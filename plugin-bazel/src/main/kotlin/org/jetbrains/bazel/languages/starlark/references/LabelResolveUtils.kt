@@ -13,7 +13,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
-import org.jetbrains.bazel.label.asBazelLabel
+import org.jetbrains.bazel.label.tryAssumeLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
@@ -71,7 +71,7 @@ private fun resolveBuildFileOrSourceFile(
   }
 
 private fun resolveBuildFileTarget(buildFile: StarlarkFile, label: TargetPattern): PsiElement? {
-  val target = label.asBazelLabel()?.target ?: return null
+  val target = label.tryAssumeLabel()?.target ?: return null
   val ruleTarget = buildFile.findRuleTarget(target.targetName) ?: return null
   return ruleTarget
     .getArgumentList()

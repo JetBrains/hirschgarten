@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.sync.languages.android
 
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
@@ -20,7 +20,7 @@ class AndroidLanguagePlugin(
 ) : LanguagePlugin<AndroidModule>() {
   private var androidMinSdkOverride: Int? = null
 
-  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     androidMinSdkOverride = workspaceContext.androidMinSdkSpec.value
   }
 
@@ -48,32 +48,21 @@ class AndroidLanguagePlugin(
     buildTarget.data = androidBuildTarget
   }
 
-  override fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): AndroidModule? {
-    if (!targetInfo.hasAndroidTargetInfo()) return null
-
-    val androidTargetInfo = targetInfo.androidTargetInfo
+  override fun resolveModule(targetInfo: TargetInfo): AndroidModule? {
+    val androidTargetInfo = targetInfo.androidTargetInfo ?: return null
     val androidJar = bazelPathsResolver.resolve(androidTargetInfo.androidJar)
     val manifest =
-      if (androidTargetInfo.hasManifest()) {
         bazelPathsResolver.resolve(androidTargetInfo.manifest)
-      } else {
-        null
-      }
     val manifestOverrides =
-      androidTargetInfo.manifestOverridesMap.run {
+      androidTargetInfo.manifestOverrides.run {
         androidMinSdkOverride?.let { androidMinSdkOverride ->
           this + ("minSdkVersion" to androidMinSdkOverride.toString())
         } ?: this
       }
-    val resourceDirectories = bazelPathsResolver.resolvePaths(androidTargetInfo.resourceDirectoriesList)
+    val resourceDirectories = bazelPathsResolver.resolvePaths(androidTargetInfo.resourceDirectories)
     val resourceJavaPackage = androidTargetInfo.resourceJavaPackage.takeIf { it.isNotEmpty() }
-    val assetsDirectories = bazelPathsResolver.resolvePaths(androidTargetInfo.assetsDirectoriesList)
-    val apk =
-      if (androidTargetInfo.hasApk()) {
-        bazelPathsResolver.resolve(androidTargetInfo.apk)
-      } else {
-        null
-      }
+    val assetsDirectories = bazelPathsResolver.resolvePaths(androidTargetInfo.assetsDirectories)
+    val apk = bazelPathsResolver.resolve(androidTargetInfo.apk)
 
     val kotlinModule: KotlinModule? = kotlinLanguagePlugin.resolveModule(targetInfo)
 
@@ -92,7 +81,7 @@ class AndroidLanguagePlugin(
     )
   }
 
-  private fun getAndroidTargetType(targetInfo: BspTargetInfo.TargetInfo): AndroidTargetType =
+  private fun getAndroidTargetType(targetInfo: TargetInfo): AndroidTargetType =
     when (targetInfo.kind) {
       "android_binary" -> AndroidTargetType.APP
       "android_library" -> AndroidTargetType.LIBRARY
@@ -100,18 +89,16 @@ class AndroidLanguagePlugin(
       else -> AndroidTargetType.LIBRARY
     }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
   override fun calculateJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.calculateJvmPackagePrefix(source)
 
-  override fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> {
-    if (!targetInfo.hasAndroidTargetInfo()) return emptySet()
-    val androidTargetInfo = targetInfo.androidTargetInfo
-    if (!androidTargetInfo.hasManifest()) return emptySet()
+  override fun resolveAdditionalResources(targetInfo: TargetInfo): Set<Path> {
+    val androidTargetInfo = targetInfo.androidTargetInfo ?: return emptySet()
 
     return bazelPathsResolver
-      .resolvePaths(listOf(targetInfo.androidTargetInfo.manifest) + targetInfo.androidTargetInfo.resourceDirectoriesList)
+      .resolvePaths(listOf(androidTargetInfo.manifest) + androidTargetInfo.resourceDirectories)
       .toSet()
   }
 }

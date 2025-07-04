@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.sync.languages
 
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.cpp.CppLanguagePlugin
@@ -26,7 +26,7 @@ class LanguagePluginsService(
 ) {
   private val emptyLanguagePlugin: EmptyLanguagePlugin = EmptyLanguagePlugin()
 
-  fun prepareSync(targetInfos: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+  fun prepareSync(targetInfos: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     scalaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
     javaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
     cppLanguagePlugin.prepareSync(targetInfos, workspaceContext)

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package bazelbsp;
 
-option java_package = "org.jetbrains.bazel.info";
+option java_package = "org.jetbrains.bazel.rawinfo";
 
 message FileLocation {
   string relative_path = 1;

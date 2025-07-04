@@ -3,7 +3,7 @@
 // source: server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto/bsp_target_info.proto
 // Protobuf Java Version: 4.29.4
 
-package org.jetbrains.bazel.info;
+package org.jetbrains.bazel.rawinfo;
 
 public final class BspTargetInfo {
   private BspTargetInfo() {}
@@ -93,15 +93,15 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_FileLocation_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_FileLocation_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_FileLocation_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_FileLocation_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.class, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder.class);
     }
 
     public static final int RELATIVE_PATH_FIELD_NUMBER = 1;
@@ -263,10 +263,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.FileLocation)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.FileLocation other = (org.jetbrains.bazel.info.BspTargetInfo.FileLocation) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation) obj;
 
       if (!getRelativePath()
           .equals(other.getRelativePath())) return false;
@@ -302,44 +302,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -347,26 +347,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -379,7 +379,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.FileLocation prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -400,21 +400,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.FileLocation)
-        org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_FileLocation_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_FileLocation_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_FileLocation_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_FileLocation_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation.class, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.FileLocation.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.newBuilder()
       private Builder() {
 
       }
@@ -438,17 +438,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_FileLocation_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_FileLocation_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation build() {
-        org.jetbrains.bazel.info.BspTargetInfo.FileLocation result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -456,14 +456,14 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.FileLocation result = new org.jetbrains.bazel.info.BspTargetInfo.FileLocation(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.FileLocation result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.relativePath_ = relativePath_;
@@ -481,16 +481,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.FileLocation) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.FileLocation)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.FileLocation other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) return this;
         if (!other.getRelativePath().isEmpty()) {
           relativePath_ = other.relativePath_;
           bitField0_ |= 0x00000001;
@@ -782,12 +782,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.FileLocation)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.FileLocation DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.FileLocation();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.FileLocation getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -823,7 +823,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -854,7 +854,7 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.Dependency.DependencyType dependency_type = 2;</code>
      * @return The dependencyType.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType getDependencyType();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType getDependencyType();
   }
   /**
    * Protobuf type {@code bazelbsp.Dependency}
@@ -884,15 +884,15 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_Dependency_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_Dependency_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_Dependency_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_Dependency_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.Dependency.class, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder.class);
     }
 
     /**
@@ -986,7 +986,7 @@ public final class BspTargetInfo {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.Dependency.getDescriptor().getEnumTypes().get(0);
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.getDescriptor().getEnumTypes().get(0);
       }
 
       private static final DependencyType[] VALUES = values();
@@ -1064,9 +1064,9 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.Dependency.DependencyType dependency_type = 2;</code>
      * @return The dependencyType.
      */
-    @java.lang.Override public org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType getDependencyType() {
-      org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType result = org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.forNumber(dependencyType_);
-      return result == null ? org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.UNRECOGNIZED : result;
+    @java.lang.Override public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType getDependencyType() {
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType result = org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType.forNumber(dependencyType_);
+      return result == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType.UNRECOGNIZED : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -1086,7 +1086,7 @@ public final class BspTargetInfo {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
         com.google.protobuf.GeneratedMessage.writeString(output, 1, id_);
       }
-      if (dependencyType_ != org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.COMPILE.getNumber()) {
+      if (dependencyType_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType.COMPILE.getNumber()) {
         output.writeEnum(2, dependencyType_);
       }
       getUnknownFields().writeTo(output);
@@ -1101,7 +1101,7 @@ public final class BspTargetInfo {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(1, id_);
       }
-      if (dependencyType_ != org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.COMPILE.getNumber()) {
+      if (dependencyType_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType.COMPILE.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, dependencyType_);
       }
@@ -1115,10 +1115,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.Dependency)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.Dependency other = (org.jetbrains.bazel.info.BspTargetInfo.Dependency) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency) obj;
 
       if (!getId()
           .equals(other.getId())) return false;
@@ -1143,44 +1143,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1188,26 +1188,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1220,7 +1220,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.Dependency prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -1241,21 +1241,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.Dependency)
-        org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_Dependency_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_Dependency_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_Dependency_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_Dependency_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.Dependency.class, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.Dependency.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.newBuilder()
       private Builder() {
 
       }
@@ -1277,17 +1277,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_Dependency_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_Dependency_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.Dependency.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency build() {
-        org.jetbrains.bazel.info.BspTargetInfo.Dependency result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1295,14 +1295,14 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.Dependency result = new org.jetbrains.bazel.info.BspTargetInfo.Dependency(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.Dependency result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.id_ = id_;
@@ -1314,16 +1314,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.Dependency) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.Dependency)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.Dependency other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.Dependency.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.getDefaultInstance()) return this;
         if (!other.getId().isEmpty()) {
           id_ = other.id_;
           bitField0_ |= 0x00000001;
@@ -1481,16 +1481,16 @@ public final class BspTargetInfo {
        * @return The dependencyType.
        */
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType getDependencyType() {
-        org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType result = org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.forNumber(dependencyType_);
-        return result == null ? org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.UNRECOGNIZED : result;
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType getDependencyType() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType result = org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType.forNumber(dependencyType_);
+        return result == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType.UNRECOGNIZED : result;
       }
       /**
        * <code>.bazelbsp.Dependency.DependencyType dependency_type = 2;</code>
        * @param value The dependencyType to set.
        * @return This builder for chaining.
        */
-      public Builder setDependencyType(org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType value) {
+      public Builder setDependencyType(org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.DependencyType value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -1514,12 +1514,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.Dependency)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.Dependency DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.Dependency();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.Dependency getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1555,7 +1555,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.Dependency getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1568,12 +1568,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getBinaryJarsList();
     /**
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getBinaryJars(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getBinaryJars(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
@@ -1581,23 +1581,23 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getBinaryJarsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getBinaryJarsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getBinaryJarsOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getInterfaceJarsList();
     /**
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getInterfaceJars(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getInterfaceJars(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
@@ -1605,23 +1605,23 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getInterfaceJarsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getInterfaceJarsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getInterfaceJarsOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getSourceJarsList();
     /**
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSourceJars(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSourceJars(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
@@ -1629,12 +1629,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getSourceJarsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSourceJarsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSourceJarsOrBuilder(
         int index);
   }
   /**
@@ -1666,32 +1666,32 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.class, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder.class);
     }
 
     public static final int BINARY_JARS_FIELD_NUMBER = 1;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> binaryJars_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> binaryJars_;
     /**
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getBinaryJarsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getBinaryJarsList() {
       return binaryJars_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getBinaryJarsOrBuilderList() {
       return binaryJars_;
     }
@@ -1706,33 +1706,33 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getBinaryJars(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getBinaryJars(int index) {
       return binaryJars_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getBinaryJarsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getBinaryJarsOrBuilder(
         int index) {
       return binaryJars_.get(index);
     }
 
     public static final int INTERFACE_JARS_FIELD_NUMBER = 2;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> interfaceJars_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> interfaceJars_;
     /**
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getInterfaceJarsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getInterfaceJarsList() {
       return interfaceJars_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getInterfaceJarsOrBuilderList() {
       return interfaceJars_;
     }
@@ -1747,33 +1747,33 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getInterfaceJars(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getInterfaceJars(int index) {
       return interfaceJars_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getInterfaceJarsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getInterfaceJarsOrBuilder(
         int index) {
       return interfaceJars_.get(index);
     }
 
     public static final int SOURCE_JARS_FIELD_NUMBER = 3;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> sourceJars_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> sourceJars_;
     /**
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getSourceJarsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getSourceJarsList() {
       return sourceJars_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getSourceJarsOrBuilderList() {
       return sourceJars_;
     }
@@ -1788,14 +1788,14 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSourceJars(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSourceJars(int index) {
       return sourceJars_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSourceJarsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSourceJarsOrBuilder(
         int index) {
       return sourceJars_.get(index);
     }
@@ -1854,10 +1854,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs other = (org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs) obj;
 
       if (!getBinaryJarsList()
           .equals(other.getBinaryJarsList())) return false;
@@ -1893,44 +1893,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1938,26 +1938,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1970,7 +1970,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -1991,21 +1991,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.JvmOutputs)
-        org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.class, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.newBuilder()
       private Builder() {
 
       }
@@ -2046,17 +2046,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmOutputs_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs build() {
-        org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -2064,15 +2064,15 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs result = new org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs result) {
         if (binaryJarsBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0)) {
             binaryJars_ = java.util.Collections.unmodifiableList(binaryJars_);
@@ -2102,22 +2102,22 @@ public final class BspTargetInfo {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs result) {
         int from_bitField0_ = bitField0_;
       }
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.getDefaultInstance()) return this;
         if (binaryJarsBuilder_ == null) {
           if (!other.binaryJars_.isEmpty()) {
             if (binaryJars_.isEmpty()) {
@@ -2223,9 +2223,9 @@ public final class BspTargetInfo {
                 done = true;
                 break;
               case 10: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (binaryJarsBuilder_ == null) {
                   ensureBinaryJarsIsMutable();
@@ -2236,9 +2236,9 @@ public final class BspTargetInfo {
                 break;
               } // case 10
               case 18: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (interfaceJarsBuilder_ == null) {
                   ensureInterfaceJarsIsMutable();
@@ -2249,9 +2249,9 @@ public final class BspTargetInfo {
                 break;
               } // case 18
               case 26: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (sourceJarsBuilder_ == null) {
                   ensureSourceJarsIsMutable();
@@ -2278,22 +2278,22 @@ public final class BspTargetInfo {
       }
       private int bitField0_;
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> binaryJars_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> binaryJars_ =
         java.util.Collections.emptyList();
       private void ensureBinaryJarsIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          binaryJars_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(binaryJars_);
+          binaryJars_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(binaryJars_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> binaryJarsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> binaryJarsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getBinaryJarsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getBinaryJarsList() {
         if (binaryJarsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(binaryJars_);
         } else {
@@ -2313,7 +2313,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getBinaryJars(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getBinaryJars(int index) {
         if (binaryJarsBuilder_ == null) {
           return binaryJars_.get(index);
         } else {
@@ -2324,7 +2324,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
       public Builder setBinaryJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (binaryJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2341,7 +2341,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
       public Builder setBinaryJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (binaryJarsBuilder_ == null) {
           ensureBinaryJarsIsMutable();
           binaryJars_.set(index, builderForValue.build());
@@ -2354,7 +2354,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public Builder addBinaryJars(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addBinaryJars(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (binaryJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2371,7 +2371,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
       public Builder addBinaryJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (binaryJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2388,7 +2388,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
       public Builder addBinaryJars(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (binaryJarsBuilder_ == null) {
           ensureBinaryJarsIsMutable();
           binaryJars_.add(builderForValue.build());
@@ -2402,7 +2402,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
       public Builder addBinaryJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (binaryJarsBuilder_ == null) {
           ensureBinaryJarsIsMutable();
           binaryJars_.add(index, builderForValue.build());
@@ -2416,7 +2416,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
       public Builder addAllBinaryJars(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (binaryJarsBuilder_ == null) {
           ensureBinaryJarsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -2456,14 +2456,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getBinaryJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getBinaryJarsBuilder(
           int index) {
         return getBinaryJarsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getBinaryJarsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getBinaryJarsOrBuilder(
           int index) {
         if (binaryJarsBuilder_ == null) {
           return binaryJars_.get(index);  } else {
@@ -2473,7 +2473,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getBinaryJarsOrBuilderList() {
         if (binaryJarsBuilder_ != null) {
           return binaryJarsBuilder_.getMessageOrBuilderList();
@@ -2484,31 +2484,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addBinaryJarsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addBinaryJarsBuilder() {
         return getBinaryJarsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addBinaryJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addBinaryJarsBuilder(
           int index) {
         return getBinaryJarsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation binary_jars = 1;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getBinaryJarsBuilderList() {
         return getBinaryJarsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getBinaryJarsFieldBuilder() {
         if (binaryJarsBuilder_ == null) {
           binaryJarsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   binaryJars_,
                   ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
@@ -2518,22 +2518,22 @@ public final class BspTargetInfo {
         return binaryJarsBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> interfaceJars_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> interfaceJars_ =
         java.util.Collections.emptyList();
       private void ensureInterfaceJarsIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          interfaceJars_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(interfaceJars_);
+          interfaceJars_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(interfaceJars_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> interfaceJarsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> interfaceJarsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getInterfaceJarsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getInterfaceJarsList() {
         if (interfaceJarsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(interfaceJars_);
         } else {
@@ -2553,7 +2553,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getInterfaceJars(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getInterfaceJars(int index) {
         if (interfaceJarsBuilder_ == null) {
           return interfaceJars_.get(index);
         } else {
@@ -2564,7 +2564,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
       public Builder setInterfaceJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (interfaceJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2581,7 +2581,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
       public Builder setInterfaceJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (interfaceJarsBuilder_ == null) {
           ensureInterfaceJarsIsMutable();
           interfaceJars_.set(index, builderForValue.build());
@@ -2594,7 +2594,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public Builder addInterfaceJars(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addInterfaceJars(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (interfaceJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2611,7 +2611,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
       public Builder addInterfaceJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (interfaceJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2628,7 +2628,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
       public Builder addInterfaceJars(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (interfaceJarsBuilder_ == null) {
           ensureInterfaceJarsIsMutable();
           interfaceJars_.add(builderForValue.build());
@@ -2642,7 +2642,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
       public Builder addInterfaceJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (interfaceJarsBuilder_ == null) {
           ensureInterfaceJarsIsMutable();
           interfaceJars_.add(index, builderForValue.build());
@@ -2656,7 +2656,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
       public Builder addAllInterfaceJars(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (interfaceJarsBuilder_ == null) {
           ensureInterfaceJarsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -2696,14 +2696,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getInterfaceJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getInterfaceJarsBuilder(
           int index) {
         return getInterfaceJarsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getInterfaceJarsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getInterfaceJarsOrBuilder(
           int index) {
         if (interfaceJarsBuilder_ == null) {
           return interfaceJars_.get(index);  } else {
@@ -2713,7 +2713,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getInterfaceJarsOrBuilderList() {
         if (interfaceJarsBuilder_ != null) {
           return interfaceJarsBuilder_.getMessageOrBuilderList();
@@ -2724,31 +2724,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addInterfaceJarsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addInterfaceJarsBuilder() {
         return getInterfaceJarsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addInterfaceJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addInterfaceJarsBuilder(
           int index) {
         return getInterfaceJarsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation interface_jars = 2;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getInterfaceJarsBuilderList() {
         return getInterfaceJarsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getInterfaceJarsFieldBuilder() {
         if (interfaceJarsBuilder_ == null) {
           interfaceJarsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   interfaceJars_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -2758,22 +2758,22 @@ public final class BspTargetInfo {
         return interfaceJarsBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> sourceJars_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> sourceJars_ =
         java.util.Collections.emptyList();
       private void ensureSourceJarsIsMutable() {
         if (!((bitField0_ & 0x00000004) != 0)) {
-          sourceJars_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(sourceJars_);
+          sourceJars_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(sourceJars_);
           bitField0_ |= 0x00000004;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> sourceJarsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> sourceJarsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getSourceJarsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getSourceJarsList() {
         if (sourceJarsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(sourceJars_);
         } else {
@@ -2793,7 +2793,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSourceJars(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSourceJars(int index) {
         if (sourceJarsBuilder_ == null) {
           return sourceJars_.get(index);
         } else {
@@ -2804,7 +2804,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
       public Builder setSourceJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (sourceJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2821,7 +2821,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
       public Builder setSourceJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (sourceJarsBuilder_ == null) {
           ensureSourceJarsIsMutable();
           sourceJars_.set(index, builderForValue.build());
@@ -2834,7 +2834,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public Builder addSourceJars(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addSourceJars(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (sourceJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2851,7 +2851,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
       public Builder addSourceJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (sourceJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2868,7 +2868,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
       public Builder addSourceJars(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (sourceJarsBuilder_ == null) {
           ensureSourceJarsIsMutable();
           sourceJars_.add(builderForValue.build());
@@ -2882,7 +2882,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
       public Builder addSourceJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (sourceJarsBuilder_ == null) {
           ensureSourceJarsIsMutable();
           sourceJars_.add(index, builderForValue.build());
@@ -2896,7 +2896,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
       public Builder addAllSourceJars(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (sourceJarsBuilder_ == null) {
           ensureSourceJarsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -2936,14 +2936,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getSourceJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getSourceJarsBuilder(
           int index) {
         return getSourceJarsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSourceJarsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSourceJarsOrBuilder(
           int index) {
         if (sourceJarsBuilder_ == null) {
           return sourceJars_.get(index);  } else {
@@ -2953,7 +2953,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getSourceJarsOrBuilderList() {
         if (sourceJarsBuilder_ != null) {
           return sourceJarsBuilder_.getMessageOrBuilderList();
@@ -2964,31 +2964,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addSourceJarsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addSourceJarsBuilder() {
         return getSourceJarsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addSourceJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addSourceJarsBuilder(
           int index) {
         return getSourceJarsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation source_jars = 3;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getSourceJarsBuilderList() {
         return getSourceJarsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getSourceJarsFieldBuilder() {
         if (sourceJarsBuilder_ == null) {
           sourceJarsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   sourceJars_,
                   ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
@@ -3002,12 +3002,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.JvmOutputs)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3043,7 +3043,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3056,12 +3056,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> 
         getJarsList();
     /**
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getJars(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getJars(int index);
     /**
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
@@ -3069,23 +3069,23 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> 
         getJarsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder getJarsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder getJarsOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> 
         getGeneratedJarsList();
     /**
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getGeneratedJars(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getGeneratedJars(int index);
     /**
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
@@ -3093,12 +3093,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> 
         getGeneratedJarsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder getGeneratedJarsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder getGeneratedJarsOrBuilder(
         int index);
 
     /**
@@ -3191,12 +3191,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getJdepsList();
     /**
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJdeps(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJdeps(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
@@ -3204,23 +3204,23 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getJdepsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJdepsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJdepsOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getTransitiveCompileTimeJarsList();
     /**
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
@@ -3228,12 +3228,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getTransitiveCompileTimeJarsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
         int index);
   }
   /**
@@ -3273,32 +3273,32 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.Builder.class);
     }
 
     public static final int JARS_FIELD_NUMBER = 1;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> jars_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> jars_;
     /**
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> getJarsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> getJarsList() {
       return jars_;
     }
     /**
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> 
         getJarsOrBuilderList() {
       return jars_;
     }
@@ -3313,33 +3313,33 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getJars(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getJars(int index) {
       return jars_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder getJarsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder getJarsOrBuilder(
         int index) {
       return jars_.get(index);
     }
 
     public static final int GENERATED_JARS_FIELD_NUMBER = 2;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> generatedJars_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> generatedJars_;
     /**
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> getGeneratedJarsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> getGeneratedJarsList() {
       return generatedJars_;
     }
     /**
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> 
         getGeneratedJarsOrBuilderList() {
       return generatedJars_;
     }
@@ -3354,14 +3354,14 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getGeneratedJars(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getGeneratedJars(int index) {
       return generatedJars_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder getGeneratedJarsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder getGeneratedJarsOrBuilder(
         int index) {
       return generatedJars_.get(index);
     }
@@ -3518,19 +3518,19 @@ public final class BspTargetInfo {
 
     public static final int JDEPS_FIELD_NUMBER = 10;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> jdeps_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> jdeps_;
     /**
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getJdepsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getJdepsList() {
       return jdeps_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getJdepsOrBuilderList() {
       return jdeps_;
     }
@@ -3545,33 +3545,33 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJdeps(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJdeps(int index) {
       return jdeps_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJdepsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJdepsOrBuilder(
         int index) {
       return jdeps_.get(index);
     }
 
     public static final int TRANSITIVE_COMPILE_TIME_JARS_FIELD_NUMBER = 11;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> transitiveCompileTimeJars_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> transitiveCompileTimeJars_;
     /**
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getTransitiveCompileTimeJarsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getTransitiveCompileTimeJarsList() {
       return transitiveCompileTimeJars_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getTransitiveCompileTimeJarsOrBuilderList() {
       return transitiveCompileTimeJars_;
     }
@@ -3586,14 +3586,14 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index) {
       return transitiveCompileTimeJars_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
         int index) {
       return transitiveCompileTimeJars_.get(index);
     }
@@ -3698,10 +3698,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo) obj;
 
       if (!getJarsList()
           .equals(other.getJarsList())) return false;
@@ -3765,44 +3765,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3810,26 +3810,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3842,7 +3842,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -3863,21 +3863,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.JvmTargetInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.newBuilder()
       private Builder() {
 
       }
@@ -3932,17 +3932,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JvmTargetInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -3950,15 +3950,15 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo result) {
         if (jarsBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0)) {
             jars_ = java.util.Collections.unmodifiableList(jars_);
@@ -3997,7 +3997,7 @@ public final class BspTargetInfo {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000004) != 0)) {
           javacOpts_.makeImmutable();
@@ -4018,16 +4018,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.getDefaultInstance()) return this;
         if (jarsBuilder_ == null) {
           if (!other.jars_.isEmpty()) {
             if (jars_.isEmpty()) {
@@ -4194,9 +4194,9 @@ public final class BspTargetInfo {
                 done = true;
                 break;
               case 10: {
-                org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.parser(),
                         extensionRegistry);
                 if (jarsBuilder_ == null) {
                   ensureJarsIsMutable();
@@ -4207,9 +4207,9 @@ public final class BspTargetInfo {
                 break;
               } // case 10
               case 18: {
-                org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.parser(),
                         extensionRegistry);
                 if (generatedJarsBuilder_ == null) {
                   ensureGeneratedJarsIsMutable();
@@ -4243,9 +4243,9 @@ public final class BspTargetInfo {
                 break;
               } // case 74
               case 82: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (jdepsBuilder_ == null) {
                   ensureJdepsIsMutable();
@@ -4256,9 +4256,9 @@ public final class BspTargetInfo {
                 break;
               } // case 82
               case 90: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (transitiveCompileTimeJarsBuilder_ == null) {
                   ensureTransitiveCompileTimeJarsIsMutable();
@@ -4285,22 +4285,22 @@ public final class BspTargetInfo {
       }
       private int bitField0_;
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> jars_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> jars_ =
         java.util.Collections.emptyList();
       private void ensureJarsIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          jars_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs>(jars_);
+          jars_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs>(jars_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> jarsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> jarsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> getJarsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> getJarsList() {
         if (jarsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(jars_);
         } else {
@@ -4320,7 +4320,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getJars(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getJars(int index) {
         if (jarsBuilder_ == null) {
           return jars_.get(index);
         } else {
@@ -4331,7 +4331,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
       public Builder setJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs value) {
         if (jarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4348,7 +4348,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
       public Builder setJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder builderForValue) {
         if (jarsBuilder_ == null) {
           ensureJarsIsMutable();
           jars_.set(index, builderForValue.build());
@@ -4361,7 +4361,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public Builder addJars(org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs value) {
+      public Builder addJars(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs value) {
         if (jarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4378,7 +4378,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
       public Builder addJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs value) {
         if (jarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4395,7 +4395,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
       public Builder addJars(
-          org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder builderForValue) {
         if (jarsBuilder_ == null) {
           ensureJarsIsMutable();
           jars_.add(builderForValue.build());
@@ -4409,7 +4409,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
       public Builder addJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder builderForValue) {
         if (jarsBuilder_ == null) {
           ensureJarsIsMutable();
           jars_.add(index, builderForValue.build());
@@ -4423,7 +4423,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
       public Builder addAllJars(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> values) {
         if (jarsBuilder_ == null) {
           ensureJarsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -4463,14 +4463,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder getJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder getJarsBuilder(
           int index) {
         return getJarsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder getJarsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder getJarsOrBuilder(
           int index) {
         if (jarsBuilder_ == null) {
           return jars_.get(index);  } else {
@@ -4480,7 +4480,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> 
            getJarsOrBuilderList() {
         if (jarsBuilder_ != null) {
           return jarsBuilder_.getMessageOrBuilderList();
@@ -4491,31 +4491,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder addJarsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder addJarsBuilder() {
         return getJarsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder addJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder addJarsBuilder(
           int index) {
         return getJarsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.JvmOutputs jars = 1;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder> 
            getJarsBuilderList() {
         return getJarsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> 
           getJarsFieldBuilder() {
         if (jarsBuilder_ == null) {
           jarsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder>(
                   jars_,
                   ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
@@ -4525,22 +4525,22 @@ public final class BspTargetInfo {
         return jarsBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> generatedJars_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> generatedJars_ =
         java.util.Collections.emptyList();
       private void ensureGeneratedJarsIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          generatedJars_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs>(generatedJars_);
+          generatedJars_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs>(generatedJars_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> generatedJarsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> generatedJarsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> getGeneratedJarsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> getGeneratedJarsList() {
         if (generatedJarsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(generatedJars_);
         } else {
@@ -4560,7 +4560,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs getGeneratedJars(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs getGeneratedJars(int index) {
         if (generatedJarsBuilder_ == null) {
           return generatedJars_.get(index);
         } else {
@@ -4571,7 +4571,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
       public Builder setGeneratedJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs value) {
         if (generatedJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4588,7 +4588,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
       public Builder setGeneratedJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder builderForValue) {
         if (generatedJarsBuilder_ == null) {
           ensureGeneratedJarsIsMutable();
           generatedJars_.set(index, builderForValue.build());
@@ -4601,7 +4601,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public Builder addGeneratedJars(org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs value) {
+      public Builder addGeneratedJars(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs value) {
         if (generatedJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4618,7 +4618,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
       public Builder addGeneratedJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs value) {
         if (generatedJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4635,7 +4635,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
       public Builder addGeneratedJars(
-          org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder builderForValue) {
         if (generatedJarsBuilder_ == null) {
           ensureGeneratedJarsIsMutable();
           generatedJars_.add(builderForValue.build());
@@ -4649,7 +4649,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
       public Builder addGeneratedJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder builderForValue) {
         if (generatedJarsBuilder_ == null) {
           ensureGeneratedJarsIsMutable();
           generatedJars_.add(index, builderForValue.build());
@@ -4663,7 +4663,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
       public Builder addAllGeneratedJars(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs> values) {
         if (generatedJarsBuilder_ == null) {
           ensureGeneratedJarsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -4703,14 +4703,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder getGeneratedJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder getGeneratedJarsBuilder(
           int index) {
         return getGeneratedJarsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder getGeneratedJarsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder getGeneratedJarsOrBuilder(
           int index) {
         if (generatedJarsBuilder_ == null) {
           return generatedJars_.get(index);  } else {
@@ -4720,7 +4720,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> 
            getGeneratedJarsOrBuilderList() {
         if (generatedJarsBuilder_ != null) {
           return generatedJarsBuilder_.getMessageOrBuilderList();
@@ -4731,31 +4731,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder addGeneratedJarsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder addGeneratedJarsBuilder() {
         return getGeneratedJarsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder addGeneratedJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder addGeneratedJarsBuilder(
           int index) {
         return getGeneratedJarsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.JvmOutputs generated_jars = 2;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder> 
            getGeneratedJarsBuilderList() {
         return getGeneratedJarsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder> 
           getGeneratedJarsFieldBuilder() {
         if (generatedJarsBuilder_ == null) {
           generatedJarsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmOutputsOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputs.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmOutputsOrBuilder>(
                   generatedJars_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -5170,22 +5170,22 @@ public final class BspTargetInfo {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> jdeps_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> jdeps_ =
         java.util.Collections.emptyList();
       private void ensureJdepsIsMutable() {
         if (!((bitField0_ & 0x00000040) != 0)) {
-          jdeps_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(jdeps_);
+          jdeps_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(jdeps_);
           bitField0_ |= 0x00000040;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> jdepsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> jdepsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getJdepsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getJdepsList() {
         if (jdepsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(jdeps_);
         } else {
@@ -5205,7 +5205,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJdeps(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJdeps(int index) {
         if (jdepsBuilder_ == null) {
           return jdeps_.get(index);
         } else {
@@ -5216,7 +5216,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
       public Builder setJdeps(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (jdepsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5233,7 +5233,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
       public Builder setJdeps(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (jdepsBuilder_ == null) {
           ensureJdepsIsMutable();
           jdeps_.set(index, builderForValue.build());
@@ -5246,7 +5246,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public Builder addJdeps(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addJdeps(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (jdepsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5263,7 +5263,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
       public Builder addJdeps(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (jdepsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5280,7 +5280,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
       public Builder addJdeps(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (jdepsBuilder_ == null) {
           ensureJdepsIsMutable();
           jdeps_.add(builderForValue.build());
@@ -5294,7 +5294,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
       public Builder addJdeps(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (jdepsBuilder_ == null) {
           ensureJdepsIsMutable();
           jdeps_.add(index, builderForValue.build());
@@ -5308,7 +5308,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
       public Builder addAllJdeps(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (jdepsBuilder_ == null) {
           ensureJdepsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -5348,14 +5348,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getJdepsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getJdepsBuilder(
           int index) {
         return getJdepsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJdepsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJdepsOrBuilder(
           int index) {
         if (jdepsBuilder_ == null) {
           return jdeps_.get(index);  } else {
@@ -5365,7 +5365,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getJdepsOrBuilderList() {
         if (jdepsBuilder_ != null) {
           return jdepsBuilder_.getMessageOrBuilderList();
@@ -5376,31 +5376,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addJdepsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addJdepsBuilder() {
         return getJdepsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addJdepsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addJdepsBuilder(
           int index) {
         return getJdepsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation jdeps = 10;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getJdepsBuilderList() {
         return getJdepsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getJdepsFieldBuilder() {
         if (jdepsBuilder_ == null) {
           jdepsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   jdeps_,
                   ((bitField0_ & 0x00000040) != 0),
                   getParentForChildren(),
@@ -5410,22 +5410,22 @@ public final class BspTargetInfo {
         return jdepsBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> transitiveCompileTimeJars_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> transitiveCompileTimeJars_ =
         java.util.Collections.emptyList();
       private void ensureTransitiveCompileTimeJarsIsMutable() {
         if (!((bitField0_ & 0x00000080) != 0)) {
-          transitiveCompileTimeJars_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(transitiveCompileTimeJars_);
+          transitiveCompileTimeJars_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(transitiveCompileTimeJars_);
           bitField0_ |= 0x00000080;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> transitiveCompileTimeJarsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> transitiveCompileTimeJarsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getTransitiveCompileTimeJarsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getTransitiveCompileTimeJarsList() {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(transitiveCompileTimeJars_);
         } else {
@@ -5445,7 +5445,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           return transitiveCompileTimeJars_.get(index);
         } else {
@@ -5456,7 +5456,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
       public Builder setTransitiveCompileTimeJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5473,7 +5473,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
       public Builder setTransitiveCompileTimeJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           ensureTransitiveCompileTimeJarsIsMutable();
           transitiveCompileTimeJars_.set(index, builderForValue.build());
@@ -5486,7 +5486,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public Builder addTransitiveCompileTimeJars(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addTransitiveCompileTimeJars(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5503,7 +5503,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
       public Builder addTransitiveCompileTimeJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5520,7 +5520,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
       public Builder addTransitiveCompileTimeJars(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           ensureTransitiveCompileTimeJarsIsMutable();
           transitiveCompileTimeJars_.add(builderForValue.build());
@@ -5534,7 +5534,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
       public Builder addTransitiveCompileTimeJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           ensureTransitiveCompileTimeJarsIsMutable();
           transitiveCompileTimeJars_.add(index, builderForValue.build());
@@ -5548,7 +5548,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
       public Builder addAllTransitiveCompileTimeJars(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           ensureTransitiveCompileTimeJarsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -5588,14 +5588,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getTransitiveCompileTimeJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getTransitiveCompileTimeJarsBuilder(
           int index) {
         return getTransitiveCompileTimeJarsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
           int index) {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           return transitiveCompileTimeJars_.get(index);  } else {
@@ -5605,7 +5605,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getTransitiveCompileTimeJarsOrBuilderList() {
         if (transitiveCompileTimeJarsBuilder_ != null) {
           return transitiveCompileTimeJarsBuilder_.getMessageOrBuilderList();
@@ -5616,31 +5616,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addTransitiveCompileTimeJarsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addTransitiveCompileTimeJarsBuilder() {
         return getTransitiveCompileTimeJarsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addTransitiveCompileTimeJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addTransitiveCompileTimeJarsBuilder(
           int index) {
         return getTransitiveCompileTimeJarsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getTransitiveCompileTimeJarsBuilderList() {
         return getTransitiveCompileTimeJarsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getTransitiveCompileTimeJarsFieldBuilder() {
         if (transitiveCompileTimeJarsBuilder_ == null) {
           transitiveCompileTimeJarsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   transitiveCompileTimeJars_,
                   ((bitField0_ & 0x00000080) != 0),
                   getParentForChildren(),
@@ -5654,12 +5654,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.JvmTargetInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5695,7 +5695,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5738,11 +5738,11 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.FileLocation java_home = 3;</code>
      * @return The javaHome.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJavaHome();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJavaHome();
     /**
      * <code>.bazelbsp.FileLocation java_home = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder();
   }
   /**
    * Protobuf type {@code bazelbsp.JavaToolchainInfo}
@@ -5772,15 +5772,15 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.class, org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.Builder.class);
     }
 
     private int bitField0_;
@@ -5863,7 +5863,7 @@ public final class BspTargetInfo {
     }
 
     public static final int JAVA_HOME_FIELD_NUMBER = 3;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation javaHome_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation javaHome_;
     /**
      * <code>.bazelbsp.FileLocation java_home = 3;</code>
      * @return Whether the javaHome field is set.
@@ -5877,15 +5877,15 @@ public final class BspTargetInfo {
      * @return The javaHome.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJavaHome() {
-      return javaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJavaHome() {
+      return javaHome_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
     }
     /**
      * <code>.bazelbsp.FileLocation java_home = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder() {
-      return javaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder() {
+      return javaHome_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -5940,10 +5940,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo other = (org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo) obj;
 
       if (!getSourceVersion()
           .equals(other.getSourceVersion())) return false;
@@ -5978,44 +5978,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6023,26 +6023,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6055,7 +6055,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -6076,21 +6076,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.JavaToolchainInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.class, org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -6123,17 +6123,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaToolchainInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -6141,14 +6141,14 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo result = new org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.sourceVersion_ = sourceVersion_;
@@ -6168,16 +6168,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.getDefaultInstance()) return this;
         if (!other.getSourceVersion().isEmpty()) {
           sourceVersion_ = other.sourceVersion_;
           bitField0_ |= 0x00000001;
@@ -6395,9 +6395,9 @@ public final class BspTargetInfo {
         return this;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation javaHome_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation javaHome_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> javaHomeBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> javaHomeBuilder_;
       /**
        * <code>.bazelbsp.FileLocation java_home = 3;</code>
        * @return Whether the javaHome field is set.
@@ -6409,9 +6409,9 @@ public final class BspTargetInfo {
        * <code>.bazelbsp.FileLocation java_home = 3;</code>
        * @return The javaHome.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJavaHome() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJavaHome() {
         if (javaHomeBuilder_ == null) {
-          return javaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
+          return javaHome_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
         } else {
           return javaHomeBuilder_.getMessage();
         }
@@ -6419,7 +6419,7 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation java_home = 3;</code>
        */
-      public Builder setJavaHome(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setJavaHome(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (javaHomeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -6436,7 +6436,7 @@ public final class BspTargetInfo {
        * <code>.bazelbsp.FileLocation java_home = 3;</code>
        */
       public Builder setJavaHome(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (javaHomeBuilder_ == null) {
           javaHome_ = builderForValue.build();
         } else {
@@ -6449,11 +6449,11 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation java_home = 3;</code>
        */
-      public Builder mergeJavaHome(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeJavaHome(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (javaHomeBuilder_ == null) {
           if (((bitField0_ & 0x00000004) != 0) &&
             javaHome_ != null &&
-            javaHome_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            javaHome_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getJavaHomeBuilder().mergeFrom(value);
           } else {
             javaHome_ = value;
@@ -6483,7 +6483,7 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation java_home = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getJavaHomeBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getJavaHomeBuilder() {
         bitField0_ |= 0x00000004;
         onChanged();
         return getJavaHomeFieldBuilder().getBuilder();
@@ -6491,23 +6491,23 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation java_home = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder() {
         if (javaHomeBuilder_ != null) {
           return javaHomeBuilder_.getMessageOrBuilder();
         } else {
           return javaHome_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation java_home = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getJavaHomeFieldBuilder() {
         if (javaHomeBuilder_ == null) {
           javaHomeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getJavaHome(),
                   getParentForChildren(),
                   isClean());
@@ -6520,12 +6520,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.JavaToolchainInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -6561,7 +6561,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -6580,11 +6580,11 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.FileLocation java_home = 1;</code>
      * @return The javaHome.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJavaHome();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJavaHome();
     /**
      * <code>.bazelbsp.FileLocation java_home = 1;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder();
   }
   /**
    * Protobuf type {@code bazelbsp.JavaRuntimeInfo}
@@ -6612,20 +6612,20 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.class, org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.Builder.class);
     }
 
     private int bitField0_;
     public static final int JAVA_HOME_FIELD_NUMBER = 1;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation javaHome_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation javaHome_;
     /**
      * <code>.bazelbsp.FileLocation java_home = 1;</code>
      * @return Whether the javaHome field is set.
@@ -6639,15 +6639,15 @@ public final class BspTargetInfo {
      * @return The javaHome.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJavaHome() {
-      return javaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJavaHome() {
+      return javaHome_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
     }
     /**
      * <code>.bazelbsp.FileLocation java_home = 1;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder() {
-      return javaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder() {
+      return javaHome_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -6690,10 +6690,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo other = (org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo) obj;
 
       if (hasJavaHome() != other.hasJavaHome()) return false;
       if (hasJavaHome()) {
@@ -6720,44 +6720,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6765,26 +6765,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6797,7 +6797,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -6818,21 +6818,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.JavaRuntimeInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.class, org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -6863,17 +6863,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_JavaRuntimeInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -6881,14 +6881,14 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo result = new org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -6902,16 +6902,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance()) return this;
         if (other.hasJavaHome()) {
           mergeJavaHome(other.getJavaHome());
         }
@@ -6965,9 +6965,9 @@ public final class BspTargetInfo {
       }
       private int bitField0_;
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation javaHome_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation javaHome_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> javaHomeBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> javaHomeBuilder_;
       /**
        * <code>.bazelbsp.FileLocation java_home = 1;</code>
        * @return Whether the javaHome field is set.
@@ -6979,9 +6979,9 @@ public final class BspTargetInfo {
        * <code>.bazelbsp.FileLocation java_home = 1;</code>
        * @return The javaHome.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getJavaHome() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getJavaHome() {
         if (javaHomeBuilder_ == null) {
-          return javaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
+          return javaHome_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
         } else {
           return javaHomeBuilder_.getMessage();
         }
@@ -6989,7 +6989,7 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation java_home = 1;</code>
        */
-      public Builder setJavaHome(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setJavaHome(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (javaHomeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -7006,7 +7006,7 @@ public final class BspTargetInfo {
        * <code>.bazelbsp.FileLocation java_home = 1;</code>
        */
       public Builder setJavaHome(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (javaHomeBuilder_ == null) {
           javaHome_ = builderForValue.build();
         } else {
@@ -7019,11 +7019,11 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation java_home = 1;</code>
        */
-      public Builder mergeJavaHome(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeJavaHome(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (javaHomeBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0) &&
             javaHome_ != null &&
-            javaHome_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            javaHome_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getJavaHomeBuilder().mergeFrom(value);
           } else {
             javaHome_ = value;
@@ -7053,7 +7053,7 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation java_home = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getJavaHomeBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getJavaHomeBuilder() {
         bitField0_ |= 0x00000001;
         onChanged();
         return getJavaHomeFieldBuilder().getBuilder();
@@ -7061,23 +7061,23 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation java_home = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder() {
         if (javaHomeBuilder_ != null) {
           return javaHomeBuilder_.getMessageOrBuilder();
         } else {
           return javaHome_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation java_home = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getJavaHomeFieldBuilder() {
         if (javaHomeBuilder_ == null) {
           javaHomeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getJavaHome(),
                   getParentForChildren(),
                   isClean());
@@ -7090,12 +7090,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.JavaRuntimeInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -7131,7 +7131,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -7169,12 +7169,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getCompilerClasspathList();
     /**
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getCompilerClasspath(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getCompilerClasspath(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
@@ -7182,23 +7182,23 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getCompilerClasspathOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getCompilerClasspathOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getCompilerClasspathOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getScalatestClasspathList();
     /**
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getScalatestClasspath(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getScalatestClasspath(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
@@ -7206,12 +7206,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getScalatestClasspathOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getScalatestClasspathOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getScalatestClasspathOrBuilder(
         int index);
   }
   /**
@@ -7244,15 +7244,15 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.Builder.class);
     }
 
     public static final int SCALAC_OPTS_FIELD_NUMBER = 1;
@@ -7294,19 +7294,19 @@ public final class BspTargetInfo {
 
     public static final int COMPILER_CLASSPATH_FIELD_NUMBER = 2;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> compilerClasspath_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> compilerClasspath_;
     /**
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getCompilerClasspathList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getCompilerClasspathList() {
       return compilerClasspath_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getCompilerClasspathOrBuilderList() {
       return compilerClasspath_;
     }
@@ -7321,33 +7321,33 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getCompilerClasspath(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getCompilerClasspath(int index) {
       return compilerClasspath_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getCompilerClasspathOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getCompilerClasspathOrBuilder(
         int index) {
       return compilerClasspath_.get(index);
     }
 
     public static final int SCALATEST_CLASSPATH_FIELD_NUMBER = 3;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> scalatestClasspath_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> scalatestClasspath_;
     /**
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getScalatestClasspathList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getScalatestClasspathList() {
       return scalatestClasspath_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getScalatestClasspathOrBuilderList() {
       return scalatestClasspath_;
     }
@@ -7362,14 +7362,14 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getScalatestClasspath(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getScalatestClasspath(int index) {
       return scalatestClasspath_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getScalatestClasspathOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getScalatestClasspathOrBuilder(
         int index) {
       return scalatestClasspath_.get(index);
     }
@@ -7432,10 +7432,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo) obj;
 
       if (!getScalacOptsList()
           .equals(other.getScalacOptsList())) return false;
@@ -7471,44 +7471,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -7516,26 +7516,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -7548,7 +7548,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -7569,21 +7569,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.ScalaTargetInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.newBuilder()
       private Builder() {
 
       }
@@ -7619,17 +7619,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_ScalaTargetInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -7637,15 +7637,15 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo result) {
         if (compilerClasspathBuilder_ == null) {
           if (((bitField0_ & 0x00000002) != 0)) {
             compilerClasspath_ = java.util.Collections.unmodifiableList(compilerClasspath_);
@@ -7666,7 +7666,7 @@ public final class BspTargetInfo {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           scalacOpts_.makeImmutable();
@@ -7676,16 +7676,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.getDefaultInstance()) return this;
         if (!other.scalacOpts_.isEmpty()) {
           if (scalacOpts_.isEmpty()) {
             scalacOpts_ = other.scalacOpts_;
@@ -7781,9 +7781,9 @@ public final class BspTargetInfo {
                 break;
               } // case 10
               case 18: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (compilerClasspathBuilder_ == null) {
                   ensureCompilerClasspathIsMutable();
@@ -7794,9 +7794,9 @@ public final class BspTargetInfo {
                 break;
               } // case 18
               case 26: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (scalatestClasspathBuilder_ == null) {
                   ensureScalatestClasspathIsMutable();
@@ -7934,22 +7934,22 @@ public final class BspTargetInfo {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> compilerClasspath_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> compilerClasspath_ =
         java.util.Collections.emptyList();
       private void ensureCompilerClasspathIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          compilerClasspath_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(compilerClasspath_);
+          compilerClasspath_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(compilerClasspath_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> compilerClasspathBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> compilerClasspathBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getCompilerClasspathList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getCompilerClasspathList() {
         if (compilerClasspathBuilder_ == null) {
           return java.util.Collections.unmodifiableList(compilerClasspath_);
         } else {
@@ -7969,7 +7969,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getCompilerClasspath(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getCompilerClasspath(int index) {
         if (compilerClasspathBuilder_ == null) {
           return compilerClasspath_.get(index);
         } else {
@@ -7980,7 +7980,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
       public Builder setCompilerClasspath(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (compilerClasspathBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -7997,7 +7997,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
       public Builder setCompilerClasspath(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (compilerClasspathBuilder_ == null) {
           ensureCompilerClasspathIsMutable();
           compilerClasspath_.set(index, builderForValue.build());
@@ -8010,7 +8010,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public Builder addCompilerClasspath(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addCompilerClasspath(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (compilerClasspathBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -8027,7 +8027,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
       public Builder addCompilerClasspath(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (compilerClasspathBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -8044,7 +8044,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
       public Builder addCompilerClasspath(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (compilerClasspathBuilder_ == null) {
           ensureCompilerClasspathIsMutable();
           compilerClasspath_.add(builderForValue.build());
@@ -8058,7 +8058,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
       public Builder addCompilerClasspath(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (compilerClasspathBuilder_ == null) {
           ensureCompilerClasspathIsMutable();
           compilerClasspath_.add(index, builderForValue.build());
@@ -8072,7 +8072,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
       public Builder addAllCompilerClasspath(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (compilerClasspathBuilder_ == null) {
           ensureCompilerClasspathIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -8112,14 +8112,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getCompilerClasspathBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getCompilerClasspathBuilder(
           int index) {
         return getCompilerClasspathFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getCompilerClasspathOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getCompilerClasspathOrBuilder(
           int index) {
         if (compilerClasspathBuilder_ == null) {
           return compilerClasspath_.get(index);  } else {
@@ -8129,7 +8129,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getCompilerClasspathOrBuilderList() {
         if (compilerClasspathBuilder_ != null) {
           return compilerClasspathBuilder_.getMessageOrBuilderList();
@@ -8140,31 +8140,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addCompilerClasspathBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addCompilerClasspathBuilder() {
         return getCompilerClasspathFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addCompilerClasspathBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addCompilerClasspathBuilder(
           int index) {
         return getCompilerClasspathFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation compiler_classpath = 2;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getCompilerClasspathBuilderList() {
         return getCompilerClasspathFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getCompilerClasspathFieldBuilder() {
         if (compilerClasspathBuilder_ == null) {
           compilerClasspathBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   compilerClasspath_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -8174,22 +8174,22 @@ public final class BspTargetInfo {
         return compilerClasspathBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> scalatestClasspath_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> scalatestClasspath_ =
         java.util.Collections.emptyList();
       private void ensureScalatestClasspathIsMutable() {
         if (!((bitField0_ & 0x00000004) != 0)) {
-          scalatestClasspath_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(scalatestClasspath_);
+          scalatestClasspath_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(scalatestClasspath_);
           bitField0_ |= 0x00000004;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> scalatestClasspathBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> scalatestClasspathBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getScalatestClasspathList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getScalatestClasspathList() {
         if (scalatestClasspathBuilder_ == null) {
           return java.util.Collections.unmodifiableList(scalatestClasspath_);
         } else {
@@ -8209,7 +8209,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getScalatestClasspath(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getScalatestClasspath(int index) {
         if (scalatestClasspathBuilder_ == null) {
           return scalatestClasspath_.get(index);
         } else {
@@ -8220,7 +8220,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
       public Builder setScalatestClasspath(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (scalatestClasspathBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -8237,7 +8237,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
       public Builder setScalatestClasspath(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (scalatestClasspathBuilder_ == null) {
           ensureScalatestClasspathIsMutable();
           scalatestClasspath_.set(index, builderForValue.build());
@@ -8250,7 +8250,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public Builder addScalatestClasspath(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addScalatestClasspath(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (scalatestClasspathBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -8267,7 +8267,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
       public Builder addScalatestClasspath(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (scalatestClasspathBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -8284,7 +8284,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
       public Builder addScalatestClasspath(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (scalatestClasspathBuilder_ == null) {
           ensureScalatestClasspathIsMutable();
           scalatestClasspath_.add(builderForValue.build());
@@ -8298,7 +8298,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
       public Builder addScalatestClasspath(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (scalatestClasspathBuilder_ == null) {
           ensureScalatestClasspathIsMutable();
           scalatestClasspath_.add(index, builderForValue.build());
@@ -8312,7 +8312,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
       public Builder addAllScalatestClasspath(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (scalatestClasspathBuilder_ == null) {
           ensureScalatestClasspathIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -8352,14 +8352,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getScalatestClasspathBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getScalatestClasspathBuilder(
           int index) {
         return getScalatestClasspathFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getScalatestClasspathOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getScalatestClasspathOrBuilder(
           int index) {
         if (scalatestClasspathBuilder_ == null) {
           return scalatestClasspath_.get(index);  } else {
@@ -8369,7 +8369,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getScalatestClasspathOrBuilderList() {
         if (scalatestClasspathBuilder_ != null) {
           return scalatestClasspathBuilder_.getMessageOrBuilderList();
@@ -8380,31 +8380,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addScalatestClasspathBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addScalatestClasspathBuilder() {
         return getScalatestClasspathFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addScalatestClasspathBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addScalatestClasspathBuilder(
           int index) {
         return getScalatestClasspathFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation scalatest_classpath = 3;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getScalatestClasspathBuilderList() {
         return getScalatestClasspathFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getScalatestClasspathFieldBuilder() {
         if (scalatestClasspathBuilder_ == null) {
           scalatestClasspathBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   scalatestClasspath_,
                   ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
@@ -8418,12 +8418,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.ScalaTargetInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -8459,7 +8459,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -8497,12 +8497,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getHeadersList();
     /**
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getHeaders(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getHeaders(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
@@ -8510,23 +8510,23 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getHeadersOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getHeadersOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getHeadersOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getTextualHeadersList();
     /**
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTextualHeaders(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getTextualHeaders(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
@@ -8534,12 +8534,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getTextualHeadersOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTextualHeadersOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getTextualHeadersOrBuilder(
         int index);
 
     /**
@@ -8706,15 +8706,15 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.Builder.class);
     }
 
     public static final int COPTS_FIELD_NUMBER = 1;
@@ -8756,19 +8756,19 @@ public final class BspTargetInfo {
 
     public static final int HEADERS_FIELD_NUMBER = 2;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> headers_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> headers_;
     /**
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getHeadersList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getHeadersList() {
       return headers_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getHeadersOrBuilderList() {
       return headers_;
     }
@@ -8783,33 +8783,33 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getHeaders(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getHeaders(int index) {
       return headers_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getHeadersOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getHeadersOrBuilder(
         int index) {
       return headers_.get(index);
     }
 
     public static final int TEXTUAL_HEADERS_FIELD_NUMBER = 3;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> textualHeaders_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> textualHeaders_;
     /**
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getTextualHeadersList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getTextualHeadersList() {
       return textualHeaders_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getTextualHeadersOrBuilderList() {
       return textualHeaders_;
     }
@@ -8824,14 +8824,14 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTextualHeaders(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getTextualHeaders(int index) {
       return textualHeaders_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTextualHeadersOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getTextualHeadersOrBuilder(
         int index) {
       return textualHeaders_.get(index);
     }
@@ -9176,10 +9176,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo) obj;
 
       if (!getCoptsList()
           .equals(other.getCoptsList())) return false;
@@ -9247,44 +9247,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -9292,26 +9292,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -9324,7 +9324,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -9345,21 +9345,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.CppTargetInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.newBuilder()
       private Builder() {
 
       }
@@ -9405,17 +9405,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CppTargetInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -9423,15 +9423,15 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo result) {
         if (headersBuilder_ == null) {
           if (((bitField0_ & 0x00000002) != 0)) {
             headers_ = java.util.Collections.unmodifiableList(headers_);
@@ -9452,7 +9452,7 @@ public final class BspTargetInfo {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           copts_.makeImmutable();
@@ -9484,16 +9484,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.getDefaultInstance()) return this;
         if (!other.copts_.isEmpty()) {
           if (copts_.isEmpty()) {
             copts_ = other.copts_;
@@ -9639,9 +9639,9 @@ public final class BspTargetInfo {
                 break;
               } // case 10
               case 18: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (headersBuilder_ == null) {
                   ensureHeadersIsMutable();
@@ -9652,9 +9652,9 @@ public final class BspTargetInfo {
                 break;
               } // case 18
               case 26: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (textualHeadersBuilder_ == null) {
                   ensureTextualHeadersIsMutable();
@@ -9826,22 +9826,22 @@ public final class BspTargetInfo {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> headers_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> headers_ =
         java.util.Collections.emptyList();
       private void ensureHeadersIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          headers_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(headers_);
+          headers_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(headers_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> headersBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> headersBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getHeadersList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getHeadersList() {
         if (headersBuilder_ == null) {
           return java.util.Collections.unmodifiableList(headers_);
         } else {
@@ -9861,7 +9861,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getHeaders(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getHeaders(int index) {
         if (headersBuilder_ == null) {
           return headers_.get(index);
         } else {
@@ -9872,7 +9872,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
       public Builder setHeaders(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (headersBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9889,7 +9889,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
       public Builder setHeaders(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (headersBuilder_ == null) {
           ensureHeadersIsMutable();
           headers_.set(index, builderForValue.build());
@@ -9902,7 +9902,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public Builder addHeaders(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addHeaders(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (headersBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9919,7 +9919,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
       public Builder addHeaders(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (headersBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9936,7 +9936,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
       public Builder addHeaders(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (headersBuilder_ == null) {
           ensureHeadersIsMutable();
           headers_.add(builderForValue.build());
@@ -9950,7 +9950,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
       public Builder addHeaders(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (headersBuilder_ == null) {
           ensureHeadersIsMutable();
           headers_.add(index, builderForValue.build());
@@ -9964,7 +9964,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
       public Builder addAllHeaders(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (headersBuilder_ == null) {
           ensureHeadersIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -10004,14 +10004,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getHeadersBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getHeadersBuilder(
           int index) {
         return getHeadersFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getHeadersOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getHeadersOrBuilder(
           int index) {
         if (headersBuilder_ == null) {
           return headers_.get(index);  } else {
@@ -10021,7 +10021,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getHeadersOrBuilderList() {
         if (headersBuilder_ != null) {
           return headersBuilder_.getMessageOrBuilderList();
@@ -10032,31 +10032,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addHeadersBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addHeadersBuilder() {
         return getHeadersFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addHeadersBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addHeadersBuilder(
           int index) {
         return getHeadersFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation headers = 2;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getHeadersBuilderList() {
         return getHeadersFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getHeadersFieldBuilder() {
         if (headersBuilder_ == null) {
           headersBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   headers_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -10066,22 +10066,22 @@ public final class BspTargetInfo {
         return headersBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> textualHeaders_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> textualHeaders_ =
         java.util.Collections.emptyList();
       private void ensureTextualHeadersIsMutable() {
         if (!((bitField0_ & 0x00000004) != 0)) {
-          textualHeaders_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(textualHeaders_);
+          textualHeaders_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(textualHeaders_);
           bitField0_ |= 0x00000004;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> textualHeadersBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> textualHeadersBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getTextualHeadersList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getTextualHeadersList() {
         if (textualHeadersBuilder_ == null) {
           return java.util.Collections.unmodifiableList(textualHeaders_);
         } else {
@@ -10101,7 +10101,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTextualHeaders(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getTextualHeaders(int index) {
         if (textualHeadersBuilder_ == null) {
           return textualHeaders_.get(index);
         } else {
@@ -10112,7 +10112,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
       public Builder setTextualHeaders(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (textualHeadersBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10129,7 +10129,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
       public Builder setTextualHeaders(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (textualHeadersBuilder_ == null) {
           ensureTextualHeadersIsMutable();
           textualHeaders_.set(index, builderForValue.build());
@@ -10142,7 +10142,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public Builder addTextualHeaders(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addTextualHeaders(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (textualHeadersBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10159,7 +10159,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
       public Builder addTextualHeaders(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (textualHeadersBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10176,7 +10176,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
       public Builder addTextualHeaders(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (textualHeadersBuilder_ == null) {
           ensureTextualHeadersIsMutable();
           textualHeaders_.add(builderForValue.build());
@@ -10190,7 +10190,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
       public Builder addTextualHeaders(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (textualHeadersBuilder_ == null) {
           ensureTextualHeadersIsMutable();
           textualHeaders_.add(index, builderForValue.build());
@@ -10204,7 +10204,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
       public Builder addAllTextualHeaders(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (textualHeadersBuilder_ == null) {
           ensureTextualHeadersIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -10244,14 +10244,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getTextualHeadersBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getTextualHeadersBuilder(
           int index) {
         return getTextualHeadersFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTextualHeadersOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getTextualHeadersOrBuilder(
           int index) {
         if (textualHeadersBuilder_ == null) {
           return textualHeaders_.get(index);  } else {
@@ -10261,7 +10261,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getTextualHeadersOrBuilderList() {
         if (textualHeadersBuilder_ != null) {
           return textualHeadersBuilder_.getMessageOrBuilderList();
@@ -10272,31 +10272,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addTextualHeadersBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addTextualHeadersBuilder() {
         return getTextualHeadersFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addTextualHeadersBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addTextualHeadersBuilder(
           int index) {
         return getTextualHeadersFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation textual_headers = 3;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getTextualHeadersBuilderList() {
         return getTextualHeadersFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getTextualHeadersFieldBuilder() {
         if (textualHeadersBuilder_ == null) {
           textualHeadersBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   textualHeaders_,
                   ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
@@ -10898,12 +10898,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.CppTargetInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -10939,7 +10939,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -11095,15 +11095,15 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.class, org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.Builder.class);
     }
 
     public static final int TARGET_NAME_FIELD_NUMBER = 1;
@@ -11418,10 +11418,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo other = (org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo) obj;
 
       if (!getTargetName()
           .equals(other.getTargetName())) return false;
@@ -11469,44 +11469,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -11514,26 +11514,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -11546,7 +11546,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -11567,21 +11567,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.CToolchainInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.class, org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.newBuilder()
       private Builder() {
 
       }
@@ -11610,17 +11610,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_CToolchainInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -11628,14 +11628,14 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo result = new org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.targetName_ = targetName_;
@@ -11662,16 +11662,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.getDefaultInstance()) return this;
         if (!other.getTargetName().isEmpty()) {
           targetName_ = other.targetName_;
           bitField0_ |= 0x00000001;
@@ -12346,12 +12346,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.CToolchainInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -12387,7 +12387,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -12449,15 +12449,15 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.class, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder.class);
     }
 
     public static final int PLUGIN_ID_FIELD_NUMBER = 100;
@@ -12583,10 +12583,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption other = (org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption) obj;
 
       if (!getPluginId()
           .equals(other.getPluginId())) return false;
@@ -12612,44 +12612,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -12657,26 +12657,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -12689,7 +12689,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -12710,21 +12710,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.KotlincPluginOption)
-        org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.class, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.newBuilder()
       private Builder() {
 
       }
@@ -12746,17 +12746,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginOption_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption build() {
-        org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -12764,14 +12764,14 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption result = new org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.pluginId_ = pluginId_;
@@ -12783,16 +12783,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.getDefaultInstance()) return this;
         if (!other.getPluginId().isEmpty()) {
           pluginId_ = other.pluginId_;
           bitField0_ |= 0x00000001;
@@ -13004,12 +13004,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.KotlincPluginOption)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -13045,7 +13045,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -13058,12 +13058,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getPluginJarsList();
     /**
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getPluginJars(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getPluginJars(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
@@ -13071,23 +13071,23 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getPluginJarsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getPluginJarsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getPluginJarsOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption> 
         getKotlincPluginOptionsList();
     /**
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption getKotlincPluginOptions(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption getKotlincPluginOptions(int index);
     /**
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
@@ -13095,12 +13095,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder> 
         getKotlincPluginOptionsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder getKotlincPluginOptionsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder getKotlincPluginOptionsOrBuilder(
         int index);
   }
   /**
@@ -13131,32 +13131,32 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.class, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder.class);
     }
 
     public static final int PLUGIN_JARS_FIELD_NUMBER = 100;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> pluginJars_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> pluginJars_;
     /**
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getPluginJarsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getPluginJarsList() {
       return pluginJars_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getPluginJarsOrBuilderList() {
       return pluginJars_;
     }
@@ -13171,33 +13171,33 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getPluginJars(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getPluginJars(int index) {
       return pluginJars_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getPluginJarsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getPluginJarsOrBuilder(
         int index) {
       return pluginJars_.get(index);
     }
 
     public static final int KOTLINC_PLUGIN_OPTIONS_FIELD_NUMBER = 200;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption> kotlincPluginOptions_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption> kotlincPluginOptions_;
     /**
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption> getKotlincPluginOptionsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption> getKotlincPluginOptionsList() {
       return kotlincPluginOptions_;
     }
     /**
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder> 
         getKotlincPluginOptionsOrBuilderList() {
       return kotlincPluginOptions_;
     }
@@ -13212,14 +13212,14 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption getKotlincPluginOptions(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption getKotlincPluginOptions(int index) {
       return kotlincPluginOptions_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder getKotlincPluginOptionsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder getKotlincPluginOptionsOrBuilder(
         int index) {
       return kotlincPluginOptions_.get(index);
     }
@@ -13271,10 +13271,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo other = (org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo) obj;
 
       if (!getPluginJarsList()
           .equals(other.getPluginJarsList())) return false;
@@ -13304,44 +13304,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -13349,26 +13349,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -13381,7 +13381,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -13402,21 +13402,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.KotlincPluginInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.class, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.newBuilder()
       private Builder() {
 
       }
@@ -13450,17 +13450,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlincPluginInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -13468,15 +13468,15 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo result = new org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo result) {
         if (pluginJarsBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0)) {
             pluginJars_ = java.util.Collections.unmodifiableList(pluginJars_);
@@ -13497,22 +13497,22 @@ public final class BspTargetInfo {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo result) {
         int from_bitField0_ = bitField0_;
       }
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.getDefaultInstance()) return this;
         if (pluginJarsBuilder_ == null) {
           if (!other.pluginJars_.isEmpty()) {
             if (pluginJars_.isEmpty()) {
@@ -13592,9 +13592,9 @@ public final class BspTargetInfo {
                 done = true;
                 break;
               case 802: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (pluginJarsBuilder_ == null) {
                   ensurePluginJarsIsMutable();
@@ -13605,9 +13605,9 @@ public final class BspTargetInfo {
                 break;
               } // case 802
               case 1602: {
-                org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.parser(),
                         extensionRegistry);
                 if (kotlincPluginOptionsBuilder_ == null) {
                   ensureKotlincPluginOptionsIsMutable();
@@ -13634,22 +13634,22 @@ public final class BspTargetInfo {
       }
       private int bitField0_;
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> pluginJars_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> pluginJars_ =
         java.util.Collections.emptyList();
       private void ensurePluginJarsIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          pluginJars_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(pluginJars_);
+          pluginJars_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(pluginJars_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> pluginJarsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> pluginJarsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getPluginJarsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getPluginJarsList() {
         if (pluginJarsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(pluginJars_);
         } else {
@@ -13669,7 +13669,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getPluginJars(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getPluginJars(int index) {
         if (pluginJarsBuilder_ == null) {
           return pluginJars_.get(index);
         } else {
@@ -13680,7 +13680,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
       public Builder setPluginJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (pluginJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13697,7 +13697,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
       public Builder setPluginJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (pluginJarsBuilder_ == null) {
           ensurePluginJarsIsMutable();
           pluginJars_.set(index, builderForValue.build());
@@ -13710,7 +13710,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public Builder addPluginJars(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addPluginJars(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (pluginJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13727,7 +13727,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
       public Builder addPluginJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (pluginJarsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13744,7 +13744,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
       public Builder addPluginJars(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (pluginJarsBuilder_ == null) {
           ensurePluginJarsIsMutable();
           pluginJars_.add(builderForValue.build());
@@ -13758,7 +13758,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
       public Builder addPluginJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (pluginJarsBuilder_ == null) {
           ensurePluginJarsIsMutable();
           pluginJars_.add(index, builderForValue.build());
@@ -13772,7 +13772,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
       public Builder addAllPluginJars(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (pluginJarsBuilder_ == null) {
           ensurePluginJarsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -13812,14 +13812,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getPluginJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getPluginJarsBuilder(
           int index) {
         return getPluginJarsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getPluginJarsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getPluginJarsOrBuilder(
           int index) {
         if (pluginJarsBuilder_ == null) {
           return pluginJars_.get(index);  } else {
@@ -13829,7 +13829,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getPluginJarsOrBuilderList() {
         if (pluginJarsBuilder_ != null) {
           return pluginJarsBuilder_.getMessageOrBuilderList();
@@ -13840,31 +13840,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addPluginJarsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addPluginJarsBuilder() {
         return getPluginJarsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addPluginJarsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addPluginJarsBuilder(
           int index) {
         return getPluginJarsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation plugin_jars = 100;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getPluginJarsBuilderList() {
         return getPluginJarsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getPluginJarsFieldBuilder() {
         if (pluginJarsBuilder_ == null) {
           pluginJarsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   pluginJars_,
                   ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
@@ -13874,22 +13874,22 @@ public final class BspTargetInfo {
         return pluginJarsBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption> kotlincPluginOptions_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption> kotlincPluginOptions_ =
         java.util.Collections.emptyList();
       private void ensureKotlincPluginOptionsIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          kotlincPluginOptions_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption>(kotlincPluginOptions_);
+          kotlincPluginOptions_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption>(kotlincPluginOptions_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder> kotlincPluginOptionsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder> kotlincPluginOptionsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption> getKotlincPluginOptionsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption> getKotlincPluginOptionsList() {
         if (kotlincPluginOptionsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(kotlincPluginOptions_);
         } else {
@@ -13909,7 +13909,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption getKotlincPluginOptions(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption getKotlincPluginOptions(int index) {
         if (kotlincPluginOptionsBuilder_ == null) {
           return kotlincPluginOptions_.get(index);
         } else {
@@ -13920,7 +13920,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
       public Builder setKotlincPluginOptions(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption value) {
         if (kotlincPluginOptionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13937,7 +13937,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
       public Builder setKotlincPluginOptions(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder builderForValue) {
         if (kotlincPluginOptionsBuilder_ == null) {
           ensureKotlincPluginOptionsIsMutable();
           kotlincPluginOptions_.set(index, builderForValue.build());
@@ -13950,7 +13950,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public Builder addKotlincPluginOptions(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption value) {
+      public Builder addKotlincPluginOptions(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption value) {
         if (kotlincPluginOptionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13967,7 +13967,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
       public Builder addKotlincPluginOptions(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption value) {
         if (kotlincPluginOptionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13984,7 +13984,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
       public Builder addKotlincPluginOptions(
-          org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder builderForValue) {
         if (kotlincPluginOptionsBuilder_ == null) {
           ensureKotlincPluginOptionsIsMutable();
           kotlincPluginOptions_.add(builderForValue.build());
@@ -13998,7 +13998,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
       public Builder addKotlincPluginOptions(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder builderForValue) {
         if (kotlincPluginOptionsBuilder_ == null) {
           ensureKotlincPluginOptionsIsMutable();
           kotlincPluginOptions_.add(index, builderForValue.build());
@@ -14012,7 +14012,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
       public Builder addAllKotlincPluginOptions(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption> values) {
         if (kotlincPluginOptionsBuilder_ == null) {
           ensureKotlincPluginOptionsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -14052,14 +14052,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder getKotlincPluginOptionsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder getKotlincPluginOptionsBuilder(
           int index) {
         return getKotlincPluginOptionsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder getKotlincPluginOptionsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder getKotlincPluginOptionsOrBuilder(
           int index) {
         if (kotlincPluginOptionsBuilder_ == null) {
           return kotlincPluginOptions_.get(index);  } else {
@@ -14069,7 +14069,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder> 
            getKotlincPluginOptionsOrBuilderList() {
         if (kotlincPluginOptionsBuilder_ != null) {
           return kotlincPluginOptionsBuilder_.getMessageOrBuilderList();
@@ -14080,31 +14080,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder addKotlincPluginOptionsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder addKotlincPluginOptionsBuilder() {
         return getKotlincPluginOptionsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder addKotlincPluginOptionsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder addKotlincPluginOptionsBuilder(
           int index) {
         return getKotlincPluginOptionsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.KotlincPluginOption kotlinc_plugin_options = 200;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder> 
            getKotlincPluginOptionsBuilderList() {
         return getKotlincPluginOptionsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder> 
           getKotlincPluginOptionsFieldBuilder() {
         if (kotlincPluginOptionsBuilder_ == null) {
           kotlincPluginOptionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOption.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginOptionOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOption.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginOptionOrBuilder>(
                   kotlincPluginOptions_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -14118,12 +14118,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.KotlincPluginInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -14159,7 +14159,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -14246,12 +14246,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getStdlibsList();
     /**
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getStdlibs(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getStdlibs(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
@@ -14259,23 +14259,23 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getStdlibsOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getStdlibsOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getStdlibsOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo> 
         getKotlincPluginInfosList();
     /**
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo getKotlincPluginInfos(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo getKotlincPluginInfos(int index);
     /**
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
@@ -14283,12 +14283,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder> 
         getKotlincPluginInfosOrBuilderList();
     /**
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
         int index);
   }
   /**
@@ -14325,15 +14325,15 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.Builder.class);
     }
 
     public static final int LANGUAGE_VERSION_FIELD_NUMBER = 100;
@@ -14490,19 +14490,19 @@ public final class BspTargetInfo {
 
     public static final int STDLIBS_FIELD_NUMBER = 500;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> stdlibs_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> stdlibs_;
     /**
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getStdlibsList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getStdlibsList() {
       return stdlibs_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getStdlibsOrBuilderList() {
       return stdlibs_;
     }
@@ -14517,33 +14517,33 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getStdlibs(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getStdlibs(int index) {
       return stdlibs_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getStdlibsOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getStdlibsOrBuilder(
         int index) {
       return stdlibs_.get(index);
     }
 
     public static final int KOTLINC_PLUGIN_INFOS_FIELD_NUMBER = 600;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo> kotlincPluginInfos_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo> kotlincPluginInfos_;
     /**
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo> getKotlincPluginInfosList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo> getKotlincPluginInfosList() {
       return kotlincPluginInfos_;
     }
     /**
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder> 
         getKotlincPluginInfosOrBuilderList() {
       return kotlincPluginInfos_;
     }
@@ -14558,14 +14558,14 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo getKotlincPluginInfos(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo getKotlincPluginInfos(int index) {
       return kotlincPluginInfos_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
         int index) {
       return kotlincPluginInfos_.get(index);
     }
@@ -14651,10 +14651,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo) obj;
 
       if (!getLanguageVersion()
           .equals(other.getLanguageVersion())) return false;
@@ -14704,44 +14704,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -14749,26 +14749,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -14781,7 +14781,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -14802,21 +14802,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.KotlinTargetInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.newBuilder()
       private Builder() {
 
       }
@@ -14856,17 +14856,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_KotlinTargetInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -14874,15 +14874,15 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo result) {
         if (stdlibsBuilder_ == null) {
           if (((bitField0_ & 0x00000010) != 0)) {
             stdlibs_ = java.util.Collections.unmodifiableList(stdlibs_);
@@ -14903,7 +14903,7 @@ public final class BspTargetInfo {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.languageVersion_ = languageVersion_;
@@ -14923,16 +14923,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.getDefaultInstance()) return this;
         if (!other.getLanguageVersion().isEmpty()) {
           languageVersion_ = other.languageVersion_;
           bitField0_ |= 0x00000001;
@@ -15064,9 +15064,9 @@ public final class BspTargetInfo {
                 break;
               } // case 3202
               case 4002: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (stdlibsBuilder_ == null) {
                   ensureStdlibsIsMutable();
@@ -15077,9 +15077,9 @@ public final class BspTargetInfo {
                 break;
               } // case 4002
               case 4802: {
-                org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.parser(),
                         extensionRegistry);
                 if (kotlincPluginInfosBuilder_ == null) {
                   ensureKotlincPluginInfosIsMutable();
@@ -15472,22 +15472,22 @@ public final class BspTargetInfo {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> stdlibs_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> stdlibs_ =
         java.util.Collections.emptyList();
       private void ensureStdlibsIsMutable() {
         if (!((bitField0_ & 0x00000010) != 0)) {
-          stdlibs_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(stdlibs_);
+          stdlibs_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(stdlibs_);
           bitField0_ |= 0x00000010;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> stdlibsBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> stdlibsBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getStdlibsList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getStdlibsList() {
         if (stdlibsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(stdlibs_);
         } else {
@@ -15507,7 +15507,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getStdlibs(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getStdlibs(int index) {
         if (stdlibsBuilder_ == null) {
           return stdlibs_.get(index);
         } else {
@@ -15518,7 +15518,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
       public Builder setStdlibs(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (stdlibsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -15535,7 +15535,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
       public Builder setStdlibs(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (stdlibsBuilder_ == null) {
           ensureStdlibsIsMutable();
           stdlibs_.set(index, builderForValue.build());
@@ -15548,7 +15548,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public Builder addStdlibs(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addStdlibs(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (stdlibsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -15565,7 +15565,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
       public Builder addStdlibs(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (stdlibsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -15582,7 +15582,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
       public Builder addStdlibs(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (stdlibsBuilder_ == null) {
           ensureStdlibsIsMutable();
           stdlibs_.add(builderForValue.build());
@@ -15596,7 +15596,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
       public Builder addStdlibs(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (stdlibsBuilder_ == null) {
           ensureStdlibsIsMutable();
           stdlibs_.add(index, builderForValue.build());
@@ -15610,7 +15610,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
       public Builder addAllStdlibs(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (stdlibsBuilder_ == null) {
           ensureStdlibsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -15650,14 +15650,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getStdlibsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getStdlibsBuilder(
           int index) {
         return getStdlibsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getStdlibsOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getStdlibsOrBuilder(
           int index) {
         if (stdlibsBuilder_ == null) {
           return stdlibs_.get(index);  } else {
@@ -15667,7 +15667,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getStdlibsOrBuilderList() {
         if (stdlibsBuilder_ != null) {
           return stdlibsBuilder_.getMessageOrBuilderList();
@@ -15678,31 +15678,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addStdlibsBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addStdlibsBuilder() {
         return getStdlibsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addStdlibsBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addStdlibsBuilder(
           int index) {
         return getStdlibsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation stdlibs = 500;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getStdlibsBuilderList() {
         return getStdlibsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getStdlibsFieldBuilder() {
         if (stdlibsBuilder_ == null) {
           stdlibsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   stdlibs_,
                   ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
@@ -15712,22 +15712,22 @@ public final class BspTargetInfo {
         return stdlibsBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo> kotlincPluginInfos_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo> kotlincPluginInfos_ =
         java.util.Collections.emptyList();
       private void ensureKotlincPluginInfosIsMutable() {
         if (!((bitField0_ & 0x00000020) != 0)) {
-          kotlincPluginInfos_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo>(kotlincPluginInfos_);
+          kotlincPluginInfos_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo>(kotlincPluginInfos_);
           bitField0_ |= 0x00000020;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder> kotlincPluginInfosBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder> kotlincPluginInfosBuilder_;
 
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo> getKotlincPluginInfosList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo> getKotlincPluginInfosList() {
         if (kotlincPluginInfosBuilder_ == null) {
           return java.util.Collections.unmodifiableList(kotlincPluginInfos_);
         } else {
@@ -15747,7 +15747,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo getKotlincPluginInfos(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo getKotlincPluginInfos(int index) {
         if (kotlincPluginInfosBuilder_ == null) {
           return kotlincPluginInfos_.get(index);
         } else {
@@ -15758,7 +15758,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
       public Builder setKotlincPluginInfos(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo value) {
         if (kotlincPluginInfosBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -15775,7 +15775,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
       public Builder setKotlincPluginInfos(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder builderForValue) {
         if (kotlincPluginInfosBuilder_ == null) {
           ensureKotlincPluginInfosIsMutable();
           kotlincPluginInfos_.set(index, builderForValue.build());
@@ -15788,7 +15788,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public Builder addKotlincPluginInfos(org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo value) {
+      public Builder addKotlincPluginInfos(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo value) {
         if (kotlincPluginInfosBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -15805,7 +15805,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
       public Builder addKotlincPluginInfos(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo value) {
         if (kotlincPluginInfosBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -15822,7 +15822,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
       public Builder addKotlincPluginInfos(
-          org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder builderForValue) {
         if (kotlincPluginInfosBuilder_ == null) {
           ensureKotlincPluginInfosIsMutable();
           kotlincPluginInfos_.add(builderForValue.build());
@@ -15836,7 +15836,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
       public Builder addKotlincPluginInfos(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder builderForValue) {
         if (kotlincPluginInfosBuilder_ == null) {
           ensureKotlincPluginInfosIsMutable();
           kotlincPluginInfos_.add(index, builderForValue.build());
@@ -15850,7 +15850,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
       public Builder addAllKotlincPluginInfos(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo> values) {
         if (kotlincPluginInfosBuilder_ == null) {
           ensureKotlincPluginInfosIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -15890,14 +15890,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder getKotlincPluginInfosBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder getKotlincPluginInfosBuilder(
           int index) {
         return getKotlincPluginInfosFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
           int index) {
         if (kotlincPluginInfosBuilder_ == null) {
           return kotlincPluginInfos_.get(index);  } else {
@@ -15907,7 +15907,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder> 
            getKotlincPluginInfosOrBuilderList() {
         if (kotlincPluginInfosBuilder_ != null) {
           return kotlincPluginInfosBuilder_.getMessageOrBuilderList();
@@ -15918,31 +15918,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder addKotlincPluginInfosBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder addKotlincPluginInfosBuilder() {
         return getKotlincPluginInfosFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder addKotlincPluginInfosBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder addKotlincPluginInfosBuilder(
           int index) {
         return getKotlincPluginInfosFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.KotlincPluginInfo kotlinc_plugin_infos = 600;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder> 
            getKotlincPluginInfosBuilderList() {
         return getKotlincPluginInfosFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder> 
           getKotlincPluginInfosFieldBuilder() {
         if (kotlincPluginInfosBuilder_ == null) {
           kotlincPluginInfosBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlincPluginInfoOrBuilder>(
                   kotlincPluginInfos_,
                   ((bitField0_ & 0x00000020) != 0),
                   getParentForChildren(),
@@ -15956,12 +15956,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.KotlinTargetInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -15997,7 +15997,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -16016,11 +16016,11 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.FileLocation interpreter = 1;</code>
      * @return The interpreter.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getInterpreter();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getInterpreter();
     /**
      * <code>.bazelbsp.FileLocation interpreter = 1;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getInterpreterOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getInterpreterOrBuilder();
 
     /**
      * <code>string version = 2;</code>
@@ -16068,12 +16068,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getGeneratedSourcesList();
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
@@ -16081,12 +16081,12 @@ public final class BspTargetInfo {
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getGeneratedSourcesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
         int index);
   }
   /**
@@ -16119,20 +16119,20 @@ public final class BspTargetInfo {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.Builder.class);
     }
 
     private int bitField0_;
     public static final int INTERPRETER_FIELD_NUMBER = 1;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation interpreter_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation interpreter_;
     /**
      * <code>.bazelbsp.FileLocation interpreter = 1;</code>
      * @return Whether the interpreter field is set.
@@ -16146,15 +16146,15 @@ public final class BspTargetInfo {
      * @return The interpreter.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getInterpreter() {
-      return interpreter_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : interpreter_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getInterpreter() {
+      return interpreter_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : interpreter_;
     }
     /**
      * <code>.bazelbsp.FileLocation interpreter = 1;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getInterpreterOrBuilder() {
-      return interpreter_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : interpreter_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getInterpreterOrBuilder() {
+      return interpreter_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : interpreter_;
     }
 
     public static final int VERSION_FIELD_NUMBER = 2;
@@ -16246,19 +16246,19 @@ public final class BspTargetInfo {
 
     public static final int GENERATED_SOURCES_FIELD_NUMBER = 5;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> generatedSources_;
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
       return generatedSources_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getGeneratedSourcesOrBuilderList() {
       return generatedSources_;
     }
@@ -16273,14 +16273,14 @@ public final class BspTargetInfo {
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index) {
       return generatedSources_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
         int index) {
       return generatedSources_.get(index);
     }
@@ -16356,10 +16356,10 @@ public final class BspTargetInfo {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo) obj;
 
       if (hasInterpreter() != other.hasInterpreter()) return false;
       if (hasInterpreter()) {
@@ -16407,44 +16407,44 @@ public final class BspTargetInfo {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -16452,26 +16452,26 @@ public final class BspTargetInfo {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -16484,7 +16484,7 @@ public final class BspTargetInfo {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -16505,21 +16505,21 @@ public final class BspTargetInfo {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.PythonTargetInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -16562,17 +16562,17 @@ public final class BspTargetInfo {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_PythonTargetInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -16580,15 +16580,15 @@ public final class BspTargetInfo {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo result) {
         if (generatedSourcesBuilder_ == null) {
           if (((bitField0_ & 0x00000010) != 0)) {
             generatedSources_ = java.util.Collections.unmodifiableList(generatedSources_);
@@ -16600,7 +16600,7 @@ public final class BspTargetInfo {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -16624,16 +16624,16 @@ public final class BspTargetInfo {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.getDefaultInstance()) return this;
         if (other.hasInterpreter()) {
           mergeInterpreter(other.getInterpreter());
         }
@@ -16731,9 +16731,9 @@ public final class BspTargetInfo {
                 break;
               } // case 32
               case 42: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (generatedSourcesBuilder_ == null) {
                   ensureGeneratedSourcesIsMutable();
@@ -16760,9 +16760,9 @@ public final class BspTargetInfo {
       }
       private int bitField0_;
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation interpreter_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation interpreter_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> interpreterBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> interpreterBuilder_;
       /**
        * <code>.bazelbsp.FileLocation interpreter = 1;</code>
        * @return Whether the interpreter field is set.
@@ -16774,9 +16774,9 @@ public final class BspTargetInfo {
        * <code>.bazelbsp.FileLocation interpreter = 1;</code>
        * @return The interpreter.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getInterpreter() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getInterpreter() {
         if (interpreterBuilder_ == null) {
-          return interpreter_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : interpreter_;
+          return interpreter_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : interpreter_;
         } else {
           return interpreterBuilder_.getMessage();
         }
@@ -16784,7 +16784,7 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation interpreter = 1;</code>
        */
-      public Builder setInterpreter(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setInterpreter(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (interpreterBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -16801,7 +16801,7 @@ public final class BspTargetInfo {
        * <code>.bazelbsp.FileLocation interpreter = 1;</code>
        */
       public Builder setInterpreter(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (interpreterBuilder_ == null) {
           interpreter_ = builderForValue.build();
         } else {
@@ -16814,11 +16814,11 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation interpreter = 1;</code>
        */
-      public Builder mergeInterpreter(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeInterpreter(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (interpreterBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0) &&
             interpreter_ != null &&
-            interpreter_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            interpreter_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getInterpreterBuilder().mergeFrom(value);
           } else {
             interpreter_ = value;
@@ -16848,7 +16848,7 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation interpreter = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getInterpreterBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getInterpreterBuilder() {
         bitField0_ |= 0x00000001;
         onChanged();
         return getInterpreterFieldBuilder().getBuilder();
@@ -16856,23 +16856,23 @@ public final class BspTargetInfo {
       /**
        * <code>.bazelbsp.FileLocation interpreter = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getInterpreterOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getInterpreterOrBuilder() {
         if (interpreterBuilder_ != null) {
           return interpreterBuilder_.getMessageOrBuilder();
         } else {
           return interpreter_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : interpreter_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : interpreter_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation interpreter = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getInterpreterFieldBuilder() {
         if (interpreterBuilder_ == null) {
           interpreterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getInterpreter(),
                   getParentForChildren(),
                   isClean());
@@ -17096,22 +17096,22 @@ public final class BspTargetInfo {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> generatedSources_ =
         java.util.Collections.emptyList();
       private void ensureGeneratedSourcesIsMutable() {
         if (!((bitField0_ & 0x00000010) != 0)) {
-          generatedSources_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(generatedSources_);
+          generatedSources_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(generatedSources_);
           bitField0_ |= 0x00000010;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> generatedSourcesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> generatedSourcesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
         if (generatedSourcesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(generatedSources_);
         } else {
@@ -17131,7 +17131,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index) {
         if (generatedSourcesBuilder_ == null) {
           return generatedSources_.get(index);
         } else {
@@ -17142,7 +17142,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
       public Builder setGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -17159,7 +17159,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
       public Builder setGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.set(index, builderForValue.build());
@@ -17172,7 +17172,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public Builder addGeneratedSources(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addGeneratedSources(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -17189,7 +17189,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
       public Builder addGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -17206,7 +17206,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
       public Builder addGeneratedSources(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.add(builderForValue.build());
@@ -17220,7 +17220,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
       public Builder addGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.add(index, builderForValue.build());
@@ -17234,7 +17234,7 @@ public final class BspTargetInfo {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
       public Builder addAllGeneratedSources(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -17274,14 +17274,14 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getGeneratedSourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getGeneratedSourcesBuilder(
           int index) {
         return getGeneratedSourcesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
           int index) {
         if (generatedSourcesBuilder_ == null) {
           return generatedSources_.get(index);  } else {
@@ -17291,7 +17291,7 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getGeneratedSourcesOrBuilderList() {
         if (generatedSourcesBuilder_ != null) {
           return generatedSourcesBuilder_.getMessageOrBuilderList();
@@ -17302,31 +17302,31 @@ public final class BspTargetInfo {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder() {
         return getGeneratedSourcesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder(
           int index) {
         return getGeneratedSourcesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getGeneratedSourcesBuilderList() {
         return getGeneratedSourcesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getGeneratedSourcesFieldBuilder() {
         if (generatedSourcesBuilder_ == null) {
           generatedSourcesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   generatedSources_,
                   ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
@@ -17340,12 +17340,12 @@ public final class BspTargetInfo {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.PythonTargetInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -17381,7 +17381,7 @@ public final class BspTargetInfo {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -17400,11 +17400,11 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.FileLocation android_jar = 100;</code>
      * @return The androidJar.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAndroidJar();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAndroidJar();
     /**
      * <code>.bazelbsp.FileLocation android_jar = 100;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAndroidJarOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAndroidJarOrBuilder();
 
     /**
      * <code>.bazelbsp.FileLocation manifest = 200;</code>
@@ -17415,11 +17415,11 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.FileLocation manifest = 200;</code>
      * @return The manifest.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getManifest();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getManifest();
     /**
      * <code>.bazelbsp.FileLocation manifest = 200;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder();
 
     /**
      * <code>map&lt;string, string&gt; manifest_overrides = 250;</code>
@@ -17458,12 +17458,12 @@ java.lang.String defaultValue);
     /**
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getResourceDirectoriesList();
     /**
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResourceDirectories(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResourceDirectories(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
@@ -17471,12 +17471,12 @@ java.lang.String defaultValue);
     /**
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getResourceDirectoriesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourceDirectoriesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourceDirectoriesOrBuilder(
         int index);
 
     /**
@@ -17494,12 +17494,12 @@ java.lang.String defaultValue);
     /**
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getAssetsDirectoriesList();
     /**
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAssetsDirectories(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAssetsDirectories(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
@@ -17507,12 +17507,12 @@ java.lang.String defaultValue);
     /**
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getAssetsDirectoriesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAssetsDirectoriesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAssetsDirectoriesOrBuilder(
         int index);
 
     /**
@@ -17524,11 +17524,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
      * @return The aidlBinaryJar.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAidlBinaryJar();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAidlBinaryJar();
     /**
      * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAidlBinaryJarOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAidlBinaryJarOrBuilder();
 
     /**
      * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
@@ -17539,11 +17539,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
      * @return The aidlSourceJar.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAidlSourceJar();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAidlSourceJar();
     /**
      * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAidlSourceJarOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAidlSourceJarOrBuilder();
 
     /**
      * <code>.bazelbsp.FileLocation apk = 700;</code>
@@ -17554,11 +17554,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.FileLocation apk = 700;</code>
      * @return The apk.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getApk();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getApk();
     /**
      * <code>.bazelbsp.FileLocation apk = 700;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getApkOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getApkOrBuilder();
   }
   /**
    * Protobuf type {@code bazelbsp.AndroidTargetInfo}
@@ -17589,7 +17589,7 @@ java.lang.String defaultValue);
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -17607,14 +17607,14 @@ java.lang.String defaultValue);
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.Builder.class);
     }
 
     private int bitField0_;
     public static final int ANDROID_JAR_FIELD_NUMBER = 100;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation androidJar_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation androidJar_;
     /**
      * <code>.bazelbsp.FileLocation android_jar = 100;</code>
      * @return Whether the androidJar field is set.
@@ -17628,19 +17628,19 @@ java.lang.String defaultValue);
      * @return The androidJar.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAndroidJar() {
-      return androidJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : androidJar_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAndroidJar() {
+      return androidJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : androidJar_;
     }
     /**
      * <code>.bazelbsp.FileLocation android_jar = 100;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAndroidJarOrBuilder() {
-      return androidJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : androidJar_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAndroidJarOrBuilder() {
+      return androidJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : androidJar_;
     }
 
     public static final int MANIFEST_FIELD_NUMBER = 200;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation manifest_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation manifest_;
     /**
      * <code>.bazelbsp.FileLocation manifest = 200;</code>
      * @return Whether the manifest field is set.
@@ -17654,15 +17654,15 @@ java.lang.String defaultValue);
      * @return The manifest.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getManifest() {
-      return manifest_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getManifest() {
+      return manifest_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
     }
     /**
      * <code>.bazelbsp.FileLocation manifest = 200;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder() {
-      return manifest_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder() {
+      return manifest_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
     }
 
     public static final int MANIFEST_OVERRIDES_FIELD_NUMBER = 250;
@@ -17671,7 +17671,7 @@ java.lang.String defaultValue);
           java.lang.String, java.lang.String> defaultEntry =
               com.google.protobuf.MapEntry
               .<java.lang.String, java.lang.String>newDefaultInstance(
-                  org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_ManifestOverridesEntry_descriptor, 
+                  org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_ManifestOverridesEntry_descriptor, 
                   com.google.protobuf.WireFormat.FieldType.STRING,
                   "",
                   com.google.protobuf.WireFormat.FieldType.STRING,
@@ -17746,19 +17746,19 @@ java.lang.String defaultValue) {
 
     public static final int RESOURCE_DIRECTORIES_FIELD_NUMBER = 300;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> resourceDirectories_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> resourceDirectories_;
     /**
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getResourceDirectoriesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getResourceDirectoriesList() {
       return resourceDirectories_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getResourceDirectoriesOrBuilderList() {
       return resourceDirectories_;
     }
@@ -17773,14 +17773,14 @@ java.lang.String defaultValue) {
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResourceDirectories(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResourceDirectories(int index) {
       return resourceDirectories_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourceDirectoriesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourceDirectoriesOrBuilder(
         int index) {
       return resourceDirectories_.get(index);
     }
@@ -17826,19 +17826,19 @@ java.lang.String defaultValue) {
 
     public static final int ASSETS_DIRECTORIES_FIELD_NUMBER = 450;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> assetsDirectories_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> assetsDirectories_;
     /**
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getAssetsDirectoriesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getAssetsDirectoriesList() {
       return assetsDirectories_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getAssetsDirectoriesOrBuilderList() {
       return assetsDirectories_;
     }
@@ -17853,20 +17853,20 @@ java.lang.String defaultValue) {
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAssetsDirectories(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAssetsDirectories(int index) {
       return assetsDirectories_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAssetsDirectoriesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAssetsDirectoriesOrBuilder(
         int index) {
       return assetsDirectories_.get(index);
     }
 
     public static final int AIDL_BINARY_JAR_FIELD_NUMBER = 500;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation aidlBinaryJar_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation aidlBinaryJar_;
     /**
      * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
      * @return Whether the aidlBinaryJar field is set.
@@ -17880,19 +17880,19 @@ java.lang.String defaultValue) {
      * @return The aidlBinaryJar.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAidlBinaryJar() {
-      return aidlBinaryJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : aidlBinaryJar_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAidlBinaryJar() {
+      return aidlBinaryJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : aidlBinaryJar_;
     }
     /**
      * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAidlBinaryJarOrBuilder() {
-      return aidlBinaryJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : aidlBinaryJar_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAidlBinaryJarOrBuilder() {
+      return aidlBinaryJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : aidlBinaryJar_;
     }
 
     public static final int AIDL_SOURCE_JAR_FIELD_NUMBER = 600;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation aidlSourceJar_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation aidlSourceJar_;
     /**
      * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
      * @return Whether the aidlSourceJar field is set.
@@ -17906,19 +17906,19 @@ java.lang.String defaultValue) {
      * @return The aidlSourceJar.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAidlSourceJar() {
-      return aidlSourceJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : aidlSourceJar_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAidlSourceJar() {
+      return aidlSourceJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : aidlSourceJar_;
     }
     /**
      * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAidlSourceJarOrBuilder() {
-      return aidlSourceJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : aidlSourceJar_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAidlSourceJarOrBuilder() {
+      return aidlSourceJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : aidlSourceJar_;
     }
 
     public static final int APK_FIELD_NUMBER = 700;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation apk_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation apk_;
     /**
      * <code>.bazelbsp.FileLocation apk = 700;</code>
      * @return Whether the apk field is set.
@@ -17932,15 +17932,15 @@ java.lang.String defaultValue) {
      * @return The apk.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getApk() {
-      return apk_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : apk_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getApk() {
+      return apk_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : apk_;
     }
     /**
      * <code>.bazelbsp.FileLocation apk = 700;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getApkOrBuilder() {
-      return apk_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : apk_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getApkOrBuilder() {
+      return apk_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : apk_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -18047,10 +18047,10 @@ java.lang.String defaultValue) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo) obj;
 
       if (hasAndroidJar() != other.hasAndroidJar()) return false;
       if (hasAndroidJar()) {
@@ -18135,44 +18135,44 @@ java.lang.String defaultValue) {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -18180,26 +18180,26 @@ java.lang.String defaultValue) {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -18212,7 +18212,7 @@ java.lang.String defaultValue) {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -18233,10 +18233,10 @@ java.lang.String defaultValue) {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.AndroidTargetInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_descriptor;
       }
 
       @SuppressWarnings({"rawtypes"})
@@ -18264,12 +18264,12 @@ java.lang.String defaultValue) {
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -18342,17 +18342,17 @@ java.lang.String defaultValue) {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidTargetInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -18360,15 +18360,15 @@ java.lang.String defaultValue) {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo result) {
         if (resourceDirectoriesBuilder_ == null) {
           if (((bitField0_ & 0x00000008) != 0)) {
             resourceDirectories_ = java.util.Collections.unmodifiableList(resourceDirectories_);
@@ -18389,7 +18389,7 @@ java.lang.String defaultValue) {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -18434,16 +18434,16 @@ java.lang.String defaultValue) {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.getDefaultInstance()) return this;
         if (other.hasAndroidJar()) {
           mergeAndroidJar(other.getAndroidJar());
         }
@@ -18569,9 +18569,9 @@ java.lang.String defaultValue) {
                 break;
               } // case 2002
               case 2402: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (resourceDirectoriesBuilder_ == null) {
                   ensureResourceDirectoriesIsMutable();
@@ -18587,9 +18587,9 @@ java.lang.String defaultValue) {
                 break;
               } // case 3202
               case 3602: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (assetsDirectoriesBuilder_ == null) {
                   ensureAssetsDirectoriesIsMutable();
@@ -18637,9 +18637,9 @@ java.lang.String defaultValue) {
       }
       private int bitField0_;
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation androidJar_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation androidJar_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> androidJarBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> androidJarBuilder_;
       /**
        * <code>.bazelbsp.FileLocation android_jar = 100;</code>
        * @return Whether the androidJar field is set.
@@ -18651,9 +18651,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation android_jar = 100;</code>
        * @return The androidJar.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAndroidJar() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAndroidJar() {
         if (androidJarBuilder_ == null) {
-          return androidJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : androidJar_;
+          return androidJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : androidJar_;
         } else {
           return androidJarBuilder_.getMessage();
         }
@@ -18661,7 +18661,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation android_jar = 100;</code>
        */
-      public Builder setAndroidJar(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setAndroidJar(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (androidJarBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -18678,7 +18678,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation android_jar = 100;</code>
        */
       public Builder setAndroidJar(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (androidJarBuilder_ == null) {
           androidJar_ = builderForValue.build();
         } else {
@@ -18691,11 +18691,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation android_jar = 100;</code>
        */
-      public Builder mergeAndroidJar(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeAndroidJar(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (androidJarBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0) &&
             androidJar_ != null &&
-            androidJar_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            androidJar_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getAndroidJarBuilder().mergeFrom(value);
           } else {
             androidJar_ = value;
@@ -18725,7 +18725,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation android_jar = 100;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getAndroidJarBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getAndroidJarBuilder() {
         bitField0_ |= 0x00000001;
         onChanged();
         return getAndroidJarFieldBuilder().getBuilder();
@@ -18733,23 +18733,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation android_jar = 100;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAndroidJarOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAndroidJarOrBuilder() {
         if (androidJarBuilder_ != null) {
           return androidJarBuilder_.getMessageOrBuilder();
         } else {
           return androidJar_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : androidJar_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : androidJar_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation android_jar = 100;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getAndroidJarFieldBuilder() {
         if (androidJarBuilder_ == null) {
           androidJarBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getAndroidJar(),
                   getParentForChildren(),
                   isClean());
@@ -18758,9 +18758,9 @@ java.lang.String defaultValue) {
         return androidJarBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation manifest_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation manifest_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> manifestBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> manifestBuilder_;
       /**
        * <code>.bazelbsp.FileLocation manifest = 200;</code>
        * @return Whether the manifest field is set.
@@ -18772,9 +18772,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation manifest = 200;</code>
        * @return The manifest.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getManifest() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getManifest() {
         if (manifestBuilder_ == null) {
-          return manifest_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
+          return manifest_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
         } else {
           return manifestBuilder_.getMessage();
         }
@@ -18782,7 +18782,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation manifest = 200;</code>
        */
-      public Builder setManifest(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setManifest(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (manifestBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -18799,7 +18799,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation manifest = 200;</code>
        */
       public Builder setManifest(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (manifestBuilder_ == null) {
           manifest_ = builderForValue.build();
         } else {
@@ -18812,11 +18812,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation manifest = 200;</code>
        */
-      public Builder mergeManifest(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeManifest(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (manifestBuilder_ == null) {
           if (((bitField0_ & 0x00000002) != 0) &&
             manifest_ != null &&
-            manifest_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            manifest_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getManifestBuilder().mergeFrom(value);
           } else {
             manifest_ = value;
@@ -18846,7 +18846,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation manifest = 200;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getManifestBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getManifestBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
         return getManifestFieldBuilder().getBuilder();
@@ -18854,23 +18854,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation manifest = 200;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder() {
         if (manifestBuilder_ != null) {
           return manifestBuilder_.getMessageOrBuilder();
         } else {
           return manifest_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation manifest = 200;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getManifestFieldBuilder() {
         if (manifestBuilder_ == null) {
           manifestBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getManifest(),
                   getParentForChildren(),
                   isClean());
@@ -19006,22 +19006,22 @@ java.lang.String defaultValue) {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> resourceDirectories_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> resourceDirectories_ =
         java.util.Collections.emptyList();
       private void ensureResourceDirectoriesIsMutable() {
         if (!((bitField0_ & 0x00000008) != 0)) {
-          resourceDirectories_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(resourceDirectories_);
+          resourceDirectories_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(resourceDirectories_);
           bitField0_ |= 0x00000008;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> resourceDirectoriesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> resourceDirectoriesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getResourceDirectoriesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getResourceDirectoriesList() {
         if (resourceDirectoriesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(resourceDirectories_);
         } else {
@@ -19041,7 +19041,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResourceDirectories(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResourceDirectories(int index) {
         if (resourceDirectoriesBuilder_ == null) {
           return resourceDirectories_.get(index);
         } else {
@@ -19052,7 +19052,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
       public Builder setResourceDirectories(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (resourceDirectoriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19069,7 +19069,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
       public Builder setResourceDirectories(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (resourceDirectoriesBuilder_ == null) {
           ensureResourceDirectoriesIsMutable();
           resourceDirectories_.set(index, builderForValue.build());
@@ -19082,7 +19082,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public Builder addResourceDirectories(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addResourceDirectories(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (resourceDirectoriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19099,7 +19099,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
       public Builder addResourceDirectories(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (resourceDirectoriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19116,7 +19116,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
       public Builder addResourceDirectories(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (resourceDirectoriesBuilder_ == null) {
           ensureResourceDirectoriesIsMutable();
           resourceDirectories_.add(builderForValue.build());
@@ -19130,7 +19130,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
       public Builder addResourceDirectories(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (resourceDirectoriesBuilder_ == null) {
           ensureResourceDirectoriesIsMutable();
           resourceDirectories_.add(index, builderForValue.build());
@@ -19144,7 +19144,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
       public Builder addAllResourceDirectories(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (resourceDirectoriesBuilder_ == null) {
           ensureResourceDirectoriesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -19184,14 +19184,14 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getResourceDirectoriesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getResourceDirectoriesBuilder(
           int index) {
         return getResourceDirectoriesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourceDirectoriesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourceDirectoriesOrBuilder(
           int index) {
         if (resourceDirectoriesBuilder_ == null) {
           return resourceDirectories_.get(index);  } else {
@@ -19201,7 +19201,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getResourceDirectoriesOrBuilderList() {
         if (resourceDirectoriesBuilder_ != null) {
           return resourceDirectoriesBuilder_.getMessageOrBuilderList();
@@ -19212,31 +19212,31 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addResourceDirectoriesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addResourceDirectoriesBuilder() {
         return getResourceDirectoriesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addResourceDirectoriesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addResourceDirectoriesBuilder(
           int index) {
         return getResourceDirectoriesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation resource_directories = 300;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getResourceDirectoriesBuilderList() {
         return getResourceDirectoriesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getResourceDirectoriesFieldBuilder() {
         if (resourceDirectoriesBuilder_ == null) {
           resourceDirectoriesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   resourceDirectories_,
                   ((bitField0_ & 0x00000008) != 0),
                   getParentForChildren(),
@@ -19318,22 +19318,22 @@ java.lang.String defaultValue) {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> assetsDirectories_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> assetsDirectories_ =
         java.util.Collections.emptyList();
       private void ensureAssetsDirectoriesIsMutable() {
         if (!((bitField0_ & 0x00000020) != 0)) {
-          assetsDirectories_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(assetsDirectories_);
+          assetsDirectories_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(assetsDirectories_);
           bitField0_ |= 0x00000020;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> assetsDirectoriesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> assetsDirectoriesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getAssetsDirectoriesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getAssetsDirectoriesList() {
         if (assetsDirectoriesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(assetsDirectories_);
         } else {
@@ -19353,7 +19353,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAssetsDirectories(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAssetsDirectories(int index) {
         if (assetsDirectoriesBuilder_ == null) {
           return assetsDirectories_.get(index);
         } else {
@@ -19364,7 +19364,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
       public Builder setAssetsDirectories(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (assetsDirectoriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19381,7 +19381,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
       public Builder setAssetsDirectories(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (assetsDirectoriesBuilder_ == null) {
           ensureAssetsDirectoriesIsMutable();
           assetsDirectories_.set(index, builderForValue.build());
@@ -19394,7 +19394,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public Builder addAssetsDirectories(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addAssetsDirectories(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (assetsDirectoriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19411,7 +19411,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
       public Builder addAssetsDirectories(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (assetsDirectoriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19428,7 +19428,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
       public Builder addAssetsDirectories(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (assetsDirectoriesBuilder_ == null) {
           ensureAssetsDirectoriesIsMutable();
           assetsDirectories_.add(builderForValue.build());
@@ -19442,7 +19442,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
       public Builder addAssetsDirectories(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (assetsDirectoriesBuilder_ == null) {
           ensureAssetsDirectoriesIsMutable();
           assetsDirectories_.add(index, builderForValue.build());
@@ -19456,7 +19456,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
       public Builder addAllAssetsDirectories(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (assetsDirectoriesBuilder_ == null) {
           ensureAssetsDirectoriesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -19496,14 +19496,14 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getAssetsDirectoriesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getAssetsDirectoriesBuilder(
           int index) {
         return getAssetsDirectoriesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAssetsDirectoriesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAssetsDirectoriesOrBuilder(
           int index) {
         if (assetsDirectoriesBuilder_ == null) {
           return assetsDirectories_.get(index);  } else {
@@ -19513,7 +19513,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getAssetsDirectoriesOrBuilderList() {
         if (assetsDirectoriesBuilder_ != null) {
           return assetsDirectoriesBuilder_.getMessageOrBuilderList();
@@ -19524,31 +19524,31 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addAssetsDirectoriesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addAssetsDirectoriesBuilder() {
         return getAssetsDirectoriesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addAssetsDirectoriesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addAssetsDirectoriesBuilder(
           int index) {
         return getAssetsDirectoriesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation assets_directories = 450;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getAssetsDirectoriesBuilderList() {
         return getAssetsDirectoriesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getAssetsDirectoriesFieldBuilder() {
         if (assetsDirectoriesBuilder_ == null) {
           assetsDirectoriesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   assetsDirectories_,
                   ((bitField0_ & 0x00000020) != 0),
                   getParentForChildren(),
@@ -19558,9 +19558,9 @@ java.lang.String defaultValue) {
         return assetsDirectoriesBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation aidlBinaryJar_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation aidlBinaryJar_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> aidlBinaryJarBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> aidlBinaryJarBuilder_;
       /**
        * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
        * @return Whether the aidlBinaryJar field is set.
@@ -19572,9 +19572,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
        * @return The aidlBinaryJar.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAidlBinaryJar() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAidlBinaryJar() {
         if (aidlBinaryJarBuilder_ == null) {
-          return aidlBinaryJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : aidlBinaryJar_;
+          return aidlBinaryJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : aidlBinaryJar_;
         } else {
           return aidlBinaryJarBuilder_.getMessage();
         }
@@ -19582,7 +19582,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
        */
-      public Builder setAidlBinaryJar(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setAidlBinaryJar(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (aidlBinaryJarBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19599,7 +19599,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
        */
       public Builder setAidlBinaryJar(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (aidlBinaryJarBuilder_ == null) {
           aidlBinaryJar_ = builderForValue.build();
         } else {
@@ -19612,11 +19612,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
        */
-      public Builder mergeAidlBinaryJar(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeAidlBinaryJar(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (aidlBinaryJarBuilder_ == null) {
           if (((bitField0_ & 0x00000040) != 0) &&
             aidlBinaryJar_ != null &&
-            aidlBinaryJar_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            aidlBinaryJar_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getAidlBinaryJarBuilder().mergeFrom(value);
           } else {
             aidlBinaryJar_ = value;
@@ -19646,7 +19646,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getAidlBinaryJarBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getAidlBinaryJarBuilder() {
         bitField0_ |= 0x00000040;
         onChanged();
         return getAidlBinaryJarFieldBuilder().getBuilder();
@@ -19654,23 +19654,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAidlBinaryJarOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAidlBinaryJarOrBuilder() {
         if (aidlBinaryJarBuilder_ != null) {
           return aidlBinaryJarBuilder_.getMessageOrBuilder();
         } else {
           return aidlBinaryJar_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : aidlBinaryJar_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : aidlBinaryJar_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation aidl_binary_jar = 500;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getAidlBinaryJarFieldBuilder() {
         if (aidlBinaryJarBuilder_ == null) {
           aidlBinaryJarBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getAidlBinaryJar(),
                   getParentForChildren(),
                   isClean());
@@ -19679,9 +19679,9 @@ java.lang.String defaultValue) {
         return aidlBinaryJarBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation aidlSourceJar_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation aidlSourceJar_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> aidlSourceJarBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> aidlSourceJarBuilder_;
       /**
        * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
        * @return Whether the aidlSourceJar field is set.
@@ -19693,9 +19693,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
        * @return The aidlSourceJar.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getAidlSourceJar() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getAidlSourceJar() {
         if (aidlSourceJarBuilder_ == null) {
-          return aidlSourceJar_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : aidlSourceJar_;
+          return aidlSourceJar_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : aidlSourceJar_;
         } else {
           return aidlSourceJarBuilder_.getMessage();
         }
@@ -19703,7 +19703,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
        */
-      public Builder setAidlSourceJar(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setAidlSourceJar(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (aidlSourceJarBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19720,7 +19720,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
        */
       public Builder setAidlSourceJar(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (aidlSourceJarBuilder_ == null) {
           aidlSourceJar_ = builderForValue.build();
         } else {
@@ -19733,11 +19733,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
        */
-      public Builder mergeAidlSourceJar(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeAidlSourceJar(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (aidlSourceJarBuilder_ == null) {
           if (((bitField0_ & 0x00000080) != 0) &&
             aidlSourceJar_ != null &&
-            aidlSourceJar_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            aidlSourceJar_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getAidlSourceJarBuilder().mergeFrom(value);
           } else {
             aidlSourceJar_ = value;
@@ -19767,7 +19767,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getAidlSourceJarBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getAidlSourceJarBuilder() {
         bitField0_ |= 0x00000080;
         onChanged();
         return getAidlSourceJarFieldBuilder().getBuilder();
@@ -19775,23 +19775,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getAidlSourceJarOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getAidlSourceJarOrBuilder() {
         if (aidlSourceJarBuilder_ != null) {
           return aidlSourceJarBuilder_.getMessageOrBuilder();
         } else {
           return aidlSourceJar_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : aidlSourceJar_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : aidlSourceJar_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation aidl_source_jar = 600;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getAidlSourceJarFieldBuilder() {
         if (aidlSourceJarBuilder_ == null) {
           aidlSourceJarBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getAidlSourceJar(),
                   getParentForChildren(),
                   isClean());
@@ -19800,9 +19800,9 @@ java.lang.String defaultValue) {
         return aidlSourceJarBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation apk_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation apk_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> apkBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> apkBuilder_;
       /**
        * <code>.bazelbsp.FileLocation apk = 700;</code>
        * @return Whether the apk field is set.
@@ -19814,9 +19814,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation apk = 700;</code>
        * @return The apk.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getApk() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getApk() {
         if (apkBuilder_ == null) {
-          return apk_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : apk_;
+          return apk_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : apk_;
         } else {
           return apkBuilder_.getMessage();
         }
@@ -19824,7 +19824,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation apk = 700;</code>
        */
-      public Builder setApk(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setApk(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (apkBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -19841,7 +19841,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation apk = 700;</code>
        */
       public Builder setApk(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (apkBuilder_ == null) {
           apk_ = builderForValue.build();
         } else {
@@ -19854,11 +19854,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation apk = 700;</code>
        */
-      public Builder mergeApk(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeApk(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (apkBuilder_ == null) {
           if (((bitField0_ & 0x00000100) != 0) &&
             apk_ != null &&
-            apk_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            apk_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getApkBuilder().mergeFrom(value);
           } else {
             apk_ = value;
@@ -19888,7 +19888,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation apk = 700;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getApkBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getApkBuilder() {
         bitField0_ |= 0x00000100;
         onChanged();
         return getApkFieldBuilder().getBuilder();
@@ -19896,23 +19896,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation apk = 700;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getApkOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getApkOrBuilder() {
         if (apkBuilder_ != null) {
           return apkBuilder_.getMessageOrBuilder();
         } else {
           return apk_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : apk_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : apk_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation apk = 700;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getApkFieldBuilder() {
         if (apkBuilder_ == null) {
           apkBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getApk(),
                   getParentForChildren(),
                   isClean());
@@ -19925,12 +19925,12 @@ java.lang.String defaultValue) {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.AndroidTargetInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -19966,7 +19966,7 @@ java.lang.String defaultValue) {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -19985,11 +19985,11 @@ java.lang.String defaultValue) {
      * <code>.bazelbsp.FileLocation manifest = 1;</code>
      * @return The manifest.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getManifest();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getManifest();
     /**
      * <code>.bazelbsp.FileLocation manifest = 1;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder();
 
     /**
      * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
@@ -20000,11 +20000,11 @@ java.lang.String defaultValue) {
      * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
      * @return The resourceFolder.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResourceFolder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResourceFolder();
     /**
      * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourceFolderOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourceFolderOrBuilder();
 
     /**
      * <code>.bazelbsp.FileLocation r_txt = 3;</code>
@@ -20015,11 +20015,11 @@ java.lang.String defaultValue) {
      * <code>.bazelbsp.FileLocation r_txt = 3;</code>
      * @return The rTxt.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getRTxt();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getRTxt();
     /**
      * <code>.bazelbsp.FileLocation r_txt = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getRTxtOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getRTxtOrBuilder();
   }
   /**
    * Protobuf type {@code bazelbsp.AndroidAarImportInfo}
@@ -20047,20 +20047,20 @@ java.lang.String defaultValue) {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.class, org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.Builder.class);
     }
 
     private int bitField0_;
     public static final int MANIFEST_FIELD_NUMBER = 1;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation manifest_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation manifest_;
     /**
      * <code>.bazelbsp.FileLocation manifest = 1;</code>
      * @return Whether the manifest field is set.
@@ -20074,19 +20074,19 @@ java.lang.String defaultValue) {
      * @return The manifest.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getManifest() {
-      return manifest_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getManifest() {
+      return manifest_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
     }
     /**
      * <code>.bazelbsp.FileLocation manifest = 1;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder() {
-      return manifest_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder() {
+      return manifest_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
     }
 
     public static final int RESOURCE_FOLDER_FIELD_NUMBER = 2;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation resourceFolder_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation resourceFolder_;
     /**
      * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
      * @return Whether the resourceFolder field is set.
@@ -20100,19 +20100,19 @@ java.lang.String defaultValue) {
      * @return The resourceFolder.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResourceFolder() {
-      return resourceFolder_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : resourceFolder_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResourceFolder() {
+      return resourceFolder_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : resourceFolder_;
     }
     /**
      * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourceFolderOrBuilder() {
-      return resourceFolder_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : resourceFolder_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourceFolderOrBuilder() {
+      return resourceFolder_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : resourceFolder_;
     }
 
     public static final int R_TXT_FIELD_NUMBER = 3;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation rTxt_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation rTxt_;
     /**
      * <code>.bazelbsp.FileLocation r_txt = 3;</code>
      * @return Whether the rTxt field is set.
@@ -20126,15 +20126,15 @@ java.lang.String defaultValue) {
      * @return The rTxt.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getRTxt() {
-      return rTxt_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : rTxt_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getRTxt() {
+      return rTxt_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : rTxt_;
     }
     /**
      * <code>.bazelbsp.FileLocation r_txt = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getRTxtOrBuilder() {
-      return rTxt_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : rTxt_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getRTxtOrBuilder() {
+      return rTxt_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : rTxt_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -20191,10 +20191,10 @@ java.lang.String defaultValue) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo other = (org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo) obj;
 
       if (hasManifest() != other.hasManifest()) return false;
       if (hasManifest()) {
@@ -20239,44 +20239,44 @@ java.lang.String defaultValue) {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -20284,26 +20284,26 @@ java.lang.String defaultValue) {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -20316,7 +20316,7 @@ java.lang.String defaultValue) {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -20337,21 +20337,21 @@ java.lang.String defaultValue) {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.AndroidAarImportInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.class, org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -20394,17 +20394,17 @@ java.lang.String defaultValue) {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_AndroidAarImportInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -20412,14 +20412,14 @@ java.lang.String defaultValue) {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo result = new org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -20445,16 +20445,16 @@ java.lang.String defaultValue) {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance()) return this;
         if (other.hasManifest()) {
           mergeManifest(other.getManifest());
         }
@@ -20528,9 +20528,9 @@ java.lang.String defaultValue) {
       }
       private int bitField0_;
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation manifest_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation manifest_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> manifestBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> manifestBuilder_;
       /**
        * <code>.bazelbsp.FileLocation manifest = 1;</code>
        * @return Whether the manifest field is set.
@@ -20542,9 +20542,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation manifest = 1;</code>
        * @return The manifest.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getManifest() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getManifest() {
         if (manifestBuilder_ == null) {
-          return manifest_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
+          return manifest_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
         } else {
           return manifestBuilder_.getMessage();
         }
@@ -20552,7 +20552,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation manifest = 1;</code>
        */
-      public Builder setManifest(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setManifest(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (manifestBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -20569,7 +20569,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation manifest = 1;</code>
        */
       public Builder setManifest(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (manifestBuilder_ == null) {
           manifest_ = builderForValue.build();
         } else {
@@ -20582,11 +20582,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation manifest = 1;</code>
        */
-      public Builder mergeManifest(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeManifest(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (manifestBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0) &&
             manifest_ != null &&
-            manifest_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            manifest_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getManifestBuilder().mergeFrom(value);
           } else {
             manifest_ = value;
@@ -20616,7 +20616,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation manifest = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getManifestBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getManifestBuilder() {
         bitField0_ |= 0x00000001;
         onChanged();
         return getManifestFieldBuilder().getBuilder();
@@ -20624,23 +20624,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation manifest = 1;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getManifestOrBuilder() {
         if (manifestBuilder_ != null) {
           return manifestBuilder_.getMessageOrBuilder();
         } else {
           return manifest_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : manifest_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation manifest = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getManifestFieldBuilder() {
         if (manifestBuilder_ == null) {
           manifestBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getManifest(),
                   getParentForChildren(),
                   isClean());
@@ -20649,9 +20649,9 @@ java.lang.String defaultValue) {
         return manifestBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation resourceFolder_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation resourceFolder_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> resourceFolderBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> resourceFolderBuilder_;
       /**
        * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
        * @return Whether the resourceFolder field is set.
@@ -20663,9 +20663,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
        * @return The resourceFolder.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResourceFolder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResourceFolder() {
         if (resourceFolderBuilder_ == null) {
-          return resourceFolder_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : resourceFolder_;
+          return resourceFolder_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : resourceFolder_;
         } else {
           return resourceFolderBuilder_.getMessage();
         }
@@ -20673,7 +20673,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
        */
-      public Builder setResourceFolder(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setResourceFolder(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (resourceFolderBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -20690,7 +20690,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
        */
       public Builder setResourceFolder(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (resourceFolderBuilder_ == null) {
           resourceFolder_ = builderForValue.build();
         } else {
@@ -20703,11 +20703,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
        */
-      public Builder mergeResourceFolder(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeResourceFolder(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (resourceFolderBuilder_ == null) {
           if (((bitField0_ & 0x00000002) != 0) &&
             resourceFolder_ != null &&
-            resourceFolder_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            resourceFolder_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getResourceFolderBuilder().mergeFrom(value);
           } else {
             resourceFolder_ = value;
@@ -20737,7 +20737,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getResourceFolderBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getResourceFolderBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
         return getResourceFolderFieldBuilder().getBuilder();
@@ -20745,23 +20745,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourceFolderOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourceFolderOrBuilder() {
         if (resourceFolderBuilder_ != null) {
           return resourceFolderBuilder_.getMessageOrBuilder();
         } else {
           return resourceFolder_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : resourceFolder_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : resourceFolder_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation resource_folder = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getResourceFolderFieldBuilder() {
         if (resourceFolderBuilder_ == null) {
           resourceFolderBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getResourceFolder(),
                   getParentForChildren(),
                   isClean());
@@ -20770,9 +20770,9 @@ java.lang.String defaultValue) {
         return resourceFolderBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation rTxt_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation rTxt_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> rTxtBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> rTxtBuilder_;
       /**
        * <code>.bazelbsp.FileLocation r_txt = 3;</code>
        * @return Whether the rTxt field is set.
@@ -20784,9 +20784,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation r_txt = 3;</code>
        * @return The rTxt.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getRTxt() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getRTxt() {
         if (rTxtBuilder_ == null) {
-          return rTxt_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : rTxt_;
+          return rTxt_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : rTxt_;
         } else {
           return rTxtBuilder_.getMessage();
         }
@@ -20794,7 +20794,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation r_txt = 3;</code>
        */
-      public Builder setRTxt(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setRTxt(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (rTxtBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -20811,7 +20811,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation r_txt = 3;</code>
        */
       public Builder setRTxt(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (rTxtBuilder_ == null) {
           rTxt_ = builderForValue.build();
         } else {
@@ -20824,11 +20824,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation r_txt = 3;</code>
        */
-      public Builder mergeRTxt(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeRTxt(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (rTxtBuilder_ == null) {
           if (((bitField0_ & 0x00000004) != 0) &&
             rTxt_ != null &&
-            rTxt_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            rTxt_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getRTxtBuilder().mergeFrom(value);
           } else {
             rTxt_ = value;
@@ -20858,7 +20858,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation r_txt = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getRTxtBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getRTxtBuilder() {
         bitField0_ |= 0x00000004;
         onChanged();
         return getRTxtFieldBuilder().getBuilder();
@@ -20866,23 +20866,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation r_txt = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getRTxtOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getRTxtOrBuilder() {
         if (rTxtBuilder_ != null) {
           return rTxtBuilder_.getMessageOrBuilder();
         } else {
           return rTxt_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : rTxt_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : rTxt_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation r_txt = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getRTxtFieldBuilder() {
         if (rTxtBuilder_ == null) {
           rTxtBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getRTxt(),
                   getParentForChildren(),
                   isClean());
@@ -20895,12 +20895,12 @@ java.lang.String defaultValue) {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.AndroidAarImportInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -20936,7 +20936,7 @@ java.lang.String defaultValue) {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -20967,21 +20967,21 @@ java.lang.String defaultValue) {
      * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
      * @return The sdkHomePath.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSdkHomePath();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSdkHomePath();
     /**
      * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSdkHomePathOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSdkHomePathOrBuilder();
 
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getGeneratedSourcesList();
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
@@ -20989,23 +20989,23 @@ java.lang.String defaultValue) {
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getGeneratedSourcesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getGeneratedLibrariesList();
     /**
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedLibraries(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedLibraries(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
@@ -21013,12 +21013,12 @@ java.lang.String defaultValue) {
     /**
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getGeneratedLibrariesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedLibrariesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedLibrariesOrBuilder(
         int index);
 
     /**
@@ -21077,15 +21077,15 @@ java.lang.String defaultValue) {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.Builder.class);
     }
 
     private int bitField0_;
@@ -21129,7 +21129,7 @@ java.lang.String defaultValue) {
     }
 
     public static final int SDK_HOME_PATH_FIELD_NUMBER = 2;
-    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation sdkHomePath_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation sdkHomePath_;
     /**
      * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
      * @return Whether the sdkHomePath field is set.
@@ -21143,32 +21143,32 @@ java.lang.String defaultValue) {
      * @return The sdkHomePath.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSdkHomePath() {
-      return sdkHomePath_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : sdkHomePath_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSdkHomePath() {
+      return sdkHomePath_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : sdkHomePath_;
     }
     /**
      * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSdkHomePathOrBuilder() {
-      return sdkHomePath_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : sdkHomePath_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSdkHomePathOrBuilder() {
+      return sdkHomePath_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : sdkHomePath_;
     }
 
     public static final int GENERATED_SOURCES_FIELD_NUMBER = 3;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> generatedSources_;
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
       return generatedSources_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getGeneratedSourcesOrBuilderList() {
       return generatedSources_;
     }
@@ -21183,33 +21183,33 @@ java.lang.String defaultValue) {
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index) {
       return generatedSources_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
         int index) {
       return generatedSources_.get(index);
     }
 
     public static final int GENERATED_LIBRARIES_FIELD_NUMBER = 4;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedLibraries_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> generatedLibraries_;
     /**
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedLibrariesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getGeneratedLibrariesList() {
       return generatedLibraries_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getGeneratedLibrariesOrBuilderList() {
       return generatedLibraries_;
     }
@@ -21224,14 +21224,14 @@ java.lang.String defaultValue) {
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedLibraries(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedLibraries(int index) {
       return generatedLibraries_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedLibrariesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedLibrariesOrBuilder(
         int index) {
       return generatedLibraries_.get(index);
     }
@@ -21344,10 +21344,10 @@ java.lang.String defaultValue) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo) obj;
 
       if (!getImportPath()
           .equals(other.getImportPath())) return false;
@@ -21396,44 +21396,44 @@ java.lang.String defaultValue) {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -21441,26 +21441,26 @@ java.lang.String defaultValue) {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -21473,7 +21473,7 @@ java.lang.String defaultValue) {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -21494,21 +21494,21 @@ java.lang.String defaultValue) {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.GoTargetInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -21558,17 +21558,17 @@ java.lang.String defaultValue) {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_GoTargetInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -21576,15 +21576,15 @@ java.lang.String defaultValue) {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo result) {
         if (generatedSourcesBuilder_ == null) {
           if (((bitField0_ & 0x00000004) != 0)) {
             generatedSources_ = java.util.Collections.unmodifiableList(generatedSources_);
@@ -21605,7 +21605,7 @@ java.lang.String defaultValue) {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.importPath_ = importPath_;
@@ -21626,16 +21626,16 @@ java.lang.String defaultValue) {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.getDefaultInstance()) return this;
         if (!other.getImportPath().isEmpty()) {
           importPath_ = other.importPath_;
           bitField0_ |= 0x00000001;
@@ -21745,9 +21745,9 @@ java.lang.String defaultValue) {
                 break;
               } // case 18
               case 26: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (generatedSourcesBuilder_ == null) {
                   ensureGeneratedSourcesIsMutable();
@@ -21758,9 +21758,9 @@ java.lang.String defaultValue) {
                 break;
               } // case 26
               case 34: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (generatedLibrariesBuilder_ == null) {
                   ensureGeneratedLibrariesIsMutable();
@@ -21865,9 +21865,9 @@ java.lang.String defaultValue) {
         return this;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation sdkHomePath_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation sdkHomePath_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> sdkHomePathBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> sdkHomePathBuilder_;
       /**
        * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
        * @return Whether the sdkHomePath field is set.
@@ -21879,9 +21879,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
        * @return The sdkHomePath.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSdkHomePath() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSdkHomePath() {
         if (sdkHomePathBuilder_ == null) {
-          return sdkHomePath_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : sdkHomePath_;
+          return sdkHomePath_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : sdkHomePath_;
         } else {
           return sdkHomePathBuilder_.getMessage();
         }
@@ -21889,7 +21889,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
        */
-      public Builder setSdkHomePath(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder setSdkHomePath(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (sdkHomePathBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -21906,7 +21906,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
        */
       public Builder setSdkHomePath(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (sdkHomePathBuilder_ == null) {
           sdkHomePath_ = builderForValue.build();
         } else {
@@ -21919,11 +21919,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
        */
-      public Builder mergeSdkHomePath(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder mergeSdkHomePath(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (sdkHomePathBuilder_ == null) {
           if (((bitField0_ & 0x00000002) != 0) &&
             sdkHomePath_ != null &&
-            sdkHomePath_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            sdkHomePath_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getSdkHomePathBuilder().mergeFrom(value);
           } else {
             sdkHomePath_ = value;
@@ -21953,7 +21953,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getSdkHomePathBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getSdkHomePathBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
         return getSdkHomePathFieldBuilder().getBuilder();
@@ -21961,23 +21961,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSdkHomePathOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSdkHomePathOrBuilder() {
         if (sdkHomePathBuilder_ != null) {
           return sdkHomePathBuilder_.getMessageOrBuilder();
         } else {
           return sdkHomePath_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : sdkHomePath_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance() : sdkHomePath_;
         }
       }
       /**
        * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getSdkHomePathFieldBuilder() {
         if (sdkHomePathBuilder_ == null) {
           sdkHomePathBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   getSdkHomePath(),
                   getParentForChildren(),
                   isClean());
@@ -21986,22 +21986,22 @@ java.lang.String defaultValue) {
         return sdkHomePathBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> generatedSources_ =
         java.util.Collections.emptyList();
       private void ensureGeneratedSourcesIsMutable() {
         if (!((bitField0_ & 0x00000004) != 0)) {
-          generatedSources_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(generatedSources_);
+          generatedSources_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(generatedSources_);
           bitField0_ |= 0x00000004;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> generatedSourcesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> generatedSourcesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
         if (generatedSourcesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(generatedSources_);
         } else {
@@ -22021,7 +22021,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index) {
         if (generatedSourcesBuilder_ == null) {
           return generatedSources_.get(index);
         } else {
@@ -22032,7 +22032,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
       public Builder setGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -22049,7 +22049,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
       public Builder setGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.set(index, builderForValue.build());
@@ -22062,7 +22062,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public Builder addGeneratedSources(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addGeneratedSources(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -22079,7 +22079,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
       public Builder addGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -22096,7 +22096,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
       public Builder addGeneratedSources(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.add(builderForValue.build());
@@ -22110,7 +22110,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
       public Builder addGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.add(index, builderForValue.build());
@@ -22124,7 +22124,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
       public Builder addAllGeneratedSources(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -22164,14 +22164,14 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getGeneratedSourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getGeneratedSourcesBuilder(
           int index) {
         return getGeneratedSourcesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
           int index) {
         if (generatedSourcesBuilder_ == null) {
           return generatedSources_.get(index);  } else {
@@ -22181,7 +22181,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getGeneratedSourcesOrBuilderList() {
         if (generatedSourcesBuilder_ != null) {
           return generatedSourcesBuilder_.getMessageOrBuilderList();
@@ -22192,31 +22192,31 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder() {
         return getGeneratedSourcesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder(
           int index) {
         return getGeneratedSourcesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 3;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getGeneratedSourcesBuilderList() {
         return getGeneratedSourcesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getGeneratedSourcesFieldBuilder() {
         if (generatedSourcesBuilder_ == null) {
           generatedSourcesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   generatedSources_,
                   ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
@@ -22226,22 +22226,22 @@ java.lang.String defaultValue) {
         return generatedSourcesBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedLibraries_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> generatedLibraries_ =
         java.util.Collections.emptyList();
       private void ensureGeneratedLibrariesIsMutable() {
         if (!((bitField0_ & 0x00000008) != 0)) {
-          generatedLibraries_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(generatedLibraries_);
+          generatedLibraries_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(generatedLibraries_);
           bitField0_ |= 0x00000008;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> generatedLibrariesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> generatedLibrariesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedLibrariesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getGeneratedLibrariesList() {
         if (generatedLibrariesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(generatedLibraries_);
         } else {
@@ -22261,7 +22261,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedLibraries(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedLibraries(int index) {
         if (generatedLibrariesBuilder_ == null) {
           return generatedLibraries_.get(index);
         } else {
@@ -22272,7 +22272,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
       public Builder setGeneratedLibraries(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedLibrariesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -22289,7 +22289,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
       public Builder setGeneratedLibraries(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedLibrariesBuilder_ == null) {
           ensureGeneratedLibrariesIsMutable();
           generatedLibraries_.set(index, builderForValue.build());
@@ -22302,7 +22302,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public Builder addGeneratedLibraries(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addGeneratedLibraries(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedLibrariesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -22319,7 +22319,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
       public Builder addGeneratedLibraries(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedLibrariesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -22336,7 +22336,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
       public Builder addGeneratedLibraries(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedLibrariesBuilder_ == null) {
           ensureGeneratedLibrariesIsMutable();
           generatedLibraries_.add(builderForValue.build());
@@ -22350,7 +22350,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
       public Builder addGeneratedLibraries(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedLibrariesBuilder_ == null) {
           ensureGeneratedLibrariesIsMutable();
           generatedLibraries_.add(index, builderForValue.build());
@@ -22364,7 +22364,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
       public Builder addAllGeneratedLibraries(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (generatedLibrariesBuilder_ == null) {
           ensureGeneratedLibrariesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -22404,14 +22404,14 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getGeneratedLibrariesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getGeneratedLibrariesBuilder(
           int index) {
         return getGeneratedLibrariesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedLibrariesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedLibrariesOrBuilder(
           int index) {
         if (generatedLibrariesBuilder_ == null) {
           return generatedLibraries_.get(index);  } else {
@@ -22421,7 +22421,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getGeneratedLibrariesOrBuilderList() {
         if (generatedLibrariesBuilder_ != null) {
           return generatedLibrariesBuilder_.getMessageOrBuilderList();
@@ -22432,31 +22432,31 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedLibrariesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addGeneratedLibrariesBuilder() {
         return getGeneratedLibrariesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedLibrariesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addGeneratedLibrariesBuilder(
           int index) {
         return getGeneratedLibrariesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_libraries = 4;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getGeneratedLibrariesBuilderList() {
         return getGeneratedLibrariesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getGeneratedLibrariesFieldBuilder() {
         if (generatedLibrariesBuilder_ == null) {
           generatedLibrariesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   generatedLibraries_,
                   ((bitField0_ & 0x00000008) != 0),
                   getParentForChildren(),
@@ -22581,12 +22581,12 @@ java.lang.String defaultValue) {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.GoTargetInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -22622,7 +22622,7 @@ java.lang.String defaultValue) {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -22684,12 +22684,12 @@ java.lang.String defaultValue) {
     /**
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency> 
         getDependenciesList();
     /**
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.Dependency getDependencies(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency getDependencies(int index);
     /**
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
@@ -22697,23 +22697,23 @@ java.lang.String defaultValue) {
     /**
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder> 
         getDependenciesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getSourcesList();
     /**
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSources(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSources(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
@@ -22721,23 +22721,23 @@ java.lang.String defaultValue) {
     /**
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getSourcesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSourcesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSourcesOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getGeneratedSourcesList();
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
@@ -22745,23 +22745,23 @@ java.lang.String defaultValue) {
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getGeneratedSourcesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
         int index);
 
     /**
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+    java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> 
         getResourcesList();
     /**
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResources(int index);
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResources(int index);
     /**
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
@@ -22769,12 +22769,12 @@ java.lang.String defaultValue) {
     /**
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getResourcesOrBuilderList();
     /**
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourcesOrBuilder(
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourcesOrBuilder(
         int index);
 
     /**
@@ -22863,11 +22863,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
      * @return The jvmTargetInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo getJvmTargetInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo getJvmTargetInfo();
     /**
      * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfoOrBuilder getJvmTargetInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfoOrBuilder getJvmTargetInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
@@ -22878,11 +22878,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
      * @return The javaToolchainInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo getJavaToolchainInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo getJavaToolchainInfo();
     /**
      * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfoOrBuilder getJavaToolchainInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfoOrBuilder getJavaToolchainInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
@@ -22893,11 +22893,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
      * @return The javaRuntimeInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo getJavaRuntimeInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo getJavaRuntimeInfo();
     /**
      * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfoOrBuilder getJavaRuntimeInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfoOrBuilder getJavaRuntimeInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
@@ -22908,11 +22908,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
      * @return The scalaTargetInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo getScalaTargetInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo getScalaTargetInfo();
     /**
      * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfoOrBuilder getScalaTargetInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfoOrBuilder getScalaTargetInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
@@ -22923,11 +22923,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
      * @return The cppTargetInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo getCppTargetInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo getCppTargetInfo();
     /**
      * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfoOrBuilder getCppTargetInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfoOrBuilder getCppTargetInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
@@ -22938,11 +22938,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
      * @return The kotlinTargetInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo getKotlinTargetInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo getKotlinTargetInfo();
     /**
      * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfoOrBuilder getKotlinTargetInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfoOrBuilder getKotlinTargetInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
@@ -22953,11 +22953,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
      * @return The pythonTargetInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo getPythonTargetInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo getPythonTargetInfo();
     /**
      * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfoOrBuilder getPythonTargetInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfoOrBuilder getPythonTargetInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
@@ -22968,11 +22968,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
      * @return The androidTargetInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo getAndroidTargetInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo getAndroidTargetInfo();
     /**
      * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfoOrBuilder getAndroidTargetInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfoOrBuilder getAndroidTargetInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
@@ -22983,11 +22983,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
      * @return The androidAarImportInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo getAndroidAarImportInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo getAndroidAarImportInfo();
     /**
      * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfoOrBuilder getAndroidAarImportInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfoOrBuilder getAndroidAarImportInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
@@ -22998,11 +22998,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
      * @return The goTargetInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo getGoTargetInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo getGoTargetInfo();
     /**
      * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfoOrBuilder getGoTargetInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfoOrBuilder getGoTargetInfoOrBuilder();
 
     /**
      * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
@@ -23013,11 +23013,11 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
      * @return The cToolchainInfo.
      */
-    org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo getCToolchainInfo();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo getCToolchainInfo();
     /**
      * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfoOrBuilder getCToolchainInfoOrBuilder();
+    org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfoOrBuilder getCToolchainInfoOrBuilder();
   }
   /**
    * Protobuf type {@code bazelbsp.TargetInfo}
@@ -23056,7 +23056,7 @@ java.lang.String defaultValue);
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_TargetInfo_descriptor;
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_TargetInfo_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -23074,9 +23074,9 @@ java.lang.String defaultValue);
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_TargetInfo_fieldAccessorTable
+      return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_TargetInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.jetbrains.bazel.info.BspTargetInfo.TargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.TargetInfo.Builder.class);
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo.Builder.class);
     }
 
     private int bitField0_;
@@ -23197,19 +23197,19 @@ java.lang.String defaultValue);
 
     public static final int DEPENDENCIES_FIELD_NUMBER = 40;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> dependencies_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency> dependencies_;
     /**
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> getDependenciesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency> getDependenciesList() {
       return dependencies_;
     }
     /**
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder> 
         getDependenciesOrBuilderList() {
       return dependencies_;
     }
@@ -23224,33 +23224,33 @@ java.lang.String defaultValue);
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.Dependency getDependencies(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency getDependencies(int index) {
       return dependencies_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
         int index) {
       return dependencies_.get(index);
     }
 
     public static final int SOURCES_FIELD_NUMBER = 50;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> sources_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> sources_;
     /**
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getSourcesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getSourcesList() {
       return sources_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getSourcesOrBuilderList() {
       return sources_;
     }
@@ -23265,33 +23265,33 @@ java.lang.String defaultValue);
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSources(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSources(int index) {
       return sources_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSourcesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSourcesOrBuilder(
         int index) {
       return sources_.get(index);
     }
 
     public static final int GENERATED_SOURCES_FIELD_NUMBER = 51;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> generatedSources_;
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
       return generatedSources_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getGeneratedSourcesOrBuilderList() {
       return generatedSources_;
     }
@@ -23306,33 +23306,33 @@ java.lang.String defaultValue);
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index) {
       return generatedSources_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
         int index) {
       return generatedSources_.get(index);
     }
 
     public static final int RESOURCES_FIELD_NUMBER = 60;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> resources_;
+    private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> resources_;
     /**
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getResourcesList() {
+    public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getResourcesList() {
       return resources_;
     }
     /**
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+    public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
         getResourcesOrBuilderList() {
       return resources_;
     }
@@ -23347,14 +23347,14 @@ java.lang.String defaultValue);
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResources(int index) {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResources(int index) {
       return resources_.get(index);
     }
     /**
      * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourcesOrBuilder(
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourcesOrBuilder(
         int index) {
       return resources_.get(index);
     }
@@ -23365,7 +23365,7 @@ java.lang.String defaultValue);
           java.lang.String, java.lang.String> defaultEntry =
               com.google.protobuf.MapEntry
               .<java.lang.String, java.lang.String>newDefaultInstance(
-                  org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_TargetInfo_EnvEntry_descriptor, 
+                  org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_TargetInfo_EnvEntry_descriptor, 
                   com.google.protobuf.WireFormat.FieldType.STRING,
                   "",
                   com.google.protobuf.WireFormat.FieldType.STRING,
@@ -23526,7 +23526,7 @@ java.lang.String defaultValue) {
     }
 
     public static final int JVM_TARGET_INFO_FIELD_NUMBER = 1000;
-    private org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo jvmTargetInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo jvmTargetInfo_;
     /**
      * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
      * @return Whether the jvmTargetInfo field is set.
@@ -23540,19 +23540,19 @@ java.lang.String defaultValue) {
      * @return The jvmTargetInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo getJvmTargetInfo() {
-      return jvmTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.getDefaultInstance() : jvmTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo getJvmTargetInfo() {
+      return jvmTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.getDefaultInstance() : jvmTargetInfo_;
     }
     /**
      * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfoOrBuilder getJvmTargetInfoOrBuilder() {
-      return jvmTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.getDefaultInstance() : jvmTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfoOrBuilder getJvmTargetInfoOrBuilder() {
+      return jvmTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.getDefaultInstance() : jvmTargetInfo_;
     }
 
     public static final int JAVA_TOOLCHAIN_INFO_FIELD_NUMBER = 2000;
-    private org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo javaToolchainInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo javaToolchainInfo_;
     /**
      * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
      * @return Whether the javaToolchainInfo field is set.
@@ -23566,19 +23566,19 @@ java.lang.String defaultValue) {
      * @return The javaToolchainInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo getJavaToolchainInfo() {
-      return javaToolchainInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.getDefaultInstance() : javaToolchainInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo getJavaToolchainInfo() {
+      return javaToolchainInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.getDefaultInstance() : javaToolchainInfo_;
     }
     /**
      * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfoOrBuilder getJavaToolchainInfoOrBuilder() {
-      return javaToolchainInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.getDefaultInstance() : javaToolchainInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfoOrBuilder getJavaToolchainInfoOrBuilder() {
+      return javaToolchainInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.getDefaultInstance() : javaToolchainInfo_;
     }
 
     public static final int JAVA_RUNTIME_INFO_FIELD_NUMBER = 3000;
-    private org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo javaRuntimeInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo javaRuntimeInfo_;
     /**
      * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
      * @return Whether the javaRuntimeInfo field is set.
@@ -23592,19 +23592,19 @@ java.lang.String defaultValue) {
      * @return The javaRuntimeInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo getJavaRuntimeInfo() {
-      return javaRuntimeInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance() : javaRuntimeInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo getJavaRuntimeInfo() {
+      return javaRuntimeInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance() : javaRuntimeInfo_;
     }
     /**
      * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfoOrBuilder getJavaRuntimeInfoOrBuilder() {
-      return javaRuntimeInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance() : javaRuntimeInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfoOrBuilder getJavaRuntimeInfoOrBuilder() {
+      return javaRuntimeInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance() : javaRuntimeInfo_;
     }
 
     public static final int SCALA_TARGET_INFO_FIELD_NUMBER = 4000;
-    private org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo scalaTargetInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo scalaTargetInfo_;
     /**
      * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
      * @return Whether the scalaTargetInfo field is set.
@@ -23618,19 +23618,19 @@ java.lang.String defaultValue) {
      * @return The scalaTargetInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo getScalaTargetInfo() {
-      return scalaTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.getDefaultInstance() : scalaTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo getScalaTargetInfo() {
+      return scalaTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.getDefaultInstance() : scalaTargetInfo_;
     }
     /**
      * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfoOrBuilder getScalaTargetInfoOrBuilder() {
-      return scalaTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.getDefaultInstance() : scalaTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfoOrBuilder getScalaTargetInfoOrBuilder() {
+      return scalaTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.getDefaultInstance() : scalaTargetInfo_;
     }
 
     public static final int CPP_TARGET_INFO_FIELD_NUMBER = 6000;
-    private org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo cppTargetInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo cppTargetInfo_;
     /**
      * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
      * @return Whether the cppTargetInfo field is set.
@@ -23644,19 +23644,19 @@ java.lang.String defaultValue) {
      * @return The cppTargetInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo getCppTargetInfo() {
-      return cppTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.getDefaultInstance() : cppTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo getCppTargetInfo() {
+      return cppTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.getDefaultInstance() : cppTargetInfo_;
     }
     /**
      * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfoOrBuilder getCppTargetInfoOrBuilder() {
-      return cppTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.getDefaultInstance() : cppTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfoOrBuilder getCppTargetInfoOrBuilder() {
+      return cppTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.getDefaultInstance() : cppTargetInfo_;
     }
 
     public static final int KOTLIN_TARGET_INFO_FIELD_NUMBER = 7000;
-    private org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo kotlinTargetInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo kotlinTargetInfo_;
     /**
      * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
      * @return Whether the kotlinTargetInfo field is set.
@@ -23670,19 +23670,19 @@ java.lang.String defaultValue) {
      * @return The kotlinTargetInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo getKotlinTargetInfo() {
-      return kotlinTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.getDefaultInstance() : kotlinTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo getKotlinTargetInfo() {
+      return kotlinTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.getDefaultInstance() : kotlinTargetInfo_;
     }
     /**
      * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfoOrBuilder getKotlinTargetInfoOrBuilder() {
-      return kotlinTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.getDefaultInstance() : kotlinTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfoOrBuilder getKotlinTargetInfoOrBuilder() {
+      return kotlinTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.getDefaultInstance() : kotlinTargetInfo_;
     }
 
     public static final int PYTHON_TARGET_INFO_FIELD_NUMBER = 8000;
-    private org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo pythonTargetInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo pythonTargetInfo_;
     /**
      * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
      * @return Whether the pythonTargetInfo field is set.
@@ -23696,19 +23696,19 @@ java.lang.String defaultValue) {
      * @return The pythonTargetInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo getPythonTargetInfo() {
-      return pythonTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.getDefaultInstance() : pythonTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo getPythonTargetInfo() {
+      return pythonTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.getDefaultInstance() : pythonTargetInfo_;
     }
     /**
      * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfoOrBuilder getPythonTargetInfoOrBuilder() {
-      return pythonTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.getDefaultInstance() : pythonTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfoOrBuilder getPythonTargetInfoOrBuilder() {
+      return pythonTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.getDefaultInstance() : pythonTargetInfo_;
     }
 
     public static final int ANDROID_TARGET_INFO_FIELD_NUMBER = 10000;
-    private org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo androidTargetInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo androidTargetInfo_;
     /**
      * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
      * @return Whether the androidTargetInfo field is set.
@@ -23722,19 +23722,19 @@ java.lang.String defaultValue) {
      * @return The androidTargetInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo getAndroidTargetInfo() {
-      return androidTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.getDefaultInstance() : androidTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo getAndroidTargetInfo() {
+      return androidTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.getDefaultInstance() : androidTargetInfo_;
     }
     /**
      * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfoOrBuilder getAndroidTargetInfoOrBuilder() {
-      return androidTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.getDefaultInstance() : androidTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfoOrBuilder getAndroidTargetInfoOrBuilder() {
+      return androidTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.getDefaultInstance() : androidTargetInfo_;
     }
 
     public static final int ANDROID_AAR_IMPORT_INFO_FIELD_NUMBER = 11000;
-    private org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo androidAarImportInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo androidAarImportInfo_;
     /**
      * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
      * @return Whether the androidAarImportInfo field is set.
@@ -23748,19 +23748,19 @@ java.lang.String defaultValue) {
      * @return The androidAarImportInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo getAndroidAarImportInfo() {
-      return androidAarImportInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance() : androidAarImportInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo getAndroidAarImportInfo() {
+      return androidAarImportInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance() : androidAarImportInfo_;
     }
     /**
      * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfoOrBuilder getAndroidAarImportInfoOrBuilder() {
-      return androidAarImportInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance() : androidAarImportInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfoOrBuilder getAndroidAarImportInfoOrBuilder() {
+      return androidAarImportInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance() : androidAarImportInfo_;
     }
 
     public static final int GO_TARGET_INFO_FIELD_NUMBER = 12000;
-    private org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo goTargetInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo goTargetInfo_;
     /**
      * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
      * @return Whether the goTargetInfo field is set.
@@ -23774,19 +23774,19 @@ java.lang.String defaultValue) {
      * @return The goTargetInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo getGoTargetInfo() {
-      return goTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance() : goTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo getGoTargetInfo() {
+      return goTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.getDefaultInstance() : goTargetInfo_;
     }
     /**
      * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfoOrBuilder getGoTargetInfoOrBuilder() {
-      return goTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance() : goTargetInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfoOrBuilder getGoTargetInfoOrBuilder() {
+      return goTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.getDefaultInstance() : goTargetInfo_;
     }
 
     public static final int C_TOOLCHAIN_INFO_FIELD_NUMBER = 13000;
-    private org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo cToolchainInfo_;
+    private org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo cToolchainInfo_;
     /**
      * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
      * @return Whether the cToolchainInfo field is set.
@@ -23800,15 +23800,15 @@ java.lang.String defaultValue) {
      * @return The cToolchainInfo.
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo getCToolchainInfo() {
-      return cToolchainInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo getCToolchainInfo() {
+      return cToolchainInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
     }
     /**
      * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfoOrBuilder getCToolchainInfoOrBuilder() {
-      return cToolchainInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfoOrBuilder getCToolchainInfoOrBuilder() {
+      return cToolchainInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -24012,10 +24012,10 @@ java.lang.String defaultValue) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.TargetInfo)) {
+      if (!(obj instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo)) {
         return super.equals(obj);
       }
-      org.jetbrains.bazel.info.BspTargetInfo.TargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.TargetInfo) obj;
+      org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo other = (org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo) obj;
 
       if (!getId()
           .equals(other.getId())) return false;
@@ -24191,44 +24191,44 @@ java.lang.String defaultValue) {
       return hash;
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(byte[] data)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -24236,26 +24236,26 @@ java.lang.String defaultValue) {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseDelimitedFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo parseFrom(
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -24268,7 +24268,7 @@ java.lang.String defaultValue) {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.TargetInfo prototype) {
+    public static Builder newBuilder(org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -24289,10 +24289,10 @@ java.lang.String defaultValue) {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:bazelbsp.TargetInfo)
-        org.jetbrains.bazel.info.BspTargetInfo.TargetInfoOrBuilder {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_TargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_TargetInfo_descriptor;
       }
 
       @SuppressWarnings({"rawtypes"})
@@ -24320,12 +24320,12 @@ java.lang.String defaultValue) {
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_TargetInfo_fieldAccessorTable
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_TargetInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.jetbrains.bazel.info.BspTargetInfo.TargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.TargetInfo.Builder.class);
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo.class, org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo.Builder.class);
       }
 
-      // Construct using org.jetbrains.bazel.info.BspTargetInfo.TargetInfo.newBuilder()
+      // Construct using org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -24457,17 +24457,17 @@ java.lang.String defaultValue) {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_TargetInfo_descriptor;
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.internal_static_bazelbsp_TargetInfo_descriptor;
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.TargetInfo getDefaultInstanceForType() {
-        return org.jetbrains.bazel.info.BspTargetInfo.TargetInfo.getDefaultInstance();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.TargetInfo build() {
-        org.jetbrains.bazel.info.BspTargetInfo.TargetInfo result = buildPartial();
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo build() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -24475,15 +24475,15 @@ java.lang.String defaultValue) {
       }
 
       @java.lang.Override
-      public org.jetbrains.bazel.info.BspTargetInfo.TargetInfo buildPartial() {
-        org.jetbrains.bazel.info.BspTargetInfo.TargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.TargetInfo(this);
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo buildPartial() {
+        org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo result = new org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo(this);
         buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.TargetInfo result) {
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo result) {
         if (dependenciesBuilder_ == null) {
           if (((bitField0_ & 0x00000008) != 0)) {
             dependencies_ = java.util.Collections.unmodifiableList(dependencies_);
@@ -24522,7 +24522,7 @@ java.lang.String defaultValue) {
         }
       }
 
-      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.TargetInfo result) {
+      private void buildPartial0(org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.id_ = id_;
@@ -24620,16 +24620,16 @@ java.lang.String defaultValue) {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.TargetInfo) {
-          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.TargetInfo)other);
+        if (other instanceof org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.TargetInfo other) {
-        if (other == org.jetbrains.bazel.info.BspTargetInfo.TargetInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo other) {
+        if (other == org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo.getDefaultInstance()) return this;
         if (!other.getId().isEmpty()) {
           id_ = other.id_;
           bitField0_ |= 0x00000001;
@@ -24851,9 +24851,9 @@ java.lang.String defaultValue) {
                 break;
               } // case 242
               case 322: {
-                org.jetbrains.bazel.info.BspTargetInfo.Dependency m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.Dependency.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.parser(),
                         extensionRegistry);
                 if (dependenciesBuilder_ == null) {
                   ensureDependenciesIsMutable();
@@ -24864,9 +24864,9 @@ java.lang.String defaultValue) {
                 break;
               } // case 322
               case 402: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (sourcesBuilder_ == null) {
                   ensureSourcesIsMutable();
@@ -24877,9 +24877,9 @@ java.lang.String defaultValue) {
                 break;
               } // case 402
               case 410: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (generatedSourcesBuilder_ == null) {
                   ensureGeneratedSourcesIsMutable();
@@ -24890,9 +24890,9 @@ java.lang.String defaultValue) {
                 break;
               } // case 410
               case 482: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation m =
                     input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.parser(),
                         extensionRegistry);
                 if (resourcesBuilder_ == null) {
                   ensureResourcesIsMutable();
@@ -25276,22 +25276,22 @@ java.lang.String defaultValue) {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> dependencies_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency> dependencies_ =
         java.util.Collections.emptyList();
       private void ensureDependenciesIsMutable() {
         if (!((bitField0_ & 0x00000008) != 0)) {
-          dependencies_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.Dependency>(dependencies_);
+          dependencies_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency>(dependencies_);
           bitField0_ |= 0x00000008;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.Dependency, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> dependenciesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder> dependenciesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> getDependenciesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency> getDependenciesList() {
         if (dependenciesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(dependencies_);
         } else {
@@ -25311,7 +25311,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency getDependencies(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency getDependencies(int index) {
         if (dependenciesBuilder_ == null) {
           return dependencies_.get(index);
         } else {
@@ -25322,7 +25322,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
       public Builder setDependencies(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.Dependency value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency value) {
         if (dependenciesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25339,7 +25339,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
       public Builder setDependencies(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder builderForValue) {
         if (dependenciesBuilder_ == null) {
           ensureDependenciesIsMutable();
           dependencies_.set(index, builderForValue.build());
@@ -25352,7 +25352,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public Builder addDependencies(org.jetbrains.bazel.info.BspTargetInfo.Dependency value) {
+      public Builder addDependencies(org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency value) {
         if (dependenciesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25369,7 +25369,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
       public Builder addDependencies(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.Dependency value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency value) {
         if (dependenciesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25386,7 +25386,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
       public Builder addDependencies(
-          org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder builderForValue) {
         if (dependenciesBuilder_ == null) {
           ensureDependenciesIsMutable();
           dependencies_.add(builderForValue.build());
@@ -25400,7 +25400,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
       public Builder addDependencies(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder builderForValue) {
         if (dependenciesBuilder_ == null) {
           ensureDependenciesIsMutable();
           dependencies_.add(index, builderForValue.build());
@@ -25414,7 +25414,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
       public Builder addAllDependencies(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.Dependency> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency> values) {
         if (dependenciesBuilder_ == null) {
           ensureDependenciesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -25454,14 +25454,14 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder getDependenciesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder getDependenciesBuilder(
           int index) {
         return getDependenciesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
           int index) {
         if (dependenciesBuilder_ == null) {
           return dependencies_.get(index);  } else {
@@ -25471,7 +25471,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder> 
            getDependenciesOrBuilderList() {
         if (dependenciesBuilder_ != null) {
           return dependenciesBuilder_.getMessageOrBuilderList();
@@ -25482,31 +25482,31 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder addDependenciesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder addDependenciesBuilder() {
         return getDependenciesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.Dependency.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder addDependenciesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder addDependenciesBuilder(
           int index) {
         return getDependenciesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.Dependency.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder> 
            getDependenciesBuilderList() {
         return getDependenciesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.Dependency, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder> 
           getDependenciesFieldBuilder() {
         if (dependenciesBuilder_ == null) {
           dependenciesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.Dependency, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency, org.jetbrains.bazel.rawinfo.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.DependencyOrBuilder>(
                   dependencies_,
                   ((bitField0_ & 0x00000008) != 0),
                   getParentForChildren(),
@@ -25516,22 +25516,22 @@ java.lang.String defaultValue) {
         return dependenciesBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> sources_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> sources_ =
         java.util.Collections.emptyList();
       private void ensureSourcesIsMutable() {
         if (!((bitField0_ & 0x00000010) != 0)) {
-          sources_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(sources_);
+          sources_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(sources_);
           bitField0_ |= 0x00000010;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> sourcesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> sourcesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getSourcesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getSourcesList() {
         if (sourcesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(sources_);
         } else {
@@ -25551,7 +25551,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getSources(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getSources(int index) {
         if (sourcesBuilder_ == null) {
           return sources_.get(index);
         } else {
@@ -25562,7 +25562,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
       public Builder setSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (sourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25579,7 +25579,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
       public Builder setSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (sourcesBuilder_ == null) {
           ensureSourcesIsMutable();
           sources_.set(index, builderForValue.build());
@@ -25592,7 +25592,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public Builder addSources(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addSources(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (sourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25609,7 +25609,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
       public Builder addSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (sourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25626,7 +25626,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
       public Builder addSources(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (sourcesBuilder_ == null) {
           ensureSourcesIsMutable();
           sources_.add(builderForValue.build());
@@ -25640,7 +25640,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
       public Builder addSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (sourcesBuilder_ == null) {
           ensureSourcesIsMutable();
           sources_.add(index, builderForValue.build());
@@ -25654,7 +25654,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
       public Builder addAllSources(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (sourcesBuilder_ == null) {
           ensureSourcesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -25694,14 +25694,14 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getSourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getSourcesBuilder(
           int index) {
         return getSourcesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getSourcesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getSourcesOrBuilder(
           int index) {
         if (sourcesBuilder_ == null) {
           return sources_.get(index);  } else {
@@ -25711,7 +25711,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getSourcesOrBuilderList() {
         if (sourcesBuilder_ != null) {
           return sourcesBuilder_.getMessageOrBuilderList();
@@ -25722,31 +25722,31 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addSourcesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addSourcesBuilder() {
         return getSourcesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addSourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addSourcesBuilder(
           int index) {
         return getSourcesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation sources = 50;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getSourcesBuilderList() {
         return getSourcesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getSourcesFieldBuilder() {
         if (sourcesBuilder_ == null) {
           sourcesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   sources_,
                   ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
@@ -25756,22 +25756,22 @@ java.lang.String defaultValue) {
         return sourcesBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> generatedSources_ =
         java.util.Collections.emptyList();
       private void ensureGeneratedSourcesIsMutable() {
         if (!((bitField0_ & 0x00000020) != 0)) {
-          generatedSources_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(generatedSources_);
+          generatedSources_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(generatedSources_);
           bitField0_ |= 0x00000020;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> generatedSourcesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> generatedSourcesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
         if (generatedSourcesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(generatedSources_);
         } else {
@@ -25791,7 +25791,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getGeneratedSources(int index) {
         if (generatedSourcesBuilder_ == null) {
           return generatedSources_.get(index);
         } else {
@@ -25802,7 +25802,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
       public Builder setGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25819,7 +25819,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
       public Builder setGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.set(index, builderForValue.build());
@@ -25832,7 +25832,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public Builder addGeneratedSources(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addGeneratedSources(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25849,7 +25849,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
       public Builder addGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (generatedSourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -25866,7 +25866,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
       public Builder addGeneratedSources(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.add(builderForValue.build());
@@ -25880,7 +25880,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
       public Builder addGeneratedSources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           generatedSources_.add(index, builderForValue.build());
@@ -25894,7 +25894,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
       public Builder addAllGeneratedSources(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (generatedSourcesBuilder_ == null) {
           ensureGeneratedSourcesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -25934,14 +25934,14 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getGeneratedSourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getGeneratedSourcesBuilder(
           int index) {
         return getGeneratedSourcesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
           int index) {
         if (generatedSourcesBuilder_ == null) {
           return generatedSources_.get(index);  } else {
@@ -25951,7 +25951,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getGeneratedSourcesOrBuilderList() {
         if (generatedSourcesBuilder_ != null) {
           return generatedSourcesBuilder_.getMessageOrBuilderList();
@@ -25962,31 +25962,31 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder() {
         return getGeneratedSourcesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder(
           int index) {
         return getGeneratedSourcesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation generated_sources = 51;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getGeneratedSourcesBuilderList() {
         return getGeneratedSourcesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getGeneratedSourcesFieldBuilder() {
         if (generatedSourcesBuilder_ == null) {
           generatedSourcesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   generatedSources_,
                   ((bitField0_ & 0x00000020) != 0),
                   getParentForChildren(),
@@ -25996,22 +25996,22 @@ java.lang.String defaultValue) {
         return generatedSourcesBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> resources_ =
+      private java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> resources_ =
         java.util.Collections.emptyList();
       private void ensureResourcesIsMutable() {
         if (!((bitField0_ & 0x00000040) != 0)) {
-          resources_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(resources_);
+          resources_ = new java.util.ArrayList<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation>(resources_);
           bitField0_ |= 0x00000040;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> resourcesBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> resourcesBuilder_;
 
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getResourcesList() {
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> getResourcesList() {
         if (resourcesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(resources_);
         } else {
@@ -26031,7 +26031,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getResources(int index) {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation getResources(int index) {
         if (resourcesBuilder_ == null) {
           return resources_.get(index);
         } else {
@@ -26042,7 +26042,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
       public Builder setResources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (resourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -26059,7 +26059,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
       public Builder setResources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (resourcesBuilder_ == null) {
           ensureResourcesIsMutable();
           resources_.set(index, builderForValue.build());
@@ -26072,7 +26072,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public Builder addResources(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+      public Builder addResources(org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (resourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -26089,7 +26089,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
       public Builder addResources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation value) {
         if (resourcesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -26106,7 +26106,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
       public Builder addResources(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (resourcesBuilder_ == null) {
           ensureResourcesIsMutable();
           resources_.add(builderForValue.build());
@@ -26120,7 +26120,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
       public Builder addResources(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+          int index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder builderForValue) {
         if (resourcesBuilder_ == null) {
           ensureResourcesIsMutable();
           resources_.add(index, builderForValue.build());
@@ -26134,7 +26134,7 @@ java.lang.String defaultValue) {
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
       public Builder addAllResources(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+          java.lang.Iterable<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation> values) {
         if (resourcesBuilder_ == null) {
           ensureResourcesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -26174,14 +26174,14 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getResourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder getResourcesBuilder(
           int index) {
         return getResourcesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getResourcesOrBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder getResourcesOrBuilder(
           int index) {
         if (resourcesBuilder_ == null) {
           return resources_.get(index);  } else {
@@ -26191,7 +26191,7 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+      public java.util.List<? extends org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
            getResourcesOrBuilderList() {
         if (resourcesBuilder_ != null) {
           return resourcesBuilder_.getMessageOrBuilderList();
@@ -26202,31 +26202,31 @@ java.lang.String defaultValue) {
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addResourcesBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addResourcesBuilder() {
         return getResourcesFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addResourcesBuilder(
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder addResourcesBuilder(
           int index) {
         return getResourcesFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+            index, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.getDefaultInstance());
       }
       /**
        * <code>repeated .bazelbsp.FileLocation resources = 60;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+      public java.util.List<org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder> 
            getResourcesBuilderList() {
         return getResourcesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder> 
           getResourcesFieldBuilder() {
         if (resourcesBuilder_ == null) {
           resourcesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.FileLocationOrBuilder>(
                   resources_,
                   ((bitField0_ & 0x00000040) != 0),
                   getParentForChildren(),
@@ -26578,9 +26578,9 @@ java.lang.String defaultValue) {
         return this;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo jvmTargetInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo jvmTargetInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfoOrBuilder> jvmTargetInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfoOrBuilder> jvmTargetInfoBuilder_;
       /**
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        * @return Whether the jvmTargetInfo field is set.
@@ -26592,9 +26592,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        * @return The jvmTargetInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo getJvmTargetInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo getJvmTargetInfo() {
         if (jvmTargetInfoBuilder_ == null) {
-          return jvmTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.getDefaultInstance() : jvmTargetInfo_;
+          return jvmTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.getDefaultInstance() : jvmTargetInfo_;
         } else {
           return jvmTargetInfoBuilder_.getMessage();
         }
@@ -26602,7 +26602,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        */
-      public Builder setJvmTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo value) {
+      public Builder setJvmTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo value) {
         if (jvmTargetInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -26619,7 +26619,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        */
       public Builder setJvmTargetInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.Builder builderForValue) {
         if (jvmTargetInfoBuilder_ == null) {
           jvmTargetInfo_ = builderForValue.build();
         } else {
@@ -26632,11 +26632,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        */
-      public Builder mergeJvmTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo value) {
+      public Builder mergeJvmTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo value) {
         if (jvmTargetInfoBuilder_ == null) {
           if (((bitField0_ & 0x00000800) != 0) &&
             jvmTargetInfo_ != null &&
-            jvmTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.getDefaultInstance()) {
+            jvmTargetInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.getDefaultInstance()) {
             getJvmTargetInfoBuilder().mergeFrom(value);
           } else {
             jvmTargetInfo_ = value;
@@ -26666,7 +26666,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder getJvmTargetInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.Builder getJvmTargetInfoBuilder() {
         bitField0_ |= 0x00000800;
         onChanged();
         return getJvmTargetInfoFieldBuilder().getBuilder();
@@ -26674,23 +26674,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfoOrBuilder getJvmTargetInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfoOrBuilder getJvmTargetInfoOrBuilder() {
         if (jvmTargetInfoBuilder_ != null) {
           return jvmTargetInfoBuilder_.getMessageOrBuilder();
         } else {
           return jvmTargetInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.getDefaultInstance() : jvmTargetInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.getDefaultInstance() : jvmTargetInfo_;
         }
       }
       /**
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfoOrBuilder> 
           getJvmTargetInfoFieldBuilder() {
         if (jvmTargetInfoBuilder_ == null) {
           jvmTargetInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JvmTargetInfoOrBuilder>(
                   getJvmTargetInfo(),
                   getParentForChildren(),
                   isClean());
@@ -26699,9 +26699,9 @@ java.lang.String defaultValue) {
         return jvmTargetInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo javaToolchainInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo javaToolchainInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo, org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfoOrBuilder> javaToolchainInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfoOrBuilder> javaToolchainInfoBuilder_;
       /**
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        * @return Whether the javaToolchainInfo field is set.
@@ -26713,9 +26713,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        * @return The javaToolchainInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo getJavaToolchainInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo getJavaToolchainInfo() {
         if (javaToolchainInfoBuilder_ == null) {
-          return javaToolchainInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.getDefaultInstance() : javaToolchainInfo_;
+          return javaToolchainInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.getDefaultInstance() : javaToolchainInfo_;
         } else {
           return javaToolchainInfoBuilder_.getMessage();
         }
@@ -26723,7 +26723,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        */
-      public Builder setJavaToolchainInfo(org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo value) {
+      public Builder setJavaToolchainInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo value) {
         if (javaToolchainInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -26740,7 +26740,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        */
       public Builder setJavaToolchainInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.Builder builderForValue) {
         if (javaToolchainInfoBuilder_ == null) {
           javaToolchainInfo_ = builderForValue.build();
         } else {
@@ -26753,11 +26753,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        */
-      public Builder mergeJavaToolchainInfo(org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo value) {
+      public Builder mergeJavaToolchainInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo value) {
         if (javaToolchainInfoBuilder_ == null) {
           if (((bitField0_ & 0x00001000) != 0) &&
             javaToolchainInfo_ != null &&
-            javaToolchainInfo_ != org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.getDefaultInstance()) {
+            javaToolchainInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.getDefaultInstance()) {
             getJavaToolchainInfoBuilder().mergeFrom(value);
           } else {
             javaToolchainInfo_ = value;
@@ -26787,7 +26787,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.Builder getJavaToolchainInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.Builder getJavaToolchainInfoBuilder() {
         bitField0_ |= 0x00001000;
         onChanged();
         return getJavaToolchainInfoFieldBuilder().getBuilder();
@@ -26795,23 +26795,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfoOrBuilder getJavaToolchainInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfoOrBuilder getJavaToolchainInfoOrBuilder() {
         if (javaToolchainInfoBuilder_ != null) {
           return javaToolchainInfoBuilder_.getMessageOrBuilder();
         } else {
           return javaToolchainInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.getDefaultInstance() : javaToolchainInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.getDefaultInstance() : javaToolchainInfo_;
         }
       }
       /**
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo, org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfoOrBuilder> 
           getJavaToolchainInfoFieldBuilder() {
         if (javaToolchainInfoBuilder_ == null) {
           javaToolchainInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo, org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaToolchainInfoOrBuilder>(
                   getJavaToolchainInfo(),
                   getParentForChildren(),
                   isClean());
@@ -26820,9 +26820,9 @@ java.lang.String defaultValue) {
         return javaToolchainInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo javaRuntimeInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo javaRuntimeInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo, org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfoOrBuilder> javaRuntimeInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfoOrBuilder> javaRuntimeInfoBuilder_;
       /**
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        * @return Whether the javaRuntimeInfo field is set.
@@ -26834,9 +26834,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        * @return The javaRuntimeInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo getJavaRuntimeInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo getJavaRuntimeInfo() {
         if (javaRuntimeInfoBuilder_ == null) {
-          return javaRuntimeInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance() : javaRuntimeInfo_;
+          return javaRuntimeInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance() : javaRuntimeInfo_;
         } else {
           return javaRuntimeInfoBuilder_.getMessage();
         }
@@ -26844,7 +26844,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        */
-      public Builder setJavaRuntimeInfo(org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo value) {
+      public Builder setJavaRuntimeInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo value) {
         if (javaRuntimeInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -26861,7 +26861,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        */
       public Builder setJavaRuntimeInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.Builder builderForValue) {
         if (javaRuntimeInfoBuilder_ == null) {
           javaRuntimeInfo_ = builderForValue.build();
         } else {
@@ -26874,11 +26874,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        */
-      public Builder mergeJavaRuntimeInfo(org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo value) {
+      public Builder mergeJavaRuntimeInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo value) {
         if (javaRuntimeInfoBuilder_ == null) {
           if (((bitField0_ & 0x00002000) != 0) &&
             javaRuntimeInfo_ != null &&
-            javaRuntimeInfo_ != org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance()) {
+            javaRuntimeInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance()) {
             getJavaRuntimeInfoBuilder().mergeFrom(value);
           } else {
             javaRuntimeInfo_ = value;
@@ -26908,7 +26908,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.Builder getJavaRuntimeInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.Builder getJavaRuntimeInfoBuilder() {
         bitField0_ |= 0x00002000;
         onChanged();
         return getJavaRuntimeInfoFieldBuilder().getBuilder();
@@ -26916,23 +26916,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfoOrBuilder getJavaRuntimeInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfoOrBuilder getJavaRuntimeInfoOrBuilder() {
         if (javaRuntimeInfoBuilder_ != null) {
           return javaRuntimeInfoBuilder_.getMessageOrBuilder();
         } else {
           return javaRuntimeInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance() : javaRuntimeInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance() : javaRuntimeInfo_;
         }
       }
       /**
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo, org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfoOrBuilder> 
           getJavaRuntimeInfoFieldBuilder() {
         if (javaRuntimeInfoBuilder_ == null) {
           javaRuntimeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo, org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.JavaRuntimeInfoOrBuilder>(
                   getJavaRuntimeInfo(),
                   getParentForChildren(),
                   isClean());
@@ -26941,9 +26941,9 @@ java.lang.String defaultValue) {
         return javaRuntimeInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo scalaTargetInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo scalaTargetInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfoOrBuilder> scalaTargetInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfoOrBuilder> scalaTargetInfoBuilder_;
       /**
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        * @return Whether the scalaTargetInfo field is set.
@@ -26955,9 +26955,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        * @return The scalaTargetInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo getScalaTargetInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo getScalaTargetInfo() {
         if (scalaTargetInfoBuilder_ == null) {
-          return scalaTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.getDefaultInstance() : scalaTargetInfo_;
+          return scalaTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.getDefaultInstance() : scalaTargetInfo_;
         } else {
           return scalaTargetInfoBuilder_.getMessage();
         }
@@ -26965,7 +26965,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        */
-      public Builder setScalaTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo value) {
+      public Builder setScalaTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo value) {
         if (scalaTargetInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -26982,7 +26982,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        */
       public Builder setScalaTargetInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.Builder builderForValue) {
         if (scalaTargetInfoBuilder_ == null) {
           scalaTargetInfo_ = builderForValue.build();
         } else {
@@ -26995,11 +26995,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        */
-      public Builder mergeScalaTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo value) {
+      public Builder mergeScalaTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo value) {
         if (scalaTargetInfoBuilder_ == null) {
           if (((bitField0_ & 0x00004000) != 0) &&
             scalaTargetInfo_ != null &&
-            scalaTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.getDefaultInstance()) {
+            scalaTargetInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.getDefaultInstance()) {
             getScalaTargetInfoBuilder().mergeFrom(value);
           } else {
             scalaTargetInfo_ = value;
@@ -27029,7 +27029,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.Builder getScalaTargetInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.Builder getScalaTargetInfoBuilder() {
         bitField0_ |= 0x00004000;
         onChanged();
         return getScalaTargetInfoFieldBuilder().getBuilder();
@@ -27037,23 +27037,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfoOrBuilder getScalaTargetInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfoOrBuilder getScalaTargetInfoOrBuilder() {
         if (scalaTargetInfoBuilder_ != null) {
           return scalaTargetInfoBuilder_.getMessageOrBuilder();
         } else {
           return scalaTargetInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.getDefaultInstance() : scalaTargetInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.getDefaultInstance() : scalaTargetInfo_;
         }
       }
       /**
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfoOrBuilder> 
           getScalaTargetInfoFieldBuilder() {
         if (scalaTargetInfoBuilder_ == null) {
           scalaTargetInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.ScalaTargetInfoOrBuilder>(
                   getScalaTargetInfo(),
                   getParentForChildren(),
                   isClean());
@@ -27062,9 +27062,9 @@ java.lang.String defaultValue) {
         return scalaTargetInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo cppTargetInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo cppTargetInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfoOrBuilder> cppTargetInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfoOrBuilder> cppTargetInfoBuilder_;
       /**
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        * @return Whether the cppTargetInfo field is set.
@@ -27076,9 +27076,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        * @return The cppTargetInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo getCppTargetInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo getCppTargetInfo() {
         if (cppTargetInfoBuilder_ == null) {
-          return cppTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.getDefaultInstance() : cppTargetInfo_;
+          return cppTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.getDefaultInstance() : cppTargetInfo_;
         } else {
           return cppTargetInfoBuilder_.getMessage();
         }
@@ -27086,7 +27086,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        */
-      public Builder setCppTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo value) {
+      public Builder setCppTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo value) {
         if (cppTargetInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -27103,7 +27103,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        */
       public Builder setCppTargetInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.Builder builderForValue) {
         if (cppTargetInfoBuilder_ == null) {
           cppTargetInfo_ = builderForValue.build();
         } else {
@@ -27116,11 +27116,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        */
-      public Builder mergeCppTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo value) {
+      public Builder mergeCppTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo value) {
         if (cppTargetInfoBuilder_ == null) {
           if (((bitField0_ & 0x00008000) != 0) &&
             cppTargetInfo_ != null &&
-            cppTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.getDefaultInstance()) {
+            cppTargetInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.getDefaultInstance()) {
             getCppTargetInfoBuilder().mergeFrom(value);
           } else {
             cppTargetInfo_ = value;
@@ -27150,7 +27150,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.Builder getCppTargetInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.Builder getCppTargetInfoBuilder() {
         bitField0_ |= 0x00008000;
         onChanged();
         return getCppTargetInfoFieldBuilder().getBuilder();
@@ -27158,23 +27158,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfoOrBuilder getCppTargetInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfoOrBuilder getCppTargetInfoOrBuilder() {
         if (cppTargetInfoBuilder_ != null) {
           return cppTargetInfoBuilder_.getMessageOrBuilder();
         } else {
           return cppTargetInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.getDefaultInstance() : cppTargetInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.getDefaultInstance() : cppTargetInfo_;
         }
       }
       /**
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfoOrBuilder> 
           getCppTargetInfoFieldBuilder() {
         if (cppTargetInfoBuilder_ == null) {
           cppTargetInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.CppTargetInfoOrBuilder>(
                   getCppTargetInfo(),
                   getParentForChildren(),
                   isClean());
@@ -27183,9 +27183,9 @@ java.lang.String defaultValue) {
         return cppTargetInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo kotlinTargetInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo kotlinTargetInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfoOrBuilder> kotlinTargetInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfoOrBuilder> kotlinTargetInfoBuilder_;
       /**
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        * @return Whether the kotlinTargetInfo field is set.
@@ -27197,9 +27197,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        * @return The kotlinTargetInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo getKotlinTargetInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo getKotlinTargetInfo() {
         if (kotlinTargetInfoBuilder_ == null) {
-          return kotlinTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.getDefaultInstance() : kotlinTargetInfo_;
+          return kotlinTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.getDefaultInstance() : kotlinTargetInfo_;
         } else {
           return kotlinTargetInfoBuilder_.getMessage();
         }
@@ -27207,7 +27207,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        */
-      public Builder setKotlinTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo value) {
+      public Builder setKotlinTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo value) {
         if (kotlinTargetInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -27224,7 +27224,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        */
       public Builder setKotlinTargetInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.Builder builderForValue) {
         if (kotlinTargetInfoBuilder_ == null) {
           kotlinTargetInfo_ = builderForValue.build();
         } else {
@@ -27237,11 +27237,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        */
-      public Builder mergeKotlinTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo value) {
+      public Builder mergeKotlinTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo value) {
         if (kotlinTargetInfoBuilder_ == null) {
           if (((bitField0_ & 0x00010000) != 0) &&
             kotlinTargetInfo_ != null &&
-            kotlinTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.getDefaultInstance()) {
+            kotlinTargetInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.getDefaultInstance()) {
             getKotlinTargetInfoBuilder().mergeFrom(value);
           } else {
             kotlinTargetInfo_ = value;
@@ -27271,7 +27271,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.Builder getKotlinTargetInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.Builder getKotlinTargetInfoBuilder() {
         bitField0_ |= 0x00010000;
         onChanged();
         return getKotlinTargetInfoFieldBuilder().getBuilder();
@@ -27279,23 +27279,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfoOrBuilder getKotlinTargetInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfoOrBuilder getKotlinTargetInfoOrBuilder() {
         if (kotlinTargetInfoBuilder_ != null) {
           return kotlinTargetInfoBuilder_.getMessageOrBuilder();
         } else {
           return kotlinTargetInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.getDefaultInstance() : kotlinTargetInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.getDefaultInstance() : kotlinTargetInfo_;
         }
       }
       /**
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfoOrBuilder> 
           getKotlinTargetInfoFieldBuilder() {
         if (kotlinTargetInfoBuilder_ == null) {
           kotlinTargetInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.KotlinTargetInfoOrBuilder>(
                   getKotlinTargetInfo(),
                   getParentForChildren(),
                   isClean());
@@ -27304,9 +27304,9 @@ java.lang.String defaultValue) {
         return kotlinTargetInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo pythonTargetInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo pythonTargetInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfoOrBuilder> pythonTargetInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfoOrBuilder> pythonTargetInfoBuilder_;
       /**
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        * @return Whether the pythonTargetInfo field is set.
@@ -27318,9 +27318,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        * @return The pythonTargetInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo getPythonTargetInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo getPythonTargetInfo() {
         if (pythonTargetInfoBuilder_ == null) {
-          return pythonTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.getDefaultInstance() : pythonTargetInfo_;
+          return pythonTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.getDefaultInstance() : pythonTargetInfo_;
         } else {
           return pythonTargetInfoBuilder_.getMessage();
         }
@@ -27328,7 +27328,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        */
-      public Builder setPythonTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo value) {
+      public Builder setPythonTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo value) {
         if (pythonTargetInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -27345,7 +27345,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        */
       public Builder setPythonTargetInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.Builder builderForValue) {
         if (pythonTargetInfoBuilder_ == null) {
           pythonTargetInfo_ = builderForValue.build();
         } else {
@@ -27358,11 +27358,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        */
-      public Builder mergePythonTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo value) {
+      public Builder mergePythonTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo value) {
         if (pythonTargetInfoBuilder_ == null) {
           if (((bitField0_ & 0x00020000) != 0) &&
             pythonTargetInfo_ != null &&
-            pythonTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.getDefaultInstance()) {
+            pythonTargetInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.getDefaultInstance()) {
             getPythonTargetInfoBuilder().mergeFrom(value);
           } else {
             pythonTargetInfo_ = value;
@@ -27392,7 +27392,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.Builder getPythonTargetInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.Builder getPythonTargetInfoBuilder() {
         bitField0_ |= 0x00020000;
         onChanged();
         return getPythonTargetInfoFieldBuilder().getBuilder();
@@ -27400,23 +27400,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfoOrBuilder getPythonTargetInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfoOrBuilder getPythonTargetInfoOrBuilder() {
         if (pythonTargetInfoBuilder_ != null) {
           return pythonTargetInfoBuilder_.getMessageOrBuilder();
         } else {
           return pythonTargetInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.getDefaultInstance() : pythonTargetInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.getDefaultInstance() : pythonTargetInfo_;
         }
       }
       /**
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfoOrBuilder> 
           getPythonTargetInfoFieldBuilder() {
         if (pythonTargetInfoBuilder_ == null) {
           pythonTargetInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.PythonTargetInfoOrBuilder>(
                   getPythonTargetInfo(),
                   getParentForChildren(),
                   isClean());
@@ -27425,9 +27425,9 @@ java.lang.String defaultValue) {
         return pythonTargetInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo androidTargetInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo androidTargetInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfoOrBuilder> androidTargetInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfoOrBuilder> androidTargetInfoBuilder_;
       /**
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        * @return Whether the androidTargetInfo field is set.
@@ -27439,9 +27439,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        * @return The androidTargetInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo getAndroidTargetInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo getAndroidTargetInfo() {
         if (androidTargetInfoBuilder_ == null) {
-          return androidTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.getDefaultInstance() : androidTargetInfo_;
+          return androidTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.getDefaultInstance() : androidTargetInfo_;
         } else {
           return androidTargetInfoBuilder_.getMessage();
         }
@@ -27449,7 +27449,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        */
-      public Builder setAndroidTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo value) {
+      public Builder setAndroidTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo value) {
         if (androidTargetInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -27466,7 +27466,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        */
       public Builder setAndroidTargetInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.Builder builderForValue) {
         if (androidTargetInfoBuilder_ == null) {
           androidTargetInfo_ = builderForValue.build();
         } else {
@@ -27479,11 +27479,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        */
-      public Builder mergeAndroidTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo value) {
+      public Builder mergeAndroidTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo value) {
         if (androidTargetInfoBuilder_ == null) {
           if (((bitField0_ & 0x00040000) != 0) &&
             androidTargetInfo_ != null &&
-            androidTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.getDefaultInstance()) {
+            androidTargetInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.getDefaultInstance()) {
             getAndroidTargetInfoBuilder().mergeFrom(value);
           } else {
             androidTargetInfo_ = value;
@@ -27513,7 +27513,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.Builder getAndroidTargetInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.Builder getAndroidTargetInfoBuilder() {
         bitField0_ |= 0x00040000;
         onChanged();
         return getAndroidTargetInfoFieldBuilder().getBuilder();
@@ -27521,23 +27521,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfoOrBuilder getAndroidTargetInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfoOrBuilder getAndroidTargetInfoOrBuilder() {
         if (androidTargetInfoBuilder_ != null) {
           return androidTargetInfoBuilder_.getMessageOrBuilder();
         } else {
           return androidTargetInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.getDefaultInstance() : androidTargetInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.getDefaultInstance() : androidTargetInfo_;
         }
       }
       /**
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfoOrBuilder> 
           getAndroidTargetInfoFieldBuilder() {
         if (androidTargetInfoBuilder_ == null) {
           androidTargetInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidTargetInfoOrBuilder>(
                   getAndroidTargetInfo(),
                   getParentForChildren(),
                   isClean());
@@ -27546,9 +27546,9 @@ java.lang.String defaultValue) {
         return androidTargetInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo androidAarImportInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo androidAarImportInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo, org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfoOrBuilder> androidAarImportInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfoOrBuilder> androidAarImportInfoBuilder_;
       /**
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        * @return Whether the androidAarImportInfo field is set.
@@ -27560,9 +27560,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        * @return The androidAarImportInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo getAndroidAarImportInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo getAndroidAarImportInfo() {
         if (androidAarImportInfoBuilder_ == null) {
-          return androidAarImportInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance() : androidAarImportInfo_;
+          return androidAarImportInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance() : androidAarImportInfo_;
         } else {
           return androidAarImportInfoBuilder_.getMessage();
         }
@@ -27570,7 +27570,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        */
-      public Builder setAndroidAarImportInfo(org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo value) {
+      public Builder setAndroidAarImportInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo value) {
         if (androidAarImportInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -27587,7 +27587,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        */
       public Builder setAndroidAarImportInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.Builder builderForValue) {
         if (androidAarImportInfoBuilder_ == null) {
           androidAarImportInfo_ = builderForValue.build();
         } else {
@@ -27600,11 +27600,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        */
-      public Builder mergeAndroidAarImportInfo(org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo value) {
+      public Builder mergeAndroidAarImportInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo value) {
         if (androidAarImportInfoBuilder_ == null) {
           if (((bitField0_ & 0x00080000) != 0) &&
             androidAarImportInfo_ != null &&
-            androidAarImportInfo_ != org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance()) {
+            androidAarImportInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance()) {
             getAndroidAarImportInfoBuilder().mergeFrom(value);
           } else {
             androidAarImportInfo_ = value;
@@ -27634,7 +27634,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.Builder getAndroidAarImportInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.Builder getAndroidAarImportInfoBuilder() {
         bitField0_ |= 0x00080000;
         onChanged();
         return getAndroidAarImportInfoFieldBuilder().getBuilder();
@@ -27642,23 +27642,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfoOrBuilder getAndroidAarImportInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfoOrBuilder getAndroidAarImportInfoOrBuilder() {
         if (androidAarImportInfoBuilder_ != null) {
           return androidAarImportInfoBuilder_.getMessageOrBuilder();
         } else {
           return androidAarImportInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance() : androidAarImportInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance() : androidAarImportInfo_;
         }
       }
       /**
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo, org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfoOrBuilder> 
           getAndroidAarImportInfoFieldBuilder() {
         if (androidAarImportInfoBuilder_ == null) {
           androidAarImportInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo, org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.AndroidAarImportInfoOrBuilder>(
                   getAndroidAarImportInfo(),
                   getParentForChildren(),
                   isClean());
@@ -27667,9 +27667,9 @@ java.lang.String defaultValue) {
         return androidAarImportInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo goTargetInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo goTargetInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfoOrBuilder> goTargetInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfoOrBuilder> goTargetInfoBuilder_;
       /**
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        * @return Whether the goTargetInfo field is set.
@@ -27681,9 +27681,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        * @return The goTargetInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo getGoTargetInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo getGoTargetInfo() {
         if (goTargetInfoBuilder_ == null) {
-          return goTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance() : goTargetInfo_;
+          return goTargetInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.getDefaultInstance() : goTargetInfo_;
         } else {
           return goTargetInfoBuilder_.getMessage();
         }
@@ -27691,7 +27691,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        */
-      public Builder setGoTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo value) {
+      public Builder setGoTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo value) {
         if (goTargetInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -27708,7 +27708,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        */
       public Builder setGoTargetInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.Builder builderForValue) {
         if (goTargetInfoBuilder_ == null) {
           goTargetInfo_ = builderForValue.build();
         } else {
@@ -27721,11 +27721,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        */
-      public Builder mergeGoTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo value) {
+      public Builder mergeGoTargetInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo value) {
         if (goTargetInfoBuilder_ == null) {
           if (((bitField0_ & 0x00100000) != 0) &&
             goTargetInfo_ != null &&
-            goTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance()) {
+            goTargetInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.getDefaultInstance()) {
             getGoTargetInfoBuilder().mergeFrom(value);
           } else {
             goTargetInfo_ = value;
@@ -27755,7 +27755,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.Builder getGoTargetInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.Builder getGoTargetInfoBuilder() {
         bitField0_ |= 0x00100000;
         onChanged();
         return getGoTargetInfoFieldBuilder().getBuilder();
@@ -27763,23 +27763,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfoOrBuilder getGoTargetInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfoOrBuilder getGoTargetInfoOrBuilder() {
         if (goTargetInfoBuilder_ != null) {
           return goTargetInfoBuilder_.getMessageOrBuilder();
         } else {
           return goTargetInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance() : goTargetInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.getDefaultInstance() : goTargetInfo_;
         }
       }
       /**
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfoOrBuilder> 
           getGoTargetInfoFieldBuilder() {
         if (goTargetInfoBuilder_ == null) {
           goTargetInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.GoTargetInfoOrBuilder>(
                   getGoTargetInfo(),
                   getParentForChildren(),
                   isClean());
@@ -27788,9 +27788,9 @@ java.lang.String defaultValue) {
         return goTargetInfoBuilder_;
       }
 
-      private org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo cToolchainInfo_;
+      private org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo cToolchainInfo_;
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo, org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfoOrBuilder> cToolchainInfoBuilder_;
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfoOrBuilder> cToolchainInfoBuilder_;
       /**
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        * @return Whether the cToolchainInfo field is set.
@@ -27802,9 +27802,9 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        * @return The cToolchainInfo.
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo getCToolchainInfo() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo getCToolchainInfo() {
         if (cToolchainInfoBuilder_ == null) {
-          return cToolchainInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
+          return cToolchainInfo_ == null ? org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
         } else {
           return cToolchainInfoBuilder_.getMessage();
         }
@@ -27812,7 +27812,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        */
-      public Builder setCToolchainInfo(org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo value) {
+      public Builder setCToolchainInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo value) {
         if (cToolchainInfoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -27829,7 +27829,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        */
       public Builder setCToolchainInfo(
-          org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.Builder builderForValue) {
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.Builder builderForValue) {
         if (cToolchainInfoBuilder_ == null) {
           cToolchainInfo_ = builderForValue.build();
         } else {
@@ -27842,11 +27842,11 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        */
-      public Builder mergeCToolchainInfo(org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo value) {
+      public Builder mergeCToolchainInfo(org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo value) {
         if (cToolchainInfoBuilder_ == null) {
           if (((bitField0_ & 0x00200000) != 0) &&
             cToolchainInfo_ != null &&
-            cToolchainInfo_ != org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance()) {
+            cToolchainInfo_ != org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.getDefaultInstance()) {
             getCToolchainInfoBuilder().mergeFrom(value);
           } else {
             cToolchainInfo_ = value;
@@ -27876,7 +27876,7 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.Builder getCToolchainInfoBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.Builder getCToolchainInfoBuilder() {
         bitField0_ |= 0x00200000;
         onChanged();
         return getCToolchainInfoFieldBuilder().getBuilder();
@@ -27884,23 +27884,23 @@ java.lang.String defaultValue) {
       /**
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfoOrBuilder getCToolchainInfoOrBuilder() {
+      public org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfoOrBuilder getCToolchainInfoOrBuilder() {
         if (cToolchainInfoBuilder_ != null) {
           return cToolchainInfoBuilder_.getMessageOrBuilder();
         } else {
           return cToolchainInfo_ == null ?
-              org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
         }
       }
       /**
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo, org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfoOrBuilder> 
+          org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfoOrBuilder> 
           getCToolchainInfoFieldBuilder() {
         if (cToolchainInfoBuilder_ == null) {
           cToolchainInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo, org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfoOrBuilder>(
+              org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo, org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfo.Builder, org.jetbrains.bazel.rawinfo.BspTargetInfo.CToolchainInfoOrBuilder>(
                   getCToolchainInfo(),
                   getParentForChildren(),
                   isClean());
@@ -27913,12 +27913,12 @@ java.lang.String defaultValue) {
     }
 
     // @@protoc_insertion_point(class_scope:bazelbsp.TargetInfo)
-    private static final org.jetbrains.bazel.info.BspTargetInfo.TargetInfo DEFAULT_INSTANCE;
+    private static final org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.TargetInfo();
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo();
     }
 
-    public static org.jetbrains.bazel.info.BspTargetInfo.TargetInfo getDefaultInstance() {
+    public static org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -27954,7 +27954,7 @@ java.lang.String defaultValue) {
     }
 
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.TargetInfo getDefaultInstanceForType() {
+    public org.jetbrains.bazel.rawinfo.BspTargetInfo.TargetInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -28165,8 +28165,8 @@ java.lang.String defaultValue) {
       "fo\022/\n\016go_target_info\030\340] \001(\0132\026.bazelbsp.G" +
       "oTargetInfo\0223\n\020c_toolchain_info\030\310e \001(\0132\030" +
       ".bazelbsp.CToolchainInfo\032*\n\010EnvEntry\022\013\n\003" +
-      "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetb" +
-      "rains.bazel.infob\006proto3"
+      "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\035\n\033org.jetb" +
+      "rains.bazel.rawinfob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

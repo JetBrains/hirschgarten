@@ -51,7 +51,7 @@ class LabelTest {
   @Test
   fun `should return repo name`() {
     val label = TargetPattern.parse("@rules_blah//path/to/target:targetName")
-    val repoName = label.assumeBazelLabel().repoName
+    val repoName = label.assumeLabel().repoName
     repoName shouldBe "rules_blah"
     label.isApparent shouldBe true
   }
@@ -59,7 +59,7 @@ class LabelTest {
   @Test
   fun `should parse repo name in canonical form`() {
     val label = TargetPattern.parse("@@rules_blah~~something~//path/to/target:targetName")
-    val repoName = label.assumeBazelLabel().repoName
+    val repoName = label.assumeLabel().repoName
     repoName shouldBe "rules_blah~~something~"
     label.isApparent shouldBe false
   }
@@ -135,13 +135,13 @@ class LabelTest {
 
   @Test
   fun `relative labels are resolved on a best-effort basis`() {
-    val label = TargetPattern.parse(":target").assumeBazelLabel()
+    val label = TargetPattern.parse(":target").assumeLabel()
     label.toString() shouldBe "//:target"
     label.targetName shouldBe "target"
     label.packagePath.toString() shouldBe ""
     label.isMainWorkspace shouldBe true
 
-    val label2 = TargetPattern.parse("target").assumeBazelLabel()
+    val label2 = TargetPattern.parse("target").assumeLabel()
     label2.toString() shouldBe "//target"
     label2.target shouldBe SingleTarget("target")
     label2.packagePath.toString() shouldBe "target"
@@ -230,7 +230,7 @@ class LabelTest {
 
   @Test
   fun `resolving relative labels works`() {
-    val base = TargetPattern.parse("@//path/to").assumeBazelLabel()
+    val base = TargetPattern.parse("@//path/to").assumeLabel()
     val relative = TargetPattern.parse(":target").asRelative()
     val resolved = relative?.resolve(base)
     resolved.toString() shouldBe "//path/to:target"
@@ -238,7 +238,7 @@ class LabelTest {
 
   @Test
   fun `resolving works in the more complex case`() {
-    val base = TargetPattern.parse("@blah//path/to").assumeBazelLabel()
+    val base = TargetPattern.parse("@blah//path/to").assumeLabel()
     val relative = TargetPattern.parse("path/segment:oh/god").asRelative()
     val resolved = relative?.resolve(base)
     resolved.toString() shouldBe "@blah//path/to/path/segment:oh/god"

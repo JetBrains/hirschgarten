@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.server.model.Tag
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
@@ -12,7 +12,7 @@ private val bazelTagToTagMapping =
   )
 
 class TargetTagsResolver {
-  fun resolveTags(targetInfo: BspTargetInfo.TargetInfo, workspaceContext: WorkspaceContext): Set<Tag> {
+  fun resolveTags(targetInfo: TargetInfo, workspaceContext: WorkspaceContext): Set<Tag> {
     val typeTags =
       when {
         targetInfo.isTest() -> setOf(Tag.TEST)
@@ -21,24 +21,24 @@ class TargetTagsResolver {
         else -> setOf(Tag.LIBRARY)
       }
 
-    return typeTags + mapBazelTags(targetInfo.tagsList) + targetInfo.experimentalTags(workspaceContext)
+    return typeTags + mapBazelTags(targetInfo.tags) + targetInfo.experimentalTags(workspaceContext)
   }
 
-  private fun BspTargetInfo.TargetInfo.experimentalTags(workspaceContext: WorkspaceContext): Set<Tag> =
+  private fun TargetInfo.experimentalTags(workspaceContext: WorkspaceContext): Set<Tag> =
     buildSet {
       if (kind in workspaceContext.experimentalPrioritizeLibrariesOverModulesTargetKinds.values) add(Tag.LIBRARIES_OVER_MODULES)
     }
 
   // https://bazel.build/extending/rules#executable_rules_and_test_rules:
   // "Test rules must have names that end in _test."
-  private fun BspTargetInfo.TargetInfo.isTest(): Boolean = isApplication() && kind.endsWith("_test")
+  private fun TargetInfo.isTest(): Boolean = isApplication() && kind.endsWith("_test")
 
-  private fun BspTargetInfo.TargetInfo.isIntellijPlugin(): Boolean = kind == "intellij_plugin_debug_target"
+  private fun TargetInfo.isIntellijPlugin(): Boolean = kind == "intellij_plugin_debug_target"
 
   // Not marked as executable by Bazel, but is actually executable via bazel mobile-install
-  private fun BspTargetInfo.TargetInfo.isAndroidBinary(): Boolean = kind == "android_binary"
+  private fun TargetInfo.isAndroidBinary(): Boolean = kind == "android_binary"
 
-  private fun BspTargetInfo.TargetInfo.isApplication(): Boolean = executable
+  private fun TargetInfo.isApplication(): Boolean = executable
 
   private fun mapBazelTags(tags: List<String>): Set<Tag> = tags.mapNotNull { bazelTagToTagMapping[it] }.toSet()
 }

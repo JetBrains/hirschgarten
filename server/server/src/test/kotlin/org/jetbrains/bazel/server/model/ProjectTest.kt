@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
@@ -248,7 +249,7 @@ class ProjectTest {
       kindString = "kindString",
     )
 
-  private fun String.toLabel(): Label = Label.parse(this)
+  private fun String.toLabel(): CanonicalLabel = Label.parseCanonical(this)
 
   private fun createMockWorkspaceContext(targetsPattern: String = "//..."): WorkspaceContext =
     WorkspaceContext(

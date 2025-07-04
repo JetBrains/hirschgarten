@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.sync.languages.go
 
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.FileLocation
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
@@ -31,26 +32,24 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
     buildTarget.data = goBuildTarget
   }
 
-  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> {
-    if (!targetInfo.hasGoTargetInfo()) return listOf()
-    return targetInfo.goTargetInfo.generatedSourcesList
+  override fun calculateAdditionalSources(targetInfo: TargetInfo): List<FileLocation> {
+    return targetInfo.goTargetInfo?.generatedSources ?: emptyList()
   }
 
-  override fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): GoModule? {
-    if (!targetInfo.hasGoTargetInfo()) return null
-    val goTargetInfo = targetInfo.goTargetInfo
+  override fun resolveModule(targetInfo: TargetInfo): GoModule? {
+    val goTargetInfo = targetInfo.goTargetInfo ?: return null
     return GoModule(
       sdkHomePath = calculateSdkPath(goTargetInfo.sdkHomePath),
       importPath = goTargetInfo.importPath,
-      generatedSources = goTargetInfo.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
-      generatedLibraries = goTargetInfo.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it) },
-      libraryLabels = goTargetInfo.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
+      generatedSources = goTargetInfo.generatedSources.map { bazelPathsResolver.resolve(it) },
+      generatedLibraries = goTargetInfo.generatedLibraries.map { bazelPathsResolver.resolve(it) },
+      libraryLabels = goTargetInfo.libraryLabels,
     )
   }
 
-  private fun calculateSdkPath(sdk: BspTargetInfo.FileLocation?): Path? =
+  private fun calculateSdkPath(sdk: FileLocation?): Path? =
     sdk
-      ?.takeUnless { it.relativePath.isNullOrEmpty() }
+      ?.takeUnless { it.relativePath.isEmpty() }
       ?.let {
         val goBinaryPath = bazelPathsResolver.resolve(it)
         goBinaryPath.parent.parent

@@ -114,14 +114,16 @@ sealed interface Label : TargetPattern {
   val repoName: String get() = repo.repoName
 
   companion object {
-    fun synthetic(targetName: String): SyntheticLabel = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
+    fun synthetic(targetName: String): CanonicalLabel {
+      val name = targetName.removeSuffix(SYNTHETIC_TAG) + SYNTHETIC_TAG
+      return CanonicalLabel(Canonical.main, Package(emptyList()), SingleTarget(name))
+    }
 
-    fun parse(value: String): Label =
-      when (val targetPattern = TargetPattern.parse(value)) {
-        is BazelLabel -> targetPattern
-        is SyntheticLabel -> targetPattern
-        else -> targetPattern.assumeBazelLabel()
-      }
+    fun parseCanonical(value: String): CanonicalLabel =
+      parse(value) as? CanonicalLabel
+        ?: throw IllegalArgumentException("Cannot parse $value as a canonical label")
+
+    fun parse(value: String): Label = TargetPattern.parse(value).assumeLabel()
 
     fun parseOrNull(value: String?): Label? =
       try {
@@ -132,14 +134,11 @@ sealed interface Label : TargetPattern {
   }
 }
 
-// cannot be synthetic
-sealed interface BazelLabel : Label
-
 data class ApparentLabel(
   override val repo: Apparent,
   override val packagePath: Package,
   override val target: SingleTarget,
-) : BazelLabel {
+) : Label {
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
 }
 
@@ -148,7 +147,7 @@ data class CanonicalLabel(
   override val repo: Canonical,
   override val packagePath: Package,
   override val target: SingleTarget,
-) : BazelLabel {
+) : Label {
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
 
   companion object {
@@ -158,16 +157,6 @@ data class CanonicalLabel(
       target: SingleTarget,
     ): CanonicalLabel = CanonicalLabel(Canonical(repo), packagePath, target)
   }
-}
-
-/**
- * Synthethic label is a label of a target which is not present in the Bazel target graph.
- */
-data class SyntheticLabel(override val target: SingleTarget) : Label {
-  override val repo: Canonical = Canonical.main
-  override val packagePath: Package = Package(listOf())
-
-  override fun toString(): String = "$target$SYNTHETIC_TAG"
 }
 
 data class AbsoluteTargetPattern(
@@ -193,14 +182,14 @@ data class RelativeTargetPattern(override val packagePath: PackageType, override
     return AbsoluteTargetPattern(base.repo, packagePath, target)
   }
 
-  fun resolve(base: BazelLabel): BazelLabel {
+  fun resolve(base: Label): Label {
     val mergedPath = base.packagePath.pathSegments + this.packagePath.pathSegments
     val packagePath: Package =
       when (this.packagePath) {
         is Package -> Package(mergedPath)
         is AllPackagesBeneath -> error("Cannot resolve a wildcard package $this")
       }
-    val target = this.assumeBazelLabel().target
+    val target = this.assumeLabel().target
     return when (base) {
       is CanonicalLabel -> CanonicalLabel(base.repo, packagePath, target)
       is ApparentLabel -> ApparentLabel(base.repo, packagePath, target)
@@ -229,13 +218,13 @@ sealed interface TargetPattern : Comparable<TargetPattern> {
     }
 
   val isMainWorkspace: Boolean
-    get() = (this as? AbsoluteTargetPattern)?.repo?.isMain == true || this is SyntheticLabel || (this as? BazelLabel)?.repo?.isMain == true
+    get() = (this as? AbsoluteTargetPattern)?.repo?.isMain == true || (this as? Label)?.repo?.isMain == true
 
   val isRelative: Boolean
     get() = this is RelativeTargetPattern
 
   val isSynthetic: Boolean
-    get() = this is SyntheticLabel
+    get() = this is CanonicalLabel && target.targetName.endsWith(SYNTHETIC_TAG)
 
   val isWildcard: Boolean
     get() = target is AllRuleTargetsAndFiles || target is AllRuleTargets || packagePath is AllPackagesBeneath
@@ -310,18 +299,17 @@ sealed interface TargetPattern : Comparable<TargetPattern> {
 
 fun TargetPattern.asRelative(): RelativeTargetPattern? = this as? RelativeTargetPattern
 
-fun TargetPattern.asBazelLabel(): BazelLabel? =
+fun TargetPattern.tryAssumeLabel(): Label? =
   try {
-    assumeBazelLabel()
+    assumeLabel()
   } catch (_: Exception) {
     null
   }
 
-fun TargetPattern.assumeBazelLabel(): BazelLabel =
+fun TargetPattern.assumeLabel(): Label =
   when (this) {
     is ApparentLabel -> this
     is CanonicalLabel -> this
-    is SyntheticLabel -> error("Target pattern $this is not a Bazel label")
     else -> {
       val singlePackagePath =
         when (packagePath) {
@@ -348,12 +336,6 @@ fun TargetPattern.assumeBazelLabel(): BazelLabel =
         is Apparent -> ApparentLabel(repo, singlePackagePath, singleTarget)
       }
     }
-  }
-
-fun TargetPattern.assumeLabel(): Label =
-  when (this) {
-    is SyntheticLabel -> this
-    else -> assumeBazelLabel()
   }
 
 private fun joinPackagePathAndTarget(packagePath: PackageType, target: TargetType) =

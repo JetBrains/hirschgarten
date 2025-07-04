@@ -9,6 +9,5 @@ kt_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
-    ],
+            ],
 )

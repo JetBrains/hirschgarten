@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.server.sync.languages.scala
 
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
-import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
@@ -15,23 +15,23 @@ import java.nio.file.Path
 
 class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<ScalaModule>() {
-  var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
-  var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
+  var scalaSdks: Map<CanonicalLabel, ScalaSdk> = emptyMap()
+  var scalaTestJars: Map<CanonicalLabel, Set<Path>> = emptyMap()
 
-  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     scalaSdks =
       targets
         .associateBy(
-          { it.label() },
+          { it.id },
           ScalaSdkResolver(bazelPathsResolver)::resolveSdk,
         ).filterValuesNotNull()
     scalaTestJars =
       targets
-        .filter { it.hasScalaTargetInfo() }
+        .filter { it.scalaTargetInfo != null }
         .associateBy(
-          { it.label() },
+          { it.id },
           {
-            it.scalaTargetInfo.scalatestClasspathList
+            it.scalaTargetInfo!!.scalatestClasspath
               .map(bazelPathsResolver::resolve)
               .toSet()
           },
@@ -40,17 +40,14 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
 
   private fun <K, V> Map<K, V?>.filterValuesNotNull(): Map<K, V> = filterValues { it != null }.mapValues { it.value!! }
 
-  override fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): ScalaModule? {
-    if (!targetInfo.hasScalaTargetInfo()) {
-      return null
-    }
-    val scalaTargetInfo = targetInfo.scalaTargetInfo
-    val sdk = scalaSdks[targetInfo.label()] ?: return null
-    val scalacOpts = scalaTargetInfo.scalacOptsList
+  override fun resolveModule(targetInfo: TargetInfo): ScalaModule? {
+    val scalaTargetInfo = targetInfo.scalaTargetInfo ?: return null
+    val sdk = scalaSdks[targetInfo.id] ?: return null
+    val scalacOpts = scalaTargetInfo.scalacOpts
     return ScalaModule(sdk, scalacOpts, javaLanguagePlugin.resolveModule(targetInfo))
   }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
   override fun applyModuleData(moduleData: ScalaModule, buildTarget: RawBuildTarget) {

@@ -2,7 +2,8 @@ package org.jetbrains.bazel.server.model
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
@@ -29,18 +30,18 @@ data class AspectSyncProject(
   override val workspaceRoot: Path,
   override val bazelRelease: BazelRelease,
   val modules: List<Module>,
-  val libraries: Map<Label, Library>,
-  val goLibraries: Map<Label, GoLibrary>,
+  val libraries: Map<CanonicalLabel, Library>,
+  val goLibraries: Map<CanonicalLabel, GoLibrary>,
   val nonModuleTargets: List<NonModuleTarget>, // targets that should be displayed in the project view but are neither modules nor libraries
   override val repoMapping: RepoMapping = RepoMappingDisabled,
   override val workspaceContext: WorkspaceContext,
   val workspaceName: String,
   val hasError: Boolean = false,
-  val targets: Map<Label, BspTargetInfo.TargetInfo>,
+  val targets: Map<CanonicalLabel, TargetInfo>,
 ) : Project {
-  private val moduleMap: Map<Label, Module> = modules.associateBy(Module::label)
+  private val moduleMap: Map<CanonicalLabel, Module> = modules.associateBy(Module::label)
 
-  fun findModule(label: Label): Module? = moduleMap[label]
+  fun findModule(label: CanonicalLabel): Module? = moduleMap[label]
 
   operator fun plus(project: AspectSyncProject): AspectSyncProject {
     if (workspaceRoot != project.workspaceRoot) {

@@ -1,14 +1,15 @@
 package org.jetbrains.bazel.server.model
 
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
 data class Module(
-  val label: Label,
+  val label: CanonicalLabel,
   val isSynthetic: Boolean,
-  val directDependencies: List<Label>,
+  val directDependencies: List<CanonicalLabel>,
   val languages: Set<LanguageClass>,
   val tags: Set<Tag>,
   val baseDirectory: Path,

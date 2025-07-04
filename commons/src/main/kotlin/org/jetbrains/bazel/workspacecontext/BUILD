@@ -7,7 +7,7 @@ kt_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/executioncontext/api",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "@maven//:commons_io_commons_io",
         "@maven//:org_slf4j_slf4j_api",
     ],

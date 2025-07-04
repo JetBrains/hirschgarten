@@ -1,20 +1,19 @@
 package org.jetbrains.bazel.server.sync.languages.thrift
 
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
-import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<ThriftModule>() {
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> {
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> {
     val transitiveSourceDeps =
       dependencyGraph
-        .transitiveDependenciesWithoutRootTargets(targetInfo.label())
+        .transitiveDependenciesWithoutRootTargets(targetInfo.id)
         .filter(::isThriftLibrary)
-        .flatMap(BspTargetInfo.TargetInfo::getSourcesList)
+        .flatMap(TargetInfo::sources)
         .map(bazelPathsResolver::resolve)
         .toHashSet()
 
@@ -23,19 +22,16 @@ class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
     return transitiveSourceDeps + directSourceDeps
   }
 
-  private fun sourcesFromJvmTargetInfo(targetInfo: BspTargetInfo.TargetInfo): HashSet<Path> =
-    if (targetInfo.hasJvmTargetInfo()) {
+  private fun sourcesFromJvmTargetInfo(targetInfo: TargetInfo): HashSet<Path> =
       targetInfo
         .jvmTargetInfo
-        .jarsList
-        .flatMap { it.sourceJarsList }
-        .map(bazelPathsResolver::resolve)
-        .toHashSet()
-    } else {
-      HashSet()
-    }
+        ?.jars
+        ?.flatMap { it.sourceJars}
+        ?.map(bazelPathsResolver::resolve)
+        ?.toHashSet()
+        ?: hashSetOf()
 
-  private fun isThriftLibrary(target: BspTargetInfo.TargetInfo): Boolean = target.kind == THRIFT_LIBRARY_RULE_NAME
+  private fun isThriftLibrary(target: TargetInfo): Boolean = target.kind == THRIFT_LIBRARY_RULE_NAME
 
   override fun applyModuleData(moduleData: ThriftModule, buildTarget: RawBuildTarget) {}
 

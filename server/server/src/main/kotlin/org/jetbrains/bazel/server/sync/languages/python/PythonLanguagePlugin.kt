@@ -1,10 +1,9 @@
 package org.jetbrains.bazel.server.sync.languages.python
 
-import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
-import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.info.FileLocation
+import org.jetbrains.bazel.info.PythonTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
-import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -28,23 +27,20 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   private fun calculateDefaultTargetInfo(targets: Sequence<TargetInfo>): PythonTargetInfo? =
     targets
-      .filter(::hasPythonInterpreter)
+      .filter { it.pythonTargetInfo?.interpreter != null }
       .firstOrNull()
       ?.pythonTargetInfo
-
-  private fun hasPythonInterpreter(targetInfo: TargetInfo): Boolean =
-    targetInfo.hasPythonTargetInfo() && targetInfo.pythonTargetInfo.hasInterpreter()
 
   override fun resolveModule(targetInfo: TargetInfo): PythonModule? =
     targetInfo.pythonTargetInfo?.let { pythonTargetInfo ->
       PythonModule(
         calculateInterpreterPath(interpreter = pythonTargetInfo.interpreter) ?: defaultInterpreter,
         pythonTargetInfo.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
-        pythonTargetInfo.importsList,
+        pythonTargetInfo.imports,
         pythonTargetInfo.isCodeGenerator,
         generatedSources =
-          pythonTargetInfo.generatedSourcesList
-            .mapNotNull { bazelPathsResolver.resolve(it) },
+          pythonTargetInfo.generatedSources
+            .map { bazelPathsResolver.resolve(it) },
       )
     }
 
@@ -66,9 +62,9 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   }
 
   override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
-    if (targetInfo.hasPythonTargetInfo()) {
+    if (targetInfo.pythonTargetInfo != null) {
       dependencyGraph
-        .transitiveDependenciesWithoutRootTargets(targetInfo.label())
+        .transitiveDependenciesWithoutRootTargets(targetInfo.id)
         .flatMap(::getExternalSources)
         .map(::calculateExternalSourcePath)
         .toSet()
@@ -77,7 +73,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
     }
 
   private fun getExternalSources(targetInfo: TargetInfo): List<FileLocation> =
-    targetInfo.sourcesList.mapNotNull { it.takeIf { it.isExternal } }
+    targetInfo.sources.mapNotNull { it.takeIf { it.isExternal } }
 
   private fun calculateExternalSourcePath(externalSource: FileLocation): Path {
     val path = bazelPathsResolver.resolve(externalSource)

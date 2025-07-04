@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.sync.languages.kotlin
 
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.KotlinTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
@@ -33,36 +34,34 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
     return kotlinBuildTarget
   }
 
-  override fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): KotlinModule? {
-    if (!targetInfo.hasKotlinTargetInfo()) return null
-
-    val kotlinTargetInfo = targetInfo.kotlinTargetInfo
+  override fun resolveModule(targetInfo: TargetInfo): KotlinModule? {
+    val kotlinTargetInfo = targetInfo.kotlinTargetInfo ?: return null
 
     return KotlinModule(
       languageVersion = kotlinTargetInfo.languageVersion,
       apiVersion = kotlinTargetInfo.apiVersion,
-      associates = kotlinTargetInfo.associatesList.map { Label.parse(it) },
+      associates = kotlinTargetInfo.associates,
       kotlincOptions = kotlinTargetInfo.toKotlincOptArguments(),
       javaModule = javaLanguagePlugin.resolveModule(targetInfo),
     )
   }
 
-  private fun BspTargetInfo.KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
+  private fun KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOpts + additionalKotlinOpts()
 
-  private fun BspTargetInfo.KotlinTargetInfo.additionalKotlinOpts(): List<String> =
+  private fun KotlinTargetInfo.additionalKotlinOpts(): List<String> =
     toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
 
-  private fun BspTargetInfo.KotlinTargetInfo.toKotlincPluginOptionArguments(): List<String> =
-    kotlincPluginInfosList
-      .flatMap { it.kotlincPluginOptionsList }
+  private fun KotlinTargetInfo.toKotlincPluginOptionArguments(): List<String> =
+    kotlincPluginInfos
+      .flatMap { it.kotlincPluginOptions }
       .flatMap { listOf("-P", "plugin:${it.pluginId}:${it.optionValue}") }
 
-  private fun BspTargetInfo.KotlinTargetInfo.toKotlincPluginClasspathArguments(): List<String> =
-    kotlincPluginInfosList
-      .flatMap { it.pluginJarsList }
+  private fun KotlinTargetInfo.toKotlincPluginClasspathArguments(): List<String> =
+    kotlincPluginInfos
+      .flatMap { it.pluginJars }
       .map { "-Xplugin=${bazelPathsResolver.resolve(it)}" }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
   override fun calculateJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.calculateJvmPackagePrefix(source)

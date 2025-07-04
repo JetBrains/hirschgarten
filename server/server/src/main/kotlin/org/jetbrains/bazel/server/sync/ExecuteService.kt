@@ -11,6 +11,7 @@ import org.jetbrains.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
@@ -251,7 +252,7 @@ class ExecuteService(
   }
 
   private suspend fun build(
-    bspIds: List<Label>,
+    bspIds: List<CanonicalLabel>,
     originId: String,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
@@ -271,14 +272,14 @@ class ExecuteService(
     }
   }
 
-  private suspend fun getAdditionalBuildTargets(bspIds: List<Label>): List<Label> =
+  private suspend fun getAdditionalBuildTargets(bspIds: List<CanonicalLabel>): List<CanonicalLabel> =
     if (workspaceContextProvider.currentFeatureFlags().isAndroidSupportEnabled) {
       additionalBuildTargetsProvider.getAdditionalBuildTargets(bspIds)
     } else {
       emptyList()
     }
 
-  private suspend fun selectModules(targets: List<Label>): List<Module> {
+  private suspend fun selectModules(targets: List<CanonicalLabel>): List<Module> {
     val project = projectProvider.get() as? AspectSyncProject ?: return emptyList()
     val modules = BspMappings.getModules(project, targets)
     val ignoreManualTag = targets.size == 1

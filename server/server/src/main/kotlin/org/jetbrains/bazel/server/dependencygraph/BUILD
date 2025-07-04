@@ -8,8 +8,9 @@ kt_library(
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/label",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/info",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/info",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
+                "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],
 )

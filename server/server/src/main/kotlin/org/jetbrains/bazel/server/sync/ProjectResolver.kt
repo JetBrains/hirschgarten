@@ -132,29 +132,7 @@ class ProjectResolver(
           "Parsing aspect outputs",
         ) {
           targetInfoReader
-            .readTargetMapFromAspectOutputs(aspectOutputs)
-            .map { (k, v) ->
-              // TODO: make sure we canonicalize everything
-              //  (https://youtrack.jetbrains.com/issue/BAZEL-1597/Make-sure-all-labels-in-the-server-are-canonicalized)
-              //  also, this can be done in a more efficient way
-              //  maybe we can do it in the aspect with some flag or something
-              val label = k.canonicalize(repoMapping)
-              label to
-                v
-                  .toBuilder()
-                  .apply {
-                    id = label.toString()
-                    val canonicalizedDependencies =
-                      dependenciesBuilderList.map {
-                        it
-                          .apply {
-                            id = Label.parse(it.id).canonicalize(repoMapping).toString()
-                          }.build()
-                      }
-                    clearDependencies()
-                    addAllDependencies(canonicalizedDependencies)
-                  }.build()
-            }.toMap()
+            .readTargetMapFromAspectOutputs(aspectOutputs, repoMapping)
         }
       // resolve root targets (expand wildcards)
       val rootTargets = buildAspectResult.bepOutput.rootTargets()

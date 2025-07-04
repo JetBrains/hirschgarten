@@ -3,8 +3,8 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.info.TargetInfo
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.ui.console.withSubtask
@@ -47,7 +47,7 @@ interface ProjectSyncHook {
     val diff: AllProjectStructuresDiff,
     val taskId: String,
     val progressReporter: SequentialProgressReporter,
-    val buildTargets: Map<Label, BspTargetInfo.TargetInfo>,
+    val buildTargets: Map<CanonicalLabel, TargetInfo>,
   )
 }
 

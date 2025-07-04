@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.BspMappings
@@ -12,7 +13,7 @@ import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMer
  * we still have to pass the dependent Kotlin target explicitly during build (and not just the merged target).
  */
 class AdditionalAndroidBuildTargetsProvider(private val projectProvider: ProjectProvider) {
-  suspend fun getAdditionalBuildTargets(targets: List<Label>): List<Label> {
+  suspend fun getAdditionalBuildTargets(targets: List<CanonicalLabel>): List<CanonicalLabel> {
     val project = projectProvider.get() as? AspectSyncProject ?: return emptyList()
     val modules = BspMappings.getModules(project, targets)
     return modules

@@ -24,7 +24,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import java.util.Collections
 
 /**
@@ -38,7 +38,7 @@ interface TargetKindProvider {
   /** A set of rule names known at compile time.  */
   val targetKinds: Set<TargetKind>
 
-  val targetKindHeuristics: (BspTargetInfo.TargetInfo) -> TargetKind?
+  val targetKindHeuristics: (TargetInfo) -> TargetKind?
     /**
      * A heuristic to identify additional target kinds at runtime which aren't known up-front. For
      * example, any rule name starting with 'kt_jvm_' might be parsed as a kotlin rule of unknown

@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.sync.languages.java
 
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -36,24 +36,13 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
   private fun pickAnyCandidate(candidates: Sequence<JdkCandidate>): JdkCandidate? = candidates.firstOrNull()
 
   private fun resolveJdkData(targetInfo: TargetInfo): JdkCandidateData? {
-    val hasRuntimeJavaHome =
-      targetInfo.hasJavaRuntimeInfo() &&
-        targetInfo.javaRuntimeInfo.hasJavaHome()
-    val hasToolchainJavaHome =
-      targetInfo.hasJavaToolchainInfo() &&
-        targetInfo.javaToolchainInfo.hasJavaHome()
-
     val javaHomeFile =
-      if (hasRuntimeJavaHome) {
-        targetInfo.javaRuntimeInfo.javaHome
-      } else if (hasToolchainJavaHome) {
-        targetInfo.javaToolchainInfo.javaHome
-      } else {
-        null
-      }
+        targetInfo.javaRuntimeInfo?.javaHome ?:
+        targetInfo.javaToolchainInfo?.javaHome
+
     val javaHome = javaHomeFile?.let { bazelPathsResolver.resolve(it) }
 
-    return JdkCandidateData(hasRuntimeJavaHome, javaHome)
+    return JdkCandidateData(targetInfo.javaRuntimeInfo?.javaHome != null, javaHome)
       .takeIf { javaHome != null }
   }
 

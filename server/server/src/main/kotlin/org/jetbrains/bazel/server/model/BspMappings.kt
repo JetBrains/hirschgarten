@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.model
 
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTargetTag
 
@@ -17,5 +18,5 @@ object BspMappings {
       Tag.IDE_LOW_SHARED_SOURCES_PRIORITY -> null
     }
 
-  fun getModules(project: AspectSyncProject, targets: List<Label>): Set<Module> = targets.mapNotNull(project::findModule).toSet()
+  fun getModules(project: AspectSyncProject, targets: List<CanonicalLabel>): Set<Module> = targets.mapNotNull(project::findModule).toSet()
 }

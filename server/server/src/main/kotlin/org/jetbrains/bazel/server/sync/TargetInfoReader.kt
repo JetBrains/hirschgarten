@@ -5,7 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.info.TargetInfo
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import java.io.IOException
@@ -13,7 +14,7 @@ import java.nio.file.Path
 import kotlin.io.path.reader
 
 class TargetInfoReader(private val bspClientLogger: BspClientLogger) {
-  suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
+  suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<CanonicalLabel, TargetInfo> =
     withContext(Dispatchers.Default) {
       files.map { file -> async { readFromFile(file) } }.awaitAll()
     }.asSequence()

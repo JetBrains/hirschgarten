@@ -5,6 +5,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
@@ -231,7 +232,7 @@ class BspProjectMapper(
   }
 
   fun dependencySources(project: AspectSyncProject, dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
-    fun getDependencySourcesItem(label: Label): DependencySourcesItem {
+    fun getDependencySourcesItem(label: CanonicalLabel): DependencySourcesItem {
       val sources =
         project
           .findModule(label)
@@ -258,7 +259,7 @@ class BspProjectMapper(
     return JvmTestEnvironmentResult(result)
   }
 
-  private suspend fun getJvmEnvironmentItems(project: AspectSyncProject, targets: List<Label>): List<JvmEnvironmentItem> {
+  private suspend fun getJvmEnvironmentItems(project: AspectSyncProject, targets: List<CanonicalLabel>): List<JvmEnvironmentItem> {
     fun extractJvmEnvironmentItem(module: Module, runtimeClasspath: List<Path>): JvmEnvironmentItem? =
       module.javaModule?.let { javaModule ->
         JvmEnvironmentItem(

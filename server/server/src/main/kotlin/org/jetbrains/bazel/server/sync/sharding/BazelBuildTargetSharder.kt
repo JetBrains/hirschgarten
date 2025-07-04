@@ -20,7 +20,7 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
-import org.jetbrains.bazel.label.asBazelLabel
+import org.jetbrains.bazel.label.tryAssumeLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
@@ -68,7 +68,7 @@ object BazelBuildTargetSharder {
     return when (shardingApproach) {
       ShardingApproach.SHARD_ONLY ->
         ShardedTargetsResult(
-          shardTargetsToBatches(includes.mapNotNull { it.asBazelLabel() }, excludes, getTargetShardSize(context)),
+          shardTargetsToBatches(includes.mapNotNull { it.tryAssumeLabel() }, excludes, getTargetShardSize(context)),
           BazelStatus.SUCCESS,
         )
 

@@ -9,7 +9,6 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.ApparentLabel
 import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
@@ -26,22 +25,19 @@ data class BzlmodRepoMapping(
 
 data object RepoMappingDisabled : RepoMapping
 
-fun Label.canonicalize(repoMapping: RepoMapping): Label =
-  when (repoMapping) {
-    is RepoMappingDisabled -> this
-    is BzlmodRepoMapping -> {
+fun Label.canonicalize(repoMapping: RepoMapping): CanonicalLabel =
       when (this) {
         is ApparentLabel -> {
           val apparentRepoName = this.repoName
-          val canonicalRepoName =
-            repoMapping.apparentRepoNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
+          val canonicalRepoName = when (repoMapping) {
+            is BzlmodRepoMapping -> repoMapping.apparentRepoNameToCanonicalName[apparentRepoName]
+              ?: error("No canonical name found for $this")
+            RepoMappingDisabled -> apparentRepoName
+          }
           CanonicalLabel.fromParts(canonicalRepoName, this.packagePath, this.target)
         }
         is CanonicalLabel -> this
-        is SyntheticLabel -> this
       }
-    }
-  }
 
 val rootRulesToNeededTransitiveRules = mapOf("rules_kotlin" to listOf("rules_java"))
 

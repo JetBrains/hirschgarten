@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.sync.languages.java
 
-import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.info.JvmTargetInfo
+import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
@@ -21,28 +21,28 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
   }
 
   override fun resolveModule(targetInfo: TargetInfo): JavaModule? =
-    targetInfo.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo?.run {
-      if (jarsCount == 0) return@run null
-      val mainOutput = bazelPathsResolver.resolve(getJars(0).getBinaryJars(0))
-      val binaryOutputs = jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
+    targetInfo.jvmTargetInfo?.run {
+      if (jars.isEmpty()) return@run null
+      val mainOutput = bazelPathsResolver.resolve(jars[0].binaryJars[0])
+      val binaryOutputs = jars.flatMap { it.binaryJars }.map(bazelPathsResolver::resolve)
       val mainClass = getMainClass(this)
       val runtimeJdk = jdkResolver.resolveJdk(targetInfo)
 
       JavaModule(
         jdk,
         runtimeJdk,
-        javacOptsList,
-        jvmFlagsList,
+        javacOpts,
+        jvmFlags,
         mainOutput,
         binaryOutputs,
         mainClass,
-        argsList,
+        args,
       )
     }
 
   override fun calculateJvmPackagePrefix(source: Path): String? = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
 
-  private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
+  private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass?.isBlank() == true }
 
   override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     emptySet() // Provided via workspace/libraries

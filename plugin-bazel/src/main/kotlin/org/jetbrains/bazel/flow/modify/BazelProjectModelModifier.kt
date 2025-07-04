@@ -19,7 +19,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.asBazelLabel
+import org.jetbrains.bazel.label.tryAssumeLabel
 import org.jetbrains.bazel.languages.starlark.formatting.formatBuildFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.references.findBuildFile
@@ -86,7 +86,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     val targetRuleLabel =
       from.project.targetUtils
         .getTargetForModuleId(from.name)
-        ?.asBazelLabel() ?: return false
+        ?.tryAssumeLabel() ?: return false
     val targetBuildFile = readAction { findBuildFile(from.project, targetRuleLabel) } ?: return false
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
     val argList = readAction { ruleTarget.getArgumentList() } ?: return false

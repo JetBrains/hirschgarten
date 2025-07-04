@@ -6,7 +6,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.TargetPattern
-import org.jetbrains.bazel.label.assumeBazelLabel
+import org.jetbrains.bazel.label.assumeLabel
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
@@ -171,7 +171,7 @@ class BazelRunnerBuilderTest {
   fun `run without program arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label().assumeBazelLabel())
+        run("in1".label().assumeLabel())
       }
 
     command.buildExecutionDescriptor().command shouldContainExactly
@@ -193,7 +193,7 @@ class BazelRunnerBuilderTest {
   fun `run with program arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label().assumeBazelLabel()) {
+        run("in1".label().assumeLabel()) {
           programArguments.addAll(listOf("hello", "world"))
         }
       }
@@ -220,7 +220,7 @@ class BazelRunnerBuilderTest {
   fun `run doesn't set environment using arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label().assumeBazelLabel()) {
+        run("in1".label().assumeLabel()) {
           environment["key"] = "value"
         }
       }

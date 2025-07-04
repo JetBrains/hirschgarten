@@ -1,14 +1,13 @@
 package org.jetbrains.bazel.server.dependencygraph
 
-import org.jetbrains.bazel.info.BspTargetInfo.Dependency
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.info.TargetInfo
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.label.label
 
-class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private val idToTargetInfo: Map<Label, TargetInfo> = emptyMap()) {
-  private val idToDirectDependenciesIds = mutableMapOf<Label, Set<Label>>()
-  private val idToReverseDependenciesIds = mutableMapOf<Label, HashSet<Label>>()
-  private val idToLazyTransitiveDependencies: Map<Label, Lazy<Set<TargetInfo>>>
+class DependencyGraph(private val rootTargets: Set<CanonicalLabel> = emptySet(), private val idToTargetInfo: Map<CanonicalLabel, TargetInfo> = emptyMap()) {
+  private val idToDirectDependenciesIds = mutableMapOf<CanonicalLabel, Set<CanonicalLabel>>()
+  private val idToReverseDependenciesIds = mutableMapOf<CanonicalLabel, HashSet<CanonicalLabel>>()
+  private val idToLazyTransitiveDependencies: Map<CanonicalLabel, Lazy<Set<TargetInfo>>>
 
   init {
 
@@ -24,9 +23,9 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
     idToLazyTransitiveDependencies = createIdToLazyTransitiveDependenciesMap(idToTargetInfo)
   }
 
-  fun getReverseDependencies(id: Label): Set<Label> = idToReverseDependenciesIds[id].orEmpty()
+  fun getReverseDependencies(id: CanonicalLabel): Set<CanonicalLabel> = idToReverseDependenciesIds[id].orEmpty()
 
-  private fun createIdToLazyTransitiveDependenciesMap(idToTargetInfo: Map<Label, TargetInfo>): Map<Label, Lazy<Set<TargetInfo>>> =
+  private fun createIdToLazyTransitiveDependenciesMap(idToTargetInfo: Map<CanonicalLabel, TargetInfo>): Map<CanonicalLabel, Lazy<Set<TargetInfo>>> =
     idToTargetInfo.mapValues { (_, targetInfo) ->
       calculateLazyTransitiveDependenciesForTarget(targetInfo)
     }
@@ -41,15 +40,15 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
     return strictlyTransitiveDependencies + directDependencies
   }
 
-  private fun calculateStrictlyTransitiveDependencies(dependencies: Set<Label>): Set<TargetInfo> =
+  private fun calculateStrictlyTransitiveDependencies(dependencies: Set<CanonicalLabel>): Set<TargetInfo> =
     dependencies
       .flatMap {
         idToLazyTransitiveDependencies[it]?.value.orEmpty()
       }.toSet()
 
-  private fun idsToTargetInfo(dependencies: Collection<Label>): Set<TargetInfo> = dependencies.mapNotNull(idToTargetInfo::get).toSet()
+  private fun idsToTargetInfo(dependencies: Collection<CanonicalLabel>): Set<TargetInfo> = dependencies.mapNotNull(idToTargetInfo::get).toSet()
 
-  private fun directDependenciesIds(targetIds: Set<Label>) =
+  private fun directDependenciesIds(targetIds: Set<CanonicalLabel>) =
     targetIds
       .flatMap {
         idToDirectDependenciesIds[it].orEmpty()
@@ -59,8 +58,8 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
 
   fun allTargetsAtDepth(
     depth: Int,
-    targets: Set<Label>,
-    isExternalTarget: (Label) -> Boolean,
+    targets: Set<CanonicalLabel>,
+    isExternalTarget: (CanonicalLabel) -> Boolean,
   ): TargetsAtDepth {
     if (depth < 0) {
       return TargetsAtDepth(
@@ -70,7 +69,7 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
     }
 
     var currentDepth = depth
-    val searched = mutableSetOf<Label>()
+    val searched = mutableSetOf<CanonicalLabel>()
     var currentTargets = targets
 
     while (currentDepth >= 0) {
@@ -100,7 +99,7 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
     )
   }
 
-  fun transitiveDependenciesWithoutRootTargets(targetId: Label): Set<TargetInfo> =
+  fun transitiveDependenciesWithoutRootTargets(targetId: CanonicalLabel): Set<TargetInfo> =
     idToTargetInfo[targetId]
       ?.let(::getDependencies)
       .orEmpty()
@@ -108,15 +107,13 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
       .flatMap(::collectTransitiveDependenciesAndAddTarget)
       .toSet()
 
-  private fun getDependencies(target: TargetInfo): Set<Label> =
-    target.dependenciesList
-      .map(Dependency::getId)
-      .map(Label::parse)
+  private fun getDependencies(target: TargetInfo): Set<CanonicalLabel> =
+    target.dependencies.map {it.id}
       .toSet()
 
-  private fun isNotARootTarget(targetId: Label): Boolean = !rootTargets.contains(targetId)
+  private fun isNotARootTarget(targetId: CanonicalLabel): Boolean = !rootTargets.contains(targetId)
 
-  private fun collectTransitiveDependenciesAndAddTarget(targetId: Label): Set<TargetInfo> {
+  private fun collectTransitiveDependenciesAndAddTarget(targetId: CanonicalLabel): Set<TargetInfo> {
     val target = idToTargetInfo[targetId]?.let(::setOf).orEmpty()
     val dependencies =
       idToLazyTransitiveDependencies[targetId]
@@ -128,10 +125,10 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
     return dependencies + target
   }
 
-  fun filterUsedLibraries(libraries: Map<Label, TargetInfo>, targets: Sequence<TargetInfo>): Map<Label, TargetInfo> {
-    val visited = hashSetOf<Label>()
-    val queue = ArrayDeque<Label>()
-    targets.map { it.label() }.forEach {
+  fun filterUsedLibraries(libraries: Map<CanonicalLabel, TargetInfo>, targets: Sequence<TargetInfo>): Map<CanonicalLabel, TargetInfo> {
+    val visited = hashSetOf<CanonicalLabel>()
+    val queue = ArrayDeque<CanonicalLabel>()
+    targets.map { it.id }.forEach {
       queue.addLast(it)
       visited.add(it)
     }
