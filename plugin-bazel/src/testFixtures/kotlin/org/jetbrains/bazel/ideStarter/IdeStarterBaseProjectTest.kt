@@ -12,6 +12,7 @@ import com.intellij.driver.sdk.waitForCodeAnalysis
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.IdeInfo
@@ -208,6 +209,15 @@ abstract class IdeStarterBaseProjectTest {
       configureProjectBeforeUse = ::configureProjectBeforeUse,
     )
   }
+}
+
+/**
+ * Builds a CommandChain with [builder] and executes it immediately.
+ * Replaces clunky construct like `execute(CommandChain().goto(3, 7))`
+ * ```
+ */
+inline fun Driver.execute(builder: CommandChain.() -> Unit) {
+  this.execute(CommandChain().apply(builder))
 }
 
 fun <T : CommandChain> T.waitForBazelSync(): T {

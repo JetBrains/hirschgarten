@@ -29,6 +29,26 @@ register_toolchains(
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "8.11.0")
 bazel_dep(name = "rules_jvm_external", version = "6.7")
+bazel_dep(name = "aspect_rules_js", version = "2.3.8")
+
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
+npm.npm_translate_lock(
+    name = "npm",
+    npmrc = "//:.npmrc",
+    pnpm_lock = "//:pnpm-lock.yaml",
+    public_hoist_packages = {
+        "typescript-eslint": [""],
+    },
+    update_pnpm_lock = True,
+    verify_node_modules_ignored = "//:.bazelignore",
+)
+use_repo(npm, "npm")
+
+pnpm = use_extension("@aspect_rules_js//npm:extensions.bzl", "pnpm")
+
+# Allows developers to use the matching pnpm version, for example:
+# bazel run -- @pnpm --dir /home/runner/work/rules_js/rules_js install
+use_repo(pnpm, "pnpm")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
@@ -186,7 +206,7 @@ single_version_override(
     patches = [
         "tools/format/use-ktlint.patch",
     ],
-    version = "1.3.4",
+    version = "1.4.4",
 )
 
 http_jar(
@@ -482,9 +502,9 @@ http_archive(
 
 # SDK 252
 
-SDK_252_PLUGIN_REPOSITORY_VERSION = "252.23309.22"
+SDK_252_PLUGIN_REPOSITORY_VERSION = "252.23591.19"
 
-SDK_252_INTELLIJ_REPOSITORY_VERSION = "252.23309.22-EAP-SNAPSHOT"
+SDK_252_INTELLIJ_REPOSITORY_VERSION = "252.23591.19-EAP-SNAPSHOT"
 
 SDK_252_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
 
@@ -494,7 +514,7 @@ SDK_252_CLION_REPOSITORY = "snapshots"  # releases or snapshots
 
 IC_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-IC_252_SHA = "39c3fad03f74bf24d4dd485d050f6dbb4f37bf719df7d2887837cecf9127fd46"
+IC_252_SHA = "c4bd649015c6d41f60bcb17f88eab30849b4aa3c097054746638b62ea3065017"
 
 http_archive(
     name = "intellij_ce_2025_2",
@@ -505,7 +525,7 @@ http_archive(
 
 IC_252_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-IC_252_SOURCES_SHA = "589924a8f7aa69046dc37122db71268e564ac4d2e5e6d21fa38c4c93280c26a8"
+IC_252_SOURCES_SHA = "350a4672f9f1daa8456f6dd4c5243295f1452ff52d6f12c98d460e51fd21e56f"
 
 http_jar(
     name = "intellij_ce_2025_2_sources",
@@ -515,7 +535,7 @@ http_jar(
 
 DEVKIT_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_252_SHA = "66c5649827f0e946edfc6a10ede1305b2ab989c4d9c9d60d5a00bfb976b0886b"
+DEVKIT_252_SHA = "fbb69bcd028f1e2d1491c6aa157cfe709a67fb3811954e8251dec32f26a27774"
 
 http_archive(
     name = "devkit_2025_2",
@@ -526,7 +546,7 @@ http_archive(
 
 PYTHON_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_252_SHA = "86b07d9337f924119e90cfc8cd4ca24f486915c2573d03fd56e18556ce596e0c"
+PYTHON_PLUGIN_252_SHA = "8ed1e8236393369e949a781cb760a79436f12e04a89c9b0a2c9ad24227e44f06"
 
 http_archive(
     name = "python_2025_2",
@@ -537,7 +557,7 @@ http_archive(
 
 GO_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_252_SHA = "1fd34c0642ab8d2eb40ae376cd23a5cadcd8729e1e9bcfaef278e1c61918eec6"
+GO_PLUGIN_252_SHA = "32d6c16b8b130227619a927c6ddeea4e1c4c679337e366b3875ff03daf8d697b"
 
 http_archive(
     name = "go_2025_2",
@@ -559,7 +579,7 @@ http_archive(
 
 ANDROID_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-ANDROID_PLUGIN_252_SHA = "ed2b860197c407702e293908341dbdc71897e1eae8758ddb0446752a83b0b602"
+ANDROID_PLUGIN_252_SHA = "74b8fd36ee4e7248a1dfd361ffd7f6f0336b0744998a0b5349ca11573060ec70"
 
 http_archive(
     name = "android_2025_2",
@@ -570,7 +590,7 @@ http_archive(
 
 PERFORMANCE_PLUGIN_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-PERFORMANCE_PLUGIN_252_SHA = "5ea935425476aef17036fac1c529dbecf7e87ae1149d525f00fd5af3a0e43188"
+PERFORMANCE_PLUGIN_252_SHA = "ab6109a42a66b70aadae1c82059ea5256dfd55d77548f3a3831ebc9ca50c02e1"
 
 http_jar(
     name = "performance_2025_2",
@@ -580,7 +600,7 @@ http_jar(
 
 CODE_WITH_ME_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_252_SHA = "4127ca34c157ac28ce03bdc7f7110f36c7a8f143d622ac99d3a48ed6164bd3e1"
+CODE_WITH_ME_252_SHA = "ec035988c916e666aab20e60583511778a39391abd21ba7902710ddcef33de32"
 
 http_jar(
     name = "code_with_me_2025_2",
@@ -611,7 +631,7 @@ http_jar(
 # From 252 python plugin requires toml plugin to be loaded
 TOML_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.toml.lang/%s/org.toml.lang-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-TOML_PLUGIN_252_SHA = "f0385862e011fe50a3bcb85ebdd29f63ac7453814c3389bd4fc4162453042322"
+TOML_PLUGIN_252_SHA = "a393b56172bad8ed80f63b830e0d07fccc466c174a4a9601aff67b456b8bf746"
 
 _TOML_BUILD_FILE = """
 java_import(

@@ -225,7 +225,8 @@ internal class TargetInfoManager(
   fun getTotalFileCount(): Int = fileToTarget.size
 
   fun close() {
-    store.close(300)
+    // close without compaction - close as fast as possible
+    store.close()
   }
 }
 

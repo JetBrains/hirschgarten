@@ -1,5 +1,5 @@
 load("@rules_java//java:java_binary.bzl", "java_binary")
-load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
+load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION", "UNTIL_VERSION")
 load(
     "//rules_intellij/build_defs:build_defs.bzl",
     "intellij_plugin",
@@ -31,6 +31,8 @@ stamped_plugin_xml(
     changelog_file = "CHANGELOG.md",
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
     stamp_since_build = True,
+    stamp_until_build = True,
+    until_build_numbers = {PLATFORM_VERSION: UNTIL_VERSION},
     version = INTELLIJ_BAZEL_VERSION,
 )
 
