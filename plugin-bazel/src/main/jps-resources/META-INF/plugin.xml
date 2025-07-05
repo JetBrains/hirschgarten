@@ -356,11 +356,6 @@
       description="Whether the Bazel Query tab should be enabled in tool window (where target tree is)"
       key="bazel.query.tab.enabled"
     />
-    <registryKey
-      defaultValue="true"
-      description="Whether the 'Jump to BUILD file' action should try to find the corresponding definition inside the file by using a longest prefix heuristic on the 'name' attribute"
-      key="bazel.use.longest.prefix.heuristic"
-    />
 
     <!--Restart required here to clear cache-->
     <registryKey
