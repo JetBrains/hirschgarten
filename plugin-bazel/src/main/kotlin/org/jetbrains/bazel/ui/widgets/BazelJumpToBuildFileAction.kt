@@ -8,6 +8,7 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiElement
+import com.intellij.util.concurrency.annotations.RequiresReadLock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
@@ -51,20 +52,22 @@ class BazelJumpToBuildFileAction(private val target: Label?) :
 }
 
 suspend fun jumpToBuildFile(project: Project, target: Label) {
-  val buildFile = readAction {
-    resolveLabel(project, target)
+  val definition = readAction {
+    findDefinition(project, target)
   } ?: return
-
-  val definition = if (buildFile is StarlarkFile && Registry.`is`("bazel.use.longest.prefix.heuristic")) {
-    findDefinitionByLongestPrefix(buildFile, target) ?: buildFile
-  }
-  else {
-    buildFile
-  }
 
   withContext(Dispatchers.EDT) {
     EditorHelper.openInEditor(definition, true, true)
   }
+}
+
+@RequiresReadLock
+private fun findDefinition(project: Project, target: Label): PsiElement? {
+  val file = resolveLabel(project, target)
+  if (file !is StarlarkFile) return file
+
+  val definition = findDefinitionByLongestPrefix(file, target)
+  return definition ?: file
 }
 
 /**
