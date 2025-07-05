@@ -77,9 +77,19 @@ private fun findDefinition(project: Project, target: Label): PsiElement? {
 private fun findDefinitionByLongestPrefix(file: StarlarkFile, target: Label): PsiElement? {
   val name = target.targetName
 
-  return file.findChildrenByClass(StarlarkExpressionStatement::class.java).maxByOrNull {
-    getCallCommonPrefix(it, name)
+  var candidate: PsiElement? = null
+  var candidateScore = 0
+
+  for (expr in file.findChildrenByClass(StarlarkExpressionStatement::class.java)) {
+    val score = getCallCommonPrefix(expr, name)
+
+    if (score > candidateScore) {
+      candidate = expr
+      candidateScore = score
+    }
   }
+
+  return candidate
 }
 
 private fun getCallCommonPrefix(expr: StarlarkExpressionStatement, value: String): Int {
