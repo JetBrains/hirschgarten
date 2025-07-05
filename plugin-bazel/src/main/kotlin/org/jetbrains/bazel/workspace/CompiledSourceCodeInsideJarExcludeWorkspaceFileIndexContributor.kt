@@ -43,7 +43,9 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
         condition = { virtualFile ->
           if (virtualFile.isDirectory) return@registerExclusionCondition false
           val rootFile = VfsUtilCore.getRootFile(virtualFile)
-          if (virtualFile.getRelativePathInsideJar(rootFile) in relativePathsToExclude) return@registerExclusionCondition true
+          val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
+          val relativePathWithoutNestedClass = removeNestedClass(relativePath)
+          if (relativePathWithoutNestedClass in relativePathsToExclude) return@registerExclusionCondition true
           if (rootFile.url in librariesFromInternalTargetsUrls) {
             return@registerExclusionCondition virtualFile.extension !in ALLOWED_FILE_EXTENSIONS_IN_LIBRARIES_FROM_INTERNAL_TARGETS
           }
@@ -61,4 +63,15 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
 private fun VirtualFile.getRelativePathInsideJar(rootFile: VirtualFile): String {
   val relativePath: String = this.path.substring(rootFile.path.length)
   return StringUtil.trimLeading(relativePath, '/')
+}
+
+/**
+ * example/lib.jar!/Example$1.class -> example/lib.jar!/Example.class
+ */
+private fun removeNestedClass(relativePath: String): String {
+  val dollarIndex = relativePath.indexOf('$')
+  if (dollarIndex == -1) return relativePath
+  val dotIndex = relativePath.indexOf('.', dollarIndex + 1)
+  if (dotIndex == -1) return relativePath
+  return relativePath.substring(0, dollarIndex) + relativePath.substring(dotIndex)
 }
