@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -106,7 +107,7 @@ abstract class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTas
     val success =
       runBlocking {
         val result =
-          withBackgroundProgress(project, "Preparing for debugging go target $target") {
+          withBackgroundProgress(project, BazelPluginBundle.message("go.debug.background.progress.start.title", target)) {
             project.connection.runWithServer { server ->
               server.buildTargetRun(
                 RunParams(
@@ -141,7 +142,7 @@ abstract class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTas
     try {
       text = scriptPath.readText(charset = Charsets.UTF_8)
     } catch (e: IOException) {
-      throw ExecutionException("Could not read script_path: $scriptPath", e)
+      throw ExecutionException(BazelPluginBundle.message("go.before.run.error.invalid.script.path", scriptPath), e)
     }
     val lastLine: String = text.split("\n").last()
     val argsMatcher = ARGS.findAll(lastLine.trim { it <= ' ' })
@@ -155,7 +156,7 @@ abstract class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTas
     if (testScrDir != null) {
       // Format is <wrapper-script> <executable> arg0 arg1 arg2 ... argN "@"
       if (args.size < 3) {
-        throw ExecutionException("Failed to parse args in script_path: $scriptPath")
+        throw ExecutionException(BazelPluginBundle.message("go.before.run.error.parsing.script.failure", scriptPath))
       }
       // Make paths used for runfiles discovery absolute as the working directory is changed below.
       envVars["TEST_SRCDIR"] = workspaceRoot.resolve(testScrDir.groupValues[1]).toString()
@@ -197,7 +198,7 @@ abstract class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTas
     } else {
       // Format is <executable> [arg0 arg1 arg2 ... argN] "@"
       if (args.size < 2) {
-        throw ExecutionException("Failed to parse args in script_path: $scriptPath")
+        throw ExecutionException(BazelPluginBundle.message("go.before.run.error.args.parsing.failure", scriptPath))
       }
       binary = File(args[0])
       workingDir = getWorkingDirectory(workspaceRoot.toFile(), binary)
