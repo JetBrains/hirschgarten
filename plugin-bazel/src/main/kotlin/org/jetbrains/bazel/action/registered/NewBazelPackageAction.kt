@@ -22,6 +22,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
+import org.jetbrains.bazel.config.BazelPluginBundle.message as bundledMessage
 
 class NewBazelPackageAction : DumbAwareAction() {
   override fun update(e: AnActionEvent) {
@@ -34,8 +35,8 @@ class NewBazelPackageAction : DumbAwareAction() {
     }
     presentation.isEnabledAndVisible = true
     val buildSystem: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
-    presentation.text = String.format("%s Package", buildSystem)
-    presentation.description = String.format("Create a new %s package", buildSystem)
+    presentation.text = bundledMessage("action.new.bazel.package.text", buildSystem)
+    presentation.description = bundledMessage("action.new.bazel.package.description", buildSystem)
     presentation.icon = BazelPluginIcons.bazelDirectory
   }
 
@@ -73,7 +74,7 @@ class NewBazelPackageAction : DumbAwareAction() {
 
     val popup =
       NewItemPopupUtil.createNewItemPopup(
-        "New Bazel Package",
+        bundledMessage("widget.new.bazel.package.popup.title"),
         contentPanel,
         nameField,
       )

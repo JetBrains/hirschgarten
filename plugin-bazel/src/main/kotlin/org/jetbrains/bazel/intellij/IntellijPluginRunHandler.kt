@@ -89,7 +89,8 @@ class IntellijPluginRunHandler(private val configuration: BazelRunConfiguration)
         }
 
         // use product-info.json values if found, otherwise fallback to defaults
-        val productInfo = loadProductInfo(ideaJdkHome) ?: throw ExecutionException("IDEA product info is null")
+        val productInfo =
+          loadProductInfo(ideaJdkHome) ?: throw ExecutionException(BazelPluginBundle.message("plugin.runner.idea.product.null"))
         productInfo.getCurrentLaunch().additionalJvmArguments.forEach { item ->
           vm.add(resolveIdeHomeVariable(item, ideaJdkHome))
         }

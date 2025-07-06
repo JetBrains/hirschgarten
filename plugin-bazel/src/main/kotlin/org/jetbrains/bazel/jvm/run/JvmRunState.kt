@@ -6,6 +6,7 @@ import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.util.xmlb.annotations.Attribute
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.state.addEnvironmentFragment
@@ -27,7 +28,7 @@ class JvmRunStateEditor(private val config: BazelRunConfiguration) :
   FragmentedSettingsEditor<JvmRunState>(config.handler?.state as JvmRunState) {
   override fun createFragments(): Collection<SettingsEditorFragment<JvmRunState, *>> =
     SettingsEditorFragmentContainer.fragments {
-      add(CommonParameterFragments.createHeader("Run Configuration"))
+      add(CommonParameterFragments.createHeader(BazelPluginBundle.message("jvm.runner.header")))
       addDebugPortFragment()
       add(bazelParamsFragment())
       add(programArgumentsFragment())

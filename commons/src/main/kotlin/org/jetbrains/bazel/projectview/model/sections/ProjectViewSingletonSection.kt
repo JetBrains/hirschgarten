@@ -82,3 +82,9 @@ data class GazelleTargetSection(override val value: String) : ProjectViewSinglet
     const val SECTION_NAME = "gazelle_target"
   }
 }
+
+data class IndexAllFilesInDirectoriesSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "index_all_files_in_directories"
+  }
+}

@@ -40,21 +40,12 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
       absoluteRoot.resolve(absoluteOrRelativePath)
     }
 
-  fun getPathRootedAt(absoluteRoot: File): Path = getPathRootedAt(absoluteRoot.toPath())
-
-  fun getFileRootedAt(absoluteRoot: File?): File =
-    if (absoluteOrRelativePath.isAbsolute) {
-      absoluteOrRelativePath.toFile()
-    } else {
-      absoluteRoot?.let { File(it, absoluteOrRelativePath.toString()) }
-        ?: absoluteOrRelativePath.toFile()
-    }
-
   companion object {
     /**
      * Returns the relative [ExecutionRootPath] if `root` is an ancestor of `path`
      * otherwise returns null.
      */
+    @JvmStatic
     fun createAncestorRelativePath(root: Path, path: Path): ExecutionRootPath? {
       // We cannot find the relative path between an absolute and relative path
       if (root.isAbsolute != path.isAbsolute) {
@@ -72,6 +63,7 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
       return ExecutionRootPath(relativePath)
     }
 
+    @JvmStatic
     fun createAncestorRelativePath(root: File, path: File): ExecutionRootPath? = createAncestorRelativePath(root.toPath(), path.toPath())
 
     /**
@@ -80,6 +72,7 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
      * @param strict if `false` then this method returns `true` if `possibleParent`
      * equals to `possibleChild`.
      */
+    @JvmStatic
     fun isAncestor(
       possibleParent: ExecutionRootPath,
       possibleChild: ExecutionRootPath,
@@ -97,6 +90,7 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
      * @param strict if `false` then this method returns `true` if `possibleParent`
      * equals to `possibleChild`.
      */
+    @JvmStatic
     fun isAncestor(
       possibleParentPath: String,
       possibleChild: ExecutionRootPath,
@@ -114,6 +108,7 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
      * @param strict if `false` then this method returns `true` if `possibleParent`
      * equals to `possibleChild`.
      */
+    @JvmStatic
     fun isAncestor(
       possibleParent: ExecutionRootPath,
       possibleChildPath: String,
@@ -131,6 +126,7 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
      * @param strict if `false` then this method returns `true` if `possibleParent`
      * equals to `possibleChild`.
      */
+    @JvmStatic
     fun isAncestor(
       possibleParentPath: String,
       possibleChildPath: String,

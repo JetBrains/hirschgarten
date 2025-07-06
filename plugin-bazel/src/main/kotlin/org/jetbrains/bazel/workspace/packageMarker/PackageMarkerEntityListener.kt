@@ -1,15 +1,15 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package org.jetbrains.bazel.workspace.packageMarker
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
-import com.intellij.workspaceModel.core.fileIndex.impl.ModuleSourceRootData
+import com.intellij.workspaceModel.core.fileIndex.impl.JvmPackageRootDataInternal
+import com.intellij.workspaceModel.core.fileIndex.impl.ModuleRelatedRootData
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.sdkcompat.findFileSetWithCustomDataCompat
@@ -41,22 +41,16 @@ private class PackageMarkerEntityListener : BulkFileListener {
 
   private fun processEvent(event: VFileCreateEvent, project: Project) {
     val workspaceModelIndex = WorkspaceFileIndex.getInstance(project)
-    val moduleRootData =
-      workspaceModelIndex
-        .findFileSetWithCustomDataCompat(
-          file = event.parent,
-          honorExclusion = true,
-          includeContentSets = true,
-          includeExternalSets = false,
-          includeExternalSourceSets = false,
-          includeCustomKindSets = false,
-          customDataClass = ModuleSourceRootData::class.java,
-        )?.data ?: return
+    if (event.file?.let { file -> findModuleSourceRootData(workspaceModelIndex, file) } != null) {
+      // Already belongs to a module, nothing to do
+      return
+    }
+    val moduleRootData = findModuleSourceRootData(workspaceModelIndex, event.parent) as? JvmPackageRootDataInternal ?: return
     val workspaceModel = project.workspaceModel
     // Update things synchronously as soon as the virtual file is created to be sure that refactorings don't break
     @Suppress("UsagesOfObsoleteApi")
     workspaceModel.updateProjectModel("Add PackageMarkerEntity") { storage ->
-      val moduleEntity = moduleRootData.module.findModuleEntity(storage) ?: return@updateProjectModel
+      val moduleEntity = (moduleRootData as ModuleRelatedRootData).module.findModuleEntity(storage) ?: return@updateProjectModel
       storage.modifyModuleEntity(moduleEntity) {
         this.packageMarkerEntities +=
           PackageMarkerEntity(
@@ -67,4 +61,16 @@ private class PackageMarkerEntityListener : BulkFileListener {
       }
     }
   }
+
+  private fun findModuleSourceRootData(workspaceModelIndex: WorkspaceFileIndex, file: VirtualFile): ModuleRelatedRootData? =
+    workspaceModelIndex
+      .findFileSetWithCustomDataCompat(
+        file = file,
+        honorExclusion = true,
+        includeContentSets = true,
+        includeExternalSets = false,
+        includeExternalSourceSets = false,
+        includeCustomKindSets = false,
+        customDataClass = ModuleRelatedRootData::class.java,
+      )?.data
 }

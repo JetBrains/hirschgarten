@@ -34,3 +34,6 @@ tools/mtls/*
 out
 
 .user.bazelrc
+
+.aspect
+node_modules

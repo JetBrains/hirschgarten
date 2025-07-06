@@ -80,16 +80,16 @@ private abstract class BazelFunctionCompletionProvider(val functionNames: Set<St
 }
 
 private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.STARLARK_FUNCTIONS)
+  BazelFunctionCompletionProvider(BazelGlobalFunctions.STARLARK_FUNCTIONS.keys)
 
 private object BazelExtensionFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.EXTENSION_FUNCTIONS)
+  BazelFunctionCompletionProvider(BazelGlobalFunctions.EXTENSION_FUNCTIONS.keys)
 
 private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.BUILD_FUNCTIONS)
+  BazelFunctionCompletionProvider(BazelGlobalFunctions.BUILD_FUNCTIONS.keys)
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.MODULE_FUNCTIONS)
+  BazelFunctionCompletionProvider(BazelGlobalFunctions.MODULE_FUNCTIONS.keys)
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.WORKSPACE_FUNCTIONS)
+  BazelFunctionCompletionProvider(BazelGlobalFunctions.WORKSPACE_FUNCTIONS.keys)

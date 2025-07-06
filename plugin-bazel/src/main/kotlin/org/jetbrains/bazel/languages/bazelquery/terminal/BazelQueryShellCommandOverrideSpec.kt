@@ -7,6 +7,7 @@ import com.intellij.terminal.completion.spec.ShellCommandSpec
 import com.intellij.terminal.completion.spec.ShellCompletionSuggestion
 import com.intellij.terminal.completion.spec.ShellRuntimeContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.bazelquery.completion.TargetCompletionsGenerator
 import org.jetbrains.bazel.languages.bazelquery.documentation.BazelQueryFunctionDocumentationTarget
@@ -35,7 +36,7 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
       if (context.project.isBazelProject) {
         subcommand("query") {
           parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
-          description("Executes a dependency graph query.")
+          description(BazelPluginBundle.message("bazelquery.query.description"))
 
           allOptions(context)
 
@@ -53,7 +54,7 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
 @Suppress("UnstableApiUsage")
 private fun ShellCommandContext.dummyArgs() {
   argument {
-    displayName("option")
+    displayName(BazelPluginBundle.message("bazelquery.query.option.description"))
     isVariadic = true
     isOptional = true
     suggestions(
@@ -67,7 +68,7 @@ private fun ShellCommandContext.dummyArgs() {
 @Suppress("UnstableApiUsage")
 private fun ShellCommandContext.queryCompletion() {
   argument {
-    displayName("query expression")
+    displayName(BazelPluginBundle.message("bazelquery.query.completion.description"))
     val targetPriority = 40 // The greater, the closer to the first place, default is 50
     suggestions(
       ShellRuntimeDataGenerator { context: ShellRuntimeContext ->

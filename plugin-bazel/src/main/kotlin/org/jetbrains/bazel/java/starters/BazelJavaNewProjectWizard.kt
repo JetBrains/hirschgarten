@@ -4,14 +4,13 @@ import com.intellij.ide.projectWizard.generators.AssetsNewProjectWizardStep
 import com.intellij.ide.projectWizard.generators.BuildSystemJavaNewProjectWizard
 import com.intellij.ide.projectWizard.generators.JavaNewProjectWizard.Step
 import com.intellij.ide.starters.local.GeneratorAsset
+import com.intellij.ide.starters.local.GeneratorFile
 import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.ide.wizard.NewProjectWizardStep
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.sdkcompat.StarterWizardCompat
-import org.jetbrains.bazel.sdkcompat.StarterWizardCompat.generatorFile
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.BAZEL_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JUNIT_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.RULES_JAVA_VERSION
@@ -21,7 +20,7 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
   override val name: @NlsContexts.Label String
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
-  override fun isEnabled(context: WizardContext): Boolean = StarterWizardCompat.startersEnabled() && super.isEnabled(context)
+  override fun isEnabled(context: WizardContext): Boolean = super.isEnabled(context)
 
   override fun createStep(parent: Step): NewProjectWizardStep = AssetsStep(parent)
 
@@ -30,13 +29,13 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
     // but it's probably easier and safer to just update and test everything together once in a while
     val generatorAssets: List<GeneratorAsset> =
       listOf(
-        generatorFile(".gitignore", ".bazelbsp/\n.idea/"),
-        generatorFile(".bazelversion", BAZEL_VERSION),
-        generatorFile(Constants.MODULE_BAZEL_FILE_NAME, moduleBazel(context)),
-        generatorFile("src/main/org/example/${Constants.defaultBuildFileName()}", buildBazelMain()),
-        generatorFile("src/main/org/example/Main.java", mainJava()),
-        generatorFile("src/test/org/example/${Constants.defaultBuildFileName()}", buildBazelTest()),
-        generatorFile("src/test/org/example/MainTest.java", testJava()),
+        GeneratorFile(".gitignore", ".bazelbsp/\n.idea/"),
+        GeneratorFile(".bazelversion", BAZEL_VERSION),
+        GeneratorFile(Constants.MODULE_BAZEL_FILE_NAME, moduleBazel(context)),
+        GeneratorFile("src/main/org/example/${Constants.defaultBuildFileName()}", buildBazelMain()),
+        GeneratorFile("src/main/org/example/Main.java", mainJava()),
+        GeneratorFile("src/test/org/example/${Constants.defaultBuildFileName()}", buildBazelTest()),
+        GeneratorFile("src/test/org/example/MainTest.java", testJava()),
       )
 
     override fun setupAssets(project: Project) {

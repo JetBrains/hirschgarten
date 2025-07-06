@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.testResultsTree
 
+import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
@@ -11,6 +12,7 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
@@ -40,18 +42,27 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
         .takeScreenshot("startSync")
         .waitForBazelSync()
         .waitForSmartMode()
-        .openFile(fileName)
-        .runSimpleKotlinTest()
-    createContext().runIdeWithDriver(runTimeout = timeout, commands = commands).useDriverAndCloseIde {
-      ideFrame {
-        waitForIndicators(5.minutes)
-        verifyTestStatus(
-          listOf("2 tests passed", "2 tests total"),
-          listOf("SimpleKotlinTest", "trivial test()", "another trivial test()"),
-        )
-        takeScreenshot("afterOpeningTestResultsTree")
+
+    createContext()
+      .runIdeWithDriver(runTimeout = timeout, commands = commands)
+      .useDriverAndCloseIde {
+        ideFrame {
+          waitForIndicators(5.minutes)
+
+          step("open SimpleKotlinTest.kt and run test") {
+            execute { openFile(fileName) }
+            execute { runSimpleKotlinTest() }
+            takeScreenshot("afterRuningSimpleKotlinTest")
+          }
+          step("Verify test status and results tree") {
+            verifyTestStatus(
+              listOf("2 tests passed", "2 tests total"),
+              listOf("SimpleKotlinTest", "trivial test()", "another trivial test()"),
+            )
+            takeScreenshot("afterOpeningTestResultsTree")
+          }
+        }
       }
-    }
   }
 
   private fun <T : CommandChain> T.runSimpleKotlinTest(): T {
