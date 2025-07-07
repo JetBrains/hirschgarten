@@ -58,6 +58,7 @@ sealed interface ProjectViewSection {
         "android_min_sdk" to Scalar.Int.META,
         "bazel_binary" to Scalar.Path.META,
         "build_flags" to List.Identifiers.META,
+        "test_flags" to List.Identifiers.META,
         "derive_targets_from_directories" to Scalar.Boolean.META,
         "directories" to List.Paths.META,
         "enable_native_android_rules" to Scalar.Boolean.META,
@@ -73,6 +74,8 @@ sealed interface ProjectViewSection {
         "target_shard_size" to Scalar.Int.META,
         "targets" to List.Paths.META,
         "import_run_configurations" to List.Identifiers.META,
+        "workspace_type" to Scalar.Identifier.META,
+        "additional_languages" to List.Identifiers.META,
       )
   }
 }

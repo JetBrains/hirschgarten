@@ -49,7 +49,8 @@ class ProjectViewAnnotator : Annotator {
       is ProjectViewPsiImport -> {
         ProjectViewImport.KEYWORD_MAP[element.getKeyword()]?.let { import ->
           import.parse(element.getPath()).onFailure {
-            createErrorAnnotation(holder, it.message ?: "", element.range)
+            val message = it.message
+            if (!message.isNullOrEmpty()) createErrorAnnotation(holder, message, element.range)
           }
         }
       }
