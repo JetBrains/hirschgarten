@@ -589,6 +589,10 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesArgumentCompletionContributor"
       language="Starlark"
     />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionCompletionContributor"
+      language="ProjectView"
+    />
     <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider" />
     <extendWordSelectionHandler
       implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"
