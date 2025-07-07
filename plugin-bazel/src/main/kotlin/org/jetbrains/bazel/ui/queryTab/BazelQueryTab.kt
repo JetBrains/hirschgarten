@@ -13,6 +13,9 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.fileChooser.FileChooser
@@ -39,6 +42,8 @@ import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.event.InputEvent
+import java.awt.event.KeyEvent
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
@@ -47,6 +52,7 @@ import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JRadioButton
+import javax.swing.KeyStroke
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 
@@ -97,10 +103,25 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   // Bazel Runner
   private val queryEvaluator = QueryEvaluator(project.baseDir)
 
+  private class EvaluateQueryAction(private val tab: BazelQueryTab) : AnAction() {
+    override fun actionPerformed(e: AnActionEvent) {
+      tab.evaluate()
+    }
+  }
+
   // UI elements
-  private val editorTextField = LanguageTextField(BazelQueryLanguage, project, "")
+  private val editorTextField = LanguageTextField(BazelQueryLanguage, project, "").apply {
+    setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.query"))
+    val action = EvaluateQueryAction(this@BazelQueryTab)
+    action.registerCustomShortcutSet(
+      CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK)),
+      this
+    )
+  }
   private val directoryField = JBTextField().apply { isEditable = false }
-  private val flagTextField = LanguageTextField(BazelQueryFlagsLanguage, project, "")
+  private val flagTextField = LanguageTextField(BazelQueryFlagsLanguage, project, "").apply {
+    setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.flags"))
+  }
   private val buttonsPanel =
     JPanel().apply {
       layout = BoxLayout(this, BoxLayout.X_AXIS)
@@ -116,6 +137,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   private val bazelFilter = BazelBuildTargetConsoleFilter(project)
   private val resultField: ConsoleView =
     ConsoleViewImpl(project, false).apply {
+
     }
 
   init {
