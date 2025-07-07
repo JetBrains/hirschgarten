@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelProjectProperties
@@ -81,8 +82,8 @@ private class BazelAllTargetsWidgetFactory :
           windowPanel.setContent(
             if (FeatureFlagsProvider.getFeatureFlags(project).isBazelQueryTabEnabled) {
               JBTabbedPane().apply {
-                addTab("Loaded Targets", panel)
-                addTab("Bazel Query", BazelQueryTab(project))
+                addTab(BazelPluginBundle.message("bazel.toolwindow.tab.targets"), panel)
+                addTab(BazelPluginBundle.message("bazel.toolwindow.tab.query"), BazelQueryTab(project))
               }
             } else {
               panel

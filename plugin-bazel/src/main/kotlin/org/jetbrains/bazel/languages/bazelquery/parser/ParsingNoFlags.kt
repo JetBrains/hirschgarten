@@ -85,7 +85,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
     parseExpr(BazelQueryTokenTypes.WHITE_SPACE)
 
     while (!eof()) {
-      utils.advanceError("Unexpected token")
+      utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token"))
     }
 
     prompt.done(root)
@@ -136,11 +136,11 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
         if (utils.atToken(queryQuotes)) return queryQuotes
         utils.expectToken(BazelQueryTokenTypes.LEFT_PAREN)
         if (!utils.matchAnyToken(getAvailableWordsSet(queryQuotes))) {
-          utils.advanceError("expected target pattern as an argument of set expression")
+          utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.target"))
         }
         while (!utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN) && !utils.atToken(queryQuotes) && !eof()) {
           if (!utils.matchAnyToken(getAvailableWordsSet(queryQuotes))) {
-            utils.advanceError("expected target pattern as an argument of set expression")
+            utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.target"))
           }
         }
         if (!utils.matchToken(
@@ -158,11 +158,13 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       utils.atToken(BazelQueryTokenTypes.UNION) ||
         utils.atToken(BazelQueryTokenTypes.EXCEPT) ||
         utils.atToken(BazelQueryTokenTypes.INTERSECT) ->
-        utils.advanceError("unexpected token: infix operator at the beginning of expression")
+        utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token.infix.operator"))
 
-      utils.atToken(BazelQueryTokenTypes.INTEGER) -> utils.advanceError("unexpected token: <integer>")
+      utils.atToken(BazelQueryTokenTypes.INTEGER) ->
+        utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token.integer"))
 
-      utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN) -> utils.advanceError("unexpected token: parenthesis mismatch")
+      utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN) ->
+        utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token.paren"))
     }
 
     when {
@@ -196,7 +198,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.expression.got.integer"))
     } else if (utils.atToken(BazelQueryTokenTypes.SQ_PATTERN) ||
         utils.atToken(BazelQueryTokenTypes.DQ_PATTERN)) {
-      utils.advanceError("incorrect word")
+      utils.advanceError(BazelPluginBundle.message("bazelquery.error.incorrect.word"))
     }else {
       queryQuotes = parseExpr(queryQuotes)
     }
@@ -349,7 +351,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
 
     if (eof() || utils.atToken(queryQuotes)) error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
     while (!eof() && !utils.atToken(queryQuotes) && !utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN)) {
-      utils.advanceError("unexpected token")
+      utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token"))
     }
     if (!utils.matchToken(BazelQueryTokenTypes.RIGHT_PAREN)) {
       error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
@@ -368,13 +370,13 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
     if (utils.atToken(BazelQueryTokenTypes.SQ_EMPTY) ||
       utils.atToken(BazelQueryTokenTypes.DQ_EMPTY)
     ) {
-      utils.advanceError("empty quotation")
+      utils.advanceError(BazelPluginBundle.message("bazelquery.error.empty.quotation"))
     } else if (utils.matchToken(BazelQueryTokenTypes.SQ_UNFINISHED) ||
       utils.matchToken(BazelQueryTokenTypes.DQ_UNFINISHED)
     ) {
       error(BazelPluginBundle.message("bazelquery.error.missing.quote"))
     } else if (utils.atToken(BazelQueryTokenTypes.ERR_WORD)) {
-      utils.advanceError("incorrect word")
+      utils.advanceError(BazelPluginBundle.message("bazelquery.error.incorrect.word"))
     } else {
       if (queryQuotes == BazelQueryTokenTypes.WHITE_SPACE) {
         if (utils.atToken(BazelQueryTokenTypes.SQ_WORD)) {
