@@ -10,18 +10,19 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
-import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
@@ -565,6 +566,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should add dependency on dummy module properly`() {
+    if (BazelFeatureFlags.fbsrSupportedInPlatform) return
     // given
     val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
     projectRoot.toFile().deleteOnExit()

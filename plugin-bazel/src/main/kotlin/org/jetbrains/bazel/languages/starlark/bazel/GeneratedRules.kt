@@ -1802,6 +1802,7 @@ java_toolchain(
             """Suppress errors thrown when using pre-release classes.""",
           ),
           BazelNativeRuleArgument("x_context_receivers", """False""", false, """Enable experimental context receivers."""),
+          BazelNativeRuleArgument("x_context_parameters", """False""", false, """Enable experimental context parameters."""),
           BazelNativeRuleArgument(
             "x_suppress_version_warnings",
             """False""",

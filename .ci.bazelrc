@@ -11,5 +11,5 @@ common:ci --incompatible_strict_action_env=true
 common:ci --remote_cache_compression=true
 common:ci --remote_upload_local_results=true
 
-# this is to prevent failures of BES initiated by teamcity Bazel runner
-common:ci --bes_upload_mode=nowait_for_upload_complete
+common:toplevel  --remote_download_outputs=toplevel
+common:full --remote_download_outputs=all

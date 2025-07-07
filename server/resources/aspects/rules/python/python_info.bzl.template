@@ -1,4 +1,6 @@
-load("//aspects:utils/utils.bzl", "create_struct", "file_location", "to_file_location")
+# Copyright 2019-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
+load("//aspects:utils/utils.bzl", "create_struct", "file_location", "to_file_location","update_sync_output_groups")
 
 # Ruleset Name: $rulesetName
 
@@ -20,7 +22,7 @@ load("@rules_python//python:defs.bzl", PyInfo_Secondary = "PyInfo", PyRuntimeInf
 PyInfo_Secondary = None
 PyRuntimeInfo_Secondary = None
 #end
-
+CODE_GENERATOR_RULE_NAMES = ${codeGeneratorRules}
 def py_info_in_target(target):
     #if( $pythonEnabled == "true" )
     return PyInfo in target or (PyInfo_Secondary != None and PyInfo_Secondary in target)
@@ -75,9 +77,27 @@ def interpreter_from_file(file):
 
     return file_location(file)
 
-def extract_python_info(target, ctx, **kwargs):
+def files_to_list(source):
+    if not hasattr(source, "files"):
+        return []
+    return source.files.to_list()
+
+def extract_python_info(target, ctx, output_groups, **kwargs):
     if not py_info_in_target(target):
-        return None, None
+      return None, None
+
+    src_attr = getattr(ctx.rule.attr, "srcs", [])
+    if type(src_attr) != "list":
+      return None,None
+
+    sources = [
+        file_location(f)
+        for t in src_attr
+        for f in files_to_list(t)
+        if not f.is_directory
+    ]
+    generated_sources=[]
+
 
     if py_runtime_info_in_target(target):
         provider = get_py_runtime_info(target)
@@ -88,11 +108,66 @@ def extract_python_info(target, ctx, **kwargs):
     interpreter_path = interpreter_from_absolute_path(getattr(provider, "interpreter_path", None))
 
     final_interpreter = interpreter if interpreter != None else interpreter_path
+    imports = getattr(ctx.rule.attr, "imports", [])
+    is_code_generator = False
 
+    if 0 == len(sources) and ctx.rule.kind in CODE_GENERATOR_RULE_NAMES:
+        def provider_import_to_attr_import(provider_import):
+            """\
+            Remaps the imports from PyInfo
+
+            The imports that are supplied on the `PyInfo` are relative to the runfiles and so are
+            not the same as those which might be supplied on an attribute of `py_library`. This
+            function will remap those back so they look as if they were `imports` attributes on
+            the rule. The form of the runfiles import is `<workspace_name>/<package_dir>/<import>`.
+            The actual `workspace_name` is not interesting such that the first part can be simply
+            stripped. Next the package to the Label is stripped leaving a path that would have been
+            supplied on an `imports` attribute to a Rule.
+            """
+
+            # Other code in this file appears to assume *NIX path component separators?
+
+            provider_import_parts = provider_import.split("/")
+            package_parts = ctx.label.package.split("/")
+
+            if 0 == len(provider_import_parts):
+                return None
+
+            scratch_parts = provider_import_parts[1:]  # remove the workspace name or _main
+
+            for p in package_parts:
+                if len(scratch_parts) > 0 and scratch_parts[0] == p :
+                    scratch_parts = scratch_parts[1:]
+                else:
+                    return None
+
+            return "/".join(scratch_parts)
+
+        def provider_imports_to_attr_imports():
+            result = []
+
+            for provider_import in get_py_info(target).imports.to_list():
+                attr_import = provider_import_to_attr_import(provider_import)
+                if attr_import:
+                    result.append(attr_import)
+
+            return result
+
+        if get_py_info(target).imports:
+            imports.extend(provider_imports_to_attr_imports())
+        runfiles = target[DefaultInfo].default_runfiles
+        if runfiles and runfiles.files:
+             generated_sources.extend([f for f in runfiles.files.to_list()])
+
+
+        is_code_generator = True
+    update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(generated_sources))
+    update_sync_output_groups(output_groups, "bsp-build-artifact", depset(generated_sources))
     python_target_info = create_struct(
         interpreter = final_interpreter,
         version = getattr(provider, "python_version", None),
-        imports = getattr(ctx.rule.attr, "imports", []),
+        imports = imports,
+        is_code_generator = is_code_generator,
+        generated_sources= [file_location(f) for f in generated_sources]
     )
-
     return dict(python_target_info = python_target_info), None

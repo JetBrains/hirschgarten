@@ -2,10 +2,10 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelJavaSourceRootEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageNameId
 import java.nio.file.Path
 import kotlin.io.path.extension
 

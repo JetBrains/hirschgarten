@@ -12,7 +12,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//sdkcompat",
     ],
 )

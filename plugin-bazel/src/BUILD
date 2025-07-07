@@ -72,6 +72,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/open",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/resolve",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/startup",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/treeview",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/ui/gutters",
@@ -128,6 +129,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure/legacy",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure/workspaceModel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
@@ -151,7 +153,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/ideStarter",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
     ],
 )

@@ -4,10 +4,10 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.bazel.workspacemodel.entities.AndroidAddendum
-import org.jetbrains.bazel.workspacemodel.entities.AndroidAddendumEntity
-import org.jetbrains.bazel.workspacemodel.entities.AndroidTargetType
-import org.jetbrains.bazel.workspacemodel.entities.androidAddendumEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendumEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidTargetType
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.androidAddendumEntity
 import org.jetbrains.bsp.protocol.AndroidTargetType.APP
 import org.jetbrains.bsp.protocol.AndroidTargetType.LIBRARY
 import org.jetbrains.bsp.protocol.AndroidTargetType.TEST

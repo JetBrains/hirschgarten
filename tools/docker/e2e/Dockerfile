@@ -36,6 +36,9 @@ USER root
 
 ARG FIXUID_VERSION=0.6.0
 
+# clean bazel caches after the bazel run
+RUN rm -rf /home/${CANONICAL_USER}/.cache
+
 # Install fixuid binary
 RUN curl -sSL \
         "https://github.com/boxboat/fixuid/releases/download/v${FIXUID_VERSION}/fixuid-${FIXUID_VERSION}-linux-amd64.tar.gz" \

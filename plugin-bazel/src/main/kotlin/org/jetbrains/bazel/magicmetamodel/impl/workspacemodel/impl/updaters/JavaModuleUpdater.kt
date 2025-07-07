@@ -17,22 +17,25 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
-import org.jetbrains.bazel.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.workspacemodel.entities.includesKotlin
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesAndroid
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesKotlin
 import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val projectBasePath: Path,
   private val isAndroidSupportEnabled: Boolean,
+  moduleEntities: List<Module> = emptyList(),
   private val libraryModules: List<JavaModule> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   val packageMarkerEntityUpdater =
     PackageMarkerEntityUpdater(
       workspaceModelEntityUpdaterConfig,
+      moduleEntities,
     )
 
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
@@ -178,10 +181,17 @@ internal class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   projectBasePath: Path,
   isAndroidSupportEnabled: Boolean,
+  moduleEntities: List<Module> = emptyList(),
   libraryModules: List<JavaModule> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   private val javaModuleWithSourcesUpdater =
-    JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled, libraryModules)
+    JavaModuleWithSourcesUpdater(
+      workspaceModelEntityUpdaterConfig,
+      projectBasePath,
+      isAndroidSupportEnabled,
+      moduleEntities,
+      libraryModules,
+    )
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig, libraryModules)
 
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity? =

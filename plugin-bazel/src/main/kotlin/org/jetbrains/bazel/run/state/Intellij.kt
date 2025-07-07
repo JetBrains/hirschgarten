@@ -3,6 +3,7 @@ package org.jetbrains.bazel.run.state
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.ui.components.JBList
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.idea.devkit.projectRoots.IdeaJdk
 
 interface HasIntellijSdkName {
@@ -18,7 +19,7 @@ fun <T : HasIntellijSdkName> intellijSdkFragment(): SettingsEditorFragment<T, JB
   val workingDirectorySettings: SettingsEditorFragment<T, JBList<String>> =
     SettingsEditorFragment(
       "intellijSdkName",
-      "IntelliJ SDK",
+      BazelPluginBundle.message("state.bazel.intellij.sdk"),
       null,
       component,
       { s, c ->

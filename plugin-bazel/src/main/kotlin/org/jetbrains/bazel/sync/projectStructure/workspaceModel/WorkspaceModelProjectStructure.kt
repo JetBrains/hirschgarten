@@ -15,7 +15,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
-import org.jetbrains.bazel.sdkcompat.replaceWorkspaceModelCompat
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider
@@ -24,8 +25,6 @@ import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
 private const val MAX_REPLACE_WSM_ATTEMPTS = 3
 
@@ -59,7 +58,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
           val workspaceModelUpdated =
             writeAction {
               bspTracer.spanBuilder("replaceprojectmodel.in.apply.on.workspace.model.ms").use {
-                workspaceModel.replaceWorkspaceModelCompat(
+                workspaceModel.replaceWorkspaceModel(
                   BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.1.wsm", attemptIdx + 1, MAX_REPLACE_WSM_ATTEMPTS),
                   storageReplacement,
                 )

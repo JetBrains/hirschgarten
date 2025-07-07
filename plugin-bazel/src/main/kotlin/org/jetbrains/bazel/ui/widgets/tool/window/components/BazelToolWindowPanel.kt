@@ -35,7 +35,7 @@ internal fun configureBazelToolWindowToolBar(
       addSeparator()
       add(BazelToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
       addSeparator()
-      add(BazelToolWindowConfigFileOpenAction())
+      add(actionManager.getAction("Bazel.OpenProjectViewFile"))
     }
 
   val actionToolbar = actionManager.createActionToolbar("Bazel Toolbar", actionGroup, true)
@@ -58,24 +58,3 @@ private class BazelToolWindowSettingsAction(private val settingsDisplayName: Str
   }
 }
 
-private class BazelToolWindowConfigFileOpenAction :
-  SuspendableAction(
-    { BazelPluginBundle.message("widget.config.file.popup.message", BazelPluginBundle.message("tool.window.generic.config.file")) },
-    AllIcons.FileTypes.Config,
-  ) {
-  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val configFile = project.bazelProjectSettings.projectViewPath
-    e.presentation.isEnabled = configFile != null
-    withContext(Dispatchers.EDT) {
-      project.serviceAsync<ProjectView>().refresh()
-      if (configFile != null) {
-        getPsiFile(configFile, project)?.navigate(true)
-      }
-    }
-  }
-}
-
-private suspend fun getPsiFile(file: Path, project: Project): PsiFile? {
-  val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(file) ?: return null
-  return project.serviceAsync<PsiManager>().findFile(virtualFile)
-}

@@ -7,7 +7,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

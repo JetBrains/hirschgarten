@@ -19,6 +19,7 @@ import com.goide.project.GoPackageFactory
 import com.goide.psi.GoFile
 import com.goide.psi.impl.GoPackage
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiDirectory
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
@@ -39,7 +40,8 @@ class BazelGoPackageFactory : GoPackageFactory {
     if (!project.isBazelProject) return null
     val virtualFile = goFile.virtualFile ?: return null
     val fileToImportPathMap = getFileToImportPathMap(project)
-    val importPath = fileToImportPathMap[virtualFile.toNioPath()]
+    val path = virtualFile.toNioPathOrNull() ?: return null
+    val importPath = fileToImportPathMap[path]
     return if (importPath != null) doResolve(importPath, project) else null
   }
 

@@ -31,6 +31,8 @@ open class BaseBuildType(
     this.params {
       params()
       password("remote.cache.netrc", "credentialsJSON:8f47c6e1-d7b2-4d3a-9b5a-12c8f3d45e92", label = "dotnetrc", description = "nenrc credentials for remote cache", display = ParameterDisplay.HIDDEN)
+      param("env.CONTAINER_UID", "")
+      param("env.CONTAINER_GID", "")
     }
 
     this.dependencies(dependencies)
