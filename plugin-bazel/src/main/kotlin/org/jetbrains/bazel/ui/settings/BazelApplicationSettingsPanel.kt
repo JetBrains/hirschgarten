@@ -85,7 +85,7 @@ class BazelApplicationSettingsConfigurable : SearchableConfigurable {
           contextHelp(BazelPluginBundle.message("application.settings.update.channel.dropdown.help.description")).align(AlignX.RIGHT)
         }
       }
-      group("Experimental Settings", indent = false) {
+      group(BazelPluginBundle.message("application.settings.plugin.experimental.settings"), indent = false) {
         row {
           cell(enablePhasedSyncCheckBox).align(Align.FILL)
           contextHelp(BazelPluginBundle.message("application.settings.plugin.enable.phased.sync.help.text"))

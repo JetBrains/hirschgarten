@@ -41,6 +41,7 @@ import com.intellij.task.TaskRunnerResults
 import com.intellij.util.io.delete
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
@@ -77,7 +78,7 @@ object FastBuildUtils {
           .getInstance()
           .getNotificationGroup("HotSwap Messages")
           .createNotification(
-            "Hotswap failed",
+            BazelPluginBundle.message("widget.fastbuild.error.title"),
             e.localizedMessage,
             NotificationType.ERROR,
           ).setImportant(true)
@@ -99,7 +100,7 @@ object FastBuildUtils {
         }.toMap()
 
     if (buildInfos.isEmpty()) {
-      throw ExecutionException("Unable to determine build targets for files. Try to resync the project.")
+      throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.no.targets"))
     }
 
     for (entry in buildInfos) {
@@ -107,7 +108,7 @@ object FastBuildUtils {
       val canonicalFilePath = inputFile.canonicalPath
       val canonicalWorkspaceRootPath = workspaceRoot.toCanonicalPath()
       if (!(canonicalFilePath?.startsWith(canonicalWorkspaceRootPath) ?: false)) {
-        throw ExecutionException("Hotswap failed with errors: $canonicalFilePath is not under workspace root $canonicalWorkspaceRootPath.")
+        throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.wrong.canonical.path"))
       }
       val relativePath =
         entry.value.baseDirectory.let {
@@ -116,7 +117,7 @@ object FastBuildUtils {
       val isLib = targetUtils.isLibrary(entry.value.id)
       val bazelBin =
         BazelBinPathService.getInstance(project).bazelBinPath
-          ?: throw ExecutionException("Missing bazelBinPath. Try to resync the project.")
+          ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
       val targetJar = Path.of("$bazelBin/$relativePath/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
 
       val originalParamsFile = targetJar.parent.resolve(targetJar.fileName.name + "-0.params")
@@ -126,7 +127,7 @@ object FastBuildUtils {
         BazelCoroutineService.getInstance(project).start {
           runBuildTargetTask(buildInfos.values.map { it.id }, project)
         }
-        throw ExecutionException("Params file not found for fast compile. Falling back to bazel build.")
+        throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.params.not.found"))
       }
 
       withContext(Dispatchers.EDT) {
@@ -135,7 +136,7 @@ object FastBuildUtils {
         }
       }
 
-      val compileTask = CompilerTask(project, "Recompile", false, false, true, false)
+      val compileTask = CompilerTask(project, BazelPluginBundle.message("widget.fastbuild.recompile"), false, false, true, false)
       val compileScope = OneProjectItemCompileScope(project, inputFile)
       val compileContext = CompileContextImpl(project, compileTask, compileScope, true, false)
       compileTask.start({
@@ -162,7 +163,7 @@ object FastBuildUtils {
 
           val toolchainInfo =
             ToolchainInfoSyncHook.JvmToolchainInfoService.getInstance(project).jvmToolchainInfo
-              ?: throw ExecutionException("jvmToolchainInfo is null. Try to resync the project.")
+              ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.jvm.toolchain"))
 
           val arguments =
             buildList {
@@ -179,7 +180,7 @@ object FastBuildUtils {
               workDirectory =
                 File(
                   BazelBinPathService.getInstance(project).bazelExecPath
-                    ?: throw ExecutionException("bazelExecPath is null. Try to resync the project."),
+                    ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.bazel.exec.path")),
                 )
             }
           val handler = OSProcessHandler(command)
@@ -367,7 +368,7 @@ object FastBuildUtils {
     project: Project,
   ) {
     ProgressManager.getInstance().run(
-      object : Task.Backgroundable(project, "Hotswapping", true) {
+      object : Task.Backgroundable(project, BazelPluginBundle.message("widget.fastbuild.hotswaping"), true) {
         override fun run(indicator: ProgressIndicator) {
           val unzip = tempDir.resolve("unzip").also { it.toFile().mkdir() }
           val files =
@@ -434,8 +435,8 @@ object FastBuildUtils {
           .getInstance()
           .getNotificationGroup("HotSwap Messages")
           .createNotification(
-            "Hotswap successful",
-            "Hotswap completed without errors",
+            BazelPluginBundle.message("widget.fastbuild.completed.title"),
+            BazelPluginBundle.message("widget.fastbuild.completed.description"),
             NotificationType.INFORMATION,
           ).setImportant(false)
           .setIcon(AllIcons.Status.Success)

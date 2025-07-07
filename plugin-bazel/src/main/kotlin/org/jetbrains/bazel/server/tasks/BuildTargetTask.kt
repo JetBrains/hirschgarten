@@ -148,7 +148,7 @@ class BuildTargetTask(private val project: Project) {
 
 suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
   saveAllFiles()
-  return withBackgroundProgress(project, "Building target(s)...") {
+  return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
     project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds) }
   }.also {
     VirtualFileManager.getInstance().asyncRefresh()
