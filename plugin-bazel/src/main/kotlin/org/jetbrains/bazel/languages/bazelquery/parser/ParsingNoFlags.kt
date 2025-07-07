@@ -188,7 +188,10 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       error("<expression> expected")
     } else if (utils.atToken(BazelQueryTokenTypes.INTEGER)) {
       utils.advanceError("<expression> expected, got <integer>")
-    } else {
+    } else if (utils.atToken(BazelQueryTokenTypes.SQ_PATTERN) ||
+        utils.atToken(BazelQueryTokenTypes.DQ_PATTERN)) {
+      utils.advanceError("incorrect word")
+    }else {
       queryQuotes = parseExpr(queryQuotes)
     }
     return queryQuotes
@@ -340,7 +343,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
 
     if (eof() || utils.atToken(queryQuotes)) error("<right parenthesis> expected")
     while (!eof() && !utils.atToken(queryQuotes) && !utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN)) {
-      utils.advanceError("too many arguments")
+      utils.advanceError("unexpected token")
     }
     if (!utils.matchToken(BazelQueryTokenTypes.RIGHT_PAREN)) {
       error("<right parenthesis> expected")

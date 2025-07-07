@@ -27,10 +27,12 @@ HYPHEN=[-]
 CARET=[\^]
 EQUALS=[=]
 BS=[\\]
+COLON=[:]
 
 LEFT_PAREN=[(]
 RIGHT_PAREN=[)]
 DOUBLE_AT=[@@]
+DOUBLE_SLASH="//"
 
 
 // Unquoted words are sequences of characters drawn from
@@ -44,12 +46,59 @@ DOUBLE_AT=[@@]
 // As a special rule meant to simplify the handling of labels referring
 // to external repositories, unquoted words that start with @@ may
 // contain + characters.
-UNQUOTED_WORD=([A-Za-z0-9/@._:$~\[\]][A-Za-z0-9*/@.\-_:$~\[\]]* | {DOUBLE_AT}[A-Za-z0-9*/@.\-_:$~\[\]+]*)
-QUOTED_WORD=[^{NL}{SQ}{DQ}{BS}]+
-ERR_WORD = [^{NL}{SQ}{DQ}]+
+REPO_SIGNS=[A-Za-z0-9\-_.+]
+UNQUOTED_SIGNS=[A-Za-z0-9*@.\-_$~\[\]]
+QUOTED_PACKAGE_SIGNS=[a-zA-Z0-9!%\-@\^_\"$&'()*+,;<=>?\[\]{|}~.\#]
+QUOTED_TARGET_SIGNS=[a-zA-Z0-9!%\-@\^_\"$&'()*+,;<=>?\[\]{|}~.\#§£]
+
+UNQUOTED_WORD=(
+    ( // only repo
+      (@|@@){REPO_SIGNS}*
+    ) |
+    ( // repo and full target
+      (@|@@){REPO_SIGNS}*
+      [/][/]{UNQUOTED_SIGNS}*(\/{UNQUOTED_SIGNS}+)*
+      ({COLON}{UNQUOTED_SIGNS})?
+      {UNQUOTED_SIGNS}*(\/{UNQUOTED_SIGNS}+)*
+    ) |
+    ( // terget (full or not)
+      ({DOUBLE_SLASH} | [A-Za-z0-9._$~\[\]])
+      {UNQUOTED_SIGNS}*(\/{UNQUOTED_SIGNS}+)*
+      ({COLON}{UNQUOTED_SIGNS})?
+      {UNQUOTED_SIGNS}*(\/{UNQUOTED_SIGNS}+)*
+    ) |
+    ( // only terget name after colon
+      ({COLON}{UNQUOTED_SIGNS})
+      {UNQUOTED_SIGNS}*(\/{UNQUOTED_SIGNS}+)*
+    )
+)
+
+QUOTED_WORD=(
+    ( // only repo
+      (@|@@){REPO_SIGNS}*
+    ) |
+    ( // repo and full target
+      (@|@@){REPO_SIGNS}*
+      [/][/]{QUOTED_PACKAGE_SIGNS}*(\/{QUOTED_PACKAGE_SIGNS}+)*
+      ({COLON}{QUOTED_TARGET_SIGNS})?
+      {QUOTED_TARGET_SIGNS}*(\/{QUOTED_TARGET_SIGNS}+)*
+    ) |
+    ( // terget (full or not)
+      ({DOUBLE_SLASH} | {QUOTED_PACKAGE_SIGNS})
+      {QUOTED_PACKAGE_SIGNS}*(\/{QUOTED_PACKAGE_SIGNS}+)*
+      ({COLON}{QUOTED_TARGET_SIGNS})?
+      {QUOTED_TARGET_SIGNS}*(\/{QUOTED_TARGET_SIGNS}+)*
+    ) |
+    ( // only terget name after colon
+      ({COLON}{QUOTED_TARGET_SIGNS})
+      {QUOTED_TARGET_SIGNS}*(\/{QUOTED_TARGET_SIGNS}+)*
+    )
+)
 
 SQ_WORD={SQ}{QUOTED_WORD}{SQ}
 DQ_WORD={DQ}{QUOTED_WORD}{DQ}
+
+ERR_WORD = [^{NL}{SQ}{DQ}]+
 
 // Patterns
 META_CHAR = [\^$.|?*+(){}\[\]]
@@ -64,8 +113,12 @@ DQ_PATTERN={DQ}{PATTERN}{DQ}
 INTEGER=[0-9]+
 
 UNEXPECTED_WORD=[^-{NL}{SPACE}][^{NL}{SPACE}]*
+
+// Flags
 FLAG_WORD=[a-z_:]*
 OPTION={HYP}{HYP}{FLAG_WORD} | {HYP}{FLAG_WORD}
+UNQUOTED_VAL=[A-Za-z0-9/@._:$~\[\]][A-Za-z0-9*/@.\-_:$~\[\]]*
+QUOTED_VAL=[^{NL}{SQ}{DQ}{BS}]+
 
 // TODO: check if it is possible to generate this list dynamicly and change lexer on updates
 OPTION_REQ_VALUE="--loading_phase_threads" |
@@ -166,6 +219,7 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
     {DQ}                              { yybegin(WORD_DQ); yypushback(1); }
     {SQ}                              { yybegin(WORD_SQ); yypushback(1); }
     {UNQUOTED_WORD}                   { return BazelQueryTokenTypes.UNQUOTED_WORD; }
+    {COLON}   | "/"                   { return BazelQueryTokenTypes.ERR_WORD; }
 
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
@@ -183,9 +237,9 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
 <FLAG> {
     {HYP} | {HYP}{HYP}                { return BazelQueryTokenTypes.UNFINISHED_FLAG; }
     {OPTION_REQ_VALUE}{SPACE}         { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
-    {OPTION_REQ_VALUE}{EQUALS}         { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
+    {OPTION_REQ_VALUE}{EQUALS}        { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
     {OPTION_REQ_VALUE}                { yybegin(PRE_VALUE); return BazelQueryTokenTypes.FLAG; }
-    {OPTION}{EQUALS}                   { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
+    {OPTION}{EQUALS}                  { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
     {OPTION}                          { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.FLAG_NO_VAL; }
 
     {OPTION_REQ_VALUE}[^{EQUALS}{SPACE}][-]*{UNEXPECTED_WORD}*     { yybegin(YYINITIAL); return BazelQueryTokenTypes.UNEXPECTED; }
@@ -194,7 +248,7 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
 
 // expecting space or equals sign if option requires value
 <PRE_VALUE> {
-    {SPACE} | {EQUALS}                 { yybegin(VALUE); return BazelQueryTokenTypes.EQUALS; }
+    {SPACE} | {EQUALS}                { yybegin(VALUE); return BazelQueryTokenTypes.EQUALS; }
 }
 
 
@@ -205,23 +259,23 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
     {SQ}                              { yybegin(VALUE_SQ); yypushback(1); }
     {DQ}                              { yybegin(VALUE_DQ); yypushback(1); }
 
-    {UNQUOTED_WORD}                   { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.UNQUOTED_VAL; }
+    {UNQUOTED_VAL}                    { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.UNQUOTED_VAL; }
 
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <VALUE_SQ> {
     {SQ}{SQ}                          { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.SQ_VAL; }
-    {SQ}({QUOTED_WORD} | {DQ})+{SQ}   { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.SQ_VAL; }
-    {SQ}({QUOTED_WORD} | {DQ})+       { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.UNFINISHED_VAL; }
+    {SQ}({QUOTED_VAL} | {DQ})+{SQ}    { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.SQ_VAL; }
+    {SQ}({QUOTED_VAL} | {DQ})+        { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.UNFINISHED_VAL; }
     {SQ}                              { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.UNFINISHED_VAL; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <VALUE_DQ> {
     {DQ}{DQ}                          { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.DQ_VAL; }
-    {DQ}({QUOTED_WORD} | {SQ})+{DQ}   { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.DQ_VAL; }
-    {DQ}({QUOTED_WORD} | {SQ})+       { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.UNFINISHED_VAL; }
+    {DQ}({QUOTED_VAL} | {SQ})+{DQ}    { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.DQ_VAL; }
+    {DQ}({QUOTED_VAL} | {SQ})+        { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.UNFINISHED_VAL; }
     {DQ}                              { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.UNFINISHED_VAL; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
