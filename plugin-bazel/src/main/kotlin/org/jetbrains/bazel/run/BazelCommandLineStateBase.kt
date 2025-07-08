@@ -47,8 +47,8 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
     val runDeferred =
       bazelCoroutineService.startAsync(lazy = true) {
         project.connection.runWithServer { server: JoinedBuildServer ->
+          saveAllFiles()
           withContext(Dispatchers.EDT) {
-            FileDocumentManager.getInstance().saveAllDocuments()
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
           startBsp(server, pid)
