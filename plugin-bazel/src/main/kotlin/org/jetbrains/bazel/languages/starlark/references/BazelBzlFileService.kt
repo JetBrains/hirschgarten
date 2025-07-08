@@ -3,19 +3,18 @@ package org.jetbrains.bazel.languages.starlark.references
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
+import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import java.nio.file.Path
 import kotlin.collections.component1
@@ -24,7 +23,7 @@ import kotlin.collections.iterator
 import kotlin.io.path.relativeToOrNull
 
 @Service(Service.Level.PROJECT)
-class BazelFileService(private val project: Project) {
+class BazelBzlFileService(private val project: Project) {
   @Volatile
   var canonicalRepoNameToBzlFiles: Map<String, List<ResolvedLabel>> = emptyMap()
 
@@ -44,7 +43,7 @@ class BazelFileService(private val project: Project) {
     )
   }
 
-  private inner class FileVisitor(
+  private class FileVisitor(
     private val canonicalName: String,
     private val repoPath: Path,
     private val map: MutableMap<String, List<ResolvedLabel>>,
@@ -85,14 +84,12 @@ class BazelFileService(private val project: Project) {
   }
 
   companion object {
-    fun getInstance(project: Project): BazelFileService = project.getService(BazelFileService::class.java)
+    fun getInstance(project: Project): BazelBzlFileService = project.getService(BazelBzlFileService::class.java)
   }
-}
 
-class BazelFileServiceStartUpActivity : ProjectActivity {
-  override suspend fun execute(project: Project) {
-    if (project.isBazelProject) {
-      val service = BazelFileService.getInstance(project) // Force service initialization on startup.
+  class BazelBzlFileServiceStartUpActivity : BazelProjectActivity() {
+    override suspend fun executeForBazelProject(project: Project) {
+      BazelBzlFileService.getInstance(project)
     }
   }
 }

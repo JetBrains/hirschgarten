@@ -117,7 +117,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
 
   private fun loadFilenameCompletion(): Array<LookupElement> {
-    val repoNameToBzlFiles = element.project.getService(BazelFileService::class.java).getApparentRepoNameToFiles()
+    val repoNameToBzlFiles = element.project.getService(BazelBzlFileService::class.java).getApparentRepoNameToFiles()
     val lookupElements = mutableListOf<LookupElement>()
     for ((_, bzlFiles) in repoNameToBzlFiles) {
       for (label in bzlFiles) {
