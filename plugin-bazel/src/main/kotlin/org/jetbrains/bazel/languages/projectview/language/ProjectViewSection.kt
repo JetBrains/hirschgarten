@@ -18,10 +18,7 @@ object ProjectViewSection {
     }
   }
 
-  data class SectionMetadata(
-    val sectionName: ProjectViewSyntaxKey,
-    val sectionType: SectionType,
-  )
+  data class SectionMetadata(val sectionName: ProjectViewSyntaxKey, val sectionType: SectionType)
 
   fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean {
     for (prop in ProjectView::class.memberProperties) {
@@ -33,10 +30,10 @@ object ProjectViewSection {
   }
 
   /*
-  * The map below should contain all syntax-wise valid section names.
-  * However, the ones that are actually supported by the plugin are defined in the ProjectView data class.
-  * This way we can recognize the keyword and annotate it accordingly.
-  * */
+   * The map below should contain all syntax-wise valid section names.
+   * However, the ones that are actually supported by the plugin are defined in the ProjectView data class.
+   * This way we can recognize the keyword and annotate it accordingly.
+   * */
   val KEYWORD_MAP: Map<ProjectViewSyntaxKey, SectionMetadata> =
     listOf(
       SectionMetadata("allow_manual_targets_sync", SectionType.Scalar.Boolean),
