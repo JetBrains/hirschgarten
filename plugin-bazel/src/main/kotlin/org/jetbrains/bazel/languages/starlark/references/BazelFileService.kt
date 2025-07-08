@@ -3,11 +3,13 @@ package org.jetbrains.bazel.languages.starlark.references
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Package
@@ -27,6 +29,8 @@ class BazelFileService(private val project: Project) {
   var canonicalRepoNameToBzlFiles: Map<String, List<ResolvedLabel>> = emptyMap()
 
   init {
+    ApplicationManager.getApplication().executeOnPooledThread { updateCache() }
+
     project.messageBus.connect().subscribe(
       SyncStatusListener.TOPIC,
       object : SyncStatusListener {
@@ -82,5 +86,13 @@ class BazelFileService(private val project: Project) {
 
   companion object {
     fun getInstance(project: Project): BazelFileService = project.getService(BazelFileService::class.java)
+  }
+}
+
+class BazelFileServiceStartUpActivity : ProjectActivity {
+  override suspend fun execute(project: Project) {
+    if (project.isBazelProject) {
+      val service = getInstance(project) // Force service initialization on startup.
+    }
   }
 }
