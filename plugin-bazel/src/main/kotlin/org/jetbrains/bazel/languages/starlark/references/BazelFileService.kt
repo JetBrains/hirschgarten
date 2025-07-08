@@ -92,7 +92,7 @@ class BazelFileService(private val project: Project) {
 class BazelFileServiceStartUpActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (project.isBazelProject) {
-      val service = getInstance(project) // Force service initialization on startup.
+      val service = BazelFileService.getInstance(project) // Force service initialization on startup.
     }
   }
 }
