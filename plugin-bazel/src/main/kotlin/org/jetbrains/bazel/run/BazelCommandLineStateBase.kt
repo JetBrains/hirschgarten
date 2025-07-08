@@ -11,6 +11,7 @@ import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,6 +48,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
       bazelCoroutineService.startAsync(lazy = true) {
         project.connection.runWithServer { server: JoinedBuildServer ->
           withContext(Dispatchers.EDT) {
+            FileDocumentManager.getInstance().saveAllDocuments()
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
           startBsp(server, pid)
