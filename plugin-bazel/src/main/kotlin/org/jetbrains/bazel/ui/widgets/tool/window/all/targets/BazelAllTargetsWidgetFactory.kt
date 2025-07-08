@@ -25,15 +25,12 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelProjectProperties
-import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.ui.queryTab.BazelQueryTab
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.configureBazelToolWindowToolBar
@@ -79,16 +76,7 @@ private class BazelAllTargetsWidgetFactory :
           val windowPanel = SimpleToolWindowPanel(true, true)
           configureBazelToolWindowToolBar(model, actionManager, windowPanel)
           val panel = BazelTargetsPanel(project, model)
-          windowPanel.setContent(
-            if (FeatureFlagsProvider.getFeatureFlags(project).isBazelQueryTabEnabled) {
-              JBTabbedPane().apply {
-                addTab(BazelPluginBundle.message("bazel.toolwindow.tab.targets"), panel)
-                addTab(BazelPluginBundle.message("bazel.toolwindow.tab.query"), BazelQueryTab(project))
-              }
-            } else {
-              panel
-            },
-          )
+          windowPanel.setContent(panel)
 
           val content = toolWindow.contentManager.getContent(0)!!
           val loadingPanel = content.component as JBLoadingPanel

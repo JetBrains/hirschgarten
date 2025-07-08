@@ -445,6 +445,19 @@
       id="Bazel"
     />
 
+    <toolWindowAllowlist id="Bazel Query" />
+    <toolWindowExtractor
+      implementation="org.jetbrains.bazel.ui.queryTab.BazelQueryToolWindowViewModelExtractor"
+    />
+
+    <toolWindow
+      anchor="bottom"
+      canCloseContents="false"
+      factoryClass="org.jetbrains.bazel.ui.queryTab.BazelQueryWidgetFactory"
+      icon="org.jetbrains.bazel.assets.BazelPluginIcons.bazelToolWindow"
+      id="Bazel Query"
+    />
+
     <consoleFilterProvider
       implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"
     />

@@ -25,7 +25,7 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.CollapsiblePanel
+import com.intellij.ui.JBSplitter
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBScrollPane
@@ -42,9 +42,9 @@ import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.Font
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
-import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
 import javax.swing.JButton
@@ -54,6 +54,7 @@ import javax.swing.JPanel
 import javax.swing.JRadioButton
 import javax.swing.KeyStroke
 import javax.swing.ScrollPaneConstants
+import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
 private class QueryFlagField(
@@ -75,7 +76,7 @@ private class QueryFlagField(
 
   init {
     valuesButtons.forEach {
-      valuesGroup.add(it)
+      this.valuesGroup.add(it)
       it.isVisible = false
     }
     valuesButtons.firstOrNull()?.isSelected = true
@@ -110,35 +111,44 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   }
 
   // UI elements
-  private val editorTextField = LanguageTextField(BazelQueryLanguage, project, "").apply {
-    setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.query"))
-    val action = EvaluateQueryAction(this@BazelQueryTab)
-    action.registerCustomShortcutSet(
-      CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK)),
-      this
-    )
-  }
+  private val editorTextField =
+    LanguageTextField(BazelQueryLanguage, project, "").apply {
+      setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.query"))
+      val action = EvaluateQueryAction(this@BazelQueryTab)
+      action.registerCustomShortcutSet(
+        CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK)),
+        this,
+      )
+    }
   private val directoryField = JBTextField().apply { isEditable = false }
-  private val flagTextField = LanguageTextField(BazelQueryFlagsLanguage, project, "").apply {
-    setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.flags"))
-  }
+  private val flagTextField =
+    LanguageTextField(BazelQueryFlagsLanguage, project, "").apply {
+      setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.flags"))
+    }
   private val buttonsPanel =
     JPanel().apply {
       layout = BoxLayout(this, BoxLayout.X_AXIS)
-      maximumSize = Dimension(Int.MAX_VALUE, 40)
     }
   private val flagsPanel =
     JPanel(VerticalLayout()).apply {
+      add(
+        JLabel(BazelPluginBundle.message("label.bazel.query.flag.panel.tittle")).apply {
+          horizontalAlignment = SwingConstants.CENTER
+          font = font.deriveFont(Font.BOLD)
+          border = JBUI.Borders.empty(5)
+        }
+      )
       defaultFlags.forEach {
         it.addToPanel(this)
       }
       add(flagTextField)
+      val action = EvaluateQueryAction(this@BazelQueryTab)
+      action.registerCustomShortcutSet(
+        CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK)),
+        this,
+      )
     }
-  private val bazelFilter = BazelBuildTargetConsoleFilter(project)
-  private val resultField: ConsoleView =
-    ConsoleViewImpl(project, false).apply {
-
-    }
+  private val resultField: ConsoleView = ConsoleViewImpl(project, false)
 
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -147,6 +157,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   }
 
   // Clickable targets in output
+  private val bazelFilter = BazelBuildTargetConsoleFilter(project)
   private fun addLinksToResult(text: String, hyperlinkInfoList: MutableList<Pair<IntRange, HyperlinkInfo>>) {
     val filterResult = WriteIntentReadAction.compute<Filter.Result> { bazelFilter.applyFilter(text, text.length) }
 
@@ -211,6 +222,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     }
   }
 
+  // UI
   private fun initializeUI() {
     fun createDirectorySelectionPanel() =
       JPanel().apply {
@@ -231,46 +243,46 @@ class BazelQueryTab(private val project: Project) : JPanel() {
       JPanel().apply {
         layout = BoxLayout(this, BoxLayout.X_AXIS)
         add(editorTextField)
+        add(buttonsPanel)
 
         maximumSize = Dimension(Int.MAX_VALUE, 40)
       }
 
-    fun createFlagsPanel() =
-      CollapsiblePanel(
-        JBScrollPane(flagsPanel).apply {
-          verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-        },
-        true,
-        true,
-        AllIcons.General.ChevronUp,
-        AllIcons.General.ChevronDown,
-        "Flags",
-      )
-
+    fun createFlagsPanel() = JBScrollPane(flagsPanel).apply {
+      verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+    }
+    
     fun createResultPanel() =
       JPanel(BorderLayout()).apply {
         add(resultField.component, BorderLayout.CENTER)
       }
 
     add(createDirectorySelectionPanel())
-    add(createQueryPanel())
     setButtonsPanelToEvaluate()
-    add(buttonsPanel)
-    add(
-      JBScrollPane(
-        JPanel(VerticalLayout()).apply {
-          add(createFlagsPanel())
-          add(createResultPanel())
-        },
-      ),
-    )
+    add(createQueryPanel())
+
+    val splitter = JBSplitter(false, 0.25f, 0.2f, 0.8f).apply {
+      firstComponent = JBScrollPane(JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        add(createFlagsPanel())
+      })
+
+      secondComponent = JBScrollPane(JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        add(createResultPanel())
+      })
+
+      setHonorComponentsMinimumSize(true)
+    }
+
+    add(splitter)
+
   }
 
   private fun setButtonsPanelToEvaluate() {
     SwingUtilities.invokeLater {
       with(buttonsPanel) {
         removeAll()
-        add(Box.createHorizontalGlue())
         val evaluateButton =
           JButton(BazelPluginBundle.message("button.bazel.query.evaluate")).apply {
             addActionListener { evaluate() }
@@ -285,7 +297,6 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     SwingUtilities.invokeLater {
       with(buttonsPanel) {
         removeAll()
-        add(Box.createHorizontalGlue())
         val evaluateButton =
           JButton(BazelPluginBundle.message("button.bazel.query.cancel")).apply {
             addActionListener { cancelEvaluate() }
@@ -355,7 +366,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     }
     flagsToRun.addAll(BazelFlag.fromTextField(flagTextField.text))
 
-    showInConsole("Bazel Query in progress...")
+    showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.in.progress"))
 
     queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
     SwingUtilities.invokeLater { setButtonsPanelToCancel() }
@@ -367,12 +378,12 @@ class BazelQueryTab(private val project: Project) : JPanel() {
       }.invokeOnCompletion {
         SwingUtilities.invokeLater {
           if (commandResults == null) {
-            showInConsole("Query cancelled")
+            showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.cancelled"))
           } else {
             if (commandResults!!.isSuccess) {
               val res = commandResults!!.stdout
               if (res.isEmpty()) {
-                showInConsole("Nothing found")
+                showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.nothing"))
               } else {
                 val hyperlinkInfoList = mutableListOf<Pair<IntRange, HyperlinkInfo>>()
                 addLinksToResult(res, hyperlinkInfoList)
