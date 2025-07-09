@@ -25,7 +25,10 @@ register_toolchains(
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "8.11.0")
+bazel_dep(name = "rules_android", version = "0.6.5")
 bazel_dep(name = "rules_jvm_external", version = "6.7")
+
+# aspect_rules_js
 bazel_dep(name = "aspect_rules_js", version = "2.3.8")
 
 npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
