@@ -222,7 +222,9 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
 
       if (firstValue) {
         firstValue = false
+        val filenameLoadValueMarker = builder.mark()
         parseLoadValue()
+        filenameLoadValueMarker.done(StarlarkElementTypes.FILENAME_LOAD_VALUE)
         continue
       } else if (isIdentifierLike(builder)) {
         val namedLoadValueMarker = builder.mark()

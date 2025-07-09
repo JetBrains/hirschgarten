@@ -10,3 +10,6 @@ common:ci --grpc_keepalive_time=30s
 common:ci --incompatible_strict_action_env=true
 common:ci --remote_cache_compression=true
 common:ci --remote_upload_local_results=true
+
+common:toplevel  --remote_download_outputs=toplevel
+common:full --remote_download_outputs=all

@@ -10,7 +10,8 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 class StarlarkLoadStatement(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitLoadStatement(this)
 
-  fun getLoadedFileNamePsi(): StarlarkStringLiteralExpression? = findChildByType(StarlarkElementTypes.STRING_LITERAL_EXPRESSION)
+  fun getLoadedFileNamePsi(): StarlarkStringLiteralExpression? =
+    (findChildByType(StarlarkElementTypes.FILENAME_LOAD_VALUE) as? StarlarkFilenameLoadValue)?.getStringLiteralExpression()
 
   fun getLoadedSymbolsPsi(): List<StarlarkElement> = children.filterIsInstance<StarlarkLoadValue>().toList()
 }
