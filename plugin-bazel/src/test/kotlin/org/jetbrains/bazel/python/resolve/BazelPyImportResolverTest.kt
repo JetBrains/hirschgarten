@@ -8,7 +8,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContext
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContextImpl
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
