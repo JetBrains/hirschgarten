@@ -8,6 +8,6 @@ const val BSP_SCOPE = "bsp"
 
 val telemetryManager: TelemetryManager by lazy { TelemetryManager.getInstance() }
 
-val bspTracer: Tracer by lazy { telemetryManager.getTracer(BSP_SCOPE) }
+val bspTracer: Tracer by lazy { telemetryManager.getTracer() }
 
-val bspMeter: Meter by lazy { telemetryManager.getMeter(BSP_SCOPE) }
+val bspMeter: Meter by lazy { telemetryManager.getMeter() }
