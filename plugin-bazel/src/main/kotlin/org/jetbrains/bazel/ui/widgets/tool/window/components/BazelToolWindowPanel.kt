@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.icons.AllIcons
-import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -11,15 +10,10 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import java.nio.file.Path
 
 internal fun configureBazelToolWindowToolBar(
   model: BazelTargetsPanelModel,
@@ -35,7 +29,7 @@ internal fun configureBazelToolWindowToolBar(
       addSeparator()
       add(BazelToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
       addSeparator()
-      add(BazelToolWindowConfigFileOpenAction())
+      add(actionManager.getAction("Bazel.OpenProjectViewFile"))
     }
 
   val actionToolbar = actionManager.createActionToolbar("Bazel Toolbar", actionGroup, true)
@@ -56,26 +50,4 @@ private class BazelToolWindowSettingsAction(private val settingsDisplayName: Str
       }
     }
   }
-}
-
-private class BazelToolWindowConfigFileOpenAction :
-  SuspendableAction(
-    { BazelPluginBundle.message("widget.config.file.popup.message", BazelPluginBundle.message("tool.window.generic.config.file")) },
-    AllIcons.FileTypes.Config,
-  ) {
-  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val configFile = project.bazelProjectSettings.projectViewPath
-    e.presentation.isEnabled = configFile != null
-    withContext(Dispatchers.EDT) {
-      project.serviceAsync<ProjectView>().refresh()
-      if (configFile != null) {
-        getPsiFile(configFile, project)?.navigate(true)
-      }
-    }
-  }
-}
-
-private suspend fun getPsiFile(file: Path, project: Project): PsiFile? {
-  val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(file) ?: return null
-  return project.serviceAsync<PsiManager>().findFile(virtualFile)
 }

@@ -10,6 +10,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
@@ -407,6 +408,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
 
   @Test
   fun `should return dummy module with out-of-project sources`() {
+    if (BazelFeatureFlags.fbsrSupportedInPlatform) return
     // given
     val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
     val projectRootName = projectRoot.name

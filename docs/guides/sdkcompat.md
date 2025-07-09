@@ -4,7 +4,6 @@
 
 The Bazel plugin currently compiles against four IDEA versions:
 - IDEA master (built with JPS)
-- 2024.3 (built with Bazel)
 - 2025.1 (built with Bazel)
 - 2025.2 (built with Bazel)
 
@@ -23,7 +22,6 @@ During compilation for different IDEA targets, the dependency is switched:
 - JPS build against IDEA master compiles `sdkcompat/master`
 - Bazel build against 2025.2 compiles `sdkcompat/v252`
 - Bazel build against 2025.1 compiles `sdkcompat/v251`
-- Bazel build against 2024.3 compiles `sdkcompat/v243`
 
 ![SDK Compatibility Structure](sdkcompat/sdkcompat_structure.png)
 
@@ -62,7 +60,7 @@ That's because on IDEA 2025.2 the method is still named `configure`.
 ### Importing the Bazel plugin source as a Bazel project
 
 In order to fix the error, you'll have to import the Bazel plugin subdirectory as a Bazel project.
-This is because we use Bazel to compile the Bazel plugin against 2025.2, 2025.1 and 2024.3.
+This is because we use Bazel to compile the Bazel plugin against 2025.2 and 2025.1.
 
 First install the Bazel plugin from Marketplace and restart IDEA:
 
@@ -113,8 +111,8 @@ used to be called `configure`, we'll call `configureCompat` from there.
 
 ![Bazel SDK Compatibility](sdkcompat/bazel_sdkcompat.png)
 
-Copy the same file to `sdkcompat/v251` and `sdkcompat/v243`, because the implementation is going to be the same for other IDEA versions.
-(If not, then you can change `build --define=ij_product=intellij-2025.2` to `build --define=ij_product=intellij-2025.1` or  `build --define=ij_product=intellij-2024.3`
+Copy the same file to `sdkcompat/v251`, because the implementation is going to be the same for other IDEA versions.
+(If not, then you can change `build --define=ij_product=intellij-2025.2` to `build --define=ij_product=intellij-2025.1`
 inside `ultimate/plugins/bazel/.bazelrc` and then re-import the project to develop for the other IDEA target.)
 
 Then open the problematic file and change the superclass from `AsyncDirectoryProjectConfigurator` to `AsyncDirectoryProjectConfiguratorCompat`.

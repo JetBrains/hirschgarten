@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.jvm.sync
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.codeInsight.multiverse.CodeInsightContextManager
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
@@ -34,11 +35,8 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.FullProjectSync
@@ -103,7 +101,7 @@ class CollectProjectDetailsTask(
     }
 
     if (scalaSdkExtensionExists()) {
-      progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
+      progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.reporter.calculating.scala.sdk.info")) {
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
     }
@@ -278,10 +276,9 @@ class CollectProjectDetailsTask(
               projectBasePath = projectBasePath,
               project = project,
               isAndroidSupportEnabled = false,
-              libraryModules = libraryModules,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
+          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
           workspaceModelUpdater.loadLibraries(libraries)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
@@ -356,7 +353,7 @@ class CollectProjectDetailsTask(
     }
 
   private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
-    if (project.isSharedSourceSupportEnabled) return
+    if (CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled) return
     if (!BazelFeatureFlags.checkSharedSources) return
     for ((file, labels) in fileToTargetWithoutLowPrioritySharedSources) {
       if (labels.size <= 1) {

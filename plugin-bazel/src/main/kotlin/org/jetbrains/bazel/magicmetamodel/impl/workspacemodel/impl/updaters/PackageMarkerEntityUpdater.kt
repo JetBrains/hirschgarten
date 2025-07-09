@@ -6,7 +6,9 @@ import com.intellij.platform.workspace.storage.entities
 import com.intellij.workspaceModel.ide.toPath
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.packageMarkerEntities
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
@@ -17,9 +19,18 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.name
 
-class PackageMarkerEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
-  WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, PackageMarkerEntity> {
-  private val alreadyVisitedDirectories = hashSetOf<Path>()
+class PackageMarkerEntityUpdater(
+  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+  moduleEntities: List<Module>,
+) : WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, PackageMarkerEntity> {
+  private val alreadyVisitedDirectories: MutableSet<Path> =
+    moduleEntities
+      .asSequence()
+      .filterIsInstance<JavaModule>()
+      .filter { !it.genericModuleInfo.isDummy }
+      .flatMap { it.sourceRoots }
+      .map { it.sourcePath }
+      .toMutableSet()
 
   private val excludedDirectories =
     workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder

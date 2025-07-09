@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkReferencesTestCase
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
@@ -20,8 +21,8 @@ class StarlarkAssignmentReferenceTest : StarlarkReferencesTestCase() {
     myFixture.configureByFile("AssignmentReference.bzl")
     val expectedResolved =
       myFixture.file
-        .getChildOfType<StarlarkAssignmentStatement>()
-        ?.getChildOfType<StarlarkTargetExpression>()
+        .getChildOfType<StarlarkAssignmentStatement>()!!
+        .getChildOfType<StarlarkTargetExpression>()
     // when
     val resolved = getUsage()?.reference?.resolve()
     // then
@@ -34,9 +35,25 @@ class StarlarkAssignmentReferenceTest : StarlarkReferencesTestCase() {
     myFixture.configureByFile("TupleAssignmentReference.bzl")
     val expectedResolved =
       myFixture.file
-        .getChildOfType<StarlarkAssignmentStatement>()
-        ?.getChildOfType<StarlarkTupleExpression>()
-        ?.getChildOfType<StarlarkTargetExpression>()
+        .getChildOfType<StarlarkAssignmentStatement>()!!
+        .getChildOfType<StarlarkTupleExpression>()!!
+        .getChildOfType<StarlarkTargetExpression>()
+    // when
+    val resolved = getUsage()?.reference?.resolve()
+    // then
+    resolved shouldBe expectedResolved
+  }
+
+  @Test
+  fun `should resolve parenthesized tuple assignment`() {
+    // given
+    myFixture.configureByFile("ParenthesizedTupleAssignmentReference.bzl")
+    val expectedResolved =
+      myFixture.file
+        .getChildOfType<StarlarkAssignmentStatement>()!!
+        .getChildOfType<StarlarkParenthesizedExpression>()!!
+        .getChildOfType<StarlarkTupleExpression>()!!
+        .getChildOfType<StarlarkTargetExpression>()
     // when
     val resolved = getUsage()?.reference?.resolve()
     // then

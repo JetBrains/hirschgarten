@@ -21,8 +21,14 @@ private class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Collect project directories") {
       val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
+      val workspaceContext =
+        query("workspace/context") {
+          environment.server.workspaceContext()
+        }
+
       val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
-      val entity = createEntity(environment.project, directories, additionalExcludes)
+      val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories.value
+      val entity = createEntity(environment.project, directories, additionalExcludes, indexAllFilesInIncludedRoots)
 
       environment.diff.workspaceModelDiff.mutableEntityStorage
         .addEntity(entity)
@@ -33,18 +39,20 @@ private class DirectoriesSyncHook : ProjectSyncHook {
     project: Project,
     directories: WorkspaceDirectoriesResult,
     additionalExcludes: List<Path>,
+    indexAllFilesInIncludedRoots: Boolean,
   ): BazelProjectDirectoriesEntity.Builder {
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
-    val includedRoots = directories.includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }
+    val includedRoots = directories.includedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) }
     val excludedRoots =
-      directories.excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) } +
+      directories.excludedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) } +
         additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
     return BazelProjectDirectoriesEntity(
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
       includedRoots = includedRoots,
       excludedRoots = excludedRoots,
+      indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots,
       entitySource = BazelProjectEntitySource,
     )
   }

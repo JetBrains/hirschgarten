@@ -16,22 +16,21 @@ import com.intellij.ide.projectView.impl.nodes.PsiFileSystemItemFilter
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.CachedValue
+import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.platform.workspace.storage.entities
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
-import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.sdkcompat.isIndexableCompat
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 private class BazelTreeStructureProvider : TreeStructureProvider {
@@ -120,10 +119,7 @@ private class BazelTreeStructureProvider : TreeStructureProvider {
         PsiFileSystemItemFilter { item ->
           item !is PsiDirectory ||
             item.virtualFile in getDirectoriesContainingIncludedDirectories(project) ||
-            (
-              !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) &&
-                WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
-            )
+            !item.project.isExcluded(item.virtualFile)
         }
       } else {
         null
@@ -136,15 +132,13 @@ private class BazelTreeStructureProvider : TreeStructureProvider {
       if (showExcludedDirectoriesAsSeparateNode) {
         ExcludedDirectoriesNode(project, rootDirectory, settings) { item ->
           if (item is PsiDirectory) {
-            ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
-              !WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
+            item.virtualFile in getDirectoriesContainingExcludedDirectories(project) ||
+              item.project.isExcluded(item.virtualFile)
           } else {
-            val parentDir = item.virtualFile.parent
-            parentDir !in getDirectoriesContainingIncludedDirectories(project) &&
-              (
-                ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
-                  !WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
-              )
+            val parent = item.parent ?: return@ExcludedDirectoriesNode false
+            // Only show files that aren't already shown by the root directory node
+            // rootDirectoryNodeFilter returns true unconditionally if a node is not a PsiDirectory, so we check the parent here.
+            rootDirectoryNodeFilter?.shouldShow(parent) == false
           }
         }
       } else {
@@ -162,29 +156,77 @@ private class BazelTreeStructureProvider : TreeStructureProvider {
   private fun getDirectoriesContainingIncludedDirectories(project: Project): Set<VirtualFile> =
     (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(directoriesContainingIncludedDirectoriesValue)
 
+  private fun getDirectoriesContainingExcludedDirectories(project: Project): Set<VirtualFile> =
+    (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(directoriesContainingExcludedDirectoriesValue)
+
   private val directoriesContainingIncludedDirectoriesValue =
     CachedValue { storage ->
-      val bspProjectDirectories = storage.entities<BazelProjectDirectoriesEntity>().firstOrNull() ?: return@CachedValue emptySet()
-
-      val result =
-        bspProjectDirectories.includedRoots
-          .asSequence()
-          .mapNotNull { it.virtualFile }
-          .mapNotNull { if (it.isDirectory) it else it.parent }
-          .toMutableSet()
-
-      val toVisit = ArrayDeque(result)
-
-      while (toVisit.isNotEmpty()) {
-        val dir = toVisit.removeFirst()
-        val parent = dir.parent ?: continue
-        if (parent in result) continue
-        result.add(parent)
-        toVisit.add(parent)
-      }
-
-      result
+      storage.directoriesContainingDirectories(included = true)
     }
+
+  private val directoriesContainingExcludedDirectoriesValue =
+    CachedValue { storage ->
+      storage.directoriesContainingDirectories(included = false)
+    }
+
+  private fun EntityStorage.directoriesContainingDirectories(included: Boolean): Set<VirtualFile> {
+    val bazelProjectDirectories = this.bazelProjectDirectoriesEntity() ?: return emptySet()
+
+    val roots = if (included) bazelProjectDirectories.includedRoots else bazelProjectDirectories.excludedRoots
+
+    val result =
+      roots
+        .asSequence()
+        .mapNotNull { it.virtualFile }
+        .mapNotNull { if (it.isDirectory) it else it.parent }
+        .toMutableSet()
+
+    val toVisit = ArrayDeque(result)
+
+    while (toVisit.isNotEmpty()) {
+      val dir = toVisit.removeFirst()
+      val parent = dir.parent ?: continue
+      if (parent in result) continue
+      result.add(parent)
+      toVisit.add(parent)
+    }
+
+    return result
+  }
+
+  /**
+   * This takes inspiration from [WorkspaceFileIndexDataImpl.getFileInfo] which we can't use here directly
+   * because on IDEA 2025.2 we by default don't add any file sets for `includedDirectories`, just one for the root directory.
+   */
+  private fun Project.isExcluded(virtualFile: VirtualFile): Boolean {
+    val (includedDirectories, excludedDirectories) = getIncludedAndExcludedDirectories(this)
+    var current: VirtualFile? = virtualFile
+    while (current != null) {
+      if (current in includedDirectories) return false
+      if (current in excludedDirectories) return true
+      current = current.parent
+    }
+    return true
+  }
+
+  private fun getIncludedAndExcludedDirectories(project: Project): Pair<Set<VirtualFile>, Set<VirtualFile>> =
+    (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(includedAndExcludedDirectoriesValue)
+
+  private val includedAndExcludedDirectoriesValue =
+    CachedValue { storage ->
+      val bazelProjectDirectories =
+        storage.bazelProjectDirectoriesEntity()
+          ?: return@CachedValue (emptySet<VirtualFile>() to emptySet<VirtualFile>())
+      bazelProjectDirectories.includedRoots.toVirtualFileSet() to bazelProjectDirectories.excludedRoots.toVirtualFileSet()
+    }
+
+  private fun List<VirtualFileUrl>.toVirtualFileSet(): Set<VirtualFile> =
+    asSequence()
+      .mapNotNull { it.virtualFile }
+      .toSet()
+
+  private fun EntityStorage.bazelProjectDirectoriesEntity(): BazelProjectDirectoriesEntity? =
+    entities<BazelProjectDirectoriesEntity>().firstOrNull()
 }
 
 /**
