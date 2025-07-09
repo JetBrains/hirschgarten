@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.language
 
-import org.jetbrains.bazel.projectview.model.ProjectView
-import kotlin.reflect.full.memberProperties
+import org.jetbrains.bazel.projectview.model.supportedSections
 
 object ProjectViewSection {
   sealed interface SectionType {
@@ -21,12 +20,7 @@ object ProjectViewSection {
   data class SectionMetadata(val sectionName: ProjectViewSyntaxKey, val sectionType: SectionType)
 
   fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean {
-    for (prop in ProjectView::class.memberProperties) {
-      if (prop.name == sectionName) {
-        return true
-      }
-    }
-    return false
+    return supportedSections.contains(sectionName)
   }
 
   /*
