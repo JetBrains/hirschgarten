@@ -5,6 +5,17 @@ import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 
+/**
+ * Global function definitions are stored in JSON files bundled with the plugin.
+ *
+ * The current implementation loads function definitions from JSON at runtime, which has two potential issues:
+ * 1. Performance impact during loading of large JSON files
+ * 2. No compile-time validation of function definitions
+ *
+ * If these become problematic, functions can be stored in Kotlin data classes instead, either:
+ * - Manually maintained in code
+ * - Auto-generated from JSON during build via a script
+ */
 @Service(Service.Level.APP)
 class BazelGlobalFunctionsService {
   private val moduleFunctionsFilePath = "/bazelGlobalFunctions/moduleFunctions.json"
