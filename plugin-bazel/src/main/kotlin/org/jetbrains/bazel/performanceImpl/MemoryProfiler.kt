@@ -12,6 +12,7 @@ import com.intellij.platform.diagnostic.telemetry.exporters.RollingFileSupplier
 import com.intellij.platform.diagnostic.telemetry.exporters.meters.TelemetryMeterJsonExporter
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import com.sun.management.GarbageCollectionNotificationInfo
+import org.jetbrains.bazel.performance.BSP_SCOPE
 import java.lang.Thread.sleep
 import java.lang.management.ManagementFactory
 import java.util.concurrent.atomic.AtomicLong
@@ -21,9 +22,6 @@ import javax.management.NotificationListener
 import kotlin.io.path.div
 import kotlin.math.max
 import kotlin.time.Duration
-import org.jetbrains.bazel.performance.telemetry.Scope as BazelScope
-
-fun BazelScope.toScope(): Scope = Scope(name)
 
 private const val MB = 1024 * 1024
 
@@ -51,7 +49,7 @@ object MemoryProfiler : NotificationListener {
     val metricsExporter = TelemetryMeterJsonExporter(RollingFileSupplier(basePath))
     val filteredMetricsExporter =
       FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->
-        metric.belongsToScope(bspScope.toScope())
+        metric.belongsToScope(Scope(BSP_SCOPE))
       }
     TelemetryManager
       .getInstance()
