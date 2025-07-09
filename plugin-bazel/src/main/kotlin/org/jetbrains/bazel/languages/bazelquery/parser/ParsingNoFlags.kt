@@ -197,9 +197,10 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
     } else if (utils.atToken(BazelQueryTokenTypes.INTEGER)) {
       utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.expression.got.integer"))
     } else if (utils.atToken(BazelQueryTokenTypes.SQ_PATTERN) ||
-        utils.atToken(BazelQueryTokenTypes.DQ_PATTERN)) {
+      utils.atToken(BazelQueryTokenTypes.DQ_PATTERN)
+    ) {
       utils.advanceError(BazelPluginBundle.message("bazelquery.error.incorrect.word"))
-    }else {
+    } else {
       queryQuotes = parseExpr(queryQuotes)
     }
     return queryQuotes
