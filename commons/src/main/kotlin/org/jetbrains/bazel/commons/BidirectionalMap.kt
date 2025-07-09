@@ -9,12 +9,10 @@ interface BidirectionalMap<K, V> : MutableMap<K, V> {
   companion object {
     private lateinit var factory: () -> BidirectionalMap<*, *>
 
-    fun getInstance(): BidirectionalMap<*, *> =
-      if (Companion::factory.isInitialized) factory() else throw IllegalStateException("BidirectionalMap factory not initialized")
+    fun getInstance(): BidirectionalMap<*, *> = factory()
 
     @Suppress("UNCHECKED_CAST")
-    fun <K, V> getTypedInstance(): BidirectionalMap<K, V> =
-      if (Companion::factory.isInitialized) factory() as BidirectionalMap<K, V> else throw IllegalStateException("BidirectionalMap factory not initialized")
+    fun <K, V> getTypedInstance(): BidirectionalMap<K, V> = factory() as BidirectionalMap<K, V>
 
     fun provideBidirectionalMapFactory(factoryFunction: () -> BidirectionalMap<*, *>) {
       factory = factoryFunction

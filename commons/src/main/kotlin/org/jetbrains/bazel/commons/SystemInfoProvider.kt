@@ -9,8 +9,7 @@ interface SystemInfoProvider {
   companion object {
     private lateinit var instance: SystemInfoProvider
 
-    fun getInstance(): SystemInfoProvider =
-      if (Companion::instance.isInitialized) instance else throw IllegalStateException("SystemInfoProvider not initialized")
+    fun getInstance(): SystemInfoProvider = instance
 
     fun provideSystemInfoProvider(spawner: SystemInfoProvider) {
       instance = spawner
