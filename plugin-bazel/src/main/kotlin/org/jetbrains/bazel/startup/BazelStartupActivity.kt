@@ -13,6 +13,7 @@ import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
+import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
