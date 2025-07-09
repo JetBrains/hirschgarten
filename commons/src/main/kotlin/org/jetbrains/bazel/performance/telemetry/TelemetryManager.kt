@@ -4,9 +4,9 @@ import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.trace.Tracer
 
 interface TelemetryManager {
-  fun getTracer(scope: Scope): Tracer
+  fun getTracer(scope: String): Tracer
 
-  fun getMeter(scope: Scope): Meter
+  fun getMeter(scope: String): Meter
 
   companion object {
     private lateinit var instance: TelemetryManager
