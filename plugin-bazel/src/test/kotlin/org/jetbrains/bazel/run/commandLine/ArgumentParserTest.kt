@@ -59,4 +59,10 @@ class ArgumentParserTest {
     args shouldBe listOf("-a", "unclosed -b value")
   }
 
+  @Test
+  fun `parse with quote escaped`() {
+    val args = transformProgramArguments("""-a "a \"b" """)
+    args shouldBe listOf("-a", "a \"b")
+  }
+
 }
