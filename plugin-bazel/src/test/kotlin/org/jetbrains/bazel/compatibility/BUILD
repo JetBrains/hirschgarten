@@ -20,4 +20,3 @@ ide_starter_test(
     src = "SimplePythonIdeStarterTest.kt",
     ide_ids = [IDE_ID.PY],
 )
-
