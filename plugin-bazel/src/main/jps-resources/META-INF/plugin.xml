@@ -629,6 +629,11 @@
       implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingActionOnSave"
     />
 
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor"
+      language="ProjectView"
+    />
+
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
       language="Starlark"

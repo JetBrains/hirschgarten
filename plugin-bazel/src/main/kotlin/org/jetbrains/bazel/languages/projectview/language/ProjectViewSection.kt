@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.languages.projectview.language
 
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.projectview.model.supportedSections
 
 object ProjectViewSection {
@@ -17,7 +20,11 @@ object ProjectViewSection {
     }
   }
 
-  data class SectionMetadata(val sectionName: ProjectViewSyntaxKey, val sectionType: SectionType)
+  data class SectionMetadata(
+    val sectionName: ProjectViewSyntaxKey,
+    val sectionType: SectionType,
+    val completionProvider: CompletionProvider<CompletionParameters>? = null
+  )
 
   fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean {
     return supportedSections.contains(sectionName)
@@ -55,5 +62,15 @@ object ProjectViewSection {
       SectionMetadata("index_all_files_in_directories", SectionType.Scalar.Boolean),
       SectionMetadata("python_code_generator_rule_names", SectionType.List.String),
       SectionMetadata("use_query_sync", SectionType.Scalar.Boolean),
+      SectionMetadata(
+        "workspace_type",
+        SectionType.Scalar.String,
+        SimpleCompletionProvider(listOf("java", "python", "dart", "android"))),
+      SectionMetadata(
+        "additional_languages",
+        SectionType.List.String,
+        SimpleCompletionProvider(
+          listOf("android", "dart", "java", "javascript", "kotlin", "python", "typescript", "go", "c"))
+      ),
     ).associateBy { it.sectionName }
 }
