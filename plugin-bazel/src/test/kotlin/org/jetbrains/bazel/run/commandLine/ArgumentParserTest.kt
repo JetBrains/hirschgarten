@@ -65,4 +65,10 @@ class ArgumentParserTest {
     args shouldBe listOf("-a", "a \"b")
   }
 
+  @Test
+  fun `parse illegal escape`() {
+    val args = transformProgramArguments("""-a "a \""")
+    args shouldBe listOf("-a", "a \\")
+  }
+
 }
