@@ -1,84 +1,87 @@
 package org.jetbrains.bazel.run.commandLine
 
-class ProgramArgumentLexer(private val input: String) {
-  enum class State {
-    Normal, String
-  }
-
-  var state: State = State.Normal
-  var position: Int = 0
-  val args = mutableListOf<String>()
-
-  val eof
-    get() = position >= input.length
-  val cursor
-    get() = if (eof) {
-      0
-    } else {
-      input[position]
-    }
+class ProgramArgumentParser(private val input: String) {
+  private var position = 0
 
   fun parse(): List<String> {
-    while (!eof) {
-      getToken()
-      while (!eof && cursor == ' ') {
-        advance()
+    val args = mutableListOf<String>()
+
+    while (!isAtEnd()) {
+      skipWhitespace()
+      if (!isAtEnd()) {
+        args.add(parseNextToken())
       }
     }
+
     return args
   }
 
-  private fun advance() {
-    position += 1
-  }
-
-  private fun getToken() {
-    when (state) {
-      State.Normal -> args.add(getNormal() ?: return)
-      State.String -> args.add(getString() ?: return)
+  private fun parseNextToken(): String {
+    return if (currentChar() == '"') {
+      parseQuotedString()
+    } else {
+      parseUnquotedToken()
     }
   }
 
-  private fun getNormal(): String? {
-    if (eof) {
-      return null
-    }
+  private fun parseQuotedString(): String {
+    advance()
+    val result = StringBuilder()
 
-    if (cursor == '"') {
-      state = State.String
-      advance()
-      return null
-    }
-
-    val start = position
-    while (!eof && cursor != ' ' && cursor != '"') {
-      advance()
-    }
-    return input.substring(start, position)
-  }
-
-  private fun getString(): String? {
-    if (eof) return null
-
-    val start = position
-    while (!eof) {
-      if (cursor == '\\') {
+    while (!isAtEnd() && currentChar() != '"') {
+      if (currentChar() == '\\' && tryAdvance()) {
+        result.append(currentChar())
         advance()
-        if (!eof) advance()
-      } else if (cursor == '"') {
-        val result = input.substring(start, position)
-        advance()
-        state = State.Normal
-        return result
       } else {
+        result.append(currentChar())
         advance()
       }
     }
+
+    if (!isAtEnd()) {
+      advance() // Skip closing quote
+    }
+
+    return result.toString()
+  }
+
+  private fun parseUnquotedToken(): String {
+    val start = position
+
+    while (!isAtEnd() && currentChar() != ' ' && currentChar() != '"') {
+      advance()
+    }
+
     return input.substring(start, position)
+  }
+
+  private fun skipWhitespace() {
+    while (!isAtEnd() && currentChar() == ' ') {
+      advance()
+    }
+  }
+
+  private fun currentChar(): Char = input[position]
+
+  private fun isAtEnd(): Boolean = position >= input.length
+
+  private fun advance() {
+    position++
+  }
+  
+  private fun tryAdvance(): Boolean {
+    if (this.position + 1 >= this.input.length) {
+      return false
+    }
+    if (!isAtEnd()) {
+      advance()
+      return true
+    }
+    return false
   }
 }
 
 fun transformProgramArguments(input: String?): List<String> {
   val input = input?.trim() ?: return emptyList()
-  return ProgramArgumentLexer(input).parse()
+  return ProgramArgumentParser(input).parse()
 }
