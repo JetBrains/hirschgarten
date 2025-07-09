@@ -133,6 +133,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
   target: BuildTarget,
   includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
+  testExecutableArguments: List<String> = emptyList(),
   callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
@@ -150,6 +151,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
         listOf(target),
         includeTargetNameInText = includeTargetNameInText,
         singleTestFilter = singleTestFilter,
+        testExecutableArguments = testExecutableArguments,
       ),
     )
     if (canBeDebugged) {
@@ -160,6 +162,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
           isDebugAction = true,
           includeTargetNameInText = includeTargetNameInText,
           singleTestFilter = singleTestFilter,
+          testExecutableArguments = testExecutableArguments,
         ),
       )
     }
