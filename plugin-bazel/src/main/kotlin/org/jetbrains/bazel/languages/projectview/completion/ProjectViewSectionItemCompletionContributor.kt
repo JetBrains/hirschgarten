@@ -6,6 +6,7 @@ import com.intellij.patterns.PlatformPatterns.psiElement
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 
 class ProjectViewSectionItemCompletionContributor : CompletionContributor() {
   init {
@@ -13,21 +14,19 @@ class ProjectViewSectionItemCompletionContributor : CompletionContributor() {
       if (metadata.completionProvider != null) {
         extend(
           CompletionType.BASIC,
-          sectionItemElement(metadata.sectionName, metadata.sectionType),
+          sectionItemElement(metadata.sectionName),
           metadata.completionProvider,
         )
       }
     }
   }
 
-  private fun sectionItemElement(sectionName: String, sectionType: ProjectViewSection.SectionType) =
-    when (sectionType) {
-      is ProjectViewSection.SectionType.List<*> -> psiElement()
-        .withLanguage(ProjectViewLanguage)
-        .withSuperParent(2, ProjectViewPsiSection::class.java)
-
-      is ProjectViewSection.SectionType.Scalar -> psiElement()
-        .withLanguage(ProjectViewLanguage)
-        .withSuperParent(2, ProjectViewPsiSection::class.java)
-    }
+  private fun sectionItemElement(sectionName: String) = psiElement()
+    .withLanguage(ProjectViewLanguage)
+    .withSuperParent(
+      2,
+      psiElement(ProjectViewPsiSection::class.java).withFirstChild(
+        psiElement(ProjectViewPsiSectionName::class.java).withText(sectionName)
+      )
+    )
 }
