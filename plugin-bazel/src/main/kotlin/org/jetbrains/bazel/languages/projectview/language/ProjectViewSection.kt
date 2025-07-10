@@ -38,32 +38,32 @@ object ProjectViewSection {
    * */
   val KEYWORD_MAP: Map<ProjectViewSyntaxKey, SectionMetadata> =
     listOf(
-      SectionMetadata("allow_manual_targets_sync", SectionType.Scalar.Boolean),
+      SectionMetadata("allow_manual_targets_sync", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("android_min_sdk", SectionType.Scalar.Integer),
       SectionMetadata("bazel_binary", SectionType.Scalar.String),
       SectionMetadata("build_flags", SectionType.List.String, BuildFlagCompletionProvider()),
       SectionMetadata("test_flags", SectionType.List.String, BuildFlagCompletionProvider()),
-      SectionMetadata("derive_targets_from_directories", SectionType.Scalar.Boolean),
+      SectionMetadata("derive_targets_from_directories", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("directories", SectionType.List.String),
-      SectionMetadata("enable_native_android_rules", SectionType.Scalar.Boolean),
+      SectionMetadata("enable_native_android_rules", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("enabled_rules", SectionType.List.String),
-      SectionMetadata("experimental_add_transitive_compile_time_jars", SectionType.Scalar.Boolean),
+      SectionMetadata("experimental_add_transitive_compile_time_jars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("experimental_no_prune_transitive_compile_time_jars_patterns", SectionType.List.String),
       SectionMetadata("experimental_transitive_compile_time_jars_target_kinds", SectionType.List.String),
       SectionMetadata("experimental_prioritize_libraries_over_modules_target_kinds", SectionType.List.String),
       SectionMetadata("ide_java_home_override", SectionType.Scalar.String),
       SectionMetadata("import_depth", SectionType.Scalar.Integer),
       SectionMetadata("shard_approach", SectionType.Scalar.String),
-      SectionMetadata("shard_sync", SectionType.Scalar.Boolean),
+      SectionMetadata("shard_sync", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("sync_flags", SectionType.List.String),
       SectionMetadata("target_shard_size", SectionType.Scalar.Integer),
       SectionMetadata("targets", SectionType.List.String),
       SectionMetadata("import_run_configurations", SectionType.List.String),
       SectionMetadata("test_sources", SectionType.List.String), // used by Google's plugin
       SectionMetadata("gazelle_target", SectionType.Scalar.String),
-      SectionMetadata("index_all_files_in_directories", SectionType.Scalar.Boolean),
+      SectionMetadata("index_all_files_in_directories", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("python_code_generator_rule_names", SectionType.List.String),
-      SectionMetadata("use_query_sync", SectionType.Scalar.Boolean),
+      SectionMetadata("use_query_sync", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata(
         "workspace_type",
         SectionType.Scalar.String,
@@ -75,4 +75,6 @@ object ProjectViewSection {
           listOf("android", "dart", "java", "javascript", "kotlin", "python", "typescript", "go", "c"))
       ),
     ).associateBy { it.sectionName }
+
+  private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))
 }
