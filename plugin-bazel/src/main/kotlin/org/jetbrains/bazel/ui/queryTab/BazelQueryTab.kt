@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.queryTab
 
+import com.intellij.codeInsight.lookup.LookupManager
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.execution.filters.Filter
@@ -9,7 +10,6 @@ import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -43,7 +43,6 @@ import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Font
-import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
@@ -114,10 +113,18 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   private val editorTextField =
     LanguageTextField(BazelQueryLanguage, project, "").apply {
       setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.query"))
-      val action = EvaluateQueryAction(this@BazelQueryTab)
-      action.registerCustomShortcutSet(
-        CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK)),
-        this,
+      registerKeyboardAction(
+        {
+          val editor = getEditor()
+          if (editor != null) {
+            val lookup = LookupManager.getActiveLookup(editor)
+            if (lookup == null) {
+              evaluate()
+            }
+          }
+        },
+        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+        WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
       )
     }
   private val directoryField = JBTextField().apply { isEditable = false }
@@ -144,7 +151,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
       add(flagTextField)
       val action = EvaluateQueryAction(this@BazelQueryTab)
       action.registerCustomShortcutSet(
-        CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK)),
+        CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0)),
         this,
       )
     }
@@ -276,7 +283,6 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     }
 
     add(splitter)
-
   }
 
   private fun setButtonsPanelToEvaluate() {
