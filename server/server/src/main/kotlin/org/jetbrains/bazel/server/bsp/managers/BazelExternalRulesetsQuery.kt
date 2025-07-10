@@ -43,7 +43,6 @@ class BazelExternalRulesetsQueryImpl(
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
   private val repoMapping: RepoMapping,
-  private val bidirectionalMapFactory: () -> BidirectionalMap<String, String>,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
     when {
@@ -55,7 +54,6 @@ class BazelExternalRulesetsQueryImpl(
           bspClientLogger,
           workspaceContext,
           repoMapping,
-          bidirectionalMapFactory,
         ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             bazelRunner,
@@ -130,7 +128,6 @@ class BazelBzlModExternalRulesetsQueryImpl(
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
   private val repoMapping: RepoMapping,
-  private val bidirectionalMapFactory: () -> BidirectionalMap<String, String>,
 ) : BazelExternalRulesetsQuery {
   private val gson = bazelGson
 
@@ -140,7 +137,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
-    val apparelRepoNameToCanonicalName = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: bidirectionalMapFactory()
+    val apparelRepoNameToCanonicalName = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap.getTypedInstance()
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
