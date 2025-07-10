@@ -6,14 +6,14 @@ import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.platform.backend.presentation.TargetPresentation
 
 @Suppress("UnstableApiUsage")
-class BazelNativeRulesDocumentationTarget(symbol: BazelNativeRuleDocumentationSymbol) :
+class BazelGlobalFunctionDocumentationTarget(symbol: BazelGlobalFunctionDocumentationSymbol) :
   DocumentationTarget,
-  Pointer<BazelNativeRulesDocumentationTarget> {
+  Pointer<BazelGlobalFunctionDocumentationTarget> {
   val symbolPtr = symbol.createPointer()
 
   override fun createPointer() = this
 
-  override fun dereference(): BazelNativeRulesDocumentationTarget? = symbolPtr.dereference().documentationTarget
+  override fun dereference(): BazelGlobalFunctionDocumentationTarget? = symbolPtr.dereference().documentationTarget
 
   override fun computePresentation(): TargetPresentation =
     symbolPtr.dereference().run {
@@ -22,14 +22,7 @@ class BazelNativeRulesDocumentationTarget(symbol: BazelNativeRuleDocumentationSy
 
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
-      val html =
-        nativeRule.docString
-          ?: if (nativeRule.externalDocLink != null) {
-            "External documentation for ${nativeRule.name}: <a href=${nativeRule.externalDocLink}>${nativeRule.externalDocLink}</a>"
-          } else {
-            return null
-          }
-
+      val html = nativeRule.docString ?: return null
       DocumentationResult.documentation(html)
     }
 }
