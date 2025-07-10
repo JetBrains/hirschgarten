@@ -37,8 +37,6 @@ import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.FullProjectSync

@@ -11,7 +11,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.startup.BazelProjectActivity
+import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.ui.queryTab.registerBazelQueryToolWindow
 import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
 

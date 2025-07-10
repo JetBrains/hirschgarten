@@ -159,6 +159,14 @@ sealed class PyCharmPluginTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:PyCharmTest"
 )
 
+sealed class PyCharmImportRedCodeTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Check red code in PyCharm test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:SimplePythonTest"
+)
+
 sealed class FastBuildTest(
   vcsRoot: GitVcsRoot,
 ) : IdeStarterTests(
@@ -278,6 +286,15 @@ object PyCharmTestGitHub : PyCharmPluginTest(
 object PyCharmTestSpace : PyCharmPluginTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
+
+object PyCharmImportRedCodeTestGitHub : PyCharmImportRedCodeTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object PyCharmImportRedCodeTestSpace : PyCharmImportRedCodeTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
 
 object FastBuildTestGitHub : FastBuildTest(
   vcsRoot = BaseConfiguration.GitHubVcs
