@@ -24,12 +24,10 @@ object ProjectViewSection {
   data class SectionMetadata(
     val sectionName: ProjectViewSyntaxKey,
     val sectionType: SectionType,
-    val completionProvider: CompletionProvider<CompletionParameters>? = null
+    val completionProvider: CompletionProvider<CompletionParameters>? = null,
   )
 
-  fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean {
-    return supportedSections.contains(sectionName)
-  }
+  fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean = supportedSections.contains(sectionName)
 
   /*
    * The map below should contain all syntax-wise valid section names.
@@ -67,12 +65,14 @@ object ProjectViewSection {
       SectionMetadata(
         "workspace_type",
         SectionType.Scalar.String,
-        SimpleCompletionProvider(listOf("java", "python", "dart", "android"))),
+        SimpleCompletionProvider(listOf("java", "python", "dart", "android")),
+      ),
       SectionMetadata(
         "additional_languages",
         SectionType.List.String,
         SimpleCompletionProvider(
-          listOf("android", "dart", "java", "javascript", "kotlin", "python", "typescript", "go", "c"))
+          listOf("android", "dart", "java", "javascript", "kotlin", "python", "typescript", "go", "c"),
+        ),
       ),
     ).associateBy { it.sectionName }
 

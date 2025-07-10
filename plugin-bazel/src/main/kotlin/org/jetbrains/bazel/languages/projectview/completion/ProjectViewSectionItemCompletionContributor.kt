@@ -21,12 +21,13 @@ class ProjectViewSectionItemCompletionContributor : CompletionContributor() {
     }
   }
 
-  private fun sectionItemElement(sectionName: String) = psiElement()
-    .withLanguage(ProjectViewLanguage)
-    .withSuperParent(
-      2,
-      psiElement(ProjectViewPsiSection::class.java).withFirstChild(
-        psiElement(ProjectViewPsiSectionName::class.java).withText(sectionName)
+  private fun sectionItemElement(sectionName: String) =
+    psiElement()
+      .withLanguage(ProjectViewLanguage)
+      .withSuperParent(
+        2,
+        psiElement(ProjectViewPsiSection::class.java).withFirstChild(
+          psiElement(ProjectViewPsiSectionName::class.java).withText(sectionName),
+        ),
       )
-    )
 }

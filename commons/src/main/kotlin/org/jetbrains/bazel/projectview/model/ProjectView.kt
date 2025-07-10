@@ -28,31 +28,32 @@ import org.jetbrains.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bazel.projectview.model.sections.TargetShardSizeSection
 import org.slf4j.LoggerFactory
 
-val supportedSections = setOf(
-  ProjectViewTargetsSection.SECTION_NAME,
-  ProjectViewBazelBinarySection.SECTION_NAME,
-  ProjectViewBuildFlagsSection.SECTION_NAME,
-  ProjectViewSyncFlagsSection.SECTION_NAME,
-  ProjectViewAllowManualTargetsSyncSection.SECTION_NAME,
-  ProjectViewDirectoriesSection.SECTION_NAME,
-  ProjectViewDeriveTargetsFromDirectoriesSection.SECTION_NAME,
-  ProjectViewImportDepthSection.SECTION_NAME,
-  ProjectViewEnabledRulesSection.SECTION_NAME,
-  ProjectViewIdeJavaHomeOverrideSection.SECTION_NAME,
-  ExperimentalAddTransitiveCompileTimeJarsSection.SECTION_NAME,
-  ExperimentalTransitiveCompileTimeJarsTargetKindsSection.SECTION_NAME,
-  ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection.SECTION_NAME,
-  ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection.SECTION_NAME,
-  EnableNativeAndroidRulesSection.SECTION_NAME,
-  AndroidMinSdkSection.SECTION_NAME,
-  ShardSyncSection.SECTION_NAME,
-  TargetShardSizeSection.SECTION_NAME,
-  ShardingApproachSection.SECTION_NAME,
-  ImportRunConfigurationsSection.SECTION_NAME,
-  GazelleTargetSection.SECTION_NAME,
-  IndexAllFilesInDirectoriesSection.SECTION_NAME,
-  PythonCodeGeneratorRuleNamesSection.SECTION_NAME,
-)
+val supportedSections =
+  setOf(
+    ProjectViewTargetsSection.SECTION_NAME,
+    ProjectViewBazelBinarySection.SECTION_NAME,
+    ProjectViewBuildFlagsSection.SECTION_NAME,
+    ProjectViewSyncFlagsSection.SECTION_NAME,
+    ProjectViewAllowManualTargetsSyncSection.SECTION_NAME,
+    ProjectViewDirectoriesSection.SECTION_NAME,
+    ProjectViewDeriveTargetsFromDirectoriesSection.SECTION_NAME,
+    ProjectViewImportDepthSection.SECTION_NAME,
+    ProjectViewEnabledRulesSection.SECTION_NAME,
+    ProjectViewIdeJavaHomeOverrideSection.SECTION_NAME,
+    ExperimentalAddTransitiveCompileTimeJarsSection.SECTION_NAME,
+    ExperimentalTransitiveCompileTimeJarsTargetKindsSection.SECTION_NAME,
+    ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection.SECTION_NAME,
+    ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection.SECTION_NAME,
+    EnableNativeAndroidRulesSection.SECTION_NAME,
+    AndroidMinSdkSection.SECTION_NAME,
+    ShardSyncSection.SECTION_NAME,
+    TargetShardSizeSection.SECTION_NAME,
+    ShardingApproachSection.SECTION_NAME,
+    ImportRunConfigurationsSection.SECTION_NAME,
+    GazelleTargetSection.SECTION_NAME,
+    IndexAllFilesInDirectoriesSection.SECTION_NAME,
+    PythonCodeGeneratorRuleNamesSection.SECTION_NAME,
+  )
 
 /**
  * Representation of the project view file.

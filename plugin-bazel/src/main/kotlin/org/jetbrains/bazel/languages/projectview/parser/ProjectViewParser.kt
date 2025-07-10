@@ -8,7 +8,6 @@ import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
-import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 
 class ProjectViewParser(private val builder: PsiBuilder) {
   fun parseFile() {

@@ -5,7 +5,7 @@ kt_jvm_library(
     srcs = glob(["**/*.kt"]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc",
     ],
 )
