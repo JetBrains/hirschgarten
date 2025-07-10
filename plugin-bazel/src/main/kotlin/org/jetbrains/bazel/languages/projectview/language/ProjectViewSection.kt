@@ -42,6 +42,7 @@ object ProjectViewSection {
       SectionMetadata("android_min_sdk", SectionType.Scalar.Integer),
       SectionMetadata("bazel_binary", SectionType.Scalar.String),
       SectionMetadata("build_flags", SectionType.List.String, BuildFlagCompletionProvider()),
+      SectionMetadata("test_flags", SectionType.List.String, BuildFlagCompletionProvider()),
       SectionMetadata("derive_targets_from_directories", SectionType.Scalar.Boolean),
       SectionMetadata("directories", SectionType.List.String),
       SectionMetadata("enable_native_android_rules", SectionType.Scalar.Boolean),
