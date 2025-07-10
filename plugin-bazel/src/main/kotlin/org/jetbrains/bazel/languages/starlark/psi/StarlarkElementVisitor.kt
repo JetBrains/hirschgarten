@@ -44,6 +44,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAugAssignme
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkBreakStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkContinueStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkIfStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
@@ -155,6 +156,10 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
   }
 
   fun visitLoadStatement(node: StarlarkLoadStatement) {
+    visitElement(node)
+  }
+
+  fun visitFilenameLoadValue(node: StarlarkFilenameLoadValue) {
     visitElement(node)
   }
 

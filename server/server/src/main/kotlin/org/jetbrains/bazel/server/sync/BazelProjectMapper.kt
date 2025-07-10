@@ -93,7 +93,9 @@ class BazelProjectMapper(
             .allTargetsAtDepth(
               workspaceContext.importDepth.value,
               rootTargets,
-            ) { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) }
+              isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
+              targetSupportsStrictDeps = { id -> targets[id]?.kind?.let { targetSupportsStrictDeps(it) } ?: false },
+            )
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
@@ -965,6 +967,15 @@ class BazelProjectMapper(
       "go_library",
       "go_binary",
       "go_test",
+    )
+
+  private fun targetSupportsStrictDeps(kind: String): Boolean = kind in strictDepsTargetKinds
+
+  private val strictDepsTargetKinds =
+    setOf(
+      "java_library",
+      "java_binary",
+      "java_test",
     )
 
   private suspend fun createModules(

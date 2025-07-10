@@ -473,6 +473,7 @@
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
+    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
     <notificationGroup
       displayType="BALLOON"
       id="Bazel slow plugins warning"
@@ -581,15 +582,8 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
       language="Starlark"
     />
-    <completion.contributor
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesCompletionContributor"
-      language="Starlark"
-    />
-    <completion.contributor
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesArgumentCompletionContributor"
-      language="Starlark"
-    />
-    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider" />
+    <editorTabTitleProvider
+      implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
     <extendWordSelectionHandler
       implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"
     />
@@ -616,7 +610,12 @@
     />
     <lang.parserDefinition
       implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"
-      language="ProjectView"/>
+      language="ProjectView"
+    />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionCompletionContributor"
+      language="ProjectView"
+    />
 
     <refactoring.safeDeleteProcessor implementation="org.jetbrains.bazel.languages.starlark.refactoring.StarlarkFileSafeDeleteProcessor"/>
     <refactoring.safeDeleteProcessor implementation="org.jetbrains.bazel.languages.starlark.refactoring.StarlarkFunctionSafeDeleteProcessor"/>
@@ -832,7 +831,8 @@
         second-keystroke="H"
       />
     </action>
-    <action class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
+    <action id="Bazel.JumpToBuildFile"
+            class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
       <add-to-group group-id="EditorPopupMenu" />
       <add-to-group group-id="EditorTabPopupMenu" />
       <keyboard-shortcut
@@ -865,6 +865,10 @@
             class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
             text="Exclude from the Project View Directories"
             description="Exclude this directory from the project view file.">
+    </action>
+
+    <action id="Bazel.OpenProjectViewFile"
+            class="org.jetbrains.bazel.action.registered.OpenProjectViewAction">
     </action>
 
     <group id="Bazel.ModifyProjectViewDirectories">
