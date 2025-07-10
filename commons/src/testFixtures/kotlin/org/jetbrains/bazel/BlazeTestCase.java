@@ -33,6 +33,7 @@ import com.intellij.openapi.util.registry.Registry;
 import org.jetbrains.bazel.commons.EnvironmentProvider;
 import org.jetbrains.bazel.commons.FileUtil;
 import org.jetbrains.bazel.commons.SystemInfoProvider;
+import org.jetbrains.bazel.startup.FileUtilIntellij;
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider;
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider;
 import org.junit.After;
@@ -41,8 +42,6 @@ import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import java.io.File;
-import java.nio.file.Path;
 
 /**
  * Test base class.
@@ -80,28 +79,6 @@ public class BlazeTestCase {
     public void dispose() {}
   }
 
-
-  /** Test implementation of FileUtil */
-  private static class TestFileUtil implements FileUtil {
-    @Override
-    public boolean isAncestor(String ancestor, String file, boolean strict) {
-      Path ancestorPath = Path.of(ancestor).toAbsolutePath().normalize();
-      Path filePath = Path.of(file).toAbsolutePath().normalize();
-
-      if (strict && ancestorPath.equals(filePath)) {
-        return false;
-      }
-
-      return filePath.startsWith(ancestorPath);
-    }
-
-    @Override
-    public boolean isAncestor(File ancestor, File file, boolean strict) {
-      return isAncestor(ancestor.getAbsolutePath(), file.getAbsolutePath(), strict);
-    }
-  }
-
-
   /** A wrapper around the pico container used by IntelliJ's DI system */
   public static class Container {
     private final MockComponentManager componentManager;
@@ -131,7 +108,7 @@ public class BlazeTestCase {
     SystemInfoProvider.Companion.provideSystemInfoProvider(IntellijSystemInfoProvider.INSTANCE);
 
     // Initialize FileUtil for tests
-    FileUtil.Companion.provideFileUtil(new TestFileUtil());
+    FileUtil.Companion.provideFileUtil(FileUtilIntellij.INSTANCE);
 
     // Initialize EnvironmentProvider for tests
     EnvironmentProvider.Companion.provideEnvironmentProvider(IntellijEnvironmentProvider.INSTANCE);

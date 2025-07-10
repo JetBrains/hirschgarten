@@ -3,12 +3,12 @@ package org.jetbrains.bazel.bazelrunner.outputs
 import com.intellij.util.io.awaitExit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
+import org.jetbrains.bazel.startup.IntellijSpawnedProcess
 import org.junit.Before
 import org.junit.Test
-import java.io.InputStream
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
@@ -16,75 +16,16 @@ import kotlin.coroutines.cancellation.CancellationException
 // Simple OS detection for tests
 private val isWindows = System.getProperty("os.name").lowercase().contains("windows")
 
-// Test wrapper to adapt java.lang.Process to SpawnedProcess
-class ProcessWrapper(private val process: Process) : SpawnedProcess {
-  override val pid: Long = process.pid()
-  override val inputStream: InputStream = process.inputStream
-  override val errorStream: InputStream = process.errorStream
-  override val isAlive: Boolean get() = process.isAlive
-
-  override fun waitFor(timeout: Int, unit: TimeUnit): Boolean = process.waitFor(timeout.toLong(), unit)
-
-  override fun waitFor(): Int = process.waitFor()
-
-  override fun destroy() {
-    process.destroyForcibly()
-  }
-
-  override suspend fun awaitExit(): Int = process.awaitExit()
-}
-
-// Mock ProcessSpawner for testing
-class MockProcessSpawner : ProcessSpawner {
-  override suspend fun spawnDeferredProcess(
-    command: List<String>,
-    environment: Map<String, String>,
-    redirectErrorStream: Boolean,
-    workDirectory: String?,
-  ): Deferred<SpawnedProcess> = throw UnsupportedOperationException("Not implemented for tests")
-
-  override fun killProcessTree(process: SpawnedProcess): Boolean {
-    if (process is ProcessWrapper) {
-      process.destroy()
-      return true
-    }
-    return false
-  }
-
-  override fun killProcess(process: SpawnedProcess) {
-    if (process is ProcessWrapper) {
-      process.destroy()
-    }
-  }
-
-  override fun killProcess(pid: Int) {
-    // Mock implementation - in real tests this would kill the process by PID
-    try {
-      val process =
-        ProcessBuilder(
-          if (isWindows) {
-            listOf("taskkill", "/F", "/PID", pid.toString())
-          } else {
-            listOf("kill", "-9", pid.toString())
-          },
-        ).start()
-      process.waitFor()
-    } catch (e: Exception) {
-      // Ignore errors in mock implementation
-    }
-  }
-}
-
 class OutputProcessorTest {
   @Before
   fun setUp() {
-    ProcessSpawner.provideProcessSpawner(MockProcessSpawner())
+    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
   }
 
   @Test
   fun `cancelling waitForExit kills the process`() {
     val process = startHangingProcess()
-    val proc = AsyncOutputProcessor(ProcessWrapper(process), OutputCollector())
+    val proc = AsyncOutputProcessor(IntellijSpawnedProcess(process), OutputCollector())
 
     process.isAlive shouldBe true
     shouldThrow<CancellationException> {
@@ -106,7 +47,7 @@ class OutputProcessorTest {
     val process = startHangingProcess()
     val serverProcess = startHangingProcess()
     val serverPidFuture = CompletableFuture.completedFuture(serverProcess.pid())
-    val proc = AsyncOutputProcessor(ProcessWrapper(process), OutputCollector())
+    val proc = AsyncOutputProcessor(IntellijSpawnedProcess(process), OutputCollector())
 
     process.isAlive shouldBe true
     serverProcess.isAlive shouldBe true
@@ -131,7 +72,7 @@ class OutputProcessorTest {
     val process = startQuickProcess()
     val serverProcess = startHangingProcess()
     val serverPidFuture = CompletableFuture.completedFuture(serverProcess.pid())
-    val proc = AsyncOutputProcessor(ProcessWrapper(process), OutputCollector())
+    val proc = AsyncOutputProcessor(IntellijSpawnedProcess(process), OutputCollector())
 
     serverProcess.isAlive shouldBe true
     val exitCode =
