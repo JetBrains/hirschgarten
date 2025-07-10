@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -132,6 +133,9 @@ class BuildServerMock(
   override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
 
   override suspend fun jvmToolchainInfo() = JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
+
+  override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo =
+    JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

@@ -138,6 +138,11 @@ class ProjectSyncService(
     return bspMapper.jvmBuilderParams(project)
   }
 
+  suspend fun buildJvmToolchainInfoForTarget(target: Label): JvmToolchainInfo {
+    val project = projectProvider.get()
+    return bspMapper.jvmBuilderParamsForTarget(project, target)
+  }
+
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     bspMapper.resolveLocalToRemote(params)
 

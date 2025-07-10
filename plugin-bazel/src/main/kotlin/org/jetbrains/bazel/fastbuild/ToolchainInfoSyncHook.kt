@@ -7,7 +7,10 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 
@@ -28,23 +31,82 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
   @Service(Service.Level.PROJECT)
   class JvmToolchainInfoService : PersistentStateComponent<JvmToolchainInfoService.State> {
     var jvmToolchainInfo: JvmToolchainInfo? = null
+    private val perTargetToolchainInfo = mutableMapOf<String, JvmToolchainInfo>()
+
+    fun getJvmToolchainInfo(target: Label? = null): JvmToolchainInfo? =
+      if (target != null) {
+        perTargetToolchainInfo[target.toString()]
+      } else {
+        jvmToolchainInfo
+      }
+
+    fun setJvmToolchainInfo(toolchainInfo: JvmToolchainInfo, target: Label? = null) {
+      if (target != null) {
+        perTargetToolchainInfo[target.toString()] = toolchainInfo
+      } else {
+        jvmToolchainInfo = toolchainInfo
+      }
+    }
+
+    fun getOrQueryJvmToolchainInfo(project: Project, target: Label): JvmToolchainInfo {
+      // first try to get cached toolchain info
+      val cachedInfo = getJvmToolchainInfo(target)
+      if (cachedInfo != null) {
+        return cachedInfo
+      }
+
+      // query the server for per-target toolchain info
+      val toolchainInfo =
+        runBlocking {
+          project.connection.runWithServer { server ->
+            server.jvmToolchainInfoForTarget(target)
+          }
+        }
+
+      // cache the result
+      setJvmToolchainInfo(toolchainInfo, target)
+      return toolchainInfo
+    }
 
     override fun getState(): State? =
-      jvmToolchainInfo?.let {
-        State(
-          java_home = it.java_home,
-          toolchain_path = it.toolchain_path,
-          jvm_opts = it.jvm_opts,
-        )
-      }
+      State(
+        defaultToolchain =
+          jvmToolchainInfo?.let {
+            ToolchainInfoState(
+              java_home = it.java_home,
+              toolchain_path = it.toolchain_path,
+              jvm_opts = it.jvm_opts,
+            )
+          },
+        perTargetToolchains =
+          perTargetToolchainInfo.mapValues { (_, toolchainInfo) ->
+            ToolchainInfoState(
+              java_home = toolchainInfo.java_home,
+              toolchain_path = toolchainInfo.toolchain_path,
+              jvm_opts = toolchainInfo.jvm_opts,
+            )
+          },
+      )
 
     override fun loadState(state: JvmToolchainInfoService.State) {
       this.jvmToolchainInfo =
-        JvmToolchainInfo(
-          java_home = state.java_home,
-          toolchain_path = state.toolchain_path,
-          jvm_opts = state.jvm_opts,
-        )
+        state.defaultToolchain?.let {
+          JvmToolchainInfo(
+            java_home = it.java_home,
+            toolchain_path = it.toolchain_path,
+            jvm_opts = it.jvm_opts,
+          )
+        }
+      this.perTargetToolchainInfo.clear()
+      this.perTargetToolchainInfo.putAll(
+        state.perTargetToolchains.mapValues { (_, toolchainState) ->
+          JvmToolchainInfo(
+            java_home = toolchainState.java_home,
+            toolchain_path = toolchainState.toolchain_path,
+            jvm_opts = toolchainState.jvm_opts,
+          )
+        },
+      )
     }
 
     companion object {
@@ -52,10 +114,15 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
     }
 
     @Suppress("PropertyName")
-    data class State(
+    data class ToolchainInfoState(
       var java_home: String = "",
       var toolchain_path: String = "",
       var jvm_opts: List<String> = emptyList(),
+    )
+
+    data class State(
+      var defaultToolchain: ToolchainInfoState? = null,
+      var perTargetToolchains: Map<String, ToolchainInfoState> = emptyMap(),
     )
   }
 }
