@@ -693,18 +693,20 @@ class DependencyGraphTest {
   }
 
   @Test
-  fun `should not add targets without sources unless someone depends on them`() {
+  fun `should not add non-workspace targets unless someone depends on them`() {
     // given
     val target = targetInfo("//target", dependenciesIds = listOf("//target1"))
-    val target1 = targetInfo("//target1", withSources = false)
-    val target2 = targetInfo("//target2", withSources = false)
+    val target1 = targetInfo("//target1")
+    val target2 = targetInfo("//target2")
     val rootTargets = setOf(Label.parse("//target"), Label.parse("//target2"))
     val idToTargetInfo =
       toIdToTargetInfoMap(target, target1, target2)
     val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
     // when
-    val dependencies = dependencyGraph.allTargetsAtDepth(1, rootTargets)
+    val dependencies = dependencyGraph.allTargetsAtDepth(1, rootTargets, isWorkspaceTarget = { label ->
+      label.toString() == "@//target"
+    })
 
     // then
     val expectedDependencies =
@@ -719,7 +721,6 @@ class DependencyGraphTest {
     id: String,
     dependenciesIds: List<String> = listOf(),
     runtimeDependenciesIds: List<String> = listOf(),
-    withSources: Boolean = true,
   ): TargetInfo =
     TargetInfo
       .newBuilder()
@@ -727,14 +728,7 @@ class DependencyGraphTest {
       .addAllDependencies(
         dependenciesIds.map { dependency(it, Dependency.DependencyType.COMPILE) } +
           runtimeDependenciesIds.map { dependency(it, Dependency.DependencyType.RUNTIME) },
-      ).applyIf(withSources) {
-        addSources(
-          BspTargetInfo.FileLocation
-            .newBuilder()
-            .setRelativePath("source")
-            .build(),
-        )
-      }.build()
+      ).build()
 
   private fun dependency(id: String, dependencyType: Dependency.DependencyType): Dependency =
     Dependency
