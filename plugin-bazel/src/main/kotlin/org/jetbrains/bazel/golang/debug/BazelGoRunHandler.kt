@@ -17,7 +17,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesGo
 import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
