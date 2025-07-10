@@ -3,14 +3,13 @@ package org.jetbrains.bazel.golang.debug
 import com.goide.dlv.DlvDebugProcess
 import com.goide.dlv.DlvDisconnectOption
 import com.goide.dlv.DlvRemoteVmConnection
+import com.goide.execution.GoBuildingRunner
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.progress.ProgressManager
@@ -20,8 +19,10 @@ import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.concurrency.Promise
+import org.jetbrains.concurrency.resolvedPromise
 
-class BazelGoDebugRunner : GenericProgramRunner<RunnerSettings>() {
+class BazelGoDebugRunner : GoBuildingRunner() {
   override fun getRunnerId(): String = "BazelGoDebugRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -31,10 +32,13 @@ class BazelGoDebugRunner : GenericProgramRunner<RunnerSettings>() {
     return profile.handler is BazelGoRunHandler || profile.handler is BazelGoTestHandler
   }
 
-  override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
-    // cast should always succeed, because canRun(...) checks for a compatible profile
-    return attachVM(state as GoDebuggableCommandLineState, environment)
-  }
+  // override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
+  //  // cast should always succeed, because canRun(...) checks for a compatible profile
+  //  return attachVM(state as GoDebuggableCommandLineState, environment)
+  // }
+
+  override fun execute(environment: ExecutionEnvironment, state: RunProfileState): Promise<RunContentDescriptor?> =
+    resolvedPromise(attachVM(state as GoDebuggableCommandLineState, environment))
 
   private fun attachVM(state: GoDebuggableCommandLineState, executionEnvironment: ExecutionEnvironment): RunContentDescriptor {
     val project = executionEnvironment.project

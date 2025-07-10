@@ -9,6 +9,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
@@ -16,7 +17,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesGo
 import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -27,7 +27,7 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
   init {
     configuration.beforeRunTasks =
       listOfNotNull(
-        BazelGoCalculateExecutableInfoBeforeRunTaskProvider().createTask(configuration),
+        BazelGoBinaryBeforeRunTaskProvider().createTask(configuration),
       )
   }
 
@@ -52,7 +52,7 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
 
   private fun getTargetId(environment: ExecutionEnvironment): Label =
     (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
-      ?: throw ExecutionException("Couldn't get BSP target from run configuration")
+      ?: throw ExecutionException(BazelPluginBundle.message("go.runner.wrong.configuration"))
 
   class BazelGoRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "BazelGoRunHandlerProvider"
@@ -75,4 +75,15 @@ class GoRunWithDebugCommandLineState(
   module: Module,
   configuration: GoApplicationConfiguration,
   val settings: GenericRunState,
-) : GoDebuggableCommandLineState(environment, module, configuration, originId)
+) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
+  override fun patchAdditionalConfigs() {
+    with(configuration) {
+      val envVarsData = settings.env
+      val envVars = envVarsData.envs
+      for (env in envVars) {
+        customEnvironment[env.key] = env.value
+      }
+      isPassParentEnvironment = envVarsData.isPassParentEnvs
+    }
+  }
+}

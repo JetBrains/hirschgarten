@@ -11,6 +11,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.ui.PortField
 import com.intellij.util.xmlb.annotations.Attribute
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.addEnvironmentFragment
@@ -33,7 +34,7 @@ class JvmTestStateEditor(private val config: BazelRunConfiguration) :
   FragmentedSettingsEditor<JvmTestState>(config.handler?.state as JvmTestState) {
   override fun createFragments(): Collection<SettingsEditorFragment<JvmTestState, *>> =
     SettingsEditorFragmentContainer.fragments {
-      add(CommonParameterFragments.createHeader("Test Configuration"))
+      add(CommonParameterFragments.createHeader(BazelPluginBundle.message("jvm.runner.test.header")))
       addDebugPortFragment()
       add(bazelParamsFragment())
       addTestFilterFragment()
@@ -55,7 +56,7 @@ fun <C : HasDebugPort> SettingsEditorFragmentContainer<C>.addDebugPortFragment()
       override val settingsHint: String? = null
       override val settingsId: String = "Debug Port ID"
       override val settingsName: String = "Debug Port"
-      override val editorLabel: @NlsContexts.Label String = "Debug port"
+      override val editorLabel: @NlsContexts.Label String = BazelPluginBundle.message("debug.editor.label")
       override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
     },
     {

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.projectview.parser
 import com.intellij.lang.PsiBuilder
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.psi.tree.IElementType
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
@@ -115,7 +116,7 @@ class ProjectViewParser(private val builder: PsiBuilder) {
     if (matches(type)) {
       return true
     }
-    builder.error("'$type' expected")
+    builder.error(BazelPluginBundle.message("bazel.language.project.parser.error", type))
     return false
   }
 
