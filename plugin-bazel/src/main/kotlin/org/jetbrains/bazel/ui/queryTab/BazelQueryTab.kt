@@ -317,6 +317,14 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         val evaluateButton =
           JButton(BazelPluginBundle.message("button.bazel.query.evaluate")).apply {
             addActionListener { evaluate() }
+            addKeyListener(object : KeyAdapter() {
+              override fun keyPressed(e: KeyEvent) {
+                if (e.keyCode == KeyEvent.VK_ENTER) {
+                  doClick()
+                  e.consume()
+                }
+              }
+            })
           }
         add(evaluateButton)
         updateUI()
