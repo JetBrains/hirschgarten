@@ -4,9 +4,7 @@ import com.intellij.util.io.awaitExit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.junit.Before
 import org.junit.Test
@@ -39,8 +37,7 @@ class ProcessWrapper(private val process: Process) : SpawnedProcess {
 // Mock ProcessSpawner for testing
 class MockProcessSpawner : ProcessSpawner {
   override suspend fun spawnDeferredProcess(
-    command: String,
-    args: List<String>,
+    command: List<String>,
     environment: Map<String, String>,
     redirectErrorStream: Boolean,
     workDirectory: String?,

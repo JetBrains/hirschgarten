@@ -36,8 +36,7 @@ class JdkVersionResolver {
       runBlocking {
         processSpawner
           .spawnDeferredProcess(
-            command = javaPath.toString(),
-            args = listOf("-version"),
+            command = listOf(javaPath.toString(), "-version"),
             environment = emptyMap(),
             redirectErrorStream = true,
             workDirectory = null,

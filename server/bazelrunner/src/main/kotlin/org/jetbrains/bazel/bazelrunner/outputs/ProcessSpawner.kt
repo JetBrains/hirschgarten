@@ -9,8 +9,7 @@ import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
  */
 interface ProcessSpawner {
   suspend fun spawnDeferredProcess(
-    command: String,
-    args: List<String>,
+    command: List<String>,
     environment: Map<String, String>,
     redirectErrorStream: Boolean,
     workDirectory: String?,
@@ -47,8 +46,7 @@ interface ProcessSpawner {
  * Spawns a process and waits for it to complete
  */
 fun ProcessSpawner.spawnProcess(
-  command: String,
-  args: List<String>,
+  command: List<String>,
   environment: Map<String, String>,
   redirectErrorStream: Boolean,
   workDirectory: String? = null,
@@ -56,7 +54,6 @@ fun ProcessSpawner.spawnProcess(
   runBlocking {
     spawnDeferredProcess(
       command = command,
-      args = args,
       environment = environment,
       redirectErrorStream = redirectErrorStream,
       workDirectory = workDirectory,
