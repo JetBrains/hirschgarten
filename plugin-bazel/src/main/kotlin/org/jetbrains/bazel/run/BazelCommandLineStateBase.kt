@@ -14,6 +14,7 @@ import com.intellij.openapi.application.EDT
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -46,6 +47,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
     val runDeferred =
       bazelCoroutineService.startAsync(lazy = true) {
         project.connection.runWithServer { server: JoinedBuildServer ->
+          saveAllFiles()
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
