@@ -12,7 +12,6 @@ import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
-import org.jetbrains.bazel.commons.FileUtils
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties

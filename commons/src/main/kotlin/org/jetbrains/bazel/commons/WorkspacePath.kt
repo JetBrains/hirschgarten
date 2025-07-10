@@ -17,8 +17,8 @@ package org.jetbrains.bazel.commons
 
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.Path
 import kotlin.ConsistentCopyVisibility
+import kotlin.io.path.Path
 
 /**
  * Represents a path relative to the workspace root. The path component separator is Bazel specific.
@@ -80,7 +80,6 @@ data class WorkspacePath private constructor(private val path: Path) {
       return if (systemInfoProvider.isWindows) relativePath.replace('\\', BAZEL_COMPONENT_SEPARATOR) else relativePath
     }
 
-
     private fun validateAndCreatePath(relativePath: String): Path {
       val normalizedPath = normalizePathSeparator(relativePath)
       val error = validate(normalizedPath)
@@ -101,7 +100,7 @@ data class WorkspacePath private constructor(private val path: Path) {
         return (
           "Workspace path must be inside the workspace; cannot start with '../': " +
             relativePath
-          )
+        )
       }
       if (relativePath.endsWith("/")) {
         return "Workspace path may not end with '/': $relativePath"

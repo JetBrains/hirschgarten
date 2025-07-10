@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.commons
 
-
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -36,8 +35,7 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
   fun getPathRootedAt(absoluteRoot: Path): Path =
     if (absoluteOrRelativePath.isAbsolute) {
       absoluteOrRelativePath
-    }
-    else {
+    } else {
       absoluteRoot.resolve(absoluteOrRelativePath)
     }
 

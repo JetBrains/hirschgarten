@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.BazelServices
 import org.jetbrains.bazel.server.bsp.info.BspInfo
@@ -40,7 +41,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
-import org.jetbrains.bazel.commons.EnvironmentProvider
 
 class BazelBspServer(
   private val bspInfo: BspInfo,

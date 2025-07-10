@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.slf4j.Logger
@@ -257,8 +257,11 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Query(bazelBinary: String, private val allowManualTargetsSync: Boolean, private val systemInfoProvider: SystemInfoProvider) :
-    BazelCommand(bazelBinary),
+  class Query(
+    bazelBinary: String,
+    private val allowManualTargetsSync: Boolean,
+    private val systemInfoProvider: SystemInfoProvider,
+  ) : BazelCommand(bazelBinary),
     HasMultipleTargets {
     override val targets: MutableList<Label> = mutableListOf()
     override val excludedTargets: MutableList<Label> = mutableListOf()

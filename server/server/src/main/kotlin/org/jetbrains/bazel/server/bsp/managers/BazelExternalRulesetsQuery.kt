@@ -137,7 +137,8 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
-    val apparelRepoNameToCanonicalName = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap.getTypedInstance()
+    val apparelRepoNameToCanonicalName =
+      (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap.getTypedInstance()
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
