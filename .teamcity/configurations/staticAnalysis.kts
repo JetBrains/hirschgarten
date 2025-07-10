@@ -104,7 +104,6 @@ open class Analyze(
             }
             additionalDockerArguments = """
                 -v %system.agent.persistent.cache%/plugins/plugin-bazel:/opt/idea/custom-plugins/plugin-bazel
-                -v %system.agent.persistent.cache%/.netrc:/root/.netrc
                 ${if (repo != null) {"-v %system.agent.persistent.cache%/$repo/qodana.yaml:%system.agent.persistent.cache%/$repo/qodana.yaml"} else {""}}
                 ${if (repo != null) {"-e QODANA_REMOTE_URL=\"%env.GIT_REPO_URL%\""} else {""}}
                 ${if (repo != null) {"-e QODANA_REVISION=\"%env.GIT_COMMIT%\""} else {""}}

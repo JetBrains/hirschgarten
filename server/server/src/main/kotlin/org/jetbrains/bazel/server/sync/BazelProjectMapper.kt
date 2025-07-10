@@ -93,7 +93,9 @@ class BazelProjectMapper(
             .allTargetsAtDepth(
               workspaceContext.importDepth.value,
               rootTargets,
-            ) { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) }
+              isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
+              targetSupportsStrictDeps = { id -> targets[id]?.kind?.let { targetSupportsStrictDeps(it) } ?: false },
+            )
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
@@ -896,7 +898,8 @@ class BazelProjectMapper(
   private fun hasKnownPythonSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
       it.relativePath.endsWith(".py")
-    }
+    } ||
+      targetInfo.pythonTargetInfo.isCodeGenerator
 
   private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
@@ -960,9 +963,19 @@ class BazelProjectMapper(
       "kt_android_library",
       "kt_android_local_test",
       "intellij_plugin_debug_target",
+      "go_proto_library",
       "go_library",
       "go_binary",
       "go_test",
+    )
+
+  private fun targetSupportsStrictDeps(kind: String): Boolean = kind in strictDepsTargetKinds
+
+  private val strictDepsTargetKinds =
+    setOf(
+      "java_library",
+      "java_binary",
+      "java_test",
     )
 
   private suspend fun createModules(
@@ -1071,6 +1084,12 @@ class BazelProjectMapper(
       }
       if (target.hasJvmTargetInfo()) {
         add(LanguageClass.JAVA)
+      }
+      if (target.hasPythonTargetInfo()) {
+        add(LanguageClass.PYTHON)
+      }
+      if (target.hasGoTargetInfo()) {
+        add(LanguageClass.GO)
       }
       languagesFromKinds[target.kind]?.let {
         addAll(it)

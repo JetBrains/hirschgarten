@@ -20,7 +20,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 @GeneratedCodeApiVersion(3)
-@GeneratedCodeImplVersion(6)
+@GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelProjectDirectoriesEntityData) : BazelProjectDirectoriesEntity,
                                                                                                               WorkspaceEntityBase(

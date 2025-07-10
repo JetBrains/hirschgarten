@@ -1,11 +1,15 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("//rules_intellij/intellij_platform_sdk:build_defs.bzl", "select_for_plugin_api")
 
 kt_jvm_library(
     name = "entities",
-    srcs = glob([
-        "*.kt",
-        "impl/*.kt",
-    ]),
+    srcs = select_for_plugin_api({
+        "intellij-2025.1": ["Dummy.kt"],
+        "intellij-2025.2": glob([
+            "*.kt",
+            "impl/*.kt",
+        ]),
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",

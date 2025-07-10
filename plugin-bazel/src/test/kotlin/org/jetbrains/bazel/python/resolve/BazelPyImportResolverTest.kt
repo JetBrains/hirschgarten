@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.python.resolve
 
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
+import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -14,6 +16,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -23,6 +26,12 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
     super.beforeEach()
     project.isBazelProject = true
     prepareFiles()
+  }
+
+  /** Dispose of the auto‑import tracker created for this test project. */
+  @AfterEach
+  fun tearDownTracker() {
+    Disposer.dispose(AutoImportProjectTracker.getInstance(project))
   }
 
   @Test
@@ -96,6 +105,35 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
     result.shouldBeNull()
   }
 
+  @Test
+  fun `should accept a synonym`() {
+    val synonymProvider = MockSynonymProvider()
+    PythonSynonymProvider.ep.registerExtension(synonymProvider)
+    val result = tryResolve("synonym.dir2.dir21.dir211.file2111")
+    result.shouldNotBeNull()
+    result.shouldBeInstanceOf<PyFile>()
+    result.virtualFile.name shouldBe "file2111.py"
+    synonymProvider.wasGetSynonymCalled shouldBe true
+  }
+
+  @Test
+  fun `should not cause an error if synonym provider returns null`() {
+    val synonymProvider = MockSynonymProvider()
+    PythonSynonymProvider.ep.registerExtension(synonymProvider)
+    val result = tryResolve("null")
+    result.shouldBeNull()
+    synonymProvider.wasGetSynonymCalled shouldBe true
+  }
+
+  @Test
+  fun `should not call synonym provider if not necessary`() {
+    val synonymProvider = MockSynonymProvider()
+    PythonSynonymProvider.ep.registerExtension(synonymProvider)
+    val result = tryResolve("file1")
+    result.shouldNotBeNull()
+    synonymProvider.wasGetSynonymCalled shouldBe false
+  }
+
   /**
    * ```
    * root
@@ -137,5 +175,18 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
     val nameObject = QualifiedName.fromComponents(qualifiedName.split('.'))
     val context = PyQualifiedNameResolveContextImpl(PsiManager.getInstance(project), null, null, null)
     return BazelPyImportResolver().resolveImportReference(nameObject, context, false)
+  }
+}
+
+private class MockSynonymProvider : PythonSynonymProvider {
+  var wasGetSynonymCalled: Boolean = false
+
+  override fun getSynonym(qualifiedNameComponents: List<String>): List<String>? {
+    wasGetSynonymCalled = true
+    return if (qualifiedNameComponents.firstOrNull() == "synonym") {
+      qualifiedNameComponents.drop(1)
+    } else {
+      null
+    }
   }
 }

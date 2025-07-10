@@ -9,11 +9,14 @@ kt_binary(
     main_class = "ProtobufReader",
     deps = [
         ":stardoc_output_java_proto",
+        "@maven//:com_google_code_gson_gson",
     ],
 )
 
 java_proto_library(
     name = "stardoc_output_java_proto",
     visibility = ["//visibility:public"],
-    deps = ["@stardoc//stardoc/proto:stardoc_output_proto"],
+    deps = [
+        "@stardoc//stardoc/proto:stardoc_output_proto",
+    ],
 )

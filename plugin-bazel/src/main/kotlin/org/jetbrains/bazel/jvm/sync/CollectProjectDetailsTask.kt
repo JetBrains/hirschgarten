@@ -37,8 +37,6 @@ import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.FullProjectSync
@@ -103,7 +101,7 @@ class CollectProjectDetailsTask(
     }
 
     if (scalaSdkExtensionExists()) {
-      progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
+      progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.reporter.calculating.scala.sdk.info")) {
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
     }
@@ -278,10 +276,9 @@ class CollectProjectDetailsTask(
               projectBasePath = projectBasePath,
               project = project,
               isAndroidSupportEnabled = false,
-              libraryModules = libraryModules,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
+          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
           workspaceModelUpdater.loadLibraries(libraries)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)

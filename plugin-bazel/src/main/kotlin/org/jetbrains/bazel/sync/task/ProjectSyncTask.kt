@@ -132,7 +132,7 @@ class ProjectSyncTask(private val project: Project) {
         BazelPluginConstants.BAZEL_DISPLAY_NAME,
       )
     suspendScanningAndIndexingThenExecute(syncActivityName, project) {
-      withBackgroundProgress(project, "Syncing project...", true) {
+      withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
         reportSequentialProgress {
           executePreSyncHooks(it)
           val syncResult = executeSyncHooks(it, syncScope, buildProject)
