@@ -61,5 +61,4 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
         }
       }
   }
-
 }
