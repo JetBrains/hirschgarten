@@ -65,7 +65,7 @@ object ProjectViewSection {
       SectionMetadata(
         "workspace_type",
         SectionType.Scalar.String,
-        SimpleCompletionProvider(listOf("java", "python", "dart", "android")),
+        SimpleCompletionProvider(listOf("java", "python", "dart", "android", "javascript")),
       ),
       SectionMetadata(
         "additional_languages",
