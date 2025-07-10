@@ -619,6 +619,10 @@
       implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"
       language="ProjectView"
     />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionCompletionContributor"
+      language="ProjectView"
+    />
 
     <formattingService implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService" />
     <actionOnSave
