@@ -42,8 +42,12 @@ import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.event.KeyAdapter
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.awt.Font
 import java.awt.event.KeyEvent
+import javax.swing.AbstractButton
 import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
 import javax.swing.JButton
@@ -66,10 +70,16 @@ private class QueryFlagField(
       addActionListener {
         valuesButtons.forEach { it.isVisible = isSelected }
       }
+      addShiftEnterAction()
     }
   val valuesButtons: List<JRadioButton> =
     values.map {
-      JRadioButton(it).apply { border = JBUI.Borders.emptyLeft(25) }
+      JRadioButton(it).apply {
+        border = JBUI.Borders.emptyLeft(25)
+        addShiftEnterAction()
+        isFocusable=true
+        setFocusable(true)
+      }
     }
   val valuesGroup: ButtonGroup = ButtonGroup()
 
@@ -79,6 +89,17 @@ private class QueryFlagField(
       it.isVisible = false
     }
     valuesButtons.firstOrNull()?.isSelected = true
+  }
+
+  private fun AbstractButton.addShiftEnterAction() {
+    addKeyListener(object : KeyAdapter() {
+      override fun keyPressed(e: KeyEvent) {
+        if (e.keyCode == KeyEvent.VK_ENTER && e.isShiftDown) {
+          doClick()
+          e.consume()
+        }
+      }
+    })
   }
 
   fun addToPanel(panel: JPanel) {
@@ -127,7 +148,23 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
       )
     }
-  private val directoryField = JBTextField().apply { isEditable = false }
+  private val directoryField = JBTextField().apply {
+    isEditable = false
+    toolTipText = BazelPluginBundle.message("bazel.toolwindow.tab.query.directory.tooltip")
+    addMouseListener(object : MouseAdapter() {
+      override fun mouseClicked(e: MouseEvent) {
+        chooseDirectory()
+      }
+    })
+    addKeyListener(object : KeyAdapter() {
+      override fun keyPressed(e: KeyEvent) {
+        if (e.keyCode == KeyEvent.VK_ENTER) {
+          chooseDirectory()
+          e.consume()
+        }
+      }
+    })
+  }
   private val flagTextField =
     LanguageTextField(BazelQueryFlagsLanguage, project, "").apply {
       setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.flags"))
@@ -234,15 +271,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     fun createDirectorySelectionPanel() =
       JPanel().apply {
         layout = BoxLayout(this, BoxLayout.X_AXIS)
-        val directoryButton =
-          JButton(
-            BazelPluginBundle.message("button.bazel.query.select"),
-          ).apply { addActionListener { chooseDirectory() } }
-
-        add(JLabel(BazelPluginBundle.message("label.bazel.query.select.directory")))
         add(directoryField)
-        add(directoryButton)
-
         maximumSize = Dimension(Int.MAX_VALUE, 40)
       }
 
@@ -255,7 +284,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         maximumSize = Dimension(Int.MAX_VALUE, 40)
       }
 
-    fun createFlagsPanel() = JBScrollPane(flagsPanel).apply {
+    fun createFlagsPanel() = ScrollToFocusedFlagPanel(flagsPanel).apply {
       verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
     }
     
@@ -269,11 +298,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     add(createQueryPanel())
 
     val splitter = JBSplitter(false, 0.25f, 0.2f, 0.8f).apply {
-      firstComponent = JBScrollPane(JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        add(createFlagsPanel())
-      })
-
+      firstComponent = createFlagsPanel()
       secondComponent = JBScrollPane(JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         add(createResultPanel())
