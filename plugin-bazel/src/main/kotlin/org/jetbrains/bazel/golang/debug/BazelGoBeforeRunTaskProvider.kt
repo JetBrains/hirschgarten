@@ -20,7 +20,6 @@ import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesGo
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
@@ -63,7 +62,7 @@ private val POP_UP_MESSAGE_ENABLE_SYMLINKS: String =
 /**
  * this class is inspired from [this code snippet](https://github.com/bazelbuild/intellij/blob/master/golang/src/com/google/idea/blaze/golang/run/BlazeGoRunConfigurationRunner.java)
  */
-abstract class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTaskProvider<T>() {
+internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTaskProvider<T>() {
   override fun createTask(runConfiguration: RunConfiguration): T? {
     if (!BazelFeatureFlags.isGoSupportEnabled) return null
     if (runConfiguration !is BazelRunConfiguration) return null
@@ -125,6 +124,7 @@ abstract class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTas
             "Cannot calculate executable info for Go targets",
             "The request failed with status code ${result.statusCode}. \nPlease try again.",
           )
+          return@runBlocking false
         }
         environment.getCopyableUserData(EXECUTABLE_KEY).set(parseScriptPathFile(scriptPath, project))
         return@runBlocking true
@@ -224,12 +224,11 @@ abstract class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTas
   }
 }
 
-private val TEST_PROVIDER_ID =
-  Key.create<BazelGoTestBeforeRunTaskProvider.Task>(
-    "BazelGoTestBeforeRunTaskProvider",
-  )
+private const val TEST_PROVIDER_NAME = "BazelGoTestBeforeRunTaskProvider"
 
-class BazelGoTestBeforeRunTaskProvider : BazelGoBeforeRunTaskProvider<BazelGoTestBeforeRunTaskProvider.Task>() {
+private val TEST_PROVIDER_ID = Key.create<BazelGoTestBeforeRunTaskProvider.Task>(TEST_PROVIDER_NAME)
+
+internal class BazelGoTestBeforeRunTaskProvider : BazelGoBeforeRunTaskProvider<BazelGoTestBeforeRunTaskProvider.Task>() {
   class Task : BeforeRunTask<Task>(TEST_PROVIDER_ID)
 
   override fun createTaskInstance(): Task = Task()
@@ -255,15 +254,14 @@ class BazelGoTestBeforeRunTaskProvider : BazelGoBeforeRunTaskProvider<BazelGoTes
 
   override fun getId(): Key<Task> = TEST_PROVIDER_ID
 
-  override fun getName() = "BazelGoTestBeforeRunTaskProvider"
+  override fun getName() = TEST_PROVIDER_NAME
 }
 
-private val BINARY_PROVIDER_ID =
-  Key.create<BazelGoBinaryBeforeRunTaskProvider.Task>(
-    "BazelGoBinaryBeforeRunTaskProvider",
-  )
+private const val BINARY_PROVIDER_NAME = "BazelGoBinaryBeforeRunTaskProvider"
 
-class BazelGoBinaryBeforeRunTaskProvider : BazelGoBeforeRunTaskProvider<BazelGoBinaryBeforeRunTaskProvider.Task>() {
+private val BINARY_PROVIDER_ID = Key.create<BazelGoBinaryBeforeRunTaskProvider.Task>(BINARY_PROVIDER_NAME)
+
+internal class BazelGoBinaryBeforeRunTaskProvider : BazelGoBeforeRunTaskProvider<BazelGoBinaryBeforeRunTaskProvider.Task>() {
   class Task : BeforeRunTask<Task>(BINARY_PROVIDER_ID)
 
   override fun additionalBazelParams(runConfiguration: BazelRunConfiguration): List<String> =
@@ -277,5 +275,5 @@ class BazelGoBinaryBeforeRunTaskProvider : BazelGoBeforeRunTaskProvider<BazelGoB
 
   override fun getId(): Key<Task> = BINARY_PROVIDER_ID
 
-  override fun getName() = "BazelGoTestBeforeRunTaskProvider"
+  override fun getName() = BINARY_PROVIDER_NAME
 }
