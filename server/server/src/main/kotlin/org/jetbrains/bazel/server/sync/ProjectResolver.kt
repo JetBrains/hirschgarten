@@ -25,7 +25,6 @@ import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bazel.commons.BidirectionalMap
 
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
@@ -58,9 +57,7 @@ class ProjectResolver(
 
       val repoMapping =
         measured("Calculating external repository mapping") {
-          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger) { 
-            BidirectionalMap.getTypedInstance()
-          }
+          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
         }
 
       val bazelExternalRulesetsQuery =
@@ -71,9 +68,7 @@ class ProjectResolver(
           bspClientLogger,
           workspaceContext,
           repoMapping,
-        ) { 
-          BidirectionalMap.getTypedInstance()
-        }
+        )
 
       val externalRulesetNames =
         measured(
