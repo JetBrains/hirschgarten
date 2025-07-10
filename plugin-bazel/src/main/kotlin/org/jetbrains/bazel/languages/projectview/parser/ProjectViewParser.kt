@@ -8,6 +8,7 @@ import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 
 class ProjectViewParser(private val builder: PsiBuilder) {
   fun parseFile() {
@@ -22,11 +23,13 @@ class ProjectViewParser(private val builder: PsiBuilder) {
 
   /** Parse an import statement or a section. */
   fun parseBlock() {
-    val marker = builder.mark()
+    val sectionMarker = builder.mark()
     when (getCurrentTokenType()) {
       ProjectViewTokenType.SECTION_KEYWORD -> {
         ProjectViewSection.KEYWORD_MAP[builder.tokenText]?.let { metadata ->
+          val sectionNameMarker = builder.mark()
           builder.advanceLexer()
+          sectionNameMarker.done(ProjectViewElementTypes.SECTION_NAME)
           expect(ProjectViewTokenType.COLON)
           when (metadata.sectionType) {
             is ProjectViewSection.SectionType.Scalar -> {
@@ -37,7 +40,7 @@ class ProjectViewParser(private val builder: PsiBuilder) {
               parseListItems()
             }
           }
-          marker.done(ProjectViewElementTypes.SECTION)
+          sectionMarker.done(ProjectViewElementTypes.SECTION)
           return
         }
       }
@@ -45,17 +48,17 @@ class ProjectViewParser(private val builder: PsiBuilder) {
         builder.advanceLexer()
         parseItem(ProjectViewElementTypes.IMPORT_ITEM)
         builder.advanceLexer()
-        marker.done(ProjectViewElementTypes.IMPORT)
+        sectionMarker.done(ProjectViewElementTypes.IMPORT)
         return
       }
     }
     // Error handling
     when {
       matches(ProjectViewTokenType.INDENT) ->
-        skipBlockAndError(marker, "Indented lines must be items of a list section.")
+        skipBlockAndError(sectionMarker, "Indented lines must be items of a list section.")
       matches(ProjectViewTokenType.COLON) ->
-        skipBlockAndError(marker, "A line cannot begin with a colon.")
-      else -> skipBlockAndError(marker, "Unrecognized keyword: ${builder.tokenText}")
+        skipBlockAndError(sectionMarker, "A line cannot begin with a colon.")
+      else -> skipBlockAndError(sectionMarker, "Unrecognized keyword: ${builder.tokenText}")
     }
   }
 
