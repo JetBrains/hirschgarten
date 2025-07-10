@@ -16,16 +16,14 @@ object GenericCommandLineProcessSpawner : ProcessSpawner {
   private val LOG = Logger.getInstance(GenericCommandLineProcessSpawner::class.java)
 
   override suspend fun spawnDeferredProcess(
-    command: String,
-    args: List<String>,
+    command: List<String>,
     environment: Map<String, String>,
     redirectErrorStream: Boolean,
     workDirectory: String?,
   ): Deferred<SpawnedProcess> {
     val deferred = CompletableDeferred<SpawnedProcess>()
     try {
-      val processArgs = listOf(command) + args
-      val commandLine = GeneralCommandLine(processArgs)
+      val commandLine = GeneralCommandLine(command)
       if (workDirectory != null) {
         commandLine.withWorkDirectory(File(workDirectory))
       }

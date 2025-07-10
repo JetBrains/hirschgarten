@@ -7,6 +7,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.overrideRepository
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import kotlin.io.path.pathString
-import org.jetbrains.bazel.commons.SystemInfoProvider
 
 class BazelRunner(
   private val bspClientLogger: BspClientLogger?,
@@ -177,8 +177,7 @@ class BazelRunner(
       runBlocking {
         processSpawner
           .spawnDeferredProcess(
-            command = processArgs.first(),
-            args = processArgs.drop(1),
+            command = processArgs,
             environment = environment,
             redirectErrorStream = false,
             workDirectory = workDir?.toString(),
