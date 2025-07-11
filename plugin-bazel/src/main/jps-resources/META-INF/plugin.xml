@@ -566,6 +566,10 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkLoadAnnotator"
       language="Starlark"
     />
+    <annotator
+      implementationClass="org.jetbrains.bazel.languages.projectview.annotation.ProjectViewAnnotator"
+      language="ProjectView"
+    />
     <completion.confidence
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"
       language="Starlark"
@@ -582,15 +586,8 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
       language="Starlark"
     />
-    <completion.contributor
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesCompletionContributor"
-      language="Starlark"
-    />
-    <completion.contributor
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesArgumentCompletionContributor"
-      language="Starlark"
-    />
-    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider" />
+    <editorTabTitleProvider
+      implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
     <extendWordSelectionHandler
       implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"
     />
@@ -617,6 +614,10 @@
     />
     <lang.parserDefinition
       implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"
+      language="ProjectView"
+    />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionCompletionContributor"
       language="ProjectView"
     />
 

@@ -92,6 +92,7 @@ data class WorkspaceContext(
   val gazelleTarget: GazelleTargetSpec,
   val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSpec,
   val pythonCodeGeneratorRuleNames: PythonCodeGeneratorRuleNamesSpec,
+  val importIjarsSpec: ImportIjarsSpec,
 )
 
 /**
