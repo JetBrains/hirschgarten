@@ -67,10 +67,11 @@ object FastBuildUtils {
 
   fun fastBuildFilesPromise(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
     val promise = AsyncPromise<ProjectTaskRunner.Result>()
+    val fastBuildStatus = FastBuildStatus(workspaceRoot = project.rootDir.toNioPath())
+    val fastBuildService = FastBuildStatusService.getInstance(project)
     BazelCoroutineService.getInstance(project).start {
-      val fastBuildStatus = FastBuildStatus(workspaceRoot = project.rootDir.toNioPath())
       try {
-        FastBuildStatusService.getInstance(project).startFastBuild(status = fastBuildStatus)
+        fastBuildService.startFastBuild(fastBuildStatus)
         fastBuildFiles(project, files, fastBuildStatus)
         promise.setResult(TaskRunnerResults.SUCCESS)
         fastBuildStatus.status = "success"
@@ -86,10 +87,14 @@ object FastBuildUtils {
             NotificationType.ERROR,
           ).setImportant(true)
           .notify(project)
-      } finally {
-        FastBuildStatusService.getInstance(project).finishFastBuild(status = fastBuildStatus)
       }
     }
+    promise
+      .onSuccess {
+        fastBuildService.finishFastBuild(fastBuildStatus)
+      }.onError {
+        fastBuildService.finishFastBuild(fastBuildStatus)
+      }
     return promise
   }
 
@@ -101,6 +106,7 @@ object FastBuildUtils {
     val workspaceRoot = fastBuildStatus.workspaceRoot
     val targetUtils = project.targetUtils
     val virtualFileManager = VirtualFileManager.getInstance()
+    val fastBuildService = FastBuildStatusService.getInstance(project)
     val buildInfos =
       files
         .mapNotNull { file ->
@@ -112,8 +118,6 @@ object FastBuildUtils {
       throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.no.targets"))
     }
 
-    val fastBuildTargetStatusList = mutableListOf<FastBuildTargetStatus>()
-    fastBuildStatus.targets = fastBuildTargetStatusList
     for (entry in buildInfos) {
       val inputFile = entry.key
       val canonicalFilePath = inputFile.canonicalPath
@@ -143,7 +147,7 @@ object FastBuildUtils {
           targetJar = targetJar,
           compilerStatus = "unknown",
         )
-      fastBuildTargetStatusList.add(fastBuildTargetStatus)
+      fastBuildService.startFastBuildTarget(fastBuildTargetStatus)
 
       val originalParamsFile = targetJar.parent.resolve(targetJar.fileName.name + "-0.params")
       val originalParamsFile1 = targetJar.parent.resolve(targetJar.fileName.name + "-1.params")
@@ -292,6 +296,8 @@ object FastBuildUtils {
           fastBuildTargetStatus.compilerStatus = "error"
           compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
           return@start
+        } finally {
+          fastBuildService.finishFastBuildTarget(fastBuildTargetStatus)
         }
       }, null)
     }
