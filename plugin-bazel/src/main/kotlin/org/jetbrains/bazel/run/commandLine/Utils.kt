@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.run.commandLine
 
-class ProgramArgumentParser(private val input: String) {
+internal class ProgramArgumentParser(private val input: String) {
   private var position = 0
 
   fun parse(): List<String> {
