@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.projectview.language
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.BuildFlagCompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.projectview.model.supportedSections
 
@@ -42,7 +43,7 @@ object ProjectViewSection {
       SectionMetadata("build_flags", SectionType.List.String, BuildFlagCompletionProvider()),
       SectionMetadata("test_flags", SectionType.List.String, BuildFlagCompletionProvider()),
       SectionMetadata("derive_targets_from_directories", SectionType.Scalar.Boolean, booleanCompletionProvider()),
-      SectionMetadata("directories", SectionType.List.String),
+      SectionMetadata("directories", SectionType.List.String, DirectoriesCompletionProvider()),
       SectionMetadata("enable_native_android_rules", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("enabled_rules", SectionType.List.String),
       SectionMetadata("experimental_add_transitive_compile_time_jars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
