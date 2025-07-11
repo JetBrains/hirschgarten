@@ -19,9 +19,7 @@ object ProjectViewSection {
 
   data class SectionMetadata(val sectionName: ProjectViewSyntaxKey, val sectionType: SectionType)
 
-  fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean {
-    return supportedSections.contains(sectionName)
-  }
+  fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean = supportedSections.contains(sectionName)
 
   /*
    * The map below should contain all syntax-wise valid section names.
