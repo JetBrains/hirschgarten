@@ -29,8 +29,8 @@ internal class BazelDepProcessor(private val lookingForModuleName: String) :
 
   override fun process(element: StarlarkElement): Boolean {
     if (element !is StarlarkCallExpression) return true
-    val moduleNameArgValue = getNamedArgumentValue(element, "name")
-    if (getFunctionName(element) == "bazel_dep" && moduleNameArgValue == lookingForModuleName) {
+    if (getFunctionName(element) != "bazel_dep") return true
+    if (getNamedArgumentValue(element, "name") == lookingForModuleName) {
       result.add(element)
     }
     return true
