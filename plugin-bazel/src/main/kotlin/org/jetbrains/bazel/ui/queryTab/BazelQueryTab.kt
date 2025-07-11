@@ -18,18 +18,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteIntentReadAction
-import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
 import org.jdesktop.swingx.VerticalLayout
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
@@ -39,12 +34,9 @@ import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.options.BazelQueryCommonOptions
 import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
-import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.KeyAdapter
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import java.awt.Font
 import java.awt.event.KeyEvent
 import javax.swing.AbstractButton
@@ -148,23 +140,6 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
       )
     }
-  private val directoryField = JBTextField().apply {
-    isEditable = false
-    toolTipText = BazelPluginBundle.message("bazel.toolwindow.tab.query.directory.tooltip")
-    addMouseListener(object : MouseAdapter() {
-      override fun mouseClicked(e: MouseEvent) {
-        chooseDirectory()
-      }
-    })
-    addKeyListener(object : KeyAdapter() {
-      override fun keyPressed(e: KeyEvent) {
-        if (e.keyCode == KeyEvent.VK_ENTER) {
-          chooseDirectory()
-          e.consume()
-        }
-      }
-    })
-  }
   private val flagTextField =
     LanguageTextField(BazelQueryFlagsLanguage, project, "").apply {
       setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.flags"))
@@ -196,7 +171,6 @@ class BazelQueryTab(private val project: Project) : JPanel() {
 
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
-    chooseDirectory(project.baseDir)
     initializeUI()
   }
 
@@ -268,13 +242,6 @@ class BazelQueryTab(private val project: Project) : JPanel() {
 
   // UI
   private fun initializeUI() {
-    fun createDirectorySelectionPanel() =
-      JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.X_AXIS)
-        add(directoryField)
-        maximumSize = Dimension(Int.MAX_VALUE, 40)
-      }
-
     fun createQueryPanel() =
       JPanel().apply {
         layout = BoxLayout(this, BoxLayout.X_AXIS)
@@ -293,7 +260,6 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         add(resultField.component, BorderLayout.CENTER)
       }
 
-    add(createDirectorySelectionPanel())
     setButtonsPanelToEvaluate()
     add(createQueryPanel())
 
@@ -339,51 +305,18 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         val evaluateButton =
           JButton(BazelPluginBundle.message("button.bazel.query.cancel")).apply {
             addActionListener { cancelEvaluate() }
+            addKeyListener(object : KeyAdapter() {
+              override fun keyPressed(e: KeyEvent) {
+                if (e.keyCode == KeyEvent.VK_ENTER) {
+                  doClick()
+                  e.consume()
+                }
+              }
+            })
           }
         add(evaluateButton)
         updateUI()
       }
-    }
-  }
-
-  // Directory selection
-  private fun chooseDirectory(dirFile: VirtualFile? = null) {
-    // If argument not passed (or passed as null) display window for user to choose from:
-    val chosenDir =
-      if (dirFile != null) {
-        if (!dirFile.isDirectory) throw IllegalArgumentException("$dirFile is not a directory")
-        dirFile
-      } else {
-        val descriptor =
-          FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
-            title = BazelPluginBundle.message("file.chooser.bazel.query.select.directory.title")
-            description = BazelPluginBundle.message("file.chooser.bazel.query.select.directory.description")
-          }
-        FileChooser.chooseFile(descriptor, project, null)
-      }
-
-    if (chosenDir != null) {
-      val relativePath =
-        VfsUtilCore.getRelativePath(
-          chosenDir,
-          project.baseDir ?: chosenDir,
-          '/',
-        )
-
-      if (relativePath == null) {
-        if (dirFile != null) throw IllegalArgumentException("$dirFile is not in project")
-
-        NotificationGroupManager
-          .getInstance()
-          .getNotificationGroup("Bazel")
-          .createNotification(BazelPluginBundle.message("notification.bazel.query.selected.dir.outside.project"), NotificationType.ERROR)
-          .notify(project)
-        return
-      }
-
-      directoryField.text = "//$relativePath"
-      BazelWorkingDirectoryManager.getInstance(project).setWorkingDirectory(chosenDir.path)
-      queryEvaluator.setEvaluationDirectory(chosenDir)
     }
   }
 

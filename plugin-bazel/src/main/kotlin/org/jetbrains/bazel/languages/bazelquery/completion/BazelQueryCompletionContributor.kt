@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.bazelquery.completion
 
+import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
@@ -18,7 +19,6 @@ import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenType
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFile
-import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.nio.file.Path
 
 class BazelQueryCompletionContributor : CompletionContributor() {
@@ -51,6 +51,7 @@ private val wordsOrCommandsTokens =
   TokenSet.create(
     *BazelQueryTokenSets.WORDS.types,
     *BazelQueryTokenSets.COMMANDS.types,
+    *BazelQueryTokenSets.PATTERNS.types,
   )
 
 private class BazelWordCompletionProvider : CompletionProvider<CompletionParameters>() {
@@ -80,17 +81,17 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         .removePrefix("\"")
         .removePrefix("'")
     val project = parameters.editor.project ?: return
-    val currentDirectory = BazelWorkingDirectoryManager.getInstance(project).getWorkingDirectory()
+    val currentDirectory = project.baseDir.path
     val targetSuggestions =
       TargetCompletionsGenerator(project)
         .getTargetsList(prefix, Path.of(currentDirectory))
 
     result.withPrefixMatcher(BazelQueryPrefixMatcher(prefix)).run {
       addAllElements(
-        knownCommands.map { functionLookupElement(it, 1.0) },
+        knownCommands.map { functionLookupElement(it, 1.0, parameters.offset) },
       )
       addAllElements(
-        knownOperations.map { functionLookupElement(it, 0.0) },
+        knownOperations.map { functionLookupElement(it, 0.0, parameters.offset) },
       )
       addAllElements(
         targetSuggestions.map {
@@ -107,23 +108,36 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
 
               else -> 0.4
             },
+            parameters.offset
           )
         },
       )
     }
   }
 
-  private fun functionLookupElement(name: String, priority: Double): LookupElement =
+  private fun functionLookupElement(name: String, priority: Double, caretOffset: Int): LookupElement =
     PrioritizedLookupElement.withPriority(
       LookupElementBuilder
         .create(name)
         .withBoldness(true)
         .withIcon(BazelPluginIcons.bazel)
-        .withInsertHandler { context, _ ->
-          val editor = context.editor
-          val caretOffset = editor.caretModel.offset
-          if (caretOffset > 0 && editor.document.charsSequence[caretOffset - 1] == ')') {
-            editor.caretModel.moveToOffset(caretOffset - 1)
+        .withInsertHandler { context, item ->
+          if (context.completionChar == '\t') {
+            val startOffset = context.startOffset
+            val cursorPositionInSuggestion = caretOffset - startOffset
+            val currentText = item.lookupString
+            val nextSlashIndex = currentText.indexOf('/', cursorPositionInSuggestion)
+
+            if (nextSlashIndex > 0) {
+              val shortenedText = currentText.take(nextSlashIndex + 1)
+              context.document.replaceString(context.startOffset, context.tailOffset, shortenedText)
+              context.editor.caretModel.moveToOffset(context.startOffset + shortenedText.length)
+              AutoPopupController.getInstance(context.project)?.autoPopupMemberLookup(context.editor, null)
+            }
+          }
+          val offset = context.editor.caretModel.offset
+          if (offset > 0 && context.document.charsSequence[offset - 1] == ')') {
+            context.editor.caretModel.moveToOffset(offset - 1)
           }
         },
       priority,

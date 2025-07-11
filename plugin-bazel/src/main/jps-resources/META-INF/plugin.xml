@@ -667,6 +667,8 @@
       language="BazelQuery"
     />
 
+    <lookup.charFilter implementation="org.jetbrains.bazel.languages.bazelquery.completion.BazelQueryCharFilter"/>
+
 
     <fileType
       extensions="bazelqueryflags"
