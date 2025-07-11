@@ -18,8 +18,14 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.fastBuildEnabled
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
+    val service = JvmToolchainInfoService.getInstance(environment.project)
+
+    // clear per-target cache to ensure fresh toolchain info after sync
+    // this is important in case javac configuration has changed
+    service.clearPerTargetCache()
+
     environment.server.jvmToolchainInfo().also {
-      JvmToolchainInfoService.getInstance(environment.project).jvmToolchainInfo = it
+      service.jvmToolchainInfo = it
     }
   }
 
@@ -46,6 +52,10 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
       } else {
         jvmToolchainInfo = toolchainInfo
       }
+    }
+
+    fun clearPerTargetCache() {
+      perTargetToolchainInfo.clear()
     }
 
     fun getOrQueryJvmToolchainInfo(project: Project, target: Label): JvmToolchainInfo {
