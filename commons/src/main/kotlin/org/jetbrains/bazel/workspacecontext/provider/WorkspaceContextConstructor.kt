@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
-import org.apache.logging.log4j.LogManager
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextConstructor
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext

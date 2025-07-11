@@ -20,6 +20,8 @@ data class NoPruneTransitiveCompileTimeJarsPatternsSpec(override val values: Lis
 
 data class PrioritizeLibrariesOverModulesTargetKindsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
 
+data class PythonCodeGeneratorRuleNamesSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
+
 data class SyncFlagsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
 
 data class TransitiveCompileTimeJarsTargetKindsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
