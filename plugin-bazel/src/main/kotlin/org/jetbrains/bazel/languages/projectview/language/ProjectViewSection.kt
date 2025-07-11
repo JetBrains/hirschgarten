@@ -4,7 +4,7 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.BuildFlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
-import org.jetbrains.bazel.languages.projectview.completion.ImportCompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.projectview.model.supportedSections
 
@@ -58,7 +58,7 @@ object ProjectViewSection {
       SectionMetadata("sync_flags", SectionType.List.String),
       SectionMetadata("target_shard_size", SectionType.Scalar.Integer),
       SectionMetadata("targets", SectionType.List.String),
-      SectionMetadata("import_run_configurations", SectionType.List.String),
+      SectionMetadata("import_run_configurations", SectionType.List.String, FiletypeCompletionProvider(".xml")),
       SectionMetadata("test_sources", SectionType.List.String), // used by Google's plugin
       SectionMetadata("gazelle_target", SectionType.Scalar.String),
       SectionMetadata("index_all_files_in_directories", SectionType.Scalar.Boolean, booleanCompletionProvider()),
@@ -76,7 +76,7 @@ object ProjectViewSection {
           listOf("android", "dart", "java", "javascript", "kotlin", "python", "typescript", "go", "c"),
         ),
       ),
-      SectionMetadata("import", SectionType.Scalar.String, ImportCompletionProvider()),
+      SectionMetadata("import", SectionType.Scalar.String, FiletypeCompletionProvider(".bazelproject")),
     ).associateBy { it.sectionName }
 
   private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))

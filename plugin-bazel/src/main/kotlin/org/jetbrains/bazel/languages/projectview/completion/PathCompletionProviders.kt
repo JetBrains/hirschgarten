@@ -10,8 +10,11 @@ import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
+import kotlin.text.isNotEmpty
 
 private fun getRelativePaths(project: Project, filter: (VirtualFile) -> Boolean): List<String> {
   val projectBasePath = project.basePath?.toNioPathOrNull() ?: return emptyList()
@@ -47,25 +50,26 @@ class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>()
       result.addElement(
         LookupElementBuilder
           .create(it)
-          .withLookupString(it)
-          .withLookupString("-$it")
+          .withLookupStrings(listOf(it, "-$it"))
           .withIcon(PlatformIcons.FILE_ICON),
       )
     }
   }
 }
 
-class ImportCompletionProvider : CompletionProvider<CompletionParameters>() {
+class FiletypeCompletionProvider(val fileExtension: String) : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
+    val section = PsiTreeUtil.getParentOfType(parameters.position, ProjectViewPsiSection::class.java) ?: return
+    val previousValues = section.getItems().map { it.text.trim() }
     val paths =
       getRelativePaths(parameters.position.project) {
-        it.name.endsWith(".bazelproject") && ProjectFileIndex.getInstance(parameters.position.project).isInContent(it)
+        it.name.endsWith(fileExtension) && ProjectFileIndex.getInstance(parameters.position.project).isInContent(it)
       }
-    paths.forEach {
+    paths.filter { !previousValues.contains(it) }.forEach {
       result.addElement(
         LookupElementBuilder
           .create(it)
