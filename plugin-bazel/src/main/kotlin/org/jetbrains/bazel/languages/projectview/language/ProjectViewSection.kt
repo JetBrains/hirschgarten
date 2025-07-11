@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.projectview.language
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
-import org.jetbrains.bazel.languages.projectview.completion.BuildFlagCompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.projectview.model.supportedSections
 
@@ -39,8 +39,8 @@ object ProjectViewSection {
       SectionMetadata("allow_manual_targets_sync", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("android_min_sdk", SectionType.Scalar.Integer),
       SectionMetadata("bazel_binary", SectionType.Scalar.String),
-      SectionMetadata("build_flags", SectionType.List.String, BuildFlagCompletionProvider()),
-      SectionMetadata("test_flags", SectionType.List.String, BuildFlagCompletionProvider()),
+      SectionMetadata("build_flags", SectionType.List.String, FlagCompletionProvider("build")),
+      SectionMetadata("test_flags", SectionType.List.String, FlagCompletionProvider("test")),
       SectionMetadata("derive_targets_from_directories", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("directories", SectionType.List.String),
       SectionMetadata("enable_native_android_rules", SectionType.Scalar.Boolean, booleanCompletionProvider()),

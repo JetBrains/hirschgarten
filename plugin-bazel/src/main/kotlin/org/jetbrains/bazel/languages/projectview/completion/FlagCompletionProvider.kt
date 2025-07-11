@@ -12,7 +12,7 @@ import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
-class BuildFlagCompletionProvider : CompletionProvider<CompletionParameters>() {
+class FlagCompletionProvider(val command: String) : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
@@ -21,13 +21,17 @@ class BuildFlagCompletionProvider : CompletionProvider<CompletionParameters>() {
     val section = PsiTreeUtil.getParentOfType(parameters.position, ProjectViewPsiSection::class.java) ?: return
     val previousFlags = section.getItems().map { it.text.trim() }.filter { it.isNotEmpty() }
     val pos = parameters.position
-    val flags = Flag.all().filter { !previousFlags.contains(it.key) }
+    val flags =
+      Flag.all().filter {
+        !previousFlags.contains(it.key) &&
+          it.value.option.commands
+            .any { cmd -> cmd == command }
+      }
     result.run {
       addAllElements(
         flags.entries.map { it -> Pair(it.key, BazelFlagSymbol(it.value, pos.project)) }.map { (k, flagSymbol) ->
           LookupElementBuilder
             .create(flagSymbol, k)
-            .withLookupString("${k}_xxx")
             .withTypeText(" ${flagSymbol.flag.option.valueHelp}")
             .withPresentableText(k)
             .withIcon(PlatformIcons.PARAMETER_ICON)
