@@ -42,5 +42,14 @@ object ProjectViewSection {
       "gazelle_target" to Parser.Scalar.String,
       "index_all_files_in_directories" to Parser.Scalar.Boolean,
       "python_code_generator_rule_names" to Parser.List.String,
+      "workspace_type" to Parser.Scalar.String,
+      "additional_languages" to Parser.List.String,
+      "java_language_level" to Parser.List.String,
+      "exclude_library" to Parser.List.String,
+      "test_flags" to Parser.List.String,
+      "android_sdk_platform" to Parser.Scalar.String,
+      "generated_android_resource_directories" to Parser.List.String,
+      "ts_config_rules" to Parser.List.String,
+      "import_ijars" to Parser.Scalar.Boolean,
     )
 }

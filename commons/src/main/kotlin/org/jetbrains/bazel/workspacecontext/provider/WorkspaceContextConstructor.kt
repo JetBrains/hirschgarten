@@ -50,6 +50,7 @@ class WorkspaceContextConstructor(
       gazelleTarget = GazelleTargetSpecExtractor.fromProjectView(projectView),
       indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpecExtractor.fromProjectView(projectView),
       pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpecExtractor.fromProjectView(projectView),
+      importIjarsSpec = ImportIjarsSpecExtractor.fromProjectView(projectView),
     )
   }
 }
