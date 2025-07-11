@@ -29,6 +29,8 @@ data class IdeJavaHomeOverrideSpec(override val value: Path?) : WorkspaceContext
 
 data class ImportDepthSpec(override val value: Int) : WorkspaceContextSingletonEntity<Int>()
 
+data class ImportIjarsSpec(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
+
 data class IndexAllFilesInDirectoriesSpec(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
 
 enum class ShardingApproach {
