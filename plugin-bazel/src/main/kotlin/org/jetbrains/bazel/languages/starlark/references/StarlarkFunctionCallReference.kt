@@ -21,8 +21,7 @@ private fun getNamedArgumentValue(element: StarlarkCallExpression, argName: Stri
       }?.getValue() as? StarlarkStringLiteralExpression
   )?.getStringContents()
 
-internal class BazelDepProcessor(private val lookingForModuleName: String) :
-  Processor<StarlarkElement> {
+internal class BazelDepProcessor(private val lookingForModuleName: String) : Processor<StarlarkElement> {
   val result: MutableList<StarlarkElement> = mutableListOf()
 
   private fun getFunctionName(element: StarlarkCallExpression): String? = element.getNamePsi()?.text
