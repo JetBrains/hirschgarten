@@ -14,6 +14,6 @@ kt_intellij_junit4_test(
     src = "ProjectViewSectionItemCompletionContributorTest.kt",
     tags = ["exclusive"],
     deps = [
-        "//plugin-bazel"
+        "//plugin-bazel",
     ],
 )
