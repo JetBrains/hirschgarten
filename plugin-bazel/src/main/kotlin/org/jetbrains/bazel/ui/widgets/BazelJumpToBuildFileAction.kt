@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiElement
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import kotlinx.coroutines.Dispatchers
@@ -52,9 +51,10 @@ class BazelJumpToBuildFileAction(private val target: Label?) :
 }
 
 suspend fun jumpToBuildFile(project: Project, target: Label) {
-  val definition = readAction {
-    findDefinition(project, target)
-  } ?: return
+  val definition =
+    readAction {
+      findDefinition(project, target)
+    } ?: return
 
   withContext(Dispatchers.EDT) {
     EditorHelper.openInEditor(definition, true, true)

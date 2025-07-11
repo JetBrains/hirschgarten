@@ -12,8 +12,8 @@ object BazelQueryElementTypes {
   val COMMAND = BazelQueryElementType("COMMAND")
   val WORD = BazelQueryElementType("WORD")
   val INTEGER = BazelQueryElementType("INTEGER")
-  val FLAG = BazelQueryElementType("FLAG")
-  val FLAG_VAL = BazelQueryElementType("FLAG_VAL")
+  val FLAG = BazelQueryFlagsElementType("FLAG")
+  val FLAG_VAL = BazelQueryFlagsElementType("FLAG_VAL")
 
   fun createElement(node: ASTNode): PsiElement =
     when (val type = node.elementType) {

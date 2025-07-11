@@ -74,7 +74,13 @@ object ProjectViewSection {
           listOf("android", "dart", "java", "javascript", "kotlin", "python", "typescript", "go", "c"),
         ),
       ),
-    ).associateBy { it.sectionName }
+      SectionMetadata("java_language_level", SectionType.Scalar.String),
+      SectionMetadata("exclude_library", SectionType.List.String),
+      SectionMetadata("android_sdk_platform", SectionType.Scalar.String),
+      SectionMetadata("generated_android_resource_directories", SectionType.List.String),
+      SectionMetadata("ts_config_rules", SectionType.List.String),
+      SectionMetadata("import_ijars", SectionType.Scalar.Boolean),
+      ).associateBy { it.sectionName }
 
   private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))
 }

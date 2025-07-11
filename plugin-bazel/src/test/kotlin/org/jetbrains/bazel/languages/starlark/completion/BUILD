@@ -82,3 +82,10 @@ kt_intellij_junit4_test(
     tags = ["exclusive"],
     deps = ["//plugin-bazel"],
 )
+
+kt_intellij_junit4_test(
+    name = "BazelLoadFilepathCompletionTest",
+    src = "BazelLoadFilepathCompletionTest.kt",
+    tags = ["exclusive"],
+    deps = ["//plugin-bazel"],
+)
