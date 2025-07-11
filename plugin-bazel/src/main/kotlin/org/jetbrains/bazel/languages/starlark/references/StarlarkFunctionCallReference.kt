@@ -42,16 +42,20 @@ class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElem
   override fun resolve(): PsiElement? =
     myElement?.let {
       val functionName = element.name
-      if (functionName != null && (functionName == "archive_override" || functionName == "git_override")) {
-        val moduleNameValue = getNamedArgumentValue(it, "module_name") ?: return@let null
-        val processor = BazelDepProcessor(moduleNameValue)
-        val file = it.containingFile as? StarlarkFile ?: return@let null
-        file.searchInFunctionCalls(processor)
-        processor.result.firstOrNull()
-      } else {
-        val processor = StarlarkResolveProcessor(mutableListOf(), it)
-        SearchUtils.searchInFile(it, processor)
-        processor.result.firstOrNull()
+      when (functionName) {
+        null -> null
+        "archive_override", "git_override" -> {
+          val moduleNameValue = getNamedArgumentValue(it, "module_name") ?: return@let null
+          val processor = BazelDepProcessor(moduleNameValue)
+          val file = it.containingFile as? StarlarkFile ?: return@let null
+          file.searchInFunctionCalls(processor)
+          processor.result.firstOrNull()
+        }
+        else -> {
+          val processor = StarlarkResolveProcessor(mutableListOf(), it)
+          SearchUtils.searchInFile(it, processor)
+          processor.result.firstOrNull()
+        }
       }
     }
 
