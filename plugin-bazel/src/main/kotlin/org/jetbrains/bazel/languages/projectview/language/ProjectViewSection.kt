@@ -53,7 +53,7 @@ object ProjectViewSection {
       SectionMetadata("import_depth", SectionType.Scalar.Integer),
       SectionMetadata("shard_approach", SectionType.Scalar.String),
       SectionMetadata("shard_sync", SectionType.Scalar.Boolean, booleanCompletionProvider()),
-      SectionMetadata("sync_flags", SectionType.List.String),
+      SectionMetadata("sync_flags", SectionType.List.String, FlagCompletionProvider("sync")),
       SectionMetadata("target_shard_size", SectionType.Scalar.Integer),
       SectionMetadata("targets", SectionType.List.String),
       SectionMetadata("import_run_configurations", SectionType.List.String),
