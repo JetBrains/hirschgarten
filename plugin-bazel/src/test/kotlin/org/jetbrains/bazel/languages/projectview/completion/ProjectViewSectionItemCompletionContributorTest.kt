@@ -44,7 +44,7 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
     myFixture.configureByText(".bazelproject", "use_query_sync: <caret>")
     myFixture.type("t")
     myFixture.completeBasic()
-    
+
     myFixture.checkResult("use_query_sync: true")
   }
 }

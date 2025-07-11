@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.BuildFlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.ImportCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.projectview.model.supportedSections
 
@@ -75,6 +76,7 @@ object ProjectViewSection {
           listOf("android", "dart", "java", "javascript", "kotlin", "python", "typescript", "go", "c"),
         ),
       ),
+      SectionMetadata("import", SectionType.Scalar.String, ImportCompletionProvider()),
     ).associateBy { it.sectionName }
 
   private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))

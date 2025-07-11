@@ -3,7 +3,6 @@ package org.jetbrains.bazel.languages.projectview.completion
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -34,20 +33,44 @@ private fun getRelativePaths(project: Project, filter: (VirtualFile) -> Boolean)
   return result.map { VfsUtilCore.getRelativePath(it, root)!! }
 }
 
-private fun pathLookupElement(path: String): LookupElement =
-  LookupElementBuilder
-    .create(path)
-    .withIcon(PlatformIcons.FILE_ICON)
-
 class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    val paths = getRelativePaths(parameters.position.project) {
-      it.isDirectory && ProjectFileIndex.getInstance(parameters.position.project).isInContent(it)
+    val paths =
+      getRelativePaths(parameters.position.project) {
+        it.isDirectory && ProjectFileIndex.getInstance(parameters.position.project).isInContent(it)
+      }
+    paths.forEach {
+      result.addElement(
+        LookupElementBuilder
+          .create(it)
+          .withLookupString(it)
+          .withLookupString("-$it")
+          .withIcon(PlatformIcons.FILE_ICON),
+      )
     }
-    paths.forEach { result.addElement(pathLookupElement(it)) }
+  }
+}
+
+class ImportCompletionProvider : CompletionProvider<CompletionParameters>() {
+  override fun addCompletions(
+    parameters: CompletionParameters,
+    context: ProcessingContext,
+    result: CompletionResultSet,
+  ) {
+    val paths =
+      getRelativePaths(parameters.position.project) {
+        it.name.endsWith(".bazelproject") && ProjectFileIndex.getInstance(parameters.position.project).isInContent(it)
+      }
+    paths.forEach {
+      result.addElement(
+        LookupElementBuilder
+          .create(it)
+          .withIcon(PlatformIcons.FILE_ICON),
+      )
+    }
   }
 }
