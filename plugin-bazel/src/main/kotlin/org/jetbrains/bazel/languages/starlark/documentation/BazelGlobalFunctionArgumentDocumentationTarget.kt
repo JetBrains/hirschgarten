@@ -6,23 +6,23 @@ import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.platform.backend.presentation.TargetPresentation
 
 @Suppress("UnstableApiUsage")
-class BazelNativeRuleArgumentDocumentationTarget(symbol: BazelNativeRuleArgumentDocumentationSymbol) :
+class BazelGlobalFunctionArgumentDocumentationTarget(symbol: BazelGlobalFunctionArgumentDocumentationSymbol) :
   DocumentationTarget,
-  Pointer<BazelNativeRuleArgumentDocumentationTarget> {
+  Pointer<BazelGlobalFunctionArgumentDocumentationTarget> {
   val symbolPtr = symbol.createPointer()
 
   override fun createPointer() = this
 
-  override fun dereference(): BazelNativeRuleArgumentDocumentationTarget? = symbolPtr.dereference().documentationTarget
+  override fun dereference(): BazelGlobalFunctionArgumentDocumentationTarget? = symbolPtr.dereference().documentationTarget
 
   override fun computePresentation(): TargetPresentation =
     symbolPtr.dereference().run {
-      TargetPresentation.builder(nativeRuleArgument.name).presentation()
+      TargetPresentation.builder(argument.name).presentation()
     }
 
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
-      val html = nativeRuleArgument.docString ?: return null
+      val html = argument.docString ?: return null
       DocumentationResult.documentation(html)
     }
 }

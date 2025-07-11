@@ -4,6 +4,7 @@ import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
 import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
+import org.jetbrains.bazel.projectview.model.sections.ImportIjarsSection
 import org.jetbrains.bazel.projectview.model.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -158,4 +159,12 @@ object IndexAllFilesInDirectoriesSectionParser : ProjectViewSingletonSectionPars
   override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
 
   override fun createInstance(value: Boolean): IndexAllFilesInDirectoriesSection = IndexAllFilesInDirectoriesSection(value)
+}
+
+object ImportIjarsSectionParser : ProjectViewSingletonSectionParser<Boolean, ImportIjarsSection>(
+  ImportIjarsSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
+
+  override fun createInstance(value: Boolean): ImportIjarsSection = ImportIjarsSection(value)
 }

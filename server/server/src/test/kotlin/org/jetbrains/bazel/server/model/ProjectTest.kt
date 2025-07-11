@@ -17,6 +17,7 @@ import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTime
 import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
 import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
@@ -274,5 +275,6 @@ class ProjectTest {
       gazelleTarget = GazelleTargetSpec(null),
       indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
       pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
+      importIjarsSpec = ImportIjarsSpec(false),
     )
 }

@@ -8,6 +8,7 @@ import org.jetbrains.bazel.projectview.parser.sections.ExperimentalNoPruneTransi
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.GazelleTargetParser
+import org.jetbrains.bazel.projectview.parser.sections.ImportIjarsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.IndexAllFilesInDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
@@ -71,6 +72,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         gazelleTarget = GazelleTargetParser.parse(rawSections),
         indexAllFilesInDirectories = IndexAllFilesInDirectoriesSectionParser.parse(rawSections),
         pythonCodeGeneratorRuleNamesSection = PythonCodeGeneratorRuleNamesSectionParser.parse(rawSections),
+        importIjars = ImportIjarsSectionParser.parse(rawSections),
       ).build()
   }
 

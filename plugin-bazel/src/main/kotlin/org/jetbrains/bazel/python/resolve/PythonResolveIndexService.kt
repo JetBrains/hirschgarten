@@ -135,11 +135,11 @@ class PythonResolveIndexService(private val project: Project) : PersistentStateC
   }
 
   /*
-  * expandFullQualifiedNameMaps will expand the map to include the parent qualified names
-  * e.g. for an entry aaa.bbb.ccc -> /aaa/bbb/ccc.py,
-  * this function will also add (aaa.bbb->/aaa/bbb) and (aaa -> /aaa) into the new map,
-  * so that pycharm won't show a red line under aaa
-  * */
+   * expandFullQualifiedNameMaps will expand the map to include the parent qualified names
+   * e.g. for an entry aaa.bbb.ccc -> /aaa/bbb/ccc.py,
+   * this function will also add (aaa.bbb->/aaa/bbb) and (aaa -> /aaa) into the new map,
+   * so that pycharm won't show a red line under aaa
+   * */
   private fun expandFullQualifiedNameMaps(originalMap: Map<QualifiedName?, Path>): Map<QualifiedName?, Path> {
     val newMap = originalMap.toMutableMap()
     for (entry in originalMap) {

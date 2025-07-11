@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.startup
+package org.jetbrains.bazel.startup.utils
 
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project

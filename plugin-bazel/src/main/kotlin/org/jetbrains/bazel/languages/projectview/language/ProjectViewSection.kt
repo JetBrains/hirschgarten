@@ -55,5 +55,14 @@ object ProjectViewSection {
       SectionMetadata("index_all_files_in_directories", SectionType.Scalar.Boolean),
       SectionMetadata("python_code_generator_rule_names", SectionType.List.String),
       SectionMetadata("use_query_sync", SectionType.Scalar.Boolean),
+      SectionMetadata("workspace_type", SectionType.Scalar.String),
+      SectionMetadata("additional_languages", SectionType.List.String),
+      SectionMetadata("java_language_level", SectionType.Scalar.String),
+      SectionMetadata("exclude_library", SectionType.List.String),
+      SectionMetadata("test_flags", SectionType.List.String),
+      SectionMetadata("android_sdk_platform", SectionType.Scalar.String),
+      SectionMetadata("generated_android_resource_directories", SectionType.List.String),
+      SectionMetadata("ts_config_rules", SectionType.List.String),
+      SectionMetadata("import_ijars", SectionType.Scalar.Boolean),
     ).associateBy { it.sectionName }
 }

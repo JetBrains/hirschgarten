@@ -33,7 +33,6 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesGo
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
