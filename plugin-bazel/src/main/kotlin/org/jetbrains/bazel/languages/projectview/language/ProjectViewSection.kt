@@ -50,5 +50,6 @@ object ProjectViewSection {
       "android_sdk_platform" to Parser.Scalar.String,
       "generated_android_resource_directories" to Parser.List.String,
       "ts_config_rules" to Parser.List.String,
+      "import_ijars" to Parser.Scalar.Boolean,
     )
 }
