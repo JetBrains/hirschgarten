@@ -31,7 +31,11 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
 
   open fun getSingleTestFilter(element: PsiElement): String? = null
 
-  open fun getTestExecutableArguments(element: PsiElement): List<String> = emptyList()
+  /**
+   * Allows adding additional test runner arguments.
+   * Under the hood it uses `--testarg` bazel arguments
+   */
+  open fun getExtraProgramArguments(element: PsiElement): List<String> = emptyList()
 
   private fun PsiElement.calculateLineMarkerInfo(): Info? =
     containingFile.virtualFile?.let { url ->
@@ -41,7 +45,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
           .getExecutableTargetsForFile(url)
           .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
       calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this),
-                              getTestExecutableArguments(this), this)
+                              getExtraProgramArguments(this), this)
     }
 
   private fun calculateLineMarkerInfo(
