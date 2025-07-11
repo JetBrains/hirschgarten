@@ -9,10 +9,8 @@ import com.jetbrains.rdserver.core.RemoteClientSessionListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.ui.queryTab.showQueryToolWindow
 
 /**
  * We want the BSP tool window and the Build tool window to be visible when we open a project with remote dev.
@@ -39,9 +37,6 @@ class BazelRemoteClientSessionListener : RemoteClientSessionListener {
     if (!project.isBazelProject) return
     showBspToolWindow(project)
     showBuildToolWindow(project)
-    if (FeatureFlagsProvider.getFeatureFlags(project).isBazelQueryTabEnabled) {
-      showQueryToolWindow(project)
-    }
   }
 
   private suspend fun showBuildToolWindow(project: Project) =

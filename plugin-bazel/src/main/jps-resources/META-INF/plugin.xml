@@ -450,14 +450,6 @@
       implementation="org.jetbrains.bazel.ui.queryTab.BazelQueryToolWindowViewModelExtractor"
     />
 
-    <toolWindow
-      anchor="bottom"
-      canCloseContents="false"
-      factoryClass="org.jetbrains.bazel.ui.queryTab.BazelQueryWidgetFactory"
-      icon="org.jetbrains.bazel.assets.BazelPluginIcons.bazelToolWindow"
-      id="Bazel Query"
-    />
-
     <consoleFilterProvider
       implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"
     />
@@ -874,6 +866,10 @@
             class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
             text="Exclude from the Project View Directories"
             description="Exclude this directory from the project view file.">
+    </action>
+
+    <action id="Bazel.OpenBazelQueryToolWindowAction"
+            class="org.jetbrains.bazel.action.registered.OpenBazelQueryToolWindowAction">
     </action>
 
     <action id="Bazel.OpenProjectViewFile"

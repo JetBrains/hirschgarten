@@ -4,7 +4,7 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId
 
 object BazelPluginConstants {
   const val BAZEL_TOOLWINDOW_ID: String = "Bazel"
-  const val BAZEL_QUERY_TOOLWINDOW_ID: String = "Bazel"
+  const val BAZEL_QUERY_TOOLWINDOW_ID: String = "Bazel Query"
 
   /**
    * This id used in [BazelMoveDeclarationsToFileRefactoringListener]. Update the usage there if changing the constant
