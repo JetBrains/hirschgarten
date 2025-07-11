@@ -14,12 +14,12 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//rules_intellij/third_party/android",
         "//rules_intellij/third_party/code_with_me",
         "//rules_intellij/third_party/devkit",
         "//rules_intellij/third_party/performance",
         "//rules_intellij/third_party/python",
+        "//sdkcompat",
     ],
 )

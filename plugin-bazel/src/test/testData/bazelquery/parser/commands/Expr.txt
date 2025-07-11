@@ -1,0 +1,11 @@
+FILE
+  BazelQueryCommand(COMMAND)
+    PsiElement(BazelQuery:TESTS)('tests')
+    PsiElement(BazelQuery:()('(')
+    BazelQueryCommand(COMMAND)
+      PsiElement(BazelQuery:SIBLINGS)('siblings')
+      PsiElement(BazelQuery:()('(')
+      BazelQueryWord(WORD)
+        PsiElement(BazelQuery:UNQUOTED_WORD)('//path/to:target')
+      PsiElement(BazelQuery:))(')')
+    PsiElement(BazelQuery:))(')')

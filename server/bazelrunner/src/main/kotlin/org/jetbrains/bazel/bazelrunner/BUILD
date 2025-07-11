@@ -1,6 +1,6 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("//rules/kotlin:macros.bzl", "kt_library")
 
-kt_jvm_library(
+kt_library(
     name = "bazelrunner",
     srcs = glob(["*.kt"]),
     resources = ["//server/log4j_config"],
@@ -20,7 +20,6 @@ kt_jvm_library(
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_fasterxml_jackson_module_jackson_module_kotlin",
-        "@maven//:org_apache_logging_log4j_log4j_api",
-        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )

@@ -86,26 +86,27 @@ class BazelProjectMapper(
         DependencyGraph(rootTargets, targets)
       }
     val transitiveCompileTimeJarsTargetKinds = workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toSet()
-    val targetsToImport =
+    val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
-        selectTargetsToImport(
-          workspaceContext,
-          rootTargets,
-          dependencyGraph,
-          repoMapping,
-          transitiveCompileTimeJarsTargetKinds,
-          featureFlags,
-        )
+        val targetsAtDepth =
+          dependencyGraph
+            .allTargetsAtDepth(
+              workspaceContext.importDepth.value,
+              rootTargets,
+              isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
+              targetSupportsStrictDeps = { id -> targets[id]?.kind?.let { targetSupportsStrictDeps(it) } ?: false },
+            )
+        val (targetsToImport, nonWorkspaceTargets) =
+          targetsAtDepth.targets.partition {
+            isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
+          }
+        val libraries = (nonWorkspaceTargets + targetsAtDepth.directDependencies).associateBy { it.label() }
+        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport.asSequence())
+        targetsToImport.asSequence() to usedLibraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
         collectInterfacesAndClasses(targetsToImport)
-      }
-    val targetsAsLibraries =
-      measure("Targets as libraries") {
-        val libraries = targets - targetsToImport.map { it.label() }.toSet()
-        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport)
-        usedLibraries
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
@@ -148,7 +149,7 @@ class BazelProjectMapper(
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
-        createLibraries(targetsAsLibraries) +
+        createLibraries(targetsAsLibraries, repoMapping) +
           librariesFromDeps.values
             .flatten()
             .distinct()
@@ -256,7 +257,7 @@ class BazelProjectMapper(
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
+        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -446,7 +447,7 @@ class BazelProjectMapper(
           target.goTargetInfo.generatedLibrariesList.map {
             GoLibrary(
               label = label,
-              goImportPath = target.goTargetInfo.importpath,
+              goImportPath = target.goTargetInfo.importPath,
               goRoot = bazelPathsResolver.resolve(it).parent,
             )
           }
@@ -643,12 +644,17 @@ class BazelProjectMapper(
         )
       }
 
-  private suspend fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
+  private suspend fun createLibraries(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, Library> =
     withContext(Dispatchers.Default) {
       targets
         .map { (targetId, targetInfo) ->
           async {
-            createLibrary(targetId, targetInfo)?.let { library ->
+            createLibrary(
+              label = targetId,
+              targetInfo = targetInfo,
+              onlyOutputJars = false,
+              isInternalTarget = isTargetTreatedAsInternal(targetId.assumeResolved(), repoMapping),
+            )?.let { library ->
               targetId to library
             }
           }
@@ -660,7 +666,8 @@ class BazelProjectMapper(
   private fun createLibrary(
     label: Label,
     targetInfo: TargetInfo,
-    onlyOutputJars: Boolean = false,
+    onlyOutputJars: Boolean,
+    isInternalTarget: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getAndroidAarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
     val sources = getSourceJarPaths(targetInfo)
@@ -692,6 +699,7 @@ class BazelProjectMapper(
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
+      isFromInternalTarget = isInternalTarget,
     )
   }
 
@@ -721,7 +729,7 @@ class BazelProjectMapper(
   ): GoLibrary =
     GoLibrary(
       label = label,
-      goImportPath = targetInfo.goTargetInfo?.importpath,
+      goImportPath = targetInfo.goTargetInfo?.importPath,
       goRoot = getGoRootPath(targetInfo, repoMapping),
     )
 
@@ -872,21 +880,6 @@ class BazelProjectMapper(
   private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =
     bazelPathsResolver.toDirectoryPath(targetInfo.label().assumeResolved(), repoMapping)
 
-  private fun selectTargetsToImport(
-    workspaceContext: WorkspaceContext,
-    rootTargets: Set<Label>,
-    graph: DependencyGraph,
-    repoMapping: RepoMapping,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
-    featureFlags: FeatureFlags,
-  ): Sequence<TargetInfo> =
-    graph
-      .allTargetsAtDepth(
-        workspaceContext.importDepth.value,
-        rootTargets,
-      ).filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags) }
-      .asSequence()
-
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
     targets
       .associate { target ->
@@ -905,7 +898,8 @@ class BazelProjectMapper(
   private fun hasKnownPythonSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
       it.relativePath.endsWith(".py")
-    }
+    } ||
+      targetInfo.pythonTargetInfo.isCodeGenerator
 
   private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
@@ -919,7 +913,7 @@ class BazelProjectMapper(
     }
 
   private fun isTargetTreatedAsInternal(target: ResolvedLabel, repoMapping: RepoMapping): Boolean =
-    target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping)
+    target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping) || target.isGazelleGenerated
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(
@@ -928,18 +922,23 @@ class BazelProjectMapper(
     transitiveCompileTimeJarsTargetKinds: Set<String>,
     featureFlags: FeatureFlags,
   ): Boolean =
-    isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
-      (
-        shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
-          target.hasJvmTargetInfo() &&
-          hasKnownJvmSources(target) ||
-          featureFlags.isPythonSupportEnabled &&
-          target.hasPythonTargetInfo() &&
-          hasKnownPythonSources(target) ||
-          featureFlags.isGoSupportEnabled &&
-          target.hasGoTargetInfo() &&
-          hasKnownGoSources(target)
-      )
+    (
+      isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
+        (
+          shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
+            target.hasJvmTargetInfo() &&
+            (
+              target.dependenciesCount > 0 ||
+                hasKnownJvmSources(target)
+            )
+        )
+    ) ||
+      featureFlags.isGoSupportEnabled &&
+      target.hasGoTargetInfo() &&
+      hasKnownGoSources(target) ||
+      featureFlags.isPythonSupportEnabled &&
+      target.hasPythonTargetInfo() &&
+      hasKnownPythonSources(target)
 
   private fun shouldImportTargetKind(kind: String, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean =
     kind in workspaceTargetKinds || kind in transitiveCompileTimeJarsTargetKinds
@@ -964,9 +963,19 @@ class BazelProjectMapper(
       "kt_android_library",
       "kt_android_local_test",
       "intellij_plugin_debug_target",
+      "go_proto_library",
       "go_library",
       "go_binary",
       "go_test",
+    )
+
+  private fun targetSupportsStrictDeps(kind: String): Boolean = kind in strictDepsTargetKinds
+
+  private val strictDepsTargetKinds =
+    setOf(
+      "java_library",
+      "java_binary",
+      "java_test",
     )
 
   private suspend fun createModules(
@@ -1059,6 +1068,9 @@ class BazelProjectMapper(
       "kt_android_library" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
       "kt_android_local_test" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
       "go_binary" to setOf(LanguageClass.GO),
+      "go_test" to setOf(LanguageClass.GO),
+      "go_library" to setOf(LanguageClass.GO),
+      "go_source" to setOf(LanguageClass.GO),
       "py_binary" to setOf(LanguageClass.PYTHON),
       "py_test" to setOf(LanguageClass.PYTHON),
       "py_library" to setOf(LanguageClass.PYTHON),
@@ -1069,6 +1081,15 @@ class BazelProjectMapper(
       // TODO It's a hack preserved from before TargetKind refactorking, to be removed
       if (transitiveCompileTimeJarsTargetKinds.contains(target.kind)) {
         add(LanguageClass.JAVA)
+      }
+      if (target.hasJvmTargetInfo()) {
+        add(LanguageClass.JAVA)
+      }
+      if (target.hasPythonTargetInfo()) {
+        add(LanguageClass.PYTHON)
+      }
+      if (target.hasGoTargetInfo()) {
+        add(LanguageClass.GO)
       }
       languagesFromKinds[target.kind]?.let {
         addAll(it)

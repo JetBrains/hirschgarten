@@ -6,17 +6,17 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendum
 import org.jetbrains.bazel.utils.StringUtils
-import org.jetbrains.bazel.workspacemodel.entities.AndroidAddendum
-import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
-import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendum
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
@@ -27,7 +27,7 @@ import java.nio.file.Path
 
 internal class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTarget>,
-  fileToTarget: Map<Path, List<Label>>,
+  fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   projectBasePath: Path,
   private val project: Project,
   private val isAndroidSupportEnabled: Boolean = false,
@@ -36,7 +36,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private val type = ModuleTypeId("JAVA_MODULE")
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
   private val javaModuleToDummyJavaModulesTransformerHACK =
-    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTarget, project)
+    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargetWithoutLowPrioritySharedSources, project)
 
   fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val javaModule =
@@ -133,9 +133,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toScalaAddendum(inputEntity: ModuleDetails): ScalaAddendum? {
     val scalaBuildTarget = extractScalaBuildTarget(inputEntity.target)
-    val version = scalaBuildTarget?.scalaVersion?.scalaVersionToScalaSdkName() ?: return null
+    val version = scalaBuildTarget?.scalaVersion ?: return null
     return ScalaAddendum(
-      scalaSdkName = version,
+      scalaVersion = version,
+      scalacOptions = scalaBuildTarget.scalacOptions,
+      sdkJars = scalaBuildTarget.sdkJars,
     )
   }
 

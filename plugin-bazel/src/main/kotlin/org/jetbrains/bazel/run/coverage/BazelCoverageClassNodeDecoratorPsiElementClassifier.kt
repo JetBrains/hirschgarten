@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.run.coverage
 
 import com.intellij.coverage.CoverageDataManager
+import com.intellij.coverage.CoverageOptionsProvider
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
@@ -8,11 +9,10 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
-import org.jetbrains.bazel.sdkcompat.shouldShowCoverageInProjectView
 
 private class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
-    if (!project.shouldShowCoverageInProjectView()) return
+    if (!CoverageOptionsProvider.getInstance(project).showInProjectView()) return
 
     val nodeValue = node.value
     val psiElement =

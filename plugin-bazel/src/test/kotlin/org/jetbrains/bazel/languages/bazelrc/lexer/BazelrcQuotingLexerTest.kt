@@ -233,7 +233,7 @@ class BazelrcQuotingLexerTest : LexerTestCase() {
   }
 
   @Test fun `values with quotes`() {
-    var code = """build --define=ij_product="intellij-2024.3""""
+    var code = """build --define=ij_product="intellij-2025.1""""
 
     code shouldLexTo
       listOf(

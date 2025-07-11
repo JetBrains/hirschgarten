@@ -11,7 +11,7 @@ import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.AndroidFacetConfiguration
 import org.jetbrains.android.facet.AndroidFacetType
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bsp.protocol.AndroidTargetType
 
 internal interface AndroidFacetEntityUpdaterExtension {

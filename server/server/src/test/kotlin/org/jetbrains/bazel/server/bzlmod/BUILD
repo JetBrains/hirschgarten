@@ -6,5 +6,6 @@ kt_junit5_test(
     src = "RepoMappingTest.kt",
     deps = [
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bzlmod",
+        "@maven//:com_jetbrains_intellij_platform_util",
     ],
 )

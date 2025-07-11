@@ -90,7 +90,23 @@ def create_struct(**kwargs):
     return struct(**d)
 
 def update_sync_output_groups(groups_dict, key, new_set):
-    groups_dict[key] = depset(transitive = [groups_dict.get(key, depset()), new_set])
+    """Updates all sync-relevant output groups associated with 'key'.
+
+    This is currently the [key] output group itself, together with [key]-outputs
+    and [key]-direct-deps.
+
+    Args:
+      groups_dict: the output groups dict, from group name to artifact depset.
+      key: the base output group name.
+      new_set: a depset of artifacts to add to the output groups.
+    """
+    update_set_in_dict(groups_dict, key, new_set)
+    update_set_in_dict(groups_dict, key + "-outputs", new_set)
+    update_set_in_dict(groups_dict, key + "-direct-deps", new_set)
+
+def update_set_in_dict(input_dict, key, other_set):
+    """Updates depset in dict, merging it with another depset."""
+    input_dict[key] = depset(transitive = [input_dict.get(key, depset()), other_set])
 
 def get_aspect_ids(ctx, target):
     """Returns the all aspect ids, filtering out self."""
@@ -277,6 +293,9 @@ COMPILE_DEPS = [
     "jars",
     "exports",
     "associates",
+    "embed", # from rules_go
+    "compilers",  # From go_proto_library
+    "java_lib",  # From old proto_library rules
     "proc_macro_deps",
     ${cppDeps}
 ]

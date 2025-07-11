@@ -52,7 +52,7 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
         syncFinished.receive()
       }
 
-      check(project.targetUtils.allTargets().isNotEmpty()) { "Target id list is empty after sync" }
+      check(project.targetUtils.getTotalTargetCount() != 0) { "Target id list is empty after sync" }
     }
 
   // copied com.intellij.collaboration.async.nestedDisposable because it's not always available in the tests

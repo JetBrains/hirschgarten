@@ -27,13 +27,13 @@ config_setting(
 )
 
 config_setting(
-    name = "intellij-2024.3",
-    values = {"define": "ij_product=intellij-2024.3"},
+    name = "intellij-2025.1",
+    values = {"define": "ij_product=intellij-2025.1"},
 )
 
 config_setting(
-    name = "intellij-2025.1",
-    values = {"define": "ij_product=intellij-2025.1"},
+    name = "intellij-2025.2",
+    values = {"define": "ij_product=intellij-2025.2"},
 )
 
 # The purpose of this rule is to hide the versioning

@@ -23,6 +23,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -32,10 +33,9 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEn
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.BeforeEach
@@ -213,9 +213,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     info: GeneratedTargetInfo,
     sources: List<SourceItem>,
     resources: List<Path>,
-  ): BuildTarget {
+  ): RawBuildTarget {
     val target =
-      BuildTarget(
+      RawBuildTarget(
         info.targetId,
         listOf(info.type),
         info.dependencies,
@@ -229,6 +229,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
           PythonBuildTarget(
             version = "3",
             interpreter = Path(PYTHON_INTERPRETER),
+            listOf(),
+            false,
+            listOf(),
           ),
         sources = sources,
         resources = resources,
@@ -263,7 +266,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     )
   }
 
-  private fun generateExpectedSourceRootEntities(target: BuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
+  private fun generateExpectedSourceRootEntities(target: RawBuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
     target.sources.map {
       val url = it.path.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-source"), parentModuleEntity.entitySource)

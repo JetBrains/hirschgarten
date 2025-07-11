@@ -4,6 +4,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 private class TargetUtilsSyncHook : ProjectSyncHook {
@@ -11,13 +12,22 @@ private class TargetUtilsSyncHook : ProjectSyncHook {
     val bspTargets = environment.server.workspaceBuildTargets().targets
     val targetUtilsDiff = environment.diff.targetUtilsDiff
     targetUtilsDiff.bspTargets = bspTargets
-    targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets)
+    targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets, withLowPrioritySharedSources = true)
+    targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources =
+      calculateFileToTarget(bspTargets, withLowPrioritySharedSources = false)
   }
 
-  private fun calculateFileToTarget(targets: List<BuildTarget>): Map<Path, List<Label>> {
+  private fun calculateFileToTarget(targets: List<BuildTarget>, withLowPrioritySharedSources: Boolean): Map<Path, List<Label>> {
     val resultMap = HashMap<Path, MutableList<Label>>()
     for (target in targets) {
-      for (source in target.sources) {
+      target as RawBuildTarget
+      val sources =
+        if (withLowPrioritySharedSources) {
+          target.sources + target.lowPrioritySharedSources
+        } else {
+          target.sources
+        }
+      for (source in sources) {
         val path = source.path
         val label = target.id
         resultMap.computeIfAbsent(path) { ArrayList() }.add(label)

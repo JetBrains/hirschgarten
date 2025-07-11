@@ -6,8 +6,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.arguments.parseCommandLineArguments
 import org.jetbrains.kotlin.config.JvmTarget
@@ -54,8 +54,8 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     parentModuleEntity: ModuleEntity,
     kotlincOpts: List<String>?,
   ) = KotlinSettingsEntity(
-    name = KotlinFacetType.NAME,
     moduleId = parentModuleEntity.symbolicId,
+    name = KotlinFacetType.NAME,
     sourceRoots = emptyList(),
     configFileItems = emptyList(),
     useProjectSettings = false,
@@ -68,10 +68,10 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     isHmppEnabled = false,
     pureKotlinSourceFolders = emptyList(),
     kind = KotlinModuleKind.DEFAULT,
-    entitySource = parentModuleEntity.entitySource,
     externalSystemRunTasks = emptyList(),
     version = KotlinFacetSettings.CURRENT_VERSION,
     flushNeeded = true,
+    entitySource = parentModuleEntity.entitySource,
   ) {
     this.productionOutputPath = ""
     this.testOutputPath = ""

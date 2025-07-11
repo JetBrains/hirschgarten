@@ -32,6 +32,9 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   }
 }
 
+/**
+ * @param rulesetName apparent ruleset name
+ */
 data class RulesetLanguage(val rulesetName: String?, val language: Language)
 
 class BazelBspAspectsManager(
@@ -136,6 +139,7 @@ class BazelBspAspectsManager(
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
           "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl]?.toString()?.let { "\"" + it + "\"" } },
+          "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.values.toStarlarkString(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }

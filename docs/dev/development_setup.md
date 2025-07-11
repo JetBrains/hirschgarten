@@ -5,7 +5,7 @@ Follow these steps to get your development environment ready.
 
 ### Requirements
 
-1) IntelliJ IDEA 2024.3 Nightly or later Release, Release Candidate or EAP version.
+1) IntelliJ IDEA 2025.1 Nightly or later Release, Release Candidate or EAP version.
 2) Install the latest plugins as described on our [landing page](https://lp.jetbrains.com/new-bazel-plugin/#:~:text=Install%20plugin).  
    Note: Our debug/developer run configurations currently require both plugins to be installed.
 3) [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable)

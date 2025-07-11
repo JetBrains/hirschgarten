@@ -6,7 +6,19 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
-import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
+
+/**
+ * Don't index irrelevant files inside jars that are built from internal targets.
+ * We care about generated classes (and respective generated sources), but not about generated resources.
+ */
+private val ALLOWED_FILE_EXTENSIONS_IN_LIBRARIES_FROM_INTERNAL_TARGETS =
+  listOf(
+    "class",
+    "java",
+    "kt",
+    "scala",
+  )
 
 class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
   WorkspaceFileIndexContributor<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
@@ -22,13 +34,22 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
     val compiledSourceCodeInsideJarExcludeEntity = storage.resolve(entity.compiledSourceCodeInsideJarExcludeId) ?: return
 
     val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude
+    val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls
 
     library.roots.map { libraryRoot ->
       val contentRootUrl = libraryRoot.url
       registrar.registerExclusionCondition(
         root = contentRootUrl,
-        condition = {
-          it.getRelativePathInsideJar() in relativePathsToExclude
+        condition = { virtualFile ->
+          if (virtualFile.isDirectory) return@registerExclusionCondition false
+          val rootFile = VfsUtilCore.getRootFile(virtualFile)
+          val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
+          val relativePathWithoutNestedClass = removeNestedClass(relativePath)
+          if (relativePathWithoutNestedClass in relativePathsToExclude) return@registerExclusionCondition true
+          if (rootFile.url in librariesFromInternalTargetsUrls) {
+            return@registerExclusionCondition virtualFile.extension !in ALLOWED_FILE_EXTENSIONS_IN_LIBRARIES_FROM_INTERNAL_TARGETS
+          }
+          false
         },
         entity = entity,
       )
@@ -37,9 +58,20 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
 }
 
 /**
- * Copied from `ArchiveFileSystem#getRelativePath` which is not `public` for some reason
+ * Based on `ArchiveFileSystem#getRelativePath`
  */
-private fun VirtualFile.getRelativePathInsideJar(): String {
-  val relativePath: String = this.path.substring(VfsUtilCore.getRootFile(this).path.length)
+private fun VirtualFile.getRelativePathInsideJar(rootFile: VirtualFile): String {
+  val relativePath: String = this.path.substring(rootFile.path.length)
   return StringUtil.trimLeading(relativePath, '/')
+}
+
+/**
+ * example/lib.jar!/Example$1.class -> example/lib.jar!/Example.class
+ */
+private fun removeNestedClass(relativePath: String): String {
+  val dollarIndex = relativePath.indexOf('$')
+  if (dollarIndex == -1) return relativePath
+  val dotIndex = relativePath.indexOf('.', dollarIndex + 1)
+  if (dotIndex == -1) return relativePath
+  return relativePath.substring(0, dollarIndex) + relativePath.substring(dotIndex)
 }

@@ -1,7 +1,7 @@
 load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
+load("//rules/kotlin:macros.bzl", "kt_binary")
 
-kt_jvm_binary(
+kt_binary(
     name = "stardoc-proto-reader",
     srcs = glob([
         "src/**/*.kt",

@@ -5,8 +5,8 @@ import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.utils.isSourceFile
-import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 
 /**
  * If a source file is added to a dummy module and is not associated with any other module, it should not be indexed or analyzed.

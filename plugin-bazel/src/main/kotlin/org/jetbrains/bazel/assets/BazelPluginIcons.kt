@@ -5,11 +5,24 @@ import javax.swing.Icon
 
 @Suppress("unused") // should be able to provide us with all available icons
 object BazelPluginIcons {
-  val bazel: Icon = IconLoader.getIcon("/icons/bazel.svg", javaClass)
-  val bazelConfig: Icon = IconLoader.getIcon("/icons/bazelConfig.svg", javaClass)
-  val bazelDirectory: Icon = IconLoader.getIcon("/icons/bazelDirectory.svg", javaClass)
-  val bazelError: Icon = IconLoader.getIcon("/icons/bazelError.svg", javaClass)
-  val bazelReload: Icon = IconLoader.getIcon("/icons/bazelReload.svg", javaClass)
-  val bazelToolWindow: Icon = IconLoader.getIcon("/icons/toolWindowBazel.svg", javaClass)
-  val bazelWarning: Icon = IconLoader.getIcon("/icons/bazelWarning.svg", javaClass)
+  private fun loadIcon(path: String): Icon = IconLoader.getIcon(path, BazelPluginIcons::class.java.classLoader)
+
+  @JvmField
+  val bazel: Icon = loadIcon("icons/bazel.svg")
+
+  @JvmField
+  val bazelConfig: Icon = loadIcon("icons/bazelConfig.svg")
+
+  @JvmField
+  val bazelDirectory: Icon = loadIcon("icons/bazelDirectory.svg")
+  val bazelError: Icon = loadIcon("icons/bazelError.svg")
+
+  @JvmField
+  val bazelReload: Icon = loadIcon("icons/bazelReload.svg")
+
+  @JvmField
+  val bazelToolWindow: Icon = loadIcon("icons/toolWindowBazel.svg")
+
+  @JvmField
+  val bazelWarning: Icon = loadIcon("icons/bazelWarning.svg")
 }

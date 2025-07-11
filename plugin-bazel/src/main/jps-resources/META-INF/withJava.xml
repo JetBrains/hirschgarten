@@ -1,25 +1,41 @@
 <idea-plugin>
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
-        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook, after TargetUtilsSyncHook"/>
+      <projectSyncHook
+      implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"
+      order="after BazelRepoMappingSyncHook, after TargetUtilsSyncHook, after DirectoriesSyncHook"
+    />
 
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
-        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
-        <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
-      <bazelCoverageClassNodeDecoratorPsiElementClassifier implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider" />
+        <psiElementConfigurationLocator
+      implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"
+    />
+
+      <bazelExperimentalSettingsProvider
+      implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"
+    />
+      <unresolvedImportChecker implementation="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker" />
+      <bazelCoverageClassNodeDecoratorPsiElementClassifier
+      implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"
+    />
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher"/>
-        <java.elementFinder implementation="org.jetbrains.bazel.java.search.BazelJavaClassFinder"/>
-        <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger"/>
+        <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher" />
+        <java.elementFinder implementation="org.jetbrains.bazel.java.search.BazelJavaClassFinder" />
+        <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger" />
 
-        <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
-                        serviceImplementation="org.jetbrains.bazel.java.annotation.BazelExternalAnnotationsManager"
-                        overrides="true"/>
+        <projectService
+      overrides="true"
+      serviceImplementation="org.jetbrains.bazel.java.annotation.BazelExternalAnnotationsManager"
+      serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
+    />
         <runLineMarkerContributor
-                implementationClass="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor"
-                language="JAVA"/>
-        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard"/>
+      implementationClass="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor"
+      language="JAVA"
+    />
+        <newProjectWizard.java.buildSystem
+      implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard"
+    />
     </extensions>
 </idea-plugin>

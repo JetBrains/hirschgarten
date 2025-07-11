@@ -2,17 +2,17 @@
 
 ## Intro
 
-The Bazel plugin currently compiles against three IDEA versions:
+The Bazel plugin currently compiles against four IDEA versions:
 - IDEA master (built with JPS)
-- 2024.3 (built with Bazel)
 - 2025.1 (built with Bazel)
+- 2025.2 (built with Bazel)
 
 The reason is that some big customers are still on old IDEA versions and we still want to deliver bugfixes and features to them.
 
 If you rename a function or break an interface that the Bazel plugin depends on,
 you're going to have to fix it for all three builds, otherwise the Bazel plugin build will fail (and so will your safe push).
 
-## How does the Bazel plugin build for three IDEA versions?
+## How does the Bazel plugin build for four IDEA versions?
 
 Any function or class that differs between IDEA versions is not used from the Bazel plugin source code directly.
 Instead, we add a compatibility layer. It should have the same signatures (such that the calling code is the same),
@@ -20,8 +20,8 @@ but three different implementations. Those three implementations are put into th
 `ultimate/plugins/bazel/sdkcompat`.
 During compilation for different IDEA targets, the dependency is switched: 
 - JPS build against IDEA master compiles `sdkcompat/master`
+- Bazel build against 2025.2 compiles `sdkcompat/v252`
 - Bazel build against 2025.1 compiles `sdkcompat/v251`
-- Bazel build against 2024.3 compiles `sdkcompat/v243`
 
 ![SDK Compatibility Structure](sdkcompat/sdkcompat_structure.png)
 
@@ -54,13 +54,13 @@ plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/exclude/BazelSymlinkExclud
 ```
 
 The reason? IDEA's "rename" refactoring changed the Bazel plugin code to use the new shiny `configureRenamed` method.
-But when compiling the Bazel plugin source code against IDEA 2025.1, this will cause the error above.
-That's because on IDEA 2025.1 the method is still named `configure`.
+But when compiling the Bazel plugin source code against IDEA 2025.2, this will cause the error above.
+That's because on IDEA 2025.2 the method is still named `configure`.
 
 ### Importing the Bazel plugin source as a Bazel project
 
 In order to fix the error, you'll have to import the Bazel plugin subdirectory as a Bazel project.
-This is because we use Bazel to compile the Bazel plugin against 2025.1 and 2024.3.
+This is because we use Bazel to compile the Bazel plugin against 2025.2 and 2025.1.
 
 First install the Bazel plugin from Marketplace and restart IDEA:
 
@@ -94,25 +94,25 @@ Then resync the project so that IDEA knows about this change we've just done:
 
 ![Resync Project](sdkcompat/resync.png)
 
-### `v251` and `v243` folders of sdkcompat
+### `v243`, `v251`, `v252` folders of sdkcompat
 
-Because `sdkcompat/v251` and `sdkcompat/v243` are only used when building `ultimate/plugins/bazel` with Bazel, we're going to use the imported subfolder (`ultimate/plugins/bazel`)
+Because `sdkcompat/v252`, `sdkcompat/v251`, and `sdkcompat/v243` are only used when building `ultimate/plugins/bazel` with Bazel, we're going to use the imported subfolder (`ultimate/plugins/bazel`)
 in this section.
 
 We know that the `configure` method was renamed to `configureRenamed` in IDEA master. Therefore, the Bazel plugin code
 can't depend on the `AsyncDirectoryProjectConfigurator` class anymore. We have to create a compatibility layer.
 Let's name it `AsyncDirectoryProjectConfiguratorCompat`. It should have the same method signatures in all IDEA versions. 
 
-Create a new `AsyncDirectoryProjectConfiguratorCompat.kt` in `sdkcompat/v251`.
-Because the default target for Bazel build is 2025.1, this is the currently imported subdirectory of `sdkcompat`.
+Create a new `AsyncDirectoryProjectConfiguratorCompat.kt` in `sdkcompat/v252`.
+Because the default target for Bazel build is 2025.2, this is the currently imported subdirectory of `sdkcompat`.
 
 Here we'll add a `configureCompat` method that the Bazel plugin code will override. Because in 2025.1 the method
 used to be called `configure`, we'll call `configureCompat` from there.
 
 ![Bazel SDK Compatibility](sdkcompat/bazel_sdkcompat.png)
 
-Copy the same file to `sdkcompat/v243`, because the implementation is going to be the same for 2024.3.
-(If not, then you can change `build --define=ij_product=intellij-2025.1` to `build --define=ij_product=intellij-2024.3`
+Copy the same file to `sdkcompat/v251`, because the implementation is going to be the same for other IDEA versions.
+(If not, then you can change `build --define=ij_product=intellij-2025.2` to `build --define=ij_product=intellij-2025.1`
 inside `ultimate/plugins/bazel/.bazelrc` and then re-import the project to develop for the other IDEA target.)
 
 Then open the problematic file and change the superclass from `AsyncDirectoryProjectConfigurator` to `AsyncDirectoryProjectConfiguratorCompat`.
@@ -133,7 +133,7 @@ we now have a broken JPS build, because `sdkcompat/master` doesn't have `AsyncDi
 
 ![Master SDK Compatibility](sdkcompat/master_sdkcompat.png)
 
-We add the same `configureCompat` method as in `v251` and `v243`, so that the Bazel plugin code compiles without errors for any IDEA target. 
+We add the same `configureCompat` method as in `v252`, `v251`, and `v243`, so that the Bazel plugin code compiles without errors for any IDEA target. 
 Then we implement the new-and-shiny `configureRenamed` method by calling `configureCompat` from it.
 
 **The Bazel plugin code stays the same because the class and method signatures are the same for all sdkcompat directories!**

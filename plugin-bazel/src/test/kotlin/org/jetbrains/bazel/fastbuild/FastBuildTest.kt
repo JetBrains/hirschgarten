@@ -2,13 +2,14 @@ package org.jetbrains.bazel.fastbuild
 
 import com.intellij.driver.client.Remote
 import com.intellij.driver.client.service
+import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.sdk.VirtualFile
+import com.intellij.driver.sdk.XDebuggerUtil
 import com.intellij.driver.sdk.findFile
-import com.intellij.driver.sdk.openFile
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.toggleLineBreakpoint
-import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitVisible
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
@@ -24,6 +25,8 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.findFile
+import org.jetbrains.bazel.ideStarter.openFile
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -58,8 +61,11 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
         waitForIndicators(5.minutes)
 
         step("Set breakpoint") {
-          openFile("Main.java")
-          toggleLineBreakpoint("Main.java", 6)
+          val file = openFile("Main.java")
+          withContext(OnDispatcher.EDT) {
+            val debuggerUtil = service<XDebuggerUtil>()
+            debuggerUtil.toggleLineBreakpoint(singleProject(), file, 6, false)
+          }
         }
 
         step("Launch debug run config") {
@@ -74,7 +80,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
           waitFor(
             timeout = 3.minutes,
             getter = {},
-            checker = { resumeProgram.isVisible() && resumeProgram.isEnabled() },
+            checker = { resumeProgram.present() && resumeProgram.isEnabled() },
           )
         }
 
@@ -95,7 +101,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
 
         step("Agree to the 'Reload Changed Classes' dialog") {
           val reloadButton = ui.x { byAccessibleName("Reload") }
-          reloadButton.waitVisible(timeout = 30.seconds)
+          reloadButton.waitFound(timeout = 30.seconds)
           reloadButton.click()
           Thread.sleep(5000)
         }

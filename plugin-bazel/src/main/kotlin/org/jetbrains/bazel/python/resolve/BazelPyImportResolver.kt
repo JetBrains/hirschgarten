@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.python.resolve
 
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.QualifiedName
@@ -10,6 +11,8 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 
 class BazelPyImportResolver : PyImportResolver {
+  val cacheKey = "PythonResolveIndex"
+
   override fun resolveImportReference(
     name: QualifiedName,
     context: PyQualifiedNameResolveContext,
@@ -17,7 +20,18 @@ class BazelPyImportResolver : PyImportResolver {
   ): PsiElement? {
     if (!context.project.isBazelProject) return null
 
-    return resolveRootImport(name, context)
+    val rootImportResolve = resolveRootImport(name, context)
+    if (rootImportResolve != null) return rootImportResolve
+
+    val synonymImport =
+      PythonSynonymProvider.ep.extensionList.firstNotNullOfOrNull {
+        it
+          .getSynonym(name.components)
+          ?.let { synonym -> resolveRootImport(QualifiedName.fromComponents(synonym), context) }
+      }
+    if (synonymImport != null) return synonymImport
+
+    return resolveShortImport(name, context)
   }
 
   /**
@@ -76,6 +90,12 @@ class BazelPyImportResolver : PyImportResolver {
 
     // case 4
     return null
+  }
+
+  private fun resolveShortImport(name: QualifiedName, context: PyQualifiedNameResolveContext): PsiElement? {
+    val sourcesIndex = context.project.service<PythonResolveIndexService>().resolveIndex
+    val resolvedName = sourcesIndex[name] ?: return null
+    return resolvedName(context.psiManager)
   }
 }
 

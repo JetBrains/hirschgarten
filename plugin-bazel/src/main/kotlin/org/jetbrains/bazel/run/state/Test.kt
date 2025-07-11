@@ -6,6 +6,7 @@ import com.intellij.openapi.externalSystem.service.execution.configuration.fragm
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
 import com.intellij.openapi.util.NlsContexts
+import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.JTextField
 
 interface HasTestFilter {
@@ -20,7 +21,7 @@ fun <C : HasTestFilter> SettingsEditorFragmentContainer<C>.addTestFilterFragment
       override val settingsHint: String? = null
       override val settingsId: String = "Test Filter ID"
       override val settingsName: String = "Test Filter"
-      override val editorLabel: @NlsContexts.Label String = "Test filter"
+      override val editorLabel: @NlsContexts.Label String = BazelPluginBundle.message("settings.editor.label.test.filter")
       override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
     },
     {

@@ -3,7 +3,8 @@
   <category>Build Tools</category>
   <vendor>JetBrains</vendor>
   <name>Bazel (EAP)</name>
-  <description><![CDATA[
+  <description
+  ><![CDATA[
   <p>Bazel by JetBrains (EAP) for IntelliJ IDEA</p>
 
   <p>This plugin is available as EAP (Early Access Program). This means that it may already be useful, but many
@@ -23,519 +24,865 @@
   ]]>
   </description>
 
-  <depends>com.intellij.modules.lang</depends>
-  <depends>com.intellij.modules.platform</depends>
+  <dependencies>
+    <plugin id="com.intellij.modules.lang" />
+    <module name="intellij.platform.searchEverywhere" />
+  </dependencies>
 
-  <depends optional="true" config-file="withCodeWithMe.xml">com.jetbrains.codeWithMe</depends>
-  <depends optional="true" config-file="withCoverage.xml">com.intellij.modules.coverage</depends>
-  <depends optional="true" config-file="withCpp.xml">com.intellij.clion</depends>
-  <depends optional="true" config-file="withDevKit.xml">DevKit</depends>
-  <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
-  <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
-  <depends optional="true" config-file="withJava.xml">com.intellij.modules.java</depends>
-  <depends optional="true" config-file="withJunit.xml">JUnit</depends>
-  <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
-  <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
+  <depends
+    config-file="withCodeWithMe.xml"
+    optional="true"
+  >com.jetbrains.codeWithMe</depends>
+  <depends
+    config-file="withCoverage.xml"
+    optional="true"
+  >com.intellij.modules.coverage</depends>
+  <depends
+    config-file="withCpp.xml"
+    optional="true"
+  >com.intellij.clion</depends>
+  <depends
+    config-file="withDevKit.xml"
+    optional="true"
+  >DevKit</depends>
+  <depends
+    config-file="withGo.xml"
+    optional="true"
+  >org.jetbrains.plugins.go</depends>
+  <depends
+    config-file="withIdeStarter.xml"
+    optional="true"
+  >com.jetbrains.performancePlugin</depends>
+  <depends
+    config-file="withJava.xml"
+    optional="true"
+  >com.intellij.modules.java</depends>
+  <depends
+    config-file="withJunit.xml"
+    optional="true"
+  >JUnit</depends>
+  <depends
+    config-file="withKotlin.xml"
+    optional="true"
+  >org.jetbrains.kotlin</depends>
+  <depends
+    config-file="withPython.xml"
+    optional="true"
+  >com.intellij.modules.python</depends>
+  <depends
+    config-file="withTerminal.xml"
+    optional="true"
+  >org.jetbrains.plugins.terminal</depends>
 
   <extensionPoints>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
-                    interface="org.jetbrains.bazel.utils.SourceTypeIconProvider"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
-                    interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.androidFacetEntityUpdaterExtension"
-                    interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.runHandlerProvider"
-                    interface="org.jetbrains.bazel.run.RunHandlerProvider"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.projectAwareExtension"
-                    interface="org.jetbrains.bazel.projectAware.ProjectAwareExtension"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.runConfigurationExtension"
-                    interface="org.jetbrains.bazel.run.config.RunConfigurationExtensionManager"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.projectSyncHook"
-                    interface="org.jetbrains.bazel.sync.ProjectSyncHook"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.projectPreSyncHook"
-                    interface="org.jetbrains.bazel.sync.ProjectPreSyncHook"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.projectPostSyncHook"
-                    interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.projectStructureProvider"
-                    interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.additionalProjectTaskRunnerProvider"
-                    interface="org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.treeStructureSettingsExtension"
-                    interface="org.jetbrains.bazel.ui.projectTree.TreeStructureSettingsProvider"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.jvmBinaryJarsExtension"
-                    interface="org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
-                    interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
-                    interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier"
-                    interface="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecoratorPsiElementClassifier"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.unresolvedImportChecker"
-                    interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
-                    interface="org.jetbrains.bazel.junit.PsiElementConfigurationLocator"
-                    dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.targetKindProvider"
-                    interface="org.jetbrains.bazel.sync.TargetKindProvider"
-                    dynamic="true"/>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.utils.SourceTypeIconProvider"
+      qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
+      qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
+      qualifiedName="org.jetbrains.bazel.androidFacetEntityUpdaterExtension"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.run.RunHandlerProvider"
+      qualifiedName="org.jetbrains.bazel.runHandlerProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.projectAware.ProjectAwareExtension"
+      qualifiedName="org.jetbrains.bazel.projectAwareExtension"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.run.config.RunConfigurationExtensionManager"
+      qualifiedName="org.jetbrains.bazel.runConfigurationExtension"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.ProjectSyncHook"
+      qualifiedName="org.jetbrains.bazel.projectSyncHook"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.ProjectPreSyncHook"
+      qualifiedName="org.jetbrains.bazel.projectPreSyncHook"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
+      qualifiedName="org.jetbrains.bazel.projectPostSyncHook"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
+      qualifiedName="org.jetbrains.bazel.projectStructureProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider"
+      qualifiedName="org.jetbrains.bazel.additionalProjectTaskRunnerProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.ui.projectTree.TreeStructureSettingsProvider"
+      qualifiedName="org.jetbrains.bazel.treeStructureSettingsExtension"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension"
+      qualifiedName="org.jetbrains.bazel.jvmBinaryJarsExtension"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
+      qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
+      qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecoratorPsiElementClassifier"
+      qualifiedName="org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
+      qualifiedName="org.jetbrains.bazel.unresolvedImportChecker"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.junit.PsiElementConfigurationLocator"
+      qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.TargetKindProvider"
+      qualifiedName="org.jetbrains.bazel.targetKindProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
+      qualifiedName="org.jetbrains.bazel.bazelExperimentalSettingsProvider"
+    />
+    <extensionPoint
+      interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
+      qualifiedName="org.jetbrains.bazel.bazelGeneralSettingsProvider"
+    />
+    <extensionPoint
+      interface="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook$EnableWorkspaceModuleSyncHookExtension"
+      qualifiedName="org.jetbrains.bazel.workspaceModuleSyncHook.enable"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
-    <supportsKotlinPluginMode supportsK1="true" supportsK2="true"/>
+    <supportsKotlinPluginMode
+      supportsK1="true"
+      supportsK2="true"
+    />
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
+    <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook" />
 
-    <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
-    <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
-    <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"
-                     id="BazelRepoMappingSyncHook"/>
-    <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
-    <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>
-    <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook"/>
-    <projectSyncHook implementation="org.jetbrains.bazel.ui.widgets.tool.window.components.BazelToolwindowSyncHook"
-                     order="after BazelRepoMappingSyncHook"/>
-    <projectSyncHook implementation="org.jetbrains.bazel.target.sync.TargetUtilsSyncHook" id="TargetUtilsSyncHook"/>
+    <projectSyncHook
+      id="DirectoriesSyncHook"
+      implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"
+    />
+    <projectSyncHook
+      id="BazelRepoMappingSyncHook"
+      implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"
+    />
+    <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook" />
+    <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook" />
+    <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook" />
+    <projectSyncHook
+      id="TargetUtilsSyncHook"
+      implementation="org.jetbrains.bazel.target.sync.TargetUtilsSyncHook"
+    />
+    <projectSyncHook
+      implementation="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook"
+      order="after TargetUtilsSyncHook"
+    />
 
-    <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook" />
+    <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook" />
+    <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache" />
+
 
     <projectStructureProvider
-      implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-    <projectStructureProvider implementation="org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureProvider"/>
+      implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"
+      order="after TargetUtilsProjectStructureProvider"
+    />
+    <projectStructureProvider
+      id="TargetUtilsProjectStructureProvider"
+      implementation="org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureProvider"
+    />
 
-    <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
-                        id="JvmRunHandlerProvider"/>
     <runHandlerProvider
+      id="JvmRunHandlerProvider"
+      implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
+    />
+    <runHandlerProvider
+      id="JvmTestHandlerProvider"
       implementation="org.jetbrains.bazel.jvm.run.JvmTestHandler$JvmTestHandlerProvider"
-      id="JvmTestHandlerProvider"/>
-    <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericRunHandlerProvider"
-                        order="last"/>
-    <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
-                        order="last"/>
-    <projectAwareExtension
-      implementation="org.jetbrains.bazel.flow.open.BazelProjectAwareExtension"/>
+    />
+    <runHandlerProvider
+      implementation="org.jetbrains.bazel.run.handler.GenericRunHandlerProvider"
+      order="last"
+    />
+    <runHandlerProvider
+      implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
+      order="last"
+    />
+    <projectAwareExtension implementation="org.jetbrains.bazel.flow.open.BazelProjectAwareExtension" />
 
     <additionalProjectTaskRunnerProvider
-      implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
+      implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"
+    />
+    <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules" />
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <registryKey defaultValue="false"
-                 description="Build project on initial project sync"
-                 key="bsp.build.project.on.sync"/>
-    <registryKey defaultValue="true"
-                 description="Python modules support"
-                 key="bsp.python.support"/>
-    <registryKey defaultValue="false"
-                 description="Android modules support"
-                 key="bsp.android.support"/>
-    <registryKey defaultValue="false"
-                 description="Go modules support"
-                 key="bsp.go.support"/>
-    <registryKey defaultValue="true"
-                 description="Shorten module/library names by hashing the first parts and retaining the others"
-                 key="bsp.shorten.module.library.names"/>
-    <registryKey defaultValue="false"
-                 description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
-                 key="bsp.wrap.libraries.inside.modules"/>
-    <registryKey defaultValue="true"
-                 description="Execute second phase of the phased sync. `bsp.use.phased.sync` has to be enabled to use this flag. It should be used only for testing purposes."
-                 key="bsp.execute.second.phase.on.sync"/>
-    <registryKey defaultValue=""
-                 description="Add dependencies to so-called &quot;dummy&quot; modules to make Java resolve work correctly. Set to either true, false, or leave empty for the default value."
-                 key="bsp.add.dummy.module.dependencies"/>
-    <registryKey defaultValue="true"
-                 description="Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
-                 key="bsp.exclude.compiled.source.code.inside.jars"/>
+    <registryKey
+      defaultValue="false"
+      description="Build project on initial project sync"
+      key="bsp.build.project.on.sync"
+    />
+    <registryKey
+      defaultValue="true"
+      description="Python modules support"
+      key="bsp.python.support"
+    />
+    <registryKey
+      defaultValue="false"
+      description="Android modules support"
+      key="bsp.android.support"
+    />
+    <registryKey
+      defaultValue="false"
+      description="Go modules support"
+      key="bsp.go.support"
+    />
+    <registryKey
+      defaultValue="true"
+      description="Shorten module/library names by hashing the first parts and retaining the others"
+      key="bsp.shorten.module.library.names"
+    />
+    <registryKey
+      defaultValue="false"
+      description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
+      key="bsp.wrap.libraries.inside.modules"
+    />
+    <registryKey
+      defaultValue="true"
+      description="Execute second phase of the phased sync. `bsp.use.phased.sync` has to be enabled to use this flag. It should be used only for testing purposes."
+      key="bsp.execute.second.phase.on.sync"
+    />
+    <registryKey
+      defaultValue=""
+      description="Add dependencies to so-called &quot;dummy&quot; modules to make Java resolve work correctly. Set to either true, false, or leave empty for the default value."
+      key="bsp.add.dummy.module.dependencies"
+    />
+    <registryKey
+      defaultValue="true"
+      description="Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
+      key="bsp.exclude.compiled.source.code.inside.jars"
+    />
     <!-- https://youtrack.jetbrains.com/issue/BAZEL-1734 -->
-    <registryKey defaultValue="false"
-                 description="Enable partial sync action for a target."
-                 key="bsp.enable.partial.sync"/>
-    <registryKey defaultValue="false"
-                 description="Enables a fast compile mechanism for Java by delegating directly to the Bazel builder"
-                 key="bazel.enable.jvm.fastbuild"/>
-    <registryKey defaultValue="25"
-                 description="Maximum number of attempts to connect with the Starlark debugger socket"
-                 key="bazel.starlark.debug.socket.attempts"/>
-    <registryKey defaultValue="400"
-                 description="Interval (in milliseconds) between attempts to connect with the Starlark debugger socket"
-                 key="bazel.starlark.debug.socket.interval"/>
-    <registryKey defaultValue="2"
-                 description="How many levels to go down when scanning the project for Bazel symlinks to exclude"
-                 key="bazel.symlink.scan.max.depth"/>
-    <registryKey defaultValue="true"
-                 description="Force Bazel to shut down before each shard build to prevent Bazel memory leak issue"
-                 key="bazel.shutdown.before.shard.build"/>
-    <registryKey defaultValue="false"
-                 description="Enable a custom class finder for Java instead of &quot;dummy&quot; modules"
-                 key="bazel.enable.custom.java.class.finder"/>
-    <registryKey defaultValue="true"
-                 description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
-                 key="bazel.merge.source.roots"/>
+    <registryKey
+      defaultValue="false"
+      description="Enable partial sync action for a target."
+      key="bsp.enable.partial.sync"
+    />
+    <registryKey
+      defaultValue="false"
+      description="Enables a fast compile mechanism for Java by delegating directly to the Bazel builder"
+      key="bazel.enable.jvm.fastbuild"
+    />
+    <registryKey
+      defaultValue="25"
+      description="Maximum number of attempts to connect with the Starlark debugger socket"
+      key="bazel.starlark.debug.socket.attempts"
+    />
+    <registryKey
+      defaultValue="400"
+      description="Interval (in milliseconds) between attempts to connect with the Starlark debugger socket"
+      key="bazel.starlark.debug.socket.interval"
+    />
+    <registryKey
+      defaultValue="2"
+      description="How many levels to go down when scanning the project for Bazel symlinks to exclude"
+      key="bazel.symlink.scan.max.depth"
+    />
+    <registryKey
+      defaultValue="true"
+      description="Force Bazel to shut down before each shard build to prevent Bazel memory leak issue"
+      key="bazel.shutdown.before.shard.build"
+    />
+    <registryKey
+      defaultValue="false"
+      description="Enable a custom class finder for Java instead of &quot;dummy&quot; modules"
+      key="bazel.enable.custom.java.class.finder"
+    />
+    <registryKey
+      defaultValue="true"
+      description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
+      key="bazel.merge.source.roots"
+    />
+    <registryKey
+      defaultValue="true"
+      description="Check and warn about shared sources in the project by showing the &quot;Shared sources detected&quot; notification"
+      key="bazel.check.shared.sources"
+    />
+    <registryKey
+      defaultValue="false"
+      description="Whether the Bazel plugin should import automatically even if .idea or another project model (e.g., Gradle) exists already"
+      key="bazel.project.auto.open.if.present"
+    />
+    <registryKey
+      defaultValue="false"
+      description="Whether the Bazel Query tab should be enabled in tool window (where target tree is)"
+      key="bazel.query.tab.enabled"
+    />
 
-    <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
+    <!--Restart required here to clear cache-->
+    <registryKey
+      defaultValue="false"
+      description="Bazel Query autocompletion in new 2024 terminal"
+      key="bazel.query.terminal.completion"
+      restartRequired="true"
+    />
 
-    <projectService serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
-                    serviceImplementation="org.jetbrains.bazel.services.BazelBaseProjectDirectories"
-                    overrides="true"/>
-    <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
-                   serviceImplementation="org.jetbrains.bazel.services.BazelModuleFileIndex"
-                   overrides="true"/>
+    <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
+
+    <projectService
+      overrides="true"
+      serviceImplementation="org.jetbrains.bazel.services.BazelBaseProjectDirectories"
+      serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
+    />
+    <moduleService
+      overrides="true"
+      serviceImplementation="org.jetbrains.bazel.services.BazelModuleFileIndex"
+      serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
+    />
 
     <commandLineInspectionProjectConfigurator
-      implementation="org.jetbrains.bazel.startup.BazelCommandLineInspectionConfigurator"/>
-    <configurationType implementation="org.jetbrains.bazel.run.config.BazelRunConfigurationType"/>
+      implementation="org.jetbrains.bazel.startup.BazelCommandLineInspectionConfigurator"
+    />
+    <configurationType implementation="org.jetbrains.bazel.run.config.BazelRunConfigurationType" />
 
-    <notificationGroup id="Bazel" displayType="STICKY_BALLOON"/>
+    <notificationGroup
+      displayType="STICKY_BALLOON"
+      id="Bazel"
+    />
 
     <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"/>
+      implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
+    />
     <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
-    <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider"/>
-    <moduleType id="BAZEL_DUMMY_MODULE_TYPE"
-                implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"/>
+      implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"
+    />
+    <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider" />
+    <moduleType
+      id="BAZEL_DUMMY_MODULE_TYPE"
+      implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"
+    />
     <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
+      implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"
+    />
     <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.PackageMarkerEntityWorkspaceFileIndexContributor"/>
+      implementation="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityWorkspaceFileIndexContributor"
+    />
 
-    <postStartupActivity
-      implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
+    <postStartupActivity implementation="org.jetbrains.bazel.startup.BazelStartupActivity" />
 
-    <treeStructureProvider implementation="org.jetbrains.bazel.ui.projectTree.BazelTreeStructureProvider"/>
-    <projectViewNodeDecorator
-      implementation="org.jetbrains.bazel.ui.projectTree.BazelProjectViewNodeDecorator"/>
+    <treeStructureProvider implementation="org.jetbrains.bazel.ui.projectTree.BazelTreeStructureProvider" />
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.ui.projectTree.BazelProjectViewNodeDecorator" />
     <projectTaskRunner
       id="BazelProjectTaskRunner"
-      implementation="org.jetbrains.bazel.buildTask.BazelProjectTaskRunner"/>
-    <projectTaskRunner implementation="org.jetbrains.bazel.fastbuild.BazelFastBuildProjectTaskRunner"
-                       order="before BazelProjectTaskRunner"/>
-    <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
+      implementation="org.jetbrains.bazel.buildTask.BazelProjectTaskRunner"
+    />
+    <projectTaskRunner
+      implementation="org.jetbrains.bazel.fastbuild.BazelFastBuildProjectTaskRunner"
+      order="before BazelProjectTaskRunner"
+    />
+    <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner" />
 
     <directoryProjectConfigurator
       implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
-      order="last"/>
+      order="last"
+    />
     <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
     <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
     <!--                    overrides="true"/>-->
-    <statusBarWidgetFactory id="BazelFileTargetsWidget"
-                            implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetFactory"/>
+    <statusBarWidgetFactory
+      id="BazelFileTargetsWidget"
+      implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetFactory"
+    />
 
-    <toolWindowAllowlist id="Bazel"/>
+    <toolWindowAllowlist id="Bazel" />
     <toolWindowExtractor
-      implementation="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BazelToolWindowViewModelExtractor"/>
+      implementation="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BazelToolWindowViewModelExtractor"
+    />
+
+    <toolWindow
+      anchor="right"
+      canCloseContents="false"
+      factoryClass="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BazelAllTargetsWidgetFactory"
+      icon="org.jetbrains.bazel.assets.BazelPluginIcons.bazelToolWindow"
+      id="Bazel"
+    />
 
     <consoleFilterProvider
-      implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
+      implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"
+    />
 
-    <notificationGroup displayType="BALLOON" id="Bazel Plugin"/>
+    <notificationGroup
+      displayType="BALLOON"
+      id="Bazel Plugin"
+    />
     <editorNotificationProvider
-      implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
+      implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"
+    />
 
-    <statistics.projectUsagesCollector implementation="org.jetbrains.bazel.fus.BazelProjectStatisticsCollector"/>
+    <statistics.projectUsagesCollector implementation="org.jetbrains.bazel.fus.BazelProjectStatisticsCollector" />
 
     <disableCompilationDependenciesResolutionTask
-      implementation="org.jetbrains.bazel.jpsCompilation.utils.DisableCompilationDependenciesResolutionImpl"/>
-    <projectService serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
-                    serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"/>
+      implementation="org.jetbrains.bazel.jpsCompilation.utils.DisableCompilationDependenciesResolutionImpl"
+    />
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"
+      serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
+    />
 
-    <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider"/>
+    <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider" />
 
-    <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
-    <projectOpenProcessor
-      implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor"/>
-    <postStartupActivity
-      implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity"/>
-    <notificationGroup displayType="BALLOON" id="Bazel slow plugins warning"/>
+    <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
+    <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
+    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
+    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
+    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
+    <notificationGroup
+      displayType="BALLOON"
+      id="Bazel slow plugins warning"
+    />
 
     <externalSystemUnlinkedProjectAware
       id="Bazel"
-      implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"/>
+      implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"
+    />
     <directoryProjectConfigurator
       implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"
-      order="after PlatformProjectConfigurator"/>
+      order="after PlatformProjectConfigurator"
+    />
     <externalIconProvider
+      implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"
       key="bazel"
-      implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"/>
-    <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier"/>
+    />
+    <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier" />
 
     <fileType
-      name="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkFileType"
-      fieldName="INSTANCE"
-      language="Starlark"
-      fileNames="BUILD;WORKSPACE"
       extensions="bzl;bazel;bzlmod;star"
-      patterns="*.bzl.template"/>
+      fieldName="INSTANCE"
+      fileNames="BUILD;WORKSPACE"
+      implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkFileType"
+      language="Starlark"
+      name="Starlark"
+      patterns="*.bzl.template"
+    />
     <lang.fileViewProviderFactory
+      implementationClass="org.jetbrains.bazel.languages.starlark.psi.StarlarkViewProviderFactory"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.psi.StarlarkViewProviderFactory"/>
+    />
     <enterBetweenBracesDelegate
+      implementationClass="org.jetbrains.bazel.languages.starlark.indentation.StarlarkEnterBetweenBracesHandler"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.indentation.StarlarkEnterBetweenBracesHandler"/>
+    />
     <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"/>
+    />
     <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkSyntaxHighlighterFactory"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkSyntaxHighlighterFactory"/>
+    />
     <lang.commenter
+      implementationClass="org.jetbrains.bazel.languages.starlark.commenter.StarlarkCommenter"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.commenter.StarlarkCommenter"/>
+    />
     <lang.braceMatcher
+      implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkBraceMatcher"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkBraceMatcher"/>
+    />
     <lang.quoteHandler
+      implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkQuoteHandler"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkQuoteHandler"/>
+    />
     <lang.findUsagesProvider
+      implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"/>
-    <lang.foldingBuilder language="Starlark"
-                         implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"/>
+    />
+    <lang.foldingBuilder
+      implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"
+      language="Starlark"
+    />
     <lineIndentProvider
-      implementation="org.jetbrains.bazel.languages.starlark.indentation.StarlarkLineIndentProvider"/>
-    <colorSettingsPage
-      implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
+      implementation="org.jetbrains.bazel.languages.starlark.indentation.StarlarkLineIndentProvider"
+    />
+    <colorSettingsPage implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage" />
     <additionalTextAttributes
+      file="colorSchemes/StarlarkDefault.xml"
       scheme="Default"
-      file="colorSchemes/StarlarkDefault.xml"/>
+    />
     <additionalTextAttributes
+      file="colorSchemes/StarlarkDarcula.xml"
       scheme="Darcula"
-      file="colorSchemes/StarlarkDarcula.xml"/>
+    />
     <annotator
+      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkDeclarationAnnotator"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkDeclarationAnnotator"/>
+    />
     <annotator
+      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkFunctionAnnotator"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkFunctionAnnotator"/>
+    />
     <annotator
+      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkStringAnnotator"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkStringAnnotator"/>
+    />
     <annotator
+      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkLoadAnnotator"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkLoadAnnotator"/>
+    />
     <completion.confidence
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"/>
+    />
     <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelGlobalFunctionCompletionContributor"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelGlobalFunctionCompletionContributor"/>
+    />
     <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"/>
+    />
     <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"/>
+    />
     <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesCompletionContributor"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesCompletionContributor"/>
+    />
     <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesArgumentCompletionContributor"
       language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesArgumentCompletionContributor"/>
-    <editorTabTitleProvider
-      implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
+    />
+    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider" />
     <extendWordSelectionHandler
-      implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"/>
+      implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"
+    />
     <fileType
-      name="ProjectView"
+      extensions="bazelproject"
+      fieldName="INSTANCE"
       implementationClass="org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType"
-      fieldName="INSTANCE"
       language="ProjectView"
-      extensions="bazelproject"/>
+      name="ProjectView"
+    />
     <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"
       language="ProjectView"
-      implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
+    />
     <lang.commenter
+      implementationClass="org.jetbrains.bazel.languages.projectview.commenter.ProjectViewCommenter"
       language="ProjectView"
-      implementationClass="org.jetbrains.bazel.languages.projectview.commenter.ProjectViewCommenter"/>
+    />
     <langCodeStyleSettingsProvider
-      implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewLanguageCodeStyleSettingsProvider"/>
-    <enterHandlerDelegate implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewEnterHandler"/>
+      implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewLanguageCodeStyleSettingsProvider"
+    />
+    <enterHandlerDelegate
+      implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewEnterHandler"
+    />
     <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"
       language="ProjectView"
-      implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
+    />
 
-    <formattingService
-      implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
-    <actionOnSave id="StarlarkFormattingActionOnSave"
-                  implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingActionOnSave"/>
+    <formattingService implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService" />
+    <actionOnSave
+      id="StarlarkFormattingActionOnSave"
+      implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingActionOnSave"
+    />
 
-    <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
-                              language="Starlark"/>
+    <runLineMarkerContributor
+      implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
+      language="Starlark"
+    />
 
     <fileType
-      name="BazelQuery"
-      implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelQueryFileType"
-      fieldName="INSTANCE"
-      language="BazelQuery"
-
       extensions="bazelquery"
+      fieldName="INSTANCE"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelQueryFileType"
+      language="BazelQuery"
+      name="BazelQuery"
     />
 
     <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryParserDefinition"
       language="BazelQuery"
-      implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryParserDefinition"/>
+    />
 
     <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"
       language="BazelQuery"
-      implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"/>
+    />
 
     <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.completion.BazelQueryCompletionContributor"
       language="BazelQuery"
-      implementationClass="org.jetbrains.bazel.languages.bazelquery.completion.BazelQueryCompletionContributor"/>
+    />
 
 
     <fileType
-      name="BazelQueryFlags"
-      implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsFileType"
-      fieldName="INSTANCE"
-      language="BazelQueryFlags"
-
       extensions="bazelqueryflags"
+      fieldName="INSTANCE"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsFileType"
+      language="BazelQueryFlags"
+      name="BazelQueryFlags"
     />
 
     <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryFlagsParserDefinition"
       language="BazelQueryFlags"
-      implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryFlagsParserDefinition"/>
+    />
 
     <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"
       language="BazelQueryFlags"
-      implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"/>
+    />
 
     <fileType
-      name="Bazelrc"
-      implementationClass="org.jetbrains.bazel.languages.bazelrc.BazelrcFileType"
-      fieldName="INSTANCE"
-      language="Bazelrc"
-      fileNames=".bazelrc"
       extensions="bazelrc"
+      fieldName="INSTANCE"
+      fileNames=".bazelrc"
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.BazelrcFileType"
+      language="Bazelrc"
+      name="Bazelrc"
     />
 
     <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcSyntaxHighlighterFactory"
       language="Bazelrc"
-      implementationClass="org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcSyntaxHighlighterFactory"/>
+    />
 
     <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.parser.BazelrcParserDefinition"
       language="Bazelrc"
-      implementationClass="org.jetbrains.bazel.languages.bazelrc.parser.BazelrcParserDefinition"/>
+    />
 
     <lang.commenter
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.commenter.BazelrcCommenter"
       language="Bazelrc"
-      implementationClass="org.jetbrains.bazel.languages.bazelrc.commenter.BazelrcCommenter"/>
+    />
 
     <lang.quoteHandler
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.matching.BazelrcQuoteHandler"
       language="Bazelrc"
-      implementationClass="org.jetbrains.bazel.languages.bazelrc.matching.BazelrcQuoteHandler"/>
+    />
 
     <annotator
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.annotation.BazelrcFlagAnnotator"
       language="Bazelrc"
-      implementationClass="org.jetbrains.bazel.languages.bazelrc.annotation.BazelrcFlagAnnotator"/>
+    />
 
     <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.completion.BazelrcCompletionContributor"
       language="Bazelrc"
-      implementationClass="org.jetbrains.bazel.languages.bazelrc.completion.BazelrcCompletionContributor"/>
+    />
 
     <projectConfigurable
-      parentId="build.tools"
-      id="bazel.project.settings"
       displayName="Bazel"
+      id="bazel.project.settings"
       instance="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurable"
-      provider="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurableProvider">
+      parentId="build.tools"
+      provider="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurableProvider"
+    >
       <configurable
-        id="bazel.experimental.project.settings"
         displayName="Experimental Settings"
+        id="bazel.experimental.project.settings"
         instance="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurable"
-        provider="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurableProvider"/>
+        provider="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurableProvider"
+      />
     </projectConfigurable>
 
     <applicationConfigurable
-      parentId="bazel.project.settings"
-      id="bazel.application.settings"
       displayName="Advanced Settings"
+      id="bazel.application.settings"
       instance="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsConfigurable"
+      parentId="bazel.project.settings"
       provider="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsConfigurableProvider"
     />
 
-    <projectViewNodeDecorator
-      implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
-    <referencesSearch
-      implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher"/>
-    <usageTypeProvider
-      implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>
-    <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
-    <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>
-    <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
-    <searchEverywhereContributor implementation="org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor$Factory"/>
+    <obsoleteStorage
+      file="$WORKSPACE_FILE$"
+      isProjectLevel="true"
+    >
+      <components>
+        <component>TargetUtils</component>
+      </components>
+    </obsoleteStorage>
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator" />
+    <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher" />
+    <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider" />
+    <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType" />
+    <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner" />
+    <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor" />
+    <searchEverywhereContributor
+      implementation="org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor$Factory"
+    />
+    <searchEverywhere.itemsProviderFactory
+      implementation="org.jetbrains.bazel.searchEverywhere.SeLabelProviderFactory"
+    />
+
+    <portForwarding.processHandlerPidProvider
+      implementation="org.jetbrains.bazel.sdkcompat.BazelProcessHandlerPidProvider"
+    />
   </extensions>
 
   <actions>
-    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction" id="BazelRunAllTestsAction">
-      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    <action
+      class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction"
+      id="BazelRunAllTestsAction"
+    >
+      <add-to-group
+        anchor="last"
+        group-id="EditorPopupMenu"
+      />
+      <add-to-group
+        anchor="last"
+        group-id="ProjectViewPopupMenu"
+      />
     </action>
-    <action id="Bazel.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
-            icon="/icons/resync.svg"/>
-    <action id="Bazel.BuildAndResyncAction"
-            class="org.jetbrains.bazel.action.registered.BuildAndResyncAction"
-            icon="/icons/buildAndResync.svg"/>
-    <action id="Bazel.NewBazelPackageAction"
-            class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
-            text="New Bazel Package">
-      <add-to-group group-id="NewGroup" relative-to-action="NewDir" anchor="after"/>
+    <action
+      class="org.jetbrains.bazel.action.registered.ResyncAction"
+      icon="/icons/resync.svg"
+      id="Bazel.ResyncAction"
+    />
+    <action
+      class="org.jetbrains.bazel.action.registered.BuildAndResyncAction"
+      icon="/icons/buildAndResync.svg"
+      id="Bazel.BuildAndResyncAction"
+    />
+    <action
+      class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
+      id="Bazel.NewBazelPackageAction"
+      text="New Bazel Package"
+    >
+      <add-to-group
+        anchor="after"
+        group-id="NewGroup"
+        relative-to-action="NewDir"
+      />
     </action>
 
     <group id="Bazel.ActionsToolbar">
-      <reference id="Bazel.ResyncAction"/>
-      <reference id="Bazel.BuildAndResyncAction"/>
+      <reference id="Bazel.ResyncAction" />
+      <reference id="Bazel.BuildAndResyncAction" />
     </group>
 
-    <action class="org.jetbrains.bazel.settings.LoadProjectViewFileAction"
-            icon="/icons/bazel.svg">
-      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    <action
+      class="org.jetbrains.bazel.settings.LoadProjectViewFileAction"
+      icon="/icons/bazel.svg"
+    >
+      <add-to-group
+        anchor="last"
+        group-id="EditorPopupMenu"
+      />
+      <add-to-group
+        anchor="last"
+        group-id="ProjectViewPopupMenu"
+      />
     </action>
-    <action class="org.jetbrains.bazel.ui.widgets.CopyTargetIdAction"
-            icon="/icons/bazel.svg">
-      <add-to-group group-id="EditorPopupMenu"/>
-      <add-to-group group-id="EditorTabPopupMenu"/>
+    <action
+      class="org.jetbrains.bazel.ui.widgets.CopyTargetIdAction"
+      icon="/icons/bazel.svg"
+    >
+      <add-to-group group-id="EditorPopupMenu" />
+      <add-to-group group-id="EditorTabPopupMenu" />
       <!-- This shortcut doesn't mean anything, it's just not taken by anyone and is easy to type -->
-      <keyboard-shortcut first-keystroke="control alt G" second-keystroke="H" keymap="$default"/>
+      <keyboard-shortcut
+        first-keystroke="control alt G"
+        keymap="$default"
+        second-keystroke="H"
+      />
     </action>
-    <action class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
-      <add-to-group group-id="EditorPopupMenu"/>
-      <add-to-group group-id="EditorTabPopupMenu"/>
-      <keyboard-shortcut first-keystroke="control alt G" second-keystroke="J" keymap="$default"/>
+    <action id="Bazel.JumpToBuildFile"
+            class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
+      <add-to-group group-id="EditorPopupMenu" />
+      <add-to-group group-id="EditorTabPopupMenu" />
+      <keyboard-shortcut
+        first-keystroke="control alt G"
+        keymap="$default"
+        second-keystroke="J"
+      />
     </action>
-    <action id="Bazel.ImportExternalProject"
-            class="org.jetbrains.bazel.flow.open.actions.LinkBazelProjectFromScriptAction">
-      <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="last"/>
-      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+    <action
+      class="org.jetbrains.bazel.flow.open.actions.LinkBazelProjectFromScriptAction"
+      id="Bazel.ImportExternalProject"
+    >
+      <add-to-group
+        anchor="last"
+        group-id="ProjectViewPopupMenuSettingsGroup"
+      />
+      <add-to-group
+        anchor="last"
+        group-id="EditorPopupMenu"
+      />
     </action>
+
+    <action id="Bazel.AddToProjectViewDirectoriesAction"
+            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
+            text="Add to the Project View Directories"
+            description="Add this directory to the project view file.">
+    </action>
+
+    <action id="Bazel.ExcludeFromProjectViewDirectoriesAction"
+            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
+            text="Exclude from the Project View Directories"
+            description="Exclude this directory from the project view file.">
+    </action>
+
+    <action id="Bazel.OpenProjectViewFile"
+            class="org.jetbrains.bazel.action.registered.OpenProjectViewAction">
+    </action>
+
+    <group id="Bazel.ModifyProjectViewDirectories">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+      <reference id="Bazel.AddToProjectViewDirectoriesAction"/>
+      <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction"/>
+    </group>
   </actions>
 
   <applicationListeners>
-    <listener class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
-              topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    <listener
+      class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
+      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+    />
+    <listener
+      class="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityListener"
+      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+    />
   </applicationListeners>
 </idea-plugin>
