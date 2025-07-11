@@ -5,7 +5,11 @@ import com.intellij.codeInsight.lookup.Lookup
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 
 class BazelQueryCharFilter : CharFilter() {
-  override fun acceptChar(c: Char, prefixLength: Int, lookup: Lookup): Result? {
+  override fun acceptChar(
+    c: Char,
+    prefixLength: Int,
+    lookup: Lookup,
+  ): Result? {
     if (lookup.psiFile?.language != BazelQueryLanguage) {
       return null
     }

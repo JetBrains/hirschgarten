@@ -62,4 +62,3 @@ val Project.bazelQueryToolWindowIdOrNull: String?
     if (!isBazelProject) return null
     return bazelQueryToolWindowId
   }
-

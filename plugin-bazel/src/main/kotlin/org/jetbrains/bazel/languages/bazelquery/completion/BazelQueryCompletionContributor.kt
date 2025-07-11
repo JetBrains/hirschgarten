@@ -108,14 +108,18 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
 
               else -> 0.4
             },
-            parameters.offset
+            parameters.offset,
           )
         },
       )
     }
   }
 
-  private fun functionLookupElement(name: String, priority: Double, caretOffset: Int): LookupElement =
+  private fun functionLookupElement(
+    name: String,
+    priority: Double,
+    caretOffset: Int,
+  ): LookupElement =
     PrioritizedLookupElement.withPriority(
       LookupElementBuilder
         .create(name)

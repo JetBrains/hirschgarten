@@ -36,8 +36,8 @@ import org.jetbrains.bazel.languages.bazelquery.options.BazelQueryCommonOptions
 import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.awt.event.KeyAdapter
 import java.awt.Font
+import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.AbstractButton
 import javax.swing.BoxLayout
@@ -69,7 +69,7 @@ private class QueryFlagField(
       JRadioButton(it).apply {
         border = JBUI.Borders.emptyLeft(25)
         addShiftEnterAction()
-        isFocusable=true
+        isFocusable = true
         setFocusable(true)
       }
     }
@@ -84,14 +84,16 @@ private class QueryFlagField(
   }
 
   private fun AbstractButton.addShiftEnterAction() {
-    addKeyListener(object : KeyAdapter() {
-      override fun keyPressed(e: KeyEvent) {
-        if (e.keyCode == KeyEvent.VK_ENTER && e.isShiftDown) {
-          doClick()
-          e.consume()
+    addKeyListener(
+      object : KeyAdapter() {
+        override fun keyPressed(e: KeyEvent) {
+          if (e.keyCode == KeyEvent.VK_ENTER && e.isShiftDown) {
+            doClick()
+            e.consume()
+          }
         }
-      }
-    })
+      },
+    )
   }
 
   fun addToPanel(panel: JPanel) {
@@ -137,7 +139,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
           }
         },
         KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-        WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+        WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
       )
     }
   private val flagTextField =
@@ -155,7 +157,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
           horizontalAlignment = SwingConstants.CENTER
           font = font.deriveFont(Font.BOLD)
           border = JBUI.Borders.empty(5)
-        }
+        },
       )
       defaultFlags.forEach {
         it.addToPanel(this)
@@ -176,6 +178,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
 
   // Clickable targets in output
   private val bazelFilter = BazelBuildTargetConsoleFilter(project)
+
   private fun addLinksToResult(text: String, hyperlinkInfoList: MutableList<Pair<IntRange, HyperlinkInfo>>) {
     val filterResult = WriteIntentReadAction.compute<Filter.Result> { bazelFilter.applyFilter(text, text.length) }
 
@@ -251,10 +254,11 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         maximumSize = Dimension(Int.MAX_VALUE, 40)
       }
 
-    fun createFlagsPanel() = ScrollToFocusedFlagPanel(flagsPanel).apply {
-      verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-    }
-    
+    fun createFlagsPanel() =
+      ScrollToFocusedFlagPanel(flagsPanel).apply {
+        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+      }
+
     fun createResultPanel() =
       JPanel(BorderLayout()).apply {
         add(resultField.component, BorderLayout.CENTER)
@@ -263,15 +267,19 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     setButtonsPanelToEvaluate()
     add(createQueryPanel())
 
-    val splitter = JBSplitter(false, 0.25f, 0.2f, 0.8f).apply {
-      firstComponent = createFlagsPanel()
-      secondComponent = JBScrollPane(JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        add(createResultPanel())
-      })
+    val splitter =
+      JBSplitter(false, 0.25f, 0.2f, 0.8f).apply {
+        firstComponent = createFlagsPanel()
+        secondComponent =
+          JBScrollPane(
+            JPanel().apply {
+              layout = BoxLayout(this, BoxLayout.Y_AXIS)
+              add(createResultPanel())
+            },
+          )
 
-      setHonorComponentsMinimumSize(true)
-    }
+        setHonorComponentsMinimumSize(true)
+      }
 
     add(splitter)
   }
@@ -283,14 +291,16 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         val evaluateButton =
           JButton(BazelPluginBundle.message("button.bazel.query.evaluate")).apply {
             addActionListener { evaluate() }
-            addKeyListener(object : KeyAdapter() {
-              override fun keyPressed(e: KeyEvent) {
-                if (e.keyCode == KeyEvent.VK_ENTER) {
-                  doClick()
-                  e.consume()
+            addKeyListener(
+              object : KeyAdapter() {
+                override fun keyPressed(e: KeyEvent) {
+                  if (e.keyCode == KeyEvent.VK_ENTER) {
+                    doClick()
+                    e.consume()
+                  }
                 }
-              }
-            })
+              },
+            )
           }
         add(evaluateButton)
         updateUI()
@@ -305,14 +315,16 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         val evaluateButton =
           JButton(BazelPluginBundle.message("button.bazel.query.cancel")).apply {
             addActionListener { cancelEvaluate() }
-            addKeyListener(object : KeyAdapter() {
-              override fun keyPressed(e: KeyEvent) {
-                if (e.keyCode == KeyEvent.VK_ENTER) {
-                  doClick()
-                  e.consume()
+            addKeyListener(
+              object : KeyAdapter() {
+                override fun keyPressed(e: KeyEvent) {
+                  if (e.keyCode == KeyEvent.VK_ENTER) {
+                    doClick()
+                    e.consume()
+                  }
                 }
-              }
-            })
+              },
+            )
           }
         add(evaluateButton)
         updateUI()

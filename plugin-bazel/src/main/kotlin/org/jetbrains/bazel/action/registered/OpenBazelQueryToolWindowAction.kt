@@ -1,7 +1,6 @@
 
 package org.jetbrains.bazel.action.registered
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project

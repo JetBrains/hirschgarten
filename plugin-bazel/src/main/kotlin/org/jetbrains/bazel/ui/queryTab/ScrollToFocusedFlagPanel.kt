@@ -14,35 +14,37 @@ internal class ScrollToFocusedFlagPanel(private val component: JComponent) : JBS
     border = JBUI.Borders.empty()
     minimumSize = Dimension(0, 0)
     val focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager()
-    val listener = PropertyChangeListener { e ->
-      if (e.newValue != null) {
-        val focused = focusManager.focusOwner
-        if (focused != null && SwingUtilities.isDescendingFrom(focused, component)) {
-          SwingUtilities.invokeLater {
-            when (focused) {
-              is LanguageTextField -> {
-                val componentOfFocused = focused.component
-                val bounds = SwingUtilities.convertRectangle(
-                  componentOfFocused.parent,
-                  componentOfFocused.bounds,
-                  viewport
-                )
-                viewport.scrollRectToVisible(bounds)
-              }
-              is JComponent -> {
-                val bounds = SwingUtilities.convertRectangle(
-                  focused.parent,
-                  focused.bounds,
-                  viewport
-                )
-                viewport.scrollRectToVisible(bounds)
+    val listener =
+      PropertyChangeListener { e ->
+        if (e.newValue != null) {
+          val focused = focusManager.focusOwner
+          if (focused != null && SwingUtilities.isDescendingFrom(focused, component)) {
+            SwingUtilities.invokeLater {
+              when (focused) {
+                is LanguageTextField -> {
+                  val componentOfFocused = focused.component
+                  val bounds =
+                    SwingUtilities.convertRectangle(
+                      componentOfFocused.parent,
+                      componentOfFocused.bounds,
+                      viewport,
+                    )
+                  viewport.scrollRectToVisible(bounds)
+                }
+                is JComponent -> {
+                  val bounds =
+                    SwingUtilities.convertRectangle(
+                      focused.parent,
+                      focused.bounds,
+                      viewport,
+                    )
+                  viewport.scrollRectToVisible(bounds)
+                }
               }
             }
           }
         }
       }
-    }
     focusManager.addPropertyChangeListener("focusOwner", listener)
   }
 }
-
