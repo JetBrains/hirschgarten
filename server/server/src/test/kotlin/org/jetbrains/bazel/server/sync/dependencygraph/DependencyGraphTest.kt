@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.server.sync.dependencygraph
 
-import com.intellij.util.applyIf
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
@@ -704,9 +702,10 @@ class DependencyGraphTest {
     val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
     // when
-    val dependencies = dependencyGraph.allTargetsAtDepth(1, rootTargets, isWorkspaceTarget = { label ->
-      label.toString() == "@//target"
-    })
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(1, rootTargets, isWorkspaceTarget = { label ->
+        label.toString() == "@//target"
+      })
 
     // then
     val expectedDependencies =

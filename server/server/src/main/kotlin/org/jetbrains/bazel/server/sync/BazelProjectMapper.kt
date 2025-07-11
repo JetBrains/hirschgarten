@@ -99,7 +99,7 @@ class BazelProjectMapper(
                 targets[id]?.let { target ->
                   target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
                 } == true
-              }
+              },
             )
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
