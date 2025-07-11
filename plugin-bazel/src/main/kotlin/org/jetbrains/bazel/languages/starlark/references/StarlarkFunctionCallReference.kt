@@ -21,8 +21,10 @@ private fun getNamedArgumentValue(element: StarlarkCallExpression, argName: Stri
       }?.getValue() as? StarlarkStringLiteralExpression
   )?.getStringContents()
 
-internal class BazelDepProcessor(val result: MutableList<StarlarkElement>, private val lookingForModuleName: String) :
+internal class BazelDepProcessor(private val lookingForModuleName: String) :
   Processor<StarlarkElement> {
+  val result: MutableList<StarlarkElement> = mutableListOf()
+
   private fun getFunctionName(element: StarlarkCallExpression): String? = element.getNamePsi()?.text
 
   override fun process(element: StarlarkElement): Boolean {
@@ -42,7 +44,7 @@ class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElem
       val functionName = element.name
       if (functionName != null && (functionName == "archive_override" || functionName == "git_override")) {
         val moduleNameValue = getNamedArgumentValue(it, "module_name") ?: return@let null
-        val processor = BazelDepProcessor(mutableListOf(), moduleNameValue)
+        val processor = BazelDepProcessor(moduleNameValue)
         val file = it.containingFile as? StarlarkFile ?: return@let null
         file.searchInFunctionCalls(processor)
         processor.result.firstOrNull()
