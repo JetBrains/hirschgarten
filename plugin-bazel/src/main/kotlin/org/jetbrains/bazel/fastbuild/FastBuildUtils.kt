@@ -67,13 +67,17 @@ object FastBuildUtils {
 
   fun fastBuildFilesPromise(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
     val promise = AsyncPromise<ProjectTaskRunner.Result>()
+    val fastBuildStatus = FastBuildStatus(workspaceRoot = project.rootDir.toNioPath())
+    val fastBuildService = FastBuildStatusService.getInstance(project)
     BazelCoroutineService.getInstance(project).start {
       try {
-        fastBuildFiles(project, files)
+        fastBuildService.startFastBuild(fastBuildStatus)
+        fastBuildFiles(project, files, fastBuildStatus)
         promise.setResult(TaskRunnerResults.SUCCESS)
+        fastBuildStatus.status = "success"
       } catch (e: Exception) {
         promise.setResult(TaskRunnerResults.FAILURE)
-
+        fastBuildStatus.status = "failure"
         NotificationGroupManager
           .getInstance()
           .getNotificationGroup("HotSwap Messages")
@@ -85,13 +89,24 @@ object FastBuildUtils {
           .notify(project)
       }
     }
+    promise
+      .onSuccess {
+        fastBuildService.finishFastBuild(fastBuildStatus)
+      }.onError {
+        fastBuildService.finishFastBuild(fastBuildStatus)
+      }
     return promise
   }
 
-  suspend fun fastBuildFiles(project: Project, files: List<VirtualFile>) {
-    val workspaceRoot = project.rootDir.toNioPath()
+  suspend fun fastBuildFiles(
+    project: Project,
+    files: List<VirtualFile>,
+    fastBuildStatus: FastBuildStatus,
+  ) {
+    val workspaceRoot = fastBuildStatus.workspaceRoot
     val targetUtils = project.targetUtils
     val virtualFileManager = VirtualFileManager.getInstance()
+    val fastBuildService = FastBuildStatusService.getInstance(project)
     val buildInfos =
       files
         .mapNotNull { file ->
@@ -119,6 +134,14 @@ object FastBuildUtils {
         BazelBinPathService.getInstance(project).bazelBinPath
           ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
       val targetJar = Path.of("$bazelBin/$relativePath/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
+
+      val fastBuildTargetStatus =
+        FastBuildTargetStatus(
+          inputFile = inputFile,
+          targetJar = targetJar,
+          compilerStatus = "unknown",
+        )
+      fastBuildService.startFastBuildTarget(fastBuildTargetStatus)
 
       val originalParamsFile = targetJar.parent.resolve(targetJar.fileName.name + "-0.params")
       val originalParamsFile1 = targetJar.parent.resolve(targetJar.fileName.name + "-1.params")
@@ -162,8 +185,13 @@ object FastBuildUtils {
           indicator.checkCanceled()
 
           val toolchainInfo =
-            ToolchainInfoSyncHook.JvmToolchainInfoService.getInstance(project).jvmToolchainInfo
-              ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.jvm.toolchain"))
+            try {
+              ToolchainInfoSyncHook.JvmToolchainInfoService
+                .getInstance(project)
+                .getOrQueryJvmToolchainInfo(project, entry.value.id)
+            } catch (e: Exception) {
+              throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.jvm.toolchain"))
+            }
 
           val arguments =
             buildList {
@@ -245,9 +273,11 @@ object FastBuildUtils {
           if (!handler.waitFor() || handler.exitCode != 0) {
             compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
             tempDir.delete()
+            fastBuildTargetStatus.compilerStatus = "error"
             return@start
           }
           compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
+          fastBuildTargetStatus.compilerStatus = "success"
           processAndHotswapOutput(tempDir, outputJar, project)
         } catch (e: ExecutionException) {
           compileContext.addMessage(
@@ -257,8 +287,11 @@ object FastBuildUtils {
               e.message,
             ),
           )
+          fastBuildTargetStatus.compilerStatus = "error"
           compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
           return@start
+        } finally {
+          fastBuildService.finishFastBuildTarget(fastBuildTargetStatus)
         }
       }, null)
     }
