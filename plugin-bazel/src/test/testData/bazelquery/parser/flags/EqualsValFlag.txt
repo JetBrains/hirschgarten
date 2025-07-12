@@ -1,0 +1,5 @@
+FILE
+  BazelQueryFlag(FLAG)
+    PsiElement(BazelQuery:FLAG)('--aspect_deps')
+    PsiElement(BazelQuery:EQUALS)('=')
+    PsiElement(BazelQuery:UNQUOTED_VAL)('off')
