@@ -113,9 +113,16 @@ class BazelGlobalFunctionsService {
     // Ignore all parameters with * and **, for example *args and **kwargs.
     // Their absence shouldn't cause red code, and they should not be completed.
     return functions.map {
-      it.copy(params = it.params.filter {
-        param -> !param.name.startsWith("*") && !param.name.startsWith("**")
-      })
+      if (it.params.any { param -> param.name.startsWith("*") || param.name.startsWith("**") }) {
+        it.copy(
+          params =
+            it.params.filter { param ->
+              !param.name.startsWith("*") && !param.name.startsWith("**")
+            },
+        )
+      } else {
+        it
+      }
     }
   }
 
