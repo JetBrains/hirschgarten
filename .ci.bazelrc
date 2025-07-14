@@ -13,3 +13,4 @@ common:ci --remote_upload_local_results=true
 
 common:toplevel  --remote_download_outputs=toplevel
 common:full --remote_download_outputs=all
+common:localremote --remote_upload_local_results=false
