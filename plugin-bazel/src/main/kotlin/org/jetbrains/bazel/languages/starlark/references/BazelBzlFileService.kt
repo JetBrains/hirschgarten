@@ -7,6 +7,9 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
@@ -26,10 +29,10 @@ import kotlin.io.path.relativeToOrNull
 class BazelBzlFileService(private val project: Project) {
   @Volatile
   var canonicalRepoNameToBzlFiles: Map<String, List<ResolvedLabel>> = emptyMap()
+  private var isUpdateInProgress = false
+  private val mutex = Mutex()
 
   init {
-    ApplicationManager.getApplication().executeOnPooledThread { updateCache() }
-
     project.messageBus.connect().subscribe(
       SyncStatusListener.TOPIC,
       object : SyncStatusListener {
@@ -37,7 +40,7 @@ class BazelBzlFileService(private val project: Project) {
 
         override fun syncFinished(canceled: Boolean) {
           if (canceled) return
-          ApplicationManager.getApplication().executeOnPooledThread { updateCache() }
+          ApplicationManager.getApplication().executeOnPooledThread { runBlocking { updateCache() } }
         }
       },
     )
@@ -66,7 +69,12 @@ class BazelBzlFileService(private val project: Project) {
     }
   }
 
-  private fun updateCache() {
+  private suspend fun updateCache() {
+    mutex.withLock {
+      if (isUpdateInProgress) return
+      isUpdateInProgress = true
+    }
+
     val newMap = mutableMapOf<String, List<ResolvedLabel>>()
     for ((canonicalName, repoPath) in project.canonicalRepoNameToPath) {
       val root = VirtualFileManager.getInstance().findFileByNioPath(repoPath) ?: continue
@@ -74,13 +82,17 @@ class BazelBzlFileService(private val project: Project) {
       VfsUtilCore.processFilesRecursively(root, visitor::visitFile)
     }
     canonicalRepoNameToBzlFiles = newMap
+
+    mutex.withLock {
+      isUpdateInProgress = false
+    }
   }
 
   fun getApparentRepoNameToFiles(): Map<String, List<Label>> = canonicalRepoNameToBzlFiles
 
   @TestOnly
   fun forceUpdateCache() {
-    updateCache()
+    runBlocking { updateCache() }
   }
 
   companion object {
@@ -89,7 +101,7 @@ class BazelBzlFileService(private val project: Project) {
 
   class BazelBzlFileServiceStartUpActivity : BazelProjectActivity() {
     override suspend fun executeForBazelProject(project: Project) {
-      BazelBzlFileService.getInstance(project)
+      ApplicationManager.getApplication().executeOnPooledThread { runBlocking { getInstance(project).updateCache() } }
     }
   }
 }
