@@ -33,6 +33,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -74,10 +75,10 @@ object FastBuildUtils {
         fastBuildService.startFastBuild(fastBuildStatus)
         fastBuildFiles(project, files, fastBuildStatus)
         promise.setResult(TaskRunnerResults.SUCCESS)
-        fastBuildStatus.status = "success"
+        fastBuildStatus.status = FastBuildActionStatus.SUCCESS
       } catch (e: Exception) {
         promise.setResult(TaskRunnerResults.FAILURE)
-        fastBuildStatus.status = "failure"
+        fastBuildStatus.status = FastBuildActionStatus.ERROR
         NotificationGroupManager
           .getInstance()
           .getNotificationGroup("HotSwap Messages")
@@ -145,7 +146,7 @@ object FastBuildUtils {
         FastBuildTargetStatus(
           inputFile = inputFile,
           targetJar = targetJar,
-          compilerStatus = "unknown",
+          status = FastBuildActionStatus.UNKNOWN,
         )
       fastBuildService.startFastBuildTarget(fastBuildTargetStatus)
 
@@ -201,7 +202,7 @@ object FastBuildUtils {
 
           val arguments =
             buildList {
-              add(toolchainInfo.java_home + "/bin/java")
+              add(toolchainInfo.java_home + File.separator + "bin" + File.separator + calculateExecutableName("java"))
               toolchainInfo.jvm_opts.forEach { add(it) }
               add("-jar")
               add(toolchainInfo.toolchain_path)
@@ -279,11 +280,11 @@ object FastBuildUtils {
           if (!handler.waitFor() || handler.exitCode != 0) {
             compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
             tempDir.delete()
-            fastBuildTargetStatus.compilerStatus = "error"
+            fastBuildTargetStatus.status = FastBuildActionStatus.ERROR
             return@start
           }
           compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
-          fastBuildTargetStatus.compilerStatus = "success"
+          fastBuildTargetStatus.status = FastBuildActionStatus.SUCCESS
           processAndHotswapOutput(tempDir, outputJar, project)
         } catch (e: ExecutionException) {
           compileContext.addMessage(
@@ -293,7 +294,7 @@ object FastBuildUtils {
               e.message,
             ),
           )
-          fastBuildTargetStatus.compilerStatus = "error"
+          fastBuildTargetStatus.status = FastBuildActionStatus.ERROR
           compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
           return@start
         } finally {
@@ -508,4 +509,10 @@ object FastBuildUtils {
       .stream()
       .filter { debuggerSession: DebuggerSession? -> HotSwapUIImpl.canHotSwap(debuggerSession!!) }
       .toList()
+
+  private fun calculateExecutableName(name: String): String =
+    when {
+      SystemInfo.isWindows -> "$name.exe"
+      else -> name
+    }
 }
