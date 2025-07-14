@@ -5,6 +5,7 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImpo
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImportItem
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionItem
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 
 open class ProjectViewElementVisitor : PsiElementVisitor() {
   fun visitImport(node: ProjectViewPsiImport) {
@@ -20,6 +21,10 @@ open class ProjectViewElementVisitor : PsiElementVisitor() {
   }
 
   fun visitSectionItem(node: ProjectViewPsiSectionItem) {
+    visitElement(node)
+  }
+
+  fun visitSectionName(node: ProjectViewPsiSectionName) {
     visitElement(node)
   }
 }

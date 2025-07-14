@@ -22,11 +22,10 @@ import com.intellij.tools.ide.performanceTesting.commands.reloadFiles
 import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes
@@ -50,17 +49,12 @@ class HotSwapTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProject() {
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .waitForSmartMode()
-
     val startResult =
       createContext()
-        .runIdeWithDriver(commands = commands, runTimeout = timeout)
+        .runIdeWithDriver(runTimeout = timeout)
         .useDriverAndCloseIde {
           ideFrame {
+            syncBazelProject()
             waitForIndicators(5.minutes)
 
             step("Set breakpoints and start debug") {

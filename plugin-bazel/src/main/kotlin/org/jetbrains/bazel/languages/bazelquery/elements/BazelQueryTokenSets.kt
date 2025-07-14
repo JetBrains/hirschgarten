@@ -18,6 +18,14 @@ object BazelQueryTokenSets {
       BazelQueryTokenTypes.DQ_UNFINISHED,
       BazelQueryTokenTypes.SQ_EMPTY,
       BazelQueryTokenTypes.DQ_EMPTY,
+      BazelQueryTokenTypes.ERR_WORD,
+    )
+
+  val PATTERNS =
+    TokenSet.create(
+      BazelQueryTokenTypes.UNQUOTED_WORD,
+      BazelQueryTokenTypes.SQ_PATTERN,
+      BazelQueryTokenTypes.DQ_PATTERN,
     )
 
   val FLAGS =

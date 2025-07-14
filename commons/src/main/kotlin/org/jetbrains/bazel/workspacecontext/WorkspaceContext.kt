@@ -1,13 +1,20 @@
 package org.jetbrains.bazel.workspacecontext
 
-import org.jetbrains.bazel.executioncontext.api.ExecutionContext
 import org.jetbrains.bazel.label.assumeResolved
 
 /**
- * Representation of `ExecutionContext` used during server lifetime.
+ * Base `WorkspaceContext` entity class - you need to extend it or
+ * `WorkspaceContextListEntity` or `WorkspaceContextSingletonEntity` if you want to create your entity.
  *
- * @see ExecutionContext
+ * @see WorkspaceContextExcludableListEntity
+ * @see WorkspaceContextSingletonEntity
  */
+abstract class WorkspaceContextEntity
+
+/** `ProjectViewToWorkspaceContextEntityMapper` mapping failed? Return ('throw') it. */
+class WorkspaceContextEntityExtractorException(entityName: String, message: String) :
+  Exception("Mapping project view into '$entityName' failed! $message")
+
 data class WorkspaceContext(
   /**
    * Targets (included and excluded) on which the user wants to work.
@@ -85,7 +92,8 @@ data class WorkspaceContext(
   val gazelleTarget: GazelleTargetSpec,
   val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSpec,
   val pythonCodeGeneratorRuleNames: PythonCodeGeneratorRuleNamesSpec,
-) : ExecutionContext()
+  val importIjarsSpec: ImportIjarsSpec,
+)
 
 /**
  * List of names of repositories that should be treated as internal because there are some targets that we want to be imported that

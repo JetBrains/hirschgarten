@@ -51,6 +51,7 @@ private val wordsOrCommandsTokens =
   TokenSet.create(
     *BazelQueryTokenSets.WORDS.types,
     *BazelQueryTokenSets.COMMANDS.types,
+    *BazelQueryTokenSets.PATTERNS.types,
   )
 
 private class BazelWordCompletionProvider : CompletionProvider<CompletionParameters>() {
