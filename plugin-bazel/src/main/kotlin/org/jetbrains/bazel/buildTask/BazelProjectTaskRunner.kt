@@ -14,7 +14,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CompileResult
@@ -29,7 +29,7 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
 
   override fun canRun(projectTask: ProjectTask): Boolean =
     when (projectTask) {
-      is ModuleBuildTask -> !projectTask.module.project.bazelProjectSettings.enableBuildWithJps
+      is ModuleBuildTask -> !projectTask.module.project.bazelJVMProjectSettings.enableBuildWithJps
       else -> false
     }
 

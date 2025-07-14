@@ -10,11 +10,9 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
-import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -37,19 +35,21 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openProject() {
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .waitForSmartMode()
-    createContext().runIdeWithDriver(runTimeout = timeout, commands = commands).useDriverAndCloseIde {
+    createContext().runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {
+        syncBazelProject()
         waitForIndicators(5.minutes)
 
         step("Right-click the root project directory") {
-          projectView().projectViewTree.rightClickPath(requireProject().getName())
+          // the root folder is presented "ProjectName ProjectPath" now in UI
+          // not sure if it's intended but the test will work with it now
+          val rootFolderName = "${requireProject().getName()} ${requireProject().getBasePath()}"
+
+          projectView().projectViewTree.rightClickPath(rootFolderName)
           popupMenu().waitFound()
+          takeScreenshot("afterRightClickingProjectRoot")
         }
+
         step("Click on Run all tests") {
           popupMenu().findMenuItemByText("Run all tests").click()
           waitForIndicators(5.minutes)

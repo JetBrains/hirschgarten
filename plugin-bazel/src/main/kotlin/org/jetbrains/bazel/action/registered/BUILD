@@ -3,8 +3,8 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 kt_jvm_library(
     name = "registered",
     srcs = glob([
-        "*.kt",
-        "*.java",
+        "**/*.kt",
+        "**/*.java",
     ]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
@@ -12,7 +12,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/buildTask",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",

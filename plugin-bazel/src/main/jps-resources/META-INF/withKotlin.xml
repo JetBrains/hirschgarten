@@ -1,25 +1,47 @@
 <idea-plugin>
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
-        <projectConfigurator implementation="org.jetbrains.bazel.kotlin.configuration.BazelKotlinProjectConfigurator" order="first"/>
+        <projectConfigurator
+      implementation="org.jetbrains.bazel.kotlin.configuration.BazelKotlinProjectConfigurator"
+      order="first"
+    />
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater"/>
-        <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider"/>
+        <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater" />
+        <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook" />
+        <sourceTypeIconProvider
+      implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider"
+    />
         <bazelCoverageClassNodeDecoratorPsiElementClassifier
-                implementation="org.jetbrains.bazel.kotlin.coverage.KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
-        <unresolvedImportChecker implementation ="org.jetbrains.bazel.kotlin.ui.notifications.KotlinUnresolvedImportChecker"/>
-        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.kotlin.junit.KotlinPsiElementConfigurationLocator"/>
+      implementation="org.jetbrains.bazel.kotlin.coverage.KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier"
+    />
+        <unresolvedImportChecker
+      implementation="org.jetbrains.bazel.kotlin.ui.notifications.KotlinUnresolvedImportChecker"
+    />
+        <psiElementConfigurationLocator
+      implementation="org.jetbrains.bazel.kotlin.junit.KotlinPsiElementConfigurationLocator"
+    />
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.kotlin.ui.starters.BazelKotlinNewProjectWizard"/>
-        <postStartupActivity implementation="org.jetbrains.bazel.kotlin.startup.SuggestEnableK2StartupActivity"/>
-        <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
+        <newProjectWizard.kotlin.buildSystem
+      implementation="org.jetbrains.bazel.kotlin.ui.starters.BazelKotlinNewProjectWizard"
+    />
+        <postStartupActivity implementation="org.jetbrains.bazel.kotlin.startup.SuggestEnableK2StartupActivity" />
+        <notificationGroup
+      displayType="BALLOON"
+      id="Enable K2 Compiler Mode with Bazel"
+    />
         <runLineMarkerContributor
-                implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
-                language="kotlin"/>
+      implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
+      language="kotlin"
+    />
     </extensions>
-</idea-plugin>
 
+  <projectListeners>
+    <listener
+      class="org.jetbrains.bazel.sdkcompat.k2.BazelK2MoveDeclarationsRefactoringListener"
+      topic="org.jetbrains.kotlin.idea.k2.refactoring.move.processor.K2MoveDeclarationsRefactoringListener"
+    />
+  </projectListeners>
+</idea-plugin>

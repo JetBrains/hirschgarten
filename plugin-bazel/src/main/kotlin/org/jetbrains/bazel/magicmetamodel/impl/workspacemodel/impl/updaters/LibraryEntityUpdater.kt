@@ -16,13 +16,16 @@ import com.intellij.platform.workspace.jps.entities.libraryProperties
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
+import java.nio.file.Path
 
-internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
-  WorkspaceModelEntityWithoutParentModuleUpdater<Library, LibraryEntity> {
+internal class LibraryEntityUpdater(
+  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+  private val importIjars: Boolean,
+) : WorkspaceModelEntityWithoutParentModuleUpdater<Library, LibraryEntity> {
   //  a snippet of adding module library entity in case we want it back
   //  private fun addModuleLibraryEntity(
   //    builder: MutableEntityStorage,
@@ -78,11 +81,18 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
     }
 
   private fun toLibraryClassesRoots(entityToAdd: Library): List<LibraryRoot> =
-    entityToAdd.classJars.ifEmpty { entityToAdd.iJars }.map {
+    libraryJarsOrIjars(entityToAdd).map {
       LibraryRoot(
         url = Library.formatJarString(it).toResolvedVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         type = LibraryRootTypeId.COMPILED,
       )
+    }
+
+  private fun libraryJarsOrIjars(entityToAdd: Library): List<Path> =
+    if (importIjars) {
+      entityToAdd.iJars.ifEmpty { entityToAdd.classJars }
+    } else {
+      entityToAdd.classJars.ifEmpty { entityToAdd.iJars }
     }
 
   private fun toLibraryPropertiesXml(entityToAdd: Library): String? {
@@ -104,7 +114,7 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
 
 internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
   when {
-    !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps -> BspProjectEntitySource
+    !workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps -> BazelProjectEntitySource
     else ->
       LegacyBridgeJpsEntitySourceFactory
         .getInstance(workspaceModelEntityUpdaterConfig.project)

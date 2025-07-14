@@ -1,21 +1,25 @@
 package org.jetbrains.bazel.languages.java
 
+import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.waitForIndicators
+import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.delayType
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.openFile
-import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.buildAndSync
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.execute
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * ```sh
@@ -36,25 +40,39 @@ class CompiledSourceCodeInsideJarExcludeTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProject() {
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .buildAndSync()
-        .waitForSmartMode()
-        .openFile("Main.kt")
-        .checkOnRedCode()
-        .openFile("my_addition.kt")
-        .goto(1, 36)
-        // Change the signature of a top-level Kotlin function
-        .delayType(delayMs = 150, text = ", c: Int")
-        .openFile("Main.kt")
-        // Navigate to that top-level function
-        .goto(5, 5)
-        .goToDeclaration()
-        .checkOpenedFileNotInsideJar()
-        .exitApp()
-    createContext().runIDE(commands = commands, runTimeout = timeout)
+    createContext()
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        ideFrame {
+          syncBazelProject()
+          execute { buildAndSync()}
+          execute { waitForSmartMode() }
+          waitForIndicators(5.minutes)
+
+          step("Open Main.kt and check for red code") {
+            execute { openFile("Main.kt") }
+            execute { checkOnRedCode() }
+            takeScreenshot("afterOpenMainKt")
+          }
+
+          step("Modify my_addition.kt function signature") {
+            execute { openFile("my_addition.kt") }
+            execute { goto(1, 36) }
+            // Change the signature of a top-level Kotlin function
+            execute { delayType(delayMs = 150, text = ", c: Int") }
+            takeScreenshot("afterModifyMyAdditionKt")
+          }
+
+          step("Navigate to function and verify it's not inside jar") {
+            execute { openFile("Main.kt") }
+            // Navigate to that top-level function
+            execute { goto(5, 5) }
+            execute { goToDeclaration() }
+            execute { checkOpenedFileNotInsideJar() }
+            takeScreenshot("afterGoToDeclaration")
+          }
+        }
+      }
   }
 }
 

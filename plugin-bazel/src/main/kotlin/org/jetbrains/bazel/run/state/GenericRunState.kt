@@ -6,6 +6,7 @@ import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.util.xmlb.annotations.Attribute
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
@@ -39,7 +40,7 @@ class GenericRunStateEditor<T : AbstractGenericRunState<T>>(private val config: 
   FragmentedSettingsEditor<T>(config.handler?.state as T) {
   override fun createFragments(): Collection<SettingsEditorFragment<T, *>> =
     SettingsEditorFragmentContainer.fragments {
-      add(CommonParameterFragments.createHeader("Run Configuration"))
+      add(CommonParameterFragments.createHeader(BazelPluginBundle.message("state.generic.run.configuration.header")))
 
       add(bazelParamsFragment())
       add(programArgumentsFragment())

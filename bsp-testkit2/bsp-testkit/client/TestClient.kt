@@ -20,8 +20,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.testkit.JsonComparator
@@ -68,18 +66,6 @@ class TestClient(
     }
   }
 
-  fun testScalacOptions(
-    timeout: Duration,
-    params: ScalacOptionsParams,
-    expectedResult: ScalacOptionsResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetScalacOptions(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
   fun testCompile(
     timeout: Duration,
     params: CompileParams,
@@ -100,6 +86,21 @@ class TestClient(
   fun testWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
     test(timeout) { session ->
       val result = session.server.workspaceBuildTargets()
+      assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  fun testMainWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
+    test(timeout) { session ->
+      val result = session.server.workspaceBuildTargets()
+      val filteredResult =
+        WorkspaceBuildTargetsResult(
+          hasError = result.hasError,
+          targets =
+            result.targets.filter {
+              it.id.isMainWorkspace
+            },
+        )
       assertJsonEquals(expectedResult, result)
     }
   }
@@ -179,11 +180,8 @@ class TestClient(
       test(timeout) { session ->
         val getWorkspaceTargets = session.server.workspaceBuildTargets()
         val targets = getWorkspaceTargets.targets
-        val targetIds = targets.map { it.id }
         val javaTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.JAVA) }.map { it.id }
         session.server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-        val scalaTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.SCALA) }.map { it.id }
-        session.server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
         val cppTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.C) }.map { it.id }
         session.server.buildTargetCppOptions(CppOptionsParams(cppTargetIds))
       }

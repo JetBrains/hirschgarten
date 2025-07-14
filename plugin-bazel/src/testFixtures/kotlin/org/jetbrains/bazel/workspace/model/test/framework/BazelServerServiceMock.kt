@@ -12,11 +12,15 @@ import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
+import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
+import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
 import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
+import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
 import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
@@ -31,7 +35,6 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import kotlin.io.path.Path
 
@@ -57,6 +60,10 @@ private val mockWorkspaceContext =
     targetShardSize = TargetShardSizeSpec(1000),
     shardingApproachSpec = ShardingApproachSpec(null),
     importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
+    gazelleTarget = GazelleTargetSpec(null),
+    indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
+    pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
+    importIjarsSpec = ImportIjarsSpec(false),
   )
 
 private val mockBuildServer =
@@ -66,7 +73,6 @@ private val mockBuildServer =
     workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
     workspaceLibrariesResult = WorkspaceLibrariesResult(emptyList()),
     jvmBinaryJarsResult = JvmBinaryJarsResult(emptyList()),
-    workspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
     workspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap()),
     dependencySourcesResult = DependencySourcesResult(emptyList()),
     workspaceContextResult = mockWorkspaceContext,

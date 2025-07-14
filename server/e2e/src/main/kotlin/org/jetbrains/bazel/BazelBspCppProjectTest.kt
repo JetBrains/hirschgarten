@@ -7,11 +7,11 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CppBuildTarget
 import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
@@ -42,7 +42,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
       )
 
     val exampleExampleBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//example:example"),
         tags = ImmutableList.of(),
         dependencies = ImmutableList.of(Label.parse("@com_google_googletest//:gtest_main")),
@@ -59,7 +59,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
       )
 
     val bspWorkspaceRootExampleBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.synthetic("bsp-workspace-root"),
         tags = ImmutableList.of(),
         dependencies = ImmutableList.of(),

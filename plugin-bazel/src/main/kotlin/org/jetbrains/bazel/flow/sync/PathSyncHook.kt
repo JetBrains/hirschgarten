@@ -11,18 +11,22 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.workspaceName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.withSubtask
 
 class PathSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
     coroutineScope {
-      val bazelBinPathService = BazelBinPathService.getInstance(environment.project)
-      val bazelBinPathResult =
-        query("workspace/bazelBinPath") { environment.server.workspaceBazelBinPath() }
-      bazelBinPathService.bazelBinPath = bazelBinPathResult.path
-      val bazelWorkspaceResult =
-        query("workspace/bazelWorkspaceName") { environment.server.workspaceName() }
+      environment.withSubtask("Collect bazel workspace info") {
+        val bazelBinPathService = BazelBinPathService.getInstance(environment.project)
+        val bazelBinPathResult =
+          query("workspace/bazelPaths") { environment.server.workspaceBazelPaths() }
+        bazelBinPathService.bazelBinPath = bazelBinPathResult.bazelBin
+        bazelBinPathService.bazelExecPath = bazelBinPathResult.executionRoot
+        val bazelWorkspaceResult =
+          query("workspace/bazelWorkspaceName") { environment.server.workspaceName() }
 
-      environment.project.workspaceName = bazelWorkspaceResult.workspaceName
+        environment.project.workspaceName = bazelWorkspaceResult.workspaceName
+      }
     }
 }
 
@@ -34,16 +38,18 @@ class PathSyncHook : ProjectSyncHook {
 @Service(Service.Level.PROJECT)
 class BazelBinPathService : PersistentStateComponent<BazelBinPathService.State> {
   var bazelBinPath: String? = null
+  var bazelExecPath: String? = null
 
-  override fun getState(): State? = bazelBinPath?.let { State(it) }
+  override fun getState(): State? = State(bazelBinPath, bazelExecPath)
 
   override fun loadState(state: State) {
-    bazelBinPath = state.path
+    bazelBinPath = state.bazelBin
+    bazelExecPath = state.execRoot
   }
 
   companion object {
     fun getInstance(project: Project): BazelBinPathService = project.service<BazelBinPathService>()
   }
 
-  data class State(var path: String? = null)
+  data class State(var bazelBin: String? = null, var execRoot: String? = null)
 }

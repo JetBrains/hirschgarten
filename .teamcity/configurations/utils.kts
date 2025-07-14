@@ -1,26 +1,31 @@
 package configurations
 
 object DockerParams {
-  val volumes = """
-    -v %system.agent.persistent.cache%:/home/hirschuser/.cache
-    -v %system.agent.persistent.cache%/.netrc:/home/hirschuser/.netrc""".trimIndent()
+  private val DOCKER_RUN_PARAMS: String = listOf(
+    "-v %system.agent.persistent.cache%:/home/hirschuser/.cache",
+    "-u %env.CONTAINER_UID%:%env.CONTAINER_GID%",
+  ).joinToString("\n")
 
-  fun get(imageName: String = CommonParams.DockerE2eImage
+  fun get(
+    imageName: String = CommonParams.DockerE2eImage
   ): Map<String, String> =
     mapOf(
       "plugin.docker.imagePlatform" to "linux",
       "plugin.docker.pull.enabled" to "true",
       "plugin.docker.imageId" to imageName,
-      "plugin.docker.run.parameters" to volumes,
+      "plugin.docker.run.parameters" to DOCKER_RUN_PARAMS,
     )
 }
 
 object CommonParams {
   val BazelTestlogsArtifactRules: String = "+:%system.teamcity.build.checkoutDir%/testlogs/** => testlogs.zip"
-//  val BazelCiSpecificArgs: String = "--config=remotecache --config=nocacheupload --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+
+  //  val BazelCiSpecificArgs: String = "--config=remotecache --config=nocacheupload --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
   val BazelCiSpecificArgs: String = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
-//  val BazelCiBuildSpecificArgs: String = "--config=remotecache --config=bes --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
-  val BazelCiBuildSpecificArgs: String = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+
+  //  val BazelCiBuildSpecificArgs: String = "--config=remotecache --config=bes --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+  val BazelCiBuildSpecificArgs: String =
+    "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
 
   val DockerE2eImage: String = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
   val DockerQodanaImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana"
@@ -28,7 +33,7 @@ object CommonParams {
 
   val QodanaArtifactRules: String = "+:plugin-*.zip=>%system.teamcity.build.checkoutDir%/tc-artifacts"
 
-  val CrossBuildPlatforms: List<String> = listOf("243", "251")
+  val CrossBuildPlatforms: List<String> = listOf("251", "252")
 
   val BazelVersion = "7.4.1"
 }

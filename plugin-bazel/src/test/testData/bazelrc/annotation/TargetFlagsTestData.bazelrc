@@ -1,0 +1,3 @@
+# --, negative targets and normal targets shouldn't be highlighted
+build -- -//src/main/java:excluded_target
+build //... //src/main/java:included_target

@@ -3,20 +3,19 @@ package org.jetbrains.bazel.workspacecontext.provider
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.EnvironmentUtil
 import org.apache.commons.io.FileUtils.copyURLToFile
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.commons.FileUtils
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContextEntityExtractorException
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
 
-private val log = LogManager.getLogger(BazelBinarySpec::class.java)
+private val log = LoggerFactory.getLogger(BazelBinarySpec::class.java)
 
 // TODO(abrams): update tests for the whole flow and mock different OSes
-internal object BazelBinarySpecExtractor : ExecutionContextEntityExtractor<BazelBinarySpec> {
+internal object BazelBinarySpecExtractor : WorkspaceContextEntityExtractor<BazelBinarySpec> {
   override fun fromProjectView(projectView: ProjectView): BazelBinarySpec {
     val extracted = projectView.bazelBinary?.value
     return if (extracted != null) {
@@ -24,7 +23,7 @@ internal object BazelBinarySpecExtractor : ExecutionContextEntityExtractor<Bazel
     } else {
       val path =
         findBazelOnPathOrNull() ?: downloadBazelisk()
-          ?: throw ExecutionContextEntityExtractorException(
+          ?: throw WorkspaceContextEntityExtractorException(
             "bazel path",
             "Could not find bazel on your PATH nor download bazelisk",
           )

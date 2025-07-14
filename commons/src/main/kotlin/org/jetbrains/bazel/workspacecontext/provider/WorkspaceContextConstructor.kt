@@ -1,22 +1,21 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
-import org.apache.logging.log4j.LogManager
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextConstructor
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
 class WorkspaceContextConstructor(
   workspaceRoot: Path,
   private val dotBazelBspDirPath: Path,
   projectViewPath: Path,
-) : ExecutionContextConstructor<WorkspaceContext> {
+) {
   private val directoriesSpecExtractor = DirectoriesSpecExtractor(workspaceRoot, projectViewPath)
 
-  private val log = LogManager.getLogger(WorkspaceContextConstructor::class.java)
+  private val log = LoggerFactory.getLogger(WorkspaceContextConstructor::class.java)
 
-  override fun construct(projectView: ProjectView): WorkspaceContext {
+  fun construct(projectView: ProjectView): WorkspaceContext {
     log.info("Constructing workspace context for: {}.", projectView)
 
     return WorkspaceContext(
@@ -47,6 +46,10 @@ class WorkspaceContextConstructor(
       targetShardSize = TargetShardSizeSpecExtractor.fromProjectView(projectView),
       shardingApproachSpec = ShardingApproachSpecExtractor.fromProjectView(projectView),
       importRunConfigurations = ImportRunConfigurationsSpecExtractor.fromProjectView(projectView),
+      gazelleTarget = GazelleTargetSpecExtractor.fromProjectView(projectView),
+      indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpecExtractor.fromProjectView(projectView),
+      pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpecExtractor.fromProjectView(projectView),
+      importIjarsSpec = ImportIjarsSpecExtractor.fromProjectView(projectView),
     )
   }
 }

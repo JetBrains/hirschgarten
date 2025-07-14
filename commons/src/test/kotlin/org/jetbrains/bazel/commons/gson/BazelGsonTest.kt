@@ -4,8 +4,8 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -18,7 +18,7 @@ class BazelGsonTest {
   @Test
   fun `test BuildTarget serialization`() {
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         id = Label.parse("//foo:bar"),
         tags = listOf("tag1", "tag2"),
         dependencies = listOf(Label.parse("//baz:qux")),
@@ -35,11 +35,14 @@ class BazelGsonTest {
           PythonBuildTarget(
             version = "3.8",
             interpreter = Path.of("/usr/bin/python3"),
+            listOf(),
+            false,
+            listOf(),
           ),
       )
 
     val json = bazelGson.toJson(buildTarget)
-    val deserializedBuildTarget = bazelGson.fromJson(json, BuildTarget::class.java)
+    val deserializedBuildTarget = bazelGson.fromJson(json, RawBuildTarget::class.java)
     assertEquals(buildTarget, deserializedBuildTarget)
   }
 

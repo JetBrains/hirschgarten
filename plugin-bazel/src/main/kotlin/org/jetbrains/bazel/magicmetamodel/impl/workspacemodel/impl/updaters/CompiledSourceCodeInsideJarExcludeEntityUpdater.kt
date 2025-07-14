@@ -3,11 +3,11 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.storage.entities
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
-import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
-import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
 class CompiledSourceCodeInsideJarExcludeEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<CompiledSourceCodeInsideJarExclude, CompiledSourceCodeInsideJarExcludeEntity> {
@@ -22,7 +22,9 @@ class CompiledSourceCodeInsideJarExcludeEntityUpdater(private val workspaceModel
     val excludeEntityId =
       if (currentExcludeEntity == null) {
         0
-      } else if (currentExcludeEntity.relativePathsInsideJarToExclude == entityToAdd.relativePathsInsideJarToExclude) {
+      } else if (currentExcludeEntity.relativePathsInsideJarToExclude == entityToAdd.relativePathsInsideJarToExclude &&
+        currentExcludeEntity.librariesFromInternalTargetsUrls == entityToAdd.librariesFromInternalTargetsUrls
+      ) {
         currentExcludeEntity.excludeId.id
       } else {
         // Change the ID, so that all the referring entities' data (LibraryCompiledSourceCodeInsideJarExcludeEntity) will be changed,
@@ -34,15 +36,20 @@ class CompiledSourceCodeInsideJarExcludeEntityUpdater(private val workspaceModel
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(
         CompiledSourceCodeInsideJarExcludeEntity(
           relativePathsInsideJarToExclude = entityToAdd.relativePathsInsideJarToExclude,
+          librariesFromInternalTargetsUrls = entityToAdd.librariesFromInternalTargetsUrls,
           excludeId = CompiledSourceCodeInsideJarExcludeId(excludeEntityId),
-          entitySource = BspProjectEntitySource,
+          entitySource = BazelProjectEntitySource,
         ),
       )
 
     val libraries = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities<LibraryEntity>().toList()
     val libraryExcludeEntities =
       libraries.map { library ->
-        LibraryCompiledSourceCodeInsideJarExcludeEntity(library.symbolicId, excludeEntity.symbolicId, entitySource = BspProjectEntitySource)
+        LibraryCompiledSourceCodeInsideJarExcludeEntity(
+          library.symbolicId,
+          excludeEntity.symbolicId,
+          entitySource = BazelProjectEntitySource,
+        )
       }
     for (libraryExcludeEntity in libraryExcludeEntities) {
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(libraryExcludeEntity)

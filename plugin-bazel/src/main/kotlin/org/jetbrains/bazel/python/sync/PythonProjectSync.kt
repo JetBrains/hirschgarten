@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.python.sync
 
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.service
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -36,19 +38,22 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.python.resolve.PythonResolveIndexService
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.utils.StringUtils
-import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 
@@ -61,32 +66,35 @@ class PythonProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
-    val bspBuildTargets = environment.server.workspaceBuildTargets()
-    val pythonTargets = bspBuildTargets.calculatePythonTargets()
-    val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
+    environment.withSubtask("Process Python targets") {
+      // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
+      val bspBuildTargets = environment.server.workspaceBuildTargets()
+      val pythonTargets = bspBuildTargets.calculatePythonTargets()
+      val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
-    val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
-    val sourceDependencies = calculateDependenciesSources(pythonTargets.map { it.id }, environment)
-    val defaultSdk = getSystemSdk()
+      val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
+      val sourceDependencies = calculateDependenciesSources(pythonTargets.map { it.id }, environment)
+      val defaultSdk = getSystemSdk()
 
-    pythonTargets.forEach {
-      val moduleName = it.id.formatAsModuleName(environment.project)
-      val moduleSourceEntity = BspModuleEntitySource(moduleName)
-      val targetSourceDependencies = sourceDependencies[it.id] ?: emptyList()
-      val sourceDependencyLibrary =
-        calculateSourceDependencyLibrary(it.id, targetSourceDependencies, moduleSourceEntity, virtualFileUrlManager)
+      pythonTargets.forEach {
+        val moduleName = it.id.formatAsModuleName(environment.project)
+        val moduleSourceEntity = BazelModuleEntitySource(moduleName)
+        val targetSourceDependencies = sourceDependencies[it.id] ?: emptyList()
+        val sourceDependencyLibrary =
+          calculateSourceDependencyLibrary(it.id, targetSourceDependencies, moduleSourceEntity, virtualFileUrlManager)
 
-      addModuleEntityFromTarget(
-        builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
-        target = it,
-        moduleName = moduleName,
-        entitySource = moduleSourceEntity,
-        virtualFileUrlManager = virtualFileUrlManager,
-        project = environment.project,
-        sdk = sdks[it.id] ?: defaultSdk,
-        sourceDependencyLibrary = sourceDependencyLibrary,
-      )
+        addModuleEntityFromTarget(
+          builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
+          target = it as RawBuildTarget,
+          moduleName = moduleName,
+          entitySource = moduleSourceEntity,
+          virtualFileUrlManager = virtualFileUrlManager,
+          project = environment.project,
+          sdk = sdks[it.id] ?: defaultSdk,
+          sourceDependencyLibrary = sourceDependencyLibrary,
+        )
+      }
+      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(bspBuildTargets.targets)
     }
   }
 
@@ -195,9 +203,9 @@ class PythonProjectSync : ProjectSyncHook {
 
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,
-    target: BuildTarget,
+    target: RawBuildTarget,
     moduleName: String,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
     project: Project,
     sdk: Sdk?,
@@ -208,7 +216,7 @@ class PythonProjectSync : ProjectSyncHook {
     val libraryDependency =
       sourceDependencyLibrary?.let {
         val addedLibrary = builder.addEntity(it)
-        LibraryDependency(addedLibrary.symbolicId, false, DependencyScope.COMPILE)
+        LibraryDependency(addedLibrary.symbolicId, true, DependencyScope.COMPILE)
       }
 
     val dependencies =
@@ -239,18 +247,18 @@ class PythonProjectSync : ProjectSyncHook {
 
   private fun getContentRootEntities(
     target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> {
-    val sourceContentRootEntities = getSourceContentRootEntities(target, entitySource, virtualFileUrlManager)
+    val sourceContentRootEntities = getSourceContentRootEntities(target as RawBuildTarget, entitySource, virtualFileUrlManager)
     val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
 
     return sourceContentRootEntities + resourceContentRootEntities
   }
 
   private fun getSourceContentRootEntities(
-    target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    target: RawBuildTarget,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.sources.map { source ->
@@ -272,8 +280,8 @@ class PythonProjectSync : ProjectSyncHook {
     }
 
   private fun getResourceContentRootEntities(
-    target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    target: RawBuildTarget,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.resources.map { resource ->

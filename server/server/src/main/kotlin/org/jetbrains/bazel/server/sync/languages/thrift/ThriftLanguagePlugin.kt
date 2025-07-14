@@ -5,7 +5,7 @@ import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<ThriftModule>() {
@@ -37,7 +37,7 @@ class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   private fun isThriftLibrary(target: BspTargetInfo.TargetInfo): Boolean = target.kind == THRIFT_LIBRARY_RULE_NAME
 
-  override fun applyModuleData(moduleData: ThriftModule, buildTarget: BuildTarget) {}
+  override fun applyModuleData(moduleData: ThriftModule, buildTarget: RawBuildTarget) {}
 
   companion object {
     private const val THRIFT_LIBRARY_RULE_NAME = "thrift_library"

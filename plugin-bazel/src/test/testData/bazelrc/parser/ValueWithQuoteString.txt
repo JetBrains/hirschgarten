@@ -7,5 +7,5 @@ FILE
       PsiElement(Bazelrc:=)('=')
       PsiElement(Bazelrc:VALUE)('ij_product=')
       PsiElement(Bazelrc:")('"')
-      PsiElement(Bazelrc:VALUE)('intellij-2024.3')
+      PsiElement(Bazelrc:VALUE)('intellij-2025.1')
       PsiElement(Bazelrc:")('"')

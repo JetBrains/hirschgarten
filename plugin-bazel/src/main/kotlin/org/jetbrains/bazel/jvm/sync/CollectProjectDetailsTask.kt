@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.jvm.sync
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.codeInsight.multiverse.CodeInsightContextManager
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
@@ -12,6 +14,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.util.PathUtilRt
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -23,8 +26,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModulesToCompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
@@ -32,7 +35,8 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.FullProjectSync
@@ -41,21 +45,16 @@ import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
-import org.jetbrains.bazel.target.calculateFileToTarget
+import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureDiff
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import org.jetbrains.bazel.utils.isSourceFile
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.Module
-import org.jetbrains.bazel.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.workspacemodel.entities.includesScala
+import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -70,6 +69,7 @@ class CollectProjectDetailsTask(
   private val project: Project,
   private val taskId: String,
   private val diff: MutableEntityStorage,
+  private val targetUtilsDiff: TargetUtilsProjectStructureDiff,
 ) {
   private var uniqueJavaHomes: Set<Path>? = null
 
@@ -101,7 +101,7 @@ class CollectProjectDetailsTask(
     }
 
     if (scalaSdkExtensionExists()) {
-      progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
+      progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.reporter.calculating.scala.sdk.info")) {
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
     }
@@ -166,7 +166,7 @@ class CollectProjectDetailsTask(
   private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<Path> =
     projectDetails.targets
       .mapNotNull(::extractJvmBuildTarget)
-      .map { it.javaHome }
+      .map { requireNotNull(it.javaHome) { "javaHome is null but expected not to be null for $it" } }
       .toSet()
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) =
@@ -193,7 +193,7 @@ class CollectProjectDetailsTask(
         ScalaSdk(
           name = scalaBuildTarget.scalaVersion.scalaVersionToScalaSdkName(),
           scalaVersion = scalaBuildTarget.scalaVersion,
-          sdkJars = scalaBuildTarget.jars.map { path -> path.toUri() },
+          sdkJars = scalaBuildTarget.sdkJars.map { path -> path.toUri() },
         )
       }
 
@@ -223,8 +223,6 @@ class CollectProjectDetailsTask(
             projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
           }
 
-        val fileToTarget: Map<Path, List<Label>> = calculateFileToTarget(targetIdToModuleDetails)
-
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
             val syncedTargetIdToTargetInfo =
@@ -234,45 +232,41 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.targetUtils.labelToTargetInfo.mapKeys { it.key } +
-                  syncedTargetIdToTargetInfo
+                project.targetUtils.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
               }
             val targetIdToModuleEntityMap =
               TargetIdToModuleEntitiesMap(
                 projectDetails = projectDetails,
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
-                fileToTarget = fileToTarget,
+                // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
+                fileToTargetWithoutLowPrioritySharedSources = targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources,
                 projectBasePath = projectBasePath,
                 project = project,
                 isAndroidSupportEnabled = false,
               )
-
-            if (syncScope is FullProjectSync) {
-              project.targetUtils.saveTargets(
-                targetIdToTargetInfo,
-                targetIdToModuleEntityMap,
-                fileToTarget,
-                projectDetails.libraries,
-                libraryModules,
-              )
-            }
             targetIdToModuleEntityMap
           }
+
+        // TODO: remove this: https://youtrack.jetbrains.com/issue/BAZEL-2015/
+        targetUtilsDiff.libraryItems = projectDetails.libraries
 
         val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
 
         val compiledSourceCodeInsideJarToExclude =
           bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
             if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
-              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(targetIdToModuleDetails.values)
+              CompiledSourceCodeInsideJarExcludeTransformer().transform(
+                targetIdToModuleDetails.values,
+                projectDetails.libraries.orEmpty(),
+              )
             } else {
               null
             }
           }
 
         bspTracer.spanBuilder("load.modules.ms").use {
-          val workspaceModel = WorkspaceModel.getInstance(project)
+          val workspaceModel = project.serviceAsync<WorkspaceModel>()
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
@@ -282,9 +276,10 @@ class CollectProjectDetailsTask(
               projectBasePath = projectBasePath,
               project = project,
               isAndroidSupportEnabled = false,
+              importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
+          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
           workspaceModelUpdater.loadLibraries(libraries)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
@@ -305,7 +300,7 @@ class CollectProjectDetailsTask(
         }.toMap()
   }
 
-  suspend fun postprocessingSubtask() {
+  suspend fun postprocessingSubtask(targetUtilsDiff: TargetUtilsProjectStructureDiff) {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
@@ -316,7 +311,7 @@ class CollectProjectDetailsTask(
     addBspFetchedScalaSdks()
 
     VirtualFileManager.getInstance().asyncRefresh()
-    checkSharedSources()
+    checkSharedSources(targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources)
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -358,14 +353,22 @@ class CollectProjectDetailsTask(
       javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
     }
 
-  private fun checkSharedSources() {
-    if (project.isSharedSourceSupportEnabled) return
-    val fileToTarget = project.targetUtils.fileToTarget
-    for ((file, targets) in fileToTarget) {
-      if (targets.size <= 1) continue
-      if (!file.isSourceFile()) continue
-      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.endsWith(it) }) continue
-      warnOverlappingSources(targets[0], targets[1], file)
+  private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
+    if (CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled) return
+    if (!BazelFeatureFlags.checkSharedSources) return
+    for ((file, labels) in fileToTargetWithoutLowPrioritySharedSources) {
+      if (labels.size <= 1) {
+        continue
+      }
+
+      val fileName = PathUtilRt.getFileName(file.toString())
+      if (!SourceType.hasSourceFileExtension(fileName)) {
+        continue
+      }
+      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { fileName.endsWith(it) }) {
+        continue
+      }
+      warnOverlappingSources(firstTarget = labels[0], secondTarget = labels[1], fileName = fileName)
       break
     }
   }
@@ -373,7 +376,7 @@ class CollectProjectDetailsTask(
   private fun warnOverlappingSources(
     firstTarget: Label,
     secondTarget: Label,
-    source: Path,
+    fileName: String,
   ) {
     BazelBalloonNotifier.warn(
       BazelPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
@@ -381,13 +384,13 @@ class CollectProjectDetailsTask(
         "widget.collect.targets.overlapping.sources.message",
         firstTarget.toString(),
         secondTarget.toString(),
-        source.fileName,
+        fileName,
       ),
     )
   }
 
   private companion object {
-    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = listOf("empty.kt")
+    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = arrayOf("empty.kt")
   }
 }
 
@@ -428,25 +431,18 @@ suspend fun calculateProjectDetailsWithCapabilities(
           server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         }
 
-      // Same for Scala
-      val scalacOptionsResult =
-        // TODO: Son
-        if (libraries == null) {
-          asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
-            server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
-          }
-        } else {
-          null
+      val workspaceContext =
+        query("workspace/context") {
+          server.workspaceContext()
         }
 
       ProjectDetails(
         targetIds = bspBuildTargets.targets.map { it.id },
         targets = bspBuildTargets.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
-        // TODO: Son
-        scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
+        workspaceContext = workspaceContext,
       )
     } catch (e: Exception) {
       // TODO the type xd
@@ -470,15 +466,21 @@ private suspend fun queryWorkspaceBuildTargets(
   taskId: String,
 ): WorkspaceBuildTargetsResult =
   coroutineScope {
-    if (syncScope is PartialProjectSync) {
-      query("workspace/buildTargetsPartial") {
-        server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+    when (syncScope) {
+      is PartialProjectSync -> {
+        query("workspace/buildTargetsPartial") {
+          server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+        }
       }
-    } else if (syncScope is FirstPhaseSync) {
-      query("workspace/buildTargetsFirstPhase") {
-        server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+
+      is FirstPhaseSync -> {
+        query("workspace/buildTargetsFirstPhase") {
+          server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+        }
       }
-    } else {
-      query("workspace/buildTargets") { server.workspaceBuildTargets() }
+
+      else -> {
+        query("workspace/buildTargets") { server.workspaceBuildTargets() }
+      }
     }
   }

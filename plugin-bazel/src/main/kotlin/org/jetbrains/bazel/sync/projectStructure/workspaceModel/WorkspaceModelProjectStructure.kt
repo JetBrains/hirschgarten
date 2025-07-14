@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.projectStructure.workspaceModel
 
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
@@ -14,6 +15,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider
@@ -22,8 +25,8 @@ import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.workspacemodel.entities.BspEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
+
+private const val MAX_REPLACE_WSM_ATTEMPTS = 3
 
 class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntityStorage) : ProjectStructureDiff {
   private val postApplyActions = mutableListOf<suspend () -> Unit>()
@@ -41,22 +44,38 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
       taskId = taskId,
       subtaskId = "apply-changes-on-workspace-model",
       message = BazelPluginBundle.message("console.task.model.apply.changes"),
-    ) {
+    ) { subtaskId ->
       bspTracer.spanBuilder("apply.changes.on.workspace.model.ms").useWithScope {
-        val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
-        val snapshot = workspaceModel.getBuilderSnapshot()
-        bspTracer.spanBuilder("replacebysource.in.apply.on.workspace.model.ms").use {
-          snapshot.builder.replaceBySource({ it.isBspRelevant(project, syncScope) }, mutableEntityStorage)
-        }
-        val storageReplacement = snapshot.getStorageReplacement()
-        writeAction {
-          val workspaceModelUpdated =
-            bspTracer.spanBuilder("replaceprojectmodel.in.apply.on.workspace.model.ms").use {
-              workspaceModel.replaceProjectModel(storageReplacement)
-            }
-          if (!workspaceModelUpdated) {
-            error("Project model is not updated successfully. Try `reload` action to recalculate the project model.")
+        val workspaceModel = project.serviceAsync<WorkspaceModel>() as WorkspaceModelInternal
+        repeat(MAX_REPLACE_WSM_ATTEMPTS) { attemptIdx ->
+          val snapshot = workspaceModel.getBuilderSnapshot()
+          bspTracer.spanBuilder("replacebysource.in.apply.on.workspace.model.ms").use {
+            snapshot.builder.replaceBySource({ it.isBazelRelevant(project, syncScope) }, mutableEntityStorage)
           }
+          // quickly return if there are no changes to apply
+          if (!snapshot.areEntitiesChanged()) return@useWithScope
+          val storageReplacement = snapshot.getStorageReplacement()
+          val workspaceModelUpdated =
+            writeAction {
+              bspTracer.spanBuilder("replaceprojectmodel.in.apply.on.workspace.model.ms").use {
+                workspaceModel.replaceWorkspaceModel(
+                  BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.1.wsm", attemptIdx + 1, MAX_REPLACE_WSM_ATTEMPTS),
+                  storageReplacement,
+                )
+              }
+            }
+          if (workspaceModelUpdated) return@useWithScope
+          project.syncConsole.addMessage(
+            subtaskId,
+            BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.1.failed", attemptIdx + 1, MAX_REPLACE_WSM_ATTEMPTS),
+          )
+        }
+        project.syncConsole.addMessage(
+          subtaskId,
+          BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.fallback", MAX_REPLACE_WSM_ATTEMPTS),
+        )
+        workspaceModel.update(BazelPluginBundle.message("console.task.model.apply.changes.wsm")) { builder ->
+          builder.replaceBySource({ it.isBazelRelevant(project, syncScope) }, mutableEntityStorage)
         }
       }
     }
@@ -64,30 +83,30 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     postApplyActions.forEach { it() }
   }
 
-  private fun EntitySource.isBspRelevant(project: Project, syncScope: ProjectSyncScope): Boolean =
+  private fun EntitySource.isBazelRelevant(project: Project, syncScope: ProjectSyncScope): Boolean =
     when (syncScope) {
-      is FullProjectSync -> isBspRelevantForFullSync()
-      is PartialProjectSync -> isBspRelevantForPartialSync(project, syncScope)
+      is FullProjectSync -> isBazelRelevantForFullSync()
+      is PartialProjectSync -> isBazelRelevantForPartialSync(project, syncScope)
     }
 
-  private fun EntitySource.isBspRelevantForPartialSync(project: Project, syncScope: PartialProjectSync): Boolean {
+  private fun EntitySource.isBazelRelevantForPartialSync(project: Project, syncScope: PartialProjectSync): Boolean {
     val targetsToSyncNames = syncScope.targetsToSync.map { it.formatAsModuleName(project) }
 
-    if (this is BspModuleEntitySource) {
+    if (this is BazelModuleEntitySource) {
       return moduleName in targetsToSyncNames
     }
 
     return false
   }
 
-  private fun EntitySource.isBspRelevantForFullSync(): Boolean =
+  private fun EntitySource.isBazelRelevantForFullSync(): Boolean =
     when (this) {
       // avoid touching global sources
       is JpsGlobalFileEntitySource -> false
 
       is JpsFileEntitySource,
       is JpsFileDependentEntitySource,
-      is BspEntitySource,
+      is BazelEntitySource,
       -> true
 
       else -> false

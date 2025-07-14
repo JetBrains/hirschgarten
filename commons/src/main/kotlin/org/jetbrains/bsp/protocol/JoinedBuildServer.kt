@@ -29,8 +29,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
 
-  suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
-
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
 
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
@@ -40,8 +38,6 @@ interface JoinedBuildServer {
   suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult
 
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult
-
-  suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult
 
   suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult
 
@@ -57,9 +53,11 @@ interface JoinedBuildServer {
 
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
 
-  suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult
+  suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult
 
   suspend fun workspaceName(): WorkspaceNameResult
 
   suspend fun workspaceContext(): WorkspaceContext
+
+  suspend fun jvmToolchainInfo(): JvmToolchainInfo
 }

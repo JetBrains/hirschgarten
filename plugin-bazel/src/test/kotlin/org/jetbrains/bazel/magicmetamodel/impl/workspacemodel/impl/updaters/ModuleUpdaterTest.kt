@@ -16,14 +16,14 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -128,7 +128,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
               ),
-            entitySource = BspProjectEntitySource,
+            entitySource = BazelProjectEntitySource,
           ) {
             type = ModuleTypeId("JAVA_MODULE")
           },
@@ -244,7 +244,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
               ),
-            entitySource = BspProjectEntitySource,
+            entitySource = BazelProjectEntitySource,
           ) {
             type = ModuleTypeId("JAVA_MODULE")
           },
@@ -274,7 +274,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
               ),
-            entitySource = BspProjectEntitySource,
+            entitySource = BazelProjectEntitySource,
           ) {
             type = ModuleTypeId("JAVA_MODULE")
           },

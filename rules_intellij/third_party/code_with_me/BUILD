@@ -12,8 +12,8 @@ java_library(
     name = "code_with_me_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2024.3": ["@code_with_me_2024_3//jar"],
         "intellij-2025.1": ["@code_with_me_2025_1//jar"],
+        "intellij-2025.2": ["@code_with_me_2025_2//jar"],
         "default": [],
     }),
 )

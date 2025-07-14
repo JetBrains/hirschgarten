@@ -1,18 +1,21 @@
 package org.jetbrains.bazel.run.coverage
 
+import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.waitForIndicators
+import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.delay
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.buildAndSync
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.execute
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * ```sh
@@ -33,19 +36,27 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProject() {
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .buildAndSync()
-        .waitForSmartMode()
-        .openFile("src/com/example/CalculatorTest.java")
-        .runTestWithCoverage()
-        .openFile("src/com/example/Calculator.java")
-        .assertCoverage("50% lines covered")
-        .delay(1000)
-        .exitApp()
-    createContext().runIDE(commands = commands, runTimeout = timeout)
+    createContext()
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        ideFrame {
+          syncBazelProject()
+          waitForIndicators(5.minutes)
+
+          step("Run test with coverage") {
+            execute { openFile("src/com/example/CalculatorTest.java") }
+            execute { runTestWithCoverage() }
+            takeScreenshot("afterRunTestWithCoverage")
+          }
+
+          step("Verify coverage results") {
+            execute { openFile("src/com/example/Calculator.java") }
+            execute { assertCoverage("50% lines covered") }
+            execute { delay(1000) }
+            takeScreenshot("afterAssertCoverage")
+          }
+        }
+      }
   }
 }
 

@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.ui.projectTree
 
 import com.intellij.icons.AllIcons
+import com.intellij.ide.projectView.NodeSortKey
 import com.intellij.ide.projectView.PresentationData
+import com.intellij.ide.projectView.ProjectViewSettings
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode
@@ -12,16 +14,16 @@ import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileSystemItemFilter
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.components.service
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.CachedValue
+import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.platform.workspace.storage.entities
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
@@ -29,9 +31,9 @@ import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
-internal class BazelTreeStructureProvider : TreeStructureProvider {
+private class BazelTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
   // in rare cases with complicated project (modules) structure IJ
   // doesn't know how to render the project tree,
@@ -52,38 +54,54 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
     }
   }
 
+  /**
+   * only wrap [ProjectViewSettings]
+   */
   private fun wrapViewSettings(settings: ViewSettings): ViewSettings =
-    object : ViewSettings by settings {
-      override fun isAbbreviatePackageNames(): Boolean = false
+    when (settings) {
+      is ProjectViewSettings ->
+        object : ProjectViewSettings by settings {
+          override fun isAbbreviatePackageNames(): Boolean = false
 
-      override fun isFlattenPackages(): Boolean = false
+          override fun isFlattenPackages(): Boolean = false
 
-      /**
-       * this is to mitigate the issue of incorrectly compacting the middle packages.
-       *
-       * Refer to [this issue](https://youtrack.jetbrains.com/issue/BAZEL-1879) for more info.
-       *
-       * TODO: remove this when the issue is addressed in IJ Platform
-       */
-      override fun isHideEmptyMiddlePackages(): Boolean = false
+          /**
+           * this is to mitigate the issue of incorrectly compacting the middle packages.
+           *
+           * Refer to [this issue](https://youtrack.jetbrains.com/issue/BAZEL-1879) for more info.
+           *
+           * TODO: remove this when the issue is addressed in IJ Platform
+           */
+          override fun isHideEmptyMiddlePackages(): Boolean = false
 
-      override fun isCompactDirectories(): Boolean = settings.isCompactDirectories
+          override fun isCompactDirectories(): Boolean = settings.isCompactDirectories
 
-      override fun isShowLibraryContents(): Boolean = settings.isShowLibraryContents
+          override fun isShowLibraryContents(): Boolean = settings.isShowLibraryContents
 
-      override fun isFoldersAlwaysOnTop(): Boolean = settings.isFoldersAlwaysOnTop
+          override fun isFoldersAlwaysOnTop(): Boolean = settings.isFoldersAlwaysOnTop
 
-      override fun isShowMembers(): Boolean = settings.isShowMembers
+          override fun isShowMembers(): Boolean = settings.isShowMembers
 
-      override fun isStructureView(): Boolean = settings.isStructureView
+          override fun isStructureView(): Boolean = settings.isStructureView
 
-      override fun isShowModules(): Boolean = settings.isShowModules
+          override fun isShowModules(): Boolean = settings.isShowModules
 
-      override fun isShowScratchesAndConsoles(): Boolean = settings.isShowScratchesAndConsoles
+          override fun isShowScratchesAndConsoles(): Boolean = settings.isShowScratchesAndConsoles
 
-      override fun isFlattenModules(): Boolean = settings.isFlattenModules
+          override fun isFlattenModules(): Boolean = settings.isFlattenModules
 
-      override fun isShowURL(): Boolean = settings.isShowURL
+          override fun isShowURL(): Boolean = settings.isShowURL
+
+          override fun isShowExcludedFiles(): Boolean = settings.isShowExcludedFiles
+
+          override fun isShowVisibilityIcons(): Boolean = settings.isShowVisibilityIcons
+
+          override fun getSortKey(): NodeSortKey = settings.sortKey
+
+          override fun isUseFileNestingRules(): Boolean = settings.isUseFileNestingRules
+        }
+
+      else -> settings
     }
 
   private fun calculateChildrenForProjectNode(
@@ -92,7 +110,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
     settings: ViewSettings,
   ): Collection<AbstractTreeNode<*>> {
     val rootDirectory =
-      project.service<PsiManager>().findDirectory(project.rootDir) ?: return children // should never happen
+      PsiManager.getInstance(project).findDirectory(project.rootDir) ?: return children // should never happen
 
     val showExcludedDirectoriesAsSeparateNode = project.treeStructureSettings?.showExcludedDirectoriesAsSeparateNode ?: true
 
@@ -100,8 +118,8 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       if (showExcludedDirectoriesAsSeparateNode) {
         PsiFileSystemItemFilter { item ->
           item !is PsiDirectory ||
-            item.virtualFile in project.directoriesContainingIncludedDirectories ||
-            !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+            item.virtualFile in getDirectoriesContainingIncludedDirectories(project) ||
+            !item.project.isExcluded(item.virtualFile)
         }
       } else {
         null
@@ -114,11 +132,13 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       if (showExcludedDirectoriesAsSeparateNode) {
         ExcludedDirectoriesNode(project, rootDirectory, settings) { item ->
           if (item is PsiDirectory) {
-            ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+            item.virtualFile in getDirectoriesContainingExcludedDirectories(project) ||
+              item.project.isExcluded(item.virtualFile)
           } else {
-            val parentDir = item.virtualFile.parent
-            parentDir !in project.directoriesContainingIncludedDirectories &&
-              ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+            val parent = item.parent ?: return@ExcludedDirectoriesNode false
+            // Only show files that aren't already shown by the root directory node
+            // rootDirectoryNodeFilter returns true unconditionally if a node is not a PsiDirectory, so we check the parent here.
+            rootDirectoryNodeFilter?.shouldShow(parent) == false
           }
         }
       } else {
@@ -133,37 +153,80 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       .filterNot { it is ProjectViewModuleGroupNode }
       .filterNot { it is ProjectViewModuleNode }
 
-  private val Project.directoriesContainingIncludedDirectories: Set<VirtualFile>
-    get() =
-      (
-        WorkspaceModel.getInstance(
-          this,
-        ) as WorkspaceModelInternal
-      ).entityStorage.cachedValue(directoriesContainingIncludedDirectoriesValue)
+  private fun getDirectoriesContainingIncludedDirectories(project: Project): Set<VirtualFile> =
+    (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(directoriesContainingIncludedDirectoriesValue)
+
+  private fun getDirectoriesContainingExcludedDirectories(project: Project): Set<VirtualFile> =
+    (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(directoriesContainingExcludedDirectoriesValue)
 
   private val directoriesContainingIncludedDirectoriesValue =
     CachedValue { storage ->
-      val bspProjectDirectories = storage.entities<BspProjectDirectoriesEntity>().firstOrNull() ?: return@CachedValue emptySet()
-
-      val result =
-        bspProjectDirectories.includedRoots
-          .asSequence()
-          .mapNotNull { it.virtualFile }
-          .mapNotNull { if (it.isDirectory) it else it.parent }
-          .toMutableSet()
-
-      val toVisit = ArrayDeque(result)
-
-      while (toVisit.isNotEmpty()) {
-        val dir = toVisit.removeFirst()
-        val parent = dir.parent ?: continue
-        if (parent in result) continue
-        result.add(parent)
-        toVisit.add(parent)
-      }
-
-      result
+      storage.directoriesContainingDirectories(included = true)
     }
+
+  private val directoriesContainingExcludedDirectoriesValue =
+    CachedValue { storage ->
+      storage.directoriesContainingDirectories(included = false)
+    }
+
+  private fun EntityStorage.directoriesContainingDirectories(included: Boolean): Set<VirtualFile> {
+    val bazelProjectDirectories = this.bazelProjectDirectoriesEntity() ?: return emptySet()
+
+    val roots = if (included) bazelProjectDirectories.includedRoots else bazelProjectDirectories.excludedRoots
+
+    val result =
+      roots
+        .asSequence()
+        .mapNotNull { it.virtualFile }
+        .mapNotNull { if (it.isDirectory) it else it.parent }
+        .toMutableSet()
+
+    val toVisit = ArrayDeque(result)
+
+    while (toVisit.isNotEmpty()) {
+      val dir = toVisit.removeFirst()
+      val parent = dir.parent ?: continue
+      if (parent in result) continue
+      result.add(parent)
+      toVisit.add(parent)
+    }
+
+    return result
+  }
+
+  /**
+   * This takes inspiration from [WorkspaceFileIndexDataImpl.getFileInfo] which we can't use here directly
+   * because on IDEA 2025.2 we by default don't add any file sets for `includedDirectories`, just one for the root directory.
+   */
+  private fun Project.isExcluded(virtualFile: VirtualFile): Boolean {
+    val (includedDirectories, excludedDirectories) = getIncludedAndExcludedDirectories(this)
+    var current: VirtualFile? = virtualFile
+    while (current != null) {
+      if (current in includedDirectories) return false
+      if (current in excludedDirectories) return true
+      current = current.parent
+    }
+    return true
+  }
+
+  private fun getIncludedAndExcludedDirectories(project: Project): Pair<Set<VirtualFile>, Set<VirtualFile>> =
+    (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(includedAndExcludedDirectoriesValue)
+
+  private val includedAndExcludedDirectoriesValue =
+    CachedValue { storage ->
+      val bazelProjectDirectories =
+        storage.bazelProjectDirectoriesEntity()
+          ?: return@CachedValue (emptySet<VirtualFile>() to emptySet<VirtualFile>())
+      bazelProjectDirectories.includedRoots.toVirtualFileSet() to bazelProjectDirectories.excludedRoots.toVirtualFileSet()
+    }
+
+  private fun List<VirtualFileUrl>.toVirtualFileSet(): Set<VirtualFile> =
+    asSequence()
+      .mapNotNull { it.virtualFile }
+      .toSet()
+
+  private fun EntityStorage.bazelProjectDirectoriesEntity(): BazelProjectDirectoriesEntity? =
+    entities<BazelProjectDirectoriesEntity>().firstOrNull()
 }
 
 /**

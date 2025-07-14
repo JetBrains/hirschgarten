@@ -1,8 +1,18 @@
 package org.jetbrains.bazel.ideStarter
 
+import com.intellij.driver.client.Driver
+import com.intellij.driver.client.Remote
+import com.intellij.driver.client.utility
+import com.intellij.driver.sdk.Project
+import com.intellij.driver.sdk.VirtualFile
+import com.intellij.driver.sdk.openEditor
+import com.intellij.driver.sdk.singleProject
+import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.waitForCodeAnalysis
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.IdeInfo
@@ -20,11 +30,13 @@ import com.intellij.tools.ide.performanceTesting.commands.delay
 import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.resourceUtil.ResourceUtil
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
@@ -59,7 +71,7 @@ abstract class IdeStarterBaseProjectTest {
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 600).seconds
 
-  protected fun createContext(): IDETestContext =
+  protected open fun createContext(): IDETestContext =
     Starter
       .newContext(projectName, testCase)
       .executeRightAfterIdeOpened(true)
@@ -200,6 +212,21 @@ abstract class IdeStarterBaseProjectTest {
   }
 }
 
+/**
+ * Builds a CommandChain with [builder] and executes it immediately.
+ * Replaces clunky construct like `execute(CommandChain().goto(3, 7))`
+ * ```
+ */
+inline fun Driver.execute(builder: CommandChain.() -> Unit) {
+  this.execute(CommandChain().apply(builder))
+}
+
+fun Driver.syncBazelProject() {
+  execute(CommandChain().takeScreenshot("startSync"))
+  execute(CommandChain().waitForBazelSync())
+  execute(CommandChain().waitForSmartMode())
+}
+
 fun <T : CommandChain> T.waitForBazelSync(): T {
   addCommand(CMD_PREFIX + "waitForBazelSync")
   return this
@@ -230,3 +257,29 @@ fun <T : CommandChain> T.navigateToFile(
     .delay(500)
     .assertCurrentFile(expectedFilename)
     .assertCaretPosition(expectedCaretLine, expectedCaretColumn)
+
+/**
+ * Should be used instead of [com.intellij.driver.sdk.openFile] because this method doesn't rely on content roots
+ */
+fun Driver.openFile(relativePath: String, waitForCodeAnalysis: Boolean = true): VirtualFile =
+  step("Open file $relativePath") {
+    val fileToOpen = findFile(relativePath = relativePath) ?: throw IllegalArgumentException("Fail to find file $relativePath")
+    openEditor(fileToOpen, singleProject())
+    if (waitForCodeAnalysis) {
+      waitForCodeAnalysis(singleProject(), fileToOpen)
+    }
+    fileToOpen
+  }
+
+/**
+ * Should be used instead of [com.intellij.driver.sdk.findFile] because this method doesn't rely on content roots
+ */
+fun Driver.findFile(relativePath: String): VirtualFile? = projectRootDir.findFileByRelativePath(relativePath)
+
+val Driver.projectRootDir: VirtualFile
+  get() = utility<BazelProjectPropertiesKt>().getRootDir(singleProject())
+
+@Remote("org.jetbrains.bazel.config.BazelProjectPropertiesKt", plugin = "org.jetbrains.bazel")
+interface BazelProjectPropertiesKt {
+  fun getRootDir(project: Project): VirtualFile
+}

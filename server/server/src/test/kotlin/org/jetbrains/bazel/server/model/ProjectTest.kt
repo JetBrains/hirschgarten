@@ -14,11 +14,15 @@ import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
+import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
+import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
 import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
+import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
 import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
@@ -45,7 +49,6 @@ class ProjectTest {
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
@@ -59,7 +62,6 @@ class ProjectTest {
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
@@ -84,7 +86,6 @@ class ProjectTest {
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(21),
           workspaceContext = createMockWorkspaceContext(),
@@ -98,7 +99,6 @@ class ProjectTest {
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(37),
           workspaceContext = createMockWorkspaceContext(),
@@ -131,7 +131,6 @@ class ProjectTest {
               "@golibrary1//lib".toLabel() to "@golibrary1//lib".toMockGoLibrary(),
               "@golibrary2//lib".toLabel() to "@golibrary2//lib".toMockGoLibrary(),
             ),
-          invalidTargets = listOf("//invalid1".toLabel()),
           nonModuleTargets = listOf("//nonmodule1".toMockNonModuleTarget(), "//nonmodule2".toMockNonModuleTarget()),
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//..."),
@@ -159,7 +158,6 @@ class ProjectTest {
               "@golibrary3//lib".toLabel() to "@golibrary3//lib".toMockGoLibrary(),
               "@golibrary4//lib".toLabel() to "@golibrary4//lib".toMockGoLibrary(),
             ),
-          invalidTargets = listOf("//invalid2".toLabel()),
           nonModuleTargets = listOf("//nonmodule3".toMockNonModuleTarget()),
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
@@ -194,7 +192,6 @@ class ProjectTest {
               "@golibrary3//lib".toLabel() to "@golibrary3//lib".toMockGoLibrary(),
               "@golibrary4//lib".toLabel() to "@golibrary4//lib".toMockGoLibrary(),
             ),
-          invalidTargets = listOf("//invalid1".toLabel(), "//invalid2".toLabel()),
           nonModuleTargets =
             listOf(
               "//nonmodule3".toMockNonModuleTarget(),
@@ -212,7 +209,6 @@ class ProjectTest {
       newProject.modules shouldContainExactlyInAnyOrder expectedNewProject.modules
       newProject.libraries shouldBe expectedNewProject.libraries
       newProject.goLibraries shouldBe expectedNewProject.goLibraries
-      newProject.invalidTargets shouldContainExactlyInAnyOrder expectedNewProject.invalidTargets
       newProject.nonModuleTargets shouldContainExactlyInAnyOrder expectedNewProject.nonModuleTargets
       newProject.bazelRelease shouldBe expectedNewProject.bazelRelease
     }
@@ -276,5 +272,9 @@ class ProjectTest {
       targetShardSize = TargetShardSizeSpec(1000),
       shardingApproachSpec = ShardingApproachSpec(null),
       importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
+      gazelleTarget = GazelleTargetSpec(null),
+      indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
+      pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
+      importIjarsSpec = ImportIjarsSpec(false),
     )
 }

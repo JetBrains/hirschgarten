@@ -41,10 +41,12 @@ class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
     val scope =
       if (element.isTopLevelTarget() || element.isTopLevelFunction()) {
         element.useScope
+      } else if (((element as? StarlarkNamedElement)?.name ?: "").startsWith("_")) {
+        return false
       } else {
         GlobalSearchScope.fileScope(element.containingFile)
       }
-    return ReferencesSearch.search(element, scope).none()
+    return ReferencesSearch.search(element, scope).asIterable().none()
   }
 
   private fun PsiElement.isTopLevelTarget() = this is StarlarkTargetExpression && isTopLevel()

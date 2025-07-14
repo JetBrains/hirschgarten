@@ -37,7 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelHotSwapBundle
-import org.jetbrains.bazel.runnerAction.BspJvmApplicationConfiguration
+import org.jetbrains.bazel.config.BazelPluginBundle
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -160,7 +160,7 @@ object BazelHotSwapManager {
       for (path in classes) {
         val entry = jarFile.getJarEntry(path)
         if (entry == null) {
-          throw ExecutionException("Couldn't find class file $path inside jar $jar.")
+          throw ExecutionException(BazelPluginBundle.message("hotswap.missing.file.inside.jar", path, jar))
         }
         val f = destination.resolve(path.replace('/', '-'))
         f.toFile().deleteOnExit()
@@ -170,9 +170,9 @@ object BazelHotSwapManager {
         map.put(deriveQualifiedClassName(path), f)
       }
     } catch (e: IOException) {
-      throw ExecutionException("Error reading runtime jars", e)
+      throw ExecutionException(BazelPluginBundle.message("hotswap.error.reading.jars"), e)
     } catch (e: IllegalStateException) {
-      throw ExecutionException("Error reading runtime jars", e)
+      throw ExecutionException(BazelPluginBundle.message("hotswap.error.reading.jars"), e)
     }
     return map
   }
@@ -192,12 +192,10 @@ object BazelHotSwapManager {
     }
     val env = (process.session as? XDebugSessionImpl)?.executionEnvironment ?: return null
     if (!HotSwapUtils.canHotSwap(env, project)) return null
-    val runProfile = env.runProfile as? BspJvmApplicationConfiguration ?: return null
-    // build manifest if not exists
+
     return HotSwappableDebugSession(
       session,
       env,
-      runProfile,
     )
   }
 
@@ -221,9 +219,5 @@ object BazelHotSwapManager {
     }
   }
 
-  data class HotSwappableDebugSession(
-    val session: DebuggerSession,
-    val env: ExecutionEnvironment,
-    val runConfig: BspJvmApplicationConfiguration,
-  )
+  data class HotSwappableDebugSession(val session: DebuggerSession, val env: ExecutionEnvironment)
 }

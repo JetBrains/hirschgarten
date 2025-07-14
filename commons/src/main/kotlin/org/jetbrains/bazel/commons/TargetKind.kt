@@ -34,5 +34,20 @@ data class TargetKind(
   // Used in extension functions
   companion object
 
-  val isExecutable: Boolean = ruleType == RuleType.BINARY || ruleType == RuleType.TEST
+  val isExecutable: Boolean
+    get() = ruleType == RuleType.BINARY || ruleType == RuleType.TEST
+
+  fun includesKotlin(): Boolean = languageClasses.contains(LanguageClass.KOTLIN)
+
+  fun includesJava(): Boolean = languageClasses.contains(LanguageClass.JAVA)
+
+  fun includesScala(): Boolean = languageClasses.contains(LanguageClass.SCALA)
+
+  fun includesAndroid(): Boolean = languageClasses.contains(LanguageClass.ANDROID)
+
+  fun includesGo(): Boolean = languageClasses.contains(LanguageClass.GO)
+
+  fun isJvmTarget(): Boolean = (includesJava() || includesKotlin() || includesScala()) && !includesAndroid()
+
+  fun isJvmOrAndroidTarget(): Boolean = includesJava() || includesKotlin() || includesScala() || includesAndroid()
 }

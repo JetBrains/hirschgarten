@@ -2,8 +2,10 @@
 
 package org.jetbrains.bazel.workspace
 
-import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectLocator
@@ -21,6 +23,8 @@ import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.platform.util.progress.SequentialProgressReporter
+import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -28,16 +32,19 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
 import com.intellij.workspaceModel.ide.toPath
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
@@ -45,41 +52,83 @@ import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
-import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 
-class AssignFileToModuleListener : BulkFileListener {
-  private val pendingEvents = mutableMapOf<Project, MutableList<VFileEvent>>()
-
+internal class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
     // if the list has multiple events, it means an external operation (like Git) and resync is probably required anyway
-    events.singleOrNull()?.let {
-      val file = it.getAffectedFile() ?: return
-      val isSource =
-        if (it is VFileDeleteEvent) {
-          file.extension?.let { SourceType.fromExtension(it) } != null
-        } else {
-          file.isSourceFile()
+    val event = events.singleOrNull() ?: return
+    val file = event.getAffectedFile() ?: return
+    val isSource =
+      if (event is VFileDeleteEvent) {
+        file.extension?.let { SourceType.fromExtension(it) } != null
+      } else {
+        file.isSourceFile()
+      }
+    if (isSource) {
+      getRelatedProjects(file).forEach { project -> processWithDelay(project, event) }
+    }
+  }
+
+  private fun processWithDelay(project: Project, event: VFileEvent) {
+    val controller = Controller.getInstance(project)
+    if (controller.isAnotherProcessingInProgress()) return
+    val eventIsFirstInQueue = controller.addEvent(event)
+
+    // only the first event in the queue should trigger the delayed processing
+    if (eventIsFirstInQueue) {
+      BazelCoroutineService.getInstance(project).start {
+        delay(PROCESSING_DELAY)
+
+        val workspaceModel = project.serviceAsync<WorkspaceModel>()
+        val event = Controller.getInstance(project).popAllEvents().singleOrNull()
+        if (event != null) {
+          controller.processWithLock {
+            processFileEvent(event = event, project = project, workspaceModel = workspaceModel)
+          }
         }
-      if (isSource) {
-        file.getRelatedProjects().forEach { project -> project.processWithDelay(it) }
       }
     }
   }
 
-  private fun Project.processWithDelay(event: VFileEvent) {
-    synchronized(pendingEvents) {
-      @Suppress("KotlinUnreachableCode") // it is not unreachable, but IJ erroneously marks it so
-      pendingEvents[this]?.let {
-        it.add(event)
-        return
-      } ?: pendingEvents.put(this, mutableListOf(event))
+  @Service(Service.Level.PROJECT)
+  private class Controller {
+    // synchronised lists do not guarantee safety of operations like size checking and clearing - we need explicit synchronisation here
+    private val pendingEvents = mutableListOf<VFileEvent>()
+    private val processingLock = Mutex()
+
+    /** @return `true` if this event was the first to be added, `false` otherwise */
+    fun addEvent(event: VFileEvent): Boolean =
+      synchronized(pendingEvents) {
+        val isEmpty = pendingEvents.isEmpty()
+        pendingEvents.add(event)
+        isEmpty
+      }
+
+    fun popAllEvents(): List<VFileEvent> =
+      synchronized(pendingEvents) {
+        val events = pendingEvents.toList()
+        pendingEvents.clear()
+        events
+      }
+
+    suspend fun processWithLock(action: suspend () -> Unit) {
+      try {
+        processingLock.withLock(this) {
+          action()
+        }
+      } catch (_: IllegalStateException) {
+        // it means that Mutex::withLock was called with Mutex already locked - in that case, we just want not to start the processing
+      }
     }
-    BazelCoroutineService.getInstance(this).start {
-      delay(PROCESSING_DELAY)
-      synchronized(pendingEvents) { pendingEvents.remove(this)?.singleOrNull() }?.process(this)
+
+    fun isAnotherProcessingInProgress(): Boolean = processingLock.isLocked
+
+    companion object {
+      @JvmStatic
+      fun getInstance(project: Project): Controller = project.service()
     }
   }
 }
@@ -109,61 +158,72 @@ private fun VFileEvent.getOldFilePath(): String? =
     else -> null
   }
 
-private fun VirtualFile.getRelatedProjects(): List<Project> {
+fun getRelatedProjects(file: VirtualFile): List<Project> {
   val projectManager = ProjectManager.getInstance()
   val projectLocator = ProjectLocator.getInstance()
-  return if (this.isValid) {
-    projectLocator.getProjectsForFile(this).filterNotNull().filter { it.doWeCareAboutIt() }
+  return if (file.isValid) {
+    projectLocator.getProjectsForFile(file).filterNotNull().filter { it.isBazelProject }
   } else {
-    projectManager.openProjects.filter { it.doWeCareAboutIt() } // the project locator would return an empty list
+    projectManager.openProjects.filter { it.isBazelProject } // the project locator would return an empty list
   }
 }
 
-private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
+private suspend fun processFileEvent(
+  event: VFileEvent,
+  project: Project,
+  workspaceModel: WorkspaceModel,
+) {
+  val entityStorageDiff = MutableEntityStorage.from(workspaceModel.currentSnapshot)
 
-private fun VFileEvent.process(project: Project) {
-  val workspaceModel = WorkspaceModel.getInstance(project)
-  val storage = workspaceModel.currentSnapshot
-  val targetUtils = project.targetUtils
+  val newFile = event.getNewFile()
+  val oldFilePath = event.getOldFilePath()
 
-  val newFile = this.getNewFile()
-  val oldFilePath = this.getOldFilePath()
+  withBackgroundProgress(project, event.getProgressMessage(newFile)) {
+    reportSequentialProgress { reporter ->
+      oldFilePath?.let {
+        val targetUtils = project.serviceAsync<TargetUtils>()
+        processFileRemoved(
+          oldFilePath = it,
+          newFile = newFile,
+          project = project,
+          workspaceModel = workspaceModel,
+          targetUtils = targetUtils,
+          entityStorageDiff = entityStorageDiff,
+        )
+      }
+      reporter.nextStep(PROGRESS_DELETE_STEP_SIZE)
+      newFile?.let {
+        processFileCreated(
+          newFile = it,
+          project = project,
+          workspaceModel = workspaceModel,
+          entityStorageDiff = entityStorageDiff,
+          progressReporter = reporter,
+        )
+      }
 
-  runInBackgroundWithProgress(project) {
-    oldFilePath?.let {
-      processFileRemoved(
-        oldFilePath = it,
-        newFile = newFile,
-        project = project,
-        workspaceModel = workspaceModel,
-        targetUtils = targetUtils,
-        storage = storage,
-      )
-    }
-
-    newFile?.let {
-      processFileCreated(
-        newFile = it,
-        project = project,
-        workspaceModel = workspaceModel,
-        storage = storage,
-      )
+      reporter.nextStep(endFraction = 100, text = BazelPluginBundle.message("file.change.processing.step.commit")) {
+        workspaceModel.update("File changes processing (Bazel)") {
+          it.applyChangesFrom(entityStorageDiff)
+        }
+      }
     }
   }
 }
 
-private fun runInBackgroundWithProgress(project: Project, action: suspend () -> Unit): Job =
-  BazelCoroutineService.getInstance(project).start {
-    withBackgroundProgress(project, BazelPluginBundle.message("file.change.processing.title")) {
-      action()
-    }
+private fun VFileEvent.getProgressMessage(newFile: VirtualFile?): String =
+  when (this) {
+    is VFileCreateEvent -> BazelPluginBundle.message("file.change.processing.title.create", newFile?.name ?: "")
+    is VFileDeleteEvent -> BazelPluginBundle.message("file.change.processing.title.delete")
+    else -> BazelPluginBundle.message("file.change.processing.title.change", newFile?.name ?: "")
   }
 
 private suspend fun processFileCreated(
   newFile: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
-  storage: ImmutableEntityStorage,
+  entityStorageDiff: MutableEntityStorage,
+  progressReporter: SequentialProgressReporter,
 ) {
   // ProjectFileIndex::getModulesForFile is not compatible with IJ 2024, but it's not important enough to bother with SDK-compat
   // TODO: replace once 243 is dropped
@@ -174,30 +234,33 @@ private suspend fun processFileCreated(
 
   val existingModule =
     readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }.let {
-      if (it?.moduleEntity?.entitySource != BspDummyEntitySource) it else null
+      if (it?.moduleEntity?.entitySource != BazelDummyEntitySource) it else null
     }
 
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val path = url.toPath()
-  queryTargetsForFile(project, url)
-    ?.let { targets ->
-      val modules =
-        targets
-          .mapNotNull { it.toModuleEntity(storage, project) }
-//          .filter { !existingModules.contains(it) } // 251
-          .filter { it != existingModule } // 243
-      modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
-      project.targetUtils.addFileToTargetIdEntry(path, targets)
-    }
+  val targets =
+    progressReporter.nextStep(
+      endFraction = PROGRESS_QUERY_STEP_SIZE,
+      text = BazelPluginBundle.message("file.change.processing.step.query"),
+    ) { queryTargetsForFile(project, url) } ?: return
+
+  val modules =
+    targets
+      .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
+//        .filter { !existingModules.contains(it) } // 251
+      .filter { it != existingModule } // 243
+  modules.forEach { url.addToModule(entityStorageDiff, it, newFile.extension) }
+  project.targetUtils.addFileToTargetIdEntry(path, targets)
 }
 
-private suspend fun processFileRemoved(
+private fun processFileRemoved(
   oldFilePath: String,
   newFile: VirtualFile?,
   project: Project,
   workspaceModel: WorkspaceModel,
   targetUtils: TargetUtils,
-  storage: ImmutableEntityStorage,
+  entityStorageDiff: MutableEntityStorage,
 ) {
   val oldUrl = workspaceModel.getVirtualFileUrlManager().fromPath(oldFilePath)
   val oldUri = oldFilePath.toNioPathOrNull()!!
@@ -205,16 +268,16 @@ private suspend fun processFileRemoved(
   val modules =
     targetUtils
       .getTargetsForPath(oldUri)
-      .mapNotNull { it.toModuleEntity(storage, project) }
+      .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
   modules.forEach {
-    oldUrl.removeFromModule(workspaceModel, it)
-    newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one
+    oldUrl.removeFromModule(entityStorageDiff, it)
+    newUrl?.removeFromModule(entityStorageDiff, it) // IntelliJ might have already changed the content root's path to the new one
   }
-  project.targetUtils.removeFileToTargetIdEntry(oldUri)
+  targetUtils.removeFileToTargetIdEntry(oldUri)
 }
 
 private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
-  if (!SyncStatusService.getInstance(project).isSyncInProgress) {
+  if (!project.serviceAsync<SyncStatusService>().isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)
         .targets
@@ -238,8 +301,8 @@ private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Proje
   return storage.resolve(moduleId)
 }
 
-private suspend fun VirtualFileUrl.addToModule(
-  workspaceModel: WorkspaceModel,
+private fun VirtualFileUrl.addToModule(
+  entityStorageDiff: MutableEntityStorage,
   module: ModuleEntity,
   extension: String?,
 ) {
@@ -273,24 +336,15 @@ private suspend fun VirtualFileUrl.addToModule(
       sourceRoots += listOf(sourceRoot)
     }
 
-  updateContentRoots(workspaceModel, module) { it + contentRootEntity }
+  entityStorageDiff.modifyModuleEntity(module) { contentRoots += contentRootEntity }
 }
 
-private suspend fun VirtualFileUrl.removeFromModule(workspaceModel: WorkspaceModel, module: ModuleEntity) {
-  updateContentRoots(workspaceModel, module) { it.filter { contentRoot -> contentRoot.url != this } }
+private fun VirtualFileUrl.removeFromModule(entityStorageDiff: MutableEntityStorage, module: ModuleEntity) {
+  entityStorageDiff.modifyModuleEntity(module) { contentRoots = contentRoots.filter { it.url != this@removeFromModule } }
 }
 
-private suspend fun updateContentRoots(
-  workspaceModel: WorkspaceModel,
-  module: ModuleEntity,
-  updater: (List<ContentRootEntity.Builder>) -> List<ContentRootEntity.Builder>,
-) {
-  workspaceModel.update("File changes processing") {
-    it.modifyModuleEntity(module) {
-      contentRoots = updater(contentRoots)
-    }
-  }
-}
-
-private const val PROCESSING_DELAY = 250L // no noticeable by the user, but if there are many events simultaneously, we will get them all
+private const val PROCESSING_DELAY = 250L // not noticeable by the user, but if there are many events simultaneously, we will get them all
 private val logger = Logger.getInstance(AssignFileToModuleListener::class.java)
+
+private const val PROGRESS_DELETE_STEP_SIZE = 20
+private const val PROGRESS_QUERY_STEP_SIZE = 80

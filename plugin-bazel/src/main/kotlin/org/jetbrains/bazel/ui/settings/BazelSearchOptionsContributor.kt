@@ -29,14 +29,14 @@ private val bazelProjectSettingsPage =
   SettingsPage(
     id = BazelProjectSettingsConfigurable.ID,
     displayNameKey = BazelProjectSettingsConfigurable.DISPLAY_NAME_KEY,
-    optionBundleKeys = BazelProjectSettingsConfigurable.SearchIndex.keys,
+    optionBundleKeys = BazelProjectSettingsConfigurable.SearchIndex.keys + BazelGeneralSettingsProvider.searchIndexKeys(),
   )
 
 private val bazelExperimentalProjectSettingsPage =
   SettingsPage(
     id = BazelExperimentalProjectSettingsConfigurable.ID,
     displayNameKey = BazelExperimentalProjectSettingsConfigurable.DISPLAY_NAME_KEY,
-    optionBundleKeys = BazelExperimentalProjectSettingsConfigurable.SearchIndex.keys,
+    optionBundleKeys = BazelExperimentalSettingsProvider.searchIndexKeys(),
   )
 
 private val bazelApplicationSettingsPage =

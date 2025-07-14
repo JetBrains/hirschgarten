@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.execution.configurations.GeneralCommandLine
-import org.apache.logging.log4j.LogManager
+import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.overrideRepository
@@ -10,6 +10,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import kotlin.io.path.pathString
@@ -20,7 +21,7 @@ class BazelRunner(
   var bazelInfo: BazelInfo? = null,
 ) {
   companion object {
-    private val LOGGER = LogManager.getLogger(BazelRunner::class.java)
+    private val LOGGER = LoggerFactory.getLogger(BazelRunner::class.java)
   }
 
   inner class CommandBuilder(workspaceContext: WorkspaceContext) {
@@ -55,6 +56,10 @@ class BazelRunner(
     /** Special version of `query` for asking Bazel about a file instead of a target */
     fun fileQuery(filePath: Path, builder: BazelCommand.FileQuery.() -> Unit = {}) =
       BazelCommand.FileQuery(bazelBinary, filePath.toString()).apply { builder() }
+
+    /** Purest form of `query`, asking for exact string to execute instead of `Label`s */
+    fun queryExpression(expression: String, builder: BazelCommand.QueryExpression.() -> Unit = {}) =
+      BazelCommand.QueryExpression(bazelBinary, expression).apply { builder() }
 
     fun cquery(builder: BazelCommand.CQuery.() -> Unit = {}) =
       BazelCommand.CQuery(bazelBinary).apply { builder() }.also { inheritWorkspaceOptions = true }
@@ -147,6 +152,7 @@ class BazelRunner(
     logProcessOutput: Boolean = true,
     serverPidFuture: CompletableFuture<Long>?,
     shouldLogInvocation: Boolean = true,
+    createdProcessIdDeferred: CompletableDeferred<Long?>? = null,
   ): BazelProcess {
     val executionDescriptor = command.buildExecutionDescriptor()
     val finishCallback = executionDescriptor.finishCallback
@@ -164,6 +170,7 @@ class BazelRunner(
     }
 
     val process = commandLine.createProcess()
+    createdProcessIdDeferred?.complete(process.pid())
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
 
     return BazelProcess(

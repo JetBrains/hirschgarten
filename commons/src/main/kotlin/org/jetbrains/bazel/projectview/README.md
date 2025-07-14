@@ -156,30 +156,6 @@ The default value is -1, meaning that all transitive dependencies will be import
 
 ---
 
-#### workspace_type
-
-_We are working on it, you can expect support for this section in future releases._
-
----
-
-#### additional_languages
-
-_We are working on it, you can expect support for this section in future releases._
-
----
-
-#### java_language_level
-
-_We are working on it, you can expect support for this section in future releases._
-
----
-
-#### test_sources
-
-_We are working on it, you can expect support for this section in future releases._
-
----
-
 #### shard_sync
 
 enable shard sync, split and build targets in batches to avoid Bazel OOM.
@@ -264,32 +240,19 @@ _We are working on it, you can expect support for this section in future release
 
 #### import_run_configurations
 
-_We are working on it, you can expect support for this section in future releases._
+A list of XML files which will be imported as run configurations during Bazel sync.
 
----
+Run configurations from Google's Bazel plugin are converted to the new format automatically upon import.
 
-#### android_sdk_platform
+Run configurations can be exported to XML by checking the "Store as project file" checkbox in the run configuration settings UI.
 
-_We are working on it, you can expect support for this section in future releases._
+##### example:
 
----
-
-#### android_min_sdk
-
-_We are working on it, you can expect support for this section in future releases._
-
----
-
-#### generated_android_resource_directories
-
-_We are working on it, you can expect support for this section in future releases._
-
----
-
-#### ts_config_rules
-
-_We are working on it, you can expect support for this section in future releases._
-
+```
+import_run_configurations:
+  tools/intellij/run_application.xml
+  tools/intellij/run_tests.xml
+```
 ---
 
 #### allow_manual_targets_sync
@@ -305,3 +268,43 @@ allow_manual_targets_sync: true
 ##### default:
 
 allow_manual_targets_sync: false
+
+#### gazelle_target
+
+_IntelliJ and GoLand only_
+
+Points to the gazelle target to be used by the plugin during a sync. The plugin will run this target on the contents of directories at the beginning of the sync operation.
+
+#### index_all_files_in_directories
+
+- When `true`, all files inside directories (as specified in the `directories` project view section) will be indexed.
+- When `false`, only files belonging to a Bazel target will be indexed (to speed up indexing).
+
+##### example:
+
+```
+index_all_files_in_directories: true
+```
+
+##### default:
+
+```
+index_all_files_in_directories: false
+```
+
+#### import_ijars
+
+- When `true`, prefers interface/header jars (ijars) for JVM libraries over full jars.
+  This makes indexing quicker, but you can't see the decompiled code, and some IDE warnings may have false-positives.
+
+##### example:
+
+```
+import_interface_jars: true
+```
+
+##### default:
+
+```
+import_interface_jars: false
+```

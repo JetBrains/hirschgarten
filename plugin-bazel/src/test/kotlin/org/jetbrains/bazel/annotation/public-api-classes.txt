@@ -1,7 +1,10 @@
+class org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 class org.jetbrains.bazel.scala.sdk.ScalaSdk
 class org.jetbrains.bazel.target.TargetUtils
+class org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 interface org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension
 interface org.jetbrains.bazel.label.PackageType
 interface org.jetbrains.bazel.scala.sdk.ScalaSdkExtension
+interface org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JvmBinaryJarsEntity
+interface org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity
 interface org.jetbrains.bazel.sync.ProjectPostSyncHook
-interface org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity

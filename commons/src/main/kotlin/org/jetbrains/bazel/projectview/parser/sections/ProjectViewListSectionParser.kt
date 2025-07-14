@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.projectview.parser.sections
 
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
@@ -9,7 +8,9 @@ import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSecti
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewListSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.PythonCodeGeneratorRuleNamesSection
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.slf4j.LoggerFactory
 import java.util.regex.Pattern
 
 /**
@@ -59,7 +60,7 @@ abstract class ProjectViewListSectionParser<V, T : ProjectViewListSection<V>> pr
     protected abstract fun createInstance(values: List<V>): T
 
     companion object {
-      private val log = LogManager.getLogger(ProjectViewListSectionParser::class.java)
+      private val log = LoggerFactory.getLogger(ProjectViewListSectionParser::class.java)
       private val WHITESPACE_CHAR_REGEX = Pattern.compile("[ \n\t]+")
     }
   }
@@ -122,4 +123,13 @@ object ImportRunConfigurationsSectionParser :
   override fun mapRawValues(rawValue: String): String = rawValue
 
   override fun createInstance(values: List<String>): ImportRunConfigurationsSection = ImportRunConfigurationsSection(values)
+}
+
+object PythonCodeGeneratorRuleNamesSectionParser :
+  ProjectViewListSectionParser<String, PythonCodeGeneratorRuleNamesSection>(
+    PythonCodeGeneratorRuleNamesSection.SECTION_NAME,
+  ) {
+  override fun mapRawValues(rawValue: String): String = rawValue
+
+  override fun createInstance(values: List<String>): PythonCodeGeneratorRuleNamesSection = PythonCodeGeneratorRuleNamesSection(values)
 }

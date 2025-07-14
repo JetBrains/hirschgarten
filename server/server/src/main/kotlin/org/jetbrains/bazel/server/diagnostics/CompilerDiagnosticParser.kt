@@ -43,12 +43,17 @@ object CompilerDiagnosticParser : Parser {
     return lines
   }
 
-  private val IssuePositionMarker = """^\s*\^\s*$""".toRegex() // ^ surrounded by whitespace only
+  private val IssuePositionMarker = """^\s*\^+\s*$""".toRegex() // any number of ^ surrounded by whitespace only
 
   private fun tryCollectLinesTillErrorMarker(output: Output): List<String> {
-    val peeked = output.peek(limit = 20)
-    val index = peeked.indexOfFirst { IssuePositionMarker.matches(it) }
-    return if (index != -1) output.take(count = index + 1) else emptyList()
+    val peeked = output.peek(limit = 30)
+    val issuePositionMarkerIndex = peeked.indexOfFirst { IssuePositionMarker.matches(it) }
+    return if (issuePositionMarkerIndex != -1) {
+      val nextDiagnosticIndex = peeked.indexOfFirst { DiagnosticHeader.matches(it) }.takeIf { it != -1 } ?: Integer.MAX_VALUE
+      output.take(count = (issuePositionMarkerIndex + 1).coerceAtMost(nextDiagnosticIndex))
+    } else {
+      emptyList()
+    }
   }
 
   private val IssueDetails = """^\s+.*|${IssuePositionMarker.pattern}""".toRegex() // indented line or ^

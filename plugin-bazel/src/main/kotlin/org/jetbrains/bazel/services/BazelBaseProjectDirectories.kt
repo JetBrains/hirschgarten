@@ -7,12 +7,12 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.VersionedStorageChange
 import kotlinx.coroutines.CoroutineScope
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 class BazelBaseProjectDirectories(project: Project, scope: CoroutineScope) : BaseProjectDirectoriesImpl(project, scope) {
   override fun collectRoots(snapshot: ImmutableEntityStorage): Sequence<VirtualFile> =
     super.collectRoots(snapshot) +
-      snapshot.entities(BspProjectDirectoriesEntity::class.java).mapNotNull { it.projectRoot.virtualFile }
+      snapshot.entities(BazelProjectDirectoriesEntity::class.java).mapNotNull { it.projectRoot.virtualFile }
 
   override fun processChange(
     change: VersionedStorageChange,
@@ -20,7 +20,7 @@ class BazelBaseProjectDirectories(project: Project, scope: CoroutineScope) : Bas
     newRoots: HashSet<VirtualFile>,
   ) {
     super.processChange(change, oldRoots, newRoots)
-    change.getChanges(BspProjectDirectoriesEntity::class.java).forEach {
+    change.getChanges(BazelProjectDirectoriesEntity::class.java).forEach {
       it.oldEntity?.projectRoot?.virtualFile?.let { virtualFile ->
         oldRoots.add(virtualFile)
       }

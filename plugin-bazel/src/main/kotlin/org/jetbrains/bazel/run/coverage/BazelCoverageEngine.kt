@@ -14,6 +14,7 @@ import com.intellij.openapi.util.NlsActions
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
 import java.io.File
@@ -24,7 +25,7 @@ class BazelCoverageEngine : CoverageEngine() {
     fun getInstance(): BazelCoverageEngine = EP_NAME.findExtensionOrFail(BazelCoverageEngine::class.java)
   }
 
-  override fun getPresentableText(): @NlsActions.ActionText String? = "Bazel Coverage"
+  override fun getPresentableText(): @NlsActions.ActionText String? = BazelPluginBundle.message("coverage.bazel.presentable.text")
 
   override fun isApplicableTo(configuration: RunConfigurationBase<*>): Boolean {
     if (configuration !is BazelRunConfiguration) return false
@@ -55,8 +56,11 @@ class BazelCoverageEngine : CoverageEngine() {
     coverageByTestEnabled: Boolean,
     branchCoverage: Boolean,
     trackTestFolders: Boolean,
-    project: Project,
-  ): CoverageSuite? = BazelCoverageSuite(name, project, runner, fileProvider, timestamp)
+    project: Project?,
+  ): CoverageSuite? {
+    if (project == null) return null
+    return BazelCoverageSuite(name, project, runner, fileProvider, timestamp)
+  }
 
   @Deprecated("Deprecated in Java")
   override fun createCoverageSuite(
@@ -64,9 +68,9 @@ class BazelCoverageEngine : CoverageEngine() {
     name: String,
     coverageDataFileProvider: CoverageFileProvider,
     config: CoverageEnabledConfiguration,
-  ): CoverageSuite? = BazelCoverageSuite(name, config.configuration.project, runner, config.createFileProvider(), config.createTimestamp())
+  ): CoverageSuite = BazelCoverageSuite(name, config.configuration.project, runner, config.createFileProvider(), config.createTimestamp())
 
-  override fun createEmptyCoverageSuite(coverageRunner: CoverageRunner): CoverageSuite? = BazelCoverageSuite()
+  override fun createEmptyCoverageSuite(coverageRunner: CoverageRunner): CoverageSuite = BazelCoverageSuite()
 
   override fun getCoverageAnnotator(project: Project): CoverageAnnotator = BazelCoverageAnnotator.getInstance(project)
 

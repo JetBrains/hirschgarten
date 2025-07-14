@@ -14,7 +14,7 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 data class BazelProjectPropertiesState(
   var isBazelProject: Boolean = false,
@@ -55,17 +55,17 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
   override fun noStateLoaded() {
     // See https://youtrack.jetbrains.com/issue/BAZEL-1500.
     // It is possible that the user deleted .idea/workspace.xml, but the workspace model cache is left intact.
-    // In that case, we can know if we previously imported the project when BspProjectDirectoriesEntity exists.
-    val bspProjectDirectories = getBspProjectDirectoriesEntity() ?: return
-    rootDir = bspProjectDirectories.projectRoot.virtualFile ?: return
+    // In that case, we can know if we previously imported the project when [BazelProjectDirectoriesEntity] exists.
+    val bazelProjectDirectories = getBazelProjectDirectoriesEntity() ?: return
+    rootDir = bazelProjectDirectories.projectRoot.virtualFile ?: return
     isBrokenBspProject = true
   }
 
-  private fun getBspProjectDirectoriesEntity(): BspProjectDirectoriesEntity? =
+  private fun getBazelProjectDirectoriesEntity(): BazelProjectDirectoriesEntity? =
     WorkspaceModel
       .getInstance(project)
       .currentSnapshot
-      .entities(BspProjectDirectoriesEntity::class.java)
+      .entities(BazelProjectDirectoriesEntity::class.java)
       .firstOrNull()
 }
 
