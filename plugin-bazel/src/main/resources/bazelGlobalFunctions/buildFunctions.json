@@ -120,7 +120,7 @@
     "docString": "Declares metadata that applies to every rule in the package. It must be called at most once within a package (BUILD file). If called, it should be the first call in the BUILD file, right after the load() statements.",
     "params": [
       {
-        "name": "kwargs",
+        "name": "**kwargs",
         "default": "",
         "positional": false,
         "required": true,
@@ -234,5 +234,10 @@
         "docString": "Whether we fail if the call returns an empty list. By default empty list indicates potential error in BUILD file where the call to subpackages() is superflous. Setting to true allows this function to succeed in that case."
       }
     ]
+  },
+  {
+    "name": "load",
+    "docString": "Loads a Starlark extension and imports symbols from it. The function must be called at the beginning of a Bazel BUILD or .bzl file, outside of any function definition. The function can only be used to import definitions into the current file. Importing definitions into other files requires those other files to use their own load statements.",
+    "params": []
   }
 ]
