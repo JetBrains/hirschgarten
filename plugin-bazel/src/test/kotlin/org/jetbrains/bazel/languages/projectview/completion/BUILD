@@ -8,3 +8,12 @@ kt_intellij_junit4_test(
         "//plugin-bazel",
     ],
 )
+
+kt_intellij_junit4_test(
+    name = "ProjectViewSectionItemCompletionContributorTest",
+    src = "ProjectViewSectionItemCompletionContributorTest.kt",
+    tags = ["exclusive"],
+    deps = [
+        "//plugin-bazel",
+    ],
+)

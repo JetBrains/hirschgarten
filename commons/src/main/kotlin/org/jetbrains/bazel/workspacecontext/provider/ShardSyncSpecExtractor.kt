@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 
@@ -11,7 +10,7 @@ import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
  */
 private const val DEFAULT_SHARD_SYNC_VALUE = false
 
-internal object ShardSyncSpecExtractor : ExecutionContextEntityExtractor<ShardSyncSpec> {
+internal object ShardSyncSpecExtractor : WorkspaceContextEntityExtractor<ShardSyncSpec> {
   override fun fromProjectView(projectView: ProjectView): ShardSyncSpec =
     ShardSyncSpec(projectView.shardSync?.value ?: DEFAULT_SHARD_SYNC_VALUE)
 }

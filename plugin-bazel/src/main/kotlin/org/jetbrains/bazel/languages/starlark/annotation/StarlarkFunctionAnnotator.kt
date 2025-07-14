@@ -5,11 +5,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.highlighting.StarlarkHighlightingColors
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
 
@@ -45,17 +47,38 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
 
     val function = BazelGlobalFunctionsService.getInstance().getFunctionByName(functionName)
     if (function != null) {
-      val argumentList = element.lastChild
-      val arguments = argumentList as? StarlarkArgumentList ?: return
-      val argumentNames = arguments.getArgumentNames()
-      val requiredArguments = function.params.filter { it.required && it.name != "**kwargs" && it.name != "*args" }.map { it.name }
-      val missingArguments = requiredArguments.filter { !argumentNames.contains(it) }
-      if (missingArguments.isNotEmpty()) {
-        holder.annotateError(
-          element = element.firstChild, // Only underline the function name.
-          message = "Missing required arguments: " + missingArguments.joinToString(", "),
-        )
+      checkRequiredArguments(function, element, holder)
+      if (function.name == "git_override" || function.name == "archive_override") {
+        checkDependencyOverrideResolution(element, holder)
       }
+    }
+  }
+
+  private fun checkRequiredArguments(
+    function: BazelGlobalFunction,
+    element: PsiElement,
+    holder: AnnotationHolder,
+  ) {
+    val argumentList = element.lastChild
+    val arguments = argumentList as? StarlarkArgumentList ?: return
+    val argumentNames = arguments.getArgumentNames()
+    val requiredArguments = function.params.filter { it.required && it.name != "**kwargs" && it.name != "*args" }.map { it.name }
+    val missingArguments = requiredArguments.filter { !argumentNames.contains(it) }
+    if (missingArguments.isNotEmpty()) {
+      holder.annotateError(
+        element = element.firstChild, // Only underline the function name.
+        message = StarlarkBundle.message("annotator.missing.required.args") + " " + missingArguments.joinToString(", "),
+      )
+    }
+  }
+
+  private fun checkDependencyOverrideResolution(element: PsiElement, holder: AnnotationHolder) {
+    val reference = (element as? StarlarkCallExpression)?.reference ?: return
+    if (reference.resolve() == null) {
+      holder.annotateError(
+        element = element.firstChild,
+        message = StarlarkBundle.message("annotator.override.missing.dep"),
+      )
     }
   }
 
