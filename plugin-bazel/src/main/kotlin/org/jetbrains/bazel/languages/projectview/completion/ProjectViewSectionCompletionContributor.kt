@@ -43,7 +43,7 @@ class ProjectViewSectionCompletionContributor : CompletionContributor() {
     ) {
       result.addAllElements(
         ProjectViewSection.KEYWORD_MAP.map {
-          sectionLookupElement(it.key, it.value is ProjectViewSection.Parser.Scalar)
+          sectionLookupElement(it.key, it.value.sectionType is ProjectViewSection.SectionType.Scalar)
         },
       )
     }
