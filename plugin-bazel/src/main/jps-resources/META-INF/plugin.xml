@@ -203,6 +203,7 @@
     <projectSyncHook
       id="DirectoriesSyncHook"
       implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"
+      order="after TargetUtilsSyncHook"
     />
     <projectSyncHook
       id="BazelRepoMappingSyncHook"
