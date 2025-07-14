@@ -63,26 +63,6 @@ object BazelGlobalFunctions {
       "visibility" to BazelGlobalFunction("visibility"),
     )
 
-  val BUILD_FUNCTIONS =
-    mapOf(
-      "depset" to BazelGlobalFunction("depset"),
-      "existing_rule" to BazelGlobalFunction("existing_rule"),
-      "existing_rules" to BazelGlobalFunction("existing_rules"),
-      "exports_files" to BazelGlobalFunction("exports_files"),
-      "glob" to BazelGlobalFunction("glob"),
-      "load" to BazelGlobalFunction("load"),
-      "module_name" to BazelGlobalFunction("module_name"),
-      "module_version" to BazelGlobalFunction("module_version"),
-      "package" to BazelGlobalFunction("package"),
-      "package_group" to BazelGlobalFunction("package_group"),
-      "package_name" to BazelGlobalFunction("package_name"),
-      "package_relative_label" to BazelGlobalFunction("package_relative_label"),
-      "repo_name" to BazelGlobalFunction("repo_name"),
-      "repository_name" to BazelGlobalFunction("repository_name"),
-      "select" to BazelGlobalFunction("select"),
-      "subpackages" to BazelGlobalFunction("subpackages"),
-    )
-
   val WORKSPACE_FUNCTIONS =
     mapOf(
       "bind" to BazelGlobalFunction("bind"),

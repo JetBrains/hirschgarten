@@ -109,7 +109,14 @@ class BazelGlobalFunctionsService {
     (resource?.reader()?.use { Gson().fromJson<List<BazelGlobalFunction>>(it, type) })?.let {
       functions.addAll(it)
     }
-    return functions
+
+    // Ignore all parameters with * and **, for example *args and **kwargs.
+    // Their absence shouldn't cause red code, and they should not be completed.
+    return functions.map {
+      it.copy(params = it.params.filter {
+        param -> !param.name.startsWith("*") && !param.name.startsWith("**")
+      })
+    }
   }
 
   init {
