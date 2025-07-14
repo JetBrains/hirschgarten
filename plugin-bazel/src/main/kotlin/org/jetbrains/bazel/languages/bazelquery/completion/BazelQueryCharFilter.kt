@@ -15,8 +15,6 @@ class BazelQueryCharFilter : CharFilter() {
     }
 
     return when {
-      Character.isJavaIdentifierPart(c) -> Result.ADD_TO_PREFIX
-      c in setOf('/', ':', '-', '_', '.', '*', '+', '@', '$') -> Result.ADD_TO_PREFIX
       c == '(' -> Result.SELECT_ITEM_AND_FINISH_LOOKUP
       c == ' ' -> Result.HIDE_LOOKUP
       else -> Result.ADD_TO_PREFIX

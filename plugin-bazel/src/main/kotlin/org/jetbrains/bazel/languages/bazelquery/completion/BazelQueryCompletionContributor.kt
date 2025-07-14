@@ -81,7 +81,7 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         .removePrefix("\"")
         .removePrefix("'")
     val project = parameters.editor.project ?: return
-    val currentDirectory = project.baseDir.path
+    val currentDirectory = project.basePath ?: return
     val targetSuggestions =
       TargetCompletionsGenerator(project)
         .getTargetsList(prefix, Path.of(currentDirectory))
