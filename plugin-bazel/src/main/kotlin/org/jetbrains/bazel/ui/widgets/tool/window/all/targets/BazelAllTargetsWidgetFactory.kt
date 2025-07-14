@@ -73,7 +73,7 @@ private class BazelAllTargetsWidgetFactory :
       val targetPanel =
         async(Dispatchers.EDT) {
           val windowPanel = SimpleToolWindowPanel(true, true)
-          configureBazelToolWindowToolBar(model, actionManager, windowPanel)
+          configureBazelToolWindowToolBar(model, actionManager, windowPanel, project)
           val panel = BazelTargetsPanel(project, model)
           windowPanel.setContent(panel)
 

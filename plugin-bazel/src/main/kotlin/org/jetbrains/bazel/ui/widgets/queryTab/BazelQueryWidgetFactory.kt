@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.queryTab
+package org.jetbrains.bazel.ui.widgets.queryTab
 
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.serviceAsync

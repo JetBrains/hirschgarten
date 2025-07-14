@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.queryTab
+package org.jetbrains.bazel.ui.widgets.queryTab
 
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.bazelrunner.BazelProcess

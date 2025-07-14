@@ -447,7 +447,7 @@
 
     <toolWindowAllowlist id="Bazel Query" />
     <toolWindowExtractor
-      implementation="org.jetbrains.bazel.ui.queryTab.BazelQueryToolWindowViewModelExtractor"
+      implementation="org.jetbrains.bazel.ui.widgets.queryTab.BazelQueryToolWindowViewModelExtractor"
     />
 
     <consoleFilterProvider

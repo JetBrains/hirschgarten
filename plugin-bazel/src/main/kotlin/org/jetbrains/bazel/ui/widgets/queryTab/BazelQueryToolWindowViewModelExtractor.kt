@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.queryTab
+package org.jetbrains.bazel.ui.widgets.queryTab
 
 import com.intellij.openapi.client.ClientProjectSession
 import com.intellij.ui.viewModel.extraction.ToolWindowExtractorMode
