@@ -47,18 +47,5 @@ suspend fun registerBazelQueryToolWindow(project: Project) {
   }
 }
 
-suspend fun showQueryToolWindow(project: Project) {
-  val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(bazelQueryToolWindowId) ?: return
-  withContext(Dispatchers.EDT) {
-    toolWindow.show()
-  }
-}
-
 val bazelQueryToolWindowId: String
   get() = BazelPluginConstants.BAZEL_QUERY_DISPLAY_NAME
-
-val Project.bazelQueryToolWindowIdOrNull: String?
-  get() {
-    if (!isBazelProject) return null
-    return bazelQueryToolWindowId
-  }
