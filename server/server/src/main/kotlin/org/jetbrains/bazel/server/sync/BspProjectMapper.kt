@@ -9,6 +9,7 @@ import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
+import org.jetbrains.bazel.server.bzlmod.TodoRepoMapping
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.model.Module
@@ -138,6 +139,7 @@ class BspProjectMapper(
           apparentRepoNameToCanonicalName = repoMapping.apparentRepoNameToCanonicalName,
           canonicalRepoNameToPath = repoMapping.canonicalRepoNameToPath,
         )
+      TodoRepoMapping -> TODO()
     }
   }
 

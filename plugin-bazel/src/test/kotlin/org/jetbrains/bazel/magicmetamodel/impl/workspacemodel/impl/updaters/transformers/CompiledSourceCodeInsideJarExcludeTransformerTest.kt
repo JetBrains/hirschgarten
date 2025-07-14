@@ -140,7 +140,7 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
     ModuleDetails(
       target =
         RawBuildTarget(
-          Label.parse("target"),
+          Label.parseCanonical("target"),
           listOf(),
           emptyList(),
           TargetKind(

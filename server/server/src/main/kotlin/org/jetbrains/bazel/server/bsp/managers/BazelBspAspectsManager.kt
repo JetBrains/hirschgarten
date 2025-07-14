@@ -15,6 +15,7 @@ import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
+import org.jetbrains.bazel.server.bzlmod.TodoRepoMapping
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -165,6 +166,7 @@ class BazelBspAspectsManager(
         }
 
         is RepoMappingDisabled -> "{}"
+        TodoRepoMapping -> TODO()
       }
 
     templateWriter.writeToFile(

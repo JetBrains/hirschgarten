@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
@@ -16,11 +17,11 @@ internal data class BspModuleDetails(
   val javacOptions: JavacOptionsItem?,
   val type: ModuleTypeId,
   val associates: List<Label> = listOf(),
-  val moduleDependencies: List<Label>,
-  val libraryDependencies: List<Label>?,
+  val moduleDependencies: List<CanonicalLabel>,
+  val libraryDependencies: List<CanonicalLabel>?,
 )
 
-internal class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
+internal class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<CanonicalLabel, BuildTarget>, private val project: Project) :
   WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
     GenericModuleInfo(
@@ -43,8 +44,8 @@ internal class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<L
 }
 
 internal class BuildTargetToModuleDependencyTransformer(
-  private val allTargetsIds: Set<Label>,
-  private val targetsMap: Map<Label, BuildTarget>,
+  private val allTargetsIds: Set<CanonicalLabel>,
+  private val targetsMap: Map<CanonicalLabel, BuildTarget>,
   private val project: Project,
 ) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, IntermediateModuleDependency> {
   override fun transform(inputEntity: RawBuildTarget): List<IntermediateModuleDependency> =

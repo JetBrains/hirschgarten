@@ -21,6 +21,7 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
+import org.jetbrains.bazel.server.bzlmod.TodoRepoMapping
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.GoLibrary
@@ -909,6 +910,7 @@ class BazelProjectMapper(
     when (repoMapping) {
       is BzlmodRepoMapping -> repoMapping.canonicalRepoNameToLocalPath.keys
       is RepoMappingDisabled -> emptySet()
+      TodoRepoMapping -> TODO()
     }
 
   /**

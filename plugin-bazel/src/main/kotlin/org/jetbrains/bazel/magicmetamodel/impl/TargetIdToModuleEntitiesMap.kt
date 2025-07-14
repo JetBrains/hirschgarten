@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -22,13 +23,13 @@ import kotlin.io.path.Path
 object TargetIdToModuleEntitiesMap {
   suspend operator fun invoke(
     projectDetails: ProjectDetails,
-    targetIdToModuleDetails: Map<Label, ModuleDetails>,
-    targetIdToTargetInfo: Map<Label, BuildTarget>,
-    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
+    targetIdToModuleDetails: Map<CanonicalLabel, ModuleDetails>,
+    targetIdToTargetInfo: Map<CanonicalLabel, BuildTarget>,
+    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<CanonicalLabel>>,
     projectBasePath: Path,
     project: Project,
     isAndroidSupportEnabled: Boolean,
-  ): Map<Label, List<Module>> {
+  ): Map<CanonicalLabel, List<Module>> {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
@@ -60,12 +61,12 @@ object TargetIdToModuleEntitiesMap {
 }
 
 @TestOnly
-fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
+fun Collection<String>.toDefaultTargetsMap(): Map<CanonicalLabel, BuildTarget> =
   associateBy(
-    keySelector = { Label.parse(it) },
+    keySelector = { Label.parseCanonical(it) },
     valueTransform = {
       PartialBuildTarget(
-        id = Label.parse(it),
+        id = Label.parseCanonical(it),
         tags = listOf(),
         kind =
           TargetKind(

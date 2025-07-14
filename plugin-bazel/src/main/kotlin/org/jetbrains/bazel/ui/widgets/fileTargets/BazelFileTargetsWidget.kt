@@ -20,6 +20,7 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
@@ -94,7 +95,7 @@ class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(proje
     }
   }
 
-  private fun List<Label>.getTargetInfos(): List<BuildTarget> {
+  private fun List<CanonicalLabel>.getTargetInfos(): List<BuildTarget> {
     val targetUtils = project.targetUtils
     return this.mapNotNull { targetUtils.getBuildTargetForLabel(it) }
   }

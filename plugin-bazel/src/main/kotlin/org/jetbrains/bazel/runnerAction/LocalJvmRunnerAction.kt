@@ -15,7 +15,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
@@ -131,7 +131,7 @@ abstract class LocalJvmRunnerAction(
 
   companion object {
     val jvmEnvironment: Key<JvmEnvironmentItem> = Key<JvmEnvironmentItem>("jvmEnvironment")
-    val targetsToPreBuild: Key<List<Label>> = Key<List<Label>>("targetsToPreBuild")
+    val targetsToPreBuild: Key<List<CanonicalLabel>> = Key<List<CanonicalLabel>>("targetsToPreBuild")
     val includeJpsClassPaths: Key<Boolean> = Key<Boolean>("includeJpsClassPaths")
   }
 }
@@ -141,5 +141,5 @@ private const val RETRIEVE_JVM_ENVIRONMENT_ID = "bsp-retrieve-jvm-environment"
 class BspJvmApplicationConfiguration(name: String, project: Project) :
   ApplicationConfiguration(name, project),
   HotswappableRunConfiguration {
-  override fun getAffectedTargets(): List<Label> = getUserData(LocalJvmRunnerAction.targetsToPreBuild)?.take(1) ?: listOf()
+  override fun getAffectedTargets(): List<CanonicalLabel> = getUserData(LocalJvmRunnerAction.targetsToPreBuild)?.take(1) ?: listOf()
 }

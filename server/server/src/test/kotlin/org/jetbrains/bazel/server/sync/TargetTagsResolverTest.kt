@@ -1,7 +1,8 @@
 package org.jetbrains.bazel.server.sync
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.info.TargetInfo
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.Tag
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
@@ -12,6 +13,21 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
+
+fun fixture(): TargetInfo =
+  TargetInfo(
+    id = Label.parseCanonical("//some:target"),
+    kind = "java_library",
+    tags = emptyList(),
+    dependencies = emptyList(),
+    sources = emptyList(),
+    generatedSources = emptyList(),
+    resources = emptyList(),
+    env = emptyMap(),
+    envInherit = emptyList(),
+    executable = false,
+    workspaceName = "",
+  )
 
 class TargetTagsResolverTest {
   private lateinit var workspaceRoot: Path
@@ -32,11 +48,10 @@ class TargetTagsResolverTest {
   @Test
   fun `should map executable targets`() {
     val targetInfo =
-      TargetInfo
-        .newBuilder()
-        .also {
-          it.executable = true
-        }.build()
+      fixture()
+        .copy(
+          executable = true,
+        )
 
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
@@ -46,12 +61,11 @@ class TargetTagsResolverTest {
   @Test
   fun `should map a target with _binary to library if it is not executable`() {
     val targetInfo =
-      TargetInfo
-        .newBuilder()
-        .apply {
-          kind = "it_only_looks_like_binary"
-          executable = false
-        }.build()
+      fixture()
+        .copy(
+          kind = "it_only_looks_like_binary",
+          executable = false,
+        )
 
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
@@ -61,12 +75,11 @@ class TargetTagsResolverTest {
   @Test
   fun `should map test targets`() {
     val targetInfo =
-      TargetInfo
-        .newBuilder()
-        .also {
-          it.kind = "blargh_test"
-          it.executable = true
-        }.build()
+      fixture()
+        .copy(
+          kind = "blargh_test",
+          executable = true,
+        )
 
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
@@ -76,11 +89,10 @@ class TargetTagsResolverTest {
   @Test
   fun `should map intellij_plugin_debug_target`() {
     val targetInfo =
-      TargetInfo
-        .newBuilder()
-        .also {
-          it.kind = "intellij_plugin_debug_target"
-        }.build()
+      fixture()
+        .copy(
+          kind = "intellij_plugin_debug_target",
+        )
 
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
@@ -90,12 +102,8 @@ class TargetTagsResolverTest {
   @Test
   fun `should map no-ide and manual tags for library`() {
     val targetInfo =
-      TargetInfo
-        .newBuilder()
-        .also {
-          it.addTags("no-ide")
-          it.addTags("manual")
-        }.build()
+      fixture()
+        .copy(tags = listOf("no-ide", "manual"))
 
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
@@ -105,13 +113,8 @@ class TargetTagsResolverTest {
   @Test
   fun `should map no-ide and manual tags for application`() {
     val targetInfo =
-      TargetInfo
-        .newBuilder()
-        .also {
-          it.executable = true
-          it.addTags("no-ide")
-          it.addTags("manual")
-        }.build()
+      fixture()
+        .copy(executable = true, tags = listOf("no-ide", "manual"))
 
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
@@ -124,11 +127,8 @@ class TargetTagsResolverTest {
   @ValueSource(strings = ["resources_union", "java_import", "aar_import"])
   fun `should handle special cases`(name: String) {
     val targetInfo =
-      TargetInfo
-        .newBuilder()
-        .also {
-          it.kind = name
-        }.build()
+      fixture()
+        .copy(kind = name)
 
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
@@ -138,12 +138,8 @@ class TargetTagsResolverTest {
   @Test
   fun `should mark android_binary as executable`() {
     val targetInfo =
-      TargetInfo
-        .newBuilder()
-        .apply {
-          kind = "android_binary"
-          executable = false
-        }.build()
+      fixture()
+        .copy(executable = false, kind = "android_binary")
 
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 

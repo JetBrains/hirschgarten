@@ -6,7 +6,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.concurrency.annotations.RequiresEdt
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -54,11 +54,11 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
 
   @RequiresEdt
   fun update(
-    visibleTargets: List<Label>,
+    visibleTargets: List<CanonicalLabel>,
     searchRegex: Regex?,
     hasAnyTargets: Boolean,
     displayAsTree: Boolean,
-    labelToInfo: (Label) -> BuildTarget?,
+    labelToInfo: (CanonicalLabel) -> BuildTarget?,
   ) {
     val isSearchActive = searchRegex != null
     // Update the tree highlighter to highlight search matches

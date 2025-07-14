@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 
@@ -9,7 +9,7 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
   private val javacOptionsIndex = projectDetails.javacOptions.associateBy { it.target }
   private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
 
-  fun moduleDetailsForTargetId(targetId: Label): ModuleDetails {
+  fun moduleDetailsForTargetId(targetId: CanonicalLabel): ModuleDetails {
     val target = targetsIndex[targetId] ?: error("Cannot find target for target id: $targetId.")
     val allDependencies = libraryGraph.calculateAllDependencies(target)
     return ModuleDetails(

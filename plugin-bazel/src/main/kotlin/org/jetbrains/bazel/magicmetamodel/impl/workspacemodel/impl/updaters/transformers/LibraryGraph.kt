@@ -7,6 +7,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
@@ -18,7 +19,7 @@ import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 
-data class LibraryGraphDependencies(val libraryDependencies: Set<Label>, val moduleDependencies: Set<Label>)
+data class LibraryGraphDependencies(val libraryDependencies: Set<CanonicalLabel>, val moduleDependencies: Set<CanonicalLabel>)
 
 class LibraryGraph(private val libraries: List<LibraryItem>) {
   private val graph = libraries.associate { it.id to it.dependencies }
@@ -35,10 +36,10 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
 
   private fun calculateAllTransitiveDependencies(target: RawBuildTarget): LibraryGraphDependencies {
     val toVisit = target.dependencies.toMutableSet()
-    val visited = mutableSetOf<Label>(target.id)
+    val visited = mutableSetOf<CanonicalLabel>(target.id)
 
-    val resultLibraries = mutableSetOf<Label>()
-    val resultModules = mutableSetOf<Label>()
+    val resultLibraries = mutableSetOf<CanonicalLabel>()
+    val resultModules = mutableSetOf<CanonicalLabel>()
 
     while (toVisit.isNotEmpty()) {
       val currentNode = toVisit.first()
@@ -70,9 +71,9 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
     )
   }
 
-  private fun Label.isCurrentNodeLibrary() = this in graph
+  private fun CanonicalLabel.isCurrentNodeLibrary() = this in graph
 
-  private fun Label.addToCorrectResultSet(resultLibraries: MutableSet<Label>, resultModules: MutableSet<Label>) {
+  private fun CanonicalLabel.addToCorrectResultSet(resultLibraries: MutableSet<CanonicalLabel>, resultModules: MutableSet<CanonicalLabel>) {
     if (isCurrentNodeLibrary()) {
       resultLibraries += this
     } else {

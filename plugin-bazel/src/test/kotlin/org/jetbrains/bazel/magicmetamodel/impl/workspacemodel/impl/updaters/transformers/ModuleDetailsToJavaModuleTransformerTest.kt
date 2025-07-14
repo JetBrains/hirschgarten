@@ -70,15 +70,15 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val data = JvmBuildTarget(javaHome, javaVersion)
 
-    val buildTargetId = Label.parse("module1")
+    val buildTargetId = Label.parseCanonical("module1")
     val buildTarget =
       RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          Label.parseCanonical("module2"),
+          Label.parseCanonical("module3"),
+          Label.parseCanonical("@@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -119,8 +119,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            Label.parse("module2"),
-            Label.parse("module3"),
+            Label.parseCanonical("module2"),
+            Label.parseCanonical("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -205,8 +205,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         kotlincOptions = listOf(),
         associates =
           listOf(
-            Label.parse("//target4"),
-            Label.parse("//target5"),
+            Label.parseCanonical("//target4"),
+            Label.parseCanonical("//target5"),
           ),
         jvmBuildTarget =
           JvmBuildTarget(
@@ -215,15 +215,15 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val buildTargetId = Label.parse("module1")
+    val buildTargetId = Label.parseCanonical("module1")
     val buildTarget =
       RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          Label.parseCanonical("module2"),
+          Label.parseCanonical("module3"),
+          Label.parseCanonical("@@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -245,8 +245,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = emptyList(),
         moduleDependencies =
           listOf(
-            Label.parse("module2"),
-            Label.parse("module3"),
+            Label.parseCanonical("module2"),
+            Label.parseCanonical("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -330,15 +330,15 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val resourceFilePath12 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File2.txt")
     resourceFilePath12.toFile().deleteOnExit()
 
-    val buildTargetId1 = Label.parse("module1")
+    val buildTargetId1 = Label.parseCanonical("module1")
     val buildTarget1 =
       RawBuildTarget(
         buildTargetId1,
         listOf(),
         listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          Label.parseCanonical("module2"),
+          Label.parseCanonical("module3"),
+          Label.parseCanonical("@@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_library",
@@ -379,8 +379,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            Label.parse("module2"),
-            Label.parse("module3"),
+            Label.parseCanonical("module2"),
+            Label.parseCanonical("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -398,14 +398,14 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
 
-    val buildTargetId2 = Label.parse("module2")
+    val buildTargetId2 = Label.parseCanonical("module2")
     val buildTarget2 =
       RawBuildTarget(
         buildTargetId2,
         listOf(),
         listOf(
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          Label.parseCanonical("module3"),
+          Label.parseCanonical("@@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_test",
@@ -440,7 +440,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            Label.parse("module3"),
+            Label.parseCanonical("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -596,15 +596,15 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
 
-    val buildTargetId = Label.parse("module1")
+    val buildTargetId = Label.parseCanonical("module1")
     val buildTarget =
       RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          Label.parseCanonical("module2"),
+          Label.parseCanonical("module3"),
+          Label.parseCanonical("@@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -642,8 +642,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            Label.parse("module2"),
-            Label.parse("module3"),
+            Label.parseCanonical("module2"),
+            Label.parseCanonical("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -787,9 +787,9 @@ class ExtractJvmBuildTargetTest {
   private fun buildDummyTarget(data: BuildTargetData? = null): RawBuildTarget {
     val buildTarget =
       RawBuildTarget(
-        Label.parse("target"),
+        Label.parseCanonical("target"),
         listOf("tag1", "tag2"),
-        listOf(Label.parse("dep1"), Label.parse("dep2")),
+        listOf(Label.parseCanonical("dep1"), Label.parseCanonical("dep2")),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,

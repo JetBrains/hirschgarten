@@ -41,7 +41,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           languageVersion = "1.8",
           apiVersion = "1.8",
           kotlincOptions = listOf(),
-          associates = associates.map { Label.parse(it) },
+          associates = associates.map { Label.parseCanonical(it) },
           jvmBuildTarget =
             JvmBuildTarget(
               javaHome = javaHome,

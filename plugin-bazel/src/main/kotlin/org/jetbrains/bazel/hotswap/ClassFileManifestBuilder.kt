@@ -27,7 +27,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.task.query
@@ -123,14 +123,14 @@ object ClassFileManifestBuilder {
     return ClassFileManifest.modifiedClasses(oldManifest, newManifest)
   }
 
-  private fun Label.isTestTarget(project: Project): Boolean =
+  private fun CanonicalLabel.isTestTarget(project: Project): Boolean =
     project.targetUtils
       .getBuildTargetForLabel(this)
       ?.kind
       ?.ruleType == RuleType.TEST
 
   private suspend fun queryJvmEnvironment(
-    target: Label,
+    target: CanonicalLabel,
     server: JoinedBuildServer,
     isTest: Boolean,
   ): JvmEnvironmentResult =

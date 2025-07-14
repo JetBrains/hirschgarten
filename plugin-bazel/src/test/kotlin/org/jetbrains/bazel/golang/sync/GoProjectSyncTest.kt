@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
@@ -56,9 +57,9 @@ private data class ExpectedVgoDependencyEntity(
 )
 
 private data class GeneratedTargetInfo(
-  val targetId: Label,
+  val targetId: CanonicalLabel,
   val type: String,
-  val dependencies: List<Label> = listOf(),
+  val dependencies: List<CanonicalLabel> = listOf(),
   val resourcesItems: List<Path> = listOf(),
   val importPath: String,
 )
@@ -156,20 +157,20 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSet(): GoTestSet {
     val goLibrary1 =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server/lib:hello_lib"),
+        targetId = Label.parseCanonical("@@server/lib:hello_lib"),
         type = "library",
         importPath = "server/lib/file1.go",
       )
     val goLibrary2 =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server/parser:parser_lib"),
+        targetId = Label.parseCanonical("@@server/parser:parser_lib"),
         dependencies = listOf(goLibrary1.targetId),
         type = "library",
         importPath = "server/lib/file1.go",
       )
     val goApplication =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server:main_app"),
+        targetId = Label.parseCanonical("@@server:main_app"),
         type = "application",
         dependencies = listOf(goLibrary1.targetId, goLibrary2.targetId),
         importPath = "server/main_file.go",

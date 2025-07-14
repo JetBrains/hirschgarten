@@ -36,6 +36,7 @@ import com.jetbrains.python.sdk.guessedLanguageLevel
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.python.resolve.PythonResolveIndexService
@@ -158,9 +159,9 @@ class PythonProjectSync : ProjectSyncHook {
     "$projectName-python-${StringUtils.md5Hash(interpreter.interpreter.toString(), 5)}"
 
   private suspend fun calculateDependenciesSources(
-    targets: List<Label>,
+    targets: List<CanonicalLabel>,
     environment: ProjectSyncHookEnvironment,
-  ): Map<Label, List<DependencySourcesItem>> =
+  ): Map<CanonicalLabel, List<DependencySourcesItem>> =
     environment.progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.python.source.deps")) {
       environment.project.syncConsole.withSubtask(
         taskId = environment.taskId,
@@ -171,13 +172,16 @@ class PythonProjectSync : ProjectSyncHook {
       }
     }
 
-  private suspend fun queryDependenciesSources(environment: ProjectSyncHookEnvironment, targets: List<Label>): DependencySourcesResult =
+  private suspend fun queryDependenciesSources(
+    environment: ProjectSyncHookEnvironment,
+    targets: List<CanonicalLabel>,
+  ): DependencySourcesResult =
     query("buildTarget/dependencySources") {
       environment.server.buildTargetDependencySources(DependencySourcesParams(targets))
     }
 
   private fun calculateSourceDependencyLibrary(
-    target: Label,
+    target: CanonicalLabel,
     sourceDependencies: List<DependencySourcesItem>,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,

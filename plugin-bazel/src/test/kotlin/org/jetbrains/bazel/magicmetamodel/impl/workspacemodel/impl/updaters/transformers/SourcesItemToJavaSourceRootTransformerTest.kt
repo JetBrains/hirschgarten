@@ -46,7 +46,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
 
     val buildTargetAndSourceItem =
       RawBuildTarget(
-        Label.parse("target"),
+        Label.parseCanonical("target"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -87,7 +87,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
 
     val buildTargetAndSourceItem =
       RawBuildTarget(
-        Label.parse("target"),
+        Label.parseCanonical("target"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -136,7 +136,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
 
     val buildTargetAndSourceItem =
       RawBuildTarget(
-        Label.parse("target"),
+        Label.parseCanonical("target"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -192,7 +192,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
 
     val buildTargetAndSourceItem1 =
       RawBuildTarget(
-        Label.parse("target"),
+        Label.parseCanonical("target"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -206,7 +206,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
     val buildTargetAndSourceItem2 =
       RawBuildTarget(
-        Label.parse("target"),
+        Label.parseCanonical("target"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -263,7 +263,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
 
     val buildTargetAndSourceItem1 =
       RawBuildTarget(
-        Label.parse("target"),
+        Label.parseCanonical("target"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -278,7 +278,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
 
     val buildTargetAndSourceItem2 =
       RawBuildTarget(
-        Label.parse("target"),
+        Label.parseCanonical("target"),
         listOf(),
         emptyList(),
         TargetKind(

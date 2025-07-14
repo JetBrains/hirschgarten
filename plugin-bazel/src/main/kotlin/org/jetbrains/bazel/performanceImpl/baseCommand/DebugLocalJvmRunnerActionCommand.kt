@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.target.targetUtils
@@ -24,5 +24,5 @@ abstract class DebugLocalJvmRunnerActionCommand(text: String, line: Int) : Playb
     }
   }
 
-  abstract suspend fun getTargetId(project: Project): Label?
+  abstract suspend fun getTargetId(project: Project): CanonicalLabel?
 }

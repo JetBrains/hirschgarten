@@ -30,7 +30,7 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesGo
@@ -187,7 +187,7 @@ class GoProjectSync : ProjectSyncHook {
     inputEntity: RawBuildTarget,
     moduleId: ModuleId,
     virtualFileUrlManager: VirtualFileUrlManager,
-    idToGoTargetMap: Map<Label, BuildTarget>,
+    idToGoTargetMap: Map<CanonicalLabel, BuildTarget>,
     entitySource: BazelModuleEntitySource,
   ): VgoStandaloneModuleEntity.Builder {
     val goBuildInfo = extractGoBuildTarget(inputEntity)

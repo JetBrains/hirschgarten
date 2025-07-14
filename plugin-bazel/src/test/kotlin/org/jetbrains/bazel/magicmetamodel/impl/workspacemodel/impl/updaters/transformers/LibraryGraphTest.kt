@@ -407,9 +407,9 @@ class LibraryGraphTest {
 
 private fun mockTarget(id: String, dependencies: List<String>): RawBuildTarget =
   RawBuildTarget(
-    Label.parse(id),
+    Label.parseCanonical(id),
     emptyList(),
-    dependencies.map { Label.parse(it) },
+    dependencies.map { Label.parseCanonical(it) },
     TargetKind(
       kindString = "java_binary",
       ruleType = RuleType.BINARY,
@@ -422,8 +422,8 @@ private fun mockTarget(id: String, dependencies: List<String>): RawBuildTarget =
 
 private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem =
   LibraryItem(
-    id = Label.parse(id),
-    dependencies = dependencies.map { Label.parse(it) },
+    id = Label.parseCanonical(id),
+    dependencies = dependencies.map { Label.parseCanonical(it) },
     ijars = emptyList(),
     jars = emptyList(),
     sourceJars = emptyList(),

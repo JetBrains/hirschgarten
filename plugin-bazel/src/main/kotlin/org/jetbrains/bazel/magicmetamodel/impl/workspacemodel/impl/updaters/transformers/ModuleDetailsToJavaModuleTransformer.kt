@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
@@ -26,8 +27,8 @@ import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
 
 internal class ModuleDetailsToJavaModuleTransformer(
-  targetsMap: Map<Label, BuildTarget>,
-  fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
+  targetsMap: Map<CanonicalLabel, BuildTarget>,
+  fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<CanonicalLabel>>,
   projectBasePath: Path,
   private val project: Project,
   private val isAndroidSupportEnabled: Boolean = false,

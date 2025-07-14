@@ -45,16 +45,16 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
   fun `should return java module with dependencies to other targets and libraries`() {
     // given
     val targetName = "@//target1"
-    val targetId = Label.parse(targetName)
+    val targetId = Label.parseCanonical(targetName)
 
     val target =
       RawBuildTarget(
         targetId,
         emptyList(),
         listOf(
-          Label.parse("@maven//:test"),
-          Label.parse("@//target2"),
-          Label.parse("@//target3"),
+          Label.parseCanonical("@@maven~//:test"),
+          Label.parseCanonical("@//target2"),
+          Label.parseCanonical("@//target3"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -79,8 +79,8 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            Label.parse("@//target2"),
-            Label.parse("@//target3"),
+            Label.parseCanonical("@//target2"),
+            Label.parseCanonical("@//target3"),
           ),
         libraryDependencies = null,
       )
@@ -126,15 +126,15 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
   fun `should return module with associates when specified in BspModuleDetails`() {
     // given
     val targetName = "@//target1"
-    val targetId = Label.parse(targetName)
+    val targetId = Label.parseCanonical(targetName)
     val target =
       RawBuildTarget(
         targetId,
         emptyList(),
         listOf(
-          Label.parse("@maven//:test"),
-          Label.parse("@//target2"),
-          Label.parse("@//target3"),
+          Label.parseCanonical("@@maven//:test"),
+          Label.parseCanonical("@//target2"),
+          Label.parseCanonical("@//target3"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -152,17 +152,17 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         javacOptions = null,
         associates =
           listOf(
-            Label.parse("@//target4"),
-            Label.parse("@//target5"),
+            Label.parseCanonical("@//target4"),
+            Label.parseCanonical("@//target5"),
           ),
         moduleDependencies =
           listOf(
-            Label.parse("@//target2"),
-            Label.parse("@//target3"),
+            Label.parseCanonical("@//target2"),
+            Label.parseCanonical("@//target3"),
           ),
         libraryDependencies =
           listOf(
-            Label.parse("@maven//:test"),
+            Label.parseCanonical("@@maven//:test"),
           ),
       )
 
@@ -219,16 +219,16 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
   fun `should return multiple java modules with dependencies to other targets and libraries`() {
     // given
     val target1Name = "@//target1"
-    val target1Id = Label.parse(target1Name)
+    val target1Id = Label.parseCanonical(target1Name)
 
     val target1 =
       RawBuildTarget(
         target1Id,
         emptyList(),
         listOf(
-          Label.parse("@maven//:test"),
-          Label.parse("//target2"),
-          Label.parse("//target3"),
+          Label.parseCanonical("@@maven//:test"),
+          Label.parseCanonical("//target2"),
+          Label.parseCanonical("//target3"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -253,22 +253,22 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            Label.parse("//target2"),
-            Label.parse("//target3"),
+            Label.parseCanonical("//target2"),
+            Label.parseCanonical("//target3"),
           ),
         libraryDependencies = null,
       )
 
     val target2Name = "@//target2"
-    val target2Id = Label.parse(target2Name)
+    val target2Id = Label.parseCanonical(target2Name)
 
     val target2 =
       RawBuildTarget(
         target2Id,
         emptyList(),
         listOf(
-          Label.parse("@maven//:test"),
-          Label.parse("//target3"),
+          Label.parseCanonical("@@maven//:test"),
+          Label.parseCanonical("//target3"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -292,7 +292,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            Label.parse("//target3"),
+            Label.parseCanonical("//target3"),
           ),
         libraryDependencies = null,
       )

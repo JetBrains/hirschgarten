@@ -19,7 +19,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
   @Test
   fun `should return empty module details for singular module`() {
     // given
-    val targetId = Label.parse("target")
+    val targetId = Label.parseCanonical("target")
     val target =
       RawBuildTarget(
         targetId,
@@ -63,7 +63,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
   @Test
   fun `should return one module details for project details with one target`() {
     // given
-    val targetId = Label.parse("target")
+    val targetId = Label.parseCanonical("target")
     val target =
       RawBuildTarget(
         targetId,
@@ -114,8 +114,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
   @Test
   fun `should multiple module details for project details with multiple targets`() {
     // given
-    val target1Id = Label.parse("target1")
-    val target2Id = Label.parse("target2")
+    val target1Id = Label.parseCanonical("target1")
+    val target2Id = Label.parseCanonical("target2")
     val target1 =
       RawBuildTarget(
         target1Id,
@@ -153,7 +153,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf(Path("/root/dir2/resource/File.txt")),
         baseDirectory = Path("base/dir"),
       )
-    val target3Id = Label.parse("target3")
+    val target3Id = Label.parseCanonical("target3")
     val target3 =
       RawBuildTarget(
         target3Id,
@@ -174,7 +174,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf("opt1"),
       )
 
-    val target4Id = Label.parse("target4")
+    val target4Id = Label.parseCanonical("target4")
     val target4 =
       RawBuildTarget(
         target4Id,

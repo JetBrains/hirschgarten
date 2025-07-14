@@ -18,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.python.debug.BazelPyDebugPositionConverter
 import org.jetbrains.bazel.python.debug.PythonDebugCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -52,7 +52,7 @@ class PythonBspDebugRunner : PyDebugRunner() {
 
   private fun buildTarget(
     project: Project,
-    targetId: Label,
+    targetId: CanonicalLabel,
     onBuildComplete: () -> Unit,
   ) {
     BazelCoroutineService.getInstance(project).start {

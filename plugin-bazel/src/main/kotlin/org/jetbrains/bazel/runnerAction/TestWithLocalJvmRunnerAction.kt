@@ -6,7 +6,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -47,7 +47,7 @@ class TestWithLocalJvmRunnerAction(
       .firstOrNull()
   }
 
-  private fun createJvmTestEnvironmentParams(targetId: Label) = JvmTestEnvironmentParams(listOf(targetId))
+  private fun createJvmTestEnvironmentParams(targetId: CanonicalLabel) = JvmTestEnvironmentParams(listOf(targetId))
 
   override fun calculateConfiguration(
     configurationName: String,

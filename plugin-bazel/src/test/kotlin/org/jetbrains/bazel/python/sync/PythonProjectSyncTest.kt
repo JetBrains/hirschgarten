@@ -21,6 +21,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
@@ -50,9 +51,9 @@ private data class PythonTestSet(
 )
 
 private data class GeneratedTargetInfo(
-  val targetId: Label,
+  val targetId: CanonicalLabel,
   val type: String,
-  val dependencies: List<Label> = listOf(),
+  val dependencies: List<CanonicalLabel> = listOf(),
   val resourcesItems: List<String> = listOf(),
 )
 
@@ -149,17 +150,17 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSet(): PythonTestSet {
     val pythonLibrary1 =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server.lib:lib1"),
+        targetId = Label.parseCanonical("@@server.lib:lib1"),
         type = "library",
       )
     val pythonLibrary2 =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server/lib:lib2"),
+        targetId = Label.parseCanonical("@@server/lib:lib2"),
         type = "library",
       )
     val pythonBinary =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server:main_app"),
+        targetId = Label.parseCanonical("@@server:main_app"),
         type = "PYTHON_MODULE",
         dependencies = listOf(pythonLibrary1.targetId, pythonLibrary2.targetId),
       )
@@ -183,7 +184,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSetWithSources(): PythonTestSet {
     val pythonBinary =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server:main_app"),
+        targetId = Label.parseCanonical("@@server:main_app"),
         type = "PYTHON_MODULE",
         dependencies = listOf(),
       )

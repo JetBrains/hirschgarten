@@ -15,7 +15,7 @@ import com.jetbrains.python.run.PythonScriptCommandLineState
 import com.jetbrains.python.sdk.PythonSdkUtil
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -32,7 +32,7 @@ class PythonDebugCommandLineState(
   originId: OriginId,
   private val programArguments: String?,
 ) : BazelCommandLineStateBase(env, originId) {
-  val target: Label? = (env.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
+  val target: CanonicalLabel? = (env.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
   private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
@@ -71,7 +71,7 @@ class PythonDebugCommandLineState(
     }
 }
 
-private fun getSdkForTarget(project: Project, target: Label): Sdk {
+private fun getSdkForTarget(project: Project, target: CanonicalLabel): Sdk {
   val storage = WorkspaceModel.getInstance(project).currentSnapshot
   return target
     .toModuleEntity(storage, project) // module
@@ -83,7 +83,7 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
     ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
 
-private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
+private fun CanonicalLabel.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
   val moduleName = this.formatAsModuleName(project)
   val moduleId = ModuleId(moduleName)
   return storage.resolve(moduleId)

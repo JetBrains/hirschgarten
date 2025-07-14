@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel
 
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
@@ -12,8 +12,8 @@ import org.jetbrains.bsp.protocol.RawBuildTarget
 data class ModuleDetails(
   val target: RawBuildTarget,
   val javacOptions: JavacOptionsItem?,
-  val libraryDependencies: List<Label>?,
-  val moduleDependencies: List<Label>,
+  val libraryDependencies: List<CanonicalLabel>?,
+  val moduleDependencies: List<CanonicalLabel>,
   val defaultJdkName: String?,
   val jvmBinaryJars: List<JvmBinaryJarsItem>,
 )

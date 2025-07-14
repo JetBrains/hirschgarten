@@ -7,6 +7,7 @@ import com.intellij.ui.treeStructure.Tree
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClassifierExtension
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
@@ -86,9 +87,9 @@ internal class BuildTargetTree(
   }
 
   fun updateTree(
-    visibleTargets: Collection<Label>,
+    visibleTargets: Collection<CanonicalLabel>,
     displayAsTree: Boolean,
-    labelToInfo: (Label) -> BuildTarget?,
+    labelToInfo: (CanonicalLabel) -> BuildTarget?,
   ) {
     val classifier =
       if (displayAsTree) {
@@ -107,8 +108,8 @@ internal class BuildTargetTree(
   }
 
   private fun generateTree(
-    targets: Collection<Label>,
-    labelToInfo: (Label) -> BuildTarget?,
+    targets: Collection<CanonicalLabel>,
+    labelToInfo: (CanonicalLabel) -> BuildTarget?,
     classifier: BuildTargetClassifierExtension,
   ) {
     generateTreeFromIdentifiers(

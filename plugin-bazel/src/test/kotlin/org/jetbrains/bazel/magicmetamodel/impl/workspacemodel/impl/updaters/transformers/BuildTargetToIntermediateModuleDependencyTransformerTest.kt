@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
@@ -19,7 +20,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
   fun `should return no module dependencies for no dependencies`() {
     // given
     val emptyBuildTargets = listOf<RawBuildTarget>()
-    val allTargets = setOf<Label>()
+    val allTargets = setOf<CanonicalLabel>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
@@ -35,12 +36,12 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
     // given
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target1"),
+        Label.parseCanonical("//target1"),
         emptyList(),
         listOf(
-          Label.parse("//target2"),
-          Label.parse("//target3"),
-          Label.parse("@maven//:lib1"),
+          Label.parseCanonical("//target2"),
+          Label.parseCanonical("//target3"),
+          Label.parseCanonical("@@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -51,7 +52,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
       )
-    val allTargets = setOf<Label>()
+    val allTargets = setOf<CanonicalLabel>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
@@ -67,11 +68,11 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
     // given
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target1"),
+        Label.parseCanonical("//target1"),
         emptyList(),
         listOf(
-          Label.parse("//target2"),
-          Label.parse("@maven//:lib1"),
+          Label.parseCanonical("//target2"),
+          Label.parseCanonical("@@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -109,14 +110,14 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
     // given
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target1"),
+        Label.parseCanonical("//target1"),
         emptyList(),
         listOf(
-          Label.parse("//target2"),
-          Label.parse("//target3"),
-          Label.parse("//target4"),
-          Label.parse("@maven//:lib1"),
-          Label.parse("@maven//:lib2"),
+          Label.parseCanonical("//target2"),
+          Label.parseCanonical("//target3"),
+          Label.parseCanonical("//target4"),
+          Label.parseCanonical("@@maven//:lib1"),
+          Label.parseCanonical("@@maven//:lib2"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -166,13 +167,13 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
     // given
     val buildTarget1 =
       RawBuildTarget(
-        Label.parse("//target1"),
+        Label.parseCanonical("//target1"),
         emptyList(),
         listOf(
-          Label.parse("//target2"),
-          Label.parse("//target3"),
-          Label.parse("@maven//:lib1"),
-          Label.parse("@maven//:lib2"),
+          Label.parseCanonical("//target2"),
+          Label.parseCanonical("//target3"),
+          Label.parseCanonical("@@maven//:lib1"),
+          Label.parseCanonical("@@maven//:lib2"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -185,12 +186,12 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
       )
     val buildTarget2 =
       RawBuildTarget(
-        Label.parse("//target1"),
+        Label.parseCanonical("//target1"),
         emptyList(),
         listOf(
-          Label.parse("//target3"),
-          Label.parse("//target4"),
-          Label.parse("@maven//:lib2"),
+          Label.parseCanonical("//target3"),
+          Label.parseCanonical("//target4"),
+          Label.parseCanonical("@@maven//:lib2"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -238,5 +239,5 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
       listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
   }
 
-  private fun Set<String>.toTargetIds(): Set<Label> = mapTo(mutableSetOf()) { Label.parse(it) }
+  private fun Set<String>.toTargetIds(): Set<CanonicalLabel> = mapTo(mutableSetOf()) { Label.parseCanonical(it) }
 }

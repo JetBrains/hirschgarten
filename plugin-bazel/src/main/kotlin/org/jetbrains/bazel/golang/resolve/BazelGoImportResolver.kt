@@ -35,7 +35,7 @@ import com.intellij.psi.search.PsiElementProcessor
 import com.intellij.util.ThreeState
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.sync.SyncCache
@@ -130,7 +130,7 @@ fun getGoPackageMap(project: Project): ConcurrentHashMap<String, BazelGoPackage>
     .getInstance(project)
     .get(GO_PACKAGE_MAP_KEY) { ConcurrentHashMap<String, BazelGoPackage>() } ?: ConcurrentHashMap()
 
-private fun getGoTargetMap(project: Project): Map<String, Label> =
+private fun getGoTargetMap(project: Project): Map<String, CanonicalLabel> =
   SyncCache
     .getInstance(project)
     .get(GO_TARGET_MAP_KEY) {

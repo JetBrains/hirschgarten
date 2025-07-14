@@ -22,6 +22,7 @@ import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
@@ -451,9 +452,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.kind.includesJava() }.map { it.id }
+private fun List<BuildTarget>.calculateJavaTargetIds(): List<CanonicalLabel> = filter { it.kind.includesJava() }.map { it.id }
 
-private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.kind.includesScala() }.map { it.id }
+private fun List<BuildTarget>.calculateScalaTargetIds(): List<CanonicalLabel> = filter { it.kind.includesScala() }.map { it.id }
 
 private suspend fun queryWorkspaceBuildTargets(
   server: JoinedBuildServer,

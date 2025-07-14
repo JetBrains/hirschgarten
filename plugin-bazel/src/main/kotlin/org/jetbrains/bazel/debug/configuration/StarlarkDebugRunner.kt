@@ -28,6 +28,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
 import org.jetbrains.bazel.debug.connector.StarlarkSocketConnector
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
@@ -65,7 +66,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     val project = environment.project
     val port = choosePort()
     val starlarkManager = StarlarkDebugSessionManager(project)
-    val target = Label.parse(starlarkState.target)
+    val target = Label.parseCanonical(starlarkState.target)
 
     val debugJob = connectAndExecuteAnalysisDebug(project, port, starlarkManager.taskListener, target, starlarkState.futureProxy)
     debugJob.invokeOnCompletion { _ -> Disposer.dispose(starlarkManager) }
@@ -102,7 +103,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     project: Project,
     port: Int,
     taskListener: StarlarkDebugTaskListener,
-    target: Label,
+    target: CanonicalLabel,
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
   ): Job =
     project.connection.runWithServer { server ->
@@ -115,7 +116,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     project: Project,
     port: Int,
     taskListener: StarlarkDebugTaskListener,
-    target: Label,
+    target: CanonicalLabel,
     server: JoinedBuildServer,
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
   ) {

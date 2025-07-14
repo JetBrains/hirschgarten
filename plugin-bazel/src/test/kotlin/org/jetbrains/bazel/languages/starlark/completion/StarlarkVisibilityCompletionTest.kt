@@ -28,7 +28,7 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
 
   private fun setTargets(targets: List<String>) {
     project.targetUtils.setTargets(
-      targets.map { Label.parse(it) }.associateWith {
+      targets.map { Label.parseCanonical(it) }.associateWith {
         RawBuildTarget(
           id = it,
           tags = emptyList(),

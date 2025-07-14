@@ -40,7 +40,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target"),
+        Label.parseCanonical("//target"),
         emptyList(),
         listOf(),
         TargetKind(
@@ -74,7 +74,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target"),
+        Label.parseCanonical("//target"),
         listOf(),
         listOf(),
         TargetKind(
@@ -108,7 +108,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target"),
+        Label.parseCanonical("//target"),
         emptyList(),
         listOf(),
         TargetKind(
@@ -147,7 +147,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target"),
+        Label.parseCanonical("//target"),
         emptyList(),
         listOf(),
         TargetKind(
@@ -198,7 +198,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target"),
+        Label.parseCanonical("//target"),
         emptyList(),
         listOf(),
         TargetKind(
@@ -244,7 +244,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target"),
+        Label.parseCanonical("//target"),
         emptyList(),
         listOf(),
         TargetKind(
@@ -300,7 +300,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget =
       RawBuildTarget(
-        Label.parse("//target"),
+        Label.parseCanonical("//target"),
         emptyList(),
         listOf(),
         TargetKind(

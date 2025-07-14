@@ -2,7 +2,7 @@ package org.jetbrains.bazel.runnerAction
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -42,5 +42,5 @@ class RunWithLocalJvmRunnerAction(
       .firstOrNull()
   }
 
-  private fun createJvmRunEnvironmentParams(targetId: Label) = JvmRunEnvironmentParams(listOf(targetId))
+  private fun createJvmRunEnvironmentParams(targetId: CanonicalLabel) = JvmRunEnvironmentParams(listOf(targetId))
 }
