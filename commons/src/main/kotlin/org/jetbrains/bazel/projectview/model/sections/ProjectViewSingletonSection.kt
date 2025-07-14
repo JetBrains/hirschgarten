@@ -88,3 +88,9 @@ data class IndexAllFilesInDirectoriesSection(override val value: Boolean) : Proj
     const val SECTION_NAME = "index_all_files_in_directories"
   }
 }
+
+data class ImportIjarsSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "import_ijars"
+  }
+}

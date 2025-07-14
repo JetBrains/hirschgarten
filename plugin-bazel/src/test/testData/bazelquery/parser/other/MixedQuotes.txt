@@ -15,6 +15,6 @@ FILE
   BazelQueryCommand(COMMAND)
     PsiElement(BazelQuery:DEPS)('deps')
     PsiElement(BazelQuery:()('(')
-    PsiErrorElement:too many arguments
+    PsiErrorElement:Unexpected token
       PsiElement(BazelQuery:SQ_WORD)(''//path/to:target2'')
     PsiElement(BazelQuery:))(')')

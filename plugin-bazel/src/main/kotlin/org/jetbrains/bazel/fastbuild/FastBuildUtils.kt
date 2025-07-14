@@ -123,7 +123,13 @@ object FastBuildUtils {
       val canonicalFilePath = inputFile.canonicalPath
       val canonicalWorkspaceRootPath = workspaceRoot.toCanonicalPath()
       if (!(canonicalFilePath?.startsWith(canonicalWorkspaceRootPath) ?: false)) {
-        throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.wrong.canonical.path"))
+        throw ExecutionException(
+          BazelPluginBundle.message(
+            "widget.fastbuild.error.wrong.canonical.path",
+            canonicalFilePath.orEmpty(),
+            canonicalWorkspaceRootPath
+          )
+        )
       }
       val relativePath =
         entry.value.baseDirectory.let {

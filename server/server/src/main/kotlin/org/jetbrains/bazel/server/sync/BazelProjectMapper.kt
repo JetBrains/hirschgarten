@@ -94,15 +94,19 @@ class BazelProjectMapper(
               workspaceContext.importDepth.value,
               rootTargets,
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
-              targetSupportsStrictDeps = { id -> targets[id]?.kind?.let { targetSupportsStrictDeps(it) } ?: false },
+              targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
+              isWorkspaceTarget = { id ->
+                targets[id]?.let { target ->
+                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
+                } == true
+              },
             )
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
           }
         val libraries = (nonWorkspaceTargets + targetsAtDepth.directDependencies).associateBy { it.label() }
-        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport.asSequence())
-        targetsToImport.asSequence() to usedLibraries
+        targetsToImport.asSequence() to libraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -969,14 +973,8 @@ class BazelProjectMapper(
       "go_test",
     )
 
-  private fun targetSupportsStrictDeps(kind: String): Boolean = kind in strictDepsTargetKinds
-
-  private val strictDepsTargetKinds =
-    setOf(
-      "java_library",
-      "java_binary",
-      "java_test",
-    )
+  private fun targetSupportsStrictDeps(target: TargetInfo): Boolean =
+    target.hasJvmTargetInfo() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
 
   private suspend fun createModules(
     targetsToImport: Sequence<TargetInfo>,

@@ -1,6 +1,7 @@
 FILE
   ProjectViewPsiSection(section)
-    PsiElement(ProjectView:section_keyword)('directories')
+    ProjectViewPsiSectionName(section_name)
+      PsiElement(ProjectView:section_keyword)('directories')
     PsiElement(ProjectView:colon)(':')
     PsiElement(ProjectView:newline)('\n')
     PsiElement(ProjectView:indent)('  ')

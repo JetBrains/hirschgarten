@@ -1,13 +1,12 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
 import java.nio.file.Path
 
 internal class DirectoriesSpecExtractor(private val workspaceRoot: Path, projectViewPath: Path) :
-  ExecutionContextEntityExtractor<DirectoriesSpec> {
+  WorkspaceContextEntityExtractor<DirectoriesSpec> {
   private val normalizedProjectViewPath = projectViewPath.normalize()
 
   override fun fromProjectView(projectView: ProjectView): DirectoriesSpec =

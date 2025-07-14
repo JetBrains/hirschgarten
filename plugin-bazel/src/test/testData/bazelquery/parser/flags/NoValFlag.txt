@@ -1,0 +1,3 @@
+FILE
+  BazelQueryFlag(FLAG)
+    PsiElement(BazelQuery:FLAG_NO_VAL)('--keep_going')

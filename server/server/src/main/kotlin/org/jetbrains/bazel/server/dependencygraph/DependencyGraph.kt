@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.dependencygraph
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.label.label
 
 class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private val idToTargetInfo: Map<Label, TargetInfo> = emptyMap()) {
   private val idToDirectDependenciesIds = mutableMapOf<Label, Set<Label>>()
@@ -71,6 +70,7 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
     targets: Set<Label>,
     isExternalTarget: (Label) -> Boolean = { false },
     targetSupportsStrictDeps: (Label) -> Boolean = { false },
+    isWorkspaceTarget: (Label) -> Boolean = { true },
   ): TargetsAtDepth {
     if (depth < 0) {
       return TargetsAtDepth(
@@ -84,7 +84,7 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
     fun Collection<Label>.filterNotVisited(): Set<Label> = filterTo(mutableSetOf()) { it !in visited }
 
     var currentDepth = depth
-    var currentTargets = targets.filter { (idToTargetInfo[it]?.sourcesCount ?: 0) > 0 }.toSet()
+    var currentTargets = targets.filter { isWorkspaceTarget(it) }.toSet()
 
     while (currentDepth > 0) {
       visited.addAll(currentTargets)
@@ -157,23 +157,5 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
         .flatten()
         .toSet()
     return dependencies + target
-  }
-
-  fun filterUsedLibraries(libraries: Map<Label, TargetInfo>, targets: Sequence<TargetInfo>): Map<Label, TargetInfo> {
-    val visited = hashSetOf<Label>()
-    val queue = ArrayDeque<Label>()
-    targets.map { it.label() }.forEach {
-      queue.addLast(it)
-      visited.add(it)
-    }
-    while (queue.isNotEmpty()) {
-      val label = queue.removeFirst()
-      val dependencies = idToDirectDependenciesIds[label] ?: continue
-      for (dependency in dependencies) {
-        if (!visited.add(dependency)) continue
-        queue.addLast(dependency)
-      }
-    }
-    return libraries.filterKeys { it in visited }
   }
 }

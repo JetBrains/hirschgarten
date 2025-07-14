@@ -276,6 +276,7 @@ class CollectProjectDetailsTask(
               projectBasePath = projectBasePath,
               project = project,
               isAndroidSupportEnabled = false,
+              importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
             )
 
           workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
@@ -430,12 +431,18 @@ suspend fun calculateProjectDetailsWithCapabilities(
           server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         }
 
+      val workspaceContext =
+        query("workspace/context") {
+          server.workspaceContext()
+        }
+
       ProjectDetails(
         targetIds = bspBuildTargets.targets.map { it.id },
         targets = bspBuildTargets.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
+        workspaceContext = workspaceContext,
       )
     } catch (e: Exception) {
       // TODO the type xd

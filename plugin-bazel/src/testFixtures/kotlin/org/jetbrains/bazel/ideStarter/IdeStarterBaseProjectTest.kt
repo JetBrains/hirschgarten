@@ -30,6 +30,7 @@ import com.intellij.tools.ide.performanceTesting.commands.delay
 import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.resourceUtil.ResourceUtil
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
@@ -218,6 +219,12 @@ abstract class IdeStarterBaseProjectTest {
  */
 inline fun Driver.execute(builder: CommandChain.() -> Unit) {
   this.execute(CommandChain().apply(builder))
+}
+
+fun Driver.syncBazelProject() {
+  execute(CommandChain().takeScreenshot("startSync"))
+  execute(CommandChain().waitForBazelSync())
+  execute(CommandChain().waitForSmartMode())
 }
 
 fun <T : CommandChain> T.waitForBazelSync(): T {

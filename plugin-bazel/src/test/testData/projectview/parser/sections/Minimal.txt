@@ -1,6 +1,7 @@
 FILE
   ProjectViewPsiSection(section)
-    PsiElement(ProjectView:section_keyword)('directories')
+    ProjectViewPsiSectionName(section_name)
+      PsiElement(ProjectView:section_keyword)('directories')
     PsiElement(ProjectView:colon)(':')
     PsiElement(ProjectView:newline)('\n')
     PsiElement(ProjectView:indent)('  ')
@@ -13,7 +14,8 @@ FILE
     PsiElement(ProjectView:newline)('\n')
     PsiElement(ProjectView:newline)('\n')
   ProjectViewPsiSection(section)
-    PsiElement(ProjectView:section_keyword)('targets')
+    ProjectViewPsiSectionName(section_name)
+      PsiElement(ProjectView:section_keyword)('targets')
     PsiElement(ProjectView:colon)(':')
     PsiElement(ProjectView:newline)('\n')
     PsiElement(ProjectView:indent)('  ')

@@ -21,6 +21,7 @@ class WorkspaceModelUpdaterImpl(
   private val projectBasePath: Path,
   project: Project,
   private val isAndroidSupportEnabled: Boolean,
+  private val importIjars: Boolean,
 ) : WorkspaceModelUpdater {
   private val workspaceModelEntityUpdaterConfig =
     WorkspaceModelEntityUpdaterConfig(
@@ -42,7 +43,7 @@ class WorkspaceModelUpdaterImpl(
   }
 
   override suspend fun loadLibraries(libraries: List<Library>) {
-    val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
+    val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig, importIjars)
     libraryEntityUpdater.addEntities(libraries)
   }
 

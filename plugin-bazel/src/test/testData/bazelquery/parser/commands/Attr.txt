@@ -7,7 +7,7 @@ FILE
     PsiElement(BazelQuery:,)(',')
     PsiWhiteSpace(' ')
     BazelQueryWord(WORD)
-      PsiElement(BazelQuery:DQ_WORD)('"[\[ ]value[,\]]"')
+      PsiElement(BazelQuery:DQ_PATTERN)('"[\[ ]value[,\]]"')
     PsiElement(BazelQuery:,)(',')
     PsiWhiteSpace(' ')
     BazelQueryCommand(COMMAND)

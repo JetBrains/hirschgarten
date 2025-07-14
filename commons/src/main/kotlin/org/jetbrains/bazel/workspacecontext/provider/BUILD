@@ -4,11 +4,7 @@ kt_jvm_library(
     name = "provider",
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
-    exports = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/executioncontext/api",
-    ],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/executioncontext/api",
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/generator",
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser",
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",

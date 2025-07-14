@@ -26,7 +26,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
 
     workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
-    libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
+    libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig, importIjars = false)
   }
 
   @Test

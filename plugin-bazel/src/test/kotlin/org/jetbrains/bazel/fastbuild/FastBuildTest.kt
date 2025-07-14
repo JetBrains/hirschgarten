@@ -8,7 +8,6 @@ import com.intellij.driver.sdk.XDebuggerUtil
 import com.intellij.driver.sdk.findFile
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
-import com.intellij.driver.sdk.toggleLineBreakpoint
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -27,6 +26,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.findFile
 import org.jetbrains.bazel.ideStarter.openFile
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -58,6 +58,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
   fun openBazelProject() {
     createContext().runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {
+        syncBazelProject()
         waitForIndicators(5.minutes)
 
         step("Set breakpoint") {

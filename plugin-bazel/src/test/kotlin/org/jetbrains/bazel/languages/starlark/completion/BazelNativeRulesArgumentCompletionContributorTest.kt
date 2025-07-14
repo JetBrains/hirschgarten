@@ -26,10 +26,8 @@ class BazelNativeRulesArgumentCompletionContributorTest : BasePlatformTestCase()
         "resources",
         "add_opens",
         "classpath_resources",
-        "compatible_with",
         "deploy_env",
         "deploy_manifest_lines",
-        "deprecation",
       )
   }
 

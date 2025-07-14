@@ -1,0 +1,13 @@
+FILE
+  BazelQueryFlag(FLAG)
+    PsiElement(BazelQuery:FLAG_NO_VAL)('--noimplicit_deps')
+    PsiElement(BazelQuery:WHITE_SPACE)(' ')
+  BazelQueryFlag(FLAG)
+    PsiElement(BazelQuery:FLAG)('--output')
+    PsiElement(BazelQuery:EQUALS)('=')
+    PsiElement(BazelQuery:UNQUOTED_VAL)('graph')
+    PsiElement(BazelQuery:WHITE_SPACE)(' ')
+  BazelQueryFlag(FLAG)
+    PsiElement(BazelQuery:FLAG)('--order_output')
+    PsiElement(BazelQuery:EQUALS)(' ')
+    PsiElement(BazelQuery:UNQUOTED_VAL)('full')

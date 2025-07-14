@@ -1,6 +1,7 @@
 FILE
   ProjectViewPsiSection(section)
-    PsiElement(ProjectView:section_keyword)('shard_sync')
+    ProjectViewPsiSectionName(section_name)
+      PsiElement(ProjectView:section_keyword)('shard_sync')
     PsiElement(ProjectView:colon)(':')
     PsiWhiteSpace(' ')
     ProjectViewPsiSectionItem(section_item)

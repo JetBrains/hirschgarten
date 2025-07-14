@@ -160,9 +160,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     // then
     assertNull(lookups)
     val expected =
-      "java_binary(\n" +
-        "\tname = \"\",\n" +
-        "\t<caret>\n)"
+      "java_binary(\n\tname = \"<caret>\",\n)"
 
     myFixture.checkResult(expected)
   }

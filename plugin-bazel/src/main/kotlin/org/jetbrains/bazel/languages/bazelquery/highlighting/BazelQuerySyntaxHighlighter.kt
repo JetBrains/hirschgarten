@@ -18,6 +18,9 @@ object BazelQuerySyntaxHighlighter : SyntaxHighlighterBase() {
       *BazelQueryTokenSets.WORDS.types
         .map { it to BazelQueryHighlightingColors.WORD }
         .toTypedArray(),
+      *BazelQueryTokenSets.PATTERNS.types
+        .map { it to BazelQueryHighlightingColors.WORD }
+        .toTypedArray(),
       BazelQueryTokenTypes.INTEGER to BazelQueryHighlightingColors.INTEGER,
       *BazelQueryTokenSets.OPERATIONS.types
         .map { it to BazelQueryHighlightingColors.OPERATION }

@@ -14,12 +14,10 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.openFile
-import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -48,19 +46,13 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
 
   private val context by lazy { createContext() }
 
-  private val commands =
-    CommandChain()
-      .takeScreenshot("startSync")
-      .waitForBazelSync()
-      .waitForSmartMode()
-      .checkImportedModules()
-
   @Test
   fun openBazelProject() {
     context
-      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
+          syncBazelProject()
           waitForIndicators(10.minutes)
 
           step("Open file") {
@@ -77,9 +69,10 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
   @Test
   fun openBazelProjectWithTestFile() {
     context
-      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
+          syncBazelProject()
           waitForIndicators(10.minutes)
 
           step("Open test file") {
@@ -96,9 +89,10 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
   @Test
   fun checkImportStatements() {
     context
-      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
+          syncBazelProject()
           waitForIndicators(10.minutes)
 
           step("Open main.py and navigate to bbb") {

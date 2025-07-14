@@ -16,7 +16,7 @@ open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder)
     while (!eof()) {
       when {
         utils.atAnyToken(BazelQueryTokenSets.FLAGS) -> parseFlag()
-        else -> utils.advanceError("unexpected token: query option expected")
+        else -> utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token"))
       }
     }
     flagsList.done(root)
@@ -27,13 +27,13 @@ open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder)
     val flag = mark()
 
     if (utils.atToken(BazelQueryTokenTypes.UNFINISHED_FLAG)) {
-      utils.advanceError("unfinished flag")
+      utils.advanceError(BazelPluginBundle.message("bazelquery.error.unfinished.flag"))
       utils.expectToken(BazelQueryTokenTypes.WHITE_SPACE)
     } else if (utils.atToken(BazelQueryTokenTypes.FLAG)) {
       advanceLexer()
 
       if (!utils.matchToken(BazelQueryTokenTypes.EQUALS)) {
-        utils.advanceError("expected flag value")
+        utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.flag"))
       } else {
         if (utils.matchToken(BazelQueryTokenTypes.UNFINISHED_VAL)) {
           error(BazelPluginBundle.message("bazelquery.error.missing.quote"))
@@ -46,7 +46,7 @@ open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder)
     } else {
       advanceLexer()
       while (utils.matchToken(BazelQueryTokenTypes.MISSING_SPACE)) {
-        utils.advanceError("<space> expected")
+        utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.space"))
       }
       utils.matchToken(BazelQueryTokenTypes.WHITE_SPACE)
     }

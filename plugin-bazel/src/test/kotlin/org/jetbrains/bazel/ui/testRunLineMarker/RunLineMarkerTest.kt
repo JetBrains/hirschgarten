@@ -12,12 +12,10 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
-import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -36,12 +34,7 @@ class RunLineMarkerTest : IdeStarterBaseProjectTest() {
   @Test
   fun openProject() {
     val fileName = "SimpleKotlinTest.kt"
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .waitForSmartMode()
-    createContext().runIdeWithDriver(runTimeout = timeout, commands = commands).useDriverAndCloseIde {
+    createContext().runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       verifyRunLineMarkerText(fileName)
       takeScreenshot("afterClickingOnRunLineMarker1")
       invokeAction("CloseProject")
@@ -54,7 +47,9 @@ class RunLineMarkerTest : IdeStarterBaseProjectTest() {
 
   private fun Driver.verifyRunLineMarkerText(fileName: String) {
     ideFrame {
+      syncBazelProject()
       waitForIndicators(5.minutes)
+
       openFile(fileName)
       val gutterIcons = editorTabs().gutter().getGutterIcons()
       val selectedGutterIcon = gutterIcons.first()
