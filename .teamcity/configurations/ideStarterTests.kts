@@ -1,5 +1,6 @@
 package configurations
 
+import jdk.javadoc.internal.doclets.toolkit.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
@@ -61,6 +62,14 @@ sealed class HotswapTest(
   name = "Hotswap test",
   vcsRoot = vcsRoot,
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"
+)
+
+sealed class CoroutineDebugTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Coroutine debug test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/coroutineDebug"
 )
 
 sealed class ReopenWithoutResyncTest(
@@ -188,6 +197,14 @@ object HotswapTestGitHub : HotswapTest(
 )
 
 object HotswapTestSpace : HotswapTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object CoroutineDebugTestGitHub : CoroutineDebugTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object CoroutineDebugTestSpace : CoroutineDebugTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
 

@@ -24,6 +24,7 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+      <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.KotlinCoroutineLibraryFinderBeforeRunTaskProvider"/>
         <newProjectWizard.kotlin.buildSystem
       implementation="org.jetbrains.bazel.kotlin.ui.starters.BazelKotlinNewProjectWizard"
     />
