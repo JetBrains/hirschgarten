@@ -128,8 +128,8 @@ object FastBuildUtils {
           BazelPluginBundle.message(
             "widget.fastbuild.error.wrong.canonical.path",
             canonicalFilePath.orEmpty(),
-            canonicalWorkspaceRootPath
-          )
+            canonicalWorkspaceRootPath,
+          ),
         )
       }
       val relativePath =
