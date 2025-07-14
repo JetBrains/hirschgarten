@@ -5,7 +5,7 @@ kt_jvm_library(
     srcs = glob(["**/*.kt"]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/model",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/model",
     ],
 )
