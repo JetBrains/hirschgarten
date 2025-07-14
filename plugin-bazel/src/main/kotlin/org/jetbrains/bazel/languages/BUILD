@@ -13,6 +13,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/repomapping",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",

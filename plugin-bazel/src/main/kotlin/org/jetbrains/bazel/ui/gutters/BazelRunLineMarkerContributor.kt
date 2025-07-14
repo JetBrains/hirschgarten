@@ -31,6 +31,12 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
 
   open fun getSingleTestFilter(element: PsiElement): String? = null
 
+  /**
+   * Allows adding additional test runner arguments.
+   * Under the hood it uses `--testarg` bazel arguments
+   */
+  open fun getExtraProgramArguments(element: PsiElement): List<String> = emptyList()
+
   private fun PsiElement.calculateLineMarkerInfo(): Info? =
     containingFile.virtualFile?.let { url ->
       val targetUtils = project.targetUtils
@@ -38,17 +44,19 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
         targetUtils
           .getExecutableTargetsForFile(url)
           .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this), this)
+      calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this),
+                              getExtraProgramArguments(this), this)
     }
 
   private fun calculateLineMarkerInfo(
     project: Project,
     targetInfos: List<BuildTarget>,
     singleTestFilter: String?,
+    testExecutableArguments: List<String>,
     psiElement: PsiElement,
   ): Info? =
     targetInfos
-      .flatMap { it.calculateEligibleActions(project, singleTestFilter, targetInfos.size > 1, psiElement) }
+      .flatMap { it.calculateEligibleActions(project, singleTestFilter, testExecutableArguments, targetInfos.size > 1, psiElement) }
       .takeIf { it.isNotEmpty() }
       ?.let {
         BazelRunLineMarkerInfo(
@@ -60,6 +68,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
   private fun BuildTarget?.calculateEligibleActions(
     project: Project,
     singleTestFilter: String?,
+    testExecutableArguments: List<String>,
     includeTargetNameInText: Boolean,
     psiElement: PsiElement,
   ): List<AnAction> =
@@ -72,6 +81,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
           this,
           includeTargetNameInText,
           singleTestFilter,
+          testExecutableArguments,
           psiElement,
         ).childActionsOrStubs
         .toList()

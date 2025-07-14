@@ -5,7 +5,8 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
+import com.intellij.codeInsight.completion.InsertHandler
+import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PatternCondition
@@ -16,7 +17,9 @@ import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -31,12 +34,12 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     )
     extend(
       CompletionType.BASIC,
-      fileSpecificFunctionCompletionElement(BazelFileType.BUILD),
+      fileSpecificFunctionCompletionElement(BazelFileType.BUILD, true),
       BazelBuildFunctionCompletionProvider,
     )
     extend(
       CompletionType.BASIC,
-      fileSpecificFunctionCompletionElement(BazelFileType.MODULE),
+      fileSpecificFunctionCompletionElement(BazelFileType.MODULE, true),
       BazelModuleFunctionCompletionProvider,
     )
     extend(
@@ -46,9 +49,16 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     )
   }
 
-  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) =
+  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType, topLevelOnly: Boolean = false) =
     globalFunctionCompletionElement()
       .inFile(psiFile(StarlarkFile::class.java).with(bazelFileTypeCondition(bazelFileType)))
+      .let { pattern ->
+        if (topLevelOnly) {
+          pattern.withSuperParent(3, StarlarkFile::class.java)
+        } else {
+          pattern
+        }
+      }
 
   private fun globalFunctionCompletionElement() =
     psiElement()
@@ -63,33 +73,72 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     }
 }
 
-private abstract class BazelFunctionCompletionProvider(val functionNames: Set<String>) : CompletionProvider<CompletionParameters>() {
+private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> Collection<BazelGlobalFunction>) :
+  CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    functionNames.forEach { result.addElement(functionLookupElement(it)) }
+    val functions = getFunctions()
+    functions.forEach { result.addElement(functionLookupElement(it)) }
   }
 
-  private fun functionLookupElement(name: String): LookupElement =
+  private fun functionLookupElement(function: BazelGlobalFunction): LookupElement =
     LookupElementBuilder
-      .create(name)
-      .withInsertHandler(ParenthesesInsertHandler.NO_PARAMETERS)
+      .create(function.name)
+      .withInsertHandler(FunctionInsertHandler(function))
       .withIcon(PlatformIcons.FUNCTION_ICON)
+
+  private class FunctionInsertHandler<T : LookupElement>(val function: BazelGlobalFunction) : InsertHandler<T> {
+    override fun handleInsert(context: InsertionContext, item: T) {
+      val editor = context.editor
+      val document = editor.document
+      document.insertString(context.tailOffset, "(")
+
+      val requiredArgs = function.params.filter { it.required && it.name != "**kwargs" && it.name != "*args"}
+      var caretPlaced = false
+      requiredArgs.forEach {
+        document.insertString(context.tailOffset, "\n\t${it.name} = ${it.default},")
+        if (!caretPlaced) {
+          caretPlaced = true
+          placeCaret(context, it.default ?: "")
+        }
+      }
+
+      if (!caretPlaced) {
+        editor.caretModel.moveToOffset(context.tailOffset)
+      } else {
+        document.insertString(context.tailOffset, "\n")
+      }
+      document.insertString(context.tailOffset, ")")
+    }
+
+    private fun placeCaret(context: InsertionContext, default: String) {
+      val editor = context.editor
+      if (default == "\'\'" || default == "\"\"" || default == "[]" || default == "{}") {
+        editor.caretModel.moveToOffset(context.tailOffset - 2)
+      } else {
+        val selectionStart = context.tailOffset - default.length - 1
+        val selectionEnd = selectionStart + default.length
+        editor.selectionModel.setSelection(selectionStart, selectionEnd)
+        editor.caretModel.moveToOffset(selectionEnd)
+      }
+    }
+  }
 }
 
 private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.STARLARK_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.STARLARK_FUNCTIONS.values })
 
 private object BazelExtensionFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.EXTENSION_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.EXTENSION_FUNCTIONS.values })
 
 private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.BUILD_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBuildFunctions().values })
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.MODULE_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getModuleFunctions().values })
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.WORKSPACE_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.WORKSPACE_FUNCTIONS.values })

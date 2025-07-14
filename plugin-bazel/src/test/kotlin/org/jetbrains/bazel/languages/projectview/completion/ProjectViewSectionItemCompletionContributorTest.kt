@@ -26,9 +26,55 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("action")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    val expectedFlags = Flag.all().filter { it.key.contains("action") }.map { it.key }
+    val expectedFlags =
+      Flag
+        .all()
+        .filter {
+          it.key.contains("action") &&
+            it.value.option.commands.any { cmd ->
+              cmd == "build"
+            }
+        }.map { it.key }
 
-    lookups shouldContainAll expectedFlags
+    lookups shouldContainExactlyInAnyOrder expectedFlags
+  }
+
+  @Test
+  fun `should complete sync flags variants`() {
+    myFixture.configureByText(".bazelproject", "sync_flags:\n  <caret>")
+    myFixture.type("b")
+
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val expectedFlags =
+      Flag
+        .all()
+        .filter {
+          it.key.contains("b") &&
+            it.value.option.commands.any { cmd ->
+              cmd == "sync"
+            }
+        }.map { it.key }
+
+    lookups shouldContainExactlyInAnyOrder expectedFlags
+  }
+
+  @Test
+  fun `should complete test flags variants`() {
+    myFixture.configureByText(".bazelproject", "test_flags:\n  <caret>")
+    myFixture.type("action")
+
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val expectedFlags =
+      Flag
+        .all()
+        .filter {
+          it.key.contains("action") &&
+            it.value.option.commands.any { cmd ->
+              cmd == "test"
+            }
+        }.map { it.key }
+
+    lookups shouldContainExactlyInAnyOrder expectedFlags
   }
 
   @Test

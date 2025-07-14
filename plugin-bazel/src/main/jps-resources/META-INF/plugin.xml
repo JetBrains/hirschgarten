@@ -473,6 +473,7 @@
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
+    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
     <notificationGroup
       displayType="BALLOON"
       id="Bazel slow plugins warning"
@@ -585,15 +586,8 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
       language="Starlark"
     />
-    <completion.contributor
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesCompletionContributor"
-      language="Starlark"
-    />
-    <completion.contributor
-      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesArgumentCompletionContributor"
-      language="Starlark"
-    />
-    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider" />
+    <editorTabTitleProvider
+      implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
     <extendWordSelectionHandler
       implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"
     />
@@ -622,7 +616,14 @@
       implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"
       language="ProjectView"
     />
-
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionCompletionContributor"
+      language="ProjectView"
+    />
+    <annotator
+      implementationClass="org.jetbrains.bazel.languages.projectview.annotation.ProjectViewAnnotator"
+      language="ProjectView"
+    />
     <formattingService implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService" />
     <actionOnSave
       id="StarlarkFormattingActionOnSave"

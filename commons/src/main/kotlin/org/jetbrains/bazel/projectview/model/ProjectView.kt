@@ -7,6 +7,7 @@ import org.jetbrains.bazel.projectview.model.sections.ExperimentalNoPruneTransit
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
+import org.jetbrains.bazel.projectview.model.sections.ImportIjarsSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.projectview.model.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
@@ -106,6 +107,7 @@ data class ProjectView(
   /** Whether to all index files inside [ProjectViewDirectoriesSection] or just sources of targets */
   val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSection? = null,
   val pythonCodeGeneratorRuleNamesSection: PythonCodeGeneratorRuleNamesSection? = null,
+  val importIjars: ImportIjarsSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -132,6 +134,7 @@ data class ProjectView(
     private val gazelleTarget: GazelleTargetSection? = null,
     private val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSection? = null,
     private val pythonCodeGeneratorRuleNamesSection: PythonCodeGeneratorRuleNamesSection? = null,
+    private val importIjars: ImportIjarsSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -163,6 +166,8 @@ data class ProjectView(
       val gazelleTarget = combineGazelleTargetSection(importedProjectViews)
       val indexAllFilesInDirectories = combineIndexAllFilesInDirectoriesSection(importedProjectViews)
       val pythonCodeGeneratorRuleNamesSection = combinePythonCodeGeneratorRuleNamesSection(importedProjectViews)
+      val importIjars = combineImportIjarsSection(importedProjectViews)
+
       return ProjectView(
         targets,
         bazelBinary,
@@ -187,6 +192,7 @@ data class ProjectView(
         gazelleTarget,
         indexAllFilesInDirectories,
         pythonCodeGeneratorRuleNamesSection,
+        importIjars,
       )
     }
 
@@ -300,6 +306,12 @@ data class ProjectView(
         )
       return createInstanceOfListSectionOrNull(importRunConfigurations, ::PythonCodeGeneratorRuleNamesSection)
     }
+
+    private fun combineImportIjarsSection(importedProjectViews: List<ProjectView>): ImportIjarsSection? =
+      importIjars ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::importIjars,
+      )
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {
       val includedTargets =
@@ -438,7 +450,7 @@ data class ProjectView(
     private fun <T : ProjectViewSingletonSection<*>> getLastImportedSingletonValue(
       importedProjectViews: List<ProjectView>,
       sectionGetter: (ProjectView) -> T?,
-    ): T? = importedProjectViews.mapNotNull(sectionGetter).lastOrNull()
+    ): T? = importedProjectViews.asSequence().mapNotNull(sectionGetter).lastOrNull()
   }
 
   companion object {
