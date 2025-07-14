@@ -37,18 +37,18 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
   @Service(Service.Level.PROJECT)
   class JvmToolchainInfoService : PersistentStateComponent<JvmToolchainInfoService.State> {
     var jvmToolchainInfo: JvmToolchainInfo? = null
-    private val perTargetToolchainInfo = mutableMapOf<String, JvmToolchainInfo>()
+    private val perTargetToolchainInfo = mutableMapOf<Label, JvmToolchainInfo>()
 
     fun getJvmToolchainInfo(target: Label? = null): JvmToolchainInfo? =
       if (target != null) {
-        perTargetToolchainInfo[target.toString()]
+        perTargetToolchainInfo[target]
       } else {
         jvmToolchainInfo
       }
 
     fun setJvmToolchainInfo(toolchainInfo: JvmToolchainInfo, target: Label? = null) {
       if (target != null) {
-        perTargetToolchainInfo[target.toString()] = toolchainInfo
+        perTargetToolchainInfo[target] = toolchainInfo
       } else {
         jvmToolchainInfo = toolchainInfo
       }
@@ -132,7 +132,7 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
 
     data class State(
       var defaultToolchain: ToolchainInfoState? = null,
-      var perTargetToolchains: Map<String, ToolchainInfoState> = emptyMap(),
+      var perTargetToolchains: Map<Label, ToolchainInfoState> = emptyMap(),
     )
   }
 }
