@@ -17,8 +17,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
-import org.jetbrains.kotlin.idea.kdoc.insert
-import org.jetbrains.kotlin.tools.projectWizard.core.toResult
 
 class StarlarkFunctionAnnotator : StarlarkAnnotator() {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
@@ -71,27 +69,23 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
     var onlyKeywordArgs = false
     val matchedArguments = mutableMapOf<String, String>()
     val acceptsKwArgs = params.any { it.isKwArgs() }
-    val kwArgs = mutableListOf<Pair<String, String>>()
+    var kwArgsFound = false
     for (child in arguments.children) {
       when (child) {
         is StarlarkNamedArgumentExpression -> {
           val argName = child.name ?: continue
-          val argValue = child.getValue()?.text ?: continue
-          // Check if the argument can be resolved
-          if (params.any { it.name == argName }) {
-            if (matchedArguments.contains(argName) || kwArgs.any { it.first == argName }) {
-              // Duplicate keyword argument
-              holder.annotateError(
-                element = child,
-                message = StarlarkBundle.message("annotator.duplicate.keyword.argument", argName),
-              )
-            } else {
-              matchedArguments[argName] = argValue
-            } 
-          } else if (acceptsKwArgs) {
-            kwArgs.add(Pair(argName, argValue))
-          } else {
+          val argValue = child.getArgumentStringValue() ?: continue
+          if (!params.any { it.name == argName } && !acceptsKwArgs) {
+            // Cannot be resolved
             holder.annotateError(child, StarlarkBundle.message("annotator.named.parameter.not.found", argName))
+          } else if (matchedArguments.contains(argName)) {
+            // Duplicate argument
+            holder.annotateError(child, StarlarkBundle.message("annotator.duplicate.keyword.argument", argName))
+          } else {
+            matchedArguments[argName] = argValue
+            if (!params.any { it.name == argName }) {
+              kwArgsFound = true
+            }
           }
           onlyKeywordArgs = true
         }
@@ -114,11 +108,12 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
 
     val missingArguments = mutableListOf<String>()
     for (param in params) {
-      if (param.required && !matchedArguments.contains(param.name)) {
+      if ((param.required && !matchedArguments.contains(param.name) && !param.isKwArgs()) ||
+        (param.required && param.isKwArgs() && !kwArgsFound)
+      ) {
         missingArguments.add(param.name)
       }
     }
-    // TODO
     if (missingArguments.isNotEmpty()) {
       holder.annotateError(
         element = arguments,
@@ -130,6 +125,7 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
   private fun ListIterator<BazelGlobalFunctionParameter>.nextOrNull() = if (hasNext()) next() else null
 
   private fun BazelGlobalFunctionParameter.isKwArgs() = name.startsWith("**")
+
   private fun BazelGlobalFunctionParameter.isVarArgs() = name.startsWith("*")
 
   private fun checkDependencyOverrideResolution(element: PsiElement, holder: AnnotationHolder) {
