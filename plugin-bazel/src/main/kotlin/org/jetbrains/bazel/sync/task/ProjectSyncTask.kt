@@ -16,6 +16,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
+import com.intellij.util.containers.forEachLoggingErrors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -161,7 +162,7 @@ class ProjectSyncTask(private val project: Project) {
           progressReporter = progressReporter,
         )
 
-      project.projectPreSyncHooks.forEach {
+      project.projectPreSyncHooks.forEachLoggingErrors(log) {
         it.onPreSync(environment)
       }
     }
@@ -200,7 +201,7 @@ class ProjectSyncTask(private val project: Project) {
                 syncScope = syncScope,
               )
 
-            project.projectSyncHooks.forEach {
+            project.projectSyncHooks.forEachLoggingErrors(log) {
               it.onSync(environment)
             }
           }
@@ -236,7 +237,7 @@ class ProjectSyncTask(private val project: Project) {
           progressReporter = progressReporter,
         )
 
-      project.projectPostSyncHooks.forEach {
+      project.projectPostSyncHooks.forEachLoggingErrors(log) {
         it.onPostSync(environment)
       }
     }
