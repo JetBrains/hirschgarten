@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.rootDir
@@ -98,8 +99,13 @@ internal class ModuleDetailsToJavaModuleTransformer(
         .resolve(target.packagePath.toString())
     val targetData = input.target.data
     return when (targetData) {
-      is JvmBuildTarget, is KotlinBuildTarget, is ScalaBuildTarget ->
-        targetDir.resolve("${target.targetName}.jar")
+      is JvmBuildTarget, is KotlinBuildTarget, is ScalaBuildTarget -> {
+        if (input.target.kind.ruleType == RuleType.LIBRARY) {
+          targetDir.resolve("lib${target.targetName}.jar")
+        } else {
+          targetDir.resolve("${target.targetName}.jar")
+        }
+      }
       else -> null
     }
   }
