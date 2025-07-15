@@ -5,6 +5,7 @@ import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibr
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDebugFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewListSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
@@ -77,6 +78,13 @@ object ProjectViewSyncFlagsSectionParser :
   override fun mapRawValues(rawValue: String): String = rawValue
 
   override fun createInstance(values: List<String>): ProjectViewSyncFlagsSection = ProjectViewSyncFlagsSection(values)
+}
+
+object ProjectViewDebugFlagsSectionParser :
+  ProjectViewListSectionParser<String, ProjectViewDebugFlagsSection>(ProjectViewDebugFlagsSection.SECTION_NAME) {
+  override fun mapRawValues(rawValue: String): String = rawValue
+
+  override fun createInstance(values: List<String>): ProjectViewDebugFlagsSection = ProjectViewDebugFlagsSection(values)
 }
 
 object ProjectViewEnabledRulesSectionParser :
