@@ -67,14 +67,13 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
     val expectedParamIter = params.listIterator()
     var expectedParam = expectedParamIter.nextOrNull()
     var onlyKeywordArgs = false
-    val matchedArguments = mutableMapOf<String, String>()
+    val matchedArguments = mutableSetOf<String>()
     val acceptsKwArgs = params.any { it.isKwArgs() }
     var kwArgsFound = false
     for (child in arguments.children) {
       when (child) {
         is StarlarkNamedArgumentExpression -> {
           val argName = child.name ?: continue
-          val argValue = child.getArgumentStringValue() ?: continue
           if (!params.any { it.name == argName } && !acceptsKwArgs) {
             // Cannot be resolved
             holder.annotateError(child, StarlarkBundle.message("annotator.named.parameter.not.found", argName))
@@ -82,7 +81,7 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
             // Duplicate argument
             holder.annotateError(child, StarlarkBundle.message("annotator.duplicate.keyword.argument", argName))
           } else {
-            matchedArguments[argName] = argValue
+            matchedArguments.add(argName)
             if (!params.any { it.name == argName }) {
               kwArgsFound = true
             }
@@ -96,8 +95,9 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
             holder.annotateError(child, StarlarkBundle.message("annotator.too.many.positional.arguments"))
           } else {
             val argName = expectedParam.name
-            val argValue = child.text
-            matchedArguments[argName] = argValue // Possibly overwriting other values for *args but we only want to know if there were any.
+            if (!matchedArguments.contains(argName)) {
+              matchedArguments.add(argName)
+            }
             if (!expectedParam.isVarArgs()) {
               expectedParam = expectedParamIter.nextOrNull()
             }
