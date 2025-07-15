@@ -8,10 +8,8 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
-import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import java.awt.event.KeyEvent
 import kotlin.time.Duration.Companion.minutes
@@ -36,13 +34,11 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProject() {
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-    createContext().runIdeWithDriver(commands = commands, runTimeout = timeout).useDriverAndCloseIde {
+    createContext().runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {
+        syncBazelProject()
         waitForIndicators(5.minutes)
+
         step("See which run configurations there are") { x { byVisibleText("Remote JVM") }.click() }
         Thread.sleep(1000)
         step("Select another imported run configuration") { keyboard { key(KeyEvent.VK_ENTER) } }

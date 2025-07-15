@@ -183,6 +183,10 @@
       interface="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook$EnableWorkspaceModuleSyncHookExtension"
       qualifiedName="org.jetbrains.bazel.workspaceModuleSyncHook.enable"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelVersionResolver"
+                    interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -199,6 +203,7 @@
     <projectSyncHook
       id="DirectoriesSyncHook"
       implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"
+      order="after TargetUtilsSyncHook"
     />
     <projectSyncHook
       id="BazelRepoMappingSyncHook"
@@ -219,6 +224,7 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache" />
+    <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionFetchSyncHook"/>
 
 
     <projectStructureProvider
@@ -251,7 +257,12 @@
     <additionalProjectTaskRunnerProvider
       implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"
     />
-    <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules" />
+    <targetKindProvider
+      implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"
+    />
+    <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
+
+    <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -616,11 +627,19 @@
       implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionCompletionContributor"
       language="ProjectView"
     />
-
+    <annotator
+      implementationClass="org.jetbrains.bazel.languages.projectview.annotation.ProjectViewAnnotator"
+      language="ProjectView"
+    />
     <formattingService implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService" />
     <actionOnSave
       id="StarlarkFormattingActionOnSave"
       implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingActionOnSave"
+    />
+
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor"
+      language="ProjectView"
     />
 
     <runLineMarkerContributor
@@ -669,6 +688,23 @@
       implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"
       language="BazelQueryFlags"
     />
+
+    <fileType name="BazelVersion"
+              implementationClass="org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType"
+              fieldName="INSTANCE"
+              language="BazelVersion"
+              fileNames=".bazelversion"
+              extensions="bazelversion"/>
+
+    <lang.parserDefinition language="BazelVersion"
+                           implementationClass="org.jetbrains.bazel.languages.bazelversion.parser.BazelVersionParserDefinition"/>
+
+    <localInspection language="BazelVersion"
+                     displayName="Bazel Version Check"
+                     groupName="Bazel"
+                     enabledByDefault="true"
+                     level="WARNING"
+                     implementationClass="org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection"/>
 
     <fileType
       extensions="bazelrc"

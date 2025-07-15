@@ -2,10 +2,10 @@ package org.jetbrains.bazel.workspacecontext.provider
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContextEntityExtractorException
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -25,7 +25,7 @@ class BazelBinarySpecMapperTest {
 
       // when
       val exception =
-        shouldThrow<ExecutionContextEntityExtractorException> {
+        shouldThrow<WorkspaceContextEntityExtractorException> {
           BazelBinarySpecExtractor.fromProjectView(projectView)
         }
 
