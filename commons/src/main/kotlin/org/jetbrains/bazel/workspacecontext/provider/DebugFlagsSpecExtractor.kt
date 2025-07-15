@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDebugFlagsSection
 import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
@@ -11,7 +10,7 @@ private val defaultBuildFlagsSpec =
   )
 
 internal object DebugFlagsSpecExtractor :
-  ExecutionContextEntityExtractor<DebugFlagsSpec> {
+  WorkspaceContextEntityExtractor<DebugFlagsSpec> {
   override fun fromProjectView(projectView: ProjectView): DebugFlagsSpec =
     projectView.debugFlags?.let {
       mapNotEmptySection(it)
