@@ -6,6 +6,7 @@ import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletio
 import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 import org.jetbrains.bazel.projectview.model.supportedSections
 
 object ProjectViewSection {
@@ -57,7 +58,7 @@ object ProjectViewSection {
       SectionMetadata("shard_sync", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("sync_flags", SectionType.List.String, FlagCompletionProvider("sync")),
       SectionMetadata("target_shard_size", SectionType.Scalar.Integer),
-      SectionMetadata("targets", SectionType.List.String),
+      SectionMetadata("targets", SectionType.List.String, TargetCompletionProvider()),
       SectionMetadata("import_run_configurations", SectionType.List.String, FiletypeCompletionProvider(".xml")),
       SectionMetadata("test_sources", SectionType.List.String), // used by Google's plugin
       SectionMetadata("gazelle_target", SectionType.Scalar.String),

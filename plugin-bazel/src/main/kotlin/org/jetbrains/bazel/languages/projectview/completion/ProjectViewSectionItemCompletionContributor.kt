@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 
-class ProjectViewSectionItemCompletionContributor : CompletionContributor() {
+internal class ProjectViewSectionItemCompletionContributor : CompletionContributor() {
   init {
     for (metadata in ProjectViewSection.KEYWORD_MAP.values) {
       if (metadata.completionProvider != null) {

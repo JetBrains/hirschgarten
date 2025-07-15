@@ -8,5 +8,6 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/model",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
     ],
 )

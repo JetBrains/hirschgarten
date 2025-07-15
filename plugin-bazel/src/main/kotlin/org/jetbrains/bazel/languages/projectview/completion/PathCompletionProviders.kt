@@ -32,7 +32,7 @@ private fun getRelativePaths(root: VirtualFile, filter: (VirtualFile) -> Boolean
 private fun getProjectRoot(parameters: CompletionParameters): VirtualFile? =
   ProjectFileIndex.getInstance(parameters.position.project).getContentRootForFile(parameters.originalFile.virtualFile)
 
-class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
+internal class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
@@ -56,7 +56,7 @@ class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>()
   }
 }
 
-class FiletypeCompletionProvider(val fileExtension: String) : CompletionProvider<CompletionParameters>() {
+internal class FiletypeCompletionProvider(val fileExtension: String) : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,

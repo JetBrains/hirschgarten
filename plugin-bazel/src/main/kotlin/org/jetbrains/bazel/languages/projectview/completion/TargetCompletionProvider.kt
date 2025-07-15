@@ -5,20 +5,21 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
+import org.jetbrains.bazel.target.targetUtils
 
-internal class SimpleCompletionProvider(val variants: List<String>) : CompletionProvider<CompletionParameters>() {
+internal class TargetCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    result.addAllElements(variants.map { sectionItemLookupElement(it) })
+    val project = parameters.position.project
+    result.addAllElements(project.targetUtils.allTargetsAndLibrariesLabels.map { labelLookupElement(it) })
   }
 
-  private fun sectionItemLookupElement(value: String): LookupElement =
+  private fun labelLookupElement(label: String): LookupElement =
     LookupElementBuilder
-      .create(value)
-      .withIcon(PlatformIcons.PROPERTY_ICON)
+      .create(label)
+      .withLookupStrings(listOf(label, "-$label"))
 }

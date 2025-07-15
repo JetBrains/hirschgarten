@@ -18,7 +18,7 @@ import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 
-class ProjectViewSectionCompletionContributor : CompletionContributor() {
+internal class ProjectViewSectionCompletionContributor : CompletionContributor() {
   init {
     extend(
       CompletionType.BASIC,
