@@ -25,7 +25,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     val functionName = psiIdentifier?.getFunctionName()
     if (psiIdentifier?.isMethod() == true) {
       val className = psiIdentifier.getClassName() ?: return functionName
-      return "$className.$functionName"
+      return "$className.$functionName$"
     }
     return "$functionName"
   }
