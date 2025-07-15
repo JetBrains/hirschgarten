@@ -66,7 +66,7 @@ object BazelFlag {
 
   @JvmStatic fun instrumentationFilterAll(): String = arg("instrumentation_filter", "[:]")
 
-  private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
+  fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
 
   private fun flag(name: String) = "--$name"
 }
