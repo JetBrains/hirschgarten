@@ -35,3 +35,12 @@ kt_intellij_junit4_test(
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
+
+kt_intellij_junit4_test(
+    name = "BazelGlobalFunctionAnnotatorTest",
+    src = "BazelGlobalFunctionAnnotatorTest.kt",
+    tags = ["exclusive"],
+    deps = [
+        "//plugin-bazel",
+    ],
+)
