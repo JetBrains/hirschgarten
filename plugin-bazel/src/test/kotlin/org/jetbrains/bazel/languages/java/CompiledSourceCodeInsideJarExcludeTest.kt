@@ -45,7 +45,7 @@ class CompiledSourceCodeInsideJarExcludeTest : IdeStarterBaseProjectTest() {
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
-          execute { buildAndSync()}
+          execute { buildAndSync() }
           execute { waitForSmartMode() }
           waitForIndicators(5.minutes)
 

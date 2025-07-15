@@ -27,8 +27,10 @@
     </extensions>
 
     <extensionPoints>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.python.synonymProvider"
-                        interface="org.jetbrains.bazel.python.resolve.PythonSynonymProvider"
-                        dynamic="true"/>
+        <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.python.resolve.PythonSynonymProvider"
+      qualifiedName="org.jetbrains.bazel.python.synonymProvider"
+    />
     </extensionPoints>
 </idea-plugin>

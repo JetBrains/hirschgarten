@@ -473,7 +473,9 @@
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
-    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
+    <postStartupActivity
+      implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity"
+    />
     <notificationGroup
       displayType="BALLOON"
       id="Bazel slow plugins warning"
@@ -586,8 +588,7 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
       language="Starlark"
     />
-    <editorTabTitleProvider
-      implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
+    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider" />
     <extendWordSelectionHandler
       implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"
     />
@@ -829,8 +830,10 @@
         second-keystroke="H"
       />
     </action>
-    <action id="Bazel.JumpToBuildFile"
-            class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
+    <action
+      class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction"
+      id="Bazel.JumpToBuildFile"
+    >
       <add-to-group group-id="EditorPopupMenu" />
       <add-to-group group-id="EditorTabPopupMenu" />
       <keyboard-shortcut
@@ -853,26 +856,35 @@
       />
     </action>
 
-    <action id="Bazel.AddToProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
-            text="Add to the Project View Directories"
-            description="Add this directory to the project view file.">
+    <action
+      class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
+      description="Add this directory to the project view file."
+      id="Bazel.AddToProjectViewDirectoriesAction"
+      text="Add to the Project View Directories"
+    >
     </action>
 
-    <action id="Bazel.ExcludeFromProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
-            text="Exclude from the Project View Directories"
-            description="Exclude this directory from the project view file.">
+    <action
+      class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
+      description="Exclude this directory from the project view file."
+      id="Bazel.ExcludeFromProjectViewDirectoriesAction"
+      text="Exclude from the Project View Directories"
+    >
     </action>
 
-    <action id="Bazel.OpenProjectViewFile"
-            class="org.jetbrains.bazel.action.registered.OpenProjectViewAction">
+    <action
+      class="org.jetbrains.bazel.action.registered.OpenProjectViewAction"
+      id="Bazel.OpenProjectViewFile"
+    >
     </action>
 
     <group id="Bazel.ModifyProjectViewDirectories">
-      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-      <reference id="Bazel.AddToProjectViewDirectoriesAction"/>
-      <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction"/>
+      <add-to-group
+        anchor="last"
+        group-id="ProjectViewPopupMenu"
+      />
+      <reference id="Bazel.AddToProjectViewDirectoriesAction" />
+      <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction" />
     </group>
   </actions>
 

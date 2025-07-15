@@ -50,7 +50,7 @@ prettier.prettier_binary(
         # https://prettier.io/docs/en/cli.html#--log-level
         # NB: prettier 2 names this loglevel, in prettier 3 it's renamed log-level, see
         # https://prettier.io/blog/2023/07/05/3.0.0.html#cli-1
-        "--loglevel=warn",
+        "--log-level=warn",
     ],
 )
 

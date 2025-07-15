@@ -5,7 +5,7 @@ const config = {
   singleAttributePerLine: true,
   xmlSortAttributesByKey: true,
   plugins: [
-    "@prettier/plugin-xml",
+    require("@prettier/plugin-xml"),
   ],
 };
 

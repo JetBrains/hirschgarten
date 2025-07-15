@@ -163,7 +163,10 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
       for (runfilesVar in runfilesVars) {
         val envKey = "RUNFILES_${runfilesVar.groupValues[1]}"
         val envVal: String = runfilesVar.groupValues[2]
-        if ("RUNFILES_MANIFEST_ONLY" == envKey && TRUTHY_ENV_VALUES_LOWER.contains(envVal.trim { it <= ' ' }.lowercase(Locale.getDefault()))
+        if ("RUNFILES_MANIFEST_ONLY" == envKey &&
+          TRUTHY_ENV_VALUES_LOWER.contains(
+            envVal.trim { it <= ' ' }.lowercase(Locale.getDefault()),
+          )
         ) {
           throw ExecutionException(POP_UP_MESSAGE_ENABLE_SYMLINKS)
         }
