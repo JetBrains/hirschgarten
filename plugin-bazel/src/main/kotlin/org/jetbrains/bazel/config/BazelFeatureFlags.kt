@@ -4,6 +4,7 @@ import com.intellij.codeInsight.multiverse.CodeInsightContextManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.util.PlatformUtils
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
 
@@ -89,7 +90,7 @@ object BazelFeatureFlags {
     get() = isEnabled(CHECK_SHARED_SOURCES)
 
   val autoOpenProjectIfPresent: Boolean
-    get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) || ApplicationManager.getApplication().isHeadlessEnvironment
+    get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) || ApplicationManager.getApplication().isHeadlessEnvironment && !PlatformUtils.isFleetBackend()
 
   val isQueryTerminalCompletionEnabled: Boolean
     get() = isEnabled(QUERY_TERMINAL_COMPLETION)
