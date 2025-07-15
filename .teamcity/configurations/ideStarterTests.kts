@@ -1,6 +1,5 @@
 package configurations
 
-import jdk.javadoc.internal.doclets.toolkit.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
