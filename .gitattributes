@@ -18,3 +18,5 @@ plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelquery/lexer/_Baz
 # exclude test projects for e2e tests
 server/e2e/test-projects/** rules-lint-ignored
 ktlint-baseline.xml rules-lint-ignored
+# exclude lexer generated files
+**/_*.java rules-lint-ignored
