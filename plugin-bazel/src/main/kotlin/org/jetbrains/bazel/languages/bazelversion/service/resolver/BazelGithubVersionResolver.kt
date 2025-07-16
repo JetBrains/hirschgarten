@@ -59,13 +59,15 @@ class BazelGithubVersionResolver : BazelVersionResolver {
   }
 
   suspend fun getLatestBazelVersion(project: Project, forkName: String): String? {
-    val response = try {
-      HttpRequests.request("https://api.github.com/repos/$forkName/$DEFAULT_REPO_NAME/releases")
-        .productNameAsUserAgent()
-        .readString()
-    } catch (_: IOException) {
-      return null
-    }
+    val response =
+      try {
+        HttpRequests
+          .request("https://api.github.com/repos/$forkName/$DEFAULT_REPO_NAME/releases")
+          .productNameAsUserAgent()
+          .readString()
+      } catch (_: IOException) {
+        return null
+      }
     val cacheService = project.service<BazelGithubGlobalCacheService>()
 
     val releases =
