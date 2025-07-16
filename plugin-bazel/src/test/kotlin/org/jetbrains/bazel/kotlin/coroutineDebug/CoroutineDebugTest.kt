@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.kotlin.coroutineDebug
 
-import com.intellij.driver.sdk.openFile
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
@@ -18,10 +17,9 @@ import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -48,15 +46,11 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun testCoroutineDebug() {
-    val commands =
-      CommandChain()
-        .waitForBazelSync()
-        .waitForSmartMode()
-
     createContext()
-      .runIdeWithDriver(runTimeout = timeout, commands = commands)
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
+          syncBazelProject()
           waitForIndicators(5.minutes)
 
           step("Enable Kotlin Coroutine Debug") {
