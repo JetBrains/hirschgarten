@@ -44,8 +44,13 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
         targetUtils
           .getExecutableTargetsForFile(url)
           .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this),
-                              getExtraProgramArguments(this), this)
+      calculateLineMarkerInfo(
+        project,
+        targetInfos,
+        getSingleTestFilter(this),
+        getExtraProgramArguments(this),
+        this,
+      )
     }
 
   private fun calculateLineMarkerInfo(

@@ -44,6 +44,8 @@ class TestTargetAction(
   ) {
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {
     (configuration as BazelRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
-    (configuration as BazelRunConfiguration).handler?.apply { (state as? HasProgramArguments)?.programArguments?.addAll(testExecutableArguments) }
+    (configuration as BazelRunConfiguration).handler?.apply {
+      (state as? HasProgramArguments)?.programArguments?.addAll(testExecutableArguments)
+    }
   }
 }

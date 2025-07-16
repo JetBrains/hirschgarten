@@ -23,6 +23,7 @@ class WorkspaceContextConstructor(
       directories = directoriesSpecExtractor.fromProjectView(projectView),
       buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
       syncFlags = SyncFlagsSpecExtractor.fromProjectView(projectView),
+      debugFlags = DebugFlagsSpecExtractor.fromProjectView(projectView),
       bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
       allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
       dotBazelBspDirPath = DotBazelBspDirPathSpec(dotBazelBspDirPath),
