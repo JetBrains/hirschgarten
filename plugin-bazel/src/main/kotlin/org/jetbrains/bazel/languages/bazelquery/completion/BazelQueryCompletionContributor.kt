@@ -15,6 +15,7 @@ import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.startOffset
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenType
@@ -81,7 +82,7 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         .removePrefix("\"")
         .removePrefix("'")
     val project = parameters.editor.project ?: return
-    val currentDirectory = project.basePath ?: return
+    val currentDirectory = project.rootDir.getPath()
     val targetSuggestions =
       TargetCompletionsGenerator(project)
         .getTargetsList(prefix, Path.of(currentDirectory))
@@ -126,6 +127,12 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         .withBoldness(true)
         .withIcon(BazelPluginIcons.bazel)
         .withInsertHandler { context, item ->
+          /**
+           * Inserting a selected suggestion with a target path using 'tab' pastes a fragment of the suggestion
+           * to the slash occurrence (corresponding to next subpackage on the path), for example, for the entered
+           * prefix "//p", selecting the suggestion "//path/to/my:target" using 'tab' will result in "//path/"
+           * and potentially shorten the list of suggestions.
+           */
           if (context.completionChar == '\t') {
             val startOffset = context.startOffset
             val cursorPositionInSuggestion = caretOffset - startOffset
@@ -139,6 +146,11 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
               AutoPopupController.getInstance(context.project)?.autoPopupMemberLookup(context.editor, null)
             }
           }
+          /**
+           * Regardless of whether we select a suggestion using tab or enter, if we complete the name of a function
+           * (ended with parentheses), we place the cursor in the middle of the parentheses to continue entering its
+           * arguments (in Bazel Query, all functions have at least one argument).
+           */
           val offset = context.editor.caretModel.offset
           if (offset > 0 && context.document.charsSequence[offset - 1] == ')') {
             context.editor.caretModel.moveToOffset(offset - 1)
