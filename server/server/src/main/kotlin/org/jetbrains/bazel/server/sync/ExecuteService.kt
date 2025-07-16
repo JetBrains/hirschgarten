@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.HasAdditionalBazelOptions
@@ -149,8 +150,7 @@ class ExecuteService(
    * If `debugArguments` is empty, test task will be executed normally without any debugging options
    */
   suspend fun testWithDebug(params: TestParams): TestResult {
-    val modules = selectModules(params.targets)
-    val singleModule = modules.singleOrResponseError(params.targets.first())
+    val singleModule = extractSingleModule(params)
     val debugArguments =
       if (params.debug != null) {
         val requestedDebugType = params.debug
@@ -161,6 +161,12 @@ class ExecuteService(
       }
 
     return testImpl(singleModule, params, debugArguments)
+  }
+
+  suspend fun extractSingleModule(params: TestParams): Module {
+    val modules = selectModules(params.targets)
+    val singleModule = modules.singleOrResponseError(params.targets.first())
+    return singleModule
   }
 
   private suspend fun testImpl(
@@ -174,9 +180,7 @@ class ExecuteService(
       when (params.coverage) {
         true ->
           bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
-            it.options.add(BazelFlag.combinedReportLcov())
-            val parts = singleModule.label.toString().split("/")
-            it.options.add(arg("instrumentation_filter", "^//" + parts[2] + "[/:]"))
+            addCoverageOptions(it, singleModule)
           }
 
         else -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
@@ -228,6 +232,14 @@ class ExecuteService(
       }
 
     return TestResult(statusCode = result.bazelStatus, originId = params.originId)
+  }
+
+  fun addCoverageOptions(command: BazelCommand, singleModule: Module) {
+    command.options.add(BazelFlag.combinedReportLcov())
+    val packageName =
+      singleModule.label.packagePath.pathSegments
+        .first()
+    command.options.add(arg("instrumentation_filter", "^//" + packageName + "[/:]"))
   }
 
   suspend fun mobileInstall(params: MobileInstallParams): MobileInstallResult {
