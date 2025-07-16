@@ -38,7 +38,10 @@ java_binary(
 prettier.prettier_binary(
     name = "prettier",
     # Include this js_library and its dependencies in the runfiles (runtime dependencies)
-    data = [":prettierrc", "//:node_modules/@prettier/plugin-xml",],
+    data = [
+        ":prettierrc",
+        "//:node_modules/@prettier/plugin-xml",
+    ],
     # Allow the binary to be run outside bazel
     env = {"BAZEL_BINDIR": "."},
     fixed_args = [
