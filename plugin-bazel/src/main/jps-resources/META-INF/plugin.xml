@@ -456,6 +456,11 @@
       id="Bazel"
     />
 
+    <toolWindowAllowlist id="Bazel Query" />
+    <toolWindowExtractor
+      implementation="org.jetbrains.bazel.ui.widgets.queryTab.BazelQueryToolWindowViewModelExtractor"
+    />
+
     <consoleFilterProvider
       implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"
     />
@@ -669,6 +674,8 @@
       implementationClass="org.jetbrains.bazel.languages.bazelquery.completion.BazelQueryCompletionContributor"
       language="BazelQuery"
     />
+
+    <lookup.charFilter implementation="org.jetbrains.bazel.languages.bazelquery.completion.BazelQueryCharFilter"/>
 
 
     <fileType
@@ -895,6 +902,10 @@
             class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
             text="Exclude from the Project View Directories"
             description="Exclude this directory from the project view file.">
+    </action>
+
+    <action id="Bazel.OpenBazelQueryToolWindowAction"
+            class="org.jetbrains.bazel.action.registered.OpenBazelQueryToolWindowAction">
     </action>
 
     <action id="Bazel.OpenProjectViewFile"

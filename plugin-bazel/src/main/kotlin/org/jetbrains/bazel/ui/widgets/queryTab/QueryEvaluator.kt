@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.queryTab
+package org.jetbrains.bazel.ui.widgets.queryTab
 
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.bazelrunner.BazelProcess
@@ -40,7 +40,7 @@ internal class BazelFlag(value: String) {
   }
 }
 
-internal class QueryEvaluator(private var currentRunnerDirFile: VirtualFile) {
+internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
   private var bazelRunner: BazelRunner
   private var workspaceContext: WorkspaceContext
 
@@ -53,16 +53,6 @@ internal class QueryEvaluator(private var currentRunnerDirFile: VirtualFile) {
 
   private var currentProcess = AtomicReference<BazelProcess?>(null)
   private var currentProcessCancelled = AtomicBoolean(false)
-
-  fun setEvaluationDirectory(directoryFile: VirtualFile) {
-    directoryFile.isDirectoryOrThrow()
-    if (directoryFile == currentRunnerDirFile) return
-
-    val getRunnerCallResult = getRunnerOfDirectory(directoryFile)
-    bazelRunner = getRunnerCallResult.first
-    workspaceContext = getRunnerCallResult.second
-    currentRunnerDirFile = directoryFile
-  }
 
   private fun getRunnerOfDirectory(directoryFile: VirtualFile): Pair<BazelRunner, WorkspaceContext> {
     directoryFile.isDirectoryOrThrow()

@@ -1,5 +1,6 @@
-package org.jetbrains.bazel.ui.queryTab
+package org.jetbrains.bazel.ui.widgets.queryTab
 
+import com.intellij.codeInsight.lookup.LookupManager
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.execution.filters.Filter
@@ -9,24 +10,21 @@ import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteIntentReadAction
-import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.CollapsiblePanel
+import com.intellij.ui.JBSplitter
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
 import org.jdesktop.swingx.VerticalLayout
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
@@ -36,10 +34,12 @@ import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.options.BazelQueryCommonOptions
 import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
-import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
-import javax.swing.Box
+import java.awt.Font
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import javax.swing.AbstractButton
 import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
 import javax.swing.JButton
@@ -47,7 +47,9 @@ import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JRadioButton
+import javax.swing.KeyStroke
 import javax.swing.ScrollPaneConstants
+import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
 private class QueryFlagField(
@@ -60,19 +62,38 @@ private class QueryFlagField(
       addActionListener {
         valuesButtons.forEach { it.isVisible = isSelected }
       }
+      addShiftEnterAction()
     }
   val valuesButtons: List<JRadioButton> =
     values.map {
-      JRadioButton(it).apply { border = JBUI.Borders.emptyLeft(25) }
+      JRadioButton(it).apply {
+        border = JBUI.Borders.emptyLeft(25)
+        addShiftEnterAction()
+        isFocusable = true
+        setFocusable(true)
+      }
     }
   val valuesGroup: ButtonGroup = ButtonGroup()
 
   init {
     valuesButtons.forEach {
-      valuesGroup.add(it)
+      this.valuesGroup.add(it)
       it.isVisible = false
     }
     valuesButtons.firstOrNull()?.isSelected = true
+  }
+
+  private fun AbstractButton.addShiftEnterAction() {
+    addKeyListener(
+      object : KeyAdapter() {
+        override fun keyPressed(e: KeyEvent) {
+          if (e.keyCode == KeyEvent.VK_ENTER && e.isShiftDown) {
+            doClick()
+            e.consume()
+          }
+        }
+      },
+    )
   }
 
   fun addToPanel(panel: JPanel) {
@@ -97,34 +118,67 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   // Bazel Runner
   private val queryEvaluator = QueryEvaluator(project.baseDir)
 
+  private class EvaluateQueryAction(private val tab: BazelQueryTab) : AnAction() {
+    override fun actionPerformed(e: AnActionEvent) {
+      tab.evaluate()
+    }
+  }
+
   // UI elements
-  private val editorTextField = LanguageTextField(BazelQueryLanguage, project, "")
-  private val directoryField = JBTextField().apply { isEditable = false }
-  private val flagTextField = LanguageTextField(BazelQueryFlagsLanguage, project, "")
+  private val editorTextField =
+    LanguageTextField(BazelQueryLanguage, project, "").apply {
+      setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.query"))
+      registerKeyboardAction(
+        {
+          val editor = getEditor()
+          if (editor != null) {
+            val lookup = LookupManager.getActiveLookup(editor)
+            if (lookup == null) {
+              evaluate()
+            }
+          }
+        },
+        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+        WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
+      )
+    }
+  private val flagTextField =
+    LanguageTextField(BazelQueryFlagsLanguage, project, "").apply {
+      setPlaceholder(BazelPluginBundle.message("bazel.toolwindow.tab.query.placeholder.flags"))
+    }
   private val buttonsPanel =
     JPanel().apply {
       layout = BoxLayout(this, BoxLayout.X_AXIS)
-      maximumSize = Dimension(Int.MAX_VALUE, 40)
     }
   private val flagsPanel =
     JPanel(VerticalLayout()).apply {
+      add(
+        JLabel(BazelPluginBundle.message("label.bazel.query.flag.panel.tittle")).apply {
+          horizontalAlignment = SwingConstants.CENTER
+          font = font.deriveFont(Font.BOLD)
+          border = JBUI.Borders.empty(5)
+        },
+      )
       defaultFlags.forEach {
         it.addToPanel(this)
       }
       add(flagTextField)
+      val action = EvaluateQueryAction(this@BazelQueryTab)
+      action.registerCustomShortcutSet(
+        CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0)),
+        this,
+      )
     }
-  private val bazelFilter = BazelBuildTargetConsoleFilter(project)
-  private val resultField: ConsoleView =
-    ConsoleViewImpl(project, false).apply {
-    }
+  private val resultField: ConsoleView = ConsoleViewImpl(project, false)
 
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
-    chooseDirectory(project.baseDir)
     initializeUI()
   }
 
   // Clickable targets in output
+  private val bazelFilter = BazelBuildTargetConsoleFilter(project)
+
   private fun addLinksToResult(text: String, hyperlinkInfoList: MutableList<Pair<IntRange, HyperlinkInfo>>) {
     val filterResult = WriteIntentReadAction.compute<Filter.Result> { bazelFilter.applyFilter(text, text.length) }
 
@@ -189,69 +243,64 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     }
   }
 
+  // UI
   private fun initializeUI() {
-    fun createDirectorySelectionPanel() =
-      JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.X_AXIS)
-        val directoryButton =
-          JButton(
-            BazelPluginBundle.message("button.bazel.query.select"),
-          ).apply { addActionListener { chooseDirectory() } }
-
-        add(JLabel(BazelPluginBundle.message("label.bazel.query.select.directory")))
-        add(directoryField)
-        add(directoryButton)
-
-        maximumSize = Dimension(Int.MAX_VALUE, 40)
-      }
-
     fun createQueryPanel() =
       JPanel().apply {
         layout = BoxLayout(this, BoxLayout.X_AXIS)
         add(editorTextField)
+        add(buttonsPanel)
 
         maximumSize = Dimension(Int.MAX_VALUE, 40)
       }
 
     fun createFlagsPanel() =
-      CollapsiblePanel(
-        JBScrollPane(flagsPanel).apply {
-          verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-        },
-        true,
-        true,
-        AllIcons.General.ChevronUp,
-        AllIcons.General.ChevronDown,
-        "Flags",
-      )
+      ScrollToFocusedFlagPanel(flagsPanel).apply {
+        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+      }
 
     fun createResultPanel() =
       JPanel(BorderLayout()).apply {
         add(resultField.component, BorderLayout.CENTER)
       }
 
-    add(createDirectorySelectionPanel())
-    add(createQueryPanel())
     setButtonsPanelToEvaluate()
-    add(buttonsPanel)
-    add(
-      JBScrollPane(
-        JPanel(VerticalLayout()).apply {
-          add(createFlagsPanel())
-          add(createResultPanel())
-        },
-      ),
-    )
+    add(createQueryPanel())
+
+    val splitter =
+      JBSplitter(false, 0.25f, 0.2f, 0.8f).apply {
+        firstComponent = createFlagsPanel()
+        secondComponent =
+          JBScrollPane(
+            JPanel().apply {
+              layout = BoxLayout(this, BoxLayout.Y_AXIS)
+              add(createResultPanel())
+            },
+          )
+
+        setHonorComponentsMinimumSize(true)
+      }
+
+    add(splitter)
   }
 
   private fun setButtonsPanelToEvaluate() {
     SwingUtilities.invokeLater {
       with(buttonsPanel) {
         removeAll()
-        add(Box.createHorizontalGlue())
         val evaluateButton =
           JButton(BazelPluginBundle.message("button.bazel.query.evaluate")).apply {
             addActionListener { evaluate() }
+            addKeyListener(
+              object : KeyAdapter() {
+                override fun keyPressed(e: KeyEvent) {
+                  if (e.keyCode == KeyEvent.VK_ENTER) {
+                    doClick()
+                    e.consume()
+                  }
+                }
+              },
+            )
           }
         add(evaluateButton)
         updateUI()
@@ -263,55 +312,23 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     SwingUtilities.invokeLater {
       with(buttonsPanel) {
         removeAll()
-        add(Box.createHorizontalGlue())
         val evaluateButton =
           JButton(BazelPluginBundle.message("button.bazel.query.cancel")).apply {
             addActionListener { cancelEvaluate() }
+            addKeyListener(
+              object : KeyAdapter() {
+                override fun keyPressed(e: KeyEvent) {
+                  if (e.keyCode == KeyEvent.VK_ENTER) {
+                    doClick()
+                    e.consume()
+                  }
+                }
+              },
+            )
           }
         add(evaluateButton)
         updateUI()
       }
-    }
-  }
-
-  // Directory selection
-  private fun chooseDirectory(dirFile: VirtualFile? = null) {
-    // If argument not passed (or passed as null) display window for user to choose from:
-    val chosenDir =
-      if (dirFile != null) {
-        if (!dirFile.isDirectory) throw IllegalArgumentException("$dirFile is not a directory")
-        dirFile
-      } else {
-        val descriptor =
-          FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
-            title = BazelPluginBundle.message("file.chooser.bazel.query.select.directory.title")
-            description = BazelPluginBundle.message("file.chooser.bazel.query.select.directory.description")
-          }
-        FileChooser.chooseFile(descriptor, project, null)
-      }
-
-    if (chosenDir != null) {
-      val relativePath =
-        VfsUtilCore.getRelativePath(
-          chosenDir,
-          project.baseDir ?: chosenDir,
-          '/',
-        )
-
-      if (relativePath == null) {
-        if (dirFile != null) throw IllegalArgumentException("$dirFile is not in project")
-
-        NotificationGroupManager
-          .getInstance()
-          .getNotificationGroup("Bazel")
-          .createNotification(BazelPluginBundle.message("notification.bazel.query.selected.dir.outside.project"), NotificationType.ERROR)
-          .notify(project)
-        return
-      }
-
-      directoryField.text = "//$relativePath"
-      BazelWorkingDirectoryManager.getInstance(project).setWorkingDirectory(chosenDir.path)
-      queryEvaluator.setEvaluationDirectory(chosenDir)
     }
   }
 
@@ -333,7 +350,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     }
     flagsToRun.addAll(BazelFlag.fromTextField(flagTextField.text))
 
-    showInConsole("Bazel Query in progress...")
+    showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.in.progress"))
 
     queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
     SwingUtilities.invokeLater { setButtonsPanelToCancel() }
@@ -345,12 +362,12 @@ class BazelQueryTab(private val project: Project) : JPanel() {
       }.invokeOnCompletion {
         SwingUtilities.invokeLater {
           if (commandResults == null) {
-            showInConsole("Query cancelled")
+            showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.cancelled"))
           } else {
             if (commandResults!!.isSuccess) {
               val res = commandResults!!.stdout
               if (res.isEmpty()) {
-                showInConsole("Nothing found")
+                showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.nothing"))
               } else {
                 val hyperlinkInfoList = mutableListOf<Pair<IntRange, HyperlinkInfo>>()
                 addLinksToResult(res, hyperlinkInfoList)
