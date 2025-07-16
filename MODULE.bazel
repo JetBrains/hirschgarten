@@ -26,6 +26,27 @@ register_toolchains(
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "8.11.0")
 bazel_dep(name = "rules_jvm_external", version = "6.7")
+bazel_dep(name = "aspect_rules_js", version = "2.3.8")
+
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
+npm.npm_translate_lock(
+    name = "npm",
+    data = ["//:package.json"],
+    npmrc = "//:.npmrc",
+    pnpm_lock = "//:pnpm-lock.yaml",
+    public_hoist_packages = {
+        "typescript-eslint": [""],
+    },
+    update_pnpm_lock = True,
+    verify_node_modules_ignored = "//:.bazelignore",
+)
+use_repo(npm, "npm")
+
+pnpm = use_extension("@aspect_rules_js//npm:extensions.bzl", "pnpm")
+
+# Allows developers to use the matching pnpm version, for example:
+# bazel run -- @pnpm --dir /home/runner/work/rules_js/rules_js install
+use_repo(pnpm, "pnpm")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
@@ -188,29 +209,29 @@ single_version_override(
     patches = [
         "tools/format/use-ktlint.patch",
     ],
-    version = "1.4.4",
+    version = "1.5.0",
 )
 
 http_jar(
     name = "ktlint",
-    integrity = "sha256-oWvgHcxICqsvVfREtiAUIVL2bjFWSzuTdlBtYkwooq0=",
-    url = "https://github.com/pinterest/ktlint/releases/download/1.5.0/ktlint",
+    integrity = "sha256-qH7TYYzshNqg+jbeBe8M/v08BM5bM+WlOD8hLFymito=",
+    url = "https://github.com/pinterest/ktlint/releases/download/1.7.0/ktlint",
 )
 
 http_jar(
     name = "google_java_format",
-    integrity = "sha256-JRV3l6CpcsIpC1vHFTDE961kZFgCXjSEQSpuWpuMmqY=",
-    url = "https://github.com/google/google-java-format/releases/download/v1.25.2/google-java-format-1.25.2-all-deps.jar",
+    integrity = "sha256-MjQufBtGAPgN80cdpGrugBLT4URdXqG+H7cSibB8xzU=",
+    url = "https://github.com/google/google-java-format/releases/download/v1.28.0/google-java-format-1.28.0-all-deps.jar",
 )
 
 bazel_dep(
     name = "buildifier_prebuilt",
-    version = "8.0.3",
+    version = "8.2.0.2",
     dev_dependency = True,
 )
 bazel_dep(
     name = "rules_buf",
-    version = "0.3.0",
+    version = "0.4.0",
     dev_dependency = True,
 )
 
