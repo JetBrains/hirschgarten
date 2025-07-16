@@ -55,6 +55,7 @@ val supportedSections =
     GazelleTargetSection.SECTION_NAME,
     IndexAllFilesInDirectoriesSection.SECTION_NAME,
     PythonCodeGeneratorRuleNamesSection.SECTION_NAME,
+    ImportIjarsSection.SECTION_NAME,
   )
 
 /**
