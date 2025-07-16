@@ -32,47 +32,69 @@
   <depends
     config-file="withCodeWithMe.xml"
     optional="true"
-  >com.jetbrains.codeWithMe</depends>
+  >
+    com.jetbrains.codeWithMe
+  </depends>
   <depends
     config-file="withCoverage.xml"
     optional="true"
-  >com.intellij.modules.coverage</depends>
+  >
+    com.intellij.modules.coverage
+  </depends>
   <depends
     config-file="withCpp.xml"
     optional="true"
-  >com.intellij.clion</depends>
+  >
+    com.intellij.clion
+  </depends>
   <depends
     config-file="withDevKit.xml"
     optional="true"
-  >DevKit</depends>
+  >
+    DevKit
+  </depends>
   <depends
     config-file="withGo.xml"
     optional="true"
-  >org.jetbrains.plugins.go</depends>
+  >
+    org.jetbrains.plugins.go
+  </depends>
   <depends
     config-file="withIdeStarter.xml"
     optional="true"
-  >com.jetbrains.performancePlugin</depends>
+  >
+    com.jetbrains.performancePlugin
+  </depends>
   <depends
     config-file="withJava.xml"
     optional="true"
-  >com.intellij.modules.java</depends>
+  >
+    com.intellij.modules.java
+  </depends>
   <depends
     config-file="withJunit.xml"
     optional="true"
-  >JUnit</depends>
+  >
+    JUnit
+  </depends>
   <depends
     config-file="withKotlin.xml"
     optional="true"
-  >org.jetbrains.kotlin</depends>
+  >
+    org.jetbrains.kotlin
+  </depends>
   <depends
     config-file="withPython.xml"
     optional="true"
-  >com.intellij.modules.python</depends>
+  >
+    com.intellij.modules.python
+  </depends>
   <depends
     config-file="withTerminal.xml"
     optional="true"
-  >org.jetbrains.plugins.terminal</depends>
+  >
+    org.jetbrains.plugins.terminal
+  </depends>
 
   <extensionPoints>
     <extensionPoint
@@ -219,7 +241,6 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache" />
-
 
     <projectStructureProvider
       implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"
@@ -656,7 +677,6 @@
       language="BazelQuery"
     />
 
-
     <fileType
       extensions="bazelqueryflags"
       fieldName="INSTANCE"
@@ -861,22 +881,19 @@
       description="Add this directory to the project view file."
       id="Bazel.AddToProjectViewDirectoriesAction"
       text="Add to the Project View Directories"
-    >
-    </action>
+    />
 
     <action
       class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
       description="Exclude this directory from the project view file."
       id="Bazel.ExcludeFromProjectViewDirectoriesAction"
       text="Exclude from the Project View Directories"
-    >
-    </action>
+    />
 
     <action
       class="org.jetbrains.bazel.action.registered.OpenProjectViewAction"
       id="Bazel.OpenProjectViewFile"
-    >
-    </action>
+    />
 
     <group id="Bazel.ModifyProjectViewDirectories">
       <add-to-group
@@ -893,6 +910,7 @@
       class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
       topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
     />
+
     <listener
       class="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityListener"
       topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"

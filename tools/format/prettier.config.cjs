@@ -4,8 +4,9 @@ const config = {
   htmlWhitespaceSensitivity: "ignore",
   singleAttributePerLine: true,
   xmlSortAttributesByKey: true,
+  xmlWhitespaceSensitivity: "ignore",
   plugins: [
-    require("@prettier/plugin-xml"),
+    require.resolve("@prettier/plugin-xml")
   ],
 };
 

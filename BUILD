@@ -23,9 +23,3 @@ alias(
 )
 
 npm_link_all_packages(name = "node_modules")
-
-filegroup(
-    name = "blah",
-    srcs = [ #caret here
-    ],
-)
