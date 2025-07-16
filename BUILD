@@ -12,6 +12,7 @@ kt_kotlinc_options(
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = "2.0",
+    experimental_multiplex_workers = True,
     jvm_target = "17",
     kotlinc_options = ":kotlinc_options",
     language_version = "2.0",

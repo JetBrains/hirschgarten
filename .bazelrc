@@ -74,3 +74,6 @@ common --symlink_prefix=out/bazel-
 
 test:fast -- //... -//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... -//server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/...
 test:slow --jobs=1 //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... //server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/...
+
+common --action_env=ANDROID_HOME=
+common --action_env=ANDROID_SDK_HOME=
