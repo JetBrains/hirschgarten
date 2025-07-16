@@ -14,6 +14,7 @@ import org.jetbrains.bazel.projectview.parser.sections.IndexAllFilesInDirectorie
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBuildFlagsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.ProjectViewDebugFlagsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewDeriveTargetsFromDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewEnabledRulesSectionParser
@@ -53,6 +54,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         bazelBinary = ProjectViewBazelBinarySectionParser.parse(rawSections),
         buildFlags = ProjectViewBuildFlagsSectionParser.parse(rawSections),
         syncFlags = ProjectViewSyncFlagsSectionParser.parse(rawSections),
+        debugFlags = ProjectViewDebugFlagsSectionParser.parse(rawSections),
         allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSectionParser.parse(rawSections),
         directories = ProjectViewDirectoriesSectionParser.parse(rawSections),
         deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSectionParser.parse(rawSections),

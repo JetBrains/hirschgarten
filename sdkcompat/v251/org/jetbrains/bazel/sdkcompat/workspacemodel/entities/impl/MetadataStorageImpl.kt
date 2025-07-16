@@ -79,6 +79,7 @@ OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = 
 OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "projectRoot", valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")), withDefault = false),
 OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "includedRoots", valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))), primitive = primitiveTypeListNotNullable), withDefault = false),
 OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "excludedRoots", valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))), primitive = primitiveTypeListNotNullable), withDefault = false),
+OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "buildFiles", valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))), primitive = primitiveTypeListNotNullable), withDefault = false),
 OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "indexAllFilesInIncludedRoots", valueType = primitiveTypeBooleanNotNullable, withDefault = false)), extProperties = arrayListOf(), isAbstract = false)
         
         addMetadata(typeMetadata)
@@ -136,7 +137,7 @@ OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = 
     override fun initializeMetadataHash() {
         addMetadataHash(typeFqn = "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendumEntity", metadataHash = 1291437999)
         addMetadataHash(typeFqn = "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelJavaSourceRootEntity", metadataHash = 1553780067)
-        addMetadataHash(typeFqn = "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 1164090575)
+        addMetadataHash(typeFqn = "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 450849743)
         addMetadataHash(typeFqn = "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity", metadataHash = -906063924)
         addMetadataHash(typeFqn = "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JvmBinaryJarsEntity", metadataHash = -1087954003)
         addMetadataHash(typeFqn = "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity", metadataHash = -1231076700)

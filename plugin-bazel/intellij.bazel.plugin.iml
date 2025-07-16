@@ -27,6 +27,9 @@
     <orderEntry type="library" name="StreamEx" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="studio-platform" level="project" />
     <orderEntry type="library" name="swingx" level="project" />
+    <orderEntry type="library" name="caffeine" level="project" />
+    <orderEntry type="module" module-name="fleet.ktor.client.cio" />
+    <orderEntry type="module" module-name="fleet.ktor.client.core" />
     <orderEntry type="module" module-name="intellij.android.common" />
     <orderEntry type="module" module-name="intellij.android.core" />
     <orderEntry type="module" module-name="intellij.android.jps.model" />

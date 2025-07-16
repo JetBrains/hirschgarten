@@ -44,6 +44,12 @@ data class WorkspaceContext(
    */
   val syncFlags: SyncFlagsSpec,
   /**
+   * Debug flags which should be added to bazel build/run call for debugging.
+   *
+   * Obtained from `ProjectView` simply by mapping `debug_flags` section.
+   */
+  val debugFlags: DebugFlagsSpec,
+  /**
    * Path to bazel which should be used in the bazel runner.
    *
    * Obtained from `ProjectView` if not null, otherwise deducted from `PATH`.
