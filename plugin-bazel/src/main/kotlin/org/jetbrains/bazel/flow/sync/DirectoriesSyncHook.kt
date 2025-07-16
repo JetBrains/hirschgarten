@@ -28,9 +28,10 @@ private class DirectoriesSyncHook : ProjectSyncHook {
         query("workspace/context") {
           environment.server.workspaceContext()
         }
-      val buildFiles = environment.diff.targetUtilsDiff.bspTargets.mapNotNull { target ->
-        Constants.BUILD_FILE_NAMES.map { buildFileName -> target.baseDirectory.resolve(buildFileName) }.find { it.isRegularFile() }
-      }
+      val buildFiles =
+        environment.diff.targetUtilsDiff.bspTargets.mapNotNull { target ->
+          Constants.BUILD_FILE_NAMES.map { buildFileName -> target.baseDirectory.resolve(buildFileName) }.find { it.isRegularFile() }
+        }
 
       val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
       val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories.value

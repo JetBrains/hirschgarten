@@ -12,5 +12,6 @@ plugin-bazel/src/test/testData/**/*.bzl rules-lint-ignored
 .teamcity/** rules-lint-ignored
 plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java rules-lint-ignored
 plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java rules-lint-ignored
+plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelquery/lexer/_BazelQueryLexer.java rules-lint-ignored
 # exclude test projects for e2e tests
 server/e2e/test-projects/** rules-lint-ignored
