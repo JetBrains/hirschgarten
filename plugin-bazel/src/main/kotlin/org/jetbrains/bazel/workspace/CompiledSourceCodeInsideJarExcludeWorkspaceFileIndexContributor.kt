@@ -3,6 +3,7 @@ package org.jetbrains.bazel.workspace
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
@@ -12,7 +13,7 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSour
  * Don't index irrelevant files inside jars that are built from internal targets.
  * We care about generated classes (and respective generated sources), but not about generated resources.
  */
-private val ALLOWED_FILE_EXTENSIONS_IN_LIBRARIES_FROM_INTERNAL_TARGETS =
+private val JVM_EXTENSIONS =
   listOf(
     "class",
     "java",
@@ -47,12 +48,22 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
           val relativePathWithoutNestedClass = removeNestedClass(relativePath)
           if (relativePathWithoutNestedClass in relativePathsToExclude) return@registerExclusionCondition true
           if (rootFile.url in librariesFromInternalTargetsUrls) {
-            return@registerExclusionCondition virtualFile.extension !in ALLOWED_FILE_EXTENSIONS_IN_LIBRARIES_FROM_INTERNAL_TARGETS
+            return@registerExclusionCondition virtualFile.extension !in JVM_EXTENSIONS
           }
           false
         },
         entity = entity,
       )
+
+      if (libraryRoot.type == LibraryRootTypeId.SOURCES) {
+        registrar.registerExclusionCondition(
+          root = contentRootUrl,
+          condition = { virtualFile ->
+            virtualFile.extension !in JVM_EXTENSIONS
+          },
+          entity = entity,
+        )
+      }
     }
   }
 }

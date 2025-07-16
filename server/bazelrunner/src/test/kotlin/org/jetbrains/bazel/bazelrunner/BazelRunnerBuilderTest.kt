@@ -10,6 +10,7 @@ import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
+import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
 import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
@@ -18,6 +19,7 @@ import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTime
 import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
 import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
@@ -63,6 +65,8 @@ val mockContext =
     gazelleTarget = GazelleTargetSpec(null),
     indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
     pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
+    importIjarsSpec = ImportIjarsSpec(false),
+    debugFlags = DebugFlagsSpec(emptyList()),
   )
 
 val mockBazelInfo =

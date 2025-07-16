@@ -6,7 +6,6 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
@@ -14,8 +13,6 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesAndroid
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.isJvmTarget
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -24,16 +21,24 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
-class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler {
-  private val buildToolName: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
-  override val name: String = "Jvm $buildToolName Run Handler"
+class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
+  init {
+    configuration.beforeRunTasks =
+      listOfNotNull(
+        KotlinCoroutineLibraryFinderBeforeRunTaskProvider().createTask(configuration),
+      )
+  }
+
+  override val name: String = "Jvm Run Handler"
 
   override val state = JvmRunState()
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
+        environment.putCopyableUserData(KOTLIN_COROUTINE_LIB_KEY, AtomicReference())
         JvmRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), state)
       }
 
@@ -43,7 +48,7 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
     }
 
   class JvmRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
-    override val id: String = "JvmBspRunHandlerProvider"
+    override val id: String = "JvmRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmRunHandler(configuration)
 
@@ -74,6 +79,8 @@ class JvmRunWithDebugCommandLineState(
   override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
     val configuration = environment.runProfile as BazelRunConfiguration
     val targetId = configuration.targets.single()
+    val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
+    val additionalBazelParams = settings.additionalBazelParams ?: ""
     val runParams =
       RunParams(
         targetId,
@@ -81,7 +88,7 @@ class JvmRunWithDebugCommandLineState(
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
         workingDirectory = settings.workingDirectory,
-        additionalBazelParams = settings.additionalBazelParams,
+        additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
         pidDeferred = pidDeferred,
       )
     val remoteDebugData = DebugType.JDWP(getConnectionPort())

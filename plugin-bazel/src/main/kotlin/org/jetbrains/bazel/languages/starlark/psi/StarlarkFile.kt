@@ -27,4 +27,9 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
 
   fun searchInLoads(processor: Processor<StarlarkElement>): Boolean =
     findChildrenByClass(StarlarkLoadStatement::class.java).flatMap { it.getLoadedSymbolsPsi() }.all(processor::process)
+
+  fun searchInFunctionCalls(processor: Processor<StarlarkElement>): Boolean =
+    findChildrenByClass(StarlarkExpressionStatement::class.java)
+      .mapNotNull { it.callExpressionOrNull() }
+      .all(processor::process)
 }

@@ -10,10 +10,8 @@ plugin-bazel/src/test/testData/**/*.bzl rules-lint-ignored
 **/entities/impl/** rules-lint-ignored
 # exclude all TC config files in .teamcity
 .teamcity/** rules-lint-ignored
-# exclude pnpm lock file, otherwise it will trigger lock regeneration after each format
-pnpm-lock.yaml rules-lint-ignored
 plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java rules-lint-ignored
 plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java rules-lint-ignored
+plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelquery/lexer/_BazelQueryLexer.java rules-lint-ignored
 # exclude test projects for e2e tests
 server/e2e/test-projects/** rules-lint-ignored
-ktlint-baseline.xml rules-lint-ignored

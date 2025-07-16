@@ -17,9 +17,10 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/services",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/action",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/queryTab",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console/bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//sdkcompat",
+        "//server/bazelrunner",
     ],
 )
