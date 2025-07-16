@@ -34,7 +34,11 @@ import java.util.UUID
 
 @InternalApi
 class BuildTargetTask(private val project: Project) {
-  suspend fun execute(server: JoinedBuildServer, targetsIds: List<CanonicalLabel>): CompileResult =
+  suspend fun execute(
+    server: JoinedBuildServer,
+    targetsIds: List<CanonicalLabel>,
+    arguments: List<String>,
+  ): CompileResult =
     coroutineScope {
       val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
       val originId = "build-" + UUID.randomUUID().toString()
@@ -110,7 +114,7 @@ class BuildTargetTask(private val project: Project) {
       BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
 
       startBuildConsoleTask(targetsIds, bspBuildConsole, originId, this)
-      val compileParams = createCompileParams(targetsIds, originId)
+      val compileParams = CompileParams(targetsIds, originId = originId, arguments = arguments + listOf("--keep_going"))
       try {
         val buildDeferred = async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
@@ -147,10 +151,17 @@ class BuildTargetTask(private val project: Project) {
     CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
-suspend fun runBuildTargetTask(targetIds: List<CanonicalLabel>, project: Project): CompileResult? {
+suspend fun runBuildTargetTask(
+  targetIds: List<CanonicalLabel>,
+  project: Project,
+  isDebug: Boolean = false,
+): CompileResult? {
   saveAllFiles()
   return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
-    project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds) }
+    // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
+    // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
+    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags.values } else listOf()
+    project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds, debugFlag) }
   }.also {
     VirtualFileManager.getInstance().asyncRefresh()
   }

@@ -2,13 +2,13 @@ package org.jetbrains.bazel.workspacecontext.provider
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContextEntityExtractorException
 import org.jetbrains.bazel.workspacecontext.provider.TargetsSpecExtractor
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -74,7 +74,7 @@ class TargetsSpecMapperTest {
 
         // when
         val exception =
-          shouldThrow<ExecutionContextEntityExtractorException> {
+          shouldThrow<WorkspaceContextEntityExtractorException> {
             TargetsSpecExtractor.fromProjectView(projectView)
           }
 
@@ -184,7 +184,7 @@ class TargetsSpecMapperTest {
 
         // when
         val exception =
-          shouldThrow<ExecutionContextEntityExtractorException> {
+          shouldThrow<WorkspaceContextEntityExtractorException> {
             TargetsSpecExtractor.fromProjectView(projectView)
           }
 
@@ -309,7 +309,7 @@ class TargetsSpecMapperTest {
 
         // when
         val exception =
-          shouldThrow<ExecutionContextEntityExtractorException> {
+          shouldThrow<WorkspaceContextEntityExtractorException> {
             TargetsSpecExtractor.fromProjectView(projectView)
           }
 

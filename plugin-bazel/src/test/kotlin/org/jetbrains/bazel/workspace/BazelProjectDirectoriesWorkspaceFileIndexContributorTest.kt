@@ -73,6 +73,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelB
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = emptyList(),
         excludedRoots = emptyList(),
+        buildFiles = emptyList(),
         indexAllFilesInIncludedRoots = false,
         entitySource = BazelProjectEntitySource,
       )
@@ -105,6 +106,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelB
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(projectRoot),
         excludedRoots = emptyList(),
+        buildFiles = emptyList(),
         indexAllFilesInIncludedRoots = false,
         entitySource = BazelProjectEntitySource,
       )
@@ -138,6 +140,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelB
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(dir1),
         excludedRoots = emptyList(),
+        buildFiles = emptyList(),
         indexAllFilesInIncludedRoots = false,
         entitySource = BazelProjectEntitySource,
       )
@@ -171,6 +174,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelB
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(dir1),
         excludedRoots = listOf(dir1Dir3, dir4),
+        buildFiles = emptyList(),
         indexAllFilesInIncludedRoots = false,
         entitySource = BazelProjectEntitySource,
       )

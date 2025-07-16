@@ -6,16 +6,16 @@ settings:
 
 devDependencies:
   '@prettier/plugin-xml':
-    specifier: ^3.4.1
-    version: 3.4.1(prettier@3.6.2)
+    specifier: ^3.4.2
+    version: 3.4.2(prettier@3.6.2)
   prettier:
     specifier: ^3.6.2
     version: 3.6.2
 
 packages:
 
-  /@prettier/plugin-xml@3.4.1(prettier@3.6.2):
-    resolution: {integrity: sha512-Uf/6/+9ez6z/IvZErgobZ2G9n1ybxF5BhCd7eMcKqfoWuOzzNUxBipNo3QAP8kRC1VD18TIo84no7LhqtyDcTg==}
+  /@prettier/plugin-xml@3.4.2(prettier@3.6.2):
+    resolution: {integrity: sha512-/UyNlHfkuLXG6Ed85KB0WBF283xn2yavR+UtRibBRUcvEJId2DSLdGXwJ/cDa1X++SWDPzq3+GSFniHjkNy7yg==}
     peerDependencies:
       prettier: ^3.0.0
     dependencies:

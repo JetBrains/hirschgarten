@@ -20,9 +20,6 @@ import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesAndroid
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesKotlin
 import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(

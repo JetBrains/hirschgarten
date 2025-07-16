@@ -10,6 +10,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
@@ -17,7 +18,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesGo
 import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -57,7 +57,7 @@ class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler
 
   private fun getTargetId(environment: ExecutionEnvironment): Label =
     (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
-      ?: throw ExecutionException("Couldn't get target from run configuration")
+      ?: throw ExecutionException(BazelPluginBundle.message("go.test.handler.error.target.missing.from.config"))
 
   class BazelGoTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "BazelGoTestHandlerProvider"

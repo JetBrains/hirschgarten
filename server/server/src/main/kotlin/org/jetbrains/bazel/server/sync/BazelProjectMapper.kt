@@ -93,14 +93,20 @@ class BazelProjectMapper(
             .allTargetsAtDepth(
               workspaceContext.importDepth.value,
               rootTargets,
-            ) { !isTargetTreatedAsInternal(it, repoMapping) }
+              isExternalTarget = { !isTargetTreatedAsInternal(it, repoMapping) },
+              targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
+              isWorkspaceTarget = { id ->
+                targets[id]?.let { target ->
+                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
+                } == true
+              },
+            )
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
           }
         val libraries = (nonWorkspaceTargets + targetsAtDepth.directDependencies).associateBy { it.id }
-        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport.asSequence())
-        targetsToImport.asSequence() to usedLibraries
+        targetsToImport.asSequence() to libraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -976,6 +982,11 @@ class BazelProjectMapper(
       "go_binary",
       "go_test",
     )
+
+  // TODO BAZEL-2208
+  // The only language that supports strict deps by default is Java, in Kotlin and Scala strict deps are disabled by default.
+  private fun targetSupportsStrictDeps(target: TargetInfo): Boolean =
+    target.hasJvmTargetInfo() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
 
   private suspend fun createModules(
     targetsToImport: Sequence<TargetInfo>,

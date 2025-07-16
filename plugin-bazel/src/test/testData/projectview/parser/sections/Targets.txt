@@ -1,6 +1,7 @@
 FILE
   ProjectViewPsiSection(section)
-    PsiElement(ProjectView:section_keyword)('targets')
+    ProjectViewPsiSectionName(section_name)
+      PsiElement(ProjectView:section_keyword)('targets')
     PsiElement(ProjectView:colon)(':')
     PsiElement(ProjectView:newline)('\n')
     PsiElement(ProjectView:indent)('  ')

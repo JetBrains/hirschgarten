@@ -42,7 +42,7 @@ class PythonBspDebugRunner : PyDebugRunner() {
     val nativeState = debugState.asPythonState()
     val target = state.target ?: error(BazelPluginBundle.message("python.debug.error.no.id"))
     val promise = AsyncPromise<RunContentDescriptor?>()
-    buildTarget(environment.project, target) {
+    buildTargetInDebugMode(environment.project, target) {
       val superResult = ReadAction.compute<Promise<RunContentDescriptor?>, Throwable> { super.execute(environment, nativeState) }
       superResult.onSuccess { promise.setResult(it) }
       superResult.onError { promise.setError(it) }
@@ -50,13 +50,27 @@ class PythonBspDebugRunner : PyDebugRunner() {
     return promise
   }
 
-  private fun buildTarget(
+  override fun createSession(state: RunProfileState, environment: ExecutionEnvironment): Promise<XDebugSession> {
+    val debugState = state as? PythonDebugCommandLineState ?: error(BazelPluginBundle.message("python.debug.error.wrong.state"))
+    val nativeState = debugState.asPythonState()
+    val target = state.target ?: error(BazelPluginBundle.message("python.debug.error.no.id"))
+    val promise = AsyncPromise<XDebugSession>()
+    buildTargetInDebugMode(
+      environment.project,
+      target,
+    ) {
+      super.createSession(nativeState, environment).onSuccess { promise.setResult(it) }.onError { promise.setError(it) }
+    }
+    return promise
+  }
+
+  private fun buildTargetInDebugMode(
     project: Project,
     targetId: CanonicalLabel,
     onBuildComplete: () -> Unit,
   ) {
-    BazelCoroutineService.getInstance(project).start {
-      runBuildTargetTask(listOf(targetId), project)
+    BazelCoroutineService.getInstance(project).startAsync {
+      runBuildTargetTask(listOf(targetId), project, true)
       withContext(Dispatchers.EDT) {
         onBuildComplete()
       }

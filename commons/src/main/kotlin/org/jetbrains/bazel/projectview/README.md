@@ -291,3 +291,20 @@ index_all_files_in_directories: true
 ```
 index_all_files_in_directories: false
 ```
+
+#### import_ijars
+
+- When `true`, prefers interface/header jars (ijars) for JVM libraries over full jars.
+  This makes indexing quicker, but you can't see the decompiled code, and some IDE warnings may have false-positives.
+
+##### example:
+
+```
+import_ijars: true
+```
+
+##### default:
+
+```
+import_interface_jars: false
+```

@@ -366,7 +366,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(0, setOf(Label.parseCanonical("//A"), Label.parseCanonical("//D"))) { false }
+      val dependencies = dependencyGraph.allTargetsAtDepth(0, setOf(Label.parseCanonical("//A"), Label.parseCanonical("//D")))
 
       // then
       val expectedDependencies =
@@ -414,7 +414,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(1, setOf(Label.parseCanonical("//A"), Label.parseCanonical("//D"))) { false }
+      val dependencies = dependencyGraph.allTargetsAtDepth(1, setOf(Label.parseCanonical("//A"), Label.parseCanonical("//D")))
 
       // then
       val expectedDependencies =
@@ -462,7 +462,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(2, setOf(Label.parseCanonical("//A"))) { false }
+      val dependencies = dependencyGraph.allTargetsAtDepth(2, setOf(Label.parseCanonical("//A")))
 
       // then
       val expectedDependencies =
@@ -548,7 +548,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(10, setOf(Label.parseCanonical("//A00"))) { false }
+      val dependencies = dependencyGraph.allTargetsAtDepth(10, setOf(Label.parseCanonical("//A00")))
 
       // then
       val expectedDependencies =
@@ -596,7 +596,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(-1, setOf(Label.parseCanonical("//A"))) { false }
+      val dependencies = dependencyGraph.allTargetsAtDepth(-1, setOf(Label.parseCanonical("//A")))
 
       // then
       val expectedDependencies =
@@ -623,42 +623,148 @@ class DependencyGraphTest {
 
     // when
     val dependencies =
-      dependencyGraph.allTargetsAtDepth(0, setOf(Label.parseCanonical("//target"))) { label ->
-        label.repoName == "maven"
-      }
+      dependencyGraph.allTargetsAtDepth(0, setOf(Label.parseCanonical("//target")), isExternalTarget = { label ->
+        label.assumeResolved().repoName == "maven"
+      })
 
     // then
     val expectedDependencies =
       DependencyGraph.TargetsAtDepth(
-        targets = setOf(target, library1, library2, library3),
-        directDependencies = setOf(target1),
+        targets = setOf(target),
+        directDependencies = setOf(target1, library1, library2, library3),
       )
     dependencies shouldBe expectedDependencies
   }
 
-  private fun targetInfo(id: String, dependenciesIds: List<String> = listOf()): TargetInfo {
-    val dependencies = dependenciesIds.map(::dependency)
-    val id = Label.parseCanonical(id)
-    return TargetInfo(
-      id = id,
-      dependencies = dependencies,
-      tags = emptyList(),
-      kind = "kind",
-      sources = emptyList(),
-      generatedSources = emptyList(),
-      resources = emptyList(),
-      env = emptyMap(),
-      envInherit = emptyList(),
-      executable = false,
-      workspaceName = "workspace",
-    )
+  @Test
+  fun `should not return all transitive deps for libraries if the target supports strict deps`() {
+    // given
+    val target = targetInfo("//target", listOf("@maven//library1", "//target1"))
+    val target1 = targetInfo("//target1")
+    val library1 = targetInfo("@maven//library1", listOf("@maven//library2"))
+    val library2 = targetInfo("@maven//library2", listOf("@maven//library3"))
+    val library3 = targetInfo("@maven//library3")
+    val rootTargets = setOf(Label.parse("//target"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, library1, library2, library3)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(
+        0,
+        setOf(Label.parse("//target")),
+        isExternalTarget = { label ->
+          label.repoName == "maven"
+        },
+        targetSupportsStrictDeps = { it.toString() == "@//target" },
+      )
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target),
+        directDependencies = setOf(library1, target1),
+      )
+    dependencies shouldBe expectedDependencies
   }
 
-  private fun dependency(id: String): Dependency =
-    Dependency(
-      id = Label.parseCanonical(id),
-      dependencyType = DependencyType.COMPILE,
-    )
+  @Test
+  fun `should not follow runtime deps`() {
+    // given
+    val target = targetInfo("//target", dependenciesIds = listOf("//target1"), runtimeDependenciesIds = listOf("//target4"))
+    val target1 = targetInfo("//target1", dependenciesIds = listOf("//target2"), runtimeDependenciesIds = listOf("//target3"))
+    val target2 = targetInfo("//target2")
+    val target3 = targetInfo("//target3")
+    val target4 = targetInfo("//target4")
+    val rootTargets = setOf(Label.parse("//target"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, target2, target3, target4)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies = dependencyGraph.allTargetsAtDepth(1, setOf(Label.parse("//target")))
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target, target1),
+        directDependencies = setOf(target2),
+      )
+    dependencies shouldBe expectedDependencies
+  }
+
+  @Test
+  fun `should not add non-workspace targets unless someone depends on them`() {
+    // given
+    val target = targetInfo("//target", dependenciesIds = listOf("//target1"))
+    val target1 = targetInfo("//target1")
+    val target2 = targetInfo("//target2")
+    val rootTargets = setOf(Label.parse("//target"), Label.parse("//target2"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, target2)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(1, rootTargets, isWorkspaceTarget = { label ->
+        label.toString() == "@//target"
+      })
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target, target1),
+        directDependencies = setOf(),
+      )
+    dependencies shouldBe expectedDependencies
+  }
+
+  @Test
+  fun `should propagate exports of non-workspace targets if someone depends on them`() {
+    // given
+    val target = targetInfo("//target", dependenciesIds = listOf("//target1"))
+    val target1 = targetInfo("//target1", dependenciesIds = listOf("//target2"))
+    val target2 = targetInfo("//target2")
+    val rootTargets = setOf(Label.parse("//target"), Label.parse("//target1"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, target2)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(0, rootTargets, isWorkspaceTarget = { label ->
+        label.toString() == "@//target"
+      })
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target, target1),
+        directDependencies = setOf(target2),
+      )
+    dependencies shouldBe expectedDependencies
+  }
+
+  private fun targetInfo(
+    id: String,
+    dependenciesIds: List<String> = listOf(),
+    runtimeDependenciesIds: List<String> = listOf(),
+  ): TargetInfo =
+    TargetInfo
+      .newBuilder()
+      .setId(id)
+      .addAllDependencies(
+        dependenciesIds.map { dependency(it, Dependency.DependencyType.COMPILE) } +
+          runtimeDependenciesIds.map { dependency(it, Dependency.DependencyType.RUNTIME) },
+      ).build()
+
+  private fun dependency(id: String, dependencyType: Dependency.DependencyType): Dependency =
+    Dependency
+      .newBuilder()
+      .setId(id)
+      .setDependencyType(dependencyType)
+      .build()
 
   private fun toIdToTargetInfoMap(vararg targetIds: TargetInfo): Map<CanonicalLabel, TargetInfo> =
     targetIds.associateBy { targetId -> targetId.id }
