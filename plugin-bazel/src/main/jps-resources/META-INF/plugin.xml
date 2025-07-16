@@ -32,47 +32,69 @@
   <depends
     config-file="withCodeWithMe.xml"
     optional="true"
-  >com.jetbrains.codeWithMe</depends>
+  >
+    com.jetbrains.codeWithMe
+  </depends>
   <depends
     config-file="withCoverage.xml"
     optional="true"
-  >com.intellij.modules.coverage</depends>
+  >
+    com.intellij.modules.coverage
+  </depends>
   <depends
     config-file="withCpp.xml"
     optional="true"
-  >com.intellij.clion</depends>
+  >
+    com.intellij.clion
+  </depends>
   <depends
     config-file="withDevKit.xml"
     optional="true"
-  >DevKit</depends>
+  >
+    DevKit
+  </depends>
   <depends
     config-file="withGo.xml"
     optional="true"
-  >org.jetbrains.plugins.go</depends>
+  >
+    org.jetbrains.plugins.go
+  </depends>
   <depends
     config-file="withIdeStarter.xml"
     optional="true"
-  >com.jetbrains.performancePlugin</depends>
+  >
+    com.jetbrains.performancePlugin
+  </depends>
   <depends
     config-file="withJava.xml"
     optional="true"
-  >com.intellij.modules.java</depends>
+  >
+    com.intellij.modules.java
+  </depends>
   <depends
     config-file="withJunit.xml"
     optional="true"
-  >JUnit</depends>
+  >
+    JUnit
+  </depends>
   <depends
     config-file="withKotlin.xml"
     optional="true"
-  >org.jetbrains.kotlin</depends>
+  >
+    org.jetbrains.kotlin
+  </depends>
   <depends
     config-file="withPython.xml"
     optional="true"
-  >com.intellij.modules.python</depends>
+  >
+    com.intellij.modules.python
+  </depends>
   <depends
     config-file="withTerminal.xml"
     optional="true"
-  >org.jetbrains.plugins.terminal</depends>
+  >
+    org.jetbrains.plugins.terminal
+  </depends>
 
   <extensionPoints>
     <extensionPoint
@@ -183,9 +205,10 @@
       interface="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook$EnableWorkspaceModuleSyncHookExtension"
       qualifiedName="org.jetbrains.bazel.workspaceModuleSyncHook.enable"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelVersionResolver"
-                    interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
-                    dynamic="true"
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
+      qualifiedName="org.jetbrains.bazel.bazelVersionResolver"
     />
   </extensionPoints>
 
@@ -224,8 +247,9 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache" />
-    <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionFetchSyncHook"/>
-
+    <projectPostSyncHook
+      implementation="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionFetchSyncHook"
+    />
 
     <projectStructureProvider
       implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"
@@ -257,12 +281,12 @@
     <additionalProjectTaskRunnerProvider
       implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"
     />
-    <targetKindProvider
-      implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"
-    />
-    <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
+    <targetKindProvider implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider" />
+    <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules" />
 
-    <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
+    <bazelVersionResolver
+      implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"
+    />
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -456,6 +480,11 @@
       id="Bazel"
     />
 
+    <toolWindowAllowlist id="Bazel Query" />
+    <toolWindowExtractor
+      implementation="org.jetbrains.bazel.ui.widgets.queryTab.BazelQueryToolWindowViewModelExtractor"
+    />
+
     <consoleFilterProvider
       implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"
     />
@@ -484,7 +513,9 @@
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
-    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
+    <postStartupActivity
+      implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity"
+    />
     <notificationGroup
       displayType="BALLOON"
       id="Bazel slow plugins warning"
@@ -593,8 +624,7 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
       language="Starlark"
     />
-    <editorTabTitleProvider
-      implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
+    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider" />
     <extendWordSelectionHandler
       implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"
     />
@@ -670,6 +700,7 @@
       language="BazelQuery"
     />
 
+    <lookup.charFilter implementation="org.jetbrains.bazel.languages.bazelquery.completion.BazelQueryCharFilter" />
 
     <fileType
       extensions="bazelqueryflags"
@@ -689,22 +720,28 @@
       language="BazelQueryFlags"
     />
 
-    <fileType name="BazelVersion"
-              implementationClass="org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType"
-              fieldName="INSTANCE"
-              language="BazelVersion"
-              fileNames=".bazelversion"
-              extensions="bazelversion"/>
+    <fileType
+      extensions="bazelversion"
+      fieldName="INSTANCE"
+      fileNames=".bazelversion"
+      implementationClass="org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType"
+      language="BazelVersion"
+      name="BazelVersion"
+    />
 
-    <lang.parserDefinition language="BazelVersion"
-                           implementationClass="org.jetbrains.bazel.languages.bazelversion.parser.BazelVersionParserDefinition"/>
+    <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.bazelversion.parser.BazelVersionParserDefinition"
+      language="BazelVersion"
+    />
 
-    <localInspection language="BazelVersion"
-                     displayName="Bazel Version Check"
-                     groupName="Bazel"
-                     enabledByDefault="true"
-                     level="WARNING"
-                     implementationClass="org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection"/>
+    <localInspection
+      displayName="Bazel Version Check"
+      enabledByDefault="true"
+      groupName="Bazel"
+      implementationClass="org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection"
+      language="BazelVersion"
+      level="WARNING"
+    />
 
     <fileType
       extensions="bazelrc"
@@ -861,8 +898,10 @@
         second-keystroke="H"
       />
     </action>
-    <action id="Bazel.JumpToBuildFile"
-            class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
+    <action
+      class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction"
+      id="Bazel.JumpToBuildFile"
+    >
       <add-to-group group-id="EditorPopupMenu" />
       <add-to-group group-id="EditorTabPopupMenu" />
       <keyboard-shortcut
@@ -885,26 +924,37 @@
       />
     </action>
 
-    <action id="Bazel.AddToProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
-            text="Add to the Project View Directories"
-            description="Add this directory to the project view file.">
-    </action>
+    <action
+      class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
+      description="Add this directory to the project view file."
+      id="Bazel.AddToProjectViewDirectoriesAction"
+      text="Add to the Project View Directories"
+    />
 
-    <action id="Bazel.ExcludeFromProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
-            text="Exclude from the Project View Directories"
-            description="Exclude this directory from the project view file.">
-    </action>
+    <action
+      class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
+      description="Exclude this directory from the project view file."
+      id="Bazel.ExcludeFromProjectViewDirectoriesAction"
+      text="Exclude from the Project View Directories"
+    />
 
-    <action id="Bazel.OpenProjectViewFile"
-            class="org.jetbrains.bazel.action.registered.OpenProjectViewAction">
-    </action>
+    <action
+      class="org.jetbrains.bazel.action.registered.OpenBazelQueryToolWindowAction"
+      id="Bazel.OpenBazelQueryToolWindowAction"
+    />
+
+    <action
+      class="org.jetbrains.bazel.action.registered.OpenProjectViewAction"
+      id="Bazel.OpenProjectViewFile"
+    />
 
     <group id="Bazel.ModifyProjectViewDirectories">
-      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-      <reference id="Bazel.AddToProjectViewDirectoriesAction"/>
-      <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction"/>
+      <add-to-group
+        anchor="last"
+        group-id="ProjectViewPopupMenu"
+      />
+      <reference id="Bazel.AddToProjectViewDirectoriesAction" />
+      <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction" />
     </group>
   </actions>
 

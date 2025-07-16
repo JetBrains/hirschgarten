@@ -75,9 +75,7 @@
   </licenses>
   <scm>
     <connection>scm:git:github.com/JetBrains/bazel-bsp.git</connection>
-    <developerConnection>
-      scm:git:git@github.com:JetBrains/bazel-bsp.git
-    </developerConnection>
+    <developerConnection>scm:git:git@github.com:JetBrains/bazel-bsp.git</developerConnection>
     <url>https://github.com/JetBrains/bazel-bsp</url>
   </scm>
 </project>

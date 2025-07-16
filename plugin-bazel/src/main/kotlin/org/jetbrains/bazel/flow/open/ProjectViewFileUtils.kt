@@ -34,7 +34,6 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
   
   derive_targets_from_directories: true
   directories: %s
-  import_depth: 0
   """.trimIndent()
 
 private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)

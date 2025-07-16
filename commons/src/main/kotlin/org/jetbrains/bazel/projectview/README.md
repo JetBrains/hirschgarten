@@ -300,7 +300,7 @@ index_all_files_in_directories: false
 ##### example:
 
 ```
-import_interface_jars: true
+import_ijars: true
 ```
 
 ##### default:
