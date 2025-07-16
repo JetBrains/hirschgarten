@@ -63,6 +63,14 @@ sealed class HotswapTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"
 )
 
+sealed class CoroutineDebugTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Coroutine debug test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/coroutineDebug"
+)
+
 sealed class ReopenWithoutResyncTest(
   vcsRoot: GitVcsRoot,
 ) : IdeStarterTests(
@@ -188,6 +196,14 @@ object HotswapTestGitHub : HotswapTest(
 )
 
 object HotswapTestSpace : HotswapTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object CoroutineDebugTestGitHub : CoroutineDebugTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object CoroutineDebugTestSpace : CoroutineDebugTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
 
