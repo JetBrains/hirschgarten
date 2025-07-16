@@ -214,14 +214,14 @@ single_version_override(
 
 http_jar(
     name = "ktlint",
-    #     integrity = "sha256-oWvgHcxICqsvVfREtiAUIVL2bjFWSzuTdlBtYkwooq0=",
-    url = "https://github.com/pinterest/ktlint/releases/download/1.6.0/ktlint",
+    integrity = "sha256-qH7TYYzshNqg+jbeBe8M/v08BM5bM+WlOD8hLFymito=",
+    url = "https://github.com/pinterest/ktlint/releases/download/1.7.0/ktlint",
 )
 
 http_jar(
     name = "google_java_format",
-    integrity = "sha256-JRV3l6CpcsIpC1vHFTDE961kZFgCXjSEQSpuWpuMmqY=",
-    url = "https://github.com/google/google-java-format/releases/download/v1.25.2/google-java-format-1.25.2-all-deps.jar",
+    integrity = "sha256-MjQufBtGAPgN80cdpGrugBLT4URdXqG+H7cSibB8xzU=",
+    url = "https://github.com/google/google-java-format/releases/download/v1.28.0/google-java-format-1.28.0-all-deps.jar",
 )
 
 bazel_dep(
