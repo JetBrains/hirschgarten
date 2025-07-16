@@ -672,6 +672,8 @@
       language="BazelQueryFlags"
     />
 
+    <runAnything.executionProvider implementation="org.jetbrains.bazel.languages.bazelquery.runAnything.BazelQueryRunAnythingProvider"/>
+
     <fileType
       extensions="bazelrc"
       fieldName="INSTANCE"
