@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.bazelquery.completion
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import java.nio.file.Path
@@ -22,7 +23,8 @@ class TargetCompletionsGenerator(private val project: Project) {
     // Note: project root dependent format - starts with "//",
     // directory dependent format - starts with a letter or ":"
     val suggestions = mutableListOf<String>()
-    val projectPath = Path.of(project.basePath ?: return suggestions)
+    val rootDir = project.bazelProjectProperties.rootDir ?: return suggestions
+    val projectPath = Path.of(rootDir.getPath())
     if (directory != null && !directory.startsWith(projectPath)) return suggestions
 
     val currentDir = directory?.let { projectPath.relativize(it).toString() } ?: ""

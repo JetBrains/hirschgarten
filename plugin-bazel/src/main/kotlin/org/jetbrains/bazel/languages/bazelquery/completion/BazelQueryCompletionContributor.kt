@@ -15,12 +15,10 @@ import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.startOffset
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenType
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFile
-import java.nio.file.Path
 
 class BazelQueryCompletionContributor : CompletionContributor() {
   init {
@@ -82,10 +80,9 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         .removePrefix("\"")
         .removePrefix("'")
     val project = parameters.editor.project ?: return
-    val currentDirectory = project.rootDir.getPath()
     val targetSuggestions =
       TargetCompletionsGenerator(project)
-        .getTargetsList(prefix, Path.of(currentDirectory))
+        .getTargetsList(prefix)
 
     result.withPrefixMatcher(BazelQueryPrefixMatcher(prefix)).run {
       addAllElements(
