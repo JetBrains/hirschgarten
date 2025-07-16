@@ -973,6 +973,8 @@ class BazelProjectMapper(
       "go_test",
     )
 
+  // TODO BAZEL-2208
+  // The only language that supports strict deps by default is Java, in Kotlin and Scala strict deps are disabled by default.
   private fun targetSupportsStrictDeps(target: TargetInfo): Boolean =
     target.hasJvmTargetInfo() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
 
