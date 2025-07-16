@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.workspacecontext
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import java.nio.file.Path
 
 /**

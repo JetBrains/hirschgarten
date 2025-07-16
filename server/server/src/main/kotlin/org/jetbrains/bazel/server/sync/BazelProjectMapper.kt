@@ -97,7 +97,7 @@ class BazelProjectMapper(
               targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 targets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
+                  target.sources.isNotEmpty() && isWorkspaceTarget(target, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
                 } == true
               },
             )
@@ -986,7 +986,7 @@ class BazelProjectMapper(
   // TODO BAZEL-2208
   // The only language that supports strict deps by default is Java, in Kotlin and Scala strict deps are disabled by default.
   private fun targetSupportsStrictDeps(target: TargetInfo): Boolean =
-    target.hasJvmTargetInfo() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
+    target.jvmTargetInfo != null && target.scalaTargetInfo == null && target.kotlinTargetInfo == null
 
   private suspend fun createModules(
     targetsToImport: Sequence<TargetInfo>,

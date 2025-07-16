@@ -63,7 +63,7 @@ suspend fun jumpToBuildFile(project: Project, target: Label) {
 
 @RequiresReadLock
 private fun findDefinition(project: Project, target: Label): PsiElement? {
-  val file = resolveLabel(project, target)
+  val file = TODO() // resolveLabel(project, target)
   if (file !is StarlarkFile) return file
 
   val definition = findDefinitionByLongestPrefix(file, target)

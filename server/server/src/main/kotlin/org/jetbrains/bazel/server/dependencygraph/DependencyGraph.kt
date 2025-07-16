@@ -1,16 +1,18 @@
 package org.jetbrains.bazel.server.dependencygraph
 
-import org.jetbrains.bazel.label.Label
-import java.util.PriorityQueue
+import org.jetbrains.bazel.info.Dependency
+import org.jetbrains.bazel.info.DependencyType
 import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.label.CanonicalLabel
+import org.jetbrains.bazel.label.Label
+import java.util.PriorityQueue
 
 class DependencyGraph(
   private val rootTargets: Set<CanonicalLabel> = emptySet(),
   private val idToTargetInfo: Map<CanonicalLabel, TargetInfo> = emptyMap(),
 ) {
   private val idToDirectDependenciesIds = mutableMapOf<CanonicalLabel, Set<CanonicalLabel>>()
-  private val idToDirectCompileDependenciesIds = mutableMapOf<Label, Set<Label>>()
+  private val idToDirectCompileDependenciesIds = mutableMapOf<CanonicalLabel, Set<CanonicalLabel>>()
   private val idToReverseDependenciesIds = mutableMapOf<CanonicalLabel, HashSet<CanonicalLabel>>()
   private val idToLazyTransitiveDependencies: Map<CanonicalLabel, Lazy<Set<TargetInfo>>>
 
@@ -76,8 +78,8 @@ class DependencyGraph(
     maxDepth: Int,
     targets: Set<CanonicalLabel>,
     isExternalTarget: (CanonicalLabel) -> Boolean = { false },
-    targetSupportsStrictDeps: (Label) -> Boolean = { false },
-    isWorkspaceTarget: (Label) -> Boolean = { true },
+    targetSupportsStrictDeps: (CanonicalLabel) -> Boolean = { false },
+    isWorkspaceTarget: (CanonicalLabel) -> Boolean = { true },
   ): TargetsAtDepth {
     if (maxDepth < 0) {
       return TargetsAtDepth(
@@ -86,10 +88,10 @@ class DependencyGraph(
       )
     }
 
-    val depth = mutableMapOf<Label, Int>()
+    val depth = mutableMapOf<CanonicalLabel, Int>()
     val toVisit =
       PriorityQueue(
-        Comparator<Label> { label1, label2 ->
+        Comparator<CanonicalLabel> { label1, label2 ->
           depth.getOrDefault(label1, 0).compareTo(depth.getOrDefault(label2, 0)).takeIf { it != 0 } ?: label1.compareTo(label2)
         },
       )
@@ -153,21 +155,15 @@ class DependencyGraph(
       .flatMap(::collectTransitiveDependenciesAndAddTarget)
       .toSet()
 
-  private fun getDependencies(target: TargetInfo): Set<Label> = getDependencies(target.dependenciesList)
+  private fun getDependencies(target: TargetInfo): Set<CanonicalLabel> = target.dependencies.map { it.id }.toSet()
 
-  private fun getCompileAndRuntimeDependencies(target: TargetInfo): Pair<Set<Label>, Set<Label>> {
+  private fun getCompileAndRuntimeDependencies(target: TargetInfo): Pair<Set<CanonicalLabel>, Set<CanonicalLabel>> {
     val (compile, runtime) =
-      target.dependenciesList
-        .partition { it.dependencyTypeValue == Dependency.DependencyType.COMPILE_VALUE }
+      target.dependencies
+        .partition { it.dependencyType == DependencyType.COMPILE }
 
-    return getDependencies(compile) to getDependencies(runtime)
+    return compile.map { it.id }.toSet() to runtime.map { it.id }.toSet()
   }
-
-  private fun getDependencies(dependencies: List<Dependency>): Set<Label> =
-    dependencies
-      .map(Dependency::getId)
-      .map(Label::parse)
-      .toSet()
 
   private fun isNotARootTarget(targetId: CanonicalLabel): Boolean = !rootTargets.contains(targetId)
 

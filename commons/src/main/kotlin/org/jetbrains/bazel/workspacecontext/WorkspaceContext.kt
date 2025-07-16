@@ -107,7 +107,6 @@ val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
   get() =
     targets.values
       .mapNotNull {
-        it
-          .repo.repoName
-          .takeIf { repoName -> repoName.isNotEmpty() }
+        it.repo.repoName
+          .takeIf { it.isNotEmpty() }
       }.distinct()
