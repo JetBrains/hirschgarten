@@ -1,26 +1,13 @@
 import com.google.devtools.build.lib.starlarkdocextract.StardocOutputProtos
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import common.GlobalFunction
+import common.Param
+import common.serializeFunctionsTo
 import java.io.FileInputStream
 import kotlin.system.exitProcess
 
 object ProtobufReader {
-  private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
-
-  data class AttributeInfo(
-    val name: String,
-    val docString: String?,
-    val required: Boolean,
-    val default: String,
-    val positional: Boolean = false,
-  )
-
-  data class RuleInfo(
-    val name: String,
-    val docString: String,
-    val params: List<AttributeInfo>,
-  )
-
   private fun removeLinks(input: String): String {
     var result = input.replace(Regex("<a[^>]*>(.*?)</a>", RegexOption.DOT_MATCHES_ALL), "$1")
     result = result.replace(Regex("\\[(.*?)\\]\\(.*?\\)"), "$1")
@@ -35,21 +22,22 @@ object ProtobufReader {
 
   private fun defaultNameOrEmptyQuotes(name: String): String = if (name == "") "\"\"" else name
 
-  private fun attributeInfoToData(attrInfo: StardocOutputProtos.AttributeInfo): AttributeInfo =
-    AttributeInfo(
+  private fun attributeInfoToData(attrInfo: StardocOutputProtos.AttributeInfo): Param =
+    Param(
       name = attrInfo.name,
-      docString = if (attrInfo.docString.isEmpty()) null else replaceTicks(removeLinks(attrInfo.docString)),
+      doc = if (attrInfo.docString.isEmpty()) null else replaceTicks(removeLinks(attrInfo.docString)),
       required = attrInfo.mandatory,
-      default = defaultNameOrEmptyQuotes(attrInfo.defaultValue),
+      defaultValue = defaultNameOrEmptyQuotes(attrInfo.defaultValue),
       positional = false,
+      named = true,
     )
 
-  private fun ruleInfoToData(ruleInfo: StardocOutputProtos.RuleInfo): RuleInfo {
+  private fun ruleInfoToData(ruleInfo: StardocOutputProtos.RuleInfo): GlobalFunction {
     val attributes = ruleInfo.attributeList.map { attributeInfoToData(it) }
 
-    return RuleInfo(
+    return GlobalFunction(
       name = ruleInfo.ruleName,
-      docString = replaceTicks(removeLinks(ruleInfo.docString)),
+      doc = replaceTicks(removeLinks(ruleInfo.docString)),
       params = attributes,
     )
   }
@@ -61,7 +49,7 @@ object ProtobufReader {
       exitProcess(1)
     }
 
-    val allRules = mutableListOf<RuleInfo>()
+    val allRules = mutableListOf<GlobalFunction>()
 
     for (inputFilePath in args) {
       val moduleInfo =
@@ -75,7 +63,6 @@ object ProtobufReader {
       }
     }
 
-    val jsonOutput = gson.toJson(allRules)
-    println(jsonOutput)
+    println(serializeFunctionsTo(allRules))
   }
 }

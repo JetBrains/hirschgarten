@@ -6,33 +6,22 @@ import com.github.javaparser.ast.expr.BinaryExpr
 import com.github.javaparser.ast.expr.Expression
 import com.github.javaparser.ast.expr.MemberValuePair
 import com.github.javaparser.ast.expr.NormalAnnotationExpr
+import com.github.javaparser.ast.expr.StringLiteralExpr
+import common.GlobalFunction
+import common.Param
+import common.serializeFunctionsTo
 import java.io.File
 import kotlin.system.exitProcess
 
 object AnnotationConverter {
-  private val allFunctions: MutableList<FunctionInfo> = mutableListOf()
+  private val allFunctions: MutableList<GlobalFunction> = mutableListOf()
 
-  data class ParameterInfo(
-    val name: String,
-    val docString: String,
-    val required: Boolean,
-    val default: String,
-    val positional: Boolean,
-    val named: Boolean,
-  )
-
-  data class FunctionInfo(
-    val name: String,
-    val docString: String,
-    val params: List<ParameterInfo>,
-  )
-
-  private fun extractParam(paramExpr: NormalAnnotationExpr): ParameterInfo {
+  private fun extractParam(paramExpr: NormalAnnotationExpr): Param {
     var name: String? = null
     var docString: String? = null
-    var positional: Boolean? = null
+    var positional: Boolean = true
     var default: String? = null
-    var named: Boolean? = null
+    var named: Boolean = false
     for (it in paramExpr.childNodes) {
       if (it is MemberValuePair) {
         when (it.name.identifier) {
@@ -44,18 +33,19 @@ object AnnotationConverter {
         }
       }
     }
-    return ParameterInfo(
-      name!!,
-      docString!!,
-      default == null,
-      default ?: "",
-      positional!!
-    , named!!)
+    return Param(
+      name = name!!,
+      doc = docString,
+      positional = positional,
+      named = named,
+      defaultValue = default ?: "",
+      required = default == null,
+    )
   }
 
-  private fun processParams(paramsExpr: Expression): List<ParameterInfo> {
+  private fun processParams(paramsExpr: Expression): List<Param> {
     val paramsList = paramsExpr.toArrayInitializerExpr().get().values
-    val params = mutableListOf<ParameterInfo>()
+    val params = mutableListOf<Param>()
     for (paramExpr in paramsList) {
       params.add(extractParam(paramExpr as NormalAnnotationExpr))
     }
@@ -63,23 +53,31 @@ object AnnotationConverter {
   }
 
   private fun convertDocString(doc: Expression): String {
-    return if (doc is BinaryExpr) {
-      var left = doc.left
-      var res = ""
-      while (left is BinaryExpr) {
-        res = left.right.toStringLiteralExpr().get().value + res
-        left = left.left
+    return when (doc) {
+      is BinaryExpr -> {
+        var left = doc.left
+        var res = ""
+        while (left is BinaryExpr) {
+          res = left.right.toStringLiteralExpr().get().value + res
+          left = left.left
+        }
+        return left.toStringLiteralExpr().get().value + res
       }
-      return left.toStringLiteralExpr().get().value + res
-    } else {
-      doc.toStringLiteralExpr().get().value
+
+      is StringLiteralExpr -> {
+        doc.toStringLiteralExpr().get().value
+      }
+
+      else -> {
+        doc.toTextBlockLiteralExpr().get().value.trimIndent().replace("\n", " ")
+      }
     }
   }
-  
+
   private fun processAnnotation(annotationExpr: AnnotationExpr) {
     var functionName = ""
     var docString = ""
-    val params = mutableListOf<ParameterInfo>()
+    val params = mutableListOf<Param>()
     for (it in annotationExpr.childNodes) {
       if (it is MemberValuePair) {
         if (it.name.identifier == "name") {
@@ -92,42 +90,39 @@ object AnnotationConverter {
       }
     }
 
-    val functionInfo = FunctionInfo(functionName, docString, params)
+    val functionInfo = GlobalFunction(functionName, docString, params)
     allFunctions.add(functionInfo)
   }
 
   private fun processCompilationUnit(cu: CompilationUnit) {
     cu.findAll(MethodDeclaration::class.java).forEach {
       it.annotations.forEach {
-        annotationExpr -> if (annotationExpr.nameAsString == "StarlarkMethod") processAnnotation(annotationExpr)
+          annotationExpr -> if (annotationExpr.nameAsString == "StarlarkMethod") processAnnotation(annotationExpr)
       }
     }
   }
 
   @JvmStatic
   fun main(args: Array<String>) {
-//    if (args.isEmpty()) {
-//      println("No input files")
-//      exitProcess(1)
-//    }
-    val inputFilePath = "/Users/solar/dev/annotation_converter/inputs/ModuleFileGlobals.java"
-    try {
-      val file = File(inputFilePath)
-      if (!file.exists()) {
-        println("File not found: $inputFilePath")
-        exitProcess(1)
-      }
-
-      val parser = JavaParser()
-      val parseResult = parser.parse(file)
-      if (parseResult.result.isPresent) {
-        processCompilationUnit(parseResult.result.get())
-      } else {
-        println("Error parsing file $inputFilePath")
-      }
-    } catch (e: Exception) {
-      println("Error parsing file $inputFilePath: ${e.message}")
+    //if (args.isEmpty()) {
+    //  println("No input files")
+    //  exitProcess(1)
+    //}
+    //val inputFilePath = args.first()
+    val inputFilePath = "/Users/solar/dev/ultimate/plugins/bazel/tools/starlark_data_generation/annotation_converter/inputs/ModuleFileGlobals.java"
+    val file = File(inputFilePath)
+    if (!file.exists()) {
+      println("File not found: $inputFilePath")
+      exitProcess(1)
     }
-    println(allFunctions)
+
+    val parser = JavaParser()
+    val parseResult = parser.parse(file)
+    if (parseResult.result.isPresent) {
+      processCompilationUnit(parseResult.result.get())
+    } else {
+      println("Error parsing file $inputFilePath")
+    }
+    println(serializeFunctionsTo(allFunctions))
   }
 }

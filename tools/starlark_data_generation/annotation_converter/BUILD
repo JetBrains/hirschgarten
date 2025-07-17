@@ -5,6 +5,7 @@ kt_jvm_binary(
     main_class = "AnnotationConverter",
     deps = [
         "@maven//:com_github_javaparser_javaparser_core",
+        "//common:commons"
     ],
     srcs = glob([
         "src/**/*.kt"
