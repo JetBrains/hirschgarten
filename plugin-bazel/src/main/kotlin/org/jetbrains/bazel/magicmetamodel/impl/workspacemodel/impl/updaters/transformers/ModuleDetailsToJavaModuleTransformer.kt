@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
@@ -92,11 +93,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun resolveCompiledClassesPathForJVMLanguage(input: ModuleDetails): Path? {
     val target = input.target.id
-    val targetDir =
-      project.rootDir
-        .toNioPath()
-        .resolve("bazel-bin")
-        .resolve(target.packagePath.toString())
+    val targetDir = BazelBinPathService.getInstance(project).bazelBinPath
+      ?.let { Path.of(it) }
+      ?.resolve(target.packagePath.toString()) ?: return null
     val targetData = input.target.data
     return when (targetData) {
       is JvmBuildTarget, is KotlinBuildTarget, is ScalaBuildTarget -> {
