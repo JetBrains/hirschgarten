@@ -1,19 +1,17 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 
 /**
  * Interface for spawning and managing processes
  */
 interface ProcessSpawner {
-  suspend fun spawnDeferredProcess(
+  suspend fun spawnProcess(
     command: List<String>,
     environment: Map<String, String>,
     redirectErrorStream: Boolean,
     workDirectory: String?,
-  ): Deferred<SpawnedProcess>
+  ): SpawnedProcess
 
   /**
    * Kill a process tree (the process and all its child processes)
@@ -45,17 +43,17 @@ interface ProcessSpawner {
 /**
  * Spawns a process and waits for it to complete
  */
-fun ProcessSpawner.spawnProcess(
+fun ProcessSpawner.spawnProcessBlocking(
   command: List<String>,
   environment: Map<String, String>,
   redirectErrorStream: Boolean,
   workDirectory: String? = null,
 ): SpawnedProcess =
   runBlocking {
-    spawnDeferredProcess(
+    spawnProcess(
       command = command,
       environment = environment,
       redirectErrorStream = redirectErrorStream,
       workDirectory = workDirectory,
-    ).await()
+    )
   }

@@ -3,8 +3,6 @@ package org.jetbrains.bazel.startup
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.Logger
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import java.io.File
@@ -15,30 +13,24 @@ import java.io.File
 object GenericCommandLineProcessSpawner : ProcessSpawner {
   private val LOG = Logger.getInstance(GenericCommandLineProcessSpawner::class.java)
 
-  override suspend fun spawnDeferredProcess(
+  override suspend fun spawnProcess(
     command: List<String>,
     environment: Map<String, String>,
     redirectErrorStream: Boolean,
     workDirectory: String?,
-  ): Deferred<SpawnedProcess> {
-    val deferred = CompletableDeferred<SpawnedProcess>()
-    try {
-      val commandLine = GeneralCommandLine(command)
-      if (workDirectory != null) {
-        commandLine.withWorkDirectory(File(workDirectory))
-      }
-      if (environment.isNotEmpty()) {
-        commandLine.withEnvironment(environment)
-      }
-
-      commandLine.withRedirectErrorStream(redirectErrorStream)
-
-      val process = commandLine.createProcess()
-      deferred.complete(IntellijSpawnedProcess(process))
-    } catch (e: Throwable) {
-      deferred.completeExceptionally(e)
+  ): SpawnedProcess {
+    val commandLine = GeneralCommandLine(command)
+    if (workDirectory != null) {
+      commandLine.withWorkDirectory(File(workDirectory))
     }
-    return deferred
+    if (environment.isNotEmpty()) {
+      commandLine.withEnvironment(environment)
+    }
+
+    commandLine.withRedirectErrorStream(redirectErrorStream)
+
+    val process = commandLine.createProcess()
+    return IntellijSpawnedProcess(process)
   }
 
   override fun killProcessTree(process: SpawnedProcess): Boolean =

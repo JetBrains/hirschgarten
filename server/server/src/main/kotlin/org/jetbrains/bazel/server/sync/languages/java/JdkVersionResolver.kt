@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.server.sync.languages.java
 
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
+import org.jetbrains.bazel.bazelrunner.outputs.spawnProcessBlocking
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -33,15 +33,15 @@ class JdkVersionResolver {
   private fun firstLineOfJavaVersionOutput(javaPath: Path): String? {
     val processSpawner = ProcessSpawner.getInstance()
     val process =
-      runBlocking {
-        processSpawner
-          .spawnDeferredProcess(
-            command = listOf(javaPath.toString(), "-version"),
-            environment = emptyMap(),
-            redirectErrorStream = true,
-            workDirectory = null,
-          ).await()
-      }
+
+      processSpawner
+        .spawnProcessBlocking(
+          command = listOf(javaPath.toString(), "-version"),
+          environment = emptyMap(),
+          redirectErrorStream = true,
+          workDirectory = null,
+        )
+
     val result = process.waitFor()
 
     return if (result == 0) readLines(process).firstOrNull() else null
