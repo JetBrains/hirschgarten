@@ -8,8 +8,8 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelquery.completion.TargetCompletionsGenerator
-import org.jetbrains.bazel.languages.bazelquery.completion.knownCommands
 import org.jetbrains.bazel.languages.bazelquery.completion.knownOperations
+import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunction
 import org.jetbrains.bazel.languages.bazelquery.options.BazelQueryCommonOptions
 import javax.swing.Icon
 
@@ -19,7 +19,7 @@ class BazelQueryRunAnythingProvider : RunAnythingCommandLineProvider() {
     EMPTY,
     INSIDE_EXPRESSION,
     AFTER_EXPRESSION,
-    FLAG
+    FLAG,
   }
 
   override fun getHelpGroupTitle() = "Bazel"
@@ -38,8 +38,8 @@ class BazelQueryRunAnythingProvider : RunAnythingCommandLineProvider() {
       return emptySequence()
     }
 
-    val context = determineCompletionContext(commandLine)
     val toComplete = commandLine.toComplete
+    val context = determineCompletionContext(commandLine)
 
     return when (context) {
       CompletionContext.EMPTY ->
@@ -75,7 +75,10 @@ class BazelQueryRunAnythingProvider : RunAnythingCommandLineProvider() {
   }
 
   private fun functionSuggestions(prefix: String): Sequence<String> {
-    return knownCommands.asSequence().filter { it.startsWith(prefix) }
+    return BazelQueryFunction.getAll()
+      .asSequence()
+      .map { it.name + '(' + it.arguments.map { '<' + it.type + '>' }.joinToString(", ") + ')' }
+      .filter { it.startsWith(prefix) }
   }
 
   private fun targetSuggestions(project: Project, prefix: String): Sequence<String> {
@@ -87,7 +90,13 @@ class BazelQueryRunAnythingProvider : RunAnythingCommandLineProvider() {
   private fun flagSuggestions(prefix: String): Sequence<String> {
     return BazelQueryCommonOptions.getAll()
       .asSequence()
-      .map { "--${it.name}" }
+      .flatMap { option ->
+        if (option.values.isEmpty()) {
+          sequenceOf("--${option.name}")
+        } else {
+          option.values.asSequence().map { value -> "--${option.name}=${value}" }
+        }
+      }
       .filter { it.startsWith(prefix) }
   }
 
