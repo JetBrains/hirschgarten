@@ -50,7 +50,6 @@ use_repo(pnpm, "pnpm")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
-    known_contributing_modules = ["bazel_worker_java", "grpc-java", "hirschgarten"],
     artifacts = [
         "com.fasterxml.jackson.core:jackson-databind:2.19.1",
         "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.1",
@@ -100,6 +99,11 @@ maven.install(
     fail_if_repin_required = True,
     fetch_sources = True,
     generate_compat_repositories = True,
+    known_contributing_modules = [
+        "bazel_worker_java",
+        "grpc-java",
+        "hirschgarten",
+    ],
     lock_file = "//:maven_install.json",
     repositories = [
         "https://cache-redirector.jetbrains.com/maven-central",
@@ -170,11 +174,9 @@ use_repo(
 
 bazel_dep(name = "bazel_skylib", version = "1.8.1")
 bazel_dep(name = "aspect_bazel_lib", version = "2.20.0")
-
 bazel_dep(name = "googleapis-java", version = "1.0.0")
 bazel_dep(name = "googleapis-grpc-java", version = "1.0.0")
 bazel_dep(name = "googleapis", version = "0.0.0-20250703-f9d6fe4a")
-
 
 switched_rules = use_extension("@googleapis//:extensions.bzl", "switched_rules")
 switched_rules.use_languages(
