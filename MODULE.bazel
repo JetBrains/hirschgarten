@@ -24,8 +24,8 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.11.0")
-bazel_dep(name = "rules_jvm_external", version = "6.7")
+bazel_dep(name = "rules_java", version = "8.13.0")
+bazel_dep(name = "rules_jvm_external", version = "6.8")
 bazel_dep(name = "aspect_rules_js", version = "2.3.8")
 
 npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
@@ -50,21 +50,24 @@ use_repo(pnpm, "pnpm")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
+    known_contributing_modules = ["bazel_worker_java", "grpc-java", "hirschgarten"],
     artifacts = [
-        "com.fasterxml.jackson.core:jackson-databind:2.18.3",
-        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3",
-        "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3",
-        "com.google.flogger:flogger:0.8",
-        "com.google.flogger:flogger-system-backend:0.8",
+        "com.fasterxml.jackson.core:jackson-databind:2.19.1",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.1",
+        "com.fasterxml.jackson.module:jackson-module-kotlin:2.19.1",
+        "com.google.auto.value:auto-value-annotations:1.10.2",
+        "com.google.auto.value:auto-value:1.10.4",
+        "com.google.flogger:flogger:0.9",
+        "com.google.flogger:flogger-system-backend:0.9",
         "com.googlecode.java-diff-utils:diffutils:1.3.0",
         "com.google.code.findbugs:jsr305:3.0.2",
-        "com.google.code.gson:gson:2.12.1",
-        "com.google.errorprone:error_prone_annotations:2.20.0",
+        "com.google.code.gson:gson:2.13.1",
+        "com.google.errorprone:error_prone_annotations:2.39.0",
         "com.google.guava:guava:33.3.1-jre",
         "com.google.truth:truth:1.4.4",
         "com.google.truth.extensions:truth-java8-extension:1.4.4",
         "com.google.j2objc:j2objc-annotations:2.8",
-        "com.google.guava:failureaccess:1.0.2",
+        "com.google.guava:failureaccess:1.0.3",
         "org.hamcrest:hamcrest-core:3.0",
         "org.jetbrains:annotations:26.0.2",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:252.19874.12-EAP-SNAPSHOT",
@@ -72,9 +75,9 @@ maven.install(
         "com.jetbrains.intellij.tools:ide-starter-driver:252.19874.12-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-starter-junit5:252.19874.12-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-starter-squashed:252.19874.12-EAP-SNAPSHOT",
-        "commons-io:commons-io:jar:2.18.0",
-        "io.grpc:grpc-protobuf:1.71.0",
-        "io.grpc:grpc-stub:1.71.0",
+        "commons-io:commons-io:jar:2.19.0",
+        "io.grpc:grpc-protobuf:1.73.0",
+        "io.grpc:grpc-stub:1.73.0",
         "io.kotest:kotest-assertions-api-jvm:5.9.1",
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
         "io.kotest:kotest-assertions-shared-jvm:5.9.1",
@@ -83,17 +86,16 @@ maven.install(
         "org.opentest4j:opentest4j:1.3.0",
         "net.java.dev.jna:jna:5.17.0",
         "org.apache.httpcomponents:httpclient:4.5.14",
-        "org.slf4j:slf4j-api:2.0.13",
+        "org.slf4j:slf4j-api:2.0.17",
         "org.apache.velocity:velocity-engine-core:2.4.1",
         "org.jetbrains.kotlin:kotlin-stdlib:2.2.0-RC2",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0",
-        "org.junit.jupiter:junit-jupiter:5.12.1",
-        "org.junit.platform:junit-platform-console:1.12.1",
-        "org.junit.platform:junit-platform-suite-api:1.12.1",
-        "org.junit.platform:junit-platform-suite-engine:1.12.1",
-        "org.kodein.di:kodein-di:7.25.0",
-        "org.mockito:mockito-core:5.8.0",
-        "org.scala-lang:scala-library:2.13.16",
+        "org.junit.jupiter:junit-jupiter:5.13.3",
+        "org.junit.platform:junit-platform-console:1.13.3",
+        "org.junit.platform:junit-platform-suite-api:1.13.3",
+        "org.junit.platform:junit-platform-suite-engine:1.13.3",
+        "org.kodein.di:kodein-di:7.26.1",
+        "org.mockito:mockito-core:5.18.0",
     ],
     fail_if_repin_required = True,
     fetch_sources = True,
@@ -166,9 +168,13 @@ use_repo(
     truth8 = "com_google_truth_extensions_truth_java8_extension",
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
-bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a")
-bazel_dep(name = "aspect_bazel_lib", version = "2.14.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.1")
+bazel_dep(name = "aspect_bazel_lib", version = "2.20.0")
+
+bazel_dep(name = "googleapis-java", version = "1.0.0")
+bazel_dep(name = "googleapis-grpc-java", version = "1.0.0")
+bazel_dep(name = "googleapis", version = "0.0.0-20250703-f9d6fe4a")
+
 
 switched_rules = use_extension("@googleapis//:extensions.bzl", "switched_rules")
 switched_rules.use_languages(
@@ -184,12 +190,12 @@ single_version_override(
     version = "3.17.1",
 )
 
-bazel_dep(name = "rules_shell", version = "0.4.0")
+bazel_dep(name = "rules_shell", version = "0.5.0")
 bazel_dep(name = "rules_proto", version = "7.1.0")
-bazel_dep(name = "protobuf", version = "29.4")
-bazel_dep(name = "rules_cc", version = "0.1.1")
-bazel_dep(name = "rules_python", version = "1.3.0")
-bazel_dep(name = "platforms", version = "0.0.11")
+bazel_dep(name = "protobuf", version = "29.5")
+bazel_dep(name = "rules_cc", version = "0.1.3")
+bazel_dep(name = "rules_python", version = "1.5.1")
+bazel_dep(name = "platforms", version = "1.0.0")
 
 # Needed for codecanvas
 python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
@@ -245,7 +251,7 @@ use_repo(buf, "rules_buf_toolchains")
 
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.32.0",
+    version = "0.33.2",
     dev_dependency = True,
 )
 
