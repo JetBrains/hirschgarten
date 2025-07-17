@@ -47,7 +47,7 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
 
     val function = BazelGlobalFunctionsService.getInstance().getFunctionByName(functionName)
     if (function != null) {
-      checkRequiredArguments(function, element, holder)
+      //checkRequiredArguments(function, element, holder) TODO fix BAZEL-2192
       if (function.name == "git_override" || function.name == "archive_override") {
         checkDependencyOverrideResolution(element, holder)
       }
