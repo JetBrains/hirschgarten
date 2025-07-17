@@ -80,7 +80,7 @@ class BazelBzlFileService(private val project: Project) {
 
   @TestOnly
   fun forceUpdateCache() {
-    runBlocking { updateCache() }
+    updateCache()
   }
 
   companion object {
