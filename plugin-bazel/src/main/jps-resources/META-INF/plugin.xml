@@ -281,7 +281,6 @@
     <additionalProjectTaskRunnerProvider
       implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"
     />
-    <targetKindProvider implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider" />
     <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules" />
 
     <bazelVersionResolver
