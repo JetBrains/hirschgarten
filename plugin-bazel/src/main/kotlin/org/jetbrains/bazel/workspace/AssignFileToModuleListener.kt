@@ -3,12 +3,15 @@
 package org.jetbrains.bazel.workspace
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -47,7 +50,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.sdkcompat.AssignFileToModuleListenerCompat
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
@@ -268,8 +270,7 @@ private suspend fun processFileCreated(
   mutableRemovalMap: MutableMap<ModuleEntity, List<ContentRootEntity>>,
 ) {
   val existingModules =
-    AssignFileToModuleListenerCompat
-      .getModulesForFile(newFile, project)
+    getModulesForFile(newFile, project)
       .filter { it.moduleEntity?.entitySource != BazelDummyEntitySource }
       .mapNotNull { it.moduleEntity }
 
@@ -294,6 +295,9 @@ private suspend fun processFileCreated(
   }
   project.targetUtils.addFileToTargetIdEntry(path, targets)
 }
+
+suspend fun getModulesForFile(newFile: VirtualFile, project: Project): Set<Module> =
+  readAction { ProjectFileIndex.getInstance(project).getModulesForFile(newFile, true) }
 
 private fun processFileRemoved(
   oldFilePath: Path,
