@@ -19,8 +19,8 @@
     <psiElementConfigurationLocator
       implementation="org.jetbrains.bazel.kotlin.junit.KotlinPsiElementConfigurationLocator"
     />
-        <bazelTestFinder implementation="org.jetbrains.bazel.kotlin.run.KotlinTestFinder"/>
-    </extensions>
+    <bazelTestFinder implementation="org.jetbrains.bazel.kotlin.run.KotlinTestFinder"/>
+  </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <stepsBeforeRunProvider
@@ -37,7 +37,8 @@
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
       order="first"
-                language="kotlin"/>
+      language="kotlin"
+    />
   </extensions>
 
   <projectListeners>

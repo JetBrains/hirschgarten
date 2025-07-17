@@ -210,9 +210,10 @@
       interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
       qualifiedName="org.jetbrains.bazel.bazelVersionResolver"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelTestFinder"
-                    interface="org.jetbrains.bazel.run.BazelTestFinder"
-                    dynamic="true"
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.run.BazelTestFinder"
+      qualifiedName="org.jetbrains.bazel.bazelTestFinder"
     />
   </extensionPoints>
 

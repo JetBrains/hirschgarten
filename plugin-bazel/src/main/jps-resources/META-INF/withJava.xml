@@ -14,9 +14,9 @@
     <bazelExperimentalSettingsProvider
       implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"
     />
-      <unresolvedImportChecker implementation="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker" />
-        <bazelTestFinder implementation="org.jetbrains.bazel.java.run.JavaTestFinder"/>
-      <bazelCoverageClassNodeDecoratorPsiElementClassifier
+    <unresolvedImportChecker implementation="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker" />
+    <bazelTestFinder implementation="org.jetbrains.bazel.java.run.JavaTestFinder"/>
+    <bazelCoverageClassNodeDecoratorPsiElementClassifier
       implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
   </extensions>
@@ -34,7 +34,7 @@
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor"
       order="before applicationRunLineMarkerProvider"
-                language="JAVA"
+      language="JAVA"
     />
     <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard" />
   </extensions>
