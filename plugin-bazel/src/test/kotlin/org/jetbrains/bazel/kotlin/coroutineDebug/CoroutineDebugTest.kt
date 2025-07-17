@@ -77,6 +77,8 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
 
           step("Check if async stack trace is displayed") {
             waitOneContainsText("secondLevel:30")
+            // wait for the rest of the stack trace to be rendered
+            wait(10.seconds)
             x("//div[@class='Splitter']").verticalScrollBar { scrollBlockDown(6) }
             val text = x("//div[@class='XDebuggerFramesList']").getAllTexts()
             var nAsyncStackTraceText = 0
