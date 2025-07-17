@@ -10,6 +10,7 @@ import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.util.Key
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.getModule
@@ -56,7 +57,7 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
     if (!targetInfo.kind.includesKotlin() || !targetInfo.kind.isExecutable) return true
     val module = target.getModule(project) ?: return true
     runBlocking {
-      withBackgroundProgress(project, "Preparing for debugging Kotlin coroutines in target $target") {
+      withBackgroundProgress(project, BazelPluginBundle.message("background.task.description.preparing.for.debugging.kotlin", target)) {
         val kotlinxCoroutinePath =
           OrderEnumerator
             .orderEntries(module)

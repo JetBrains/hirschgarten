@@ -420,7 +420,7 @@
 
     <notificationGroup
       displayType="STICKY_BALLOON"
-      id="Bazel"
+      id="%notification.group.id.bazel"
     />
 
     <workspaceModel.fileIndexContributor
@@ -491,7 +491,7 @@
 
     <notificationGroup
       displayType="BALLOON"
-      id="Bazel Plugin"
+      id="%notification.group.id.bazel.plugin"
     />
     <editorNotificationProvider
       implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"
@@ -518,7 +518,7 @@
     />
     <notificationGroup
       displayType="BALLOON"
-      id="Bazel slow plugins warning"
+      id="%notification.group.id.bazel.slow.plugins"
     />
 
     <externalSystemUnlinkedProjectAware
@@ -735,9 +735,9 @@
     />
 
     <localInspection
-      displayName="Bazel Version Check"
+      displayName="%inspection.display.name.bazel.version.check"
       enabledByDefault="true"
-      groupName="Bazel"
+      groupName="%notification.group.id.bazel"
       implementationClass="org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection"
       language="BazelVersion"
       level="WARNING"
@@ -783,14 +783,14 @@
     />
 
     <projectConfigurable
-      displayName="Bazel"
+      displayName="%project.configurable.display.name.bazel"
       id="bazel.project.settings"
       instance="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurable"
       parentId="build.tools"
       provider="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurableProvider"
     >
       <configurable
-        displayName="Experimental Settings"
+        displayName="%configurable.display.name.bazel.experimental.project.settings"
         id="bazel.experimental.project.settings"
         instance="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurable"
         provider="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurableProvider"
@@ -798,7 +798,7 @@
     </projectConfigurable>
 
     <applicationConfigurable
-      displayName="Advanced Settings"
+      displayName="%advanced.settings.display.name"
       id="bazel.application.settings"
       instance="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsConfigurable"
       parentId="bazel.project.settings"
@@ -858,7 +858,7 @@
     <action
       class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
       id="Bazel.NewBazelPackageAction"
-      text="New Bazel Package"
+      text="%action.text.new.bazel.package"
     >
       <add-to-group
         anchor="after"
@@ -926,14 +926,14 @@
 
     <action
       class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
-      description="Add this directory to the project view file."
+      description="%action.description.add.to.projectview.directory"
       id="Bazel.AddToProjectViewDirectoriesAction"
       text="Add to the Project View Directories"
     />
 
     <action
       class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
-      description="Exclude this directory from the project view file."
+      description="%action.description.exclude.directory.from.projectview.file"
       id="Bazel.ExcludeFromProjectViewDirectoriesAction"
       text="Exclude from the Project View Directories"
     />
