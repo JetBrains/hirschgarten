@@ -1,6 +1,7 @@
 import com.google.devtools.build.lib.starlarkdocextract.StardocOutputProtos
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import common.Environment
 import common.GlobalFunction
 import common.Param
 import common.serializeFunctionsTo
@@ -38,6 +39,7 @@ object ProtobufReader {
     return GlobalFunction(
       name = ruleInfo.ruleName,
       doc = replaceTicks(removeLinks(ruleInfo.docString)),
+      environment = listOf(Environment.BUILD),
       params = attributes,
     )
   }

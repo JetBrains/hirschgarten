@@ -3,6 +3,15 @@ package common
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 
+enum class Environment {
+  ALL,
+  BZL,
+  BUILD,
+  MODULE,
+  REPO,
+  VENDOR,
+}
+
 data class Param(
   val name: String,
   val doc: String?,
@@ -15,6 +24,7 @@ data class Param(
 data class GlobalFunction(
   val name: String,
   val doc: String?,
+  val environment: List<Environment>,
   val params: List<Param>,
 )
 
