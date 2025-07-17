@@ -213,33 +213,41 @@ class BazelQueryTab(private val project: Project) : JPanel() {
           return
         }
 
-    try {
-      val svgFile = FileUtil.createTempFile("bazelqueryGraph", ".svg", true)
-      val dotFile = FileUtil.createTempFile("tempDot", ".dot", true)
-      FileUtil.writeToFile(dotFile, dotContent)
+    BazelCoroutineService.getInstance(project).start {
 
-      val commandLine =
-        GeneralCommandLine()
-          .withExePath(dotFullPath.absolutePath)
-          .withParameters("-Tsvg", "-o${svgFile.absolutePath}", dotFile.absolutePath)
+      try {
+        val svgFile = FileUtil.createTempFile("bazelqueryGraph", ".svg", true)
+        val dotFile = FileUtil.createTempFile("tempDot", ".dot", true)
+        FileUtil.writeToFile(dotFile, dotContent)
 
-      val processHandler = OSProcessHandler(commandLine)
-      processHandler.startNotify()
-      val success = processHandler.waitFor()
+        val commandLine =
+          GeneralCommandLine()
+            .withExePath(dotFullPath.absolutePath)
+            .withParameters("-Tsvg", "-o${svgFile.absolutePath}", dotFile.absolutePath)
 
-      if (!success) {
-        throw Exception()
+        val processHandler = OSProcessHandler(commandLine)
+        processHandler.startNotify()
+        val success = processHandler.waitFor()
+
+        if (!success) {
+          throw Exception()
+        }
+
+        ApplicationManager.getApplication().invokeLater {
+          BrowserUtil.browse(svgFile)
+        }
+      } catch (_: Exception) {
+        ApplicationManager.getApplication().invokeLater {
+          NotificationGroupManager
+            .getInstance()
+            .getNotificationGroup("Bazel")
+            .createNotification(
+              BazelPluginBundle.message("notification.bazel.query.graph.visualization.failed"),
+              NotificationType.ERROR
+            )
+            .notify(project)
+        }
       }
-
-      ApplicationManager.getApplication().invokeLater {
-        BrowserUtil.browse(svgFile)
-      }
-    } catch (_: Exception) {
-      NotificationGroupManager
-        .getInstance()
-        .getNotificationGroup("Bazel")
-        .createNotification(BazelPluginBundle.message("notification.bazel.query.graph.visualization.failed"), NotificationType.ERROR)
-        .notify(project)
     }
   }
 
