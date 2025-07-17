@@ -9,7 +9,6 @@ import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
-import org.jetbrains.bazel.server.bzlmod.TodoRepoMapping
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.model.Module
@@ -139,7 +138,6 @@ class BspProjectMapper(
           apparentRepoNameToCanonicalName = repoMapping.apparentRepoNameToCanonicalName,
           canonicalRepoNameToPath = repoMapping.canonicalRepoNameToPath,
         )
-      TodoRepoMapping -> TODO()
     }
   }
 
@@ -229,7 +227,7 @@ class BspProjectMapper(
     val documentRelativePath =
       inverseSourcesParams.textDocument.path
         .relativeToOrNull(project.workspaceRoot) ?: throw RuntimeException("File path outside of project root")
-    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext)
+    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext, project.repoMapping)
   }
 
   fun dependencySources(project: AspectSyncProject, dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {

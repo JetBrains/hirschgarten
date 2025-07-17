@@ -18,7 +18,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasProgramArguments
-import org.jetbrains.bazel.server.bzlmod.TodoRepoMapping
+import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.task.query
@@ -85,7 +85,7 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     val blazeSettings: Element = checkNotNull(runConfigurationXml.getChild("blaze-settings"))
     val googleHandlerId: String = checkNotNull(blazeSettings.getAttributeValue("handler-id"))
     val bazelCommand: String = checkNotNull(blazeSettings.getAttributeValue("blaze-command"))
-    val target = Label.parse(checkNotNull(blazeSettings.getChild("blaze-target")).text).canonicalize(TodoRepoMapping)
+    val target = Label.parse(checkNotNull(blazeSettings.getChild("blaze-target")).text).canonicalize(RepoMappingDisabled)
     val additionalBazelParams = blazeSettings.getChild("blaze-user-flag")?.text?.replaceProjectDir(project)
     val programArguments = blazeSettings.getChild("blaze-user-exe-flag")?.text?.replaceProjectDir(project)
 

@@ -16,7 +16,7 @@ import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
-import org.jetbrains.bazel.server.bzlmod.TodoRepoMapping
+import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.server.bzlmod.canonicalize
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
@@ -79,7 +79,7 @@ class BazelRunConfiguration internal constructor(
       targets.add(targetElement.text)
     }
 
-    this.targets = targets.map { Label.parse(it).canonicalize(TodoRepoMapping) }
+    this.targets = targets.map { Label.parse(it).canonicalize(RepoMappingDisabled) }
 
     // It should be possible to load the configuration before the project is synchronized,
     // so we can't access targets' data here. Instead, we have to use the stored provider ID.

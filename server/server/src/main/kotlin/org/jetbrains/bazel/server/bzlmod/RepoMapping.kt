@@ -25,7 +25,6 @@ data class BzlmodRepoMapping(
 
 data object RepoMappingDisabled : RepoMapping
 
-data object TodoRepoMapping : RepoMapping
 
 fun Label.canonicalize(repoMapping: RepoMapping): CanonicalLabel =
   when (this) {
@@ -36,7 +35,7 @@ fun Label.canonicalize(repoMapping: RepoMapping): CanonicalLabel =
           is BzlmodRepoMapping ->
             repoMapping.apparentRepoNameToCanonicalName[apparentRepoName]
               ?: error("No canonical name found for $this")
-          RepoMappingDisabled, TodoRepoMapping -> apparentRepoName
+          RepoMappingDisabled -> apparentRepoName
         }
       CanonicalLabel.fromParts(canonicalRepoName, this.packagePath, this.target)
     }
