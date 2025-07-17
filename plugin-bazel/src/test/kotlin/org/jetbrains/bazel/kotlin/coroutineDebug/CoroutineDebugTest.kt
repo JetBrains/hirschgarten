@@ -21,6 +21,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -76,7 +77,8 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
           }
 
           step("Check if async stack trace is displayed") {
-            waitOneContainsText("secondLevel:30")
+            // this should give enough time for the test running to reach the debug break point
+            waitOneContainsText("secondLevel:30", timeout = 1.minutes)
             // wait for the rest of the stack trace to be rendered
             wait(10.seconds)
             x("//div[@class='Splitter']").verticalScrollBar { scrollBlockDown(6) }
@@ -89,6 +91,15 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
             assert(nAsyncStackTraceText == 2) {
               "Async stack trace is not correctly displayed, number of async stack trace text found is $nAsyncStackTraceText"
             }
+          }
+
+          step("Check thread dump for coroutine thread") {
+            x("//div[@class='JBRunnerTabs']//div[@tooltiptext='More']").click()
+            popup().waitOneContainsText("Get Thread Dump").click()
+            wait(10.seconds)
+            takeScreenshot("threadDumpPanel")
+            val threadDumpTexts = x("//div[@class='ThreadDumpPanel']").getAllTexts()
+            assertNotNull(threadDumpTexts.find { it.text == "coroutine:2" }) { "Thread dump doesn't contain coroutine thread" }
           }
         }
       }
