@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions.STARLARK_FUNCTIONS
 
 /**
  * Global function definitions are stored in JSON files bundled with the plugin.
@@ -50,8 +49,6 @@ class BazelGlobalFunctionsService {
     buildRules = loadFunctionsList(buildRulesPath).associateBy { it.name }
   }
 
-  fun getAllGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions
-
   fun getBuildGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions.filter {
     it.value.environment.contains(Environment.BUILD)
   } + hardcodedBuildFunctions
@@ -66,7 +63,7 @@ class BazelGlobalFunctionsService {
 
   fun getStarlarkGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions.filter {
     it.value.environment.contains(Environment.ALL)
-  } + STARLARK_FUNCTIONS
+  }
 
   fun getBuildRules(): Map<String, BazelGlobalFunction> = buildRules
 

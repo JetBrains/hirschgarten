@@ -1689,5 +1689,568 @@
         "required": false
       }
     ]
+  },
+  {
+    "name": "min",
+    "doc": "Returns the smallest one of all given arguments. If only one positional argument is provided, it must be a non-empty iterable. It is an error if elements are not comparable (for example int with string), or if no arguments are given.\u003cpre class\u003d\\\"language-python\\\"\u003e\\nmin(2, 5, 4) \u003d\u003d 2\\nmin([5, 6, 3]) \u003d\u003d 3\\nmin(\\\"six\\\", \\\"three\\\", \\\"four\\\", key \u003d len) \u003d\u003d \\\"six\\\"  # the shortest\\nmin([2, -2, -1, 1], key \u003d abs) \u003d\u003d -1  # the first encountered with minimal key value\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "*args",
+        "doc": "The elements to be checked.",
+        "named": false,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "key",
+        "doc": "An optional function applied to each element before comparison.",
+        "defaultValue": "None",
+        "named": true,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "max",
+    "doc": "Returns the largest one of all given arguments. If only one positional argument is provided, it must be a non-empty iterable.It is an error if elements are not comparable (for example int with string), or if no arguments are given.\u003cpre class\u003d\\\"language-python\\\"\u003e\\nmax(2, 5, 4) \u003d\u003d 5\\nmax([5, 6, 3]) \u003d\u003d 6\\nmax(\\\"two\\\", \\\"three\\\", \\\"four\\\", key \u003d len) \u003d\u003d\\\"three\\\"  # the longest\\nmax([1, -1, -2, 2], key \u003d abs) \u003d\u003d -2  # the first encountered with maximal key value\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "*args",
+        "doc": "The elements to be checked.",
+        "named": false,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "key",
+        "doc": "An optional function applied to each element before comparison.",
+        "defaultValue": "None",
+        "named": true,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "abs",
+    "doc": "Returns the absolute value of a number (a non-negative number with the same magnitude).",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "A number (int or float)",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "all",
+    "doc": "Returns true if all elements evaluate to True or if the collection is empty. Elements are converted to boolean using the \u003ca href\u003d\\\"#bool\\\"\u003ebool\u003c/a\u003e function.\u003cpre class\u003d\\\"language-python\\\"\u003eall([\\\"hello\\\", 3, True]) \u003d\u003d True\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "elements",
+        "doc": "A string or a collection of elements.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "any",
+    "doc": "Returns true if at least one element evaluates to True. Elements are converted to boolean using the \u003ca href\u003d\\\"#bool\\\"\u003ebool\u003c/a\u003e function.\u003cpre class\u003d\\\"language-python\\\"\u003eany([-1, 0, 1]) \u003d\u003d True\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "elements",
+        "doc": "A string or a collection of elements.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "sorted",
+    "doc": "Returns a new sorted list containing all the elements of the supplied iterable sequence. An error may occur if any pair of elements x, y may not be compared using x \u003c y. The elements are sorted into ascending order, unless the reverse argument is True, in which case the order is descending.\\n Sorting is stable: elements that compare equal retain their original relative order.\\n\u003cpre class\u003d\\\"language-python\\\"\u003e\\nsorted([3, 5, 4]) \u003d\u003d [3, 4, 5]\\nsorted([3, 5, 4], reverse \u003d True) \u003d\u003d [5, 4, 3]\\nsorted([\\\"two\\\", \\\"three\\\", \\\"four\\\"], key \u003d len) \u003d\u003d [\\\"two\\\", \\\"four\\\", \\\"three\\\"]  # sort by length\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "iterable",
+        "doc": "The iterable sequence to sort.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "key",
+        "doc": "An optional function applied to each element before comparison.",
+        "defaultValue": "None",
+        "named": true,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "reverse",
+        "doc": "Return results in descending order.",
+        "defaultValue": "False",
+        "named": true,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "reversed",
+    "doc": "Returns a new, unfrozen list that contains the elements of the original iterable sequence in reversed order.\u003cpre class\u003d\\\"language-python\\\"\u003ereversed([3, 5, 4]) \u003d\u003d",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "sequence",
+        "doc": "The iterable sequence (e.g. list) to be reversed.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "tuple",
+    "doc": "Returns a tuple with the same elements as the given iterable value.\u003cpre class\u003d\\\"language-python\\\"\u003etuple([1, 2]) \u003d\u003d (1, 2)\\ntuple((2, 3, 2)) \u003d\u003d (2, 3, 2)\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The object to convert.",
+        "defaultValue": "()",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "list",
+    "doc": "Returns a new list with the same elements as the given iterable value.\u003cpre class\u003d\\\"language-python\\\"\u003elist([1, 2]) \u003d\u003d [1, 2]\\nlist((2, 3, 2)) \u003d\u003d [2, 3, 2]\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The object to convert.",
+        "defaultValue": "[]",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "len",
+    "doc": "Returns the length of a string, sequence (such as a list or tuple), dict, set, or other",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The value whose length to report.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "str",
+    "doc": "Converts any object to string. This is useful for debugging.\u003cpre class\u003d\\\"language-python\\\"\u003estr(\\\"ab\\\") \u003d\u003d \\\"ab\\\"\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The object to convert.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "repr",
+    "doc": "Converts any object to a string representation. This is useful for debugging.\u003cbr\u003e",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The object to convert.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "bool",
+    "doc": "Constructor for the bool type. It returns \u003ccode\u003eFalse\u003c/code\u003e if the object is \u003ccode\u003eNone\u003c/code\u003e, \u003ccode\u003eFalse\u003c/code\u003e, an empty string (\u003ccode\u003e\\\"\\\"\u003c/code\u003e), the number \u003ccode\u003e0\u003c/code\u003e, or an empty collection (e.g. \u003ccode\u003e()\u003c/code\u003e, \u003ccode\u003e[]\u003c/code\u003e). ",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The variable to convert.",
+        "defaultValue": "False",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "float",
+    "doc": "Returns x as a float value. \u003cul\u003e\u003cli\u003eIf \u003ccode\u003ex\u003c/code\u003e is already a float, \u003ccode\u003efloat\u003c/code\u003e returns it unchanged. \u003cli\u003eIf \u003ccode\u003ex\u003c/code\u003e is a bool, \u003ccode\u003efloat\u003c/code\u003e returns 1.0 for True and 0.0 for False. \u003cli\u003eIf \u003ccode\u003ex\u003c/code\u003e is an int, \u003ccode\u003efloat\u003c/code\u003e returns the nearest finite floating-point value to x, or an error if the magnitude is too large. \u003cli\u003eIf \u003ccode\u003ex\u003c/code\u003e is a string, it must be a valid floating-point literal, or be equal (ignoring case) to \u003ccode\u003eNaN\u003c/code\u003e, \u003ccode\u003eInf\u003c/code\u003e, or \u003ccode\u003eInfinity\u003c/code\u003e, optionally preceded by a \u003ccode\u003e+\u003c/code\u003e or \u003ccode\u003e-\u003c/code\u003e sign. \u003c/ul\u003eAny other value causes an error. With no argument, \u003ccode\u003efloat()\u003c/code\u003e returns",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The value to convert.",
+        "defaultValue": "unbound",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "int",
+    "doc": "Returns x as an int value.\u003cul\u003e\u003cli\u003eIf \u003ccode\u003ex\u003c/code\u003e is already an int, \u003ccode\u003eint\u003c/code\u003e returns it unchanged.\u003cli\u003eIf \u003ccode\u003ex\u003c/code\u003e is a bool, \u003ccode\u003eint\u003c/code\u003e returns 1 for True and 0 for False.\u003cli\u003eIf \u003ccode\u003ex\u003c/code\u003e is a string, it must have the format     \u003ccode\u003e\u0026lt;sign\u0026gt;\u0026lt;prefix\u0026gt;\u0026lt;digits\u0026gt;\u003c/code\u003e.     \u003ccode\u003e\u0026lt;sign\u0026gt;\u003c/code\u003e is either \u003ccode\u003e\\\"+\\\"\u003c/code\u003e, \u003ccode\u003e\\\"-\\\"\u003c/code\u003e,     or empty (interpreted as positive). \u003ccode\u003e\u0026lt;digits\u0026gt;\u003c/code\u003e are a     sequence of digits from 0 up to \u003ccode\u003ebase\u003c/code\u003e - 1, where the letters a-z     (or equivalently, A-Z) are used as digits for 10-35. In the case where     \u003ccode\u003ebase\u003c/code\u003e is 2/8/16, \u003ccode\u003e\u0026lt;prefix\u0026gt;\u003c/code\u003e is optional and may     be 0b/0o/0x (or equivalently, 0B/0O/0X) respectively; if the     \u003ccode\u003ebase\u003c/code\u003e is any other value besides these bases or the special value     0, the prefix must be empty. In the case where \u003ccode\u003ebase\u003c/code\u003e is 0, the     string is interpreted as an integer literal, in the sense that one of the     bases 2/8/10/16 is chosen depending on which prefix if any is used. If     \u003ccode\u003ebase\u003c/code\u003e is 0, no prefix is used, and there is more than one digit,     the leading digit cannot be 0; this is to avoid confusion between octal and     decimal. The magnitude of the number represented by the string must be within     the allowed range for the int type.\u003cli\u003eIf \u003ccode\u003ex\u003c/code\u003e is a float, \u003ccode\u003eint\u003c/code\u003e returns the integer value of    the float, rounding towards zero. It is an error if x is non-finite (NaN or    infinity).\u003c/ul\u003eThis function fails if \u003ccode\u003ex\u003c/code\u003e is any other type, or if the value is a string not satisfying the above format. Unlike Python\u0027s \u003ccode\u003eint\u003c/code\u003e function, this function does not allow zero arguments, and does not allow extraneous whitespace for string arguments.\u003cp\u003eExamples:\u003cpre class\u003d\\\"language-python\\\"\u003eint(\\\"123\\\") \u003d\u003d 123\\nint(\\\"-123\\\") \u003d\u003d -123\\nint(\\\"+123\\\") \u003d\u003d 123\\nint(\\\"FF\\\", 16) \u003d\u003d 255\\nint(\\\"0xFF\\\", 16) \u003d\u003d 255\\nint(\\\"10\\\", 0) \u003d\u003d 10\\nint(\\\"-0x10\\\", 0) \u003d\u003d -16\\nint(\\\"-0x10\\\", 0) \u003d\u003d -16\\nint(\\\"123.456\\\") \u003d\u003d 123\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The string to convert.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "base",
+        "doc": "The base used to interpret a string value; defaults to 10. Must be between 2 and 36 (inclusive), or 0 to detect the base as if \u003ccode\u003ex\u003c/code\u003e were an integer literal. This parameter must not be supplied if the value is not a ",
+        "defaultValue": "unbound",
+        "named": true,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "dict",
+    "doc": "Creates a \u003ca href\u003d\\\"../core/dict.html\\\"\u003edictionary\u003c/a\u003e from an optional positional argument and an optional set of keyword arguments. In the case where the same key is given multiple times, the last value will be used. Entries supplied via keyword arguments are considered to come after entries supplied via the ",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "pairs",
+        "doc": "A dict, or an iterable whose elements are each of length 2 (key, value).",
+        "defaultValue": "[]",
+        "named": false,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "**kwargs",
+        "doc": "Dictionary of additional entries.",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "set",
+    "doc": "Creates a new \u003ca href\u003d\\\"../core/set.html\\\"\u003eset\u003c/a\u003e containing the unique elements of a given iterable, preserving iteration order.  \u003cp\u003eIf called with no argument, \u003ccode\u003eset()\u003c/code\u003e returns a new empty set.  \u003cp\u003eFor example, \u003cpre class\u003dlanguage-python\u003e set()                          # an empty set set([3, 1, 1, 2])              # set([3, 1, 2]), a set of three elements set({\"k1\": \"v1\", \"k2\": \"v2\"})  # set([\"k1\", \"k2\"]), a set of two elements \u003c/pre\u003e",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "elements",
+        "doc": "A set, a sequence of hashable values, or a dict.",
+        "defaultValue": "[]",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "enumerate",
+    "doc": "Returns a list of pairs (two-element tuples), with the index (int) and the item from the input sequence.\\n\u003cpre class\u003d\\\"language-python\\\"\u003e",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "list",
+        "doc": "input sequence.",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "start",
+        "doc": "start index.",
+        "defaultValue": "0",
+        "named": true,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "hash",
+    "doc": "Return a hash value for a string. This is computed deterministically using the same algorithm as Java\u0027s \u003ccode\u003eString.hashCode()\u003c/code\u003e, namely: \u003cpre class\u003d\\\"language-python\\\"\u003es[0] * (31^(n-1)) + s[1] * (31^(n-2)) + ... + ",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "value",
+        "doc": "String value to hash.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "range",
+    "doc": "Creates a list where items go from \u003ccode\u003estart\u003c/code\u003e to \u003ccode\u003estop\u003c/code\u003e, using a \u003ccode\u003estep\u003c/code\u003e increment. If a single argument is provided, items will range from 0 to that element.\u003cpre class\u003d\\\"language-python\\\"\u003erange(4) \u003d\u003d [0, 1, 2, 3]\\nrange(3, 9, 2) \u003d\u003d [3, 5, 7]\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "start_or_stop",
+        "doc": "Value of the start element if stop is provided, ",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "stop_or_none",
+        "doc": "optional index of the first item \u003ci\u003enot\u003c/i\u003e to be included in the resulting ",
+        "defaultValue": "None",
+        "named": false,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "step",
+        "doc": "The increment (default is 1). It may be negative.",
+        "defaultValue": "1",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "hasattr",
+    "doc": "Returns True if the object \u003ccode\u003ex\u003c/code\u003e has an attribute or method of the given \u003ccode\u003ename\u003c/code\u003e, otherwise False. Example:\u003cbr\u003e",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The object to check.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "name",
+        "doc": "The name of the attribute.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "getattr",
+    "doc": "Returns the struct\u0027s field of the given name if it exists. If not, it either returns \u003ccode\u003edefault\u003c/code\u003e (if specified) or raises an error. \u003ccode\u003egetattr(x, \\\"foobar\\\")\u003c/code\u003e is equivalent to \u003ccode\u003ex.foobar\u003c/code\u003e.\u003cpre class\u003d\\\"language-python\\\"\u003egetattr(ctx.attr, \\\"myattr\\\")\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The struct whose attribute is accessed.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "name",
+        "doc": "The name of the struct attribute.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "default",
+        "doc": "The default value to return in case the struct ",
+        "defaultValue": "unbound",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "dir",
+    "doc": "Returns a list of strings: the names of the attributes and ",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The object to check.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "fail",
+    "doc": "Causes execution to fail with an error.",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "msg",
+        "doc": "Deprecated: use positional arguments instead. ",
+        "defaultValue": "None",
+        "named": true,
+        "positional": false,
+        "required": false
+      },
+      {
+        "name": "attr",
+        "doc": "Deprecated. Causes an optional prefix containing this string to be added to the",
+        "defaultValue": "None",
+        "named": true,
+        "positional": false,
+        "required": false
+      },
+      {
+        "name": "sep",
+        "doc": "The separator string between the objects, default is space (\\\" \\\").",
+        "defaultValue": "\\\" \\\"",
+        "named": true,
+        "positional": false,
+        "required": false
+      },
+      {
+        "name": "*args",
+        "doc": "A list of values, formatted with debugPrint (which is equivalent to str by default) and joined with sep (defaults to \\\" \\\"), that appear in the",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "print",
+    "doc": "Prints \u003ccode\u003eargs\u003c/code\u003e as debug output. It will be prefixed with the string \u003ccode\u003e\\\"DEBUG\\\"\u003c/code\u003e and the location (file and line number) of this call. The exact way in which the arguments are converted to strings is unspecified and may change at any time. In particular, it may be different from (and more detailed than) the formatting done by \u003ca href\u003d\u0027#str\u0027\u003e\u003ccode\u003estr()\u003c/code\u003e\u003c/a\u003e and \u003ca href\u003d\u0027#repr\u0027\u003e\u003ccode\u003erepr()\u003c/code\u003e\u003c/a\u003e.\u003cp\u003eUsing \u003ccode\u003eprint\u003c/code\u003e in production code is discouraged due to the spam it creates for users. For deprecations, prefer a hard error using \u003ca href\u003d\\\"#fail\\\"\u003e",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "sep",
+        "doc": "The separator string between the objects, default is space (\\\" \\\").",
+        "defaultValue": "\\\" \\\"",
+        "named": true,
+        "positional": false,
+        "required": false
+      },
+      {
+        "name": "*args",
+        "doc": "The objects to print.",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "type",
+    "doc": "Returns the type name of its argument. This is useful for debugging and type-checking. Examples:\u003cpre class\u003d\\\"language-python\\\"\u003etype(2) \u003d\u003d \\\"int\\\"\\ntype([1]) \u003d\u003d \\\"list\\\"\\ntype(struct(a \u003d 2)) \u003d\u003d \\\"struct\\\"\u003c/pre\u003eThis function might change in the future. To write Python-compatible code and be future-proof, use it only to compare return values: \u003cpre class\u003d\\\"language-python\\\"\u003eif type(x) \u003d\u003d type([]):  # if x is a list",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "The object to check type of.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "zip",
+    "doc": "Returns a \u003ccode\u003elist\u003c/code\u003e of \u003ccode\u003etuple\u003c/code\u003es, where the i-th tuple contains the i-th element from each of the argument sequences or iterables. The list has the size of the shortest input. With a single iterable argument, it returns a list of 1-tuples. With no arguments, it returns an empty list. Examples:\u003cpre class\u003d\\\"language-python\\\"\u003ezip()  # \u003d\u003d []\\nzip([1, 2])  # \u003d\u003d [(1,), (2,)]\\nzip([1, 2], [3, 4])  # \u003d\u003d [(1, 3), (2, 4)]\\n",
+    "environment": [
+      "ALL"
+    ],
+    "params": [
+      {
+        "name": "*args",
+        "doc": "lists to zip.",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
   }
 ]
