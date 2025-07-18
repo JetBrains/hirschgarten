@@ -41,11 +41,11 @@ class StarlarkArgumentCompletionContributor : CompletionContributor() {
 private object StarlarkArgumentCompletionProvider : CompletionProvider<CompletionParameters>() {
   private fun fileTypeToGlobalFunctions(file: StarlarkFile): Map<String, BazelGlobalFunction> =
     when (file.getBazelFileType()) {
-      BazelFileType.EXTENSION -> BazelGlobalFunctions.EXTENSION_FUNCTIONS
-      BazelFileType.BUILD -> service<BazelGlobalFunctionsService>().getBuildFunctions()
-      BazelFileType.MODULE -> service<BazelGlobalFunctionsService>().getModuleFunctions()
-      BazelFileType.WORKSPACE -> BazelGlobalFunctions.WORKSPACE_FUNCTIONS
-    } + BazelGlobalFunctions.STARLARK_FUNCTIONS
+      BazelFileType.EXTENSION -> BazelGlobalFunctionsService.getInstance().getBzlGlobalFunctions()
+      BazelFileType.BUILD -> BazelGlobalFunctionsService.getInstance().getBuildGlobalFunctions()
+      BazelFileType.MODULE -> BazelGlobalFunctionsService.getInstance().getModuleGlobalFunctions()
+      BazelFileType.WORKSPACE -> BazelGlobalFunctionsService.getInstance().getModuleGlobalFunctions()
+    } + BazelGlobalFunctionsService.getInstance().getStarlarkGlobalFunctions()
 
   override fun addCompletions(
     parameters: CompletionParameters,
@@ -103,5 +103,5 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     LookupElementBuilder
       .create(arg.name)
       .withIcon(PlatformIcons.PARAMETER_ICON)
-      .withInsertHandler(ArgumentInsertHandler(arg.default ?: ""))
+      .withInsertHandler(ArgumentInsertHandler(arg.defaultValue ?: ""))
 }

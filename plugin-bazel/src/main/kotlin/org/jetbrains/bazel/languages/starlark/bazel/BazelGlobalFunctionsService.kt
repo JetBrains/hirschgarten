@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions.STARLARK_FUNCTIONS
 
 /**
  * Global function definitions are stored in JSON files bundled with the plugin.
@@ -18,89 +19,20 @@ import com.intellij.openapi.components.service
  */
 @Service(Service.Level.APP)
 class BazelGlobalFunctionsService {
-  private val moduleFunctionsFilePath = "/bazelGlobalFunctions/moduleFunctions.json"
-  private val hardcodedBuildRulesFilePath = "/bazelGlobalFunctions/hardcodedBuildRules.json"
-  private val generatedBuildRulesFilePath = "/bazelGlobalFunctions/generatedBuildRules.json"
-  private val buildFunctionsFilePath = "/bazelGlobalFunctions/buildFunctions.json"
+  private val globalFunctionsPath = "/bazelGlobalFunctions/global_functions.json"
+  private val buildRulesPath = "/bazelGlobalFunctions/rules.json"
 
-  private val moduleFunctionsMap: Map<String, BazelGlobalFunction>
-  private val buildFunctions: Map<String, BazelGlobalFunction>
+  private val globalFunctions: Map<String, BazelGlobalFunction>
+  private val buildRules: Map<String, BazelGlobalFunction>
 
-  // Apply to all *_binary rules.
-  private val binaryRulesCommonArguments =
-    setOf(
-      BazelGlobalFunctionParameter(
-        "args",
-        "[]",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "env",
-        "{}",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "output_licenses",
-        "[]",
-        positional = false,
-        required = false,
-      ),
-    )
+  private val hardcodedBuildFunctions = listOf(
+    BazelGlobalFunction("load", null, listOf(Environment.BUILD), emptyList()),
+  ).associateBy { it.name }
 
-  // Apply to all *_test rules.
-  private val testRulesCommonArguments =
-    setOf(
-      BazelGlobalFunctionParameter(
-        "args",
-        "[]",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "env",
-        "{}",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "env_inherit",
-        "[]",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "size",
-        "\"\"",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "timeout",
-        "\"\"",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "flaky",
-        "False",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "shard_count",
-        "-1",
-        positional = false,
-        required = false,
-      ),
-      BazelGlobalFunctionParameter(
-        "local",
-        "False",
-        positional = false,
-        required = false,
-      ),
-    )
+  private val hardcodedModuleFunctions = listOf(
+    BazelGlobalFunction("bind", null, listOf(Environment.MODULE), emptyList()),
+    BazelGlobalFunction("workspace", null, listOf(Environment.MODULE), emptyList()),
+  ).associateBy { it.name }
 
   private fun loadFunctionsList(filePath: String): List<BazelGlobalFunction> {
     val resource = javaClass.getResourceAsStream(filePath)
@@ -110,42 +42,35 @@ class BazelGlobalFunctionsService {
       functions.addAll(it)
     }
 
-    // Ignore all parameters with * and **, for example *args and **kwargs.
-    // Their absence shouldn't cause red code, and they should not be completed.
-    return functions.map {
-      if (it.params.any { param -> param.name.startsWith("*") || param.name.startsWith("**") }) {
-        it.copy(
-          params =
-            it.params.filter { param ->
-              !param.name.startsWith("*") && !param.name.startsWith("**")
-            },
-        )
-      } else {
-        it
-      }
-    }
+    return functions
   }
 
   init {
-    moduleFunctionsMap = loadFunctionsList(moduleFunctionsFilePath).associateBy { it.name }
-    val buildFunctionsList =
-      (loadFunctionsList(hardcodedBuildRulesFilePath) + loadFunctionsList(generatedBuildRulesFilePath)).map { func ->
-        if (func.name.endsWith("_binary")) {
-          func.copy(params = (func.params + binaryRulesCommonArguments).toList())
-        } else if (func.name.endsWith("_test")) {
-          func.copy(params = (func.params + testRulesCommonArguments).toList())
-        } else {
-          func
-        }
-      } + loadFunctionsList(buildFunctionsFilePath)
-    buildFunctions = buildFunctionsList.associateBy { it.name }
+    globalFunctions = loadFunctionsList(globalFunctionsPath).associateBy { it.name }
+    buildRules = loadFunctionsList(buildRulesPath).associateBy { it.name }
   }
 
-  fun getModuleFunctions(): Map<String, BazelGlobalFunction> = moduleFunctionsMap
+  fun getAllGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions
 
-  fun getBuildFunctions(): Map<String, BazelGlobalFunction> = buildFunctions
+  fun getBuildGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions.filter {
+    it.value.environment.contains(Environment.BUILD)
+  } + hardcodedBuildFunctions
 
-  fun getFunctionByName(name: String): BazelGlobalFunction? = moduleFunctionsMap[name] ?: buildFunctions[name]
+  fun getModuleGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions.filter {
+    it.value.environment.contains(Environment.MODULE)
+  } + hardcodedModuleFunctions
+
+  fun getBzlGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions.filter {
+    it.value.environment.contains(Environment.BZL)
+  }
+
+  fun getStarlarkGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions.filter {
+    it.value.environment.contains(Environment.ALL)
+  } + STARLARK_FUNCTIONS
+
+  fun getBuildRules(): Map<String, BazelGlobalFunction> = buildRules
+
+  fun getFunctionByName(name: String): BazelGlobalFunction? = globalFunctions[name]
 
   companion object {
     fun getInstance(): BazelGlobalFunctionsService = service<BazelGlobalFunctionsService>()

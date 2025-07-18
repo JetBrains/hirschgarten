@@ -57,15 +57,4 @@ object BazelGlobalFunctions {
       starlarkWithJustName("type"),
       starlarkWithJustName("zip"),
     ).associateBy { it.name }
-
-  val EXTENSION_FUNCTIONS =
-    mapOf(
-      "load" to starlarkWithJustName("load"),
-    )
-
-  val WORKSPACE_FUNCTIONS =
-    mapOf(
-      "bind" to starlarkWithJustName("bind"),
-      "workspace" to starlarkWithJustName("workspace"),
-    )
 }

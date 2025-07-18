@@ -30,7 +30,7 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     extend(
       CompletionType.BASIC,
       fileSpecificFunctionCompletionElement(BazelFileType.EXTENSION),
-      BazelExtensionFunctionCompletionProvider,
+      BazelBzlFunctionCompletionProvider,
     )
     extend(
       CompletionType.BASIC,
@@ -99,10 +99,11 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
       val requiredArgs = function.params.filter { it.required }
       var caretPlaced = false
       requiredArgs.forEach {
-        document.insertString(context.tailOffset, "\n\t${it.name} = ${it.default},")
+        val default = it.defaultValue ?: ""
+        document.insertString(context.tailOffset, "\n\t${it.name} = $default,")
         if (!caretPlaced) {
           caretPlaced = true
-          placeCaret(context, it.default ?: "")
+          placeCaret(context, it.defaultValue ?: "")
         }
       }
 
@@ -129,16 +130,16 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
 }
 
 private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.STARLARK_FUNCTIONS.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getStarlarkGlobalFunctions().values } )
 
-private object BazelExtensionFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.EXTENSION_FUNCTIONS.values })
+private object BazelBzlFunctionCompletionProvider :
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBzlGlobalFunctions().values })
 
 private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBuildFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBuildGlobalFunctions().values })
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getModuleFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getModuleGlobalFunctions().values })
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.WORKSPACE_FUNCTIONS.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getModuleGlobalFunctions().values })
