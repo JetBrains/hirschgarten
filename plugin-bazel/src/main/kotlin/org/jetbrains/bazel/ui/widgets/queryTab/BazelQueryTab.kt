@@ -22,7 +22,7 @@ import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.platform.backend.documentation.impl.computeDocumentationBlocking
+import com.intellij.platform.backend.documentation.impl.computeDocumentationAsync
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.awt.RelativePoint
@@ -70,10 +70,12 @@ private class QueryFlagField(
       addShiftEnterAction()
       val flagSymbol = Flag.byName("--$flag")?.let { f -> BazelFlagSymbol(f, project) }
       if (flagSymbol != null) {
-        toolTipText =
-          ReadAction.compute<String, Throwable> {
-            computeDocumentationBlocking(flagSymbol.getDocumentationTarget().createPointer())?.html
+        BazelCoroutineService.getInstance(project).start {
+          val doc = computeDocumentationAsync(flagSymbol.getDocumentationTarget().createPointer()).await()
+          SwingUtilities.invokeLater {
+            toolTipText = doc?.html
           }
+        }
       }
     }
   val valuesButtons: List<JRadioButton> =
