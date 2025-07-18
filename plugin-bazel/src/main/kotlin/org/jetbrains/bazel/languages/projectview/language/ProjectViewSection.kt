@@ -84,6 +84,7 @@ object ProjectViewSection {
       SectionMetadata("generated_android_resource_directories", SectionType.List.String),
       SectionMetadata("ts_config_rules", SectionType.List.String),
       SectionMetadata("import_ijars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
+      SectionMetadata("debug_flags", SectionType.List.String, FlagCompletionProvider("debug")),
     ).associateBy { it.sectionName }
 
   private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))

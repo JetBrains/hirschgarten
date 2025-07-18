@@ -16,13 +16,12 @@ internal class ProgramArgumentParser(private val input: String) {
     return args
   }
 
-  private fun parseNextToken(): String {
-    return if (currentChar() == '"') {
+  private fun parseNextToken(): String =
+    if (currentChar() == '"') {
       parseQuotedString()
     } else {
       parseUnquotedToken()
     }
-  }
 
   private fun parseQuotedString(): String {
     advance()
@@ -81,5 +80,4 @@ internal class ProgramArgumentParser(private val input: String) {
   }
 }
 
-fun String.toProgramArguments() =
-  ProgramArgumentParser(this.trim()).parse()
+fun String.toProgramArguments() = ProgramArgumentParser(this.trim()).parse()

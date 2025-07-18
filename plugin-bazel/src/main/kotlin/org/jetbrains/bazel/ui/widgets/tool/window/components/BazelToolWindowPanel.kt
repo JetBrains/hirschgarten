@@ -14,11 +14,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.FeatureFlagsProvider
 
 internal fun configureBazelToolWindowToolBar(
   model: BazelTargetsPanelModel,
   actionManager: ActionManager,
   windowPanel: SimpleToolWindowPanel,
+  project: Project,
 ) {
   val defaultActions = actionManager.getAction("Bazel.ActionsToolbar")
   val actionGroup =
@@ -30,6 +32,10 @@ internal fun configureBazelToolWindowToolBar(
       add(BazelToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
       addSeparator()
       add(actionManager.getAction("Bazel.OpenProjectViewFile"))
+      if (FeatureFlagsProvider.getFeatureFlags(project).isBazelQueryTabEnabled) {
+        addSeparator()
+        add(actionManager.getAction("Bazel.OpenBazelQueryToolWindowAction"))
+      }
     }
 
   val actionToolbar = actionManager.createActionToolbar("Bazel Toolbar", actionGroup, true)

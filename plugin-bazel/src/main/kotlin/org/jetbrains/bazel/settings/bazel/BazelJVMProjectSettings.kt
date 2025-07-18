@@ -19,6 +19,7 @@ data class BazelJVMProjectSettings(
   var enableLocalJvmActions: Boolean = false,
   var enableBuildWithJps: Boolean = false,
   var useIntellijTestRunner: Boolean = false,
+  var enableKotlinCoroutineDebug: Boolean = false,
 ) {
   fun withNewHotSwapEnabled(newHotSwapEnabled: Boolean): BazelJVMProjectSettings = copy(hotSwapEnabled = newHotSwapEnabled)
 }
@@ -43,6 +44,7 @@ internal class BazelJVMProjectSettingsService :
         enableLocalJvmActions = settingsState.enableLocalJvmActions,
         enableBuildWithJps = settingsState.enableBuildWithJps,
         useIntellijTestRunner = settingsState.useIntellijTestRunner,
+        enableKotlinCoroutineDebug = settingsState.enableKotlinCoroutineDebug,
       )
   }
 
