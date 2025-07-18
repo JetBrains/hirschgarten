@@ -28,6 +28,7 @@ class SeLabelItem(
   val legacyItem: LabelWithPreview,
   private val weight: Int,
   val extendedDescription: String?,
+  val isMultiSelectionSupported: Boolean,
 ) : SeItem {
   override fun weight(): Int = weight
 
@@ -36,6 +37,7 @@ class SeLabelItem(
       iconId = BazelPluginIcons.bazel.rpcId(),
       text = legacyItem.displayName,
       extendedDescription = extendedDescription,
+      isMultiSelectionSupported = isMultiSelectionSupported,
     )
 }
 
@@ -56,7 +58,7 @@ class SeLabelProvider(private val contributorWrapper: SeAsyncWeightedContributor
             val legacyItem = t.item ?: return true
             if (legacyItem !is LabelWithPreview) return true
             val weight = t.weight
-            return collector.put(SeLabelItem(legacyItem, weight, getExtendedDescription(legacyItem)))
+            return collector.put(SeLabelItem(legacyItem, weight, getExtendedDescription(legacyItem), contributorWrapper.contributor.isMultiSelectionSupported))
           }
         },
       )
