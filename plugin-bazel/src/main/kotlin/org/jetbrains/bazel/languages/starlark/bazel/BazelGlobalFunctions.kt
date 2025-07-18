@@ -1,73 +1,71 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
+enum class Environment {
+  ALL,
+  BZL,
+  BUILD,
+  MODULE,
+  REPO,
+  VENDOR,
+}
+
 data class BazelGlobalFunctionParameter(
   val name: String,
-  val default: String?,
+  val doc: String?,
+  val defaultValue: String?,
+  val named: Boolean,
   val positional: Boolean,
-  val required: Boolean = false,
-  val docString: String? = null,
+  val required: Boolean,
 )
 
 data class BazelGlobalFunction(
   val name: String,
-  val docString: String? = null,
-  val params: List<BazelGlobalFunctionParameter> = emptyList(),
+  val doc: String?,
+  val environment: List<Environment>,
+  val params: List<BazelGlobalFunctionParameter>,
 )
 
 object BazelGlobalFunctions {
+  private fun starlarkWithJustName(name: String) = BazelGlobalFunction(name, null, listOf(Environment.ALL), emptyList())
+
   val STARLARK_FUNCTIONS =
-    mapOf(
-      "abs" to BazelGlobalFunction("abs"),
-      "all" to BazelGlobalFunction("all"),
-      "any" to BazelGlobalFunction("any"),
-      "bool" to BazelGlobalFunction("bool"),
-      "dict" to BazelGlobalFunction("dict"),
-      "dir" to BazelGlobalFunction("dir"),
-      "enumerate" to BazelGlobalFunction("enumerate"),
-      "fail" to BazelGlobalFunction("fail"),
-      "float" to BazelGlobalFunction("float"),
-      "getattr" to BazelGlobalFunction("getattr"),
-      "hasattr" to BazelGlobalFunction("hasattr"),
-      "hash" to BazelGlobalFunction("hash"),
-      "int" to BazelGlobalFunction("int"),
-      "len" to BazelGlobalFunction("len"),
-      "list" to BazelGlobalFunction("list"),
-      "max" to BazelGlobalFunction("max"),
-      "min" to BazelGlobalFunction("min"),
-      "print" to BazelGlobalFunction("print"),
-      "range" to BazelGlobalFunction("range"),
-      "repr" to BazelGlobalFunction("repr"),
-      "reversed" to BazelGlobalFunction("reversed"),
-      "sorted" to BazelGlobalFunction("sorted"),
-      "str" to BazelGlobalFunction("str"),
-      "tuple" to BazelGlobalFunction("tuple"),
-      "type" to BazelGlobalFunction("type"),
-      "zip" to BazelGlobalFunction("zip"),
-    )
+    listOf(
+      starlarkWithJustName("abs"),
+      starlarkWithJustName("all"),
+      starlarkWithJustName("any"),
+      starlarkWithJustName("bool"),
+      starlarkWithJustName("dict"),
+      starlarkWithJustName("dir"),
+      starlarkWithJustName("enumerate"),
+      starlarkWithJustName("fail"),
+      starlarkWithJustName("float"),
+      starlarkWithJustName("getattr"),
+      starlarkWithJustName("hasattr"),
+      starlarkWithJustName("hash"),
+      starlarkWithJustName("int"),
+      starlarkWithJustName("len"),
+      starlarkWithJustName("list"),
+      starlarkWithJustName("max"),
+      starlarkWithJustName("min"),
+      starlarkWithJustName("print"),
+      starlarkWithJustName("range"),
+      starlarkWithJustName("repr"),
+      starlarkWithJustName("reversed"),
+      starlarkWithJustName("sorted"),
+      starlarkWithJustName("str"),
+      starlarkWithJustName("tuple"),
+      starlarkWithJustName("type"),
+      starlarkWithJustName("zip"),
+    ).associateBy { it.name }
 
   val EXTENSION_FUNCTIONS =
     mapOf(
-      "analysis_test_transition" to BazelGlobalFunction("analysis_test_transition"),
-      "aspect" to BazelGlobalFunction("aspect"),
-      "configuration_field" to BazelGlobalFunction("configuration_field"),
-      "depset" to BazelGlobalFunction("depset"),
-      "exec_group" to BazelGlobalFunction("exec_group"),
-      "load" to BazelGlobalFunction("load"),
-      "module_extension" to BazelGlobalFunction("module_extension"),
-      "provider" to BazelGlobalFunction("provider"),
-      "repository_rule" to BazelGlobalFunction("repository_rule"),
-      "rule" to BazelGlobalFunction("rule"),
-      "select" to BazelGlobalFunction("select"),
-      "subrule" to BazelGlobalFunction("subrule"),
-      "tag_class" to BazelGlobalFunction("tag_class"),
-      "visibility" to BazelGlobalFunction("visibility"),
+      "load" to starlarkWithJustName("load"),
     )
 
   val WORKSPACE_FUNCTIONS =
     mapOf(
-      "bind" to BazelGlobalFunction("bind"),
-      "register_execution_platforms" to BazelGlobalFunction("register_execution_platforms"),
-      "register_toolchains" to BazelGlobalFunction("register_toolchains"),
-      "workspace" to BazelGlobalFunction("workspace"),
+      "bind" to starlarkWithJustName("bind"),
+      "workspace" to starlarkWithJustName("workspace"),
     )
 }

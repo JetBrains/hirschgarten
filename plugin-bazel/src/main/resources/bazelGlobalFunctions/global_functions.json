@@ -1,0 +1,1596 @@
+[
+  {
+    "name": "to_list",
+    "doc": "Returns a list of the elements, without duplicates, in the depset\u0027s traversal order. Note that order is unspecified (but deterministic) for elements that were added more than once to the depset. Order is also unspecified for \u003ccode\u003e\\\"default\\\"\u003c/code\u003e-ordered depsets, and for elements of child depsets whose order differs from that of the parent depset. The list is a copy; modifying it has no effect ",
+    "environment": [
+      "BUILD",
+      "BZL"
+    ],
+    "params": []
+  },
+  {
+    "name": "depset",
+    "doc": "Creates a \u003ca href\u003d\\\"../builtins/depset.html\\\"\u003edepset\u003c/a\u003e. The \u003ccode\u003edirect\u003c/code\u003e parameter is a list of direct elements of the depset, and \u003ccode\u003etransitive\u003c/code\u003e parameter is a list of depsets whose elements become indirect elements of the created depset. The order in which elements are returned when the depset is converted to a list is specified by the \u003ccode\u003eorder\u003c/code\u003e parameter. See the \u003ca href\u003d\\\"https://bazel.build/extending/depsets\\\"\u003eDepsets overview\u003c/a\u003e for more information.\\n\u003cp\u003eAll elements (direct and indirect) of a depset must be of the same type, as obtained by the expression \u003ca href\u003d\\\"../globals/all#type\\\"\u003e\u003ccode\u003etype(x)\u003c/code\u003e\u003c/a\u003e.\\n\u003cp\u003eBecause a hash-based set is used to eliminate duplicates during iteration, all elements of a depset should be hashable. However, this invariant is not currently checked consistently in all constructors. Use the --incompatible_always_check_depset_elements flag to enable consistent checking; this will be the default behavior in future releases;  see \u003ca href\u003d\u0027https://github.com/bazelbuild/bazel/issues/10313\u0027\u003eIssue 10313\u003c/a\u003e.\\n\u003cp\u003eIn addition, elements must currently be immutable, though this restriction will be relaxed in future.\\n\u003cp\u003e The order of the created depset should be \u003ci\u003ecompatible\u003c/i\u003e with the order of its \u003ccode\u003etransitive\u003c/code\u003e depsets. \u003ccode\u003e\\\"default\\\"\u003c/code\u003e order is compatible with any other order, all other orders are only compatible with",
+    "environment": [
+      "BUILD",
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "direct",
+        "doc": "A list of \u003ci\u003edirect\u003c/i\u003e elements of a depset. ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "order",
+        "doc": "The traversal strategy for the new depset. See ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "transitive",
+        "doc": "A list of depsets whose elements will become indirect elements of the depset.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "repository_rule",
+    "doc": "Creates a new repository rule. Store it in a global value, so that it can be loaded and \\ called from a \u003ca href\u003d\"#module_extension\"\u003e\u003ccode\u003emodule_extension()\u003c/code\u003e\u003c/a\u003e \\ implementation function, or used by \\ \u003ca href\u003d\"../globals/module.html#use_repo_rule\"\u003e\u003ccode\u003euse_repo_rule()\u003c/code\u003e\u003c/a\u003e.",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "implementation",
+        "doc": "the function that implements this rule. Must have a single parameter, \u003ccode\u003e\u003ca href\u003d\\\"../builtins/repository_ctx.html\\\"\u003erepository_ctx\u003c/a\u003e\u003c/code\u003e. The function is called during the loading phase for each instance of the",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "attrs",
+        "doc": "A dictionary to declare all the attributes of the repository rule. It maps from \\ an attribute name to an attribute object (see \u003ca href\u003d\"../toplevel/attr.html\"\u003e\u003ccode\u003eattr\u003c/code\u003e\u003c/a\u003e module). Attributes \\ starting with \u003ccode\u003e_\u003c/code\u003e are private, and can be used to add an implicit \\ dependency on a label to a file (a repository rule cannot depend on a generated \\ artifact). The attribute \u003ccode\u003ename\u003c/code\u003e is implicitly added and must not be \\ specified. \u003cp\u003eDeclared attributes will convert \u003ccode\u003eNone\u003c/code\u003e to the default value.\u003c/p\u003e",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "local",
+        "doc": "Indicate that this rule fetches everything from the local system and should be ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "environ",
+        "doc": "\u003cb\u003eDeprecated\u003c/b\u003e. This parameter has been deprecated. Migrate to \u003ccode\u003erepository_ctx.getenv\u003c/code\u003e instead.\u003cbr/\u003eProvides a list of environment variable that this repository rule depends on. If an environment variable in that list change, the repository will be ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "configure",
+        "doc": "Indicate that the repository inspects the system for configuration purpose",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "remotable",
+        "doc": "Compatible with remote execution",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "doc",
+        "doc": "A description of the repository rule that can be extracted by documentation ",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "module_extension",
+    "doc": "Creates a new module extension. Store it in a global value, so that it can be exported and used in a MODULE.bazel file with \u003ccode\u003e\u003ca",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "implementation",
+        "doc": "The function that implements this module extension. Must take a single parameter, \u003ccode\u003e\u003ca href\u003d\\\"../builtins/module_ctx.html\\\"\u003emodule_ctx\u003c/a\u003e\u003c/code\u003e. The function is called once at the beginning of a build to determine the set of",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "tag_classes",
+        "doc": "A dictionary to declare all the tag classes used by the extension. It maps from the name of the tag class to a \u003ccode\u003e\u003ca",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "doc",
+        "doc": "A description of the module extension that can be extracted by documentation",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "environ",
+        "doc": "Provides a list of environment variable that this module extension depends on. If an environment variable in that list changes, the extension will be ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "os_dependent",
+        "doc": "Indicates whether this extension is OS-dependent or not",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "arch_dependent",
+        "doc": "Indicates whether this extension is architecture-dependent or not",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "tag_class",
+    "doc": "Creates a new tag_class object, which defines an attribute schema for a class of tags,",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "attrs",
+        "doc": "A dictionary to declare all the attributes of this tag class. It maps from an \\ attribute name to an attribute object (see \u003ca href\u003d\"../toplevel/attr.html\"\u003e attr\u003c/a\u003e module). \u003cp\u003eNote that unlike \u003ca href\u003d\"../globals/bzl.html#rule\"\u003e\u003ccode\u003erule()\u003c/code\u003e\u003c/a\u003e, \\ \u003ca href\u003d\"../globals/bzl.html#aspect\"\u003e\u003ccode\u003easpect()\u003c/code\u003e\u003c/a\u003e and \\ \u003ca href\u003d\"../globals/bzl.html#repository_rule\"\u003e\u003ccode\u003erepository_rule()\u003c/code\u003e\u003c/a\u003e, declared attributes will not convert \u003ccode\u003eNone\u003c/code\u003e to the default value. For \\ the default to be used, the attribute must be omitted entirely by the caller.\u003c/p\u003e",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "doc",
+        "doc": "A description of the tag class that can be extracted by documentation",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "__do_not_use_fail_with_incompatible_use_cc_configure_from_rules_cc",
+    "doc": "When --incompatible_use_cc_configure_from_rules_cc is set to true, Bazel will fail the build. Please see https://github.com/bazelbuild/bazel/issues/10134 for ",
+    "environment": [
+      "BZL"
+    ],
+    "params": []
+  },
+  {
+    "name": "visibility",
+    "doc": "\u003cp\u003eSets the load visibility of the .bzl module currently being initialized.\u003cp\u003eThe load visibility of a module governs whether or not other BUILD and .bzl files may load it. (This is distinct from the target visibility of the underlying .bzl source file, which governs whether the file may appear as a dependency of other targets.) Load visibility works at the level of packages: To load a module the file doing the loading must live in a package that has been granted visibility to the module. A module can always be loaded within its own package, regardless of its visibility.\u003cp\u003e\u003ccode\u003evisibility()\u003c/code\u003e may only be called once per .bzl file, and only at the top level, not inside a function. The preferred style is to put this call immediately below the \u003ccode\u003eload()\u003c/code\u003e statements and any brief logic needed to determine the argument.\u003cp\u003eIf the flag \u003ccode\u003e--check_bzl_visibility\u003c/code\u003e is set to false, load",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "value",
+        "doc": "A list of package specification strings, or a single package specification string.\u003cp\u003ePackage specifications follow the same format as for \u003ccode\u003e\u003ca href\u003d\u0027${link functions#package_group}\u0027\u003epackage_group\u003c/a\u003e\u003c/code\u003e, except that negative package specifications are not permitted. That is, a specification may have the forms:\u003cul\u003e\u003cli\u003e\u003ccode\u003e\\\"//foo\\\"\u003c/code\u003e: the package \u003ccode\u003e//foo\u003c/code\u003e\u003cli\u003e\u003ccode\u003e\\\"//foo/...\\\"\u003c/code\u003e: the package \u003ccode\u003e//foo\u003c/code\u003e and all of its subpackages.\u003cli\u003e\u003ccode\u003e\\\"public\\\"\u003c/code\u003e or \u003ccode\u003e\\\"private\\\"\u003c/code\u003e: all packages or no packages, respectively\u003c/ul\u003e\u003cp\u003eThe \\\"@\\\" syntax is not allowed; all specifications are interpreted relative to the current module\u0027s repository.\u003cp\u003eIf \u003ccode\u003evalue\u003c/code\u003e is a list of strings, the set of packages granted visibility to this module is the union of the packages represented by each specification. (An empty list has the same effect as \u003ccode\u003eprivate\u003c/code\u003e.) If \u003ccode\u003evalue\u003c/code\u003e is a single string, it is treated as if it were the singleton list \u003ccode\u003e[value]\u003c/code\u003e.\u003cp\u003eNote that the flags \u003ccode\u003e--incompatible_package_group_has_public_syntax\u003c/code\u003e and \u003ccode\u003e--incompatible_fix_package_group_reporoot_syntax\u003c/code\u003e have no effect on this argument. The \u003ccode\u003e\\\"public\\\"\u003c/code\u003e and \u003ccode\u003e\\\"private\\\"\u003c/code\u003e values are always available, and \u003ccode\u003e\\\"//...\\\"\u003c/code\u003e is always",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "configuration_field",
+    "doc": "References a late-bound default value for an attribute of type \u003ca href\u003d\\\"../toplevel/attr.html#label\\\"\u003elabel\u003c/a\u003e. A value is \u0027late-bound\u0027 if it requires the configuration to be built before determining the value. Any attribute using this as a value must \u003ca href\u003d\\\"https://bazel.build/extending/rules#private-attributes\\\"\u003ebe private\u003c/a\u003e. \u003cp\u003eExample usage: \u003cp\u003eDefining a rule attribute: \u003cbr\u003e\u003cpre class\u003dlanguage-python\u003e\u0027_foo\u0027: attr.label(default\u003dconfiguration_field(fragment\u003d\u0027java\u0027, name\u003d\u0027toolchain\u0027))\u003c/pre\u003e\u003cp\u003eAccessing in rule implementation: \u003cbr\u003e\u003cpre class\u003dlanguage-python\u003e  def _rule_impl(ctx):\\n    foo_info \u003d ctx.attr._foo\\n",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "fragment",
+        "doc": "The name of a configuration fragment which contains the late-bound value.",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "name",
+        "doc": "The name of the value to obtain from the configuration fragment.",
+        "named": true,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "transition",
+    "doc": "A transition that reads a set of input build settings and writes a set of output build settings.\u003cp\u003eExample:\u003c/p\u003e\u003cp\u003e\u003cpre class\u003d\\\"language-python\\\"\u003e\\ndef _transition_impl(settings, attr):\\n    # This transition just reads the current CPU value as a demonstration.\\n    # A real transition could incorporate this into its followup logic.\\n    current_cpu \u003d settings[\\\"//command_line_option:cpu\\\"]\\n    return {\\\"//command_line_option:compilation_mode\\\": \\\"dbg\\\"}\\n\\nbuild_in_debug_mode \u003d transition(\\n    implementation \u003d _transition_impl,\\n    inputs \u003d [\\\"//command_line_option:cpu\\\"],\\n    outputs \u003d [\\\"//command_line_option:compilation_mode\\\"],\\n)\u003c/pre\u003e\u003c/p\u003e\u003cp\u003eFor more details see \u003ca",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "implementation",
+        "doc": "The function implementing this transition. This function always has two parameters: \u003ccode\u003esettings\u003c/code\u003e and \u003ccode\u003eattr\u003c/code\u003e. The \u003ccode\u003esettings\u003c/code\u003e param is a dictionary whose set of keys is defined by the inputs parameter. So, for each build setting \u003ccode\u003e--//foo\u003dbar\u003c/code\u003e, if \u003ccode\u003einputs\u003c/code\u003e contains \u003ccode\u003e//foo\u003c/code\u003e, \u003ccode\u003esettings\u003c/code\u003e will have an entry \u003ccode\u003esettings[\u0027//foo\u0027]\u003d\u0027bar\u0027\u003c/code\u003e.\u003cp\u003eThe \u003ccode\u003eattr\u003c/code\u003e param is a reference to \u003ccode\u003ectx.attr\u003c/code\u003e. This gives the implementation function access to the rule\u0027s attributes to make attribute-parameterized transitions possible.\u003cp\u003eThis function must return a \u003ccode\u003edict\u003c/code\u003e from build setting identifier to build setting value; this represents the configuration transition: for each entry in the returned \u003ccode\u003edict\u003c/code\u003e, the transition updates that setting to the new value. All other settings are unchanged. This function can also return a \u003ccode\u003elist\u003c/code\u003e of \u003ccode\u003edict\u003c/code\u003es or a \u003ccode\u003edict\u003c/code\u003e of \u003ccode\u003edict\u003c/code\u003es in the case of a ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "inputs",
+        "doc": "List of build settings that can be read by this transition. This becomes the key set of the settings parameter of the implementation function ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "outputs",
+        "doc": "List of build settings that can be written by this transition. This must be ",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "analysis_test_transition",
+    "doc": "\u003cp\u003e Creates a configuration transition to be applied on an analysis-test rule\u0027s dependencies. This transition may only be applied on attributes of rules with \u003ccode\u003eanalysis_test \u003d True\u003c/code\u003e. Such rules are restricted in capabilities (for example, the size of their dependency tree is limited), so transitions created using this function are limited in potential scope as compared to transitions created using \u003ca href\u003d\\\"../builtins/transition.html\\\"\u003e\u003ccode\u003etransition()\u003c/code\u003e\u003c/a\u003e. \u003cp\u003eThis function is primarily designed to facilitate the \u003ca href\u003d\\\"https://bazel.build/rules/testing\\\"\u003eAnalysis Test Framework\u003c/a\u003e core",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "settings",
+        "doc": "A dictionary containing information about configuration settings which should be set by this configuration transition. Keys are build setting labels and values are their new post-transition values. All other settings are unchanged. Use this to declare specific configuration settings that ",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "exec_transition",
+    "doc": "A specialized version of \u003ca href\u003d\\\"../builtins/transition.html\\\"\u003e\u003ccode\u003etransition()\u003c/code\u003e\u003c/a\u003e used to define the exec transition. See its documentation (or its implementation) for best",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "implementation",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "inputs",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "outputs",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "glob",
+    "doc": "Glob returns a new, mutable, sorted list of every file in the current package that:\u003cul\u003e\\n\u003cli\u003eMatches at least one pattern in \u003ccode\u003einclude\u003c/code\u003e.\u003c/li\u003e\\n\u003cli\u003eDoes not match any of the patterns in \u003ccode\u003eexclude\u003c/code\u003e (default \u003ccode\u003e[]\u003c/code\u003e).\u003c/li\u003e\u003c/ul\u003e\\nIf the \u003ccode\u003eexclude_directories\u003c/code\u003e argument is enabled (set to \u003ccode\u003e1\u003c/code\u003e), files of type directory will be omitted from the ",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "include",
+        "doc": "The list of glob patterns to include.",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "exclude",
+        "doc": "The list of glob patterns to exclude.",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "exclude_directories",
+        "doc": "A flag whether to exclude directories or not.",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "allow_empty",
+        "doc": "Whether we allow glob patterns to match nothing. If `allow_empty` is False, each individual include pattern must match something and also the final result must be non-empty (after the matches of the `exclude` patterns are",
+        "named": true,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "existing_rule",
+    "doc": "Returns an immutable dict-like object that describes the attributes of a rule instantiated in this thread\u0027s package, or \u003ccode\u003eNone\u003c/code\u003e if no rule instance of that name exists.\u003cp\u003eHere, an \u003cem\u003eimmutable dict-like object\u003c/em\u003e means a deeply immutable object \u003ccode\u003ex\u003c/code\u003e supporting dict-like iteration, \u003ccode\u003elen(x)\u003c/code\u003e, \u003ccode\u003ename in x\u003c/code\u003e, \u003ccode\u003ex[name]\u003c/code\u003e, \u003ccode\u003ex.get(name)\u003c/code\u003e, \u003ccode\u003ex.items()\u003c/code\u003e, \u003ccode\u003ex.keys()\u003c/code\u003e, and \u003ccode\u003ex.values()\u003c/code\u003e.\u003cp\u003eThe result contains an entry for each attribute, with the exception of private ones (whose names do not start with a letter) and a few unrepresentable legacy attribute types. In addition, the dict contains entries for the rule instance\u0027s \u003ccode\u003ename\u003c/code\u003e and \u003ccode\u003ekind\u003c/code\u003e (for example, \u003ccode\u003e\u0027cc_binary\u0027\u003c/code\u003e).\u003cp\u003eThe values of the result represent attribute values as follows:\u003cul\u003e\u003cli\u003eAttributes of type str, int, and bool are represented as is.\u003c/li\u003e\u003cli\u003eLabels are converted to strings of the form \u003ccode\u003e\u0027:foo\u0027\u003c/code\u003e for targets in the same package or \u003ccode\u003e\u0027//pkg:name\u0027\u003c/code\u003e for targets in a different package.\u003c/li\u003e\u003cli\u003eLists are represented as tuples, and dicts are converted to new, mutable dicts. Their elements are recursively converted in the same fashion.\u003c/li\u003e\u003cli\u003e\u003ccode\u003eselect\u003c/code\u003e values are returned with their contents transformed as described above.\u003c/li\u003e\u003cli\u003eAttributes for which no value was specified during rule instantiation and whose default value is computed are excluded from the result. (Computed defaults cannot be computed until the analysis phase.).\u003c/li\u003e\u003c/ul\u003e\u003cp\u003eIf possible, use this function only in \u003ca href\u003d\\\"https://bazel.build/extending/macros#finalizers\\\"\u003eimplementation functions of rule finalizer symbolic macros\u003c/a\u003e. Use of this function in other contexts is not recommened, and will be disabled in a future Bazel release; it makes \u003ccode\u003eBUILD\u003c/code\u003e files brittle and order-dependent. Also, beware that it differs subtly from the two other conversions of rule attribute values from internal form to Starlark: one used by computed defaults, the other used by",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "name",
+        "doc": "The name of the target.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "existing_rules",
+    "doc": "Returns an immutable dict-like object describing the rules so far instantiated in this thread\u0027s package. Each entry of the dict-like object maps the name of the rule instance to the result that would be returned by \u003ccode\u003eexisting_rule(name)\u003c/code\u003e.\u003cp\u003eHere, an \u003cem\u003eimmutable dict-like object\u003c/em\u003e means a deeply immutable object \u003ccode\u003ex\u003c/code\u003e supporting dict-like iteration, \u003ccode\u003elen(x)\u003c/code\u003e, \u003ccode\u003ename in x\u003c/code\u003e, \u003ccode\u003ex[name]\u003c/code\u003e, \u003ccode\u003ex.get(name)\u003c/code\u003e, \u003ccode\u003ex.items()\u003c/code\u003e, \u003ccode\u003ex.keys()\u003c/code\u003e, and \u003ccode\u003ex.values()\u003c/code\u003e.\u003cp\u003eIf possible, use this function only in \u003ca href\u003d\\\"https://bazel.build/extending/macros#finalizers\\\"\u003eimplementation functions of rule finalizer symbolic macros\u003c/a\u003e. Use of this function in other contexts is not recommened, and will be disabled in a future Bazel release; it makes",
+    "environment": [
+      "BUILD"
+    ],
+    "params": []
+  },
+  {
+    "name": "package_group",
+    "doc": "This function defines a set of packages and assigns a label to the group. ",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "name",
+        "doc": "The unique name for this rule.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "packages",
+        "doc": "A complete enumeration of packages in this group.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "includes",
+        "doc": "Other package groups that are included in this one.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "exports_files",
+    "doc": "Specifies a list of files belonging to this package that are exported to other ",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "srcs",
+        "doc": "The list of files to export.",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "visibility",
+        "doc": "A visibility declaration can to be specified. The files will be visible to the targets specified. If no visibility is specified, the files will be visible ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "licenses",
+        "doc": "Licenses to be specified.",
+        "named": true,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "package_name",
+    "doc": "The name of the package being evaluated, without the repository name. For example, in the BUILD file \u003ccode\u003esome/package/BUILD\u003c/code\u003e, its value will be \u003ccode\u003esome/package\u003c/code\u003e. If the BUILD file calls a function defined in a .bzl file, \u003ccode\u003epackage_name()\u003c/code\u003e will match the caller BUILD file package. ",
+    "environment": [
+      "BUILD"
+    ],
+    "params": []
+  },
+  {
+    "name": "package_default_visibility",
+    "doc": "Returns the default visibility of the package being evaluated. This is the value of the \u003ccode\u003edefault_visibility\u003c/code\u003e parameter of \u003ccode\u003epackage()\u003c/code\u003e, extended to",
+    "environment": [
+      "BUILD"
+    ],
+    "params": []
+  },
+  {
+    "name": "repository_name",
+    "doc": "\u003cstrong\u003eDeprecated.\u003c/strong\u003e Prefer to use \u003ca href\u003d\\\"#repo_name\\\"\u003e\u003ccode\u003erepo_name\u003c/code\u003e\u003c/a\u003e instead, which doesn\u0027t contain the spurious leading at-sign, but behaves identically otherwise.\u003cp\u003eThe canonical name of the repository containing the package currently being evaluated, with a single at-sign (\u003ccode\u003e@\u003c/code\u003e) prefixed. For example, in packages that are called into existence by the WORKSPACE stanza \u003ccode\u003elocal_repository(name\u003d\u0027local\u0027, path\u003d...)\u003c/code\u003e it will be set to \u003ccode\u003e@local\u003c/code\u003e. In packages in the main",
+    "environment": [
+      "BUILD"
+    ],
+    "params": []
+  },
+  {
+    "name": "repo_name",
+    "doc": "The canonical name of the repository containing the package currently being evaluated,",
+    "environment": [
+      "BUILD"
+    ],
+    "params": []
+  },
+  {
+    "name": "package_relative_label",
+    "doc": "Converts the input string into a \u003ca href\u003d\u0027../builtins/Label.html\u0027\u003eLabel\u003c/a\u003e object, in the context of the package currently being initialized (that is, the \u003ccode\u003eBUILD\u003c/code\u003e file for which the current macro is executing). If the input is already a \u003ccode\u003eLabel\u003c/code\u003e, it is returned unchanged.\u003cp\u003eThis function may only be called while evaluating a BUILD file and the macros it directly or indirectly calls; it may not be called in (for instance) a rule implementation function. \u003cp\u003eThe result of this function is the same \u003ccode\u003eLabel\u003c/code\u003e value as would be produced by passing the given string to a label-valued attribute of a target declared in the BUILD file. \u003cp\u003e\u003ci\u003eUsage note:\u003c/i\u003e The difference between this function and \u003ca href\u003d\u0027../builtins/Label.html#Label\u0027\u003eLabel()\u003c/a\u003e\u003c/code\u003e is that \u003ccode\u003eLabel()\u003c/code\u003e uses the context of the package of the \u003ccode\u003e.bzl\u003c/code\u003e file that called it, not the package of the \u003ccode\u003eBUILD\u003c/code\u003e file. Use \u003ccode\u003eLabel()\u003c/code\u003e when you need to refer to a fixed target that is hardcoded into the macro, such as a compiler. Use \u003ccode\u003epackage_relative_label()\u003c/code\u003e when you need to normalize a label string supplied by the BUILD file to a \u003ccode\u003eLabel\u003c/code\u003e object. (There is no way to convert a string to a \u003ccode\u003eLabel\u003c/code\u003e in the context of a package other than the BUILD file or the calling .bzl file. For that reason, outer macros should",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "input",
+        "doc": "The input label string or Label object. If a Label object is passed, it\u0027s",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "module_name",
+    "doc": "The name of the Bazel module associated with the repo this package is in. If this package is from a repo defined in WORKSPACE instead of MODULE.bazel, this is empty. For repos generated by module extensions, this is the name of the module hosting the extension. It\u0027s the same as the \u003ccode\u003emodule.name\u003c/code\u003e field seen",
+    "environment": [
+      "BUILD"
+    ],
+    "params": []
+  },
+  {
+    "name": "module_version",
+    "doc": "The version of the Bazel module associated with the repo this package is in. If this package is from a repo defined in WORKSPACE instead of MODULE.bazel, this is empty. For repos generated by module extensions, this is the version of the module hosting the extension. It\u0027s the same as the \u003ccode\u003emodule.version\u003c/code\u003e",
+    "environment": [
+      "BUILD"
+    ],
+    "params": []
+  },
+  {
+    "name": "subpackages",
+    "doc": "Returns a new mutable list of every direct subpackage of the current package, regardless of file-system directory depth. List returned is sorted and contains the names of subpackages relative to the current package. It is advised to prefer using the methods in bazel_skylib.subpackages module rather than calling",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "include",
+        "doc": "The list of glob patterns to include in subpackages scan.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "exclude",
+        "doc": "The list of glob patterns to exclude from subpackages scan.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "allow_empty",
+        "doc": "Whether we fail if the call returns an empty list. By default empty list indicates potential error in BUILD file where the call to subpackages() is",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "provider",
+    "doc": "Defines a provider symbol. The resulting value of this function must be stored in a global value to be usable in a rule or aspect implementation. Providers can be instantiated by calling the resulting value as a function, or used directly as an index key for retrieving an instance of that provider from a target. Example:\u003cbr\u003e\u003cpre class\u003d\\\"language-python\\\"\u003eMyInfo \u003d provider()\\n...\\ndef _my_library_impl(ctx):\\n    ...\\n    my_info \u003d MyInfo(x \u003d 2, y \u003d 3)\\n    # my_info.x \u003d\u003d 2\\n    # my_info.y \u003d\u003d 3\\n    ...\u003c/pre\u003e\u003cp\u003eSee \u003ca href\u003d\u0027https://bazel.build/extending/rules#providers\u0027\u003eRules (Providers)\u003c/a\u003e for a comprehensive guide on how to use providers.\u003cp\u003eReturns a \u003ca href\u003d\u0027../builtins/Provider.html\u0027\u003e\u003ccode\u003eProvider\u003c/code\u003e\u003c/a\u003e callable value if \u003ccode\u003einit\u003c/code\u003e is not specified.\u003cp\u003eIf \u003ccode\u003einit\u003c/code\u003e is specified, returns a tuple of 2 elements: a \u003ca href\u003d\u0027../builtins/Provider.html\u0027\u003e\u003ccode\u003eProvider\u003c/code\u003e\u003c/a\u003e callable value and a \u003cem\u003eraw constructor\u003c/em\u003e callable value. See \u003ca href\u003d\u0027https://bazel.build/extending/rules#custom_initialization_of_providers\u0027\u003e Rules (Custom initialization of custom providers)\u003c/a\u003e and the discussion of the",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "doc",
+        "doc": "A description of the provider that can be extracted by documentation generating",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "fields",
+        "doc": "If specified, restricts the set of allowed fields. \u003cbr\u003ePossible values are:\u003cul\u003e  \u003cli\u003e list of fields:\u003cbr\u003e       \u003cpre class\u003d\\\"language-python\\\"\u003eprovider(fields \u003d [\u0027a\u0027, \u0027b\u0027])\u003c/pre\u003e\u003cp\u003e  \u003cli\u003e dictionary field name -\u003e documentation:\u003cbr\u003e       \u003cpre class\u003d\\\"language-python\\\"\u003eprovider(\\n       fields \u003d { \u0027a\u0027 : \u0027Documentation for a\u0027, \u0027b\u0027 : \u0027Documentation for b\u0027",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "init",
+        "doc": "An optional callback for preprocessing and validating the provider\u0027s field values during instantiation. If \u003ccode\u003einit\u003c/code\u003e is specified, \u003ccode\u003eprovider()\u003c/code\u003e returns a tuple of 2 elements: the normal provider symbol and a \u003cem\u003eraw constructor\u003c/em\u003e.\u003cp\u003eA precise description follows; see \u003ca href\u003d\u0027https://bazel.build/extending/rules#custom_initialization_of_providers\u0027\u003eRules (Custom initialization of providers)\u003c/a\u003e for an intuitive discussion and use cases.\u003cp\u003eLet \u003ccode\u003eP\u003c/code\u003e be the provider symbol created by calling \u003ccode\u003eprovider()\u003c/code\u003e. Conceptually, an instance of \u003ccode\u003eP\u003c/code\u003e is generated by calling a default constructor function \u003ccode\u003ec(*args, **kwargs)\u003c/code\u003e, which does the following:\u003cul\u003e\u003cli\u003eIf \u003ccode\u003eargs\u003c/code\u003e is non-empty, an error occurs.\u003c/li\u003e\u003cli\u003eIf the \u003ccode\u003efields\u003c/code\u003e parameter was specified when \u003ccode\u003eprovider()\u003c/code\u003e was called, and if \u003ccode\u003ekwargs\u003c/code\u003e contains any key that was not listed in \u003ccode\u003efields\u003c/code\u003e, an error occurs.\u003c/li\u003e\u003cli\u003eOtherwise, \u003ccode\u003ec\u003c/code\u003e returns a new instance that has, for each \u003ccode\u003ek: v\u003c/code\u003e entry in \u003ccode\u003ekwargs\u003c/code\u003e, a field named \u003ccode\u003ek\u003c/code\u003e with value \u003ccode\u003ev\u003c/code\u003e.\u003c/ul\u003eIn the case where an \u003ccode\u003einit\u003c/code\u003e callback is \u003cem\u003enot\u003c/em\u003e given, a call to the symbol \u003ccode\u003eP\u003c/code\u003e itself acts as a call to the default constructor function \u003ccode\u003ec\u003c/code\u003e; in other words, \u003ccode\u003eP(*args, **kwargs)\u003c/code\u003e returns \u003ccode\u003ec(*args, **kwargs)\u003c/code\u003e. For example,\u003cpre class\u003d\\\"language-python\\\"\u003eMyInfo \u003d provider()\\nm \u003d MyInfo(foo \u003d 1)\u003c/pre\u003ewill straightforwardly make it so that \u003ccode\u003em\u003c/code\u003e is a \u003ccode\u003eMyInfo\u003c/code\u003e instance with \u003ccode\u003em.foo \u003d\u003d 1\u003c/code\u003e.\u003cp\u003eBut in the case where \u003ccode\u003einit\u003c/code\u003e is specified, the call \u003ccode\u003eP(*args, **kwargs)\u003c/code\u003e will perform the following steps instead:\u003col\u003e\u003cli\u003eThe callback is invoked as \u003ccode\u003einit(*args, **kwargs)\u003c/code\u003e, that is, with the exact same positional and keyword arguments as were passed to \u003ccode\u003eP\u003c/code\u003e.\u003c/li\u003e\u003cli\u003eThe return value of \u003ccode\u003einit\u003c/code\u003e is expected to be a dictionary, \u003ccode\u003ed\u003c/code\u003e, whose keys are field name strings. If it is not, an error occurs.\u003c/li\u003e\u003cli\u003eA new instance of \u003ccode\u003eP\u003c/code\u003e is generated as if by calling the default constructor with \u003ccode\u003ed\u003c/code\u003e\u0027s entries as keyword arguments, as in \u003ccode\u003ec(**d)\u003c/code\u003e.\u003c/li\u003e\u003c/ol\u003e\u003cp\u003eNB: the above steps imply that an error occurs if \u003ccode\u003e*args\u003c/code\u003e or \u003ccode\u003e**kwargs\u003c/code\u003e does not match \u003ccode\u003einit\u003c/code\u003e\u0027s signature, or the evaluation of \u003ccode\u003einit\u003c/code\u003e\u0027s body fails (perhaps intentionally via a call to \u003ca href\u003d\\\"../globals/all.html#fail\\\"\u003e\u003ccode\u003efail()\u003c/code\u003e\u003c/a\u003e), or if the return value of \u003ccode\u003einit\u003c/code\u003e is not a dictionary with the expected schema.\u003cp\u003eIn this way, the \u003ccode\u003einit\u003c/code\u003e callback generalizes normal provider construction by allowing positional arguments and arbitrary logic for preprocessing and validation. It does \u003cem\u003enot\u003c/em\u003e enable circumventing the list of allowed \u003ccode\u003efields\u003c/code\u003e.\u003cp\u003eWhen \u003ccode\u003einit\u003c/code\u003e is specified, the return value of \u003ccode\u003eprovider()\u003c/code\u003e becomes a tuple \u003ccode\u003e(P, r)\u003c/code\u003e, where \u003ccode\u003er\u003c/code\u003e is the \u003cem\u003eraw constructor\u003c/em\u003e. In fact, the behavior of \u003ccode\u003er\u003c/code\u003e is exactly that of the default constructor function \u003ccode\u003ec\u003c/code\u003e discussed above. Typically, \u003ccode\u003er\u003c/code\u003e is bound to a variable whose name is prefixed with an underscore, so that only the current .bzl file has direct access to it:\u003cpre class\u003d\\\"language-python\\\"\u003eMyInfo, _new_myinfo \u003d provider(init \u003d ...)",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "macro",
+    "doc": "Defines a symbolic macro, which may be called in \u003ccode\u003eBUILD\u003c/code\u003e files or macros (legacy or symbolic) to define targets \u0026ndash; possibly multiple ones.  \u003cp\u003eThe value returned by \u003ccode\u003emacro(...)\u003c/code\u003e must be assigned to a global variable in a .bzl file; the name of the global variable will be the macro symbol\u0027s name.  \u003cp\u003eSee \u003ca href\u003d\"/extending/macros\"\u003eMacros\u003c/a\u003e for a comprehensive guide on how to use symbolic macros.",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "implementation",
+        "doc": "The Starlark function implementing this macro. The values of the macro\u0027s attributes are passed to the implementation function as keyword arguments. The implementation function must have at least two named parameters, \u003ccode\u003ename\u003c/code\u003e and \u003ccode\u003evisibility\u003c/code\u003e, and if the macro inherits attributes (see \u003ccode\u003einherit_attrs\u003c/code\u003e below), it must have a \u003ccode\u003e**kwargs\u003c/code\u003e residual keyword parameter.  \u003cp\u003eBy convention, the implementation function should have a named parameter for any attribute that the macro needs to examine, modify, or pass to non-\"main\" targets, while the \"bulk\" inherited attributes which will be passed to the \"main\" target unchanged are passed as \u003ccode\u003e**kwargs\u003c/code\u003e.  \u003cp\u003eThe implementation function must not return a value. Instead, the implementation function \u003cem\u003edeclares targets\u003c/em\u003e by calling rule or macro symbols.  \u003cp\u003eThe name of any target or inner symbolic macro declared by a symbolic macro (including by any Starlark function that the macro\u0027s implementation function transitively calls) must either equal \u003ccode\u003ename\u003c/code\u003e (this is referred to as the \"main\" target) or start with \u003ccode\u003ename\u003c/code\u003e, followed by a separator chracter (\u003ccode\u003e\"_\"\u003c/code\u003e, \u003ccode\u003e\"-\"\u003c/code\u003e, or \u003ccode\u003e\".\"\u003c/code\u003e) and a string suffix. (Targets violating this naming scheme are allowed to be declared, but cannot be built, configured, or depended upon.)  \u003cp\u003eBy default, targets declared by a symbolic macro (including by any Starlark function that the macro\u0027s implementation function transitively calls) are visible only in the package containing the .bzl file defining the macro. To declare targets visible externally, \u003cem\u003eincluding to the caller of the symbolic macro\u003c/em\u003e, the implementation function must set \u003ccode\u003evisibility\u003c/code\u003e appropriately \u0026ndash; typically, by passing \u003ccode\u003evisibility \u003d visibility\u003c/code\u003e to the rule or macro symbol being called.  \u003cp\u003eThe following APIs are unavailable within a macro implementation function and any Starlark function it transitively calls: \u003cul\u003e   \u003cli\u003e\u003ca href\u003d\"/reference/be/functions#package\"\u003e\u003ccode\u003epackage()\u003c/code\u003e, \u003ccode\u003elicenses()\u003c/code\u003e   \u003cli\u003e\u003ccode\u003eenvironment_group()\u003c/code\u003e   \u003cli\u003e\u003ca href\u003d\"../toplevel/native#glob\"\u003e\u003ccode\u003enative.glob()\u003c/code\u003e\u003c/a\u003e \u0026ndash; instead, you may pass     a glob into the macro via a label list attribute   \u003cli\u003e\u003ca href\u003d\"../toplevel/native#subpackages\"\u003e\u003ccode\u003enative.subpackages()\u003c/code\u003e\u003c/a\u003e   \u003cli\u003e(allowed in rule finalizers only, see \u003ccode\u003efinalizer\u003c/code\u003e below)     \u003ca href\u003d\"../toplevel/native#existing_rules\"\u003e\u003ccode\u003enative.existing_rules()\u003c/code\u003e\u003c/a\u003e,     \u003ca href\u003d\"../toplevel/native#existing_rule\"\u003e\u003ccode\u003enative.existing_rule()\u003c/code\u003e\u003c/a\u003e   \u003cli\u003e(for \u003ccode\u003eWORKSPACE\u003c/code\u003e threads)     \u003ca href\u003d\"../globals/workspace#workspace\"\u003e\u003ccode\u003eworkspace()\u003c/code\u003e\u003c/a\u003e,     \u003ca href\u003d\"../globals/workspace#register_toolchains\"\u003e\u003ccode\u003eregister_toolchains()\u003c/code\u003e\u003c/a\u003e,     \u003ca href\u003d\"../globals/workspace#register_execution_platforms\u003e\u003ccode\u003eregister_execution_platforms()\u003c/code\u003e\u003c/a\u003e,     \u003ca href\u003d\"../globals/workspace#bind\"\u003e\u003ccode\u003ebind()\u003c/code\u003e\u003c/a\u003e, repository rule instantiation \u003c/ul\u003e",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "attrs",
+        "doc": "A dictionary of the attributes this macro supports, analogous to \u003ca href\u003d\"#rule.attrs\"\u003erule.attrs\u003c/a\u003e. Keys are attribute names, and values are either attribute objects like \u003ccode\u003eattr.label_list(...)\u003c/code\u003e (see the \u003ca href\u003d\\\"../toplevel/attr.html\\\"\u003eattr\u003c/a\u003e module), or \u003ccode\u003eNone\u003c/code\u003e. A \u003ccode\u003eNone\u003c/code\u003e entry means that the macro does not have an attribute by that name, even if it would have otherwise inherited one via \u003ccode\u003einherit_attrs\u003c/code\u003e (see below).  \u003cp\u003eThe special \u003ccode\u003ename\u003c/code\u003e attribute is predeclared and must not be included in the dictionary. The \u003ccode\u003evisibility\u003c/code\u003e attribute name is reserved and must not be included in the dictionary.  \u003cp\u003eAttributes whose names start with \u003ccode\u003e_\u003c/code\u003e are private -- they cannot be passed at the call site of the rule. Such attributes can be assigned a default value (as in \u003ccode\u003eattr.label(default\u003d\"//pkg:foo\")\u003c/code\u003e) to create an implicit dependency on a label.  \u003cp\u003eTo limit memory usage, there is a cap on the number of attributes that may be declared.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "inherit_attrs",
+        "doc": "A rule symbol, macro symbol, or the name of a built-in common attribute list (see below) from which the macro should inherit attributes.  \u003cp\u003eIf \u003ccode\u003einherit_attrs\u003c/code\u003e is set to the string \u003ccode\u003e\"common\"\u003c/code\u003e, the macro will inherit \u003ca href\u003d\"/reference/be/common-definitions#common-attributes\"\u003ecommon rule attribute definitions\u003c/a\u003e used by all Starlark rules.  \u003cp\u003eNote that if the return value of \u003ccode\u003erule()\u003c/code\u003e or \u003ccode\u003emacro()\u003c/code\u003e was not assigned to a global variable in a .bzl file, then such a value has not been registered as a rule or macro symbol, and therefore cannot be used for \u003ccode\u003einherit_attrs\u003c/code\u003e.  \u003cp\u003eThe inheritance mechanism works as follows:\u003c/p\u003e \u003col\u003e   \u003cli\u003eThe special \u003ccode\u003ename\u003c/code\u003e and \u003ccode\u003evisibility\u003c/code\u003e attributes are never inherited;   \u003cli\u003eHidden attributes (ones whose name starts with \u003ccode\u003e\"_\"\u003c/code\u003e) are never inherited;   \u003cli\u003eAttributes whose names are already defined in the \u003ccode\u003eattrs\u003c/code\u003e dictionary are never     inherited (the entry in \u003ccode\u003eattrs\u003c/code\u003e takes precedence; note that an entry may be set to     \u003ccode\u003eNone\u003c/code\u003e to ensure that no attribute by that name gets defined on the macro);   \u003cli\u003eAll other attributes are inherited from the rule or macro and effectively merged into the     \u003ccode\u003eattrs\u003c/code\u003e dict. \u003c/ol\u003e  \u003cp\u003eWhen a non-mandatory attribute is inherited, the default value of the attribute is overridden to be \u003ccode\u003eNone\u003c/code\u003e, regardless of what it was specified in the original rule or macro. This ensures that when the macro forwards the attribute\u0027s value to an instance of the wrapped rule or macro \u0026ndash; such as by passing in the unmodified \u003ccode\u003e**kwargs\u003c/code\u003e \u0026ndash; a value that was absent from the outer macro\u0027s call will also be absent in the inner rule or macro\u0027s call (since passing \u003ccode\u003eNone\u003c/code\u003e to an attribute is treated the same as omitting the attribute). This is important because omitting an attribute has subtly different semantics from passing its apparent default value. In particular, omitted attributes are not shown in some \u003ccode\u003ebazel query\u003c/code\u003e output formats, and computed defaults only execute when the value is omitted. If the macro needs to examine or modify an inherited attribute \u0026ndash; for example, to add a value to an inherited \u003ccode\u003etags\u003c/code\u003e attribute \u0026ndash; you must make sure to handle the \u003ccode\u003eNone\u003c/code\u003e case in the macro\u0027s implementation function.  \u003cp\u003eFor example, the following macro inherits all attributes from \u003ccode\u003enative.cc_library\u003c/code\u003e, except for \u003ccode\u003ecxxopts\u003c/code\u003e (which is removed from the attribute list) and \u003ccode\u003ecopts\u003c/code\u003e (which is given a new definition). It also takes care to checks for the default \u003ccode\u003eNone\u003c/code\u003e value of the inherited \u003ccode\u003etags\u003c/code\u003e attribute before appending an additional tag.  \u003cpre class\u003d\"language-python\"\u003e def _my_cc_library_impl(name, visibility, tags, **kwargs):     # Append a tag; tags attr was inherited from native.cc_library, and     # therefore is None unless explicitly set by the caller of my_cc_library()     my_tags \u003d (tags or []) + [\"my_custom_tag\"]     native.cc_library(         name \u003d name,         visibility \u003d visibility,         tags \u003d my_tags,         **kwargs     )  my_cc_library \u003d macro(     implementation \u003d _my_cc_library_impl,     inherit_attrs \u003d native.cc_library,     attrs \u003d {         \"cxxopts\": None,         \"copts\": attr.string_list(default \u003d [\"-D_FOO\"]),     }, ) \u003c/pre\u003e  \u003cp\u003eIf \u003ccode\u003einherit_attrs\u003c/code\u003e is set, the macro\u0027s implementation function \u003cem\u003emust\u003c/em\u003e have a \u003ccode\u003e**kwargs\u003c/code\u003e residual keyword parameter.  \u003cp\u003eBy convention, a macro should pass inherited, non-overridden attributes unchanged to the \"main\" rule or macro symbol which the macro is wrapping. Typically, most inherited attributes will not have a parameter in the implementation function\u0027s parameter list, and will simply be passed via \u003ccode\u003e**kwargs\u003c/code\u003e. It can be convenient for the implementation function to have explicit parameters for some inherited attributes (most commonly, \u003ccode\u003etags\u003c/code\u003e and \u003ccode\u003etestonly\u003c/code\u003e) if the macro needs to pass those attributes to both \"main\" and non-\"main\" targets \u0026ndash; but if the macro also needs to examine or manipulate those attributes, you must take care to handle the \u003ccode\u003eNone\u003c/code\u003e default value of non-mandatory inherited attributes.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "finalizer",
+        "doc": "Whether this macro is a rule finalizer, which is a macro that, regardless of its position in a \u003ccode\u003eBUILD\u003c/code\u003e file, is evaluated at the end of package loading, after all non-finalizer targets have been defined.  \u003cp\u003eUnlike ordinary symbolic macros, rule finalizers may call \u003ca href\u003d\"../toplevel/native#existing_rule\"\u003e\u003ccode\u003enative.existing_rule()\u003c/code\u003e\u003c/a\u003e and \u003ca href\u003d\"../toplevel/native#existing_rules\"\u003e\u003ccode\u003enative.existing_rules()\u003c/code\u003e\u003c/a\u003e to query the set of \u003cem\u003enon-finalizer\u003c/em\u003e rule targets defined in the current package. Note that \u003ccode\u003enative.existing_rule()\u003c/code\u003e and \u003ccode\u003enative.existing_rules()\u003c/code\u003e cannot access the targets defined by any rule finalizer, including this one.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "doc",
+        "doc": "A description of the macro that can be extracted by documentation generating ",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "rule",
+    "doc": "Creates a new rule, which can be called from a BUILD file or a macro to create targets.\u003cp\u003eRules must be assigned to global variables in a .bzl file; the name of the global variable is the rule\u0027s name.\u003cp\u003eTest rules are required to have a name ending in \u003ccode\u003e_test\u003c/code\u003e, while all other rules must not have this suffix. (This restriction applies only to rules, ",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "implementation",
+        "doc": "the Starlark function implementing this rule, must have exactly one parameter: \u003ca href\u003d\\\"../builtins/ctx.html\\\"\u003ectx\u003c/a\u003e. The function is called during the analysis phase for each instance of the rule. It can access the attributes provided by the user. It must create actions to generate all the declared ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "test",
+        "doc": "Whether this rule is a test rule, that is, whether it may be the subject of a \u003ccode\u003ebazel test\u003c/code\u003e command. All test rules are automatically considered \u003ca href\u003d\u0027#rule.executable\u0027\u003eexecutable\u003c/a\u003e; it is unnecessary (and discouraged) to explicitly set \u003ccode\u003eexecutable \u003d True\u003c/code\u003e for a test rule. The value defaults to \u003ccode\u003eFalse\u003c/code\u003e. See the \u003ca href\u003d\u0027https://bazel.build/extending/rules#executable_rules_and_test_rules\u0027\u003e",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "attrs",
+        "doc": "A dictionary to declare all the attributes of the rule. It maps from an attribute \\ name to an attribute object (see \u003ca href\u003d\"../toplevel/attr.html\"\u003e\u003ccode\u003eattr\u003c/code\u003e\u003c/a\u003e module). Attributes starting \\ with \u003ccode\u003e_\u003c/code\u003e are private, and can be used to add an implicit dependency on \\ a label. The attribute \u003ccode\u003ename\u003c/code\u003e is implicitly added and must not be \\ specified. Attributes \u003ccode\u003evisibility\u003c/code\u003e, \u003ccode\u003edeprecation\u003c/code\u003e, \\ \u003ccode\u003etags\u003c/code\u003e, \u003ccode\u003etestonly\u003c/code\u003e, and \u003ccode\u003efeatures\u003c/code\u003e are implicitly \\ added and cannot be overridden. Most rules need only a handful of attributes. To \\ limit memory usage, there is a cap on the number of attributes that may be \\ declared. \u003cp\u003eDeclared attributes will convert \u003ccode\u003eNone\u003c/code\u003e to the default value.\u003c/p\u003e",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "outputs",
+        "doc": "This parameter has been deprecated. Migrate rules to use \u003ccode\u003eOutputGroupInfo\u003c/code\u003e or \u003ccode\u003eattr.output\u003c/code\u003e instead. \u003cp\u003eA schema for defining predeclared outputs. Unlike \u003ca href\u003d\u0027../toplevel/attr.html#output\u0027\u003e\u003ccode\u003eoutput\u003c/code\u003e\u003c/a\u003e and \u003ca href\u003d\u0027../toplevel/attr.html#output_list\u0027\u003e\u003ccode\u003eoutput_list\u003c/code\u003e\u003c/a\u003e attributes, the user does not specify the labels for these files. See the \u003ca href\u003d\u0027https://bazel.build/extending/rules#files\u0027\u003eRules page\u003c/a\u003e for more on predeclared outputs.\u003cp\u003eThe value of this argument is either a dictionary or a callback function that produces a dictionary. The callback works similar to computed dependency attributes: The function\u0027s parameter names are matched against the rule\u0027s attributes, so for example if you pass \u003ccode\u003eoutputs \u003d _my_func\u003c/code\u003e with the definition \u003ccode\u003edef _my_func(srcs, deps): ...\u003c/code\u003e, the function has access to the attributes \u003ccode\u003esrcs\u003c/code\u003e and \u003ccode\u003edeps\u003c/code\u003e. Whether the dictionary is specified directly or via a function, it is interpreted as follows.\u003cp\u003eEach entry in the dictionary creates a predeclared output where the key is an identifier and the value is a string template that determines the output\u0027s label. In the rule\u0027s implementation function, the identifier becomes the field name used to access the output\u0027s \u003ca href\u003d\u0027../builtins/File.html\u0027\u003e\u003ccode\u003eFile\u003c/code\u003e\u003c/a\u003e in \u003ca href\u003d\u0027../builtins/ctx.html#outputs\u0027\u003e\u003ccode\u003ectx.outputs\u003c/code\u003e\u003c/a\u003e. The output\u0027s label has the same package as the rule, and the part after the package is produced by substituting each placeholder of the form \u003ccode\u003e\\\"%{ATTR}\\\"\u003c/code\u003e with a string formed from the value of the attribute \u003ccode\u003eATTR\u003c/code\u003e:\u003cul\u003e\u003cli\u003eString-typed attributes are substituted verbatim.\u003cli\u003eLabel-typed attributes become the part of the label after the package, minus the file extension. For example, the label \u003ccode\u003e\\\"//pkg:a/b.c\\\"\u003c/code\u003e becomes \u003ccode\u003e\\\"a/b\\\"\u003c/code\u003e.\u003cli\u003eOutput-typed attributes become the part of the label after the package, including the file extension (for the above example, \u003ccode\u003e\\\"a/b.c\\\"\u003c/code\u003e).\u003cli\u003eAll list-typed attributes (for example, \u003ccode\u003eattr.label_list\u003c/code\u003e) used in placeholders are required to have \u003ci\u003eexactly one element\u003c/i\u003e. Their conversion is the same as their non-list version (\u003ccode\u003eattr.label\u003c/code\u003e).\u003cli\u003eOther attribute types may not appear in placeholders.\u003cli\u003eThe special non-attribute placeholders \u003ccode\u003e%{dirname}\u003c/code\u003e and \u003ccode\u003e%{basename}\u003c/code\u003e expand to those parts of the rule\u0027s label, excluding its package. For example, in \u003ccode\u003e\\\"//pkg:a/b.c\\\"\u003c/code\u003e, the dirname is \u003ccode\u003ea\u003c/code\u003e and the basename is \u003ccode\u003eb.c\u003c/code\u003e.\u003c/ul\u003e\u003cp\u003eIn practice, the most common substitution placeholder is \u003ccode\u003e\\\"%{name}\\\"\u003c/code\u003e. For example, for a target named \\\"foo\\\", the outputs dict \u003ccode\u003e{\\\"bin\\\": \\\"%{name}.exe\\\"}\u003c/code\u003e predeclares an output named \u003ccode\u003efoo.exe\u003c/code\u003e that is accessible in the implementation function as",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "executable",
+        "doc": "Whether this rule is considered executable, that is, whether it may be the subject of a \u003ccode\u003ebazel run\u003c/code\u003e command. It defaults to \u003ccode\u003eFalse\u003c/code\u003e. See the \u003ca href\u003d\u0027https://bazel.build/extending/rules#executable_rules_and_test_rules\u0027\u003e",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "output_to_genfiles",
+        "doc": "If true, the files will be generated in the genfiles directory instead of the bin directory. Unless you need it for compatibility with existing rules ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "fragments",
+        "doc": "List of names of configuration fragments that the rule requires ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "host_fragments",
+        "doc": "List of names of configuration fragments that the rule requires ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "_skylark_testable",
+        "doc": "\u003ci\u003e(Experimental)\u003c/i\u003e\u003cbr/\u003e\u003cbr/\u003eIf true, this rule will expose its actions for inspection by rules that depend on it via an \u003ccode\u003eActions\u003c/code\u003e provider. The provider is also available to the rule itself by calling \u003ca href\u003d\\\"../builtins/ctx.html#created_actions\\\"\u003ectx.created_actions()\u003c/a\u003e.\u003cbr/\u003e\u003cbr/\u003eThis should only be used for testing the analysis-time behavior of",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "toolchains",
+        "doc": "If set, the set of toolchains this rule requires. The list can contain String, Label, or StarlarkToolchainTypeApi objects, in any combination. Toolchains will be found by checking the current platform, and provided to the rule",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "doc",
+        "doc": "A description of the rule that can be extracted by documentation generating ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "provides",
+        "doc": "A list of providers that the implementation function must return.\u003cp\u003eIt is an error if the implementation function omits any of the types of providers listed here from its return value. However, the implementation function may return additional providers not listed here.\u003cp\u003eEach element of the list is an \u003ccode\u003e*Info\u003c/code\u003e object returned by \u003ca href\u003d\u0027../globals/bzl.html#provider\u0027\u003e\u003ccode\u003eprovider()\u003c/code\u003e\u003c/a\u003e. When a target of the rule is used as a dependency for a target that declares a required provider, it is not necessary to specify that provider here. It is enough that the implementation function returns it. However, it is considered best practice to specify it, even though this is not required. The \u003ca href\u003d\u0027../globals/bzl.html#aspect.required_providers\u0027\u003e\u003ccode\u003erequired_providers\u003c/code\u003e\u003c/a\u003e field of an \u003ca href\u003d\u0027../globals/bzl.html#aspect\u0027\u003easpect\u003c/a\u003e does, however, require",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "dependency_resolution_rule",
+        "doc": "If set, the rule can be a dependency through attributes also marked as available in materializers. Every attribute of rules with this flag set must be marked as  available in materializers also. This is so that rules so marked cannot depend on",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "exec_compatible_with",
+        "doc": "A list of constraints on the execution platform that apply to all targets of ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "analysis_test",
+        "doc": "If true, then this rule is treated as an analysis test. \u003cp\u003eNote: Analysis test rules are primarily defined using infrastructure provided in core Starlark libraries. See \u003ca href\u003d\\\"https://bazel.build/rules/testing#testing-rules\\\"\u003eTesting\u003c/a\u003e for guidance. \u003cp\u003eIf a rule is defined as an analysis test rule, it becomes allowed to use configuration transitions defined using \u003ca href\u003d\\\"#analysis_test_transition\\\"\u003eanalysis_test_transition\u003c/a\u003e on its attributes, but opts into some restrictions: \u003cul\u003e\u003cli\u003eTargets of this rule are limited in the number of transitive dependencies they may have. \u003cli\u003eThe rule is considered a test rule (as if \u003ccode\u003etest\u003dTrue\u003c/code\u003e were set). This supersedes the value of \u003ccode\u003etest\u003c/code\u003e\u003c/li\u003e \u003cli\u003eThe rule implementation function may not register actions. Instead, it must register a pass/fail result via providing \u003ca",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "build_setting",
+        "doc": "If set, describes what kind of \u003ca href\u003d\u0027${link config#user-defined-build-settings}\u0027\u003e\u003ccode\u003ebuild setting\u003c/code\u003e\u003c/a\u003e this rule is. See the \u003ca href\u003d\u0027../toplevel/config.html\u0027\u003e\u003ccode\u003econfig\u003c/code\u003e\u003c/a\u003e module. If this is set, a mandatory attribute named \\\"build_setting_default\\\" is automatically added to this rule, with a type",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "cfg",
+        "doc": "If set, points to the configuration transition the rule will ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "exec_groups",
+        "doc": "Dict of execution group name (string) to \u003ca href\u003d\u0027../globals/bzl.html#exec_group\u0027\u003e\u003ccode\u003eexec_group\u003c/code\u003es\u003c/a\u003e. If set, allows rules to run actions on multiple execution platforms within a single target. See \u003ca href\u003d\u0027${link exec-groups}\u0027\u003eexecution groups",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "initializer",
+        "doc": "Experimental: the Stalark function initializing the attributes of the rule. \u003cp\u003eThe function is called at load time for each instance of the rule. It\u0027s called with \u003ccode\u003ename\u003c/code\u003e and the values of public attributes defined by the rule (not with generic attributes, for example \u003ccode\u003etags\u003c/code\u003e). \u003cp\u003eIt has to return a dictionary from the attribute names to the desired values. The attributes that are not returned are unaffected. Returning \u003ccode\u003eNone\u003c/code\u003e as value results in using the default value specified in the attribute definition. \u003cp\u003eInitializers are evaluated before the default values specified in an attribute definition. Consequently, if a parameter in the initializer\u0027s signature contains a default values, it overwrites the default from the attribute definition (except if returning \u003ccode\u003eNone\u003c/code\u003e). \u003cp\u003eSimilarly, if a parameter in the initializer\u0027s signature doesn\u0027t have a default, the parameter will become mandatory. It\u0027s a good practice to omit default/mandatory settings on an attribute definition in such cases. \u003cp\u003eIt\u0027s a good practice to use \u003ccode\u003e**kwargs\u003c/code\u003e for attributes that are not handled.\u003cp\u003eIn case of extended rules, all initializers are called proceeding from child to ancestors. Each initializer is passed only the public attributes ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "parent",
+        "doc": "Experimental: the Stalark rule that is extended. When set the public attributes are merged as well as advertised providers. The rule matches \u003ccode\u003eexecutable\u003c/code\u003e and \u003ccode\u003etest\u003c/code\u003e from the parent. Values of \u003ccode\u003efragments\u003c/code\u003e, \u003ccode\u003etoolchains\u003c/code\u003e, \u003ccode\u003eexec_compatible_with\u003c/code\u003e, and \u003ccode\u003eexec_groups\u003c/code\u003e are merged. Legacy or deprecated parameters may not be set. Incoming configuration transition \u003ccode\u003ecfg\u003c/code\u003e of parent is applied after this",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "extendable",
+        "doc": "Experimental: A label of an allowlist defining which rules can extending this rule. It can be set also to True/False to always allow/disallow extending.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "subrules",
+        "doc": "Experimental: List of subrules used by this rule.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "aspect",
+    "doc": "Creates a new aspect. The result of this function must be stored in a global value. Please see the \u003ca href\u003d\\\"https://bazel.build/rules/aspects\\\"\u003eintroduction to",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "implementation",
+        "doc": "A Starlark function that implements this aspect, with exactly two parameters: \u003ca href\u003d\\\"../builtins/Target.html\\\"\u003eTarget\u003c/a\u003e (the target to which the aspect is applied) and \u003ca href\u003d\\\"../builtins/ctx.html\\\"\u003ectx\u003c/a\u003e (the rule context which the target is created from). Attributes of the target are available via the \u003ccode\u003ectx.rule\u003c/code\u003e field. This function is evaluated during the",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "attr_aspects",
+        "doc": "Accepts a list of attribute names or [Experimental] a function that returns the list of attribute names. The aspect propagates along dependencies specified in the attributes of a target with these names. Common values here include \u003ccode\u003edeps\u003c/code\u003e and \u003ccode\u003eexports\u003c/code\u003e. The list can also contain a single string \u003ccode\u003e\\\"*\\\"\u003c/code\u003e to propagate along all dependencies of a",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "toolchains_aspects",
+        "doc": "Accepts a list of toolchain types or [Experimental] a function that returns the list of toolchain types. The aspect propagates to target toolchains which",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "attrs",
+        "doc": "A dictionary declaring all the attributes of the aspect. It maps from an \\ attribute name to an attribute object, like \u003ccode\u003eattr.label\u003c/code\u003e or \\ \u003ccode\u003eattr.string\u003c/code\u003e (see \\ \u003ca href\u003d\"../toplevel/attr.html\"\u003e\u003ccode\u003eattr\u003c/code\u003e\u003c/a\u003e module). Aspect attributes \\ are available to implementation function as fields of \u003ccode\u003ectx\u003c/code\u003e parameter. \\ \u003cp\u003eImplicit attributes starting with \u003ccode\u003e_\u003c/code\u003e must have default values, and \\ have type \u003ccode\u003elabel\u003c/code\u003e or \u003ccode\u003elabel_list\u003c/code\u003e.\u003c/p\u003e \\ \u003cp\u003eExplicit attributes must have type \u003ccode\u003estring\u003c/code\u003e, and must use the \\ \u003ccode\u003evalues\u003c/code\u003e restriction. Explicit attributes restrict the aspect to only \\ be used with rules that have attributes of the same name, type, and valid values \\ according to the restriction.\u003c/p\u003e \u003cp\u003eDeclared attributes will convert \u003ccode\u003eNone\u003c/code\u003e to the default value.\u003c/p\u003e",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "required_providers",
+        "doc": "This attribute allows the aspect to limit its propagation to only the targets whose rules advertise its required providers. The value must be a list containing either individual providers or lists of providers but not both. For example, \u003ccode\u003e[[FooInfo], [BarInfo], [BazInfo, QuxInfo]]\u003c/code\u003e is a valid value while \u003ccode\u003e[FooInfo, BarInfo, [BazInfo, QuxInfo]]\u003c/code\u003e is not valid.\u003cp\u003eAn unnested list of providers will automatically be converted to a list containing one list of providers. That is, \u003ccode\u003e[FooInfo, BarInfo]\u003c/code\u003e will automatically be converted to \u003ccode\u003e[[FooInfo, BarInfo]]\u003c/code\u003e.\u003cp\u003eTo make some rule (e.g. \u003ccode\u003esome_rule\u003c/code\u003e) targets visible to an aspect, \u003ccode\u003esome_rule\u003c/code\u003e must advertise all providers from at least one of the required providers lists. For example, if the \u003ccode\u003erequired_providers\u003c/code\u003e of an aspect are \u003ccode\u003e[[FooInfo], [BarInfo], [BazInfo, QuxInfo]]\u003c/code\u003e, this aspect can see \u003ccode\u003esome_rule\u003c/code\u003e targets if and only if \u003ccode\u003esome_rule\u003c/code\u003e provides \u003ccode\u003eFooInfo\u003c/code\u003e, \u003cem\u003eor\u003c/em\u003e \u003ccode\u003eBarInfo\u003c/code\u003e, \u003cem\u003eor\u003c/em\u003e both \u003ccode\u003eBazInfo\u003c/code\u003e \u003cem\u003eand\u003c/em\u003e ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "required_aspect_providers",
+        "doc": "This attribute allows this aspect to inspect other aspects. The value must be a list containing either individual providers or lists of providers but not both. For example, \u003ccode\u003e[[FooInfo], [BarInfo], [BazInfo, QuxInfo]]\u003c/code\u003e is a valid value while \u003ccode\u003e[FooInfo, BarInfo, [BazInfo, QuxInfo]]\u003c/code\u003e is not valid.\u003cp\u003eAn unnested list of providers will automatically be converted to a list containing one list of providers. That is, \u003ccode\u003e[FooInfo, BarInfo]\u003c/code\u003e will automatically be converted to \u003ccode\u003e[[FooInfo, BarInfo]]\u003c/code\u003e. \u003cp\u003eTo make another aspect (e.g. \u003ccode\u003eother_aspect\u003c/code\u003e) visible to this aspect, \u003ccode\u003eother_aspect\u003c/code\u003e must provide all providers from at least one of the lists. In the example of \u003ccode\u003e[[FooInfo], [BarInfo], [BazInfo, QuxInfo]]\u003c/code\u003e, this aspect can see \u003ccode\u003eother_aspect\u003c/code\u003e if and only if \u003ccode\u003eother_aspect\u003c/code\u003e provides \u003ccode\u003eFooInfo\u003c/code\u003e, \u003cem\u003eor\u003c/em\u003e \u003ccode\u003eBarInfo\u003c/code\u003e, ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "provides",
+        "doc": "A list of providers that the implementation function must return.\u003cp\u003eIt is an error if the implementation function omits any of the types of providers listed here from its return value. However, the implementation function may return additional providers not listed here.\u003cp\u003eEach element of the list is an \u003ccode\u003e*Info\u003c/code\u003e object returned by \u003ca href\u003d\u0027../globals/bzl.html#provider\u0027\u003e\u003ccode\u003eprovider()\u003c/code\u003e\u003c/a\u003e. When a target of the rule is used as a dependency for a target that declares a required provider, it is not necessary to specify that provider here. It is enough that the implementation function returns it. However, it is considered best practice to specify it, even though this is not required. The \u003ca href\u003d\u0027../globals/bzl.html#aspect.required_providers\u0027\u003e\u003ccode\u003erequired_providers\u003c/code\u003e\u003c/a\u003e field of an \u003ca href\u003d\u0027../globals/bzl.html#aspect\u0027\u003easpect\u003c/a\u003e does, however, require",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "requires",
+        "doc": "List of aspects required to be propagated before this aspect.",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "propagation_predicate",
+        "doc": "Experimental: a function that returns a boolean value indicating whether the",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "fragments",
+        "doc": "List of names of configuration fragments that the aspect requires ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "host_fragments",
+        "doc": "List of names of configuration fragments that the aspect requires ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "toolchains",
+        "doc": "If set, the set of toolchains this aspect requires. The list can contain String, Label, or StarlarkToolchainTypeApi objects, in any combination. Toolchains will be found by checking the current platform, and provided to the aspect",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "doc",
+        "doc": "A description of the aspect that can be extracted by documentation generating ",
+        "named": true,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "apply_to_generating_rules",
+        "doc": "If true, the aspect will, when applied to an output file, instead apply to the output file\u0027s generating rule. \u003cp\u003eFor example, suppose an aspect propagates transitively through attribute `deps` and it is applied to target `alpha`. Suppose `alpha` has `deps \u003d [\u0027:beta_output\u0027]`, where `beta_output` is a declared output of a target `beta`. Suppose `beta` has a target `charlie` as one of its `deps`. If `apply_to_generating_rules\u003dTrue` for the aspect, then the aspect will propagate through `alpha`, `beta`, and `charlie`. If False, then the ",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "exec_compatible_with",
+        "doc": "A list of constraints on the execution platform that apply to all instances of",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "exec_groups",
+        "doc": "Dict of execution group name (string) to \u003ca href\u003d\u0027../globals/bzl.html#exec_group\u0027\u003e\u003ccode\u003eexec_group\u003c/code\u003es\u003c/a\u003e. If set, allows aspects to run actions on multiple execution platforms within a single instance. See \u003ca href\u003d\u0027${link exec-groups}\u0027\u003eexecution groups",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "subrules",
+        "doc": "Experimental: list of subrules used by this aspect.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "Label",
+    "doc": "Converts a label string into a \u003ccode\u003eLabel\u003c/code\u003e object, in the context of the package where the calling \u003ccode\u003e.bzl\u003c/code\u003e source file lives. If the given value is already a \u003ccode\u003eLabel\u003c/code\u003e, it is returned unchanged.\u003cp\u003eFor macros, a related function, \u003ccode\u003e\u003ca href\u003d\u0027../toplevel/native.html#package_relative_label\u0027\u003enative.package_relative_label()\u003c/a\u003e\u003c/code\u003e, converts the input into a \u003ccode\u003eLabel\u003c/code\u003e in the context of the package currently being constructed. Use that function to mimic the string-to-label",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "input",
+        "doc": "The input label string or Label object. If a Label object is passed, it\u0027s",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "exec_group",
+    "doc": "Creates an \u003ca href\u003d\u0027${link exec-groups}\u0027\u003eexecution group\u003c/a\u003e which can be used to",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "toolchains",
+        "doc": "The set of toolchains this execution group requires. The list can contain String,",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "exec_compatible_with",
+        "doc": "A list of constraints on the execution platform.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "subrule",
+    "doc": "Constructs a new instance of a subrule. The result of this function must be stored in ",
+    "environment": [
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "implementation",
+        "doc": "The Starlark function implementing this subrule",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "attrs",
+        "doc": "A dictionary to declare all the (private) attributes of the subrule. \u003cp/\u003eSubrules may only have private attributes that are label-typed (i.e. label or label-list). The resolved values corresponding to these labels are automatically passed by Bazel to the subrule\u0027s implementation function as named arguments (thus the implementation function is required to accept named parameters matching the attribute names). The types of these values will be: \u003cul\u003e\u003cli\u003e\u003ccode\u003eFilesToRunProvider\u003c/code\u003e for label attributes with \u003ccode\u003eexecutable\u003dTrue\u003c/code\u003e\u003c/li\u003e\u003cli\u003e\u003ccode\u003eFile\u003c/code\u003e for label attributes with \u003ccode\u003eallow_single_file\u003dTrue\u003c/code\u003e\u003c/li\u003e\u003cli\u003e\u003ccode\u003eTarget\u003c/code\u003e for all other label attributes\u003c/li\u003e\u003cli\u003e\u003ccode\u003e[Target]\u003c/code\u003e for all label-list",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "toolchains",
+        "doc": "If set, the set of toolchains this subrule requires. The list can contain String, Label, or StarlarkToolchainTypeApi objects, in any combination. Toolchains will be found by checking the current platform, and provided to the subrule implementation via \u003ccode\u003ectx.toolchains\u003c/code\u003e. Note that AEGs need to be enabled on the consuming rule(s) if this parameter is set. In case you haven\u0027t migrated to AEGs yet, see",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "fragments",
+        "doc": "List of names of configuration fragments that the subrule requires in target",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "subrules",
+        "doc": "List of other subrules needed by this subrule.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "module",
+    "doc": "Declares certain properties of the Bazel module represented by the current Bazel repo. These properties are either essential metadata of the module (such as the name and version), or affect behavior of the current module and its dependents.  \u003cp\u003eIt should be called at most once, and if called, it must be the very first directive in the MODULE.bazel file. It can be omitted only if this module is the root",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "name",
+        "doc": "The name of the module. Can be omitted only if this module is the root module (as in, if it\u0027s not going to be depended on by another module). A valid module name must: 1) only contain lowercase letters (a-z), digits (0-9), dots (.), hyphens (-), and underscores (_); 2) begin with a lowercase letter; 3) end",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "version",
+        "doc": "The version of the module. Can be omitted only if this module is the root module (as in, if it\u0027s not going to be depended on by another module). The version must be in a relaxed SemVer format; see \u003ca href\u003d\\\"/external/module#version_format\\\"\u003ethe documentation\u003c/a\u003e for more",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "compatibility_level",
+        "doc": "The compatibility level of the module; this should be changed every time a major incompatible change is introduced. This is essentially the \\\"major version\\\" of the module in terms of SemVer, except that it\u0027s not embedded in the version string itself, but exists as a separate field. Modules with different compatibility levels participate in version resolution as if they\u0027re modules with different names, but the final dependency graph cannot contain multiple modules with the same name but different compatibility levels (unless \u003ccode\u003emultiple_version_override\u003c/code\u003e is in effect). See \u003ca href\u003d\\\"/external/module#compatibility_level\\\"\u003ethe documentation\u003c/a\u003e for",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "repo_name",
+        "doc": "The name of the repository representing this module, as seen by the module itself. By default, the name of the repo is the name of the module. This can be specified to ease migration for projects that have been using a repo name",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "bazel_compatibility",
+        "doc": "A list of bazel versions that allows users to declare which Bazel versions are compatible with this module. It does NOT affect dependency resolution, but bzlmod will use this information to check if your current Bazel version is compatible. The format of this value is a string of some constraint values separated by comma. Three constraints are supported: \u003c\u003dX.X.X: The Bazel version must be equal or older than X.X.X. Used when there is a known incompatible change in a newer version. \u003e\u003dX.X.X: The Bazel version must be equal or newer than X.X.X.Used when you depend on some features that are only available since X.X.X. -X.X.X: The Bazel version X.X.X is not compatible. Used when there is a bug in X.X.X that breaks you, but fixed in",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "bazel_dep",
+    "doc": "Declares a direct dependency on another Bazel module.",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "name",
+        "doc": "The name of the module to be added as a direct dependency.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "version",
+        "doc": "The version of the module to be added as a direct dependency.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "max_compatibility_level",
+        "doc": "The maximum \u003ccode\u003ecompatibility_level\u003c/code\u003e supported for the module to be added as a direct dependency. The version of the module implies the minimum compatibility_level supported, as well as the maximum if this attribute is",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "repo_name",
+        "doc": "The name of the external repo representing this dependency. This is by default the name of the module. Can be set to \u003ccode\u003eNone\u003c/code\u003e to make this dependency a \"\u003cem\u003enodep\u003c/em\u003e\" dependency: in this case, this \u003ccode\u003ebazel_dep\u003c/code\u003e specification is only honored if the target module already exists in the dependency graph by some other means.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "dev_dependency",
+        "doc": "If true, this dependency will be ignored if the current module is not the root",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "register_execution_platforms",
+    "doc": "Specifies already-defined execution platforms to be registered when this module is selected. Should be absolute \u003ca href\u003d\u0027https://bazel.build/reference/glossary#target-pattern\u0027\u003etarget patterns\u003c/a\u003e (ie. beginning with either \u003ccode\u003e@\u003c/code\u003e or \u003ccode\u003e//\u003c/code\u003e). See \u003ca href\u003d\\\"${link toolchains}\\\"\u003etoolchain resolution\u003c/a\u003e for more information. Patterns that expand to multiple targets, such as \u003ccode\u003e:all\u003c/code\u003e, will be",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "dev_dependency",
+        "doc": "If true, the execution platforms will not be registered if the current module is",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "*platform_labels",
+        "doc": "The target patterns to register.",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "register_toolchains",
+    "doc": "Specifies already-defined toolchains to be registered when this module is selected. Should be absolute \u003ca href\u003d\u0027https://bazel.build/reference/glossary#target-pattern\u0027\u003etarget patterns\u003c/a\u003e (ie. beginning with either \u003ccode\u003e@\u003c/code\u003e or \u003ccode\u003e//\u003c/code\u003e). See \u003ca href\u003d\\\"${link toolchains}\\\"\u003etoolchain resolution\u003c/a\u003e for more information. Patterns that expand to multiple targets, such as \u003ccode\u003e:all\u003c/code\u003e, will be registered in lexicographical order by target name (not the name of the toolchain",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "dev_dependency",
+        "doc": "If true, the toolchains will not be registered if the current module is not the",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "*toolchain_labels",
+        "doc": "The target patterns to register.",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "use_extension",
+    "doc": "Returns a proxy object representing a module extension; its methods can be invoked to",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "extension_bzl_file",
+        "doc": "A label to the Starlark file defining the module extension.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "extension_name",
+        "doc": "The name of the module extension to use. A symbol with this name must be exported",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "dev_dependency",
+        "doc": "If true, this usage of the module extension will be ignored if the current module",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "isolate",
+        "doc": "If true, this usage of the module extension will be isolated from all other usages, both in this and other modules. Tags created for this usage do not affect other usages and the repositories generated by the extension for this usage will be distinct from all other repositories generated by the extension.\u003cp\u003eThis parameter is currently experimental and only available with the ",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "call",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "**kwargs",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "use_repo",
+    "doc": "Imports one or more repos generated by the given module extension into the scope of the",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "extension_proxy",
+        "doc": "A module extension proxy object returned by a \u003ccode\u003euse_extension\u003c/code\u003e call.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "*args",
+        "doc": "The names of the repos to import.",
+        "named": false,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "**kwargs",
+        "doc": "Specifies certain repos to import into the scope of the current module with different names. The keys should be the name to use in the current scope, whereas the values should be the original names exported by the module extension. \u003cp\u003eKeys that are not valid identifiers can be specified via a literal dict passed as extra keyword arguments, e.g., \u003ccode\u003euse_repo(extension_proxy, **{\"foo.2\": \"foo\"})\u003c/code\u003e.",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "override_repo",
+    "doc": "Overrides one or more repos defined by the given module extension with the given repos visible to the current module. This is ignored if the current module is not the root module or `--ignore_dev_dependency` is enabled.  \u003cp\u003eUse \u003ca href\u003d\"#inject_repo\"\u003e\u003ccode\u003einject_repo\u003c/code\u003e\u003c/a\u003e instead to add a new repo.",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "extension_proxy",
+        "doc": "A module extension proxy object returned by a \u003ccode\u003euse_extension\u003c/code\u003e call.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "*args",
+        "doc": "The repos in the extension that should be overridden with the repos of the same name in the current module.\\",
+        "named": false,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "**kwargs",
+        "doc": "The overrides to apply to the repos generated by the extension, where the values are the names of repos in the scope of the current module and the keys are the names of the repos they will override in the extension. \u003cp\u003eKeys that are not valid identifiers can be specified via a literal dict passed as extra keyword arguments, e.g., \u003ccode\u003eoverride_repo(extension_proxy, **{\"foo.2\": \"foo\"})\u003c/code\u003e.",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "inject_repo",
+    "doc": "Injects one or more new repos into the given module extension. This is ignored if the current module is not the root module or \u003ccode\u003e--ignore_dev_dependency\u003c/code\u003e is enabled.  \u003cp\u003eUse \u003ca href\u003d\"#override_repo\"\u003e\u003ccode\u003eoverride_repo\u003c/code\u003e\u003c/a\u003e instead to override an existing repo.\\",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "extension_proxy",
+        "doc": "A module extension proxy object returned by a \u003ccode\u003euse_extension\u003c/code\u003e call.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "*args",
+        "doc": "The repos visible to the current module that should be injected into the extension under the same name.\\",
+        "named": false,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "**kwargs",
+        "doc": "The new repos to inject into the extension, where the values are the names of repos in the scope of the current module and the keys are the name they will be visible under in the extension. \u003cp\u003eKeys that are not valid identifiers can be specified via a literal dict passed as extra keyword arguments, e.g., \u003ccode\u003einject_repo(extension_proxy, **{\"foo.2\": \"foo\"})\u003c/code\u003e.",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "use_repo_rule",
+    "doc": "Returns a proxy value that can be directly invoked in the MODULE.bazel file as a repository rule, one or more times. Repos created in such a way are only visible to the current module, under the name declared using the \u003ccode\u003ename\u003c/code\u003e attribute on the proxy. The implicit Boolean \u003ccode\u003edev_dependency\u003c/code\u003e attribute can also be used on the proxy to denote that a certain repo is only to",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "repo_rule_bzl_file",
+        "doc": "A label to the Starlark file defining the repo rule.",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "repo_rule_name",
+        "doc": "The name of the repo rule to use. A symbol with this name must be exported by the",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "call",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "name",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "dev_dependency",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "**kwargs",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "ompiledModuleFile.INCLUDE_IDENTIFIE",
+    "doc": "Includes the contents of another MODULE.bazel-like file. Effectively, \u003ccode\u003einclude()\u003c/code\u003e behaves as if the included file is textually placed at the location of the \u003ccode\u003einclude()\u003c/code\u003e call, except that variable bindings (such as those used for \u003ccode\u003euse_extension\u003c/code\u003e) are only ever visible in the file they occur in, not in any included or including files.\u003cp\u003eOnly the root module may use \u003ccode\u003einclude()\u003c/code\u003e; it is an error if a \u003ccode\u003ebazel_dep\u003c/code\u003e\u0027s MODULE file uses \u003ccode\u003einclude()\u003c/code\u003e.\u003cp\u003eOnly files in the main repo may be included.\u003cp\u003e\u003ccode\u003einclude()\u003c/code\u003e allows you to segment the root module file into multiple parts, to avoid having an enormous MODULE.bazel file or to better",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "label",
+        "doc": "The label pointing to the file to include. The label must point to a file in the main repo; in other words, it \u003cstrong\u003emust\u003cstrong\u003e start with double slashes (\u003ccode\u003e//\u003c/code\u003e). The name of the file must end with",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "single_version_override",
+    "doc": "Specifies that a dependency should still come from a registry, but its version should be pinned, or its registry overridden, or a list of patches applied. This directive only takes effect in the root module; in other words, if a module",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "module_name",
+        "doc": "The name of the Bazel module dependency to apply this override to.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "version",
+        "doc": "Overrides the declared version of this module in the dependency graph. In other words, this module will be \\\"pinned\\\" to this override version. This attribute can be omitted if all one wants to override is the registry or",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "registry",
+        "doc": "Overrides the registry for this module; instead of finding this module from the",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "patches",
+        "doc": "A list of labels pointing to patch files to apply for this module. The patch files must exist in the source tree of the top level project. They are applied in the list order.\u003cp\u003eIf a patch makes changes to the MODULE.bazel file, these changes will",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "patch_cmds",
+        "doc": "Sequence of Bash commands to be applied on Linux/Macos after patches are applied.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "patch_strip",
+        "doc": "Same as the --strip argument of Unix patch.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "multiple_version_override",
+    "doc": "Specifies that a dependency should still come from a registry, but multiple versions of it should be allowed to coexist. See \u003ca href\u003d\\\"/external/module#multiple-version_override\\\"\u003ethe documentation\u003c/a\u003e for more details. This directive only takes effect in the root module; in other words, if a module",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "module_name",
+        "doc": "The name of the Bazel module dependency to apply this override to.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "versions",
+        "doc": "Explicitly specifies the versions allowed to coexist. These versions must already be present in the dependency graph pre-selection. Dependencies on this module will be \\\"upgraded\\\" to the nearest higher allowed version at the same compatibility level, whereas dependencies that have a higher version than any allowed versions at the same compatibility level will cause an",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "registry",
+        "doc": "Overrides the registry for this module; instead of finding this module from the",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "archive_override",
+    "doc": "Specifies that this dependency should come from an archive file (zip, gzip, etc) at a certain location, instead of from a registry. Effectively, this dependency will be backed by an \u003ca href\u003d\"../repo/http#http_archive\"\u003e\u003ccode\u003ehttp_archive\u003c/code\u003e\u003c/a\u003e rule.  \u003cp\u003eThis directive only takes effect in the root module; in other words, if a module is used as a dependency by others, its own overrides are ignored.\\",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "module_name",
+        "doc": "The name of the Bazel module dependency to apply this override to.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "**kwargs",
+        "doc": "All other arguments are forwarded to the underlying \u003ccode\u003ehttp_archive\u003c/code\u003e repo rule. Note that the \u003ccode\u003ename\u003c/code\u003e attribute shouldn\u0027t be specified; use \u003ccode\u003emodule_name\u003c/code\u003e instead.\\",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "git_override",
+    "doc": "Specifies that this dependency should come from a certain commit in a Git repository, instead of from a registry. Effectively, this dependency will be backed by a \u003ca href\u003d\"../repo/git#git_repository\"\u003e\u003ccode\u003egit_repository\u003c/code\u003e\u003c/a\u003e rule.  \u003cp\u003eThis directive only takes effect in the root module; in other words, if a module is used as a dependency by others, its own overrides are ignored.\\",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "module_name",
+        "doc": "The name of the Bazel module dependency to apply this override to.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "**kwargs",
+        "doc": "All other arguments are forwarded to the underlying \u003ccode\u003egit_repository\u003c/code\u003e repo rule. Note that the \u003ccode\u003ename\u003c/code\u003e attribute shouldn\u0027t be specified; use \u003ccode\u003emodule_name\u003c/code\u003e instead.\\",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "local_path_override",
+    "doc": "Specifies that this dependency should come from a certain directory on local disk, instead of from a registry. Effectively, this dependency will be backed by a \u003ca href\u003d\"../repo/local#local_repository\"\u003e\u003ccode\u003elocal_repository\u003c/code\u003e\u003c/a\u003e rule.  \u003cp\u003eThis directive only takes effect in the root module; in other words, if a module is used as a dependency by others, its own overrides are ignored.\\",
+    "environment": [
+      "MODULE"
+    ],
+    "params": [
+      {
+        "name": "module_name",
+        "doc": "The name of the Bazel module dependency to apply this override to.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "path",
+        "doc": "The path to the directory where this module is.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "select",
+    "doc": "\u003ccode\u003eselect()\u003c/code\u003e is the helper function that makes a rule attribute \u003ca href\u003d\\\"${link common-definitions#configurable-attributes}\\\"\u003econfigurable\u003c/a\u003e. See ",
+    "environment": [
+      "BUILD",
+      "BZL"
+    ],
+    "params": [
+      {
+        "name": "x",
+        "doc": "A dict that maps configuration conditions to values. Each key is a \u003ca href\u003d\\\"../builtins/Label.html\\\"\u003eLabel\u003c/a\u003e or a label string that identifies a config_setting or constraint_value instance. See the \u003ca href\u003d\\\"https://bazel.build/rules/macros#label-resolution\\\"\u003e",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "no_match_error",
+        "doc": "Optional custom error to report if no condition matches.",
+        "named": true,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "ignore_directories",
+    "doc": "The list of directories to ignore in this repository. \u003cp\u003eThis function takes a list of strings and a directory is ignored if any of the given strings matches its repository-relative path according to the semantics of the \u003ccode\u003eglob()\u003c/code\u003e function. This function can be used to ignore directories that are implementation",
+    "environment": [
+      "REPO"
+    ],
+    "params": [
+      {
+        "name": "dirs",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "repo",
+    "doc": "Declares metadata that applies to every rule in the repository. It must be called at most once per REPO.bazel file. If called, it must be the first call in the ",
+    "environment": [
+      "REPO"
+    ],
+    "params": [
+      {
+        "name": "**kwargs",
+        "doc": "The \u003ccode\u003erepo()\u003c/code\u003e function accepts exactly the same arguments as the \u003ca href\u003d\\\"${link functions}#package\\\"\u003e\u003ccode\u003epackage()\u003c/code\u003e\u003c/a\u003e function ",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "package",
+    "doc": "Declares metadata that applies to every rule in the package. It must be called at most once within a package (BUILD file). If called, it should be the first call ",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "**kwargs",
+        "doc": "See the \u003ca href\u003d\\\"${link functions}#package\\\"\u003e\u003ccode\u003epackage()\u003c/code\u003e\u003c/a\u003e ",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "environment_group",
+    "doc": "Defines a set of related environments that can be tagged onto rules to prevent",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "name",
+        "doc": "The name of the rule.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "environments",
+        "doc": "A list of Labels for the environments to be grouped, from the same package.",
+        "named": true,
+        "positional": false,
+        "required": true
+      },
+      {
+        "name": "defaults",
+        "doc": "A list of Labels.",
+        "named": true,
+        "positional": false,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "licenses",
+    "doc": "Declare the license(s) for the code in the current package.",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "license_strings",
+        "doc": "A list of strings, the names of the licenses used.",
+        "named": false,
+        "positional": true,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "ignore",
+    "doc": "Ignore this repo from vendoring. Bazel will never vendor it or use the corresponding",
+    "environment": [
+      "VENDOR"
+    ],
+    "params": [
+      {
+        "name": "*args",
+        "doc": "The canonical repo names of the repos to ignore.",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "pin",
+    "doc": "Pin the contents of this repo under the vendor directory. Bazel will not update this repo while vendoring, and will use the vendored source as if there is a",
+    "environment": [
+      "VENDOR"
+    ],
+    "params": [
+      {
+        "name": "*args",
+        "doc": "The canonical repo names of the repos to pin.",
+        "named": false,
+        "positional": true,
+        "required": false
+      }
+    ]
+  }
+]
