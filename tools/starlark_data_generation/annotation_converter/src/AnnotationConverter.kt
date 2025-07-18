@@ -148,7 +148,11 @@ object AnnotationConverter {
         }
       }
     }
-    return environments
+    return if (environments.isEmpty()) {
+      listOf(Environment.ALL)
+    } else {
+      environments
+    }
   }
 
   private fun String.containsOnlyUppercaseAndUnderscores(): Boolean {
@@ -171,7 +175,11 @@ object AnnotationConverter {
 
   private fun processCompilationUnit(cu: CompilationUnit) {
     val globalMethodsExpr = cu.findAll(AnnotationExpr::class.java).filter { it.nameAsString == "GlobalMethods" }
-    val environments = getEnvironments(globalMethodsExpr.first()!!)
+    val environments = if (globalMethodsExpr.isNotEmpty()) {
+      getEnvironments(globalMethodsExpr.first()!!)
+    } else {
+      listOf(Environment.ALL)
+    }
     val stringConsts = getStringConsts(cu)
     cu.findAll(MethodDeclaration::class.java).forEach {
       it.annotations.forEach {
@@ -183,6 +191,9 @@ object AnnotationConverter {
   }
 
 
+  /*
+   sh sed "s|^|/path/to/bazel/repo|" inputs | xargs bazel run //annotation_converter:annotation_converter -- > global_functions.json
+   */
   @JvmStatic
   fun main(args: Array<String>) {
     if (args.isEmpty()) {
