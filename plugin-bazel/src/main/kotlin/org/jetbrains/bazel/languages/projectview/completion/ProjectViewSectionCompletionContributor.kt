@@ -41,6 +41,7 @@ internal class ProjectViewSectionCompletionContributor : CompletionContributor()
       context: ProcessingContext,
       result: CompletionResultSet,
     ) {
+      result.addElement(LookupElementBuilder.create("import").withIcon(PlatformIcons.FUNCTION_ICON))
       result.addAllElements(
         ProjectViewSection.KEYWORD_MAP.map {
           sectionLookupElement(it.key, it.value.sectionType is ProjectViewSection.SectionType.Scalar)

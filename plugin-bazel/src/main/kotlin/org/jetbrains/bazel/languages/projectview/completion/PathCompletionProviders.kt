@@ -80,3 +80,20 @@ internal class FiletypeCompletionProvider(val fileExtension: String) : Completio
     }
   }
 }
+
+internal class ImportCompletionProvider : CompletionProvider<CompletionParameters>() {
+  override fun addCompletions(
+    parameters: CompletionParameters,
+    context: ProcessingContext,
+    result: CompletionResultSet,
+  ) {
+    val projectRoot = getProjectRoot(parameters) ?: return
+    val paths =
+      getRelativePaths(projectRoot) {
+        it.name.endsWith(".bazelproject") &&
+          ProjectFileIndex.getInstance(parameters.position.project).isInContent(it) &&
+          it.path != parameters.originalFile.virtualFile.path
+      }
+    result.addAllElements(paths.map { LookupElementBuilder.create(it) })
+  }
+}

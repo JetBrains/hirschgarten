@@ -10,8 +10,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewImport
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 
@@ -48,6 +50,12 @@ internal class ProjectViewSectionItemCompletionContributor : CompletionContribut
         )
       }
     }
+
+    extend(
+      CompletionType.BASIC,
+      importElement(),
+      ImportCompletionProvider(),
+    )
   }
 
   private fun sectionItemElement(sectionName: String) =
@@ -59,4 +67,9 @@ internal class ProjectViewSectionItemCompletionContributor : CompletionContribut
           psiElement(ProjectViewPsiSectionName::class.java).withText(sectionName),
         ),
       )
+
+  private fun importElement() =
+    psiElement()
+      .withLanguage(ProjectViewLanguage)
+      .inside(ProjectViewPsiImport::class.java)
 }

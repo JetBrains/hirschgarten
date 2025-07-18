@@ -77,7 +77,6 @@ object ProjectViewSection {
           listOf("android", "dart", "java", "javascript", "kotlin", "python", "typescript", "go", "c"),
         ),
       ),
-      SectionMetadata("import", SectionType.Scalar.String, FiletypeCompletionProvider(".bazelproject")),
       SectionMetadata("java_language_level", SectionType.Scalar.String),
       SectionMetadata("exclude_library", SectionType.List.String),
       SectionMetadata("android_sdk_platform", SectionType.Scalar.String),
