@@ -9,7 +9,7 @@ class BazelQueryFlag(node: ASTNode) : BazelQueryBaseElement(node) {
   override fun acceptVisitor(visitor: BazelQueryElementVisitor) = visitor.visitFlag(this)
 
   val name: PsiElement?
-    get() = findChildByType(BazelQueryTokenTypes.FLAG)
+    get() = findChildByType(BazelQueryTokenTypes.FLAG) ?: findChildByType(BazelQueryTokenTypes.FLAG_NO_VAL)
 
   override fun getOwnReferences(): Collection<BazelQueryFlagNameReference> =
     name?.let { listOf(BazelQueryFlagNameReference(this)) } ?: emptyList()
