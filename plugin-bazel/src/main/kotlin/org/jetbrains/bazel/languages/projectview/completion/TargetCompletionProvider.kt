@@ -18,14 +18,18 @@ internal class TargetCompletionProvider : CompletionProvider<CompletionParameter
     result: CompletionResultSet,
   ) {
     val project = parameters.position.project
-    var prefix = parameters.position.text
-      .take(parameters.offset - parameters.position.startOffset)
-      .removePrefix("-")
+    var prefix =
+      parameters.position.text
+        .take(parameters.offset - parameters.position.startOffset)
+        .removePrefix("-")
 
-    if (parameters.position.prevSibling?.node?.elementType == ProjectViewTokenType.COLON) {
+    if (parameters.position.prevSibling
+        ?.node
+        ?.elementType == ProjectViewTokenType.COLON
+    ) {
       prefix = ":$prefix"
     }
-    
+
     result.withPrefixMatcher(ProjectViewPrefixMatcher(prefix)).run {
       addAllElements(project.targetUtils.allTargetsAndLibrariesLabels.map { labelLookupElement(it) })
     }

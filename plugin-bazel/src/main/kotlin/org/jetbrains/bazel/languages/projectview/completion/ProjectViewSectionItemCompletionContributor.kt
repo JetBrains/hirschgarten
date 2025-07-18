@@ -24,7 +24,13 @@ internal class ProjectViewPrefixMatcher(prefix: String) : PrefixMatcher(prefix) 
 internal class ProjectViewSectionItemCompletionContributor : CompletionContributor() {
   class AutoPopup : TypedHandlerDelegate() {
     private val acceptedChars = listOf('/', ':', '_')
-    override fun checkAutoPopup(charTyped: Char, project: Project, editor: Editor, file: PsiFile): Result {
+
+    override fun checkAutoPopup(
+      charTyped: Char,
+      project: Project,
+      editor: Editor,
+      file: PsiFile,
+    ): Result {
       if (file !is ProjectViewPsiFile || (!charTyped.isLetterOrDigit() && charTyped !in acceptedChars)) return Result.CONTINUE
 
       AutoPopupController.getInstance(project).scheduleAutoPopup(editor, CompletionType.BASIC, null)

@@ -45,7 +45,7 @@ internal class DirectoriesCompletionProvider : CompletionProvider<CompletionPara
       getRelativePaths(projectRoot) {
         it.isDirectory && ProjectFileIndex.getInstance(parameters.position.project).isInContent(it)
       }
-    paths.filter { !previousValues.contains(it)}.forEach {
+    paths.filter { !previousValues.contains(it) }.forEach {
       result.addElement(
         LookupElementBuilder
           .create(it)
