@@ -13,7 +13,6 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
-import com.intellij.platform.project.projectId
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -308,7 +307,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   private fun contentChangeEvent(file: VirtualFile) = VFileContentChangeEvent(requestor, file, 0, 0)
 
-  private fun VFileEvent.process(): Job? = AssignFileToModuleListener().afterSingleFileEvent(this)[project.projectId()]
+  private fun VFileEvent.process(): Job? = AssignFileToModuleListener().afterSingleFileEvent(this)[project.locationHash]
 
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     this.toVirtualFileUrl(virtualFileUrlManager).assertFileBelongsToTargets(*expectedBelongingStatus)

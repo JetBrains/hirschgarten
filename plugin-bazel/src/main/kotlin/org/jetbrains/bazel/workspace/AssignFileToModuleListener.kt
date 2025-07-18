@@ -25,8 +25,6 @@ import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.ide.progress.withBackgroundProgress
-import com.intellij.platform.project.ProjectId
-import com.intellij.platform.project.projectIdOrNull
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -72,9 +70,9 @@ internal class AssignFileToModuleListener : BulkFileListener {
     }
   }
 
-  // the returned map is for testing purposes; ProjectId is used instead of Project since it's safer to store
+  // the returned map is for testing purposes; Project location hash is used instead of Project since it's safer to store
   @VisibleForTesting
-  fun afterSingleFileEvent(event: VFileEvent): Map<ProjectId, Job> {
+  fun afterSingleFileEvent(event: VFileEvent): Map<String, Job> {
     val file = getAffectedFile(event) ?: return emptyMap()
     val isSource =
       if (event is VFileDeleteEvent) {
@@ -194,13 +192,12 @@ fun getRelatedProjects(file: VirtualFile): List<Project> =
     .openProjects
     .filter { it.isBazelProject && VfsUtil.isAncestor(it.rootDir, file, false) }
 
-// must guarantee that the action is performed regardless of whether the project ID is null or not
-private fun List<Project>.associateProjectIdWithJob(action: (Project) -> Job?): Map<ProjectId, Job> =
+private fun List<Project>.associateProjectIdWithJob(action: (Project) -> Job?): Map<String, Job> =
   mapNotNull {
-    val projectId = it.projectIdOrNull()
+    val projectHash = it.locationHash
     val job = action(it)
-    if (projectId != null && job != null) {
-      projectId to job
+    if (job != null) {
+      projectHash to job
     } else {
       null
     }
