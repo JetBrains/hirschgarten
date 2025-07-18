@@ -19,23 +19,26 @@
       {
         "name": "direct",
         "doc": "A list of \u003ci\u003edirect\u003c/i\u003e elements of a depset. ",
+        "defaultValue": "None",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "order",
         "doc": "The traversal strategy for the new depset. See ",
+        "defaultValue": "\\\"default\\\"",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "transitive",
         "doc": "A list of depsets whose elements will become indirect elements of the depset.",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -56,44 +59,50 @@
       {
         "name": "attrs",
         "doc": "A dictionary to declare all the attributes of the repository rule. It maps from \\ an attribute name to an attribute object (see \u003ca href\u003d\"../toplevel/attr.html\"\u003e\u003ccode\u003eattr\u003c/code\u003e\u003c/a\u003e module). Attributes \\ starting with \u003ccode\u003e_\u003c/code\u003e are private, and can be used to add an implicit \\ dependency on a label to a file (a repository rule cannot depend on a generated \\ artifact). The attribute \u003ccode\u003ename\u003c/code\u003e is implicitly added and must not be \\ specified. \u003cp\u003eDeclared attributes will convert \u003ccode\u003eNone\u003c/code\u003e to the default value.\u003c/p\u003e",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "local",
         "doc": "Indicate that this rule fetches everything from the local system and should be ",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "environ",
         "doc": "\u003cb\u003eDeprecated\u003c/b\u003e. This parameter has been deprecated. Migrate to \u003ccode\u003erepository_ctx.getenv\u003c/code\u003e instead.\u003cbr/\u003eProvides a list of environment variable that this repository rule depends on. If an environment variable in that list change, the repository will be ",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "configure",
         "doc": "Indicate that the repository inspects the system for configuration purpose",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "remotable",
         "doc": "Compatible with remote execution",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "doc",
         "doc": "A description of the repository rule that can be extracted by documentation ",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -114,37 +123,42 @@
       {
         "name": "tag_classes",
         "doc": "A dictionary to declare all the tag classes used by the extension. It maps from the name of the tag class to a \u003ccode\u003e\u003ca",
+        "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "doc",
         "doc": "A description of the module extension that can be extracted by documentation",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "environ",
         "doc": "Provides a list of environment variable that this module extension depends on. If an environment variable in that list changes, the extension will be ",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "os_dependent",
         "doc": "Indicates whether this extension is OS-dependent or not",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "arch_dependent",
         "doc": "Indicates whether this extension is architecture-dependent or not",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -158,16 +172,18 @@
       {
         "name": "attrs",
         "doc": "A dictionary to declare all the attributes of this tag class. It maps from an \\ attribute name to an attribute object (see \u003ca href\u003d\"../toplevel/attr.html\"\u003e attr\u003c/a\u003e module). \u003cp\u003eNote that unlike \u003ca href\u003d\"../globals/bzl.html#rule\"\u003e\u003ccode\u003erule()\u003c/code\u003e\u003c/a\u003e, \\ \u003ca href\u003d\"../globals/bzl.html#aspect\"\u003e\u003ccode\u003easpect()\u003c/code\u003e\u003c/a\u003e and \\ \u003ca href\u003d\"../globals/bzl.html#repository_rule\"\u003e\u003ccode\u003erepository_rule()\u003c/code\u003e\u003c/a\u003e, declared attributes will not convert \u003ccode\u003eNone\u003c/code\u003e to the default value. For \\ the default to be used, the attribute must be omitted entirely by the caller.\u003c/p\u003e",
+        "defaultValue": "{}",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "doc",
         "doc": "A description of the tag class that can be extracted by documentation",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -301,30 +317,34 @@
       {
         "name": "include",
         "doc": "The list of glob patterns to include.",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "exclude",
         "doc": "The list of glob patterns to exclude.",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "exclude_directories",
         "doc": "A flag whether to exclude directories or not.",
+        "defaultValue": "1",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "allow_empty",
         "doc": "Whether we allow glob patterns to match nothing. If `allow_empty` is False, each individual include pattern must match something and also the final result must be non-empty (after the matches of the `exclude` patterns are",
+        "defaultValue": "unbound",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -369,16 +389,18 @@
       {
         "name": "packages",
         "doc": "A complete enumeration of packages in this group.",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "includes",
         "doc": "Other package groups that are included in this one.",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -399,16 +421,18 @@
       {
         "name": "visibility",
         "doc": "A visibility declaration can to be specified. The files will be visible to the targets specified. If no visibility is specified, the files will be visible ",
+        "defaultValue": "None",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "licenses",
         "doc": "Licenses to be specified.",
+        "defaultValue": "None",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -493,16 +517,18 @@
       {
         "name": "exclude",
         "doc": "The list of glob patterns to exclude from subpackages scan.",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "allow_empty",
         "doc": "Whether we fail if the call returns an empty list. By default empty list indicates potential error in BUILD file where the call to subpackages() is",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -516,23 +542,26 @@
       {
         "name": "doc",
         "doc": "A description of the provider that can be extracted by documentation generating",
+        "defaultValue": "None",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "fields",
         "doc": "If specified, restricts the set of allowed fields. \u003cbr\u003ePossible values are:\u003cul\u003e  \u003cli\u003e list of fields:\u003cbr\u003e       \u003cpre class\u003d\\\"language-python\\\"\u003eprovider(fields \u003d [\u0027a\u0027, \u0027b\u0027])\u003c/pre\u003e\u003cp\u003e  \u003cli\u003e dictionary field name -\u003e documentation:\u003cbr\u003e       \u003cpre class\u003d\\\"language-python\\\"\u003eprovider(\\n       fields \u003d { \u0027a\u0027 : \u0027Documentation for a\u0027, \u0027b\u0027 : \u0027Documentation for b\u0027",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "init",
         "doc": "An optional callback for preprocessing and validating the provider\u0027s field values during instantiation. If \u003ccode\u003einit\u003c/code\u003e is specified, \u003ccode\u003eprovider()\u003c/code\u003e returns a tuple of 2 elements: the normal provider symbol and a \u003cem\u003eraw constructor\u003c/em\u003e.\u003cp\u003eA precise description follows; see \u003ca href\u003d\u0027https://bazel.build/extending/rules#custom_initialization_of_providers\u0027\u003eRules (Custom initialization of providers)\u003c/a\u003e for an intuitive discussion and use cases.\u003cp\u003eLet \u003ccode\u003eP\u003c/code\u003e be the provider symbol created by calling \u003ccode\u003eprovider()\u003c/code\u003e. Conceptually, an instance of \u003ccode\u003eP\u003c/code\u003e is generated by calling a default constructor function \u003ccode\u003ec(*args, **kwargs)\u003c/code\u003e, which does the following:\u003cul\u003e\u003cli\u003eIf \u003ccode\u003eargs\u003c/code\u003e is non-empty, an error occurs.\u003c/li\u003e\u003cli\u003eIf the \u003ccode\u003efields\u003c/code\u003e parameter was specified when \u003ccode\u003eprovider()\u003c/code\u003e was called, and if \u003ccode\u003ekwargs\u003c/code\u003e contains any key that was not listed in \u003ccode\u003efields\u003c/code\u003e, an error occurs.\u003c/li\u003e\u003cli\u003eOtherwise, \u003ccode\u003ec\u003c/code\u003e returns a new instance that has, for each \u003ccode\u003ek: v\u003c/code\u003e entry in \u003ccode\u003ekwargs\u003c/code\u003e, a field named \u003ccode\u003ek\u003c/code\u003e with value \u003ccode\u003ev\u003c/code\u003e.\u003c/ul\u003eIn the case where an \u003ccode\u003einit\u003c/code\u003e callback is \u003cem\u003enot\u003c/em\u003e given, a call to the symbol \u003ccode\u003eP\u003c/code\u003e itself acts as a call to the default constructor function \u003ccode\u003ec\u003c/code\u003e; in other words, \u003ccode\u003eP(*args, **kwargs)\u003c/code\u003e returns \u003ccode\u003ec(*args, **kwargs)\u003c/code\u003e. For example,\u003cpre class\u003d\\\"language-python\\\"\u003eMyInfo \u003d provider()\\nm \u003d MyInfo(foo \u003d 1)\u003c/pre\u003ewill straightforwardly make it so that \u003ccode\u003em\u003c/code\u003e is a \u003ccode\u003eMyInfo\u003c/code\u003e instance with \u003ccode\u003em.foo \u003d\u003d 1\u003c/code\u003e.\u003cp\u003eBut in the case where \u003ccode\u003einit\u003c/code\u003e is specified, the call \u003ccode\u003eP(*args, **kwargs)\u003c/code\u003e will perform the following steps instead:\u003col\u003e\u003cli\u003eThe callback is invoked as \u003ccode\u003einit(*args, **kwargs)\u003c/code\u003e, that is, with the exact same positional and keyword arguments as were passed to \u003ccode\u003eP\u003c/code\u003e.\u003c/li\u003e\u003cli\u003eThe return value of \u003ccode\u003einit\u003c/code\u003e is expected to be a dictionary, \u003ccode\u003ed\u003c/code\u003e, whose keys are field name strings. If it is not, an error occurs.\u003c/li\u003e\u003cli\u003eA new instance of \u003ccode\u003eP\u003c/code\u003e is generated as if by calling the default constructor with \u003ccode\u003ed\u003c/code\u003e\u0027s entries as keyword arguments, as in \u003ccode\u003ec(**d)\u003c/code\u003e.\u003c/li\u003e\u003c/ol\u003e\u003cp\u003eNB: the above steps imply that an error occurs if \u003ccode\u003e*args\u003c/code\u003e or \u003ccode\u003e**kwargs\u003c/code\u003e does not match \u003ccode\u003einit\u003c/code\u003e\u0027s signature, or the evaluation of \u003ccode\u003einit\u003c/code\u003e\u0027s body fails (perhaps intentionally via a call to \u003ca href\u003d\\\"../globals/all.html#fail\\\"\u003e\u003ccode\u003efail()\u003c/code\u003e\u003c/a\u003e), or if the return value of \u003ccode\u003einit\u003c/code\u003e is not a dictionary with the expected schema.\u003cp\u003eIn this way, the \u003ccode\u003einit\u003c/code\u003e callback generalizes normal provider construction by allowing positional arguments and arbitrary logic for preprocessing and validation. It does \u003cem\u003enot\u003c/em\u003e enable circumventing the list of allowed \u003ccode\u003efields\u003c/code\u003e.\u003cp\u003eWhen \u003ccode\u003einit\u003c/code\u003e is specified, the return value of \u003ccode\u003eprovider()\u003c/code\u003e becomes a tuple \u003ccode\u003e(P, r)\u003c/code\u003e, where \u003ccode\u003er\u003c/code\u003e is the \u003cem\u003eraw constructor\u003c/em\u003e. In fact, the behavior of \u003ccode\u003er\u003c/code\u003e is exactly that of the default constructor function \u003ccode\u003ec\u003c/code\u003e discussed above. Typically, \u003ccode\u003er\u003c/code\u003e is bound to a variable whose name is prefixed with an underscore, so that only the current .bzl file has direct access to it:\u003cpre class\u003d\\\"language-python\\\"\u003eMyInfo, _new_myinfo \u003d provider(init \u003d ...)",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -553,30 +582,34 @@
       {
         "name": "attrs",
         "doc": "A dictionary of the attributes this macro supports, analogous to \u003ca href\u003d\"#rule.attrs\"\u003erule.attrs\u003c/a\u003e. Keys are attribute names, and values are either attribute objects like \u003ccode\u003eattr.label_list(...)\u003c/code\u003e (see the \u003ca href\u003d\\\"../toplevel/attr.html\\\"\u003eattr\u003c/a\u003e module), or \u003ccode\u003eNone\u003c/code\u003e. A \u003ccode\u003eNone\u003c/code\u003e entry means that the macro does not have an attribute by that name, even if it would have otherwise inherited one via \u003ccode\u003einherit_attrs\u003c/code\u003e (see below).  \u003cp\u003eThe special \u003ccode\u003ename\u003c/code\u003e attribute is predeclared and must not be included in the dictionary. The \u003ccode\u003evisibility\u003c/code\u003e attribute name is reserved and must not be included in the dictionary.  \u003cp\u003eAttributes whose names start with \u003ccode\u003e_\u003c/code\u003e are private -- they cannot be passed at the call site of the rule. Such attributes can be assigned a default value (as in \u003ccode\u003eattr.label(default\u003d\"//pkg:foo\")\u003c/code\u003e) to create an implicit dependency on a label.  \u003cp\u003eTo limit memory usage, there is a cap on the number of attributes that may be declared.",
+        "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "inherit_attrs",
         "doc": "A rule symbol, macro symbol, or the name of a built-in common attribute list (see below) from which the macro should inherit attributes.  \u003cp\u003eIf \u003ccode\u003einherit_attrs\u003c/code\u003e is set to the string \u003ccode\u003e\"common\"\u003c/code\u003e, the macro will inherit \u003ca href\u003d\"/reference/be/common-definitions#common-attributes\"\u003ecommon rule attribute definitions\u003c/a\u003e used by all Starlark rules.  \u003cp\u003eNote that if the return value of \u003ccode\u003erule()\u003c/code\u003e or \u003ccode\u003emacro()\u003c/code\u003e was not assigned to a global variable in a .bzl file, then such a value has not been registered as a rule or macro symbol, and therefore cannot be used for \u003ccode\u003einherit_attrs\u003c/code\u003e.  \u003cp\u003eThe inheritance mechanism works as follows:\u003c/p\u003e \u003col\u003e   \u003cli\u003eThe special \u003ccode\u003ename\u003c/code\u003e and \u003ccode\u003evisibility\u003c/code\u003e attributes are never inherited;   \u003cli\u003eHidden attributes (ones whose name starts with \u003ccode\u003e\"_\"\u003c/code\u003e) are never inherited;   \u003cli\u003eAttributes whose names are already defined in the \u003ccode\u003eattrs\u003c/code\u003e dictionary are never     inherited (the entry in \u003ccode\u003eattrs\u003c/code\u003e takes precedence; note that an entry may be set to     \u003ccode\u003eNone\u003c/code\u003e to ensure that no attribute by that name gets defined on the macro);   \u003cli\u003eAll other attributes are inherited from the rule or macro and effectively merged into the     \u003ccode\u003eattrs\u003c/code\u003e dict. \u003c/ol\u003e  \u003cp\u003eWhen a non-mandatory attribute is inherited, the default value of the attribute is overridden to be \u003ccode\u003eNone\u003c/code\u003e, regardless of what it was specified in the original rule or macro. This ensures that when the macro forwards the attribute\u0027s value to an instance of the wrapped rule or macro \u0026ndash; such as by passing in the unmodified \u003ccode\u003e**kwargs\u003c/code\u003e \u0026ndash; a value that was absent from the outer macro\u0027s call will also be absent in the inner rule or macro\u0027s call (since passing \u003ccode\u003eNone\u003c/code\u003e to an attribute is treated the same as omitting the attribute). This is important because omitting an attribute has subtly different semantics from passing its apparent default value. In particular, omitted attributes are not shown in some \u003ccode\u003ebazel query\u003c/code\u003e output formats, and computed defaults only execute when the value is omitted. If the macro needs to examine or modify an inherited attribute \u0026ndash; for example, to add a value to an inherited \u003ccode\u003etags\u003c/code\u003e attribute \u0026ndash; you must make sure to handle the \u003ccode\u003eNone\u003c/code\u003e case in the macro\u0027s implementation function.  \u003cp\u003eFor example, the following macro inherits all attributes from \u003ccode\u003enative.cc_library\u003c/code\u003e, except for \u003ccode\u003ecxxopts\u003c/code\u003e (which is removed from the attribute list) and \u003ccode\u003ecopts\u003c/code\u003e (which is given a new definition). It also takes care to checks for the default \u003ccode\u003eNone\u003c/code\u003e value of the inherited \u003ccode\u003etags\u003c/code\u003e attribute before appending an additional tag.  \u003cpre class\u003d\"language-python\"\u003e def _my_cc_library_impl(name, visibility, tags, **kwargs):     # Append a tag; tags attr was inherited from native.cc_library, and     # therefore is None unless explicitly set by the caller of my_cc_library()     my_tags \u003d (tags or []) + [\"my_custom_tag\"]     native.cc_library(         name \u003d name,         visibility \u003d visibility,         tags \u003d my_tags,         **kwargs     )  my_cc_library \u003d macro(     implementation \u003d _my_cc_library_impl,     inherit_attrs \u003d native.cc_library,     attrs \u003d {         \"cxxopts\": None,         \"copts\": attr.string_list(default \u003d [\"-D_FOO\"]),     }, ) \u003c/pre\u003e  \u003cp\u003eIf \u003ccode\u003einherit_attrs\u003c/code\u003e is set, the macro\u0027s implementation function \u003cem\u003emust\u003c/em\u003e have a \u003ccode\u003e**kwargs\u003c/code\u003e residual keyword parameter.  \u003cp\u003eBy convention, a macro should pass inherited, non-overridden attributes unchanged to the \"main\" rule or macro symbol which the macro is wrapping. Typically, most inherited attributes will not have a parameter in the implementation function\u0027s parameter list, and will simply be passed via \u003ccode\u003e**kwargs\u003c/code\u003e. It can be convenient for the implementation function to have explicit parameters for some inherited attributes (most commonly, \u003ccode\u003etags\u003c/code\u003e and \u003ccode\u003etestonly\u003c/code\u003e) if the macro needs to pass those attributes to both \"main\" and non-\"main\" targets \u0026ndash; but if the macro also needs to examine or manipulate those attributes, you must take care to handle the \u003ccode\u003eNone\u003c/code\u003e default value of non-mandatory inherited attributes.",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "finalizer",
         "doc": "Whether this macro is a rule finalizer, which is a macro that, regardless of its position in a \u003ccode\u003eBUILD\u003c/code\u003e file, is evaluated at the end of package loading, after all non-finalizer targets have been defined.  \u003cp\u003eUnlike ordinary symbolic macros, rule finalizers may call \u003ca href\u003d\"../toplevel/native#existing_rule\"\u003e\u003ccode\u003enative.existing_rule()\u003c/code\u003e\u003c/a\u003e and \u003ca href\u003d\"../toplevel/native#existing_rules\"\u003e\u003ccode\u003enative.existing_rules()\u003c/code\u003e\u003c/a\u003e to query the set of \u003cem\u003enon-finalizer\u003c/em\u003e rule targets defined in the current package. Note that \u003ccode\u003enative.existing_rule()\u003c/code\u003e and \u003ccode\u003enative.existing_rules()\u003c/code\u003e cannot access the targets defined by any rule finalizer, including this one.",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "doc",
         "doc": "A description of the macro that can be extracted by documentation generating ",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -597,149 +630,170 @@
       {
         "name": "test",
         "doc": "Whether this rule is a test rule, that is, whether it may be the subject of a \u003ccode\u003ebazel test\u003c/code\u003e command. All test rules are automatically considered \u003ca href\u003d\u0027#rule.executable\u0027\u003eexecutable\u003c/a\u003e; it is unnecessary (and discouraged) to explicitly set \u003ccode\u003eexecutable \u003d True\u003c/code\u003e for a test rule. The value defaults to \u003ccode\u003eFalse\u003c/code\u003e. See the \u003ca href\u003d\u0027https://bazel.build/extending/rules#executable_rules_and_test_rules\u0027\u003e",
+        "defaultValue": "unbound",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "attrs",
         "doc": "A dictionary to declare all the attributes of the rule. It maps from an attribute \\ name to an attribute object (see \u003ca href\u003d\"../toplevel/attr.html\"\u003e\u003ccode\u003eattr\u003c/code\u003e\u003c/a\u003e module). Attributes starting \\ with \u003ccode\u003e_\u003c/code\u003e are private, and can be used to add an implicit dependency on \\ a label. The attribute \u003ccode\u003ename\u003c/code\u003e is implicitly added and must not be \\ specified. Attributes \u003ccode\u003evisibility\u003c/code\u003e, \u003ccode\u003edeprecation\u003c/code\u003e, \\ \u003ccode\u003etags\u003c/code\u003e, \u003ccode\u003etestonly\u003c/code\u003e, and \u003ccode\u003efeatures\u003c/code\u003e are implicitly \\ added and cannot be overridden. Most rules need only a handful of attributes. To \\ limit memory usage, there is a cap on the number of attributes that may be \\ declared. \u003cp\u003eDeclared attributes will convert \u003ccode\u003eNone\u003c/code\u003e to the default value.\u003c/p\u003e",
+        "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "outputs",
         "doc": "This parameter has been deprecated. Migrate rules to use \u003ccode\u003eOutputGroupInfo\u003c/code\u003e or \u003ccode\u003eattr.output\u003c/code\u003e instead. \u003cp\u003eA schema for defining predeclared outputs. Unlike \u003ca href\u003d\u0027../toplevel/attr.html#output\u0027\u003e\u003ccode\u003eoutput\u003c/code\u003e\u003c/a\u003e and \u003ca href\u003d\u0027../toplevel/attr.html#output_list\u0027\u003e\u003ccode\u003eoutput_list\u003c/code\u003e\u003c/a\u003e attributes, the user does not specify the labels for these files. See the \u003ca href\u003d\u0027https://bazel.build/extending/rules#files\u0027\u003eRules page\u003c/a\u003e for more on predeclared outputs.\u003cp\u003eThe value of this argument is either a dictionary or a callback function that produces a dictionary. The callback works similar to computed dependency attributes: The function\u0027s parameter names are matched against the rule\u0027s attributes, so for example if you pass \u003ccode\u003eoutputs \u003d _my_func\u003c/code\u003e with the definition \u003ccode\u003edef _my_func(srcs, deps): ...\u003c/code\u003e, the function has access to the attributes \u003ccode\u003esrcs\u003c/code\u003e and \u003ccode\u003edeps\u003c/code\u003e. Whether the dictionary is specified directly or via a function, it is interpreted as follows.\u003cp\u003eEach entry in the dictionary creates a predeclared output where the key is an identifier and the value is a string template that determines the output\u0027s label. In the rule\u0027s implementation function, the identifier becomes the field name used to access the output\u0027s \u003ca href\u003d\u0027../builtins/File.html\u0027\u003e\u003ccode\u003eFile\u003c/code\u003e\u003c/a\u003e in \u003ca href\u003d\u0027../builtins/ctx.html#outputs\u0027\u003e\u003ccode\u003ectx.outputs\u003c/code\u003e\u003c/a\u003e. The output\u0027s label has the same package as the rule, and the part after the package is produced by substituting each placeholder of the form \u003ccode\u003e\\\"%{ATTR}\\\"\u003c/code\u003e with a string formed from the value of the attribute \u003ccode\u003eATTR\u003c/code\u003e:\u003cul\u003e\u003cli\u003eString-typed attributes are substituted verbatim.\u003cli\u003eLabel-typed attributes become the part of the label after the package, minus the file extension. For example, the label \u003ccode\u003e\\\"//pkg:a/b.c\\\"\u003c/code\u003e becomes \u003ccode\u003e\\\"a/b\\\"\u003c/code\u003e.\u003cli\u003eOutput-typed attributes become the part of the label after the package, including the file extension (for the above example, \u003ccode\u003e\\\"a/b.c\\\"\u003c/code\u003e).\u003cli\u003eAll list-typed attributes (for example, \u003ccode\u003eattr.label_list\u003c/code\u003e) used in placeholders are required to have \u003ci\u003eexactly one element\u003c/i\u003e. Their conversion is the same as their non-list version (\u003ccode\u003eattr.label\u003c/code\u003e).\u003cli\u003eOther attribute types may not appear in placeholders.\u003cli\u003eThe special non-attribute placeholders \u003ccode\u003e%{dirname}\u003c/code\u003e and \u003ccode\u003e%{basename}\u003c/code\u003e expand to those parts of the rule\u0027s label, excluding its package. For example, in \u003ccode\u003e\\\"//pkg:a/b.c\\\"\u003c/code\u003e, the dirname is \u003ccode\u003ea\u003c/code\u003e and the basename is \u003ccode\u003eb.c\u003c/code\u003e.\u003c/ul\u003e\u003cp\u003eIn practice, the most common substitution placeholder is \u003ccode\u003e\\\"%{name}\\\"\u003c/code\u003e. For example, for a target named \\\"foo\\\", the outputs dict \u003ccode\u003e{\\\"bin\\\": \\\"%{name}.exe\\\"}\u003c/code\u003e predeclares an output named \u003ccode\u003efoo.exe\u003c/code\u003e that is accessible in the implementation function as",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "executable",
         "doc": "Whether this rule is considered executable, that is, whether it may be the subject of a \u003ccode\u003ebazel run\u003c/code\u003e command. It defaults to \u003ccode\u003eFalse\u003c/code\u003e. See the \u003ca href\u003d\u0027https://bazel.build/extending/rules#executable_rules_and_test_rules\u0027\u003e",
+        "defaultValue": "unbound",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "output_to_genfiles",
         "doc": "If true, the files will be generated in the genfiles directory instead of the bin directory. Unless you need it for compatibility with existing rules ",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "fragments",
         "doc": "List of names of configuration fragments that the rule requires ",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "host_fragments",
         "doc": "List of names of configuration fragments that the rule requires ",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "_skylark_testable",
         "doc": "\u003ci\u003e(Experimental)\u003c/i\u003e\u003cbr/\u003e\u003cbr/\u003eIf true, this rule will expose its actions for inspection by rules that depend on it via an \u003ccode\u003eActions\u003c/code\u003e provider. The provider is also available to the rule itself by calling \u003ca href\u003d\\\"../builtins/ctx.html#created_actions\\\"\u003ectx.created_actions()\u003c/a\u003e.\u003cbr/\u003e\u003cbr/\u003eThis should only be used for testing the analysis-time behavior of",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "toolchains",
         "doc": "If set, the set of toolchains this rule requires. The list can contain String, Label, or StarlarkToolchainTypeApi objects, in any combination. Toolchains will be found by checking the current platform, and provided to the rule",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "doc",
         "doc": "A description of the rule that can be extracted by documentation generating ",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "provides",
         "doc": "A list of providers that the implementation function must return.\u003cp\u003eIt is an error if the implementation function omits any of the types of providers listed here from its return value. However, the implementation function may return additional providers not listed here.\u003cp\u003eEach element of the list is an \u003ccode\u003e*Info\u003c/code\u003e object returned by \u003ca href\u003d\u0027../globals/bzl.html#provider\u0027\u003e\u003ccode\u003eprovider()\u003c/code\u003e\u003c/a\u003e. When a target of the rule is used as a dependency for a target that declares a required provider, it is not necessary to specify that provider here. It is enough that the implementation function returns it. However, it is considered best practice to specify it, even though this is not required. The \u003ca href\u003d\u0027../globals/bzl.html#aspect.required_providers\u0027\u003e\u003ccode\u003erequired_providers\u003c/code\u003e\u003c/a\u003e field of an \u003ca href\u003d\u0027../globals/bzl.html#aspect\u0027\u003easpect\u003c/a\u003e does, however, require",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "dependency_resolution_rule",
         "doc": "If set, the rule can be a dependency through attributes also marked as available in materializers. Every attribute of rules with this flag set must be marked as  available in materializers also. This is so that rules so marked cannot depend on",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "exec_compatible_with",
         "doc": "A list of constraints on the execution platform that apply to all targets of ",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "analysis_test",
         "doc": "If true, then this rule is treated as an analysis test. \u003cp\u003eNote: Analysis test rules are primarily defined using infrastructure provided in core Starlark libraries. See \u003ca href\u003d\\\"https://bazel.build/rules/testing#testing-rules\\\"\u003eTesting\u003c/a\u003e for guidance. \u003cp\u003eIf a rule is defined as an analysis test rule, it becomes allowed to use configuration transitions defined using \u003ca href\u003d\\\"#analysis_test_transition\\\"\u003eanalysis_test_transition\u003c/a\u003e on its attributes, but opts into some restrictions: \u003cul\u003e\u003cli\u003eTargets of this rule are limited in the number of transitive dependencies they may have. \u003cli\u003eThe rule is considered a test rule (as if \u003ccode\u003etest\u003dTrue\u003c/code\u003e were set). This supersedes the value of \u003ccode\u003etest\u003c/code\u003e\u003c/li\u003e \u003cli\u003eThe rule implementation function may not register actions. Instead, it must register a pass/fail result via providing \u003ca",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "build_setting",
         "doc": "If set, describes what kind of \u003ca href\u003d\u0027${link config#user-defined-build-settings}\u0027\u003e\u003ccode\u003ebuild setting\u003c/code\u003e\u003c/a\u003e this rule is. See the \u003ca href\u003d\u0027../toplevel/config.html\u0027\u003e\u003ccode\u003econfig\u003c/code\u003e\u003c/a\u003e module. If this is set, a mandatory attribute named \\\"build_setting_default\\\" is automatically added to this rule, with a type",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "cfg",
         "doc": "If set, points to the configuration transition the rule will ",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "exec_groups",
         "doc": "Dict of execution group name (string) to \u003ca href\u003d\u0027../globals/bzl.html#exec_group\u0027\u003e\u003ccode\u003eexec_group\u003c/code\u003es\u003c/a\u003e. If set, allows rules to run actions on multiple execution platforms within a single target. See \u003ca href\u003d\u0027${link exec-groups}\u0027\u003eexecution groups",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "initializer",
         "doc": "Experimental: the Stalark function initializing the attributes of the rule. \u003cp\u003eThe function is called at load time for each instance of the rule. It\u0027s called with \u003ccode\u003ename\u003c/code\u003e and the values of public attributes defined by the rule (not with generic attributes, for example \u003ccode\u003etags\u003c/code\u003e). \u003cp\u003eIt has to return a dictionary from the attribute names to the desired values. The attributes that are not returned are unaffected. Returning \u003ccode\u003eNone\u003c/code\u003e as value results in using the default value specified in the attribute definition. \u003cp\u003eInitializers are evaluated before the default values specified in an attribute definition. Consequently, if a parameter in the initializer\u0027s signature contains a default values, it overwrites the default from the attribute definition (except if returning \u003ccode\u003eNone\u003c/code\u003e). \u003cp\u003eSimilarly, if a parameter in the initializer\u0027s signature doesn\u0027t have a default, the parameter will become mandatory. It\u0027s a good practice to omit default/mandatory settings on an attribute definition in such cases. \u003cp\u003eIt\u0027s a good practice to use \u003ccode\u003e**kwargs\u003c/code\u003e for attributes that are not handled.\u003cp\u003eIn case of extended rules, all initializers are called proceeding from child to ancestors. Each initializer is passed only the public attributes ",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "parent",
         "doc": "Experimental: the Stalark rule that is extended. When set the public attributes are merged as well as advertised providers. The rule matches \u003ccode\u003eexecutable\u003c/code\u003e and \u003ccode\u003etest\u003c/code\u003e from the parent. Values of \u003ccode\u003efragments\u003c/code\u003e, \u003ccode\u003etoolchains\u003c/code\u003e, \u003ccode\u003eexec_compatible_with\u003c/code\u003e, and \u003ccode\u003eexec_groups\u003c/code\u003e are merged. Legacy or deprecated parameters may not be set. Incoming configuration transition \u003ccode\u003ecfg\u003c/code\u003e of parent is applied after this",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "extendable",
         "doc": "Experimental: A label of an allowlist defining which rules can extending this rule. It can be set also to True/False to always allow/disallow extending.",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "subrules",
         "doc": "Experimental: List of subrules used by this rule.",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -760,114 +814,130 @@
       {
         "name": "attr_aspects",
         "doc": "Accepts a list of attribute names or [Experimental] a function that returns the list of attribute names. The aspect propagates along dependencies specified in the attributes of a target with these names. Common values here include \u003ccode\u003edeps\u003c/code\u003e and \u003ccode\u003eexports\u003c/code\u003e. The list can also contain a single string \u003ccode\u003e\\\"*\\\"\u003c/code\u003e to propagate along all dependencies of a",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "toolchains_aspects",
         "doc": "Accepts a list of toolchain types or [Experimental] a function that returns the list of toolchain types. The aspect propagates to target toolchains which",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "attrs",
         "doc": "A dictionary declaring all the attributes of the aspect. It maps from an \\ attribute name to an attribute object, like \u003ccode\u003eattr.label\u003c/code\u003e or \\ \u003ccode\u003eattr.string\u003c/code\u003e (see \\ \u003ca href\u003d\"../toplevel/attr.html\"\u003e\u003ccode\u003eattr\u003c/code\u003e\u003c/a\u003e module). Aspect attributes \\ are available to implementation function as fields of \u003ccode\u003ectx\u003c/code\u003e parameter. \\ \u003cp\u003eImplicit attributes starting with \u003ccode\u003e_\u003c/code\u003e must have default values, and \\ have type \u003ccode\u003elabel\u003c/code\u003e or \u003ccode\u003elabel_list\u003c/code\u003e.\u003c/p\u003e \\ \u003cp\u003eExplicit attributes must have type \u003ccode\u003estring\u003c/code\u003e, and must use the \\ \u003ccode\u003evalues\u003c/code\u003e restriction. Explicit attributes restrict the aspect to only \\ be used with rules that have attributes of the same name, type, and valid values \\ according to the restriction.\u003c/p\u003e \u003cp\u003eDeclared attributes will convert \u003ccode\u003eNone\u003c/code\u003e to the default value.\u003c/p\u003e",
+        "defaultValue": "{}",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "required_providers",
         "doc": "This attribute allows the aspect to limit its propagation to only the targets whose rules advertise its required providers. The value must be a list containing either individual providers or lists of providers but not both. For example, \u003ccode\u003e[[FooInfo], [BarInfo], [BazInfo, QuxInfo]]\u003c/code\u003e is a valid value while \u003ccode\u003e[FooInfo, BarInfo, [BazInfo, QuxInfo]]\u003c/code\u003e is not valid.\u003cp\u003eAn unnested list of providers will automatically be converted to a list containing one list of providers. That is, \u003ccode\u003e[FooInfo, BarInfo]\u003c/code\u003e will automatically be converted to \u003ccode\u003e[[FooInfo, BarInfo]]\u003c/code\u003e.\u003cp\u003eTo make some rule (e.g. \u003ccode\u003esome_rule\u003c/code\u003e) targets visible to an aspect, \u003ccode\u003esome_rule\u003c/code\u003e must advertise all providers from at least one of the required providers lists. For example, if the \u003ccode\u003erequired_providers\u003c/code\u003e of an aspect are \u003ccode\u003e[[FooInfo], [BarInfo], [BazInfo, QuxInfo]]\u003c/code\u003e, this aspect can see \u003ccode\u003esome_rule\u003c/code\u003e targets if and only if \u003ccode\u003esome_rule\u003c/code\u003e provides \u003ccode\u003eFooInfo\u003c/code\u003e, \u003cem\u003eor\u003c/em\u003e \u003ccode\u003eBarInfo\u003c/code\u003e, \u003cem\u003eor\u003c/em\u003e both \u003ccode\u003eBazInfo\u003c/code\u003e \u003cem\u003eand\u003c/em\u003e ",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "required_aspect_providers",
         "doc": "This attribute allows this aspect to inspect other aspects. The value must be a list containing either individual providers or lists of providers but not both. For example, \u003ccode\u003e[[FooInfo], [BarInfo], [BazInfo, QuxInfo]]\u003c/code\u003e is a valid value while \u003ccode\u003e[FooInfo, BarInfo, [BazInfo, QuxInfo]]\u003c/code\u003e is not valid.\u003cp\u003eAn unnested list of providers will automatically be converted to a list containing one list of providers. That is, \u003ccode\u003e[FooInfo, BarInfo]\u003c/code\u003e will automatically be converted to \u003ccode\u003e[[FooInfo, BarInfo]]\u003c/code\u003e. \u003cp\u003eTo make another aspect (e.g. \u003ccode\u003eother_aspect\u003c/code\u003e) visible to this aspect, \u003ccode\u003eother_aspect\u003c/code\u003e must provide all providers from at least one of the lists. In the example of \u003ccode\u003e[[FooInfo], [BarInfo], [BazInfo, QuxInfo]]\u003c/code\u003e, this aspect can see \u003ccode\u003eother_aspect\u003c/code\u003e if and only if \u003ccode\u003eother_aspect\u003c/code\u003e provides \u003ccode\u003eFooInfo\u003c/code\u003e, \u003cem\u003eor\u003c/em\u003e \u003ccode\u003eBarInfo\u003c/code\u003e, ",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "provides",
         "doc": "A list of providers that the implementation function must return.\u003cp\u003eIt is an error if the implementation function omits any of the types of providers listed here from its return value. However, the implementation function may return additional providers not listed here.\u003cp\u003eEach element of the list is an \u003ccode\u003e*Info\u003c/code\u003e object returned by \u003ca href\u003d\u0027../globals/bzl.html#provider\u0027\u003e\u003ccode\u003eprovider()\u003c/code\u003e\u003c/a\u003e. When a target of the rule is used as a dependency for a target that declares a required provider, it is not necessary to specify that provider here. It is enough that the implementation function returns it. However, it is considered best practice to specify it, even though this is not required. The \u003ca href\u003d\u0027../globals/bzl.html#aspect.required_providers\u0027\u003e\u003ccode\u003erequired_providers\u003c/code\u003e\u003c/a\u003e field of an \u003ca href\u003d\u0027../globals/bzl.html#aspect\u0027\u003easpect\u003c/a\u003e does, however, require",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "requires",
         "doc": "List of aspects required to be propagated before this aspect.",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "propagation_predicate",
         "doc": "Experimental: a function that returns a boolean value indicating whether the",
+        "defaultValue": "None",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "fragments",
         "doc": "List of names of configuration fragments that the aspect requires ",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "host_fragments",
         "doc": "List of names of configuration fragments that the aspect requires ",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "toolchains",
         "doc": "If set, the set of toolchains this aspect requires. The list can contain String, Label, or StarlarkToolchainTypeApi objects, in any combination. Toolchains will be found by checking the current platform, and provided to the aspect",
+        "defaultValue": "[]",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "doc",
         "doc": "A description of the aspect that can be extracted by documentation generating ",
+        "defaultValue": "None",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       },
       {
         "name": "apply_to_generating_rules",
         "doc": "If true, the aspect will, when applied to an output file, instead apply to the output file\u0027s generating rule. \u003cp\u003eFor example, suppose an aspect propagates transitively through attribute `deps` and it is applied to target `alpha`. Suppose `alpha` has `deps \u003d [\u0027:beta_output\u0027]`, where `beta_output` is a declared output of a target `beta`. Suppose `beta` has a target `charlie` as one of its `deps`. If `apply_to_generating_rules\u003dTrue` for the aspect, then the aspect will propagate through `alpha`, `beta`, and `charlie`. If False, then the ",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "exec_compatible_with",
         "doc": "A list of constraints on the execution platform that apply to all instances of",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "exec_groups",
         "doc": "Dict of execution group name (string) to \u003ca href\u003d\u0027../globals/bzl.html#exec_group\u0027\u003e\u003ccode\u003eexec_group\u003c/code\u003es\u003c/a\u003e. If set, allows aspects to run actions on multiple execution platforms within a single instance. See \u003ca href\u003d\u0027${link exec-groups}\u0027\u003eexecution groups",
+        "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "subrules",
         "doc": "Experimental: list of subrules used by this aspect.",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -897,16 +967,18 @@
       {
         "name": "toolchains",
         "doc": "The set of toolchains this execution group requires. The list can contain String,",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "exec_compatible_with",
         "doc": "A list of constraints on the execution platform.",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -927,30 +999,34 @@
       {
         "name": "attrs",
         "doc": "A dictionary to declare all the (private) attributes of the subrule. \u003cp/\u003eSubrules may only have private attributes that are label-typed (i.e. label or label-list). The resolved values corresponding to these labels are automatically passed by Bazel to the subrule\u0027s implementation function as named arguments (thus the implementation function is required to accept named parameters matching the attribute names). The types of these values will be: \u003cul\u003e\u003cli\u003e\u003ccode\u003eFilesToRunProvider\u003c/code\u003e for label attributes with \u003ccode\u003eexecutable\u003dTrue\u003c/code\u003e\u003c/li\u003e\u003cli\u003e\u003ccode\u003eFile\u003c/code\u003e for label attributes with \u003ccode\u003eallow_single_file\u003dTrue\u003c/code\u003e\u003c/li\u003e\u003cli\u003e\u003ccode\u003eTarget\u003c/code\u003e for all other label attributes\u003c/li\u003e\u003cli\u003e\u003ccode\u003e[Target]\u003c/code\u003e for all label-list",
+        "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "toolchains",
         "doc": "If set, the set of toolchains this subrule requires. The list can contain String, Label, or StarlarkToolchainTypeApi objects, in any combination. Toolchains will be found by checking the current platform, and provided to the subrule implementation via \u003ccode\u003ectx.toolchains\u003c/code\u003e. Note that AEGs need to be enabled on the consuming rule(s) if this parameter is set. In case you haven\u0027t migrated to AEGs yet, see",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "fragments",
         "doc": "List of names of configuration fragments that the subrule requires in target",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "subrules",
         "doc": "List of other subrules needed by this subrule.",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -964,37 +1040,42 @@
       {
         "name": "name",
         "doc": "The name of the module. Can be omitted only if this module is the root module (as in, if it\u0027s not going to be depended on by another module). A valid module name must: 1) only contain lowercase letters (a-z), digits (0-9), dots (.), hyphens (-), and underscores (_); 2) begin with a lowercase letter; 3) end",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "version",
         "doc": "The version of the module. Can be omitted only if this module is the root module (as in, if it\u0027s not going to be depended on by another module). The version must be in a relaxed SemVer format; see \u003ca href\u003d\\\"/external/module#version_format\\\"\u003ethe documentation\u003c/a\u003e for more",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "compatibility_level",
         "doc": "The compatibility level of the module; this should be changed every time a major incompatible change is introduced. This is essentially the \\\"major version\\\" of the module in terms of SemVer, except that it\u0027s not embedded in the version string itself, but exists as a separate field. Modules with different compatibility levels participate in version resolution as if they\u0027re modules with different names, but the final dependency graph cannot contain multiple modules with the same name but different compatibility levels (unless \u003ccode\u003emultiple_version_override\u003c/code\u003e is in effect). See \u003ca href\u003d\\\"/external/module#compatibility_level\\\"\u003ethe documentation\u003c/a\u003e for",
+        "defaultValue": "0",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "repo_name",
         "doc": "The name of the repository representing this module, as seen by the module itself. By default, the name of the repo is the name of the module. This can be specified to ease migration for projects that have been using a repo name",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "bazel_compatibility",
         "doc": "A list of bazel versions that allows users to declare which Bazel versions are compatible with this module. It does NOT affect dependency resolution, but bzlmod will use this information to check if your current Bazel version is compatible. The format of this value is a string of some constraint values separated by comma. Three constraints are supported: \u003c\u003dX.X.X: The Bazel version must be equal or older than X.X.X. Used when there is a known incompatible change in a newer version. \u003e\u003dX.X.X: The Bazel version must be equal or newer than X.X.X.Used when you depend on some features that are only available since X.X.X. -X.X.X: The Bazel version X.X.X is not compatible. Used when there is a bug in X.X.X that breaks you, but fixed in",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -1015,30 +1096,34 @@
       {
         "name": "version",
         "doc": "The version of the module to be added as a direct dependency.",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "max_compatibility_level",
         "doc": "The maximum \u003ccode\u003ecompatibility_level\u003c/code\u003e supported for the module to be added as a direct dependency. The version of the module implies the minimum compatibility_level supported, as well as the maximum if this attribute is",
+        "defaultValue": "-1",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "repo_name",
         "doc": "The name of the external repo representing this dependency. This is by default the name of the module. Can be set to \u003ccode\u003eNone\u003c/code\u003e to make this dependency a \"\u003cem\u003enodep\u003c/em\u003e\" dependency: in this case, this \u003ccode\u003ebazel_dep\u003c/code\u003e specification is only honored if the target module already exists in the dependency graph by some other means.",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "dev_dependency",
         "doc": "If true, this dependency will be ignored if the current module is not the root",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -1052,9 +1137,10 @@
       {
         "name": "dev_dependency",
         "doc": "If true, the execution platforms will not be registered if the current module is",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "*platform_labels",
@@ -1075,9 +1161,10 @@
       {
         "name": "dev_dependency",
         "doc": "If true, the toolchains will not be registered if the current module is not the",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "*toolchain_labels",
@@ -1112,16 +1199,18 @@
       {
         "name": "dev_dependency",
         "doc": "If true, this usage of the module extension will be ignored if the current module",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "isolate",
         "doc": "If true, this usage of the module extension will be isolated from all other usages, both in this and other modules. Tags created for this usage do not affect other usages and the repositories generated by the extension for this usage will be distinct from all other repositories generated by the extension.\u003cp\u003eThis parameter is currently experimental and only available with the ",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -1266,9 +1355,10 @@
       },
       {
         "name": "dev_dependency",
+        "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "**kwargs",
@@ -1311,37 +1401,42 @@
       {
         "name": "version",
         "doc": "Overrides the declared version of this module in the dependency graph. In other words, this module will be \\\"pinned\\\" to this override version. This attribute can be omitted if all one wants to override is the registry or",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "registry",
         "doc": "Overrides the registry for this module; instead of finding this module from the",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "patches",
         "doc": "A list of labels pointing to patch files to apply for this module. The patch files must exist in the source tree of the top level project. They are applied in the list order.\u003cp\u003eIf a patch makes changes to the MODULE.bazel file, these changes will",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "patch_cmds",
         "doc": "Sequence of Bash commands to be applied on Linux/Macos after patches are applied.",
+        "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       },
       {
         "name": "patch_strip",
         "doc": "Same as the --strip argument of Unix patch.",
+        "defaultValue": "0",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -1369,9 +1464,10 @@
       {
         "name": "registry",
         "doc": "Overrides the registry for this module; instead of finding this module from the",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": false,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -1462,9 +1558,10 @@
       {
         "name": "no_match_error",
         "doc": "Optional custom error to report if no condition matches.",
+        "defaultValue": "\u0027\u0027",
         "named": true,
         "positional": true,
-        "required": true
+        "required": false
       }
     ]
   },
