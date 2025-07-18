@@ -42,7 +42,7 @@ object AnnotationConverter {
           "doc" -> docString = stringOrStringConst(it.value, stringConsts)
           "named" -> named = it.value.toString() == "true"
           "positional" -> positional = it.value.toString() == "true"
-          "default" -> default = it.value.toString().substring(1, it.value.toString().length - 1)
+          "defaultValue" -> default = stringOrStringConst(it.value, stringConsts)
         }
       }
     }

@@ -21,6 +21,14 @@ object ProtobufReader {
 
   private fun defaultNameOrNull(name: String): String? = if (name == "") null else name
 
+  private fun unwrapName(name: String): String {
+    return if (name.contains(".")) {
+      name.split(".")[1]
+    } else {
+      name
+    }
+  }
+
   private fun attributeInfoToData(attrInfo: StardocOutputProtos.AttributeInfo): BazelGlobalFunctionParameter =
     BazelGlobalFunctionParameter(
       name = attrInfo.name,
@@ -35,7 +43,7 @@ object ProtobufReader {
     val attributes = ruleInfo.attributeList.map { attributeInfoToData(it) }
 
     return BazelGlobalFunction(
-      name = ruleInfo.ruleName,
+      name = unwrapName(ruleInfo.ruleName),
       doc = replaceTicks(removeLinks(ruleInfo.docString)),
       environment = listOf(Environment.BUILD),
       params = attributes,
