@@ -248,6 +248,26 @@ class StarlarkScopeTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `does consider expressions before dot`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      <target>baz = struct(bar = 500)
+      <caret>baz.bar
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `does not consider expressions after dot`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      bar = 500
+      baz.<caret>bar
+      """.trimIndent(),
+    )
+  }
+
+  @Test
   fun `local variable hides containing function`() {
     verifyTargetOfReferenceAtCaret(
       """
@@ -439,6 +459,10 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
     // when
     val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
+    if (expectedLine == null && reference == null) {
+      // If we expect no target, we may not even have a reference.
+      return;
+    }
     val resolved = reference!!.resolve()
 
     // then
