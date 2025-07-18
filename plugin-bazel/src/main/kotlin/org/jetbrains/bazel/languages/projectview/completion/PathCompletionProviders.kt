@@ -38,11 +38,11 @@ internal class DirectoriesCompletionProvider : CompletionProvider<CompletionPara
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    val projectRoot = getProjectRoot(parameters)
+    val projectRoot = getProjectRoot(parameters) ?: return
     val section = PsiTreeUtil.getParentOfType(parameters.position, ProjectViewPsiSection::class.java) ?: return
     val previousValues = section.getItems().map { it.text.trim() }
     val paths =
-      getRelativePaths(projectRoot!!) {
+      getRelativePaths(projectRoot) {
         it.isDirectory && ProjectFileIndex.getInstance(parameters.position.project).isInContent(it)
       }
     paths.filter { !previousValues.contains(it)}.forEach {
@@ -62,11 +62,11 @@ internal class FiletypeCompletionProvider(val fileExtension: String) : Completio
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    val projectRoot = getProjectRoot(parameters)
+    val projectRoot = getProjectRoot(parameters) ?: return
     val section = PsiTreeUtil.getParentOfType(parameters.position, ProjectViewPsiSection::class.java) ?: return
     val previousValues = section.getItems().map { it.text.trim() }
     val paths =
-      getRelativePaths(projectRoot!!) {
+      getRelativePaths(projectRoot) {
         it.name.endsWith(fileExtension) &&
           ProjectFileIndex.getInstance(parameters.position.project).isInContent(it) &&
           it.path != parameters.originalFile.virtualFile.path
