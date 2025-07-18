@@ -8,6 +8,8 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.VirtualFileVisitor
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.backend.workspace.virtualFile
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Canonical
@@ -16,6 +18,7 @@ import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import kotlin.io.path.relativeToOrNull
@@ -43,7 +46,6 @@ class BazelBzlFileService(private val project: Project) {
 
   private fun updateCache() {
     val newMap = mutableMapOf<String, List<ResolvedLabel>>()
-    val projectFileIndex = ProjectFileIndex.getInstance(project)
 
     val canonicalRepoPaths =
       project.canonicalRepoNameToPath.values
@@ -51,13 +53,23 @@ class BazelBzlFileService(private val project: Project) {
           VirtualFileManager.getInstance().findFileByNioPath(it)
         }.toSet()
 
+    val excludedRoots =
+      WorkspaceModel
+        .getInstance(project)
+        .currentSnapshot
+        .entities(BazelProjectDirectoriesEntity::class.java)
+        .singleOrNull()
+        ?.excludedRoots
+        ?.mapNotNull { it.virtualFile }
+        ?.toSet() ?: return
+
     for ((canonicalName, repoPath) in project.canonicalRepoNameToPath) {
       val root = VirtualFileManager.getInstance().findFileByNioPath(repoPath) ?: continue
       VfsUtilCore.visitChildrenRecursively(
         root,
         object : VirtualFileVisitor<Unit>() {
           override fun visitFileEx(file: VirtualFile): Result {
-            if (runReadAction { projectFileIndex.isExcluded(file) }) return SKIP_CHILDREN
+            if (file in excludedRoots) return SKIP_CHILDREN
             if (file != root && file in canonicalRepoPaths) return SKIP_CHILDREN
             if (file.isDirectory || file.extension != "bzl") return CONTINUE
 
