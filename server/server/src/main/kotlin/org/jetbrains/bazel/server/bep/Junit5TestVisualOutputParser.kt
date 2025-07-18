@@ -198,6 +198,24 @@ private class TestResultTreeNode(
     } else if (isLeafNode()) {
       val fullMessage = generateMessage()
       bspClientTestNotifier.startTest(name, taskId)
+
+      if (status == TestStatus.FAILED && parent?.isRootNode() == true && children.isEmpty()) {
+        // BAZEL-2080: if an exception happens at the start of a test suit, there will be no test case run
+        // and no test case reported. Teamcity will mark a testsuit with no test case as success.
+        // So in this case, we need to report a dummy test case with TestStatus.FAILED status.
+        val displayName = "no test found"
+        val placeholderID = TaskId("empty-test-" + UUID.randomUUID().toString(), parents = listOfNotNull(taskId.id))
+        bspClientTestNotifier.startTest(displayName, placeholderID)
+        bspClientTestNotifier.finishTest(
+          displayName = displayName,
+          taskId = placeholderID,
+          status =
+            TestStatus.FAILED,
+          message = displayName,
+          data = createTestCaseData(displayName, time),
+        )
+      }
+
       bspClientTestNotifier.finishTest(
         displayName = name,
         taskId = taskId,
