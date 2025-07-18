@@ -12,14 +12,14 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr
 import com.github.javaparser.ast.expr.StringLiteralExpr
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr
 import common.Environment
-import common.GlobalFunction
-import common.Param
+import common.BazelGlobalFunction
+import common.BazelGlobalFunctionParameter
 import common.serializeFunctionsTo
 import java.io.File
 import kotlin.system.exitProcess
 
 object AnnotationConverter {
-  private val allFunctions: MutableList<GlobalFunction> = mutableListOf()
+  private val allFunctions: MutableList<BazelGlobalFunction> = mutableListOf()
 
   private fun stringOrStringConst(expr: Expression, stringConsts: Map<String, String>): String {
     return if (expr is NameExpr) {
@@ -29,7 +29,7 @@ object AnnotationConverter {
     }
   }
 
-  private fun extractParam(paramExpr: NormalAnnotationExpr, stringConsts: Map<String, String>): Param {
+  private fun extractParam(paramExpr: NormalAnnotationExpr, stringConsts: Map<String, String>): BazelGlobalFunctionParameter {
     var name: String? = null
     var docString: String? = null
     var positional: Boolean = true
@@ -46,19 +46,19 @@ object AnnotationConverter {
         }
       }
     }
-    return Param(
+    return BazelGlobalFunctionParameter(
       name = name!!,
       doc = docString,
       positional = positional,
       named = named,
-      defaultValue = default ?: "",
+      defaultValue = default,
       required = default == null,
     )
   }
 
-  private fun processParams(paramsExpr: Expression, stringConsts: Map<String, String>): List<Param> {
+  private fun processParams(paramsExpr: Expression, stringConsts: Map<String, String>): List<BazelGlobalFunctionParameter> {
     val paramsList = paramsExpr.toArrayInitializerExpr().get().values
-    val params = mutableListOf<Param>()
+    val params = mutableListOf<BazelGlobalFunctionParameter>()
     for (paramExpr in paramsList) {
       params.add(extractParam(paramExpr as NormalAnnotationExpr, stringConsts))
     }
@@ -92,7 +92,7 @@ object AnnotationConverter {
   private fun processAnnotation(annotationExpr: AnnotationExpr, environment: List<Environment>, stringConsts: Map<String, String>) {
     var functionName = ""
     var docString: String? = null
-    val params = mutableListOf<Param>()
+    val params = mutableListOf<BazelGlobalFunctionParameter>()
     for (it in annotationExpr.childNodes) {
       if (it is MemberValuePair) {
         if (it.name.identifier == "name") {
@@ -101,11 +101,31 @@ object AnnotationConverter {
           docString = convertDocString(it.value)
         } else if (it.name.identifier == "parameters") {
           params.addAll(processParams(it.value, stringConsts))
+        } else if (it.name.identifier == "extraPositionals") {
+          val param = extractParam(it.value as NormalAnnotationExpr, stringConsts)
+          params.add(BazelGlobalFunctionParameter(
+            name = "*" + param.name,
+            doc = param.doc,
+            positional = true,
+            named = false,
+            defaultValue = null,
+            required = false,
+          ))
+        } else if (it.name.identifier == "extraKeywords") {
+          val param = extractParam(it.value as NormalAnnotationExpr, stringConsts)
+          params.add(BazelGlobalFunctionParameter(
+            name = "**" + param.name,
+            doc = param.doc,
+            positional = false,
+            named = false,
+            defaultValue = null,
+            required = false,
+          ))
         }
       }
     }
 
-    val functionInfo = GlobalFunction(functionName, docString, environment, params)
+    val functionInfo = BazelGlobalFunction(functionName, docString, environment, params)
     allFunctions.add(functionInfo)
   }
 

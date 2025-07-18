@@ -1,9 +1,7 @@
 import com.google.devtools.build.lib.starlarkdocextract.StardocOutputProtos
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import common.Environment
-import common.GlobalFunction
-import common.Param
+import common.BazelGlobalFunction
+import common.BazelGlobalFunctionParameter
 import common.serializeFunctionsTo
 import java.io.FileInputStream
 import kotlin.system.exitProcess
@@ -21,22 +19,22 @@ object ProtobufReader {
     return result
   }
 
-  private fun defaultNameOrEmptyQuotes(name: String): String = if (name == "") "\"\"" else name
+  private fun defaultNameOrNull(name: String): String? = if (name == "") null else name
 
-  private fun attributeInfoToData(attrInfo: StardocOutputProtos.AttributeInfo): Param =
-    Param(
+  private fun attributeInfoToData(attrInfo: StardocOutputProtos.AttributeInfo): BazelGlobalFunctionParameter =
+    BazelGlobalFunctionParameter(
       name = attrInfo.name,
       doc = if (attrInfo.docString.isEmpty()) null else replaceTicks(removeLinks(attrInfo.docString)),
       required = attrInfo.mandatory,
-      defaultValue = defaultNameOrEmptyQuotes(attrInfo.defaultValue),
+      defaultValue = defaultNameOrNull(attrInfo.defaultValue),
       positional = false,
       named = true,
     )
 
-  private fun ruleInfoToData(ruleInfo: StardocOutputProtos.RuleInfo): GlobalFunction {
+  private fun ruleInfoToData(ruleInfo: StardocOutputProtos.RuleInfo): BazelGlobalFunction {
     val attributes = ruleInfo.attributeList.map { attributeInfoToData(it) }
 
-    return GlobalFunction(
+    return BazelGlobalFunction(
       name = ruleInfo.ruleName,
       doc = replaceTicks(removeLinks(ruleInfo.docString)),
       environment = listOf(Environment.BUILD),
@@ -51,7 +49,7 @@ object ProtobufReader {
       exitProcess(1)
     }
 
-    val allRules = mutableListOf<GlobalFunction>()
+    val allRules = mutableListOf<BazelGlobalFunction>()
 
     for (inputFilePath in args) {
       val moduleInfo =

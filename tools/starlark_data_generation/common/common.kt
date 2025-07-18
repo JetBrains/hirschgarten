@@ -12,23 +12,23 @@ enum class Environment {
   VENDOR,
 }
 
-data class Param(
+data class BazelGlobalFunctionParameter(
   val name: String,
   val doc: String?,
-  val defaultValue: String,
+  val defaultValue: String?,
   val named: Boolean,
   val positional: Boolean,
   val required: Boolean,
 )
 
-data class GlobalFunction(
+data class BazelGlobalFunction(
   val name: String,
   val doc: String?,
   val environment: List<Environment>,
-  val params: List<Param>,
+  val params: List<BazelGlobalFunctionParameter>,
 )
 
-fun serializeFunctionsTo(functions: List<GlobalFunction>): String {
+fun serializeFunctionsTo(functions: List<BazelGlobalFunction>): String {
   val gson: Gson = GsonBuilder().setPrettyPrinting().create()
   return gson.toJson(functions)
 }
