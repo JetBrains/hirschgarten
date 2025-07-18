@@ -81,8 +81,8 @@ object ProjectViewSection {
       SectionMetadata("java_language_level", SectionType.Scalar.String),
       SectionMetadata("exclude_library", SectionType.List.String),
       SectionMetadata("android_sdk_platform", SectionType.Scalar.String),
-      SectionMetadata("generated_android_resource_directories", SectionType.List.String),
-      SectionMetadata("ts_config_rules", SectionType.List.String),
+      SectionMetadata("generated_android_resource_directories", SectionType.List.String, DirectoriesCompletionProvider()),
+      SectionMetadata("ts_config_rules", SectionType.List.String, TargetCompletionProvider()),
       SectionMetadata("import_ijars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("debug_flags", SectionType.List.String, FlagCompletionProvider("debug")),
     ).associateBy { it.sectionName }
