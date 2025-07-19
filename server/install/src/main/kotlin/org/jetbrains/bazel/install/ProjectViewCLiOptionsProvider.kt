@@ -8,6 +8,7 @@ import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDebugFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
@@ -34,6 +35,7 @@ object ProjectViewCLiOptionsProvider {
       targets = toTargetsSection(projectViewCliOptions),
       buildFlags = toBuildFlagsSection(projectViewCliOptions),
       syncFlags = toSyncFlagsSection(projectViewCliOptions),
+      debugFlags = toDebugFlagsSection(projectViewCliOptions),
       directories = toDirectoriesSection(projectViewCliOptions),
       deriveTargetsFromDirectories = toDeriveTargetFlagSection(projectViewCliOptions),
       importDepth = toImportDepthSection(projectViewCliOptions),
@@ -91,6 +93,9 @@ object ProjectViewCLiOptionsProvider {
 
   private fun toSyncFlagsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewSyncFlagsSection? =
     projectViewCliOptions?.syncFlags?.let { ProjectViewSyncFlagsSection(it) }
+
+  private fun toDebugFlagsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewDebugFlagsSection? =
+    projectViewCliOptions?.debugFlags?.let { ProjectViewDebugFlagsSection(it) }
 
   private fun toEnabledRulesSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewEnabledRulesSection? =
     projectViewCliOptions?.enabledRules?.let { ProjectViewEnabledRulesSection(it) }

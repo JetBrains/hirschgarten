@@ -26,6 +26,8 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
     @Suppress("SimplifyBooleanWithConstants")
     if (entity.indexAllFilesInIncludedRoots || !CONTENT_NON_INDEXABLE_SUPPORTED) {
       registrar.registerIncludedDirectories(entity)
+    } else {
+      registrar.registerBuildFiles(entity)
     }
     registrar.registerExcludedDirectories(entity)
     registrar.registerOtherRootsCompat(entity.projectRoot, entity.includedRoots, entity)
@@ -46,6 +48,16 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
       registerExcludedRoot(
         excludedRoot = it,
         entity = entity,
+      )
+    }
+
+  private fun WorkspaceFileSetRegistrar.registerBuildFiles(entity: BazelProjectDirectoriesEntity) =
+    entity.buildFiles.forEach {
+      registerNonRecursiveFileSet(
+        file = it,
+        kind = WorkspaceFileKind.CONTENT,
+        entity = entity,
+        customData = null,
       )
     }
 }

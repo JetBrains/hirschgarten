@@ -9,13 +9,13 @@ class ArgumentParserTest {
     val args = transformProgramArguments("""-s Suite -t "my test" """)
     args shouldBe listOf("-s", "Suite", "-t", "my test")
   }
-  
+
   @Test
   fun `parse simpl`() {
     val args = transformProgramArguments("""-a A -b B """)
     args shouldBe listOf("-a", "A", "-b", "B")
   }
-  
+
   @Test
   fun `parse escape`() {
     val args = transformProgramArguments("""-a A -b "B" """)
@@ -46,7 +46,6 @@ class ArgumentParserTest {
     args shouldBe listOf("-x", "test1", "-y", "test 2")
   }
 
-
   @Test
   fun `parse unclosed quotes at end`() {
     val args = transformProgramArguments("""-a value -b "unclosed""")
@@ -70,5 +69,4 @@ class ArgumentParserTest {
     val args = transformProgramArguments("""-a "a \""")
     args shouldBe listOf("-a", "a \\")
   }
-
 }

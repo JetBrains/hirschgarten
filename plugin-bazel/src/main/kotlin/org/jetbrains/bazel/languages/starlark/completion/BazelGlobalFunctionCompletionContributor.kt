@@ -96,7 +96,7 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
       val document = editor.document
       document.insertString(context.tailOffset, "(")
 
-      val requiredArgs = function.params.filter { it.required && it.name != "**kwargs" && it.name != "*args"}
+      val requiredArgs = function.params.filter { it.required }
       var caretPlaced = false
       requiredArgs.forEach {
         document.insertString(context.tailOffset, "\n\t${it.name} = ${it.default},")
