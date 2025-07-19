@@ -37,7 +37,6 @@ import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.toPath
-import com.jetbrains.python.sdk.uv.LOGGER
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
@@ -60,7 +59,6 @@ import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
-import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
 internal class AssignFileToModuleListener : BulkFileListener {
@@ -159,8 +157,6 @@ internal class AssignFileToModuleListener : BulkFileListener {
     companion object {
       @JvmStatic
       fun getInstance(project: Project): Controller = project.service()
-
-      private val LOGGER = LoggerFactory.getLogger(AssignFileToModuleListener::class.java)
     }
   }
 }
@@ -201,7 +197,6 @@ private fun projectIsBazelAndContainsFile(project: Project, file: VirtualFile): 
     try {
       project.rootDir
     } catch (_: IllegalStateException) {
-      LOGGER.warn("Project ${project.name} does not have root dir set")
       return false
     }
   return project.isBazelProject && VfsUtil.isAncestor(rootDir, file, false)
