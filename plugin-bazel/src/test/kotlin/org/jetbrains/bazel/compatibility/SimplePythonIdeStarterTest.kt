@@ -37,8 +37,8 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
           waitForIndicators(10.minutes)
+          syncBazelProject()
 
           step("check no red node in main/main.py") {
             execute { openFile("main/main.py") }
