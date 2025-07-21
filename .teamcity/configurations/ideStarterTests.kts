@@ -191,6 +191,14 @@ sealed class ProjectViewOpenTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/settings:project_view_open_test"
 )
 
+sealed class MoveKotlinFileTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Move Kotlin file test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/move:moveKotlinFileTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -327,3 +335,12 @@ object ProjectViewOpenTestGitHub : ProjectViewOpenTest(
 object ProjectViewOpenTestSpace : ProjectViewOpenTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
+
+object MoveKotlinFileTestGitHub : MoveKotlinFileTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object MoveKotlinFileTestSpace : MoveKotlinFileTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
