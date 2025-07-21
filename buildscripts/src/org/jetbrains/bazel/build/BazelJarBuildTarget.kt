@@ -36,7 +36,7 @@ object BazelJarBuildTarget {
         val context =
           createCompilationContext(
             projectHome = ULTIMATE_HOME,
-            defaultOutputRoot = outDir,
+            defaultOutputRoot = ULTIMATE_HOME.resolve("out"),
           )
 
         val jarFile = outDir.resolve("bazel.jar")
