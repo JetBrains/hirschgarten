@@ -203,7 +203,7 @@ private class TestResultTreeNode(
         // BAZEL-2080: if an exception happens at the start of a test suit, there will be no test case run
         // and no test case reported. Teamcity will mark a testsuit with no test case as success.
         // So in this case, we need to report a dummy test case with TestStatus.FAILED status.
-        val displayName = "no test found"
+        val displayName = "no tests found"
         val placeholderID = TaskId("empty-test-" + UUID.randomUUID().toString(), parents = listOfNotNull(taskId.id))
         bspClientTestNotifier.startTest(displayName, placeholderID)
         bspClientTestNotifier.finishTest(
