@@ -55,7 +55,10 @@ class BazelGlobalFunctionsService {
       it.value.environment.contains(Environment.BZL)
     }
 
-  fun getStarlarkGlobalFunctions(): Map<String, BazelGlobalFunction> = globalFunctions
+  fun getStarlarkGlobalFunctions(): Map<String, BazelGlobalFunction> =
+    globalFunctions.filter {
+      it.value.environment.containsAll(Environment.entries)
+    }
 
   fun getFunctionByName(name: String): BazelGlobalFunction? = globalFunctions[name]
 
