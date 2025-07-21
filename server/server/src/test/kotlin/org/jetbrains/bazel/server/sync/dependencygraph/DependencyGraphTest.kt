@@ -627,8 +627,8 @@ class DependencyGraphTest {
     // then
     val expectedDependencies =
       DependencyGraph.TargetsAtDepth(
-        targets = setOf(target, library1, library2, library3),
-        directDependencies = setOf(target1),
+        targets = setOf(target),
+        directDependencies = setOf(target1, library1, library2, library3),
       )
     dependencies shouldBe expectedDependencies
   }
@@ -667,15 +667,16 @@ class DependencyGraphTest {
   }
 
   @Test
-  fun `should not follow runtime deps for the last layer`() {
+  fun `should not follow runtime deps`() {
     // given
-    val target = targetInfo("//target", runtimeDependenciesIds = listOf("//target1"))
+    val target = targetInfo("//target", dependenciesIds = listOf("//target1"), runtimeDependenciesIds = listOf("//target4"))
     val target1 = targetInfo("//target1", dependenciesIds = listOf("//target2"), runtimeDependenciesIds = listOf("//target3"))
     val target2 = targetInfo("//target2")
     val target3 = targetInfo("//target3")
+    val target4 = targetInfo("//target4")
     val rootTargets = setOf(Label.parse("//target"))
     val idToTargetInfo =
-      toIdToTargetInfoMap(target, target1, target2, target3)
+      toIdToTargetInfoMap(target, target1, target2, target3, target4)
     val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
     // when
@@ -712,6 +713,32 @@ class DependencyGraphTest {
       DependencyGraph.TargetsAtDepth(
         targets = setOf(target, target1),
         directDependencies = setOf(),
+      )
+    dependencies shouldBe expectedDependencies
+  }
+
+  @Test
+  fun `should propagate exports of non-workspace targets if someone depends on them`() {
+    // given
+    val target = targetInfo("//target", dependenciesIds = listOf("//target1"))
+    val target1 = targetInfo("//target1", dependenciesIds = listOf("//target2"))
+    val target2 = targetInfo("//target2")
+    val rootTargets = setOf(Label.parse("//target"), Label.parse("//target1"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, target2)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(0, rootTargets, isWorkspaceTarget = { label ->
+        label.toString() == "@//target"
+      })
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target, target1),
+        directDependencies = setOf(target2),
       )
     dependencies shouldBe expectedDependencies
   }

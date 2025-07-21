@@ -17,10 +17,12 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
+import com.intellij.platform.backend.documentation.impl.computeDocumentationAsync
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.awt.RelativePoint
@@ -33,6 +35,8 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.options.BazelQueryCommonOptions
+import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
+import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -53,6 +57,7 @@ import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
 private class QueryFlagField(
+  project: Project,
   val flag: String,
   checked: Boolean = false,
   val values: List<String> = emptyList(),
@@ -63,6 +68,15 @@ private class QueryFlagField(
         valuesButtons.forEach { it.isVisible = isSelected }
       }
       addShiftEnterAction()
+      val flagSymbol = Flag.byName("--$flag")?.let { f -> BazelFlagSymbol(f, project) }
+      if (flagSymbol != null) {
+        BazelCoroutineService.getInstance(project).start {
+          val doc = computeDocumentationAsync(flagSymbol.getDocumentationTarget().createPointer()).await()
+          SwingUtilities.invokeLater {
+            toolTipText = doc?.html
+          }
+        }
+      }
     }
   val valuesButtons: List<JRadioButton> =
     values.map {
@@ -110,6 +124,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   private val defaultFlags =
     BazelQueryCommonOptions.getAll().map { option ->
       QueryFlagField(
+        project,
         flag = option.name,
         values = option.values,
       )
@@ -213,33 +228,39 @@ class BazelQueryTab(private val project: Project) : JPanel() {
           return
         }
 
-    try {
-      val svgFile = FileUtil.createTempFile("bazelqueryGraph", ".svg", true)
-      val dotFile = FileUtil.createTempFile("tempDot", ".dot", true)
-      FileUtil.writeToFile(dotFile, dotContent)
+    BazelCoroutineService.getInstance(project).start {
+      try {
+        val svgFile = FileUtil.createTempFile("bazelqueryGraph", ".svg", true)
+        val dotFile = FileUtil.createTempFile("tempDot", ".dot", true)
+        FileUtil.writeToFile(dotFile, dotContent)
 
-      val commandLine =
-        GeneralCommandLine()
-          .withExePath(dotFullPath.absolutePath)
-          .withParameters("-Tsvg", "-o${svgFile.absolutePath}", dotFile.absolutePath)
+        val commandLine =
+          GeneralCommandLine()
+            .withExePath(dotFullPath.absolutePath)
+            .withParameters("-Tsvg", "-o${svgFile.absolutePath}", dotFile.absolutePath)
 
-      val processHandler = OSProcessHandler(commandLine)
-      processHandler.startNotify()
-      val success = processHandler.waitFor()
+        val processHandler = OSProcessHandler(commandLine)
+        processHandler.startNotify()
+        val success = processHandler.waitFor()
 
-      if (!success) {
-        throw Exception()
+        if (!success) {
+          throw Exception()
+        }
+
+        ApplicationManager.getApplication().invokeLater {
+          BrowserUtil.browse(svgFile)
+        }
+      } catch (_: Exception) {
+        ApplicationManager.getApplication().invokeLater {
+          NotificationGroupManager
+            .getInstance()
+            .getNotificationGroup("Bazel")
+            .createNotification(
+              BazelPluginBundle.message("notification.bazel.query.graph.visualization.failed"),
+              NotificationType.ERROR,
+            ).notify(project)
+        }
       }
-
-      ApplicationManager.getApplication().invokeLater {
-        BrowserUtil.browse(svgFile)
-      }
-    } catch (_: Exception) {
-      NotificationGroupManager
-        .getInstance()
-        .getNotificationGroup("Bazel")
-        .createNotification(BazelPluginBundle.message("notification.bazel.query.graph.visualization.failed"), NotificationType.ERROR)
-        .notify(project)
     }
   }
 

@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
-import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -137,7 +137,8 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
-    val apparelRepoNameToCanonicalName = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap()
+    val apparelRepoNameToCanonicalName =
+      (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap.getTypedInstance()
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)

@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-import com.intellij.execution.process.OSProcessUtil
-import com.intellij.util.io.awaitExit
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -12,7 +12,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import kotlin.coroutines.cancellation.CancellationException
 
-abstract class OutputProcessor(private val process: Process, vararg loggers: OutputHandler) {
+abstract class OutputProcessor(private val process: SpawnedProcess, vararg loggers: OutputHandler) {
   val stdoutCollector = OutputCollector()
   val stderrCollector = OutputCollector()
 
@@ -62,11 +62,12 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
       try {
         return@coroutineScope process.awaitExit()
       } catch (e: CancellationException) {
-        OSProcessUtil.killProcessTree(process)
-        OSProcessUtil.killProcess(process)
+        val processSpawner = ProcessSpawner.getInstance()
+        processSpawner.killProcessTree(process)
+        processSpawner.killProcess(process)
         if (serverPidFuture?.isDone == true) {
           val pid = serverPidFuture.get()
-          OSProcessUtil.killProcess(pid.toInt())
+          processSpawner.killProcess(pid.toInt())
         }
         throw e
       } finally {
