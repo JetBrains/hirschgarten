@@ -69,7 +69,7 @@ object AnnotationConverter {
     return when (doc) {
       is BinaryExpr -> {
         var left = doc.left
-        var res = ""
+        var res = doc.right.toStringLiteralExpr().get().value
         while (left is BinaryExpr) {
           res = left.right.toStringLiteralExpr().get().value + res
           left = left.left
@@ -92,6 +92,7 @@ object AnnotationConverter {
   private fun processAnnotation(annotationExpr: AnnotationExpr, environment: List<Environment>, stringConsts: Map<String, String>) {
     var functionName = ""
     var docString: String? = null
+    var documented = true
     val params = mutableListOf<BazelGlobalFunctionParameter>()
     for (it in annotationExpr.childNodes) {
       if (it is MemberValuePair) {
@@ -121,12 +122,16 @@ object AnnotationConverter {
             defaultValue = null,
             required = false,
           ))
+        } else if (it.name.identifier == "documented") {
+          documented = it.value.toString() == "true"
         }
       }
     }
 
-    val functionInfo = BazelGlobalFunction(functionName, docString, environment, params)
-    allFunctions.add(functionInfo)
+    if (documented) {
+      val functionInfo = BazelGlobalFunction(functionName, docString, environment, params)
+      allFunctions.add(functionInfo)
+    }
   }
 
   private fun getEnvironments(annotationExpr: AnnotationExpr): List<Environment> {
@@ -192,7 +197,8 @@ object AnnotationConverter {
 
 
   /*
-   sh sed "s|^|/path/to/bazel/repo|" inputs | xargs bazel run //annotation_converter:annotation_converter -- > global_functions.json
+   sh
+   sed "s|^|/path/to/bazel/repo|" inputs | xargs bazel run //annotation_converter:annotation_converter -- > global_functions.json
    */
   @JvmStatic
   fun main(args: Array<String>) {
