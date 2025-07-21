@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PatternCondition
@@ -80,47 +81,9 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
   private fun functionLookupElement(function: BazelGlobalFunction): LookupElement =
     LookupElementBuilder
       .create(function.name)
-      .withInsertHandler(FunctionInsertHandler(function))
+      .withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
       .withIcon(PlatformIcons.FUNCTION_ICON)
-
-  private class FunctionInsertHandler<T : LookupElement>(val function: BazelGlobalFunction) : InsertHandler<T> {
-    override fun handleInsert(context: InsertionContext, item: T) {
-      val editor = context.editor
-      val document = editor.document
-      document.insertString(context.tailOffset, "(")
-
-      val requiredArgs = function.params.filter { it.required }
-      var caretPlaced = false
-      requiredArgs.forEach {
-        val default = it.defaultValue ?: ""
-        document.insertString(context.tailOffset, "\n\t${it.name} = $default,")
-        if (!caretPlaced) {
-          caretPlaced = true
-          placeCaret(context, it.defaultValue ?: "")
-        }
-      }
-
-      if (!caretPlaced) {
-        editor.caretModel.moveToOffset(context.tailOffset)
-      } else {
-        document.insertString(context.tailOffset, "\n")
-      }
-      document.insertString(context.tailOffset, ")")
-    }
-
-    private fun placeCaret(context: InsertionContext, default: String) {
-      val editor = context.editor
-      if (default == "\'\'" || default == "\"\"" || default == "[]" || default == "{}") {
-        editor.caretModel.moveToOffset(context.tailOffset - 2)
-      } else {
-        val selectionStart = context.tailOffset - default.length - 1
-        val selectionEnd = selectionStart + default.length
-        editor.selectionModel.setSelection(selectionStart, selectionEnd)
-        editor.caretModel.moveToOffset(selectionEnd)
-      }
-    }
   }
-}
 
 private object StarlarkFunctionCompletionProvider :
   BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getStarlarkGlobalFunctions().values })
