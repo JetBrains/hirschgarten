@@ -148,10 +148,9 @@ class BazelBzlModExternalRulesetsQueryImpl(
             val queryFailedMessage = getQueryFailedMessage(result)
             bspClientLogger.warn(queryFailedMessage)
             log.warn(queryFailedMessage)
-            null
-          } else {
-            result.stdout.toJson(log)
           }
+          // best effort to parse the output even when there are errors
+          result.stdout.toJson(log)
         } as? JsonObject
     return try {
       val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
