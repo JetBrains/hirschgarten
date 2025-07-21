@@ -41,11 +41,11 @@ class StarlarkArgumentCompletionContributor : CompletionContributor() {
 private object StarlarkArgumentCompletionProvider : CompletionProvider<CompletionParameters>() {
   private fun fileTypeToGlobalFunctions(file: StarlarkFile): Map<String, BazelGlobalFunction> =
     when (file.getBazelFileType()) {
-      BazelFileType.EXTENSION -> BazelGlobalFunctionsService.getInstance().getBzlGlobalFunctions()
-      BazelFileType.BUILD -> BazelGlobalFunctionsService.getInstance().getBuildGlobalFunctions()
-      BazelFileType.MODULE -> BazelGlobalFunctionsService.getInstance().getModuleGlobalFunctions()
-      BazelFileType.WORKSPACE -> BazelGlobalFunctionsService.getInstance().getModuleGlobalFunctions()
-    } + BazelGlobalFunctionsService.getInstance().getStarlarkGlobalFunctions()
+      BazelFileType.EXTENSION -> BazelGlobalFunctionsService.getInstance().extensionGlobalFunctions
+      BazelFileType.BUILD -> BazelGlobalFunctionsService.getInstance().buildGlobalFunctions
+      BazelFileType.MODULE -> BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions
+      BazelFileType.WORKSPACE -> BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions
+    } + BazelGlobalFunctionsService.getInstance().starlarkGlobalFunctions
 
   override fun addCompletions(
     parameters: CompletionParameters,

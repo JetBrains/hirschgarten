@@ -22,7 +22,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
     // then
     val expectedArgNames =
       service<BazelGlobalFunctionsService>()
-        .getModuleGlobalFunctions()["module"]!!
+        .moduleGlobalFunctions["module"]!!
         .params
         .filter { it.name.contains('a') }
         .map { it.name }
@@ -41,7 +41,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
     // then
     val expectedArgNames =
       service<BazelGlobalFunctionsService>()
-        .getModuleGlobalFunctions()["module"]!!
+        .moduleGlobalFunctions["module"]!!
         .params
         .filter { it.name.contains('a') && it.name != "name" }
         .map { it.name }
