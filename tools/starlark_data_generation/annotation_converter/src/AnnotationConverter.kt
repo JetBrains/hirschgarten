@@ -19,7 +19,39 @@ import java.io.File
 import kotlin.system.exitProcess
 
 object AnnotationConverter {
-  private val allFunctions: MutableList<BazelGlobalFunction> = mutableListOf()
+  private val allFunctions: MutableList<BazelGlobalFunction> = mutableListOf(
+    BazelGlobalFunction(
+      name = "load",
+      doc = "Loads specified symbols from an external .bzl file into the current BUILD file. This function allows importing functions, rules, and other symbols defined in Starlark extension files.",
+      environment = listOf(Environment.BUILD),
+      params = listOf(
+        BazelGlobalFunctionParameter(
+          name = "ext_file_label",
+          doc = "Label reference to the .bzl file containing the symbols to import (e.g. \"@repo//path/to/file.bzl\")",
+          required = true,
+          named = false,
+          positional = true,
+          defaultValue = null,
+        ),
+        BazelGlobalFunctionParameter(
+          name = "*targets",
+          named = false,
+          positional = true,
+          doc = "Variable number of symbol names to import directly from the extension file. Each symbol will be imported using its original name.",
+          required = false,
+          defaultValue = null,
+          ),
+        BazelGlobalFunctionParameter(
+          name = "**aliased_targets",
+          named = false,
+          positional = false,
+          doc = "Symbol imports with aliases specified as keyword arguments. The key is the local alias name and the value is the original symbol name in the extension file.",
+          required = false,
+          defaultValue = null,
+        ),
+      )
+    )
+  )
 
   private fun stringOrStringConst(expr: Expression, stringConsts: Map<String, String>): String {
     return if (expr is NameExpr) {
