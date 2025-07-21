@@ -83,7 +83,7 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
       .create(function.name)
       .withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
       .withIcon(PlatformIcons.FUNCTION_ICON)
-  }
+}
 
 private object StarlarkFunctionCompletionProvider :
   BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getStarlarkGlobalFunctions().values })

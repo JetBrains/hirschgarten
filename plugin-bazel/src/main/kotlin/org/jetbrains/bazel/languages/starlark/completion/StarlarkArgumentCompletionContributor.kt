@@ -16,6 +16,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.findParentOfType
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
+import org.jetbrains.bazel.languages.bazelrc.completion.letIf
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
@@ -102,5 +103,7 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     LookupElementBuilder
       .create(arg.name)
       .withIcon(PlatformIcons.PARAMETER_ICON)
-      .withInsertHandler(ArgumentInsertHandler(arg.defaultValue ?: ""))
+      .letIf(arg.named) {
+        it.withInsertHandler(ArgumentInsertHandler(arg.defaultValue ?: ""))
+      }
 }
