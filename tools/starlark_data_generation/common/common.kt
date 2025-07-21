@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 
 enum class Environment {
-  ALL,
   BZL,
   BUILD,
   MODULE,

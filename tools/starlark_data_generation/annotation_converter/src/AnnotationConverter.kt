@@ -154,7 +154,7 @@ object AnnotationConverter {
       }
     }
     return if (environments.isEmpty()) {
-      listOf(Environment.ALL)
+      Environment.entries
     } else {
       environments
     }
@@ -183,7 +183,7 @@ object AnnotationConverter {
     val environments = if (globalMethodsExpr.isNotEmpty()) {
       getEnvironments(globalMethodsExpr.first()!!)
     } else {
-      listOf(Environment.ALL)
+      Environment.entries
     }
     val stringConsts = getStringConsts(cu)
     cu.findAll(MethodDeclaration::class.java).forEach {
