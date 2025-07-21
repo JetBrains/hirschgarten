@@ -6,15 +6,11 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
-import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.openFile
-import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -31,7 +27,7 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
         commitHash = "1fe1e07dcf5d50868e10f3e6e87f2c4e95b4c290",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simplePythonTest") },
-        isReusable = true,
+        isReusable = false,
         configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
       )
 
@@ -41,8 +37,7 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          execute { takeScreenshot("startSync")}
-          execute { waitForSmartMode()}
+          syncBazelProject()
           waitForIndicators(10.minutes)
 
           step("check no red node in main/main.py") {
