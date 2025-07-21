@@ -1,5 +1,35 @@
 [
   {
+    "name": "load",
+    "doc": "Loads specified symbols from an external .bzl file into the current BUILD file. This function allows importing functions, rules, and other symbols defined in Starlark extension files.",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "ext_file_label",
+        "doc": "Label reference to the .bzl file containing the symbols to import (e.g. \"@repo//path/to/file.bzl\")",
+        "named": false,
+        "positional": true,
+        "required": true
+      },
+      {
+        "name": "*targets",
+        "doc": "Variable number of symbol names to import directly from the extension file. Each symbol will be imported using its original name.",
+        "named": false,
+        "positional": true,
+        "required": false
+      },
+      {
+        "name": "**aliased_targets",
+        "doc": "Symbol imports with aliases specified as keyword arguments. The key is the local alias name and the value is the original symbol name in the extension file.",
+        "named": false,
+        "positional": false,
+        "required": false
+      }
+    ]
+  },
+  {
     "name": "to_list",
     "doc": "Returns a list of the elements, without duplicates, in the depset\u0027s traversal order. Note that order is unspecified (but deterministic) for elements that were added more than once to the depset. Order is also unspecified for \u003ccode\u003e\\\"default\\\"\u003c/code\u003e-ordered depsets, and for elements of child depsets whose order differs from that of the parent depset. The list is a copy; modifying it has no effect on the depset and vice versa.",
     "environment": [
