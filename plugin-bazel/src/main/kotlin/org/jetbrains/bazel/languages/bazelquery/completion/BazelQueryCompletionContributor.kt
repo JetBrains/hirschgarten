@@ -18,11 +18,13 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenType
+import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFile
 
 class BazelQueryCompletionContributor : CompletionContributor() {
   init {
     extend(CompletionType.BASIC, BazelWordCompletionProvider.psiPattern, BazelWordCompletionProvider())
+    extend(CompletionType.BASIC, BazelInfixCompletionProvider.psiPattern, BazelInfixCompletionProvider())
   }
 }
 
@@ -34,7 +36,13 @@ val knownCommands =
     }.toList()
 
 val knownOperations =
-  BazelQueryTokenSets.OPERATIONS.types
+  listOf(
+    BazelQueryTokenTypes.LET.completionText() + "  in",
+    BazelQueryTokenTypes.SET.completionText() + "()",
+  )
+
+val knownInfixOperators =
+  BazelQueryTokenSets.INFIX_OPERATORS.types
     .map { tokenType ->
       tokenType as BazelQueryTokenType
       tokenType.completionText()
@@ -53,6 +61,39 @@ private val wordsOrCommandsTokens =
     *BazelQueryTokenSets.PATTERNS.types,
   )
 
+private class BazelInfixCompletionProvider : CompletionProvider<CompletionParameters>() {
+  companion object {
+    val psiPattern =
+      psiElement()
+        .withLanguage(BazelQueryLanguage)
+        .and(
+          psiElement().inside(psiElement(BazelQueryFile::class.java)),
+        ).andOr(
+          psiElement().afterLeaf(psiElement(BazelQueryTokenTypes.RIGHT_PAREN)),
+          psiElement().afterLeaf(psiElement().withElementType(BazelQueryTokenSets.WORDS)),
+        )
+  }
+
+  override fun addCompletions(
+    parameters: CompletionParameters,
+    context: ProcessingContext,
+    result: CompletionResultSet,
+  ) {
+    val prefix =
+      parameters.position.text
+        .take(parameters.offset - parameters.position.startOffset)
+        .trim()
+        .removePrefix("\"")
+        .removePrefix("'")
+
+    result.withPrefixMatcher(BazelQueryPrefixMatcher(prefix)).run {
+      addAllElements(
+        knownInfixOperators.map { functionLookupElement(it, 0.0, parameters.offset) },
+      )
+    }
+  }
+}
+
 private class BazelWordCompletionProvider : CompletionProvider<CompletionParameters>() {
   private val startTargetSign = "//"
 
@@ -65,6 +106,10 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         ).andOr(
           psiElement().withElementType(wordsOrCommandsTokens),
           psiElement().atStartOf(psiElement().withElementType(wordsOrCommandsTokens)),
+        ).andNot(
+          psiElement().afterLeaf(psiElement(BazelQueryTokenTypes.RIGHT_PAREN)),
+        ).andNot(
+          psiElement().afterLeaf(psiElement().withElementType(BazelQueryTokenSets.WORDS)),
         )
   }
 
@@ -89,7 +134,7 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         knownCommands.map { functionLookupElement(it, 1.0, parameters.offset) },
       )
       addAllElements(
-        knownOperations.map { functionLookupElement(it, 0.0, parameters.offset) },
+        knownOperations.map { functionLookupElement(it, 0.5, parameters.offset) },
       )
       addAllElements(
         targetSuggestions.map {
@@ -112,47 +157,56 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
       )
     }
   }
-
-  private fun functionLookupElement(
-    name: String,
-    priority: Double,
-    caretOffset: Int,
-  ): LookupElement =
-    PrioritizedLookupElement.withPriority(
-      LookupElementBuilder
-        .create(name)
-        .withBoldness(true)
-        .withIcon(BazelPluginIcons.bazel)
-        .withInsertHandler { context, item ->
-          /**
-           * Inserting a selected suggestion with a target path using 'tab' pastes a fragment of the suggestion
-           * to the slash occurrence (corresponding to next subpackage on the path), for example, for the entered
-           * prefix "//p", selecting the suggestion "//path/to/my:target" using 'tab' will result in "//path/"
-           * and potentially shorten the list of suggestions.
-           */
-          if (context.completionChar == '\t') {
-            val startOffset = context.startOffset
-            val cursorPositionInSuggestion = caretOffset - startOffset
-            val currentText = item.lookupString
-            val nextSlashIndex = currentText.indexOf('/', cursorPositionInSuggestion)
-
-            if (nextSlashIndex > 0) {
-              val shortenedText = currentText.take(nextSlashIndex + 1)
-              context.document.replaceString(context.startOffset, context.tailOffset, shortenedText)
-              context.editor.caretModel.moveToOffset(context.startOffset + shortenedText.length)
-              AutoPopupController.getInstance(context.project)?.autoPopupMemberLookup(context.editor, null)
-            }
-          }
-          /**
-           * Regardless of whether we select a suggestion using tab or enter, if we complete the name of a function
-           * (ended with parentheses), we place the cursor in the middle of the parentheses to continue entering its
-           * arguments (in Bazel Query, all functions have at least one argument).
-           */
-          val offset = context.editor.caretModel.offset
-          if (offset > 0 && context.document.charsSequence[offset - 1] == ')') {
-            context.editor.caretModel.moveToOffset(offset - 1)
-          }
-        },
-      priority,
-    )
 }
+
+private fun functionLookupElement(
+  name: String,
+  priority: Double,
+  caretOffset: Int,
+): LookupElement =
+  PrioritizedLookupElement.withPriority(
+    LookupElementBuilder
+      .create(name)
+      .withBoldness(true)
+      .withIcon(BazelPluginIcons.bazel)
+      .withInsertHandler { context, item ->
+        /**
+         * Inserting a selected suggestion with a target path using 'tab' pastes a fragment of the suggestion
+         * to the slash occurrence (corresponding to next subpackage on the path), for example, for the entered
+         * prefix "//p", selecting the suggestion "//path/to/my:target" using 'tab' will result in "//path/"
+         * and potentially shorten the list of suggestions.
+         */
+        if (context.completionChar == '\t') {
+          val startOffset = context.startOffset
+          val cursorPositionInSuggestion = caretOffset - startOffset
+          val currentText = item.lookupString
+          val nextSlashIndex = currentText.indexOf('/', cursorPositionInSuggestion)
+
+          if (nextSlashIndex > 0) {
+            val shortenedText = currentText.take(nextSlashIndex + 1)
+            context.document.replaceString(context.startOffset, context.tailOffset, shortenedText)
+            context.editor.caretModel.moveToOffset(context.startOffset + shortenedText.length)
+            AutoPopupController.getInstance(context.project)?.autoPopupMemberLookup(context.editor, null)
+          }
+        }
+        /**
+         * Regardless of whether we select a suggestion using tab or enter, if we complete the name of a function
+         * (ended with parentheses), we place the cursor in the middle of the parentheses to continue entering its
+         * arguments (in Bazel Query, all functions have at least one argument).
+         */
+        val offset = context.editor.caretModel.offset
+        if (offset > 0 && context.document.charsSequence[offset - 1] == ')') {
+          context.editor.caretModel.moveToOffset(offset - 1)
+        }
+        /**
+         * When completing the "let ... in ..." operation, we place the cursor between 'let' and 'in'.
+         */
+        if (offset > 0 && context.document.charsSequence
+            .subSequence(offset - 4, offset)
+            .toString() == "  in"
+        ) {
+          context.editor.caretModel.moveToOffset(offset - 3)
+        }
+      },
+    priority,
+  )
