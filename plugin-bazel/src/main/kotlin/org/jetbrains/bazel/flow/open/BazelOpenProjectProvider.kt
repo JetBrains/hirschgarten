@@ -36,9 +36,14 @@ internal suspend fun performOpenBazelProject(project: Project?, projectRootDir: 
     registerBazelToolWindow(project)
     configureProjectCounterPlatform(project)
     BazelCoroutineService.getInstance(project).start {
-      StartupActivity.POST_STARTUP_ACTIVITY.extensionList.filterIsInstance<BazelProjectActivity>().forEach {
-        it.execute(project)
-      }
+      StartupActivity.POST_STARTUP_ACTIVITY
+        .filterableLazySequence()
+        .map { item ->
+          item.instance
+        }.filterIsInstance<BazelProjectActivity>()
+        .forEach {
+          it.execute(project)
+        }
     }
   }
 }

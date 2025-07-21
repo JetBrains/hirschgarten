@@ -11,6 +11,7 @@ intellij_integration_test_suite(
     test_package_root = "org.jetbrains.bazel.server.sync",
     deps = [
         "//plugin-bazel/src:test_fixtures",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],

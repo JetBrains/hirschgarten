@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.isBrokenBspProject
+import org.jetbrains.bazel.config.isBrokenBazelProject
 
 internal class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
@@ -21,7 +21,7 @@ internal class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean =
     project.isBazelProject ||
       // See https://youtrack.jetbrains.com/issue/BAZEL-1500. Broken projects are handled by OpenBrokenBazelProjectStartupActivity already.
-      project.isBrokenBspProject
+      project.isBrokenBazelProject
 
   override suspend fun linkAndLoadProjectAsync(project: Project, externalProjectPath: String) {
     BazelOpenProjectProvider().linkProject(getProjectFile(externalProjectPath), project)
