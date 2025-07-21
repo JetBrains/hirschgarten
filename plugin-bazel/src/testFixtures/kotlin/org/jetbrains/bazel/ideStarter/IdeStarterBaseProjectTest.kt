@@ -223,8 +223,15 @@ inline fun Driver.execute(builder: CommandChain.() -> Unit) {
 
 fun Driver.syncBazelProject() {
   execute(CommandChain().takeScreenshot("startSync"))
+  execute(CommandChain().openBspToolWindow())
+  execute(CommandChain().takeScreenshot("openBspToolWindow"))
   execute(CommandChain().waitForBazelSync())
   execute(CommandChain().waitForSmartMode())
+}
+
+fun <T : CommandChain> T.openBspToolWindow(): T {
+  addCommand(CMD_PREFIX + "openBspToolWindow")
+  return this
 }
 
 fun <T : CommandChain> T.waitForBazelSync(): T {
