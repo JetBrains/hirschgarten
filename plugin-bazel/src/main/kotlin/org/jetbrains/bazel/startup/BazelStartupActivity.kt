@@ -15,6 +15,7 @@ import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
+import org.jetbrains.bazel.config.isBrokenBazelProject
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.projectAware.BazelWorkspace
@@ -105,5 +106,6 @@ private fun startupActivityExecutedAlready(project: Project): Boolean =
  */
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
   project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
+    project.serviceAsync<BazelProjectProperties>().isBrokenBazelProject ||
     !PlatformUtils.isGoIde() &&
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache
