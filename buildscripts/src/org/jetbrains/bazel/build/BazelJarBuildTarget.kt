@@ -39,6 +39,7 @@ object BazelJarBuildTarget {
             defaultOutputRoot = outDir,
           )
 
+        context.compileModules(bazelModulesToPack)
         val jarFile = outDir.resolve("bazel.jar")
         buildJar(
           targetFile = jarFile,
