@@ -17,12 +17,12 @@ class BazelGlobalFunctionDocumentationTarget(symbol: BazelGlobalFunctionDocument
 
   override fun computePresentation(): TargetPresentation =
     symbolPtr.dereference().run {
-      TargetPresentation.builder(nativeRule.name).presentation()
+      TargetPresentation.builder(function.name).presentation()
     }
 
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
-      val html = nativeRule.doc ?: return null
+      val html = function.doc ?: return null
       DocumentationResult.documentation(html)
     }
 }
