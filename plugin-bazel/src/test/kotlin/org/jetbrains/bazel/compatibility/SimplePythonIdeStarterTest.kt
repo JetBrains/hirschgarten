@@ -6,11 +6,15 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.openFile
+import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -37,8 +41,9 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
+          execute { takeScreenshot("startSync")}
+          execute { waitForSmartMode()}
           waitForIndicators(10.minutes)
-          syncBazelProject()
 
           step("check no red node in main/main.py") {
             execute { openFile("main/main.py") }
