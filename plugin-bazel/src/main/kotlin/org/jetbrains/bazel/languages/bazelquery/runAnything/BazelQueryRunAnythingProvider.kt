@@ -77,7 +77,7 @@ class BazelQueryRunAnythingProvider : RunAnythingCommandLineProvider() {
   private fun functionSuggestions(prefix: String): Sequence<String> {
     return BazelQueryFunction.getAll()
       .asSequence()
-      .map { it.name + '(' + it.arguments.map { '<' + it.type + '>' }.joinToString(", ") + ')' }
+      .map { it.name + '(' + it.arguments.map { '<' + it.type + '>' }.joinToString(",") + ')' }
       .filter { it.startsWith(prefix) }
   }
 

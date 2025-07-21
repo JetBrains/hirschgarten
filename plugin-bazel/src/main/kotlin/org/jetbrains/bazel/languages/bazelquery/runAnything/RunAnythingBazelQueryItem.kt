@@ -26,7 +26,6 @@ class RunAnythingBazelQueryItem(command: String, icon: Icon?) : RunAnythingItemB
         "--${it.name.split("=").first()}".startsWith(toComplete) || "-${it.name.split("=").first()}".startsWith(toComplete)
       }
       if (option != null) {
-        println("option: ${option.name}")
         val flag = Flag.byName("--${option.name.split("=").first()}")
         if (flag != null) {
           val description = flag.help()
@@ -39,7 +38,7 @@ class RunAnythingBazelQueryItem(command: String, icon: Icon?) : RunAnythingItemB
         }
       }
     } else if (toComplete.isFunction()) {
-      val functionName = toComplete.removeSuffix("()")
+      val functionName = toComplete.substringBefore('(')
       val function = BazelQueryFunction.getAll()
         .firstOrNull { it.name == functionName }
       if (function != null) {
@@ -66,7 +65,6 @@ class RunAnythingBazelQueryItem(command: String, icon: Icon?) : RunAnythingItemB
 
   private fun String.isFunction(): Boolean =
     !startsWith("-") && BazelQueryFunction.getAll().any {
-      this.startsWith(it.name) || this.startsWith("${it.name}(")
+      this.split("<").first().startsWith("${it.name}(")
     }
-
 }
