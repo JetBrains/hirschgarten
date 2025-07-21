@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
 enum class Environment {
-  ALL,
   BZL,
   BUILD,
   MODULE,
