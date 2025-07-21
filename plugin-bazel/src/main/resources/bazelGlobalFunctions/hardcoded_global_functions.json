@@ -1,0 +1,32 @@
+[
+  {
+    "name": "load",
+    "doc": "Loads specified symbols from an external .bzl file into the current BUILD file. This function allows importing functions, rules, and other symbols defined in Starlark extension files.",
+    "environment": [
+      "BUILD"
+    ],
+    "params": [
+      {
+        "name": "ext_file_label",
+        "named": false,
+        "positional": true,
+        "doc": "Label reference to the .bzl file containing the symbols to import (e.g. \"@repo//path/to/file.bzl\")",
+        "required": true
+      },
+      {
+        "name": "*targets",
+        "named": false,
+        "positional": true,
+        "doc": "Variable number of symbol names to import directly from the extension file. Each symbol will be imported using its original name.",
+        "required": false
+      },
+      {
+        "name": "**aliased_targets",
+        "named": false,
+        "positional": false,
+        "doc": "Symbol imports with aliases specified as keyword arguments. The key is the local alias name and the value is the original symbol name in the extension file.",
+        "required": false
+      }
+    ]
+  }
+]

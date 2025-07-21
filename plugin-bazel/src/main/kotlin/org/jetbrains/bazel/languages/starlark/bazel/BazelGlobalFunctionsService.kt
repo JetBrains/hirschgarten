@@ -24,17 +24,6 @@ class BazelGlobalFunctionsService {
   private val globalFunctions: Map<String, BazelGlobalFunction>
   private val buildRules: Map<String, BazelGlobalFunction>
 
-  private val hardcodedBuildFunctions =
-    listOf(
-      BazelGlobalFunction("load", null, listOf(Environment.BUILD), emptyList()),
-    ).associateBy { it.name }
-
-  private val hardcodedModuleFunctions =
-    listOf(
-      BazelGlobalFunction("bind", null, listOf(Environment.MODULE), emptyList()),
-      BazelGlobalFunction("workspace", null, listOf(Environment.MODULE), emptyList()),
-    ).associateBy { it.name }
-
   private fun loadFunctionsList(filePath: String): List<BazelGlobalFunction> {
     val resource = javaClass.getResourceAsStream(filePath)
     val functions = mutableListOf<BazelGlobalFunction>()
@@ -54,12 +43,12 @@ class BazelGlobalFunctionsService {
   fun getBuildGlobalFunctions(): Map<String, BazelGlobalFunction> =
     globalFunctions.filter {
       it.value.environment.contains(Environment.BUILD)
-    } + hardcodedBuildFunctions
+    }
 
   fun getModuleGlobalFunctions(): Map<String, BazelGlobalFunction> =
     globalFunctions.filter {
       it.value.environment.contains(Environment.MODULE)
-    } + hardcodedModuleFunctions
+    }
 
   fun getBzlGlobalFunctions(): Map<String, BazelGlobalFunction> =
     globalFunctions.filter {
