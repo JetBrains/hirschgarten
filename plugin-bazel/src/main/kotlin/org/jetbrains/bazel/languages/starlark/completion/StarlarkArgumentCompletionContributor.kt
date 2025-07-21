@@ -87,14 +87,12 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     override fun handleInsert(context: InsertionContext, item: T) {
       val editor = context.editor
       val document = editor.document
-      document.insertString(context.tailOffset, " = $default,")
       if (default == "\'\'" || default == "\"\"" || default == "[]" || default == "{}") {
+        document.insertString(context.tailOffset, " = $default,")
         editor.caretModel.moveToOffset(context.tailOffset - 2)
       } else {
-        val selectionStart = context.tailOffset - default.length - 1
-        val selectionEnd = selectionStart + default.length
-        editor.selectionModel.setSelection(selectionStart, selectionEnd)
-        editor.caretModel.moveToOffset(selectionEnd)
+        document.insertString(context.tailOffset, " = ,")
+        editor.caretModel.moveToOffset(context.tailOffset - 1)
       }
     }
   }
