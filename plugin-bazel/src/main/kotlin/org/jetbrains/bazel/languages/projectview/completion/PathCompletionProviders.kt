@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
 private fun getRelativePaths(root: VirtualFile, filter: (VirtualFile) -> Boolean): List<String> {
@@ -29,8 +30,7 @@ private fun getRelativePaths(root: VirtualFile, filter: (VirtualFile) -> Boolean
   return result.map { VfsUtilCore.getRelativePath(it, root)!! }
 }
 
-private fun getProjectRoot(parameters: CompletionParameters): VirtualFile? =
-  ProjectFileIndex.getInstance(parameters.position.project).getContentRootForFile(parameters.originalFile.virtualFile)
+private fun getProjectRoot(parameters: CompletionParameters): VirtualFile? = parameters.position.project.rootDir
 
 internal class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
