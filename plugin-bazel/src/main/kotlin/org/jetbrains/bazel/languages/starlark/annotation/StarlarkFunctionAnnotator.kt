@@ -64,7 +64,8 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
   ) {
     val arguments = element.lastChild as? StarlarkArgumentList ?: return
     val params = function.params
-    val expectedParamIter = params.listIterator()
+    val positionalParams = params.filter { it.positional }
+    val expectedParamIter = positionalParams.listIterator()
     var expectedParam = expectedParamIter.nextOrNull()
     var onlyKeywordArgs = false
     val matchedArguments = mutableSetOf<String>()
