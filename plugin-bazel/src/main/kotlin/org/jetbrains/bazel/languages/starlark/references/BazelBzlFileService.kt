@@ -40,6 +40,7 @@ class BazelBzlFileService(private val project: Project) {
     )
   }
 
+  @Synchronized
   private fun updateCache() {
     val newMap = mutableMapOf<String, List<ResolvedLabel>>()
 
@@ -101,7 +102,9 @@ class BazelBzlFileService(private val project: Project) {
 
   class BazelBzlFileServiceStartUpActivity : BazelProjectActivity() {
     override suspend fun executeForBazelProject(project: Project) {
-      BazelCoroutineService.getInstance(project).start { updateCache() }
+      BazelCoroutineService.getInstance(project).start {
+        getInstance(project).updateCache()
+      }
     }
   }
 }
