@@ -513,9 +513,9 @@ http_archive(
 
 # SDK 252
 
-SDK_252_PLUGIN_REPOSITORY_VERSION = "252.23591.19"
+SDK_252_PLUGIN_REPOSITORY_VERSION = "252.23892.248"
 
-SDK_252_INTELLIJ_REPOSITORY_VERSION = "252.23591.19-EAP-SNAPSHOT"
+SDK_252_INTELLIJ_REPOSITORY_VERSION = "252.23892.248-EAP-SNAPSHOT"
 
 SDK_252_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
 
@@ -525,7 +525,7 @@ SDK_252_CLION_REPOSITORY = "snapshots"  # releases or snapshots
 
 IC_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-IC_252_SHA = "c4bd649015c6d41f60bcb17f88eab30849b4aa3c097054746638b62ea3065017"
+IC_252_SHA = "021015293706ebe45624215fcad59269a0852e6251d00c277396cf64b2b3c108"
 
 http_archive(
     name = "intellij_ce_2025_2",
@@ -536,7 +536,7 @@ http_archive(
 
 IC_252_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-IC_252_SOURCES_SHA = "350a4672f9f1daa8456f6dd4c5243295f1452ff52d6f12c98d460e51fd21e56f"
+IC_252_SOURCES_SHA = "539338e27ce4b4cb484680f645774dd55c7fd48a079e9147b32c45f0cee4ef48"
 
 http_jar(
     name = "intellij_ce_2025_2_sources",
@@ -546,7 +546,7 @@ http_jar(
 
 DEVKIT_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_252_SHA = "fbb69bcd028f1e2d1491c6aa157cfe709a67fb3811954e8251dec32f26a27774"
+DEVKIT_252_SHA = "e237df12b6d2522364c0109519ef6c1cf64df349642eb383f1144a4871f43172"
 
 http_archive(
     name = "devkit_2025_2",
@@ -557,7 +557,7 @@ http_archive(
 
 PYTHON_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_252_SHA = "8ed1e8236393369e949a781cb760a79436f12e04a89c9b0a2c9ad24227e44f06"
+PYTHON_PLUGIN_252_SHA = "b5d402d7d73c004a7fa3811caf373c9e24cecf328cfb934718fbe0bac61fa06c"
 
 http_archive(
     name = "python_2025_2",
@@ -568,7 +568,7 @@ http_archive(
 
 GO_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_252_SHA = "32d6c16b8b130227619a927c6ddeea4e1c4c679337e366b3875ff03daf8d697b"
+GO_PLUGIN_252_SHA = "4f805bbe5bf8f8379a95958d441c62ff102173759f900546e9a1586b85d081a8"
 
 http_archive(
     name = "go_2025_2",
@@ -590,7 +590,7 @@ http_archive(
 
 ANDROID_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-ANDROID_PLUGIN_252_SHA = "74b8fd36ee4e7248a1dfd361ffd7f6f0336b0744998a0b5349ca11573060ec70"
+ANDROID_PLUGIN_252_SHA = "b7211f93c7c7e1a206ae068d49494b4d15587d1f4fb8009f4f277fed8b97e3b2"
 
 http_archive(
     name = "android_2025_2",
@@ -611,7 +611,7 @@ http_jar(
 
 CODE_WITH_ME_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_252_SHA = "ec035988c916e666aab20e60583511778a39391abd21ba7902710ddcef33de32"
+CODE_WITH_ME_252_SHA = "a535074c97acf12a1a3cbc6378063db5eddd551dfd96e8f21085b9807bfe8079"
 
 http_jar(
     name = "code_with_me_2025_2",
@@ -642,7 +642,7 @@ http_jar(
 # From 252 python plugin requires toml plugin to be loaded
 TOML_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.toml.lang/%s/org.toml.lang-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-TOML_PLUGIN_252_SHA = "a393b56172bad8ed80f63b830e0d07fccc466c174a4a9601aff67b456b8bf746"
+TOML_PLUGIN_252_SHA = "95a7123c004d369d1dd07b74eaeed2b38cd6cb2f452bbc3075f28bd17767d6e2"
 
 _TOML_BUILD_FILE = """
 java_import(
