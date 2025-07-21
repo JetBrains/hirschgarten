@@ -74,7 +74,7 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
     for (child in arguments.children) {
       when (child) {
         is StarlarkNamedArgumentExpression -> {
-          val argName = child.name ?: continue
+          val argName = child.name ?: return // If data is not complete, logic might be skewed onwards.
           if (!params.any { it.name == argName } && !acceptsKwArgs) {
             // Cannot be resolved
             holder.annotateError(child, StarlarkBundle.message("annotator.named.parameter.not.found", argName))
