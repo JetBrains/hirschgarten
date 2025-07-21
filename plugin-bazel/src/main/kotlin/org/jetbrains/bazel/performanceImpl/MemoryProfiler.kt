@@ -5,12 +5,14 @@ package org.jetbrains.bazel.performance
 import com.intellij.openapi.application.PathManager
 import com.intellij.platform.diagnostic.telemetry.FilteredMetricsExporter
 import com.intellij.platform.diagnostic.telemetry.MetricsExporterEntry
+import com.intellij.platform.diagnostic.telemetry.Scope
 import com.intellij.platform.diagnostic.telemetry.TelemetryManager
 import com.intellij.platform.diagnostic.telemetry.belongsToScope
 import com.intellij.platform.diagnostic.telemetry.exporters.RollingFileSupplier
 import com.intellij.platform.diagnostic.telemetry.exporters.meters.TelemetryMeterJsonExporter
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import com.sun.management.GarbageCollectionNotificationInfo
+import org.jetbrains.bazel.performance.BSP_SCOPE
 import java.lang.Thread.sleep
 import java.lang.management.ManagementFactory
 import java.util.concurrent.atomic.AtomicLong
@@ -47,7 +49,7 @@ object MemoryProfiler : NotificationListener {
     val metricsExporter = TelemetryMeterJsonExporter(RollingFileSupplier(basePath))
     val filteredMetricsExporter =
       FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->
-        metric.belongsToScope(bspScope)
+        metric.belongsToScope(Scope(BSP_SCOPE))
       }
     TelemetryManager
       .getInstance()

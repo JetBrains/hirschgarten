@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.BazelServices
 import org.jetbrains.bazel.server.bsp.info.BspInfo
@@ -163,6 +164,7 @@ class BazelBspServer(
         mavenCoordinatesResolver,
         kotlinAndroidModulesMerger,
         bspClientLogger,
+        EnvironmentProvider.getInstance(),
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 
