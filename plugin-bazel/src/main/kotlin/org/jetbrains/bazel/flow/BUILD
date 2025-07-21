@@ -16,6 +16,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure/workspaceModel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target/sync/projectStructure",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/widgets",

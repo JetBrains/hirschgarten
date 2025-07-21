@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.dependencygraph
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
+import java.util.PriorityQueue
 
 class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private val idToTargetInfo: Map<Label, TargetInfo> = emptyMap()) {
   private val idToDirectDependenciesIds = mutableMapOf<Label, Set<Label>>()
@@ -65,59 +66,79 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
 
   data class TargetsAtDepth(val targets: Set<TargetInfo>, val directDependencies: Set<TargetInfo>)
 
+  fun allTransitiveTargets(targets: Set<Label>): TargetsAtDepth =
+    TargetsAtDepth(
+      targets = idsToTargetInfo(targets) + calculateStrictlyTransitiveDependencies(targets),
+      directDependencies = emptySet(),
+    )
+
   fun allTargetsAtDepth(
-    depth: Int,
+    maxDepth: Int,
     targets: Set<Label>,
     isExternalTarget: (Label) -> Boolean = { false },
     targetSupportsStrictDeps: (Label) -> Boolean = { false },
     isWorkspaceTarget: (Label) -> Boolean = { true },
   ): TargetsAtDepth {
-    if (depth < 0) {
-      return TargetsAtDepth(
-        targets = idsToTargetInfo(targets) + calculateStrictlyTransitiveDependencies(targets),
-        directDependencies = emptySet(),
+    if (maxDepth < 0) {
+      return allTransitiveTargets(targets)
+    }
+
+    val depth = mutableMapOf<Label, Int>()
+    val toVisit =
+      PriorityQueue(
+        Comparator<Label> { label1, label2 ->
+          depth.getOrDefault(label1, 0).compareTo(depth.getOrDefault(label2, 0)).takeIf { it != 0 } ?: label1.compareTo(label2)
+        },
       )
+    val dependenciesOfNonStrictDepsTargets = mutableSetOf<Label>()
+
+    var (currentTargets, nonWorkspaceTargets) =
+      targets.partition { isWorkspaceTarget(it) }.let { (currentTargets, nonWorkspaceTargets) ->
+        currentTargets.toSet() to nonWorkspaceTargets
+      }
+    currentTargets.forEach { target ->
+      depth[target] = 0
+      toVisit.add(target)
     }
 
-    val visited = mutableSetOf<Label>()
-
-    fun Collection<Label>.filterNotVisited(): Set<Label> = filterTo(mutableSetOf()) { it !in visited }
-
-    var currentDepth = depth
-    var currentTargets = targets.filter { isWorkspaceTarget(it) }.toSet()
-
-    while (currentDepth > 0) {
-      visited.addAll(currentTargets)
-      currentTargets = directDependenciesIds(currentTargets).filterNotVisited()
-      currentDepth--
-    }
-
-    // Handle last level separately
-    visited.addAll(currentTargets)
-    val (targetsWithStrictDeps, targetsWithNonStrictDeps) = currentTargets.partition { targetSupportsStrictDeps(it) }
-    val directDependenciesOfNonStrictDeps = directCompileDependenciesIds(targetsWithNonStrictDeps).filterNotVisited()
-    val directDependenciesOfStrictDeps = directCompileDependenciesIds(targetsWithStrictDeps).filterNotVisited()
-
-    // Add all transitive libraries for targets that don't support strict deps to avoid red code
-    val (externalTargets, internalTargets) = directDependenciesOfNonStrictDeps.partition { isExternalTarget(it) }
-    val toVisit = ArrayDeque(externalTargets)
-    visited.addAll(toVisit)
-    while (toVisit.isNotEmpty()) {
-      val current = toVisit.removeFirst()
-      val directDependencies = idToDirectDependenciesIds[current].orEmpty()
-      for (dependency in directDependencies) {
-        if (dependency !in visited) {
-          visited.add(dependency)
-          toVisit.addLast(dependency)
+    fun bfs(ignoreMaxDepth: Boolean = false) {
+      while (toVisit.isNotEmpty()) {
+        val current = toVisit.remove()
+        val currentDepth = depth.getOrDefault(current, 0)
+        if (!ignoreMaxDepth && currentDepth == maxDepth + 1) continue
+        val targetSupportsStrictDeps = targetSupportsStrictDeps(current)
+        for (dependency in idToDirectCompileDependenciesIds[current].orEmpty()) {
+          val dependencyDepth = depth.getOrDefault(dependency, Int.MAX_VALUE)
+          if (currentDepth + 1 < dependencyDepth) {
+            depth[dependency] = currentDepth + 1
+            toVisit.add(dependency)
+            if (!targetSupportsStrictDeps) {
+              dependenciesOfNonStrictDepsTargets.add(dependency)
+            }
+          }
         }
       }
     }
 
-    val directDependencies = internalTargets.filterNotVisited() + directDependenciesOfStrictDeps.filterNotVisited()
+    bfs()
+
+    // Only traverse non-workspace targets if someone depends on them
+    nonWorkspaceTargets.filter { it in depth }.forEach { target ->
+      depth[target] = 0
+      toVisit.add(target)
+    }
+    bfs()
+
+    // Add all transitive external libraries for targets that don't support strict deps to avoid red code
+    val directDependencies = depth.filter { (_, depth) -> depth > maxDepth }.map { (target, _) -> target }
+    toVisit.addAll(directDependencies.filter { it in dependenciesOfNonStrictDepsTargets }.filter { isExternalTarget(it) })
+    bfs(ignoreMaxDepth = true)
+
+    val (finalTargets, finalDirectDependencies) = depth.entries.partition { (_, depth) -> depth <= maxDepth }
 
     return TargetsAtDepth(
-      targets = idsToTargetInfo(visited),
-      directDependencies = idsToTargetInfo(directDependencies),
+      targets = idsToTargetInfo(finalTargets.map { (target, _) -> target }),
+      directDependencies = idsToTargetInfo(finalDirectDependencies.map { (target, _) -> target }),
     )
   }
 

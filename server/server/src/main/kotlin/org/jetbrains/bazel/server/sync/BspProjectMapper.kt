@@ -135,7 +135,8 @@ class BspProjectMapper(
       is RepoMappingDisabled -> WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap())
       is BzlmodRepoMapping ->
         WorkspaceBazelRepoMappingResult(
-          apparentRepoNameToCanonicalName = repoMapping.apparentRepoNameToCanonicalName,
+          apparentRepoNameToCanonicalName =
+            repoMapping.apparentRepoNameToCanonicalName,
           canonicalRepoNameToPath = repoMapping.canonicalRepoNameToPath,
         )
     }
