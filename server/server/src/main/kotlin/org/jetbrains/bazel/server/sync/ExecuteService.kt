@@ -236,10 +236,16 @@ class ExecuteService(
 
   fun addCoverageOptions(command: BazelCommand, singleModule: Module) {
     command.options.add(BazelFlag.combinedReportLcov())
-    val packageName =
-      singleModule.label.packagePath.pathSegments
-        .first()
-    command.options.add(arg("instrumentation_filter", "^//" + packageName + "[/:]"))
+    if (singleModule.label.packagePath.pathSegments
+        .isEmpty()
+    ) {
+      command.options.add(BazelFlag.instrumentationFilterAll())
+    } else {
+      val packageName =
+        singleModule.label.packagePath.pathSegments
+          .first()
+      command.options.add(arg("instrumentation_filter", "^//" + packageName + "[/:]"))
+    }
   }
 
   suspend fun mobileInstall(params: MobileInstallParams): MobileInstallResult {

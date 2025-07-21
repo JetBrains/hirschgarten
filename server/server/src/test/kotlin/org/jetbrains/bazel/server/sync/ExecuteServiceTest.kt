@@ -110,7 +110,7 @@ class ExecuteServiceTest {
     }
 
   @Test
-  fun `addCoverageOptions should add coverage options`() =
+  fun `addCoverageOptions should add coverage options for label with path segments`() =
     runTest {
       // given
       val targetLabel = Label.parse("//src/test:my_test")
@@ -135,6 +135,34 @@ class ExecuteServiceTest {
       val size = bazelTestCommand.options.size
       bazelTestCommand.options[size - 2] shouldBe "--combined_report=lcov"
       bazelTestCommand.options[size - 1] shouldBe "--instrumentation_filter=^//src[/:]"
+    }
+
+  @Test
+  fun `addCoverageOptions should add coverage options  for label without path segments`() =
+    runTest {
+      // given
+      val targetLabel = Label.parse("//:my_test")
+      val testParams =
+        TestParams(
+          targets = listOf(targetLabel),
+          originId = "test-origin",
+          coverage = true,
+        )
+
+      val mockModule =
+        createMockModule(
+          label = targetLabel,
+          languages = setOf(LanguageClass.JAVA),
+        )
+
+      setupMocksForSuccessfulExecution(listOf(mockModule), listOf(targetLabel))
+
+      val bazelTestCommand = BazelCommand.Test("/path/to/bazel_binary")
+      executeService.addCoverageOptions(bazelTestCommand, mockModule)
+
+      val size = bazelTestCommand.options.size
+      bazelTestCommand.options[size - 2] shouldBe "--combined_report=lcov"
+      bazelTestCommand.options[size - 1] shouldBe "--instrumentation_filter=[:]"
     }
 
   private suspend fun setupMocksForSuccessfulExecution(modules: List<Module>, targets: List<Label>) {
