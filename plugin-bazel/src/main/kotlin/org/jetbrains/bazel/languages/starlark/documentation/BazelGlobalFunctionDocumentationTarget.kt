@@ -9,7 +9,7 @@ import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.platform.backend.presentation.TargetPresentation
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.highlighting.StarlarkHighlightingColors
-import org.jetbrains.jewel.ui.util.toRgbaHexString
+import java.awt.Color
 
 @Suppress("UnstableApiUsage")
 class BazelGlobalFunctionDocumentationTarget(symbol: BazelGlobalFunctionDocumentationSymbol) :
@@ -32,6 +32,8 @@ class BazelGlobalFunctionDocumentationTarget(symbol: BazelGlobalFunctionDocument
     val color = scheme.getAttributes(key, true)
     return "<span style='color:${color.foregroundColor.toRgbaHexString()}'>$str</span>"
   }
+
+  private fun Color.toRgbaHexString() = "#%02X%02X%02X%02X".format(red, green, blue, alpha)
 
   private fun computeFunctionDefinition(function: BazelGlobalFunction): String {
     val functionName = colorString(function.name, StarlarkHighlightingColors.FUNCTION_DECLARATION)
