@@ -5,6 +5,7 @@ import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider

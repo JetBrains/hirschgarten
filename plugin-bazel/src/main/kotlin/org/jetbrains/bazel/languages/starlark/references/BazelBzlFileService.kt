@@ -45,7 +45,7 @@ class BazelBzlFileService(private val project: Project) {
   }
 
   private fun updateCache() {
-    val newMap = mutableMapOf<String, List<ResolvedLabel>>()
+    val newMap = mutableMapOf<String, List<CanonicalLabel>>()
 
     val canonicalRepoPaths =
       project.canonicalRepoNameToPath.values
@@ -78,8 +78,8 @@ class BazelBzlFileService(private val project: Project) {
             val relativeTargetBaseDirectory = targetBaseDirectory.toNioPath().relativeToOrNull(repoPath) ?: return CONTINUE
 
             val label =
-          CanonicalLabel(
-            repo = Canonical(canonicalName),
+              CanonicalLabel(
+                repo = Canonical(canonicalName),
                 packagePath = Package(relativeTargetBaseDirectory.toString().split("/")),
                 target = SingleTarget(targetName),
               )
@@ -92,7 +92,7 @@ class BazelBzlFileService(private val project: Project) {
     canonicalRepoNameToBzlFiles = newMap
   }
 
-  fun getApparentRepoNameToFiles(): Map<String, List<Label>> = canonicalRepoNameToBzlFiles
+  fun getApparentRepoNameToFiles(): Map<String, List<CanonicalLabel>> = canonicalRepoNameToBzlFiles
 
   @TestOnly
   fun forceUpdateCache() {

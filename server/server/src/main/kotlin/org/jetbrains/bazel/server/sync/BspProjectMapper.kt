@@ -228,7 +228,13 @@ class BspProjectMapper(
     val documentRelativePath =
       inverseSourcesParams.textDocument.path
         .relativeToOrNull(project.workspaceRoot) ?: throw RuntimeException("File path outside of project root")
-    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext, project.repoMapping)
+    return InverseSourcesQuery.inverseSourcesQuery(
+      documentRelativePath,
+      bazelRunner,
+      project.bazelRelease,
+      project.workspaceContext,
+      project.repoMapping,
+    )
   }
 
   fun dependencySources(project: AspectSyncProject, dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {

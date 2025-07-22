@@ -74,7 +74,7 @@ class DependencyGraph(
 
   data class TargetsAtDepth(val targets: Set<TargetInfo>, val directDependencies: Set<TargetInfo>)
 
-  fun allTransitiveTargets(targets: Set<Label>): TargetsAtDepth =
+  fun allTransitiveTargets(targets: Set<CanonicalLabel>): TargetsAtDepth =
     TargetsAtDepth(
       targets = idsToTargetInfo(targets) + calculateStrictlyTransitiveDependencies(targets),
       directDependencies = emptySet(),

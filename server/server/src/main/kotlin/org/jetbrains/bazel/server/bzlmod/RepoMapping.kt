@@ -25,7 +25,6 @@ data class BzlmodRepoMapping(
 
 data object RepoMappingDisabled : RepoMapping
 
-
 fun Label.canonicalize(repoMapping: RepoMapping): CanonicalLabel =
   when (this) {
     is ApparentLabel -> {

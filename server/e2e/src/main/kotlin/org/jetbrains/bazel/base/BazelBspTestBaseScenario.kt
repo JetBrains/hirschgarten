@@ -9,6 +9,7 @@ import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
@@ -16,7 +17,6 @@ import org.jetbrains.bazel.startup.IntellijBidirectionalMap
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
-import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.testkit.client.TestClient

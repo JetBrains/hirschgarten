@@ -9,6 +9,7 @@ import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
@@ -46,7 +47,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 
-fun String.label() = TargetPattern.parse(this)
+fun String.label() = Label.parse(this)
 
 val mockContext =
   WorkspaceContext(
@@ -190,7 +191,7 @@ class BazelRunnerBuilderTest {
   fun `run without program arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label().assumeLabel())
+        run("in1".label())
       }
 
     command.buildExecutionDescriptor().command shouldContainExactly
@@ -212,7 +213,7 @@ class BazelRunnerBuilderTest {
   fun `run with program arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label().assumeLabel()) {
+        run("in1".label()) {
           programArguments.addAll(listOf("hello", "world"))
         }
       }
@@ -239,7 +240,7 @@ class BazelRunnerBuilderTest {
   fun `run doesn't set environment using arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label().assumeLabel()) {
+        run("in1".label()) {
           environment["key"] = "value"
         }
       }

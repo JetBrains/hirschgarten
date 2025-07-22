@@ -91,7 +91,7 @@ class BazelProjectMapper(
         // the import depth mechanism does not apply for go targets sync
         // for now, go sync assumes to retrieve all transitive targets, which is equivalent to `import_depth: -1`
         // in fact, go sync should not even go through this highly overfitted JVM model: https://youtrack.jetbrains.com/issue/BAZEL-2210
-        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { targets[it]?.hasGoTargetInfo() == true }
+        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { targets[it]?.goTargetInfo != null }
         val nonGoTargetsAtDepth =
           dependencyGraph
             .allTargetsAtDepth(
