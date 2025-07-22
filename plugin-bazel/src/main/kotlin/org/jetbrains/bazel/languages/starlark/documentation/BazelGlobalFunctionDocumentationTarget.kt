@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.documentation
 
-import com.intellij.ide.startup.importSettings.models.EditorColorScheme
 import com.intellij.model.Pointer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
