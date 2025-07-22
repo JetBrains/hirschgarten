@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
@@ -258,8 +258,11 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Query(bazelBinary: String, private val allowManualTargetsSync: Boolean) :
-    BazelCommand(bazelBinary),
+  class Query(
+    bazelBinary: String,
+    private val allowManualTargetsSync: Boolean,
+    private val systemInfoProvider: SystemInfoProvider,
+  ) : BazelCommand(bazelBinary),
     HasMultipleTargets {
     override val targets: MutableList<TargetPattern> = mutableListOf()
     override val excludedTargets: MutableList<TargetPattern> = mutableListOf()
@@ -288,7 +291,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
 
     private fun excludeManualTargetsQueryString(targetString: String): String =
-      if (SystemInfo.isWindows) {
+      if (systemInfoProvider.isWindows) {
         "attr('tags', '^((?!manual).)*$', $targetString)"
       } else {
         "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"

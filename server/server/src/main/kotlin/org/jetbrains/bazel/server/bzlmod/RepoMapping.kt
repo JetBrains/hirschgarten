@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.server.bzlmod
 
-import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.label.ApparentLabel
 import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
@@ -103,7 +103,8 @@ suspend fun calculateRepoMapping(
   }
 
   val apparentRepoNameToCanonicalName =
-    BidirectionalMap<String, String>()
+    BidirectionalMap
+      .getTypedInstance<String, String>()
       .apply { putAll(moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName) }
 
   return BzlmodRepoMapping(

@@ -74,6 +74,12 @@ class DependencyGraph(
 
   data class TargetsAtDepth(val targets: Set<TargetInfo>, val directDependencies: Set<TargetInfo>)
 
+  fun allTransitiveTargets(targets: Set<Label>): TargetsAtDepth =
+    TargetsAtDepth(
+      targets = idsToTargetInfo(targets) + calculateStrictlyTransitiveDependencies(targets),
+      directDependencies = emptySet(),
+    )
+
   fun allTargetsAtDepth(
     maxDepth: Int,
     targets: Set<CanonicalLabel>,
@@ -82,10 +88,7 @@ class DependencyGraph(
     isWorkspaceTarget: (CanonicalLabel) -> Boolean = { true },
   ): TargetsAtDepth {
     if (maxDepth < 0) {
-      return TargetsAtDepth(
-        targets = idsToTargetInfo(targets) + calculateStrictlyTransitiveDependencies(targets),
-        directDependencies = emptySet(),
-      )
+      return allTransitiveTargets(targets)
     }
 
     val depth = mutableMapOf<CanonicalLabel, Int>()

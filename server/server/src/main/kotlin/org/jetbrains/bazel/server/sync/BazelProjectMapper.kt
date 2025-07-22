@@ -2,13 +2,12 @@ package org.jetbrains.bazel.server.sync
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
-import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
-import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.Dependency
 import org.jetbrains.bazel.info.FileLocation
@@ -18,6 +17,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
@@ -54,6 +54,7 @@ class BazelProjectMapper(
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
+  private val environmentProvider: EnvironmentProvider,
 ) {
   private suspend fun <T> measure(description: String, body: suspend () -> T): T =
     bspTracer.spanBuilder(description).useWithScope { body() }
@@ -87,11 +88,15 @@ class BazelProjectMapper(
     val transitiveCompileTimeJarsTargetKinds = workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toSet()
     val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
-        val targetsAtDepth =
+        // the import depth mechanism does not apply for go targets sync
+        // for now, go sync assumes to retrieve all transitive targets, which is equivalent to `import_depth: -1`
+        // in fact, go sync should not even go through this highly overfitted JVM model: https://youtrack.jetbrains.com/issue/BAZEL-2210
+        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { targets[it]?.hasGoTargetInfo() == true }
+        val nonGoTargetsAtDepth =
           dependencyGraph
             .allTargetsAtDepth(
               workspaceContext.importDepth.value,
-              rootTargets,
+              nonGoTargetLabels.toSet(),
               isExternalTarget = { !isTargetTreatedAsInternal(it, repoMapping) },
               targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
@@ -100,12 +105,17 @@ class BazelProjectMapper(
                 } == true
               },
             )
-        val (targetsToImport, nonWorkspaceTargets) =
-          targetsAtDepth.targets.partition {
+        val (nonGoTargetsToImport, nonWorkspaceTargets) =
+          nonGoTargetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
           }
-        val libraries = (nonWorkspaceTargets + targetsAtDepth.directDependencies).associateBy { it.id }
-        targetsToImport.asSequence() to libraries
+        val goTargetsToImport =
+          dependencyGraph
+            .allTransitiveTargets(goTargetLabels.toSet())
+            .targets
+            .filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags) }
+        val libraries = (nonWorkspaceTargets + nonGoTargetsAtDepth.directDependencies).associateBy { it.id }
+        (nonGoTargetsToImport + goTargetsToImport).asSequence() to libraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -1142,7 +1152,7 @@ class BazelProjectMapper(
   }
 
   private fun collectInheritedEnvs(targetInfo: TargetInfo): Map<String, String> =
-    targetInfo.envInherit.associateWith { EnvironmentUtil.getValue(it).orEmpty() }
+    targetInfo.envInherit.associateWith { environmentProvider.getValue(it) ?: "" }
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {

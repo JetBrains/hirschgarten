@@ -12,6 +12,7 @@ intellij_integration_test_suite(
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//plugin-bazel/src:test_fixtures",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],
