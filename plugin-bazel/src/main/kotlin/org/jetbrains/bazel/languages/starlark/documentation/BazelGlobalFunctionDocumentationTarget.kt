@@ -29,8 +29,8 @@ class BazelGlobalFunctionDocumentationTarget(symbol: BazelGlobalFunctionDocument
   val scheme = EditorColorsManager.getInstance().globalScheme
 
   private fun colorString(str: String, key: TextAttributesKey): String {
-    val color = scheme.getAttributes(key, true)
-    return "<span style='color:${color.foregroundColor.toRgbaHexString()}'>$str</span>"
+    val color = scheme.getAttributes(key, true).foregroundColor ?: return str
+    return "<span style='color:${color.toRgbaHexString()}'>$str</span>"
   }
 
   private fun Color.toRgbaHexString() = "#%02X%02X%02X%02X".format(red, green, blue, alpha)
