@@ -6,5 +6,6 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:com_google_code_gson_gson",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
     ],
 )

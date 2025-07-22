@@ -11,9 +11,6 @@ import com.github.javaparser.ast.expr.NameExpr
 import com.github.javaparser.ast.expr.NormalAnnotationExpr
 import com.github.javaparser.ast.expr.StringLiteralExpr
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr
-import common.Environment
-import common.BazelGlobalFunction
-import common.BazelGlobalFunctionParameter
 import common.serializeFunctionsTo
 import java.io.File
 import kotlin.system.exitProcess

@@ -1,8 +1,7 @@
 import com.google.devtools.build.lib.starlarkdocextract.StardocOutputProtos
-import common.Environment
-import common.BazelGlobalFunction
-import common.BazelGlobalFunctionParameter
 import common.serializeFunctionsTo
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 import java.io.FileInputStream
 import kotlin.system.exitProcess
 

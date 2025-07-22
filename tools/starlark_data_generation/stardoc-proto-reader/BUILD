@@ -9,7 +9,8 @@ kt_jvm_binary(
     main_class = "ProtobufReader",
     deps = [
         ":stardoc_output_java_proto",
-        "//common:commons",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
+        "//tools/starlark_data_generation/common:commons",
     ],
 )
 

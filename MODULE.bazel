@@ -73,6 +73,7 @@ maven.install(
         "org.kodein.di:kodein-di:7.25.0",
         "org.mockito:mockito-core:5.8.0",
         "org.scala-lang:scala-library:2.13.16",
+        "com.github.javaparser:javaparser-core:3.27.0",
     ],
     fail_if_repin_required = True,
     fetch_sources = True,
