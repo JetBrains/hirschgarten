@@ -6,6 +6,7 @@ import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bazel.server.label.label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -662,6 +663,41 @@ class DependencyGraphTest {
       DependencyGraph.TargetsAtDepth(
         targets = setOf(target),
         directDependencies = setOf(library1, target1),
+      )
+    dependencies shouldBe expectedDependencies
+  }
+
+  @Test
+  fun `should return all transitive deps for libraries if a non-strict target depends on it transitively`() {
+    // given
+    val target = targetInfo("//target", listOf("//target1"))
+    val target1 = targetInfo("//target1", listOf("@maven//library1"))
+    val library1 = targetInfo("@maven//library1", listOf("@maven//library2"))
+    val library2 = targetInfo("@maven//library2", listOf("@maven//library3"))
+    val library3 = targetInfo("@maven//library3")
+    val rootTargets = setOf(Label.parse("//target"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, library1, library2, library3)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(
+        0,
+        setOf(Label.parse("//target"), Label.parse("//target1")),
+        targetSupportsStrictDeps = { label ->
+          label == target1.label()
+        },
+        isExternalTarget = { label ->
+          label.assumeResolved().repoName == "maven"
+        },
+      )
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target, target1),
+        directDependencies = setOf(library1, library2, library3),
       )
     dependencies shouldBe expectedDependencies
   }
