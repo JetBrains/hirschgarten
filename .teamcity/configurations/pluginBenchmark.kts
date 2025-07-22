@@ -108,12 +108,3 @@ object BenchmarkDefaultGitHub : BenchmarkDefault(
   }
 )
 
-
-// Space variants
-object SpaceBenchmarkWithVersion : BenchmarkWithBazelVersion(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
-object SpaceBenchmarkDefault : BenchmarkDefault(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)

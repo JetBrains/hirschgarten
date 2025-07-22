@@ -4,6 +4,7 @@ import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import java.util.PriorityQueue
+import kotlin.math.min
 
 class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private val idToTargetInfo: Map<Label, TargetInfo> = emptyMap()) {
   private val idToDirectDependenciesIds = mutableMapOf<Label, Set<Label>>()
@@ -106,15 +107,26 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
         val current = toVisit.remove()
         val currentDepth = depth.getOrDefault(current, 0)
         if (!ignoreMaxDepth && currentDepth == maxDepth + 1) continue
-        val targetSupportsStrictDeps = targetSupportsStrictDeps(current)
-        for (dependency in idToDirectCompileDependenciesIds[current].orEmpty()) {
-          val dependencyDepth = depth.getOrDefault(dependency, Int.MAX_VALUE)
-          if (currentDepth + 1 < dependencyDepth) {
-            depth[dependency] = currentDepth + 1
-            toVisit.add(dependency)
-            if (!targetSupportsStrictDeps) {
-              dependenciesOfNonStrictDepsTargets.add(dependency)
+
+        var isDependencyOfNonStrictDepsTarget = current in dependenciesOfNonStrictDepsTargets
+        if (!isDependencyOfNonStrictDepsTarget && !targetSupportsStrictDeps(current)) {
+          isDependencyOfNonStrictDepsTarget = true
+          dependenciesOfNonStrictDepsTargets.add(current)
+        }
+
+        for (dep in idToDirectCompileDependenciesIds[current].orEmpty()) {
+          val dependencyDepth = depth.getOrDefault(dep, Int.MAX_VALUE)
+          val shouldUpdateDepth = currentDepth + 1 < dependencyDepth
+          val shouldAddToDependenciesOfNonStrictTargets = isDependencyOfNonStrictDepsTarget && dep !in dependenciesOfNonStrictDepsTargets
+
+          if (shouldUpdateDepth || shouldAddToDependenciesOfNonStrictTargets) {
+            if (shouldUpdateDepth) {
+              depth[dep] = currentDepth + 1
             }
+            if (shouldAddToDependenciesOfNonStrictTargets) {
+              dependenciesOfNonStrictDepsTargets.add(dep)
+            }
+            toVisit.add(dep)
           }
         }
       }

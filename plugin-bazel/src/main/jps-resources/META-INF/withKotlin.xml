@@ -31,7 +31,7 @@
     <postStartupActivity implementation="org.jetbrains.bazel.kotlin.startup.SuggestEnableK2StartupActivity" />
     <notificationGroup
       displayType="BALLOON"
-      id="Enable K2 Compiler Mode with Bazel"
+      id="%post.startup.activity.id.enable.k2.compiler"
     />
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
