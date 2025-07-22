@@ -1,26 +1,35 @@
-package org.jetbrains.bazel.server.client
+package org.jetbrains.bazel.logger
 
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.IdeaLogRecordFormatter
 import com.intellij.openapi.diagnostic.JulLogger
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.RollingFileHandler
 import kotlinx.datetime.Instant
 import java.util.logging.Level
 import java.util.logging.LogRecord
 
-class BazelLogger {
-  private val logDir = PathManager.getLogDir().resolve("bsp-logs").resolve("bsp.log")
+abstract class BazelLogger {
+  abstract fun error(message: String)
+
+  abstract fun warn(message: String)
+
+  abstract fun info(message: String)
+
+  abstract fun trace(message: String)
+}
+
+class BazelLoggerFactory {
+  private val logDir = PathManager.getLogDir().resolve("bazel-logs").resolve("bazel.log")
 
   private val handler = RollingFileHandler(logDir, 20_000_000L, 10, true)
 
   private val baseLoggerLevel = Level.INFO
 
   init {
-    handler.formatter = BspLogsFormatter
+    handler.formatter = BazelLogsFormatter
   }
 
-  fun getBspLoggerInstance(name: String): Logger {
+  fun getBazelLoggerInstance(name: String): BazelLogger {
     val logger =
       java.util.logging.Logger
         .getLogger(name)
@@ -29,10 +38,20 @@ class BazelLogger {
     logger.addHandler(handler)
     logger.setUseParentHandlers(false)
     logger.setLevel(baseLoggerLevel)
-    return JulLogger(logger)
+    return object : BazelLogger() {
+      val julLogger = JulLogger(logger)
+
+      override fun error(message: String) = julLogger.error(message)
+
+      override fun warn(message: String) = julLogger.warn(message)
+
+      override fun info(message: String) = julLogger.info(message)
+
+      override fun trace(message: String) = julLogger.trace(message)
+    }
   }
 
-  private object BspLogsFormatter : IdeaLogRecordFormatter() {
+  private object BazelLogsFormatter : IdeaLogRecordFormatter() {
     private val creationTime = System.currentTimeMillis()
 
     private val separator = System.lineSeparator()
@@ -50,4 +69,4 @@ class BazelLogger {
   }
 }
 
-inline fun <reified T : Any> bazelLogger(): Logger = BazelLogger().getBspLoggerInstance("#${T::class.java}")
+inline fun <reified T : Any> bazelLogger(): BazelLogger = BazelLoggerFactory().getBazelLoggerInstance("#${T::class.java}")
