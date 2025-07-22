@@ -23,7 +23,7 @@ class RunAnythingBazelQueryItem(command: String, icon: Icon?) : RunAnythingItemB
     if (toComplete.startsWith("-")) {
       val knownOptions = BazelQueryCommonOptions.getAll()
       val option = knownOptions.firstOrNull {
-        "--${it.name.split("=").first()}".startsWith(toComplete) || "-${it.name.split("=").first()}".startsWith(toComplete)
+        "--${it.name}".startsWith(toComplete.split("=").first())
       }
       if (option != null) {
         val flag = Flag.byName("--${option.name.split("=").first()}")
