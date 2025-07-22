@@ -19,7 +19,7 @@ class RunAnythingBazelQueryItem(command: String, icon: Icon?) : RunAnythingItemB
     val command = getCommand()
     val component = super.createComponent(pattern, isSelected, hasFocus) as JPanel
 
-    val toComplete = StringUtil.notNullize(StringUtil.substringAfterLast(command, " "))
+    val toComplete = StringUtil.substringAfterLast(command, " ") ?: ""
     if (toComplete.startsWith("-")) {
       val knownOptions = BazelQueryCommonOptions.getAll()
       val option = knownOptions.firstOrNull {
@@ -42,11 +42,18 @@ class RunAnythingBazelQueryItem(command: String, icon: Icon?) : RunAnythingItemB
       val function = BazelQueryFunction.getAll()
         .firstOrNull { it.name == functionName }
       if (function != null) {
+        val arguments = function.arguments.joinToString(separator = ", ") { it.name }
+        if (arguments.isNotEmpty()) {
+          component.add(
+            createArgsComponent("$arguments )"),
+            BorderLayout.CENTER
+          )
+        }
         val description = function.description
         if (description.isNotEmpty()) {
           component.add(
             createDescriptionComponent(description),
-            BorderLayout.EAST
+            BorderLayout.EAST,
           )
         }
       }
@@ -54,10 +61,19 @@ class RunAnythingBazelQueryItem(command: String, icon: Icon?) : RunAnythingItemB
     return component
   }
 
-  private fun createDescriptionComponent(description: String) : SimpleColoredComponent {
+  private fun createArgsComponent(args: String): SimpleColoredComponent {
+    val argsComponent = SimpleColoredComponent()
+    argsComponent.append(
+      StringUtil.shortenTextWithEllipsis(args, 100, 0),
+      SimpleTextAttributes.GRAYED_ATTRIBUTES,
+    )
+    return argsComponent
+  }
+
+  private fun createDescriptionComponent(description: String): SimpleColoredComponent {
     val descriptionComponent = SimpleColoredComponent()
     descriptionComponent.append(
-      " " + StringUtil.shortenTextWithEllipsis(description, 200, 0),
+      " " + StringUtil.shortenTextWithEllipsis(description, 150, 0),
       SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES,
     )
     return descriptionComponent
@@ -65,6 +81,6 @@ class RunAnythingBazelQueryItem(command: String, icon: Icon?) : RunAnythingItemB
 
   private fun String.isFunction(): Boolean =
     !startsWith("-") && BazelQueryFunction.getAll().any {
-      this.split("<").first().startsWith("${it.name}(")
+      this.startsWith("${it.name}(")
     }
 }

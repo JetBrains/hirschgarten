@@ -59,11 +59,12 @@ class BazelQueryRunAnythingProvider : RunAnythingCommandLineProvider() {
   private fun determineCompletionContext(commandLine: CommandLine): CompletionContext {
     val command = commandLine.command.trim()
     val prefix = commandLine.prefix.trim()
+    println("command: $command, prefix: $prefix")
 
     if (command.contains("--")) {
       return CompletionContext.FLAG
     }
-    if (command.isEmpty()) {
+    if (command.isBlank()) {
       return CompletionContext.EMPTY
     }
     if (listOf("(", ",", "+", "^", "\\", "intersect", "union", "except", "equals", "in" ).none {
@@ -77,7 +78,7 @@ class BazelQueryRunAnythingProvider : RunAnythingCommandLineProvider() {
   private fun functionSuggestions(prefix: String): Sequence<String> {
     return BazelQueryFunction.getAll()
       .asSequence()
-      .map { it.name + '(' + it.arguments.map { '<' + it.type + '>' }.joinToString(",") + ')' }
+      .map { it.name + "(" }
       .filter { it.startsWith(prefix) }
   }
 
