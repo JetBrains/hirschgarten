@@ -60,7 +60,7 @@ object ProjectViewSection {
       SectionMetadata("target_shard_size", SectionType.Scalar.Integer),
       SectionMetadata("targets", SectionType.List.String, TargetCompletionProvider()),
       SectionMetadata("import_run_configurations", SectionType.List.String, FiletypeCompletionProvider(".xml")),
-      SectionMetadata("test_sources", SectionType.List.String), // used by Google's plugin
+      SectionMetadata("test_sources", SectionType.List.String, DirectoriesCompletionProvider()), // used by Google's plugin
       SectionMetadata("gazelle_target", SectionType.Scalar.String),
       SectionMetadata("index_all_files_in_directories", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("python_code_generator_rule_names", SectionType.List.String),
@@ -78,7 +78,7 @@ object ProjectViewSection {
         ),
       ),
       SectionMetadata("java_language_level", SectionType.Scalar.String),
-      SectionMetadata("exclude_library", SectionType.List.String),
+      SectionMetadata("exclude_library", SectionType.List.String, DirectoriesCompletionProvider()),
       SectionMetadata("android_sdk_platform", SectionType.Scalar.String),
       SectionMetadata("generated_android_resource_directories", SectionType.List.String, DirectoriesCompletionProvider()),
       SectionMetadata("ts_config_rules", SectionType.List.String, TargetCompletionProvider()),
