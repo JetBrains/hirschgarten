@@ -56,10 +56,6 @@ object SampleRepoGitHub : SampleRepo(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object SampleRepoSpace : SampleRepo(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class LocalJdk(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -70,10 +66,6 @@ object LocalJdkGitHub : LocalJdk(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object LocalJdkSpace : LocalJdk(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class RemoteJdk(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -82,10 +74,6 @@ open class RemoteJdk(vcsRoot: GitVcsRoot) :
 
 object RemoteJdkGitHub : RemoteJdk(
   vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object RemoteJdkSpace : RemoteJdk(
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class ServerDownloadsBazelisk(vcsRoot: GitVcsRoot) :
@@ -103,10 +91,6 @@ object ServerDownloadsBazeliskGitHub : ServerDownloadsBazelisk(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object ServerDownloadsBazeliskSpace : ServerDownloadsBazelisk(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class KotlinProject(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -115,10 +99,6 @@ open class KotlinProject(vcsRoot: GitVcsRoot) :
 
 object KotlinProjectGitHub : KotlinProject(
   vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object KotlinProjectSpace : KotlinProject(
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class AndroidProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
@@ -140,10 +120,6 @@ object AndroidProjectGitHub : AndroidProject(
   },
 )
 
-object AndroidProjectSpace : AndroidProject(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class AndroidKotlinProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -163,10 +139,6 @@ object AndroidKotlinProjectGitHub : AndroidKotlinProject(
   },
 )
 
-object AndroidKotlinProjectSpace : AndroidKotlinProject(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class ScalaProject(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -175,10 +147,6 @@ open class ScalaProject(vcsRoot: GitVcsRoot) :
 
 object ScalaProjectGitHub : ScalaProject(
   vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object ScalaProjectSpace : ScalaProject(
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class PythonProject(vcsRoot: GitVcsRoot) :
@@ -191,10 +159,6 @@ object PythonProjectGitHub : PythonProject(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object PythonProjectSpace : PythonProject(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class JavaDiagnostics(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -203,10 +167,6 @@ open class JavaDiagnostics(vcsRoot: GitVcsRoot) :
 
 object JavaDiagnosticsGitHub : JavaDiagnostics(
   vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object JavaDiagnosticsSpace : JavaDiagnostics(
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class ManualTargets(vcsRoot: GitVcsRoot) :
@@ -219,10 +179,6 @@ object ManualTargetsGitHub : ManualTargets(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object ManualTargetsSpace : ManualTargets(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class BuildSync(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -231,10 +187,6 @@ open class BuildSync(vcsRoot: GitVcsRoot) :
 
 object BuildSyncGitHub : BuildSync(
   vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object BuildSyncSpace : BuildSync(
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class FirstPhaseSync(vcsRoot: GitVcsRoot) :
@@ -247,10 +199,6 @@ object FirstPhaseSyncGitHub : FirstPhaseSync(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object FirstPhaseSyncSpace : FirstPhaseSync(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class PartialSync(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -259,10 +207,6 @@ open class PartialSync(vcsRoot: GitVcsRoot) :
 
 object PartialSyncGitHub : PartialSync(
   vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object PartialSyncSpace : PartialSync(
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class NestedModules(vcsRoot: GitVcsRoot) :
@@ -275,10 +219,6 @@ object NestedModulesGitHub : NestedModules(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object NestedModulesSpace : NestedModules(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class ExternalAutoloads(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
@@ -287,8 +227,4 @@ open class ExternalAutoloads(vcsRoot: GitVcsRoot) :
 
 object ExternalAutoloadsGitHub : ExternalAutoloads(
   vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object ExternalAutoloadsSpace : ExternalAutoloads(
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )

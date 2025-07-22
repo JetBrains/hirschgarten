@@ -59,6 +59,3 @@ object GitHub : Aggregator(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object Space : Aggregator(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)

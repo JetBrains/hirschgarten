@@ -45,22 +45,14 @@ open class BaseBuildType(
       root(vcsRoot)
     }
 
-    if (vcsRoot.name == "hirschgarten-github") {
-      id("GitHub$name".toExtId())
-      if (requirements == null) {
-        requirements {
-          endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
-          equals("container.engine.osType", "linux")
-        }
-      } else {
-        this.requirements(requirements)
-      }
-    } else {
-      id("Space$name".toExtId())
+    id("GitHub$name".toExtId())
+    if (requirements == null) {
       requirements {
-        endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
+        endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
         equals("container.engine.osType", "linux")
       }
+    } else {
+      this.requirements(requirements)
     }
 
     this.features.dockerSupport(dockerSupport)
@@ -68,41 +60,27 @@ open class BaseBuildType(
     features {
       perfmon {
       }
-      if (vcsRoot.name == "hirschgarten-github") {
-        commitStatusPublisher {
-          publisher =
-            github {
-              githubUrl = "https://api.github.com"
-              authType =
-                personalToken {
-                  token = Utils.CredentialsStore.GitHubPassword
-                }
-            }
-          param("github_oauth_user", "hb-man")
-        }
-        pullRequests {
-          vcsRootExtId = "${vcsRoot.id}"
-          provider =
-            github {
-              authType =
-                token {
-                  token = Utils.CredentialsStore.GitHubPassword
-                }
-              filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
-            }
-        }
-      } else {
-        commitStatusPublisher {
-          vcsRootExtId = "${vcsRoot.id}"
-          publisher =
-            space {
-              authType =
-                connection {
-                  connectionId = "PROJECT_EXT_12"
-                }
-              displayName = "BazelTeamCityCloud"
-            }
-        }
+      commitStatusPublisher {
+        publisher =
+          github {
+            githubUrl = "https://api.github.com"
+            authType =
+              personalToken {
+                token = Utils.CredentialsStore.GitHubPassword
+              }
+          }
+        param("github_oauth_user", "hb-man")
+      }
+      pullRequests {
+        vcsRootExtId = "${vcsRoot.id}"
+        provider =
+          github {
+            authType =
+              token {
+                token = Utils.CredentialsStore.GitHubPassword
+              }
+            filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
+          }
       }
     }
     this.steps {
@@ -144,19 +122,3 @@ object GitHubVcs : GitVcsRoot({
   param("tokenType", "permanent")
 })
 
-object SpaceVcs : GitVcsRoot({
-  name = "hirschgarten-space"
-  url = "https://git.jetbrains.team/bazel/hirschgarten.git"
-  branch = "main"
-  branchSpec = """
-    +:refs/heads/*
-    +:(refs/merge/*)
-""".trimIndent()
-  authMethod =
-    password {
-      userName = "x-oauth-basic"
-      password = Utils.CredentialsStore.SpaceToken
-    }
-  param("oauthProviderId", "PROJECT_EXT_15")
-  param("tokenType", "permanent")
-})
