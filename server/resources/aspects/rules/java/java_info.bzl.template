@@ -1,5 +1,6 @@
 #if( $javaEnabled == "true" && $bazel8OrAbove == "true" && $rulesetName != "" )
 load("@${rulesetName}//java/common:java_info.bzl", "JavaInfo")
+load("@${rulesetName}//java/common:java_plugin_info.bzl", "JavaPluginInfo")
 #end
 
 load("//aspects:utils/utils.bzl", "create_struct", "to_file_location")
@@ -16,6 +17,17 @@ def get_java_info(target):
     #if( $javaEnabled == "true" )
     if JavaInfo in target:
         return target[JavaInfo]
+    else:
+        return None
+
+    #else
+    return None
+    #end
+
+def get_java_plugin_info(target):
+    #if( $javaEnabled == "true" )
+    if JavaPluginInfo in target:
+        return target[JavaPluginInfo]
     else:
         return None
 
