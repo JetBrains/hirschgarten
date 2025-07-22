@@ -24,7 +24,6 @@ import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.DebugHelper.buildBeforeRun
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
-import org.jetbrains.bazel.server.sync.DebugHelper.verifyDebugRequest
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
@@ -97,13 +96,10 @@ class ExecuteService(
    * If `debugArguments` is empty, run task will be executed normally without any debugging options
    */
   suspend fun runWithDebug(params: RunWithDebugParams): RunResult {
-    val modules = selectModules(listOf(params.runParams.target))
-    val singleModule = modules.singleOrResponseError(params.runParams.target)
     val requestedDebugType = params.debug
     val debugArguments = generateRunArguments(requestedDebugType)
     val debugOptions = generateRunOptions(requestedDebugType)
     val buildBeforeRun = buildBeforeRun(requestedDebugType)
-    verifyDebugRequest(requestedDebugType, singleModule)
 
     return runImpl(params.runParams, debugArguments, debugOptions, buildBeforeRun)
   }
@@ -150,10 +146,7 @@ class ExecuteService(
   suspend fun testWithDebug(params: TestParams): TestResult {
     val debugArguments =
       if (params.debug != null) {
-        val modules = selectModules(params.targets)
-        val singleModule = modules.singleOrResponseError(params.targets.first())
         val requestedDebugType = params.debug
-        verifyDebugRequest(requestedDebugType, singleModule)
         generateRunArguments(requestedDebugType)
       } else {
         null
@@ -297,10 +290,3 @@ class ExecuteService(
         workspaceContext.allowManualTargetsSync.value
     )
 }
-
-private fun <T> List<T>.singleOrResponseError(requestedTarget: Label): T =
-  when {
-    this.isEmpty() -> error("No supported target found for $requestedTarget")
-    this.size == 1 -> this.single()
-    else -> error("More than one supported target found for $requestedTarget")
-  }
