@@ -48,6 +48,3 @@ object GitHub : Build(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object Space : Build(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
