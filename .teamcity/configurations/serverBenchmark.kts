@@ -30,6 +30,3 @@ object GitHub : Benchmark(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object Space : Benchmark(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)

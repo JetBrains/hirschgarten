@@ -3,7 +3,11 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 kt_jvm_library(
     name = "startup",
     srcs = glob(["*.kt"]),
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = [
+        "//commons:__subpackages__",
+        "//plugin-bazel:__subpackages__",
+        "//server:__subpackages__",
+    ],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extensionPoints",
