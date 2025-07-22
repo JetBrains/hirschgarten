@@ -25,6 +25,3 @@ object GitHub : FormatChecker(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object Space : FormatChecker(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
