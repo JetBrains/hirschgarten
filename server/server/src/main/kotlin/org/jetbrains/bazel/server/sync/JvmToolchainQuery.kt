@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonSyntaxException
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -62,21 +63,14 @@ object JvmToolchainQuery {
         .waitAndGetResult(ensureAllOutputRead = true)
     if (aqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for jvm toolchain info")
 
-    // Extract target-specific java_home, toolchain_path, and jvm_opts from aquery
-    val (javaHome, toolchainPath, jvmOpts) = parseJavaHomeAndToolchainPathFromAquery(aqueryResult.stdout)
-
-    return JvmToolchainInfo(
-      java_home = javaHome,
-      toolchain_path = toolchainPath,
-      jvm_opts = jvmOpts,
-    )
+    return parseJavaHomeAndToolchainPathFromAquery(aqueryResult.stdout)
   }
 
   /**
    * Extract java_home, toolchain_path, and jvm_opts from aquery result.
    * Uses -jar as delimiter: everything before -jar are JVM options, everything after are compiler options.
    */
-  private fun parseJavaHomeAndToolchainPathFromAquery(stdout: String): Triple<String, String, List<String>> {
+  private fun parseJavaHomeAndToolchainPathFromAquery(stdout: String): JvmToolchainInfo {
     val gson = Gson()
     val jsonObject = gson.fromJson(stdout, JsonObject::class.java)
     val actions = jsonObject.getAsJsonArray("actions")
@@ -110,10 +104,11 @@ object JvmToolchainQuery {
     // Extract java_home from first argument
     if (arguments.size() > 0) {
       val javaExec = arguments[0].asString
-      if (javaExec.endsWith("/bin/java") || javaExec.endsWith("/java")) {
-        javaHome = javaExec.substring(0, javaExec.lastIndexOf("/bin/java"))
-      } else if (javaExec.contains("/bin/java")) {
-        javaHome = javaExec.substring(0, javaExec.indexOf("/bin/java"))
+      val javaExecName = ExecUtils.calculateExecutableName("java")
+      if (javaExec.endsWith("/bin/$javaExecName") || javaExec.endsWith("/$javaExecName")) {
+        javaHome = javaExec.substring(0, javaExec.lastIndexOf("/bin/$javaExecName"))
+      } else if (javaExec.contains("/bin/$javaExecName")) {
+        javaHome = javaExec.substring(0, javaExec.indexOf("/bin/$javaExecName"))
       }
     }
 
@@ -128,6 +123,10 @@ object JvmToolchainQuery {
       jvmOpts.add(arg)
     }
 
-    return Triple(javaHome, toolchainPath, jvmOpts)
+    return JvmToolchainInfo(
+      java_home = javaHome,
+      toolchain_path = toolchainPath,
+      jvm_opts = jvmOpts,
+    )
   }
 }

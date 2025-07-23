@@ -3,11 +3,11 @@ package org.jetbrains.bazel.fastbuild
 import com.intellij.util.messages.Topic
 
 interface FastBuildStatusListener {
-  fun fastBuildStarted(fastBuildStatus: FastBuildStatus)
+  fun fastBuildStarted()
 
   fun fastBuildFinished(fastBuildStatus: FastBuildStatus)
 
-  fun fastBuildTargetStarted(fastBuildTargetStatus: FastBuildTargetStatus)
+  fun fastBuildTargetStarted()
 
   fun fastBuildTargetFinished(fastBuildTargetStatus: FastBuildTargetStatus)
 

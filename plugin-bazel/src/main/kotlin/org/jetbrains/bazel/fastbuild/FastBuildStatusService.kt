@@ -6,20 +6,20 @@ import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
 class FastBuildStatusService(private val project: Project) {
-  fun startFastBuild(fastBuildStatus: FastBuildStatus) {
-    project.messageBus.syncPublisher(FastBuildStatusListener.TOPIC).fastBuildStarted(fastBuildStatus)
+  fun startFastBuild() {
+    project.messageBus.syncPublisher(FastBuildStatusListener.TOPIC).fastBuildStarted()
   }
 
   fun finishFastBuild(fastBuildStatus: FastBuildStatus) {
     project.messageBus.syncPublisher(FastBuildStatusListener.TOPIC).fastBuildFinished(fastBuildStatus)
   }
 
-  fun startFastBuildTarget(fastBuildTargetStatus: FastBuildTargetStatus) {
-    project.messageBus.syncPublisher(FastBuildStatusListener.TOPIC).fastBuildTargetStarted(fastBuildTargetStatus)
+  fun startFastBuildTarget() {
+    project.messageBus.syncPublisher(FastBuildStatusListener.TOPIC).fastBuildTargetStarted()
   }
 
   fun finishFastBuildTarget(fastBuildTargetStatus: FastBuildTargetStatus) {
-    project.messageBus.syncPublisher(FastBuildStatusListener.TOPIC).fastBuildTargetStarted(fastBuildTargetStatus)
+    project.messageBus.syncPublisher(FastBuildStatusListener.TOPIC).fastBuildTargetFinished(fastBuildTargetStatus)
   }
 
   companion object {

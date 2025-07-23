@@ -42,6 +42,7 @@ import com.intellij.task.TaskRunnerResults
 import com.intellij.util.io.delete
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -68,17 +69,14 @@ object FastBuildUtils {
 
   fun fastBuildFilesPromise(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
     val promise = AsyncPromise<ProjectTaskRunner.Result>()
-    val fastBuildStatus = FastBuildStatus(workspaceRoot = project.rootDir.toNioPath())
     val fastBuildService = FastBuildStatusService.getInstance(project)
     BazelCoroutineService.getInstance(project).start {
       try {
-        fastBuildService.startFastBuild(fastBuildStatus)
-        fastBuildFiles(project, files, fastBuildStatus)
+        fastBuildService.startFastBuild()
+        fastBuildFiles(project, files)
         promise.setResult(TaskRunnerResults.SUCCESS)
-        fastBuildStatus.status = FastBuildActionStatus.SUCCESS
       } catch (e: Exception) {
         promise.setResult(TaskRunnerResults.FAILURE)
-        fastBuildStatus.status = FastBuildActionStatus.ERROR
         NotificationGroupManager
           .getInstance()
           .getNotificationGroup("HotSwap Messages")
@@ -92,19 +90,17 @@ object FastBuildUtils {
     }
     promise
       .onSuccess {
-        fastBuildService.finishFastBuild(fastBuildStatus)
+        fastBuildService.finishFastBuild(
+          FastBuildStatus(workspaceRoot = project.rootDir.toNioPath(), status = FastBuildActionStatus.SUCCESS),
+        )
       }.onError {
-        fastBuildService.finishFastBuild(fastBuildStatus)
+        fastBuildService.finishFastBuild(FastBuildStatus(workspaceRoot = project.rootDir.toNioPath(), status = FastBuildActionStatus.ERROR))
       }
     return promise
   }
 
-  suspend fun fastBuildFiles(
-    project: Project,
-    files: List<VirtualFile>,
-    fastBuildStatus: FastBuildStatus,
-  ) {
-    val workspaceRoot = fastBuildStatus.workspaceRoot
+  suspend fun fastBuildFiles(project: Project, files: List<VirtualFile>) {
+    val workspaceRoot = project.rootDir.toNioPath()
     val targetUtils = project.targetUtils
     val virtualFileManager = VirtualFileManager.getInstance()
     val fastBuildService = FastBuildStatusService.getInstance(project)
@@ -142,13 +138,8 @@ object FastBuildUtils {
           ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
       val targetJar = Path.of("$bazelBin/$relativePath/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
 
-      val fastBuildTargetStatus =
-        FastBuildTargetStatus(
-          inputFile = inputFile,
-          targetJar = targetJar,
-          status = FastBuildActionStatus.UNKNOWN,
-        )
-      fastBuildService.startFastBuildTarget(fastBuildTargetStatus)
+      var fastBuildTargetStatus: FastBuildTargetStatus? = null
+      fastBuildService.startFastBuildTarget()
 
       val originalParamsFile = targetJar.parent.resolve(targetJar.fileName.name + "-0.params")
       val originalParamsFile1 = targetJar.parent.resolve(targetJar.fileName.name + "-1.params")
@@ -202,7 +193,7 @@ object FastBuildUtils {
 
           val arguments =
             buildList {
-              add(toolchainInfo.java_home + File.separator + "bin" + File.separator + calculateExecutableName("java"))
+              add(toolchainInfo.java_home + File.separator + "bin" + File.separator + ExecUtils.calculateExecutableName("java"))
               toolchainInfo.jvm_opts.forEach { add(it) }
               add("-jar")
               add(toolchainInfo.toolchain_path)
@@ -280,11 +271,21 @@ object FastBuildUtils {
           if (!handler.waitFor() || handler.exitCode != 0) {
             compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
             tempDir.delete()
-            fastBuildTargetStatus.status = FastBuildActionStatus.ERROR
+            fastBuildTargetStatus =
+              FastBuildTargetStatus(
+                inputFile = inputFile,
+                targetJar = targetJar,
+                status = FastBuildActionStatus.ERROR,
+              )
             return@start
           }
           compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
-          fastBuildTargetStatus.status = FastBuildActionStatus.SUCCESS
+          fastBuildTargetStatus =
+            FastBuildTargetStatus(
+              inputFile = inputFile,
+              targetJar = targetJar,
+              status = FastBuildActionStatus.SUCCESS,
+            )
           processAndHotswapOutput(tempDir, outputJar, project)
         } catch (e: ExecutionException) {
           compileContext.addMessage(
@@ -294,10 +295,23 @@ object FastBuildUtils {
               e.message,
             ),
           )
-          fastBuildTargetStatus.status = FastBuildActionStatus.ERROR
+          fastBuildTargetStatus =
+            FastBuildTargetStatus(
+              inputFile = inputFile,
+              targetJar = targetJar,
+              status = FastBuildActionStatus.ERROR,
+            )
           compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
           return@start
         } finally {
+          if (fastBuildTargetStatus == null) {
+            fastBuildTargetStatus =
+              FastBuildTargetStatus(
+                inputFile = inputFile,
+                targetJar = targetJar,
+                status = FastBuildActionStatus.UNKNOWN,
+              )
+          }
           fastBuildService.finishFastBuildTarget(fastBuildTargetStatus)
         }
       }, null)
@@ -509,10 +523,4 @@ object FastBuildUtils {
       .stream()
       .filter { debuggerSession: DebuggerSession? -> HotSwapUIImpl.canHotSwap(debuggerSession!!) }
       .toList()
-
-  private fun calculateExecutableName(name: String): String =
-    when {
-      SystemInfo.isWindows -> "$name.exe"
-      else -> name
-    }
 }
