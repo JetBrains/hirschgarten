@@ -48,13 +48,13 @@ import org.jetbrains.bazel.utils.toVirtualFile
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
-import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Objects
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
+import kotlin.io.path.invariantSeparatorsPathString
 
 private const val GO_TARGET_TO_FILE_MAP_KEY = "BazelGoTargetToFileMap"
 
@@ -264,26 +264,6 @@ class BazelGoPackage : GoPackage {
       return builder.build()
     }
 
-    /**
-     * Workaround for https://github.com/bazelbuild/intellij/issues/2057. External workspace symlinks
-     * can be changed externally by practically any bazel command. Such changes to symlinks will make
-     * IntelliJ red. This helper resolves such symlink to an actual location.
-     *
-     * In IDE Starter Test, this logic does not work properly, so it is disabled.
-     */
-    private fun toRealFile(maybeExternal: Path): Path {
-      if (TestUtils.isInIdeStarterTest()) return maybeExternal
-      val externalUriString = maybeExternal.toUri().toString()
-      return if (externalUriString.contains("/external/") &&
-        !externalUriString.contains("/bazel-out/") &&
-        !externalUriString.contains("/blaze-out/")
-      ) {
-        Paths.get(URI(externalUriString.replace(Regex("/execroot.*?/external/"), "/external/")))
-      } else {
-        maybeExternal
-      }
-    }
-
     private fun getSourceFiles(target: BuildTarget, libraryToTestMap: ImmutableMultimap<Label, GoBuildTarget>): ImmutableSet<Path> {
       if (target.kind == GoBazelRules.RuleTypes.GO_WRAP_CC.kind) {
         return getWrapCcGoFiles(target)
@@ -414,5 +394,26 @@ class BazelGoPackage : GoPackage {
   override fun getPsiDirectories(): StreamEx<PsiDirectory> {
     val psiManager = PsiManager.getInstance(project)
     return StreamEx.of(getDirectories().mapNotNull { directory -> psiManager.findDirectory(directory)?.takeIf { it.isValid } })
+  }
+}
+
+/**
+ * Workaround for https://github.com/bazelbuild/intellij/issues/2057. External workspace symlinks
+ * can be changed externally by practically any bazel command. Such changes to symlinks will make
+ * IntelliJ red. This helper resolves such symlink to an actual location.
+ *
+ * In IDE Starter Test, this logic does not work properly, so it is disabled.
+ */
+@VisibleForTesting
+internal fun toRealFile(maybeExternal: Path): Path {
+  if (TestUtils.isInIdeStarterTest()) return maybeExternal
+  val externalString = maybeExternal.invariantSeparatorsPathString
+  return if (externalString.contains("/external/") &&
+    !externalString.contains("/bazel-out/") &&
+    !externalString.contains("/blaze-out/")
+  ) {
+    Paths.get(externalString.replace(Regex("/execroot.*?/external/"), "/external/"))
+  } else {
+    maybeExternal
   }
 }
