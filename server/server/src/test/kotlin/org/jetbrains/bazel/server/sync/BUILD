@@ -23,6 +23,7 @@ kt_junit5_test(
     src = "ExecuteServiceTest.kt",
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//server/bazelrunner",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/managers",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bzlmod",

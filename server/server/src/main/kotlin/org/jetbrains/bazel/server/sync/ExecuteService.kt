@@ -163,7 +163,7 @@ class ExecuteService(
     return testImpl(singleModule, params, debugArguments)
   }
 
-  suspend fun extractSingleModule(params: TestParams): Module {
+  private suspend fun extractSingleModule(params: TestParams): Module {
     val modules = selectModules(params.targets)
     val singleModule = modules.singleOrResponseError(params.targets.first())
     return singleModule
@@ -234,7 +234,7 @@ class ExecuteService(
     return TestResult(statusCode = result.bazelStatus, originId = params.originId)
   }
 
-  fun addCoverageOptions(command: BazelCommand, singleModule: Module) {
+  private fun addCoverageOptions(command: BazelCommand, singleModule: Module) {
     command.options.add(BazelFlag.combinedReportLcov())
     if (singleModule.label.packagePath.pathSegments
         .isEmpty()
