@@ -75,15 +75,19 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
       when (child) {
         is StarlarkNamedArgumentExpression -> {
           val argName = child.name ?: return // If data is not complete, logic might be skewed onwards.
-          if (!params.any { it.name == argName } && !acceptsKwArgs) {
+          val matched = params.firstOrNull { it.name == argName }
+          if (matched == null && !acceptsKwArgs) {
             // Cannot be resolved
             holder.annotateError(child, StarlarkBundle.message("annotator.named.parameter.not.found", argName))
           } else if (matchedArguments.contains(argName)) {
             // Duplicate argument
             holder.annotateError(child, StarlarkBundle.message("annotator.duplicate.keyword.argument", argName))
+          } else if (matched != null && !matched.named) {
+            // This parameter is positional, but a keyword argument was provided.
+            holder.annotateError(child, StarlarkBundle.message("annotator.unnamed.arg.with.name", argName))
           } else {
             matchedArguments.add(argName)
-            if (!params.any { it.name == argName }) {
+            if (matched == null) {
               kwArgsFound = true
             }
           }
