@@ -24,6 +24,7 @@
   ]]>
   </description>
 
+  <resource-bundle>messages.BazelPluginBundle</resource-bundle>
   <dependencies>
     <plugin id="com.intellij.modules.lang" />
     <module name="intellij.platform.searchEverywhere" />
@@ -391,7 +392,8 @@
 
     <notificationGroup
       displayType="STICKY_BALLOON"
-      id="%notification.group.id.bazel"
+      id="Bazel"
+      key="notificationGroup.Bazel.title"
     />
 
     <workspaceModel.fileIndexContributor
@@ -462,7 +464,8 @@
 
     <notificationGroup
       displayType="BALLOON"
-      id="%notification.group.id.bazel.plugin"
+      id="BazelPlugin"
+      key="notificationGroup.BazelPlugin.title"
     />
     <editorNotificationProvider
       implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"
@@ -487,7 +490,8 @@
     <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
     <notificationGroup
       displayType="BALLOON"
-      id="%notification.group.id.bazel.slow.plugins"
+      id="BazelSlowPlugins"
+      key="notificationGroup.BazelSlowPlugins.title"
     />
 
     <externalSystemUnlinkedProjectAware
@@ -702,8 +706,8 @@
                            implementationClass="org.jetbrains.bazel.languages.bazelversion.parser.BazelVersionParserDefinition"/>
 
     <localInspection language="BazelVersion"
-                     displayName="%inspection.display.name.bazel.version.check"
-                     groupName="%notification.group.id.bazel"
+                     key="inspection.display.name.bazel.version.check"
+                     groupName="Bazel"
                      enabledByDefault="true"
                      level="WARNING"
                      implementationClass="org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection"/>
@@ -748,14 +752,14 @@
     />
 
     <projectConfigurable
-      displayName="%project.configurable.display.name.bazel"
+      key="project.configurable.display.name.bazel"
       id="bazel.project.settings"
       instance="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurable"
       parentId="build.tools"
       provider="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurableProvider"
     >
       <configurable
-        displayName="%configurable.display.name.bazel.experimental.project.settings"
+        key="configurable.display.name.bazel.experimental.project.settings"
         id="bazel.experimental.project.settings"
         instance="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurable"
         provider="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurableProvider"
@@ -763,7 +767,7 @@
     </projectConfigurable>
 
     <applicationConfigurable
-      displayName="%advanced.settings.display.name"
+      key="advanced.settings.display.name"
       id="bazel.application.settings"
       instance="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsConfigurable"
       parentId="bazel.project.settings"
@@ -823,7 +827,6 @@
     <action
       class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
       id="Bazel.NewBazelPackageAction"
-      text="%action.text.new.bazel.package"
     >
       <add-to-group
         anchor="after"
@@ -888,15 +891,11 @@
     </action>
 
     <action id="Bazel.AddToProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
-            text="Add to the Project View Directories"
-            description="%action.description.add.to.projectview.directory">
+            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction">
     </action>
 
     <action id="Bazel.ExcludeFromProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
-            text="Exclude from the Project View Directories"
-            description="%action.description.exclude.directory.from.projectview.file">
+            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction">
     </action>
 
     <action id="Bazel.OpenBazelQueryToolWindowAction"

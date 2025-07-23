@@ -30,7 +30,7 @@ data class ProjectViewDirectoriesAction(
     val type: NotificationType,
   ) {
     companion object {
-      const val NOTIFICATION_GROUP_ID: String = "Bazel Plugin"
+      const val NOTIFICATION_GROUP_ID: String = "BazelPlugin"
     }
 
     fun create(directory: String): Notification = Notification(NOTIFICATION_GROUP_ID, title, content(directory), type)

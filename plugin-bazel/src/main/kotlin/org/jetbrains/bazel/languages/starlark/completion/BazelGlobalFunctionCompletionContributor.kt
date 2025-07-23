@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PatternCondition
@@ -18,7 +19,6 @@ import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -30,16 +30,16 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     extend(
       CompletionType.BASIC,
       fileSpecificFunctionCompletionElement(BazelFileType.EXTENSION),
-      BazelExtensionFunctionCompletionProvider,
+      BazelBzlFunctionCompletionProvider,
     )
     extend(
       CompletionType.BASIC,
-      fileSpecificFunctionCompletionElement(BazelFileType.BUILD, true),
+      fileSpecificFunctionCompletionElement(BazelFileType.BUILD),
       BazelBuildFunctionCompletionProvider,
     )
     extend(
       CompletionType.BASIC,
-      fileSpecificFunctionCompletionElement(BazelFileType.MODULE, true),
+      fileSpecificFunctionCompletionElement(BazelFileType.MODULE),
       BazelModuleFunctionCompletionProvider,
     )
     extend(
@@ -49,16 +49,10 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     )
   }
 
-  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType, topLevelOnly: Boolean = false) =
+  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) =
     globalFunctionCompletionElement()
       .inFile(psiFile(StarlarkFile::class.java).with(bazelFileTypeCondition(bazelFileType)))
-      .let { pattern ->
-        if (topLevelOnly) {
-          pattern.withSuperParent(3, StarlarkFile::class.java)
-        } else {
-          pattern
-        }
-      }
+      .withSuperParent(3, StarlarkFile::class.java)
 
   private fun globalFunctionCompletionElement() =
     psiElement()
@@ -87,58 +81,21 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
   private fun functionLookupElement(function: BazelGlobalFunction): LookupElement =
     LookupElementBuilder
       .create(function.name)
-      .withInsertHandler(FunctionInsertHandler(function))
+      .withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
       .withIcon(PlatformIcons.FUNCTION_ICON)
-
-  private class FunctionInsertHandler<T : LookupElement>(val function: BazelGlobalFunction) : InsertHandler<T> {
-    override fun handleInsert(context: InsertionContext, item: T) {
-      val editor = context.editor
-      val document = editor.document
-      document.insertString(context.tailOffset, "(")
-
-      val requiredArgs = function.params.filter { it.required }
-      var caretPlaced = false
-      requiredArgs.forEach {
-        document.insertString(context.tailOffset, "\n\t${it.name} = ${it.default},")
-        if (!caretPlaced) {
-          caretPlaced = true
-          placeCaret(context, it.default ?: "")
-        }
-      }
-
-      if (!caretPlaced) {
-        editor.caretModel.moveToOffset(context.tailOffset)
-      } else {
-        document.insertString(context.tailOffset, "\n")
-      }
-      document.insertString(context.tailOffset, ")")
-    }
-
-    private fun placeCaret(context: InsertionContext, default: String) {
-      val editor = context.editor
-      if (default == "\'\'" || default == "\"\"" || default == "[]" || default == "{}") {
-        editor.caretModel.moveToOffset(context.tailOffset - 2)
-      } else {
-        val selectionStart = context.tailOffset - default.length - 1
-        val selectionEnd = selectionStart + default.length
-        editor.selectionModel.setSelection(selectionStart, selectionEnd)
-        editor.caretModel.moveToOffset(selectionEnd)
-      }
-    }
-  }
 }
 
 private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.STARLARK_FUNCTIONS.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().starlarkGlobalFunctions.values })
 
-private object BazelExtensionFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.EXTENSION_FUNCTIONS.values })
+private object BazelBzlFunctionCompletionProvider :
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().extensionGlobalFunctions.values })
 
 private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBuildFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().buildGlobalFunctions.values })
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getModuleFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions.values })
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.WORKSPACE_FUNCTIONS.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions.values })

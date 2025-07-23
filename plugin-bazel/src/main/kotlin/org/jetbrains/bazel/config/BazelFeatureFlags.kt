@@ -11,7 +11,9 @@ import org.jetbrains.bsp.protocol.FeatureFlags
 object BazelFeatureFlags {
   private const val PYTHON_SUPPORT = "bsp.python.support"
   private const val ANDROID_SUPPORT = "bsp.android.support"
-  private const val GO_SUPPORT = "bsp.go.support"
+
+  @VisibleForTesting
+  const val GO_SUPPORT = "bsp.go.support"
   private const val QUERY_TERMINAL_COMPLETION = "bazel.query.terminal.completion"
 
   @VisibleForTesting

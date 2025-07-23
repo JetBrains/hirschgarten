@@ -3,10 +3,6 @@ package org.jetbrains.bazel.sync.libraries
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
-import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import com.intellij.vfs.AsyncVfsEventsListener
-import com.intellij.vfs.AsyncVfsEventsPostProcessor
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sync.status.SyncStatusListener
@@ -43,23 +39,6 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
   }
 
   private fun initializeListeners() {
-    val listener =
-      object : AsyncVfsEventsListener {
-        override suspend fun filesChanged(events: List<VFileEvent>) {
-          if (duringSync.get() || libraries.isEmpty()) return
-          val deletedFiles =
-            events
-              .asSequence()
-              .filterIsInstance<VFileDeleteEvent>()
-              .map { it.file }
-              .toSet()
-          if (deletedFiles.isNotEmpty()) {
-            libraries.values.forEach { it.removeInvalidFiles(deletedFiles) }
-          }
-        }
-      }
-
-    AsyncVfsEventsPostProcessor.getInstance().addListener(listener, cs)
     project.messageBus.connect().subscribe(
       SyncStatusListener.TOPIC,
       object : SyncStatusListener {

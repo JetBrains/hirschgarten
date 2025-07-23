@@ -32,11 +32,11 @@ import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.resourceUtil.ResourceUtil
+import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
@@ -56,6 +56,7 @@ abstract class IdeStarterBaseProjectTest {
     when (System.getProperty("bazel.ide.starter.test.ide.id")) {
       "IC" -> IdeProductProvider.IC
       "PY" -> IdeProductProvider.PY
+      "GO" -> IdeProductProvider.GO
       else -> error("IDE id is not set properly. Please use ide_starter_test rule to setup the test.")
     }
 
@@ -80,8 +81,9 @@ abstract class IdeStarterBaseProjectTest {
       .patchPathVariable()
       .withKotlinPluginK2()
       .withBazelPluginInstalled()
+      .addIdeStarterTestMarker()
   // uncomment for debugging
-  //  .applyVMOptionsPatch { debug(8000, suspend = true) }
+  // .applyVMOptionsPatch { debug(8000, suspend = true) }
 
   @BeforeEach
   fun initialize() {
@@ -183,6 +185,13 @@ abstract class IdeStarterBaseProjectTest {
     applyVMOptionsPatch {
       withEnv("PATH", path)
       withEnv("HOME", System.getProperty("user.home"))
+    }
+    return this
+  }
+
+  private fun IDETestContext.addIdeStarterTestMarker(): IDETestContext {
+    applyVMOptionsPatch {
+      addSystemProperty(IS_IN_IDE_STARTER_TEST, "true")
     }
     return this
   }
