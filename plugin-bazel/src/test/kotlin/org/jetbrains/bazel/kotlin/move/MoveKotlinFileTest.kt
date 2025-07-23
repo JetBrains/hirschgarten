@@ -14,7 +14,7 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileContentsEqual
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * ```sh
