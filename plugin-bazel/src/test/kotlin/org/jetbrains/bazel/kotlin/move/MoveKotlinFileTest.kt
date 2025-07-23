@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.kotlin.move
 
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.dialog
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
@@ -15,6 +16,7 @@ import org.jetbrains.bazel.ideStarter.assertFileContentsEqual
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * ```sh
@@ -29,7 +31,7 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
         commitHash = "7beddfa764a06bd5fcd4211e00c744847b7a0da9",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("moveFilesTest") },
-        isReusable = true,
+        isReusable = false,
         configureProjectBeforeUse = { context -> configureProjectBeforeUseWithoutBazelClean(context) },
       )
 
@@ -54,6 +56,7 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
       step("Close Add file to Git popup") {
         ideFrame {
+          dialog().waitFound(timeout = 30.seconds)
           dialog {
             closeDialog()
           }
