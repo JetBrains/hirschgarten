@@ -58,8 +58,8 @@ class GolandSync : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
-          step("Check for red code in files") {
-            FILES_TO_CHECK_FOR_RED_CODE.forEach {
+          FILES_TO_CHECK_FOR_RED_CODE.forEach {
+            step("Check for red code in file $it") {
               checkForRedCodeInFile(it)
               wait(4.seconds)
             }
