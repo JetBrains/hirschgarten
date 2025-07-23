@@ -7,8 +7,8 @@ kt_jvm_library(
         "**/*.java",
     ]),
     visibility = [
-      "//plugin-bazel:__subpackages__",
-      "//tools/starlark_data_generation:__subpackages__",
+        "//plugin-bazel:__subpackages__",
+        "//tools/starlark_data_generation:__subpackages__",
     ],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",

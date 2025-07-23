@@ -2,6 +2,7 @@ import com.google.devtools.build.lib.starlarkdocextract.StardocOutputProtos
 import common.serializeFunctionsTo
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
+import org.jetbrains.bazel.languages.starlark.bazel.Environment
 import java.io.FileInputStream
 import kotlin.system.exitProcess
 
@@ -20,13 +21,12 @@ object ProtobufReader {
 
   private fun defaultNameOrNull(name: String): String? = if (name == "") null else name
 
-  private fun unwrapName(name: String): String {
-    return if (name.contains(".")) {
+  private fun unwrapName(name: String): String =
+    if (name.contains(".")) {
       name.split(".")[1]
     } else {
       name
     }
-  }
 
   private fun attributeInfoToData(attrInfo: StardocOutputProtos.AttributeInfo): BazelGlobalFunctionParameter =
     BazelGlobalFunctionParameter(

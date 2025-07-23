@@ -2,15 +2,15 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 
 kt_jvm_binary(
     name = "annotation_converter",
+    srcs = glob([
+        "src/**/*.kt",
+    ]),
     main_class = "AnnotationConverter",
     deps = [
-        "@maven//:com_github_javaparser_javaparser_core",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//tools/starlark_data_generation/common:commons",
+        "@maven//:com_github_javaparser_javaparser_core",
     ],
-    srcs = glob([
-        "src/**/*.kt"
-    ]),
 )
 
 java_proto_library(

@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionFile
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionStringLiteral
@@ -33,7 +34,7 @@ class BazelVersionInspection : LocalInspectionTool() {
       if (latestVersion.isGreaterThan(currentVersion)) {
         holder.registerProblem(
           psiFile,
-          "New bazel version available: $latestVersion",
+          BazelPluginBundle.message("inspection.description.bazel.version", latestVersion),
           BazelVersionQuickFix(),
         )
       }
@@ -41,7 +42,7 @@ class BazelVersionInspection : LocalInspectionTool() {
   }
 
   class BazelVersionQuickFix : LocalQuickFix {
-    override fun getFamilyName(): String = "Update version"
+    override fun getFamilyName(): String = BazelPluginBundle.message("quickfix.bazel.version")
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
       val manager = PsiDocumentManager.getInstance(project)

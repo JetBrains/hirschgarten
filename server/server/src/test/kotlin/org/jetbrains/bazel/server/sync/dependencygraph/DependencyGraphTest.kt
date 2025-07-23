@@ -6,6 +6,7 @@ import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bazel.server.label.label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -627,8 +628,8 @@ class DependencyGraphTest {
     // then
     val expectedDependencies =
       DependencyGraph.TargetsAtDepth(
-        targets = setOf(target, library1, library2, library3),
-        directDependencies = setOf(target1),
+        targets = setOf(target),
+        directDependencies = setOf(target1, library1, library2, library3),
       )
     dependencies shouldBe expectedDependencies
   }
@@ -667,15 +668,51 @@ class DependencyGraphTest {
   }
 
   @Test
-  fun `should not follow runtime deps for the last layer`() {
+  fun `should return all transitive deps for libraries if a non-strict target depends on it transitively`() {
     // given
-    val target = targetInfo("//target", runtimeDependenciesIds = listOf("//target1"))
+    val target = targetInfo("//target", listOf("//target1"))
+    val target1 = targetInfo("//target1", listOf("@maven//library1"))
+    val library1 = targetInfo("@maven//library1", listOf("@maven//library2"))
+    val library2 = targetInfo("@maven//library2", listOf("@maven//library3"))
+    val library3 = targetInfo("@maven//library3")
+    val rootTargets = setOf(Label.parse("//target"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, library1, library2, library3)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(
+        0,
+        setOf(Label.parse("//target"), Label.parse("//target1")),
+        targetSupportsStrictDeps = { label ->
+          label == target1.label()
+        },
+        isExternalTarget = { label ->
+          label.assumeResolved().repoName == "maven"
+        },
+      )
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target, target1),
+        directDependencies = setOf(library1, library2, library3),
+      )
+    dependencies shouldBe expectedDependencies
+  }
+
+  @Test
+  fun `should not follow runtime deps`() {
+    // given
+    val target = targetInfo("//target", dependenciesIds = listOf("//target1"), runtimeDependenciesIds = listOf("//target4"))
     val target1 = targetInfo("//target1", dependenciesIds = listOf("//target2"), runtimeDependenciesIds = listOf("//target3"))
     val target2 = targetInfo("//target2")
     val target3 = targetInfo("//target3")
+    val target4 = targetInfo("//target4")
     val rootTargets = setOf(Label.parse("//target"))
     val idToTargetInfo =
-      toIdToTargetInfoMap(target, target1, target2, target3)
+      toIdToTargetInfoMap(target, target1, target2, target3, target4)
     val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
     // when
@@ -712,6 +749,32 @@ class DependencyGraphTest {
       DependencyGraph.TargetsAtDepth(
         targets = setOf(target, target1),
         directDependencies = setOf(),
+      )
+    dependencies shouldBe expectedDependencies
+  }
+
+  @Test
+  fun `should propagate exports of non-workspace targets if someone depends on them`() {
+    // given
+    val target = targetInfo("//target", dependenciesIds = listOf("//target1"))
+    val target1 = targetInfo("//target1", dependenciesIds = listOf("//target2"))
+    val target2 = targetInfo("//target2")
+    val rootTargets = setOf(Label.parse("//target"), Label.parse("//target1"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, target2)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(0, rootTargets, isWorkspaceTarget = { label ->
+        label.toString() == "@//target"
+      })
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target, target1),
+        directDependencies = setOf(target2),
       )
     dependencies shouldBe expectedDependencies
   }

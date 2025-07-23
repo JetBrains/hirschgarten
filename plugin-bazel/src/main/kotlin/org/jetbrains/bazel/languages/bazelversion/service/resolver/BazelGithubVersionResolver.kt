@@ -13,20 +13,17 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.util.io.HttpRequests
 import com.intellij.util.text.SemVer
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XMap
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.future.future
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.withNewVersionWhenPossible
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver
+import java.io.IOException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
@@ -39,7 +36,6 @@ class BazelGithubVersionResolver : BazelVersionResolver {
       .serializeNulls()
       .disableHtmlEscaping()
       .create()
-  val httpClient = HttpClient(CIO)
 
   override val id: String = ID
   override val name: String = "Github"
@@ -63,15 +59,20 @@ class BazelGithubVersionResolver : BazelVersionResolver {
   }
 
   suspend fun getLatestBazelVersion(project: Project, forkName: String): String? {
-    val response = httpClient.get("https://api.github.com/repos/$forkName/$DEFAULT_REPO_NAME/releases")
+    val response =
+      try {
+        HttpRequests
+          .request("https://api.github.com/repos/$forkName/$DEFAULT_REPO_NAME/releases")
+          .productNameAsUserAgent()
+          .readString()
+      } catch (_: IOException) {
+        return null
+      }
     val cacheService = project.service<BazelGithubGlobalCacheService>()
 
-    if (response.status != HttpStatusCode.OK) {
-      return null
-    }
     val releases =
       try {
-        githubGson.fromJson(response.bodyAsText(), Array<GithubReleaseResponse>::class.java)
+        githubGson.fromJson(response, Array<GithubReleaseResponse>::class.java)
       } catch (_: JsonSyntaxException) {
         return null
       }

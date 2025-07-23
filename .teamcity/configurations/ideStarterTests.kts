@@ -191,139 +191,83 @@ sealed class ProjectViewOpenTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/settings:project_view_open_test"
 )
 
-object HotswapTestGitHub : HotswapTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
+sealed class MoveKotlinFileTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Move Kotlin file test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/move:moveKotlinFileTest"
 )
 
-object HotswapTestSpace : HotswapTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
+object HotswapTestGitHub : HotswapTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
 )
 
 object CoroutineDebugTestGitHub : CoroutineDebugTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object CoroutineDebugTestSpace : CoroutineDebugTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
-)
-
 object ReopenWithoutResyncTestGitHub : ReopenWithoutResyncTest(
   vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object ReopenWithoutResyncTestSpace : ReopenWithoutResyncTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
 )
 
 object ExternalRepoResolveTestGitHub : ExternalRepoResolveTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object ExternalRepoResolveTestSpace : ExternalRepoResolveTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
-)
-
 object JarSourceExcludeTestGitHub : JarSourceExcludeTest(
   vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object JarSourceExcludeTestSpace : JarSourceExcludeTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
 )
 
 object BazelProjectModelModifierTestGitHub : BazelProjectModelModifierTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object BazelProjectModelModifierTestSpace : BazelProjectModelModifierTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
-)
-
 object BazelCoverageTestGitHub : BazelCoverageTest(
   vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object BazelCoverageTestSpace : BazelCoverageTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
 )
 
 object TestResultsTreeTestGitHub : TestResultsTreeTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object TestResultsTreeTestSpace : TestResultsTreeTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
-)
-
 object RunLineMarkerTestGitHub : RunLineMarkerTest(
   vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object RunLineMarkerTestSpace : RunLineMarkerTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
 )
 
 object ImportRunConfigurationsTestGitHub : ImportRunConfigurationsTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object ImportRunConfigurationsTestSpace : ImportRunConfigurationsTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
-)
-
 object NonModuleTargetsTestGitHub : NonModuleTargetsTest(
   vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object NonModuleTargetsTestSpace : NonModuleTargetsTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
 )
 
 object RunAllTestsActionTestGitHub : RunAllTestsActionTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object RunAllTestsActionTestSpace : RunAllTestsActionTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
-)
-
 object DisabledKotlinPluginTestGitHub : DisabledKotlinPluginTest(
   vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object DisabledKotlinPluginTestSpace : DisabledKotlinPluginTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
 )
 
 object PyCharmTestGitHub : PyCharmPluginTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object PyCharmTestSpace : PyCharmPluginTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
-)
-
 object PyCharmImportRedCodeTestGitHub : PyCharmImportRedCodeTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object PyCharmImportRedCodeTestSpace : PyCharmImportRedCodeTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
-)
-
-
 object FastBuildTestGitHub : FastBuildTest(
   vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object FastBuildTestSpace : FastBuildTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
 )
 
 object ProjectViewOpenTestGitHub : ProjectViewOpenTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object ProjectViewOpenTestSpace : ProjectViewOpenTest(
-  vcsRoot = BaseConfiguration.SpaceVcs
+object MoveKotlinFileTestGitHub : MoveKotlinFileTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
 )
+

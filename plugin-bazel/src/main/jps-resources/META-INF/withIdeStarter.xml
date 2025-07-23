@@ -24,6 +24,8 @@
     <performancePlugin.commandProvider
       implementation="org.jetbrains.bazel.python.sync.ideStarter.PyCharmCheckImportedModulesProvider"
     />
-    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.kotlin.ideStarter.KotlinIdeStarterCommandProvider"/>
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.kotlin.ideStarter.KotlinIdeStarterCommandProvider"
+    />
   </extensions>
 </idea-plugin>
