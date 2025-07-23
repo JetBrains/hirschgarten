@@ -23,7 +23,9 @@ object AnnotationConverter {
     mutableListOf(
       BazelGlobalFunction(
         name = "load",
-        doc = "Loads specified symbols from an external .bzl file into the current BUILD file. This function allows importing functions, rules, and other symbols defined in Starlark extension files.",
+        doc =
+          "Loads specified symbols from an external .bzl file into the current BUILD file. " +
+            "This function allows importing functions, rules, and other symbols defined in Starlark extension files.",
         environment = listOf(Environment.BUILD),
         params =
           listOf(
@@ -39,7 +41,9 @@ object AnnotationConverter {
               name = "*targets",
               named = false,
               positional = true,
-              doc = "Variable number of symbol names to import directly from the extension file. Each symbol will be imported using its original name.",
+              doc =
+                "Variable number of symbol names to import directly from the extension file. " +
+                  "Each symbol will be imported using its original name.",
               required = false,
               defaultValue = null,
             ),
@@ -47,7 +51,9 @@ object AnnotationConverter {
               name = "**aliased_targets",
               named = false,
               positional = false,
-              doc = "Symbol imports with aliases specified as keyword arguments. The key is the local alias name and the value is the original symbol name in the extension file.",
+              doc =
+                "Symbol imports with aliases specified as keyword arguments. " +
+                  "The key is the local alias name and the value is the original symbol name in the extension file.",
               required = false,
               defaultValue = null,
             ),
