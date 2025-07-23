@@ -280,8 +280,8 @@ class BazelProjectMapper(
     !targetInfo.kind.endsWith("_resources") &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-          targetInfo.hasJvmTargetInfo() &&
-          !hasKnownJvmSources(targetInfo)
+          (targetInfo.hasJvmTargetInfo() && !hasKnownJvmSources(targetInfo)) ||
+          (targetInfo.hasJvmTargetInfo() && targetInfo.jvmTargetInfo.hasApiGeneratingPlugins)
       )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
