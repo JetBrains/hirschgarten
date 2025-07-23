@@ -48,8 +48,9 @@ import org.jetbrains.bazel.utils.toVirtualFile
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
-import java.io.File
+import java.net.URI
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.Objects
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
@@ -268,16 +269,16 @@ class BazelGoPackage : GoPackage {
      * can be changed externally by practically any bazel command. Such changes to symlinks will make
      * IntelliJ red. This helper resolves such symlink to an actual location.
      *
-     * This method does not work in IDE Starter Test.
+     * In IDE Starter Test, this logic does not work properly, so it is disabled.
      */
     private fun toRealFile(maybeExternal: Path): Path {
       if (TestUtils.isInIdeStarterTest()) return maybeExternal
-      val externalString = maybeExternal.toFile().toString()
-      return if (externalString.contains("/external/") &&
-        !externalString.contains("/bazel-out/") &&
-        !externalString.contains("/blaze-out/")
+      val externalUriString = maybeExternal.toUri().toString()
+      return if (externalUriString.contains("/external/") &&
+        !externalUriString.contains("/bazel-out/") &&
+        !externalUriString.contains("/blaze-out/")
       ) {
-        File(externalString.replace(Regex("/execroot.*?/external/"), "/external/")).toPath()
+        Paths.get(URI(externalUriString.replace(Regex("/execroot.*?/external/"), "/external/")))
       } else {
         maybeExternal
       }
