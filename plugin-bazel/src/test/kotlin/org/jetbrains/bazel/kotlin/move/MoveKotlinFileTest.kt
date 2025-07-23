@@ -15,6 +15,8 @@ import org.jetbrains.bazel.ideStarter.assertFileContentsEqual
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * ```sh
@@ -54,6 +56,7 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
       step("Close Add file to Git popup") {
         ideFrame {
+          dialog().waitFound(timeout = 30.seconds)
           dialog {
             closeDialog()
           }
