@@ -43,34 +43,34 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
     val context = createContext()
 
     context.runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
-      syncBazelProject()
-      step("Create a new subpackage") {
-        execute { createDirectory("subpackage") }
-      }
+      ideFrame {
+        syncBazelProject()
+        step("Create a new subpackage") {
+          execute { createDirectory("subpackage") }
+        }
 
-      step("Move Class2.kt to subpackage") {
-        execute { moveClass("Class2.kt", "subpackage") }
-      }
+        step("Move Class2.kt to subpackage") {
+          execute { moveClass("Class2.kt", "subpackage") }
+        }
 
-      step("Close Add file to Git popup") {
-        ideFrame {
+        step("Close Add file to Git popup") {
           dialog {
             closeDialog()
           }
         }
+
+        execute { saveDocumentsAndSettings() }
+
+        step("Check that Class2.kt is correct after move") {
+          execute { assertFileContentsEqual("expected/Class2.kt", "subpackage/Class2.kt") }
+        }
+
+        step("Check that Class1.java is correct after move") {
+          execute { assertFileContentsEqual("expected/Class1.java", "Class1.java") }
+        }
+
+        Thread.sleep(30000)
       }
-
-      execute { saveDocumentsAndSettings() }
-
-      step("Check that Class2.kt is correct after move") {
-        execute { assertFileContentsEqual("expected/Class2.kt", "subpackage/Class2.kt") }
-      }
-
-      step("Check that Class1.java is correct after move") {
-        execute { assertFileContentsEqual("expected/Class1.java", "Class1.java") }
-      }
-
-      Thread.sleep(30000)
     }
   }
 }
