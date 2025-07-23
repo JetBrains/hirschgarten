@@ -25,9 +25,7 @@ class BazelGoPackageTest {
     System.setProperty(IS_IN_IDE_STARTER_TEST, "true")
     val originalPath =
       "/private/var/tmp/_bazel/5dac6b1ab7f3c3b055628efa7ab248d6/execroot/_main/_tmp/external/gazelle++go_deps+com_github_pmezard_go_difflib/difflib/difflib.go"
-    val expectedPath =
-      "/private/var/tmp/_bazel/5dac6b1ab7f3c3b055628efa7ab248d6/execroot/_main/_tmp/external/gazelle++go_deps+com_github_pmezard_go_difflib/difflib/difflib.go"
-    toRealFile(Paths.get(originalPath)).invariantSeparatorsPathString shouldBe expectedPath
+    toRealFile(Paths.get(originalPath)).invariantSeparatorsPathString shouldBe originalPath
     System.clearProperty(IS_IN_IDE_STARTER_TEST)
   }
 }
