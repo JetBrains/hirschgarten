@@ -67,7 +67,7 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
     val positionalParams = params.filter { it.positional }
     val expectedParamIter = positionalParams.listIterator()
     var expectedParam = expectedParamIter.nextOrNull()
-    var onlyKeywordArgs = false
+    var onlyKeywordArgsExpected = false
     val matchedArguments = mutableSetOf<String>()
     val acceptsKwArgs = params.any { it.isKwArgs() }
     var kwArgsFound = false
@@ -87,12 +87,12 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
               kwArgsFound = true
             }
           }
-          onlyKeywordArgs = true
+          onlyKeywordArgsExpected = true
         }
         is StarlarkArgumentExpression -> {
-          if (onlyKeywordArgs) {
+          if (onlyKeywordArgsExpected) {
             holder.annotateError(child, StarlarkBundle.message("annotator.positional.argument.after.keyword.argument"))
-          } else if (expectedParam == null || expectedParam.isKwArgs()) {
+          } else if (expectedParam == null) {
             holder.annotateError(child, StarlarkBundle.message("annotator.too.many.positional.arguments"))
           } else {
             val argName = expectedParam.name
