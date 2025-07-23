@@ -14,7 +14,7 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileContentsEqual
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * ```sh
@@ -29,7 +29,7 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
         commitHash = "7beddfa764a06bd5fcd4211e00c744847b7a0da9",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("moveFilesTest") },
-        isReusable = false,
+        isReusable = true,
         configureProjectBeforeUse = { context -> configureProjectBeforeUseWithoutBazelClean(context) },
       )
 

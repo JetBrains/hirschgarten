@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions

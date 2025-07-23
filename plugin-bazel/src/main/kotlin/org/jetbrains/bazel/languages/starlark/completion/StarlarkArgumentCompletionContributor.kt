@@ -10,7 +10,6 @@ import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.openapi.components.service
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.findParentOfType
