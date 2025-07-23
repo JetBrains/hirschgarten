@@ -117,7 +117,7 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
     }
     if (missingArguments.isNotEmpty()) {
       holder.annotateError(
-        element = arguments,
+        element = element.firstChild, // only annotate the function name
         message = StarlarkBundle.message("annotator.missing.required.args", missingArguments.joinToString(", ")),
       )
     }
