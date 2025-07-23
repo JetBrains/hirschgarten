@@ -56,6 +56,54 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
           ),
       ),
       BazelGlobalFunction(
+        name = "simpleWithoutKwArgs",
+        doc = null,
+        environment = Environment.entries,
+        params =
+          listOf(
+            BazelGlobalFunctionParameter(
+              name = "argOne",
+              positional = true,
+              named = false,
+              required = true,
+              doc = null,
+              defaultValue = null,
+            ),
+            BazelGlobalFunctionParameter(
+              name = "argTwo",
+              positional = true,
+              named = true,
+              required = true,
+              doc = null,
+              defaultValue = null,
+            ),
+          ),
+      ),
+      BazelGlobalFunction(
+        name = "positionalNotFirst",
+        doc = null,
+        environment = Environment.entries,
+        params =
+          listOf(
+            BazelGlobalFunctionParameter(
+              name = "argOne",
+              positional = false,
+              named = true,
+              required = true,
+              doc = null,
+              defaultValue = null,
+            ),
+            BazelGlobalFunctionParameter(
+              name = "argTwo",
+              positional = true,
+              named = false,
+              required = true,
+              doc = null,
+              defaultValue = null,
+            ),
+          ),
+      ),
+      BazelGlobalFunction(
         name = "optionalAndVarArgs",
         doc = null,
         environment = Environment.entries,
@@ -131,7 +179,7 @@ class BazelGlobalFunctionAnnotatorTest : BasePlatformTestCase() {
     myFixture.configureByText(
       "MODULE.bazel",
       """
-      simple(
+      simpleWithoutKwArgs(
         "val2", "val2",
         <error descr="$errorMessage">unknownParam = "whatever"</error>
       )
@@ -229,6 +277,20 @@ class BazelGlobalFunctionAnnotatorTest : BasePlatformTestCase() {
           "varArg2",
           kwArg1 = "kwArg1Value",
           kwArg2 = "kwArg2Value",
+      )
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting()
+  }
+
+  @Test
+  fun `handle positional argument not first`() {
+    myFixture.configureByText(
+      "MODULE.bazel",
+      """
+      positionalNotFirst(
+          "varArg2",
+          argOne = "valueOne",
       )
       """.trimIndent(),
     )
