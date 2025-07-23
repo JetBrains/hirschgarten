@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.highlighting.StarlarkHighlightingColors
@@ -48,7 +48,7 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
     val functionName = element.firstChild.text
     holder.mark(element.firstChild, StarlarkHighlightingColors.FUNCTION_DECLARATION)
 
-    val function = BazelGlobalFunctionsService.getInstance().getFunctionByName(functionName)
+    val function = BazelGlobalFunctions.getFunctionByName(functionName)
     if (function != null) {
       doAnnotateGlobalFunction(function, element, holder)
       if (function.name == "git_override" || function.name == "archive_override") {

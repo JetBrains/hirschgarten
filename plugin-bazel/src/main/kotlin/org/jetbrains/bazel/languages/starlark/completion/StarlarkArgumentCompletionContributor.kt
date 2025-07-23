@@ -20,7 +20,7 @@ import org.jetbrains.bazel.languages.bazelrc.completion.letIf
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkNamedLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
@@ -41,11 +41,11 @@ class StarlarkArgumentCompletionContributor : CompletionContributor() {
 private object StarlarkArgumentCompletionProvider : CompletionProvider<CompletionParameters>() {
   private fun fileTypeToGlobalFunctions(file: StarlarkFile): Map<String, BazelGlobalFunction> =
     when (file.getBazelFileType()) {
-      BazelFileType.EXTENSION -> BazelGlobalFunctionsService.getInstance().extensionGlobalFunctions
-      BazelFileType.BUILD -> BazelGlobalFunctionsService.getInstance().buildGlobalFunctions
-      BazelFileType.MODULE -> BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions
-      BazelFileType.WORKSPACE -> BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions
-    } + BazelGlobalFunctionsService.getInstance().starlarkGlobalFunctions
+      BazelFileType.EXTENSION -> BazelGlobalFunctions.extensionGlobalFunctions
+      BazelFileType.BUILD -> BazelGlobalFunctions.buildGlobalFunctions
+      BazelFileType.MODULE -> BazelGlobalFunctions.moduleGlobalFunctions
+      BazelFileType.WORKSPACE -> BazelGlobalFunctions.moduleGlobalFunctions
+    } + BazelGlobalFunctions.starlarkGlobalFunctions
 
   override fun addCompletions(
     parameters: CompletionParameters,
