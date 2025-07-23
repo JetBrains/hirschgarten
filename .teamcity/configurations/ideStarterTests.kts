@@ -63,6 +63,14 @@ sealed class HotswapTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"
 )
 
+sealed class GoLandSyncTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "GoLand sync test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/resolve/golandSync"
+)
+
 sealed class CoroutineDebugTest(
   vcsRoot: GitVcsRoot,
 ) : IdeStarterTests(
@@ -200,6 +208,10 @@ sealed class MoveKotlinFileTest(
 )
 
 object HotswapTestGitHub : HotswapTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object GoLandSyncTestGitHub : GoLandSyncTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
