@@ -43,6 +43,7 @@ project {
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
         buildType(IdeStarterTests.HotswapTestGitHub)
+        buildType(IdeStarterTests.GoLandSyncTestGitHub)
         buildType(IdeStarterTests.CoroutineDebugTestGitHub)
         buildType(IdeStarterTests.ReopenWithoutResyncTestGitHub)
         buildType(IdeStarterTests.RunLineMarkerTestGitHub)
@@ -123,6 +124,7 @@ project {
       PluginBenchmark.BenchmarkDefaultGitHub,
       PluginBenchmark.BenchmarkWithVersionGitHub,
       IdeStarterTests.HotswapTestGitHub,
+      IdeStarterTests.GoLandSyncTestGitHub,
       IdeStarterTests.CoroutineDebugTestGitHub,
       IdeStarterTests.ReopenWithoutResyncTestGitHub,
       IdeStarterTests.RunLineMarkerTestGitHub,
