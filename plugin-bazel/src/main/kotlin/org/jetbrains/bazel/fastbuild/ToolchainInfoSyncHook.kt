@@ -6,6 +6,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -22,11 +23,8 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
 
     // clear per-target cache to ensure fresh toolchain info after sync
     // this is important in case javac configuration has changed
+    logger.info("Clearing previously saved toolchains")
     service.clearPerTargetCache()
-
-    environment.server.jvmToolchainInfo().also {
-      service.jvmToolchainInfo = it
-    }
   }
 
   @State(
@@ -36,22 +34,12 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
   )
   @Service(Service.Level.PROJECT)
   class JvmToolchainInfoService : PersistentStateComponent<JvmToolchainInfoService.State> {
-    var jvmToolchainInfo: JvmToolchainInfo? = null
     private val perTargetToolchainInfo = mutableMapOf<Label, JvmToolchainInfo>()
 
-    fun getJvmToolchainInfo(target: Label? = null): JvmToolchainInfo? =
-      if (target != null) {
-        perTargetToolchainInfo[target]
-      } else {
-        jvmToolchainInfo
-      }
+    fun getJvmToolchainInfo(target: Label): JvmToolchainInfo? = perTargetToolchainInfo[target]
 
-    fun setJvmToolchainInfo(toolchainInfo: JvmToolchainInfo, target: Label? = null) {
-      if (target != null) {
-        perTargetToolchainInfo[target] = toolchainInfo
-      } else {
-        jvmToolchainInfo = toolchainInfo
-      }
+    fun setJvmToolchainInfo(toolchainInfo: JvmToolchainInfo, target: Label) {
+      perTargetToolchainInfo[target] = toolchainInfo
     }
 
     fun clearPerTargetCache() {
@@ -80,14 +68,6 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
 
     override fun getState(): State? =
       State(
-        defaultToolchain =
-          jvmToolchainInfo?.let {
-            ToolchainInfoState(
-              java_home = it.java_home,
-              toolchain_path = it.toolchain_path,
-              jvm_opts = it.jvm_opts,
-            )
-          },
         perTargetToolchains =
           perTargetToolchainInfo.mapValues { (_, toolchainInfo) ->
             ToolchainInfoState(
@@ -99,14 +79,7 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
       )
 
     override fun loadState(state: JvmToolchainInfoService.State) {
-      this.jvmToolchainInfo =
-        state.defaultToolchain?.let {
-          JvmToolchainInfo(
-            java_home = it.java_home,
-            toolchain_path = it.toolchain_path,
-            jvm_opts = it.jvm_opts,
-          )
-        }
+      logger.info("Started load of previously saved toolchains")
       this.perTargetToolchainInfo.clear()
       this.perTargetToolchainInfo.putAll(
         state.perTargetToolchains.mapValues { (_, toolchainState) ->
@@ -117,6 +90,7 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
           )
         },
       )
+      logger.info("Finished load of previously saved toolchains")
     }
 
     companion object {
@@ -130,9 +104,10 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
       var jvm_opts: List<String> = emptyList(),
     )
 
-    data class State(
-      var defaultToolchain: ToolchainInfoState? = null,
-      var perTargetToolchains: Map<Label, ToolchainInfoState> = emptyMap(),
-    )
+    data class State(var perTargetToolchains: Map<Label, ToolchainInfoState> = emptyMap())
+  }
+
+  companion object {
+    private val logger = Logger.getInstance(ToolchainInfoSyncHook::class.java)
   }
 }
