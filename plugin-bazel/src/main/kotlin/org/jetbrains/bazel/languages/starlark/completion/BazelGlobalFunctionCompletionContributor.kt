@@ -86,16 +86,16 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
 }
 
 private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getStarlarkGlobalFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().starlarkGlobalFunctions.values })
 
 private object BazelBzlFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBzlGlobalFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().extensionGlobalFunctions.values })
 
 private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBuildGlobalFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().buildGlobalFunctions.values })
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getModuleGlobalFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions.values })
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getModuleGlobalFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions.values })

@@ -22,7 +22,6 @@ class BazelGlobalFunctionsService {
   private val buildRulesPath = "/bazelGlobalFunctions/rules.json"
 
   private val globalFunctions: Map<String, BazelGlobalFunction>
-  private val buildRules: Map<String, BazelGlobalFunction>
 
   private fun loadFunctionsList(filePath: String): List<BazelGlobalFunction> {
     val resource = javaClass.getResourceAsStream(filePath)
@@ -36,26 +35,25 @@ class BazelGlobalFunctionsService {
   }
 
   init {
-    globalFunctions = loadFunctionsList(globalFunctionsPath).associateBy { it.name }
-    buildRules = loadFunctionsList(buildRulesPath).associateBy { it.name }
+    globalFunctions = (loadFunctionsList(globalFunctionsPath) + loadFunctionsList(buildRulesPath)).associateBy { it.name }
   }
 
-  fun getBuildGlobalFunctions(): Map<String, BazelGlobalFunction> =
+  val buildGlobalFunctions: Map<String, BazelGlobalFunction> =
     globalFunctions.filter {
       it.value.environment.contains(Environment.BUILD)
     }
 
-  fun getModuleGlobalFunctions(): Map<String, BazelGlobalFunction> =
+  val moduleGlobalFunctions: Map<String, BazelGlobalFunction> =
     globalFunctions.filter {
       it.value.environment.contains(Environment.MODULE)
     }
 
-  fun getBzlGlobalFunctions(): Map<String, BazelGlobalFunction> =
+  val extensionGlobalFunctions: Map<String, BazelGlobalFunction> =
     globalFunctions.filter {
       it.value.environment.contains(Environment.BZL)
     }
 
-  fun getStarlarkGlobalFunctions(): Map<String, BazelGlobalFunction> =
+  val starlarkGlobalFunctions: Map<String, BazelGlobalFunction> =
     globalFunctions.filter {
       it.value.environment.containsAll(Environment.entries)
     }
