@@ -56,6 +56,8 @@ import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
+private const val BAZEL_NOTIFICATION_GROUP = "Bazel"
+
 private class QueryFlagField(
   project: Project,
   val flag: String,
@@ -222,7 +224,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
 
           NotificationGroupManager
             .getInstance()
-            .getNotificationGroup("Bazel")
+            .getNotificationGroup(BAZEL_NOTIFICATION_GROUP)
             .createNotification(notificationText, NotificationType.ERROR)
             .notify(project)
           return
@@ -254,7 +256,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         ApplicationManager.getApplication().invokeLater {
           NotificationGroupManager
             .getInstance()
-            .getNotificationGroup("Bazel")
+            .getNotificationGroup(BAZEL_NOTIFICATION_GROUP)
             .createNotification(
               BazelPluginBundle.message("notification.bazel.query.graph.visualization.failed"),
               NotificationType.ERROR,
