@@ -13,98 +13,100 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvider {
-  override val functions: List<BazelGlobalFunction> = listOf(
-    BazelGlobalFunction(
-      name = "simple",
-      doc = null,
-      environment = Environment.entries,
-      params = listOf(
-        BazelGlobalFunctionParameter(
-          name = "argOne",
-          positional = true,
-          named = false,
-          required = true,
-          doc = null,
-          defaultValue = null,
-        ),
-        BazelGlobalFunctionParameter(
-          name = "argTwo",
-          positional = true,
-          named = true,
-          required = true,
-          doc = null,
-          defaultValue = null,
-        ),
-        BazelGlobalFunctionParameter(
-          name = "*args",
-          positional = true,
-          named = false,
-          required = false,
-          doc = null,
-          defaultValue = null,
-        ),
-        BazelGlobalFunctionParameter(
-          name = "**kwargs",
-          positional = false,
-          named = true,
-          required = false,
-          doc = null,
-          defaultValue = null,
-        ),
+  override val functions: List<BazelGlobalFunction> =
+    listOf(
+      BazelGlobalFunction(
+        name = "simple",
+        doc = null,
+        environment = Environment.entries,
+        params =
+          listOf(
+            BazelGlobalFunctionParameter(
+              name = "argOne",
+              positional = true,
+              named = false,
+              required = true,
+              doc = null,
+              defaultValue = null,
+            ),
+            BazelGlobalFunctionParameter(
+              name = "argTwo",
+              positional = true,
+              named = true,
+              required = true,
+              doc = null,
+              defaultValue = null,
+            ),
+            BazelGlobalFunctionParameter(
+              name = "*args",
+              positional = true,
+              named = false,
+              required = false,
+              doc = null,
+              defaultValue = null,
+            ),
+            BazelGlobalFunctionParameter(
+              name = "**kwargs",
+              positional = false,
+              named = true,
+              required = false,
+              doc = null,
+              defaultValue = null,
+            ),
+          ),
       ),
-    ),
-    BazelGlobalFunction(
-      name = "optionalAndVarArgs",
-      doc = null,
-      environment = Environment.entries,
-      params = listOf(
-        BazelGlobalFunctionParameter(
-          name = "argOne",
-          positional = false,
-          named = true,
-          required = false,
-          doc = null,
-          defaultValue = "default",
-        ),
-        BazelGlobalFunctionParameter(
-          name = "*args",
-          positional = true,
-          named = true,
-          required = false,
-          doc = null,
-          defaultValue = null,
-        ),
-        BazelGlobalFunctionParameter(
-          name = "argTwo",
-          positional = false,
-          named = true,
-          required = false,
-          doc = null,
-          defaultValue = "default",
-        ),
-        BazelGlobalFunctionParameter(
-          name = "**kwargs",
-          positional = false,
-          named = true,
-          required = false,
-          doc = null,
-          defaultValue = null,
-        ),
+      BazelGlobalFunction(
+        name = "optionalAndVarArgs",
+        doc = null,
+        environment = Environment.entries,
+        params =
+          listOf(
+            BazelGlobalFunctionParameter(
+              name = "argOne",
+              positional = false,
+              named = true,
+              required = false,
+              doc = null,
+              defaultValue = "default",
+            ),
+            BazelGlobalFunctionParameter(
+              name = "*args",
+              positional = true,
+              named = true,
+              required = false,
+              doc = null,
+              defaultValue = null,
+            ),
+            BazelGlobalFunctionParameter(
+              name = "argTwo",
+              positional = false,
+              named = true,
+              required = false,
+              doc = null,
+              defaultValue = "default",
+            ),
+            BazelGlobalFunctionParameter(
+              name = "**kwargs",
+              positional = false,
+              named = true,
+              required = false,
+              doc = null,
+              defaultValue = null,
+            ),
+          ),
       ),
     )
-  )
 }
 
 @RunWith(JUnit4::class)
 class BazelGlobalFunctionAnnotatorTest : BasePlatformTestCase() {
-
   @Before
   fun beforeAll() {
     ExtensionTestUtil.maskExtensions(
       StarlarkGlobalFunctionProvider.extensionPoint,
       listOf(TestStarlarkGlobalFunctionProvider()),
-        myFixture.testRootDisposable,
-      )
+      myFixture.testRootDisposable,
+    )
   }
 
   @Test
