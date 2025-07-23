@@ -21,6 +21,10 @@ data class BazelGlobalFunctionParameter(
   val required: Boolean,
 )
 
+fun BazelGlobalFunctionParameter.isKwArgs() = name.startsWith("**")
+
+fun BazelGlobalFunctionParameter.isVarArgs() = name.startsWith("*")
+
 data class BazelGlobalFunction(
   val name: String,
   val doc: String?,

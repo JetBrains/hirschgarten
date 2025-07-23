@@ -8,6 +8,8 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
+import org.jetbrains.bazel.languages.starlark.bazel.isKwArgs
+import org.jetbrains.bazel.languages.starlark.bazel.isVarArgs
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.highlighting.StarlarkHighlightingColors
@@ -128,10 +130,6 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
   }
 
   private fun ListIterator<BazelGlobalFunctionParameter>.nextOrNull() = if (hasNext()) next() else null
-
-  private fun BazelGlobalFunctionParameter.isKwArgs() = name.startsWith("**")
-
-  private fun BazelGlobalFunctionParameter.isVarArgs() = name.startsWith("*")
 
   private fun checkDependencyOverrideResolution(element: PsiElement, holder: AnnotationHolder) {
     val reference = (element as? StarlarkCallExpression)?.reference ?: return
