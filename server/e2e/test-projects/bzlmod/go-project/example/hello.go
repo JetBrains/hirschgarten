@@ -1,9 +1,8 @@
 package main
 
 import (
-    "example.com/lib"
-    "fmt"
-	"golang.org/x/text/cases"
+	"fmt"
+	"go-project-e2e/lib"
 )
 
 func main() {

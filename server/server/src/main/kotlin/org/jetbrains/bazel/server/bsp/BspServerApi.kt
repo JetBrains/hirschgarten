@@ -95,8 +95,6 @@ class BspServerApi(
 
   override suspend fun workspaceLibraries(): WorkspaceLibrariesResult = projectSyncService.workspaceBuildLibraries()
 
-  override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = projectSyncService.workspaceBuildGoLibraries()
-
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = projectSyncService.workspaceDirectories()
 
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()

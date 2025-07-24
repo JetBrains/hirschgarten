@@ -75,11 +75,6 @@ class ProjectSyncService(
     return bspMapper.workspaceLibraries(project)
   }
 
-  suspend fun workspaceBuildGoLibraries(): WorkspaceGoLibrariesResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceGoLibrariesResult(emptyList())
-    return bspMapper.workspaceGoLibraries(project)
-  }
-
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
     val project = projectProvider.get()
     return bspMapper.workspaceDirectories(project)
