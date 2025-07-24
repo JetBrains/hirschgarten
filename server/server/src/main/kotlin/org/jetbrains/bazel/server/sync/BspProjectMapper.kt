@@ -337,4 +337,7 @@ class BspProjectMapper(
 
   suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo =
     JvmToolchainQuery.jvmToolchainQuery(bspInfo, bazelRunner, project.workspaceContext)
+
+  suspend fun jvmBuilderParamsForTarget(project: Project, target: Label): JvmToolchainInfo =
+    JvmToolchainQuery.jvmToolchainQueryForTarget(bspInfo, bazelRunner, project.workspaceContext, target)
 }
