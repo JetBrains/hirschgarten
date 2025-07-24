@@ -278,7 +278,7 @@
       key="bsp.android.support"
     />
     <registryKey
-      defaultValue="false"
+      defaultValue="true"
       description="Go modules support"
       key="bsp.go.support"
     />
