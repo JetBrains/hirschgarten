@@ -26,6 +26,9 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.performance.telemetry.TelemetryManager
+import org.jetbrains.bazel.startup.IntellijTelemetryManager
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -40,6 +43,11 @@ import java.nio.file.Path
 class PerformanceTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() = getProjectInfoFromSystemProperties()
+
+  @BeforeEach
+  fun setUp() {
+    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
+  }
 
   @Test
   fun openBazelProject() {
