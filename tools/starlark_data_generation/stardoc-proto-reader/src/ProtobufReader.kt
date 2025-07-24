@@ -7,6 +7,545 @@ import java.io.FileInputStream
 import kotlin.system.exitProcess
 
 object ProtobufReader {
+  private val commonParams =
+    listOf(
+      BazelGlobalFunctionParameter(
+        name = "aspect_hints",
+        doc = """
+          <p>List of <a href="/concepts/labels">labels</a>; default is <code translate="no" dir="ltr">[]</code></p>
+
+          <p>A list of arbitrary labels which is exposed to <a href="/extending/aspects">aspects</a> (in
+          particular - aspects invoked by this rule's reverse dependencies), but isn't exposed to this rule's
+          own implementation. Consult documentation for language-specific rule sets for details about what
+          effect a particular aspect hint would have.</p>
+
+          <p>You could think of an aspect hint as a richer alternative to a <a href="#common.tags">tag</a>:
+          while a tag conveys only a boolean state (the tag is either present or absent in the
+          <code translate="no" dir="ltr">tags</code> list), an aspect hint can convey arbitrary structured information in its
+          <a href="/extending/rules#providers">providers</a>.</p>
+
+          <p>In practice, aspect hints are used for interoperability between different language-specific
+          rule sets. For example, imagine you have a <code translate="no" dir="ltr">mylang_binary</code> target which needs to depend
+          on an <code translate="no" dir="ltr">otherlang_library</code> target. The MyLang-specific logic needs some additional
+          information about the OtherLang target in order to use it, but <code translate="no" dir="ltr">otherlang_library</code>
+          doesn't provide this information because it knows nothing about MyLang. One solution might be for
+          the MyLang rule set to define a <code translate="no" dir="ltr">mylang_hint</code> rule which can be used to encode that
+          additional information; the user can add the hint to their <code translate="no" dir="ltr">otherlang_library</code>'s
+          <code translate="no" dir="ltr">aspect_hints</code>, and <code translate="no" dir="ltr">mylang_binary</code> can use an aspect to collect the
+          additional information from a MyLang-specific provider in the <code translate="no" dir="ltr">mylang_hint</code>.</p>
+
+          <p>For a concrete example, see
+          <a href="https://github.com/bazelbuild/rules_swift/blob/master/doc/rules.md#swift_interop_hint"><code translate="no" dir="ltr">swift_interop_hint</code></a>
+          and <a href="https://github.com/bazelbuild/rules_swift/blob/master/doc/rules.md#swift_overlay"><code translate="no" dir="ltr">swift_overlay</code></a>
+          in <code translate="no" dir="ltr">rules_swift</code>.</p>
+
+          <p>Best practices:</p>
+          <ul>
+            <li>Targets listed in <code translate="no" dir="ltr">aspect_hints</code> should be lightweight and minimal.</li>
+            <li>Language-specific logic should consider only aspect hints having providers relevant to that
+              language, and should ignore any other aspect hints.</li>
+          </ul>
+        """.trimIndent(),
+        required = false,
+        defaultValue = "[]",
+        positional = false,
+        named = true,
+      ),
+      BazelGlobalFunctionParameter(
+        name = "compatible_with",
+        doc = """
+          <p>List of <a href="/concepts/labels">labels</a>;
+            <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">[]</code></p>
+
+          <p>
+          The list of environments this target can be built for, in addition to
+          default-supported environments.
+          </p>
+
+          <p>
+          This is part of Bazel's constraint system, which lets users declare which
+          targets can and cannot depend on each other. For example, externally deployable
+          binaries shouldn't depend on libraries with company-secret code. See
+          <a href="https://github.com/bazelbuild/bazel/blob/master/src/main/java/com/google/devtools/build/lib/analysis/constraints/ConstraintSemantics.java#L46">
+          ConstraintSemantics</a> for details.
+          </p>
+        """.trimIndent(),
+        required = false,
+        positional = false,
+        named = true,
+        defaultValue = "[]",
+      ),
+      BazelGlobalFunctionParameter(
+        name = "deprecation",
+        doc = """
+          <p>String; <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">None</code></p>
+
+          <p>
+          An explanatory warning message associated with this target.
+          Typically this is used to notify users that a target has become obsolete,
+          or has become superseded by another rule, is private to a package, or is
+          perhaps considered harmful for some reason. It is a good idea to include
+          some reference (like a webpage, a bug number or example migration CLs) so
+          that one can easily find out what changes are required to avoid the message.
+          If there is a new target that can be used as a drop in replacement, it is a
+          good idea to just migrate all users of the old target.
+          </p>
+
+          <p>
+          This attribute has no effect on the way things are built, but it
+          may affect a build tool's diagnostic output.  The build tool issues a
+          warning when a rule with a <code translate="no" dir="ltr">deprecation</code> attribute is
+          depended upon by a target in another package.
+          </p>
+
+          <p>
+          Intra-package dependencies are exempt from this warning, so that,
+          for example, building the tests of a deprecated rule does not
+          encounter a warning.
+          </p>
+
+          <p>
+          If a deprecated target depends on another deprecated target, no warning
+          message is issued.
+          </p>
+
+          <p>
+          Once people have stopped using it, the target can be removed.
+          </p>
+        """.trimIndent(),
+        required = false,
+        positional = false,
+        named = true,
+        defaultValue = "None",
+      ),
+      BazelGlobalFunctionParameter(
+        name = "exec_compatible_with",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "[]",
+        doc = """
+          <p>List of <a href="/concepts/labels">labels</a>;
+            <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">[]</code>
+          </p>
+
+          <p>
+          A list of
+          <code translate="no" dir="ltr"><a href="/reference/be/platforms-and-toolchains#constraint_value">constraint_values</a></code>
+          that must be present in the execution platform of this target's default exec
+          group. This is in addition to any constraints already set by the rule type.
+          Constraints are used to restrict the list of available execution platforms.
+
+          For more details, see
+          the description of
+            <a href="/docs/toolchains#toolchain-resolution">toolchain resolution</a>.
+            and
+            <a href="/extending/exec-groups">exec groups</a>
+
+          </p>
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "exec_group_compatible_with",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "{}",
+        doc = """
+          <p>
+          A dictionary of exec group names to lists of
+          <code translate="no" dir="ltr"><a href="/reference/be/platforms-and-toolchains#constraint_value">constraint_values</a></code>
+          that must be present in the execution platform for the given exec group. This
+          is in addition to any constraints already set on the exec group's definition.
+          Constraints are used to restrict the list of available execution platforms.
+
+          For more details, see
+          the description of
+            <a href="/docs/toolchains#toolchain-resolution">toolchain resolution</a>.
+            and
+            <a href="/extending/exec-groups">exec groups</a>
+
+          </p>
+        """.trimIndent()
+      ),
+      BazelGlobalFunctionParameter(
+        name = "exec_properties",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "{}",
+        doc = """
+          <p>Dictionary of strings; default is <code translate="no" dir="ltr">{}</code></p>
+
+          <p> A dictionary of strings that will be added to the <code translate="no" dir="ltr">exec_properties</code> of a platform selected for this target. See <code translate="no" dir="ltr">exec_properties</code> of the <a href="/reference/be/platforms-and-toolchains#platform">platform</a> rule.</p>
+
+          <p>If a key is present in both the platform and target-level properties, the value will be taken from the target.</p>
+
+          <p>Keys can be prefixed with the name of an execution group followed by a <code translate="no" dir="ltr">.</code> to apply them only to that particular exec group.</p>
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "features",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "[]",
+        doc = """
+          <p>List of <i>feature</i> strings; default is <code translate="no" dir="ltr">[]</code></p>
+
+          <p>A feature is string tag that can be enabled or disabled on a target. The
+            meaning of a feature depends on the rule itself.</p>
+
+          <p>This <code translate="no" dir="ltr">features</code> attribute is combined with the <a href="/reference/be/functions#package">
+          package</a> level <code translate="no" dir="ltr">features</code> attribute. For example, if
+          the features ["a", "b"] are enabled on the package level, and a target's
+          <code translate="no" dir="ltr">features</code> attribute contains ["-a", "c"], the features enabled for the
+          rule will be "b" and "c".
+            <a href="https://github.com/bazelbuild/examples/blob/main/rules/features/BUILD">
+              See example</a>.
+          </p>
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "package_metadata",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = null,
+        doc = """
+          <p>List of <a href="/concepts/labels">labels</a>;
+            <a href="#configurable-attributes">nonconfigurable</a>; default is the package's
+            <code translate="no" dir="ltr"><a href="/reference/be/functions#package.default_package_metadata">default_package_metadata</a></code>
+          </p>
+
+          <p>
+          A list of labels that are associated metadata about this target.
+          Typically, the labels are simple rules that return a provider of
+          constant values. Rules and aspects may use these labels to perform some
+          additional analysis on the build graph.
+          </p>
+
+          <p>
+          The canonical use case is that of
+          <a href="https://github.com/bazelbuild/rules_license">rules_license</a>.
+          For that use case, <code translate="no" dir="ltr">package_metadata</code> and
+          <code translate="no" dir="ltr">default_package_metadata</code> is used to attach information
+          about a package's licence or version to targets. An aspect applied
+          to a top-level binary can be used to gather those and produce
+          compliance reports.
+          </p>
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "restricted_to",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "[]",
+        doc = """
+          <p>List of <a href="/concepts/labels">labels</a>;
+            <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">[]</code></p>
+
+          <p>
+          The list of environments this target can be built for, <i>instead</i> of
+          default-supported environments.
+          </p>
+
+          <p>
+          This is part of Bazel's constraint system. See
+          <code translate="no" dir="ltr"><a href="#common.compatible_with">compatible_with</a></code>
+          for details.
+          </p>
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "tags",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "[]",
+        doc = """
+          <p>
+            List of strings; <a href="#configurable-attributes">nonconfigurable</a>;
+            default is <code translate="no" dir="ltr">[]</code>
+          </p>
+
+          <p>
+            <i>Tags</i> can be used on any rule. <i>Tags</i> on test and
+            <code translate="no" dir="ltr">test_suite</code> rules are useful for categorizing the tests.
+            <i>Tags</i> on non-test targets are used to control sandboxed execution of
+            <code translate="no" dir="ltr">genrule</code>s and
+
+          <a href="/rules/concepts">Starlark</a>
+            actions, and for parsing by humans and/or external tools.
+          </p>
+
+          <p>
+            Bazel modifies the behavior of its sandboxing code if it finds the following
+            keywords in the <code translate="no" dir="ltr">tags</code> attribute of any test or <code translate="no" dir="ltr">genrule</code>
+            target, or the keys of <code translate="no" dir="ltr">execution_requirements</code> for any Starlark
+            action.
+          </p>
+
+          <ul>
+              <li><code translate="no" dir="ltr">no-sandbox</code> keyword results in the action or test never being
+              sandboxed; it can still be cached or run remotely - use <code translate="no" dir="ltr">no-cache</code>
+              or <code translate="no" dir="ltr">no-remote</code> to prevent either or both of those.
+            </li>
+            <li><code translate="no" dir="ltr">no-cache</code> keyword results in the action or test never being
+              cached (locally or remotely). Note: for the purposes of this tag, the disk cache
+              is considered a local cache, whereas the HTTP and gRPC caches are considered
+              remote. Other caches, such as Skyframe or the persistent action cache, are not
+              affected.
+            </li>
+              <li><code translate="no" dir="ltr">no-remote-cache</code> keyword results in the action or test never being
+              cached remotely (but it may be cached locally; it may also be executed remotely).
+              Note: for the purposes of this tag, the disk cache is considered a local cache,
+              whereas the HTTP and gRPC caches are considered remote. Other caches, such as
+              Skyframe or the persistent action cache, are not affected.
+              If a combination of local disk cache and remote cache are used (combined cache),
+              it's treated as a remote cache and disabled entirely unless <code translate="no" dir="ltr">--incompatible_remote_results_ignore_disk</code>
+              is set in which case the local components will be used.
+            </li>
+              <li><code translate="no" dir="ltr">no-remote-exec</code> keyword results in the action or test never being
+              executed remotely (but it may be cached remotely).
+            </li>
+
+            <li><code translate="no" dir="ltr">no-remote</code> keyword prevents the action or test from being executed remotely or
+              cached remotely. This is equivalent to using both
+              <code translate="no" dir="ltr">no-remote-cache</code> and <code translate="no" dir="ltr">no-remote-exec</code>.
+                </li>
+             <li><code translate="no" dir="ltr">no-remote-cache-upload</code> keyword disables upload part of remote caching of a spawn.
+               it does not disable remote execution.
+            </li>
+              <li><code translate="no" dir="ltr">local</code> keyword precludes the action or test from being remotely cached,
+              remotely executed, or run inside the sandbox.
+              For genrules and tests, marking the rule with the <code translate="no" dir="ltr">local = True</code>
+              attribute has the same effect.
+            </li>
+
+              <li><code translate="no" dir="ltr">requires-network</code> keyword allows access to the external
+              network from inside the sandbox.  This tag only has an effect if sandboxing
+              is enabled.
+            </li>
+
+            <li><code translate="no" dir="ltr">block-network</code> keyword blocks access to the external
+              network from inside the sandbox. In this case, only communication
+              with localhost is allowed. This tag only has an effect if sandboxing is
+              enabled.
+            </li>
+
+            <li><code translate="no" dir="ltr">requires-fakeroot</code> runs the test or action as uid and gid 0 (i.e., the root
+              user). This is only supported on Linux. This tag takes precedence over the
+              <code class="flag" translate="no" dir="ltr">--sandbox_fake_username</code> command-line option.
+            </li>
+          </ul>
+
+          <p>
+            <i>Tags</i> on tests are generally used to annotate a test's role in your
+            debug and release process.  Typically, tags are most useful for C++ and Python
+            tests, which lack any runtime annotation ability.  The use of tags and size
+            elements gives flexibility in assembling suites of tests based around codebase
+            check-in policy.
+          </p>
+
+          <p>
+            Bazel modifies test running behavior if it finds the following keywords in the
+            <code translate="no" dir="ltr">tags</code> attribute of the test rule:
+          </p>
+
+          <ul>
+            <li><code translate="no" dir="ltr">exclusive</code> will force the test to be run in the
+              "exclusive" mode, ensuring that no other tests are running at the
+              same time. Such tests will be executed in serial fashion after all build
+              activity and non-exclusive tests have been completed. Remote execution is
+              disabled for such tests because Bazel doesn't have control over what's
+              running on a remote machine.
+            </li>
+
+            <li><code translate="no" dir="ltr">exclusive-if-local</code> will force the test to be run in the
+              "exclusive" mode if it is executed locally, but will run the test in parallel if it's
+              executed remotely.
+            </li>
+
+            <li><code translate="no" dir="ltr">manual</code> keyword will exclude the target from expansion of target pattern wildcards
+              (<code translate="no" dir="ltr">...</code>, <code translate="no" dir="ltr">:*</code>, <code translate="no" dir="ltr">:all</code>, etc.) and <code translate="no" dir="ltr">test_suite</code> rules
+              which do not list the test explicitly when computing the set of top-level targets to build/run
+              for the <code translate="no" dir="ltr">build</code>, <code translate="no" dir="ltr">test</code>, and <code translate="no" dir="ltr">coverage</code> commands. It does not
+              affect target wildcard or test suite expansion in other contexts, including the
+              <code translate="no" dir="ltr">query</code> command. Note that <code translate="no" dir="ltr">manual</code> does not imply that a target should
+              not be built/run automatically by continuous build/test systems. For example, it may be
+              desirable to exclude a target from <code translate="no" dir="ltr">bazel test ...</code> because it requires specific
+              Bazel flags, but still have it included in properly-configured presubmit or continuous test
+              runs.
+
+                </li>
+
+            <li><code translate="no" dir="ltr">external</code> keyword will force test to be unconditionally
+              executed (regardless of <code class="flag" translate="no" dir="ltr">--cache_test_results</code>
+              value).
+            </li>
+
+            </ul>
+
+          See
+          <a href="/reference/test-encyclopedia#tag-conventions">Tag Conventions</a>
+           in the Test Encyclopedia for more conventions on tags attached to test targets.
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "target_compatible_with",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "[]",
+        doc = """
+          <td><p>
+          List of <a href="/concepts/labels">labels</a>; default is <code translate="no" dir="ltr">[]</code>
+          </p>
+
+          <p>
+          A list of
+          <code translate="no" dir="ltr"><a href="/reference/be/platforms-and-toolchains#constraint_value">constraint_value</a></code>s
+          that must be present in the target platform for this target to be considered
+          <em>compatible</em>. This is in addition to any constraints already set by the
+          rule type. If the target platform does not satisfy all listed constraints then
+          the target is considered <em>incompatible</em>. Incompatible targets are
+          skipped for building and testing when the target pattern is expanded
+          (e.g. <code translate="no" dir="ltr">//...</code>, <code translate="no" dir="ltr">:all</code>). When explicitly specified on the
+          command line, incompatible targets cause Bazel to print an error and cause a
+          build or test failure.
+          </p>
+
+          <p>
+          Targets that transitively depend on incompatible targets are themselves
+          considered incompatible. They are also skipped for building and testing.
+          </p>
+
+          <p>
+          An empty list (which is the default) signifies that the target is compatible
+          with all platforms.
+          </p><p>
+
+          </p><p>
+          All rules other than <a href="/reference/be/workspace">Workspace Rules</a> support this
+          attribute.
+          For some rules this attribute has no effect. For example, specifying
+          <code translate="no" dir="ltr">target_compatible_with</code> for a
+          <code translate="no" dir="ltr"><a href="/reference/be/c-cpp#cc_toolchain">cc_toolchain</a></code> is not useful.
+          </p><p>
+
+          </p><p>
+          See the
+          <a href="/docs/platforms#skipping-incompatible-targets">Platforms</a>
+          page for more information about incompatible target skipping.
+          </p>
+          </td>
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "testonly",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "False",
+        doc = """
+          <p>Boolean; <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">False</code>
+            except for test and test suite targets</p>
+
+          <p>
+          If <code translate="no" dir="ltr">True</code>, only testonly targets (such as tests) can depend on this target.
+          </p>
+
+          <p>
+          Equivalently, a rule that is not <code translate="no" dir="ltr">testonly</code> is not allowed to
+          depend on any rule that is <code translate="no" dir="ltr">testonly</code>.
+          </p>
+
+          <p>
+          Tests (<code translate="no" dir="ltr">*_test</code> rules)
+          and test suites (<a href="/reference/be/general#test_suite">test_suite</a> rules)
+          are <code translate="no" dir="ltr">testonly</code> by default.
+          </p>
+
+          <p>
+          This attribute is intended to mean that the target should not be
+          contained in binaries that are released to production.
+          </p>
+
+          <p>
+          Because testonly is enforced at build time, not run time, and propagates
+          virally through the dependency tree, it should be applied judiciously. For
+          example, stubs and fakes that
+          are useful for unit tests may also be useful for integration tests
+          involving the same binaries that will be released to production, and
+          therefore should probably not be marked testonly. Conversely, rules that
+          are dangerous to even link in, perhaps because they unconditionally
+          override normal behavior, should definitely be marked testonly.
+          </p>
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "toolchains",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "[]",
+        doc = """
+          <p>List of <a href="/concepts/labels">labels</a>;
+            <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">[]</code></p>
+
+          <p>
+            The set of targets whose <a href="/reference/be/make-variables">Make variables</a> this target is
+            allowed to access. These targets are either instances of rules that provide
+            <code translate="no" dir="ltr">TemplateVariableInfo</code> or special targets for toolchain types built into Bazel. These
+            include:
+
+          </p><ul>
+              <li><code translate="no" dir="ltr">@bazel_tools//tools/cpp:toolchain_type</code>
+            </li><li><code translate="no" dir="ltr">@rules_java//toolchains:current_java_runtime</code>
+            </li></ul>
+
+          <p>
+            Note that this is distinct from the concept of
+              <a href="/docs/toolchains#toolchain-resolution">toolchain resolution</a>
+              that is used by rule implementations for platform-dependent configuration. You cannot use this
+            attribute to determine which specific <code translate="no" dir="ltr">cc_toolchain</code> or <code translate="no" dir="ltr">java_toolchain</code> a
+            target will use.
+          </p>
+        """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "visibility",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = null,
+        doc = """
+          <p>List of <a href="/concepts/labels">labels</a>;
+            <a href="#configurable-attributes">nonconfigurable</a>;
+            default varies
+          </p>
+
+          <p>
+            The <code translate="no" dir="ltr">visibility</code> attribute controls whether the target can be
+            depended on by targets in other locations. See the documentation for
+            <a href="/concepts/visibility">visibility</a>.
+          </p>
+
+          <p>
+            For targets declared directly in a BUILD file or in legacy macros called from
+            a BUILD file, the default value is the package's
+            <code translate="no" dir="ltr"><a href="/reference/be/functions#package.default_visibility">default_visibility</a></code>
+            if specified, or else <code translate="no" dir="ltr">["//visibility:private"]</code>. For targets
+            declared in one or more symbolic macros, the default value is always just
+            <code translate="no" dir="ltr">["//visibility:private"]</code> (which makes it useable only within the
+            package containing the macro's code).
+          </p>
+        """.trimIndent(),
+      ),
+    )
+
   private fun removeLinks(input: String): String {
     var result = input.replace(Regex("<a[^>]*>(.*?)</a>", RegexOption.DOT_MATCHES_ALL), "$1")
     result = result.replace(Regex("\\[(.*?)\\]\\(.*?\\)"), "$1")
@@ -45,7 +584,7 @@ object ProtobufReader {
       name = unwrapName(ruleInfo.ruleName),
       doc = replaceTicks(removeLinks(ruleInfo.docString)),
       environment = listOf(Environment.BUILD),
-      params = attributes,
+      params = attributes + commonParams,
     )
   }
 
