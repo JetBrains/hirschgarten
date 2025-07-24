@@ -63,15 +63,6 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
     companion object {
       fun getInstance(project: Project) = project.service<JvmToolchainInfoService>()
     }
-
-    @Suppress("PropertyName")
-    data class ToolchainInfoState(
-      var java_home: String = "",
-      var toolchain_path: String = "",
-      var jvm_opts: List<String> = emptyList(),
-    )
-
-    data class State(var perTargetToolchains: Map<Label, ToolchainInfoState> = emptyMap())
   }
 
   companion object {
