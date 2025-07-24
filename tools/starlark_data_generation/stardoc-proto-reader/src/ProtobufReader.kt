@@ -11,7 +11,8 @@ object ProtobufReader {
     listOf(
       BazelGlobalFunctionParameter(
         name = "aspect_hints",
-        doc = """
+        doc =
+          """
           <p>List of <a href="/concepts/labels">labels</a>; default is <code translate="no" dir="ltr">[]</code></p>
 
           <p>A list of arbitrary labels which is exposed to <a href="/extending/aspects">aspects</a> (in
@@ -45,7 +46,7 @@ object ProtobufReader {
             <li>Language-specific logic should consider only aspect hints having providers relevant to that
               language, and should ignore any other aspect hints.</li>
           </ul>
-        """.trimIndent(),
+          """.trimIndent(),
         required = false,
         defaultValue = "[]",
         positional = false,
@@ -53,7 +54,8 @@ object ProtobufReader {
       ),
       BazelGlobalFunctionParameter(
         name = "compatible_with",
-        doc = """
+        doc =
+          """
           <p>List of <a href="/concepts/labels">labels</a>;
             <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">[]</code></p>
 
@@ -69,7 +71,7 @@ object ProtobufReader {
           <a href="https://github.com/bazelbuild/bazel/blob/master/src/main/java/com/google/devtools/build/lib/analysis/constraints/ConstraintSemantics.java#L46">
           ConstraintSemantics</a> for details.
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
         required = false,
         positional = false,
         named = true,
@@ -77,7 +79,8 @@ object ProtobufReader {
       ),
       BazelGlobalFunctionParameter(
         name = "deprecation",
-        doc = """
+        doc =
+          """
           <p>String; <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">None</code></p>
 
           <p>
@@ -112,7 +115,7 @@ object ProtobufReader {
           <p>
           Once people have stopped using it, the target can be removed.
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
         required = false,
         positional = false,
         named = true,
@@ -124,7 +127,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "[]",
-        doc = """
+        doc =
+          """
           <p>List of <a href="/concepts/labels">labels</a>;
             <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">[]</code>
           </p>
@@ -143,7 +147,7 @@ object ProtobufReader {
             <a href="/extending/exec-groups">exec groups</a>
 
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "exec_group_compatible_with",
@@ -151,7 +155,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "{}",
-        doc = """
+        doc =
+          """
           <p>
           A dictionary of exec group names to lists of
           <code translate="no" dir="ltr"><a href="/reference/be/platforms-and-toolchains#constraint_value">constraint_values</a></code>
@@ -166,7 +171,7 @@ object ProtobufReader {
             <a href="/extending/exec-groups">exec groups</a>
 
           </p>
-        """.trimIndent()
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "exec_properties",
@@ -174,7 +179,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "{}",
-        doc = """
+        doc =
+          """
           <p>Dictionary of strings; default is <code translate="no" dir="ltr">{}</code></p>
 
           <p> A dictionary of strings that will be added to the <code translate="no" dir="ltr">exec_properties</code> of a platform selected for this target. See <code translate="no" dir="ltr">exec_properties</code> of the <a href="/reference/be/platforms-and-toolchains#platform">platform</a> rule.</p>
@@ -182,7 +188,7 @@ object ProtobufReader {
           <p>If a key is present in both the platform and target-level properties, the value will be taken from the target.</p>
 
           <p>Keys can be prefixed with the name of an execution group followed by a <code translate="no" dir="ltr">.</code> to apply them only to that particular exec group.</p>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "features",
@@ -190,7 +196,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "[]",
-        doc = """
+        doc =
+          """
           <p>List of <i>feature</i> strings; default is <code translate="no" dir="ltr">[]</code></p>
 
           <p>A feature is string tag that can be enabled or disabled on a target. The
@@ -204,7 +211,7 @@ object ProtobufReader {
             <a href="https://github.com/bazelbuild/examples/blob/main/rules/features/BUILD">
               See example</a>.
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "package_metadata",
@@ -212,7 +219,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = null,
-        doc = """
+        doc =
+          """
           <p>List of <a href="/concepts/labels">labels</a>;
             <a href="#configurable-attributes">nonconfigurable</a>; default is the package's
             <code translate="no" dir="ltr"><a href="/reference/be/functions#package.default_package_metadata">default_package_metadata</a></code>
@@ -234,7 +242,7 @@ object ProtobufReader {
           to a top-level binary can be used to gather those and produce
           compliance reports.
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "restricted_to",
@@ -242,7 +250,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "[]",
-        doc = """
+        doc =
+          """
           <p>List of <a href="/concepts/labels">labels</a>;
             <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">[]</code></p>
 
@@ -256,7 +265,7 @@ object ProtobufReader {
           <code translate="no" dir="ltr"><a href="#common.compatible_with">compatible_with</a></code>
           for details.
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "tags",
@@ -264,7 +273,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "[]",
-        doc = """
+        doc =
+          """
           <p>
             List of strings; <a href="#configurable-attributes">nonconfigurable</a>;
             default is <code translate="no" dir="ltr">[]</code>
@@ -391,7 +401,7 @@ object ProtobufReader {
           See
           <a href="/reference/test-encyclopedia#tag-conventions">Tag Conventions</a>
            in the Test Encyclopedia for more conventions on tags attached to test targets.
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "target_compatible_with",
@@ -399,7 +409,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "[]",
-        doc = """
+        doc =
+          """
           <td><p>
           List of <a href="/concepts/labels">labels</a>; default is <code translate="no" dir="ltr">[]</code>
           </p>
@@ -441,7 +452,7 @@ object ProtobufReader {
           page for more information about incompatible target skipping.
           </p>
           </td>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "testonly",
@@ -449,7 +460,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "False",
-        doc = """
+        doc =
+          """
           <p>Boolean; <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">False</code>
             except for test and test suite targets</p>
 
@@ -483,7 +495,7 @@ object ProtobufReader {
           are dangerous to even link in, perhaps because they unconditionally
           override normal behavior, should definitely be marked testonly.
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "toolchains",
@@ -491,7 +503,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = "[]",
-        doc = """
+        doc =
+          """
           <p>List of <a href="/concepts/labels">labels</a>;
             <a href="#configurable-attributes">nonconfigurable</a>; default is <code translate="no" dir="ltr">[]</code></p>
 
@@ -513,7 +526,7 @@ object ProtobufReader {
             attribute to determine which specific <code translate="no" dir="ltr">cc_toolchain</code> or <code translate="no" dir="ltr">java_toolchain</code> a
             target will use.
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
       BazelGlobalFunctionParameter(
         name = "visibility",
@@ -521,7 +534,8 @@ object ProtobufReader {
         named = true,
         positional = false,
         defaultValue = null,
-        doc = """
+        doc =
+          """
           <p>List of <a href="/concepts/labels">labels</a>;
             <a href="#configurable-attributes">nonconfigurable</a>;
             default varies
@@ -542,9 +556,289 @@ object ProtobufReader {
             <code translate="no" dir="ltr">["//visibility:private"]</code> (which makes it useable only within the
             package containing the macro's code).
           </p>
-        """.trimIndent(),
+          """.trimIndent(),
       ),
     )
+
+  private val testParams =
+    listOf(
+      BazelGlobalFunctionParameter(
+        name = "args",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "[]",
+        doc =
+          """
+          <p>List of strings; subject to
+          <a href="/reference/be/make-variables#predefined_label_variables">$(location)</a> and
+          <a href="/reference/be/make-variables">"Make variable"</a> substitution, and
+          <a href="#sh-tokenization">Bourne shell tokenization</a>; default is <code translate="no" dir="ltr">[]</code></p>
+
+          <p>Command line arguments that Bazel passes to the target when it is
+          executed with <code translate="no" dir="ltr">bazel test</code>.
+
+          </p><p>
+          These arguments are passed before any <code translate="no" dir="ltr">--test_arg</code> values
+          specified on the <code translate="no" dir="ltr">bazel test</code> command line.
+          </p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "env",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "{}",
+        doc =
+          """
+          <p>
+            Dictionary of strings; values are subject to
+            <a href="/reference/be/make-variables#predefined_label_variables">$(location)</a> and
+            <a href="/reference/be/make-variables">"Make variable"</a> substitution; default is <code translate="no" dir="ltr">{}</code>
+          </p>
+
+          <p>
+            Specifies additional environment variables to set when the test is executed by
+            <code translate="no" dir="ltr">bazel test</code>.
+          </p>
+
+          <p>
+            This attribute only applies to native rules, like <code translate="no" dir="ltr">cc_test</code>,
+            <code translate="no" dir="ltr">py_test</code>, and <code translate="no" dir="ltr">sh_test</code>. It does not apply to
+            Starlark-defined test rules. For your own Starlark rules, you can add an "env"
+            attribute and use it to populate a
+
+              <a href="/rules/lib/providers/RunEnvironmentInfo">RunEnvironmentInfo</a>
+            Provider.
+          </p>
+              <a href="/rules/lib/toplevel/testing#TestEnvironment">TestEnvironment</a>
+
+            Provider.
+          <p></p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "env_inherit",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "[]",
+        doc =
+          """
+          <p>List of strings; default is <code translate="no" dir="ltr">[]</code></p>
+
+          <p>Specifies additional environment variables to inherit from the
+            external environment when the test is executed by <code translate="no" dir="ltr">bazel test</code>.
+          </p>
+
+          <p>
+            This attribute only applies to native rules, like <code translate="no" dir="ltr">cc_test</code>, <code translate="no" dir="ltr">py_test</code>,
+            and <code translate="no" dir="ltr">sh_test</code>.  It does not apply to Starlark-defined test rules.
+          </p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "size",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "medium",
+        doc =
+          """
+          <p>String <code translate="no" dir="ltr">"enormous"</code>, <code translate="no" dir="ltr">"large"</code>, <code translate="no" dir="ltr">"medium"</code>, or
+            <code translate="no" dir="ltr">"small"</code>; <a href="#configurable-attributes">nonconfigurable</a>;
+            default is <code translate="no" dir="ltr">"medium"</code></p>
+
+          <p>Specifies a test target's "heaviness": how much time/resources it needs to run.</p>
+
+          <p>Unit tests are considered "small", integration tests "medium", and end-to-end tests "large" or
+          "enormous". Bazel uses the size to determine a default timeout, which can be overridden using the
+          <code translate="no" dir="ltr">timeout</code> attribute. The timeout is for all tests in the BUILD target, not for each
+          individual test. When the test is run locally, the <code translate="no" dir="ltr">size</code> is additionally used for
+          scheduling purposes: Bazel tries to respect <code translate="no" dir="ltr">--local_{ram,cpu}_resources</code> and not
+          overwhelm the local machine by running lots of heavy tests at the same time.</p>
+
+          <p>Test sizes correspond to the following default timeouts and assumed peak local resource
+          usages:</p>
+
+          <div class="devsite-table-wrapper"><table style="width: 100%">
+            <tbody><tr>
+              <th>Size</th>
+              <th>RAM (in MB)</th>
+              <th>CPU (in CPU cores)</th>
+              <th>Default timeout</th>
+            </tr>
+            <tr>
+              <td>small</td>
+              <td>20</td>
+              <td>1</td>
+              <td>short (1 minute)</td>
+            </tr>
+            <tr>
+              <td>medium</td>
+              <td>100</td>
+              <td>1</td>
+              <td>moderate (5 minutes)</td>
+            </tr>
+            <tr>
+              <td>large</td>
+              <td>300</td>
+              <td>1</td>
+              <td>long (15 minutes)</td>
+            </tr>
+            <tr>
+              <td>enormous</td>
+              <td>800</td>
+              <td>1</td>
+              <td>eternal (60 minutes)</td>
+            </tr>
+          </tbody></table></div>
+
+          <p>
+            The environment variable
+            <code translate="no" dir="ltr"><a href="/reference/test-encyclopedia#initial-conditions">TEST_SIZE</a></code> will be set to
+            the value of this attribute when spawning the test.
+          </p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "timeout",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = null,
+        doc =
+          """
+          <p>String <code translate="no" dir="ltr">"short"</code>, <code translate="no" dir="ltr">"moderate"</code>, <code translate="no" dir="ltr">"long"</code>, or
+            <code translate="no" dir="ltr">"eternal"</code>; <a href="#configurable-attributes">nonconfigurable</a>; default is derived
+            from the test's <code translate="no" dir="ltr">size</code> attribute</p>
+
+          <p>
+          How long the test is expected to run before returning.
+          </p>
+
+          <p>
+          While a test's size attribute controls resource estimation, a test's
+          timeout may be set independently.  If not explicitly specified, the
+          timeout is based on the <a href="#test.size">test's size</a>. The test
+          timeout can be overridden with the <code translate="no" dir="ltr">--test_timeout</code> flag, e.g. for
+          running under certain conditions which are known to be slow. Test timeout values
+          correspond to the following time periods:
+          </p>
+
+          <div class="devsite-table-wrapper"><table style="width: 100%">
+            <tbody><tr>
+              <th>Timeout Value</th>
+              <th>Time Period</th>
+            </tr>
+            <tr>
+              <td>short</td>
+              <td>1 minute</td>
+            </tr>
+            <tr>
+              <td>moderate</td>
+              <td>5 minutes</td>
+            </tr>
+            <tr>
+              <td>long</td>
+              <td>15 minutes</td>
+            </tr>
+            <tr>
+              <td>eternal</td>
+              <td>60 minutes</td>
+            </tr>
+          </tbody></table></div>
+
+          <p>
+          For times other than the above, the test timeout can be overridden with the
+          <code translate="no" dir="ltr">--test_timeout</code> bazel flag, e.g. for manually running under
+          conditions which are known to be slow. The <code translate="no" dir="ltr">--test_timeout</code> values
+          are in seconds. For example <code translate="no" dir="ltr">--test_timeout=120</code> will set the test
+          timeout to two minutes.
+          </p>
+
+          <p>
+            The environment variable
+            <code translate="no" dir="ltr"><a href="/reference/test-encyclopedia#initial-conditions">TEST_TIMEOUT</a></code> will be set
+            to the test timeout (in seconds) when spawning the test.
+          </p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "flaky",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "False",
+        doc =
+          """
+          <p>Boolean; <a href="#configurable-attributes">nonconfigurable</a>;
+            default is <code translate="no" dir="ltr">False</code></p>
+
+          <p>
+          Marks test as flaky.
+          </p>
+
+          <p>
+          If set, executes the test up to three times, marking it as failed only if it
+          fails each time. By default, this attribute is set to False and the test is
+          executed only once. Note, that use of this attribute is generally discouraged -
+          tests should pass reliably when their assertions are upheld.
+          </p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "shard_count",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "-1",
+        doc =
+          """
+          <p>Non-negative integer less than or equal to 50; default is <code translate="no" dir="ltr">-1</code></p>
+
+          <p>Specifies the number of parallel shards
+          to use to run the test.</p>
+
+          <p>If set, this value will override any heuristics used to determine the number of
+          parallel shards with which to run the test. Note that for some test
+          rules, this parameter may be required to enable sharding
+          in the first place. Also see <code translate="no" dir="ltr">--test_sharding_strategy</code>.</p>
+
+          <p>If test sharding is enabled, the environment variable <code translate="no" dir="ltr">
+          <a href="/reference/test-encyclopedia#initial-conditions">TEST_TOTAL_SHARDS</a>
+          </code> will be set to this value when spawning the test.</p>
+
+          <p>Sharding requires the test runner to support the test sharding protocol.
+          If it does not, then it will most likely run every test in every shard, which
+          is not what you want.</p>
+
+          <p>See
+          <a href="/reference/test-encyclopedia#test-sharding">Test Sharding</a>
+          in the Test Encyclopedia for details on sharding.</p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "local",
+        required = false,
+        named = true,
+        positional = false,
+        defaultValue = "False",
+        doc =
+          """
+          <p>Boolean; <a href="#configurable-attributes">nonconfigurable</a>;
+            default is <code translate="no" dir="ltr">False</code></p>
+
+          <p>Forces the test to be run locally, without sandboxing.</p>
+
+          <p>Setting this to True is equivalent to providing "local" as a tag
+          (<code translate="no" dir="ltr">tags=["local"]</code>).</p>
+          """.trimIndent(),
+      ),
+    )
+
+  val binaryParams = listOf<BazelGlobalFunctionParameter>()
 
   private fun removeLinks(input: String): String {
     var result = input.replace(Regex("<a[^>]*>(.*?)</a>", RegexOption.DOT_MATCHES_ALL), "$1")
@@ -577,14 +871,45 @@ object ProtobufReader {
       named = true,
     )
 
+  private fun joinParamLists(
+    a: List<BazelGlobalFunctionParameter>,
+    b: List<BazelGlobalFunctionParameter>,
+  ): List<BazelGlobalFunctionParameter> {
+    val res = mutableListOf<BazelGlobalFunctionParameter>()
+
+    for (rule in a) {
+      val corresponding = b.firstOrNull { it.name == rule.name }
+      if (corresponding == null) {
+        res.add(rule)
+      } else if (rule.doc == null) {
+        res.add(rule.copy(doc = corresponding.doc))
+      } else {
+        res.add(rule)
+      }
+    }
+
+    return res
+  }
+
   private fun ruleInfoToData(ruleInfo: StardocOutputProtos.RuleInfo): BazelGlobalFunction {
-    val attributes = ruleInfo.attributeList.map { attributeInfoToData(it) }
+    var attributes = ruleInfo.attributeList.map { attributeInfoToData(it) }
+    val name = unwrapName(ruleInfo.ruleName)
+    attributes = joinParamLists(attributes, commonParams)
+
+    attributes =
+      if (name.endsWith("_test")) {
+        joinParamLists(attributes, testParams)
+      } else if (name.endsWith("_binary")) {
+        joinParamLists(attributes, binaryParams)
+      } else {
+        attributes
+      }
 
     return BazelGlobalFunction(
-      name = unwrapName(ruleInfo.ruleName),
+      name = name,
       doc = replaceTicks(removeLinks(ruleInfo.docString)),
       environment = listOf(Environment.BUILD),
-      params = attributes + commonParams,
+      params = attributes,
     )
   }
 
