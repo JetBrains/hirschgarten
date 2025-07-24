@@ -6,6 +6,5 @@ import (
 )
 
 func main() {
-	_ = cases.Compact
 	fmt.Println(lib.SayHello())
 }
