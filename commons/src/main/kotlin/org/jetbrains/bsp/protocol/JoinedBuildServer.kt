@@ -60,4 +60,6 @@ interface JoinedBuildServer {
   suspend fun workspaceContext(): WorkspaceContext
 
   suspend fun jvmToolchainInfo(): JvmToolchainInfo
+
+  suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo
 }
