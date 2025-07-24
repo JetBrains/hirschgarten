@@ -101,6 +101,16 @@ object KotlinProjectGitHub : KotlinProject(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
+open class GoProject(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:go_project_test",
+  )
+
+object GoProjectGitHub : GoProject(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
 open class AndroidProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
   E2ETest(
     vcsRoot = vcsRoot,
