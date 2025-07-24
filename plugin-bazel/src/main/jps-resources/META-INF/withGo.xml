@@ -17,7 +17,6 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <!--<projectSyncHook implementation="org.jetbrains.bazel.golang.sync.GoProjectSync"/>-->
     <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoSdkSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoModuleSupportPostSyncHook" />
     <workspaceModuleSyncHook.enable implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceModuleEnable" />
