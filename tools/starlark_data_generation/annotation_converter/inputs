@@ -1,0 +1,13 @@
+src/main/java/com/google/devtools/build/lib/collect/nestedset/Depset.java
+src/main/java/com/google/devtools/build/lib/starlarkbuildapi/repository/RepositoryModuleApi.java
+src/main/java/com/google/devtools/build/lib/starlarkbuildapi/StarlarkBuildApiGlobals.java
+src/main/java/com/google/devtools/build/lib/starlarkbuildapi/config/ConfigGlobalLibraryApi.java
+src/main/java/com/google/devtools/build/lib/starlarkbuildapi/StarlarkNativeModuleApi.java
+src/main/java/com/google/devtools/build/lib/starlarkbuildapi/StarlarkRuleFunctionsApi.java
+src/main/java/com/google/devtools/build/lib/bazel/bzlmod/ModuleFileGlobals.java
+src/main/java/com/google/devtools/build/lib/packages/SelectorList.java
+src/main/java/com/google/devtools/build/lib/packages/RepoFileGlobals.java
+src/main/java/com/google/devtools/build/lib/packages/PackageCallable.java
+src/main/java/com/google/devtools/build/lib/packages/BuildGlobals.java
+src/main/java/com/google/devtools/build/lib/packages/VendorFileGlobals.java
+src/main/java/net/starlark/java/eval/MethodLibrary.java

@@ -182,6 +182,7 @@
       },
       {
         "name": "env",
+        "doc": "\u003cp\u003eDictionary of strings; values are subject to\n\u003ca href\u003d\"/reference/be/make-variables#predefined_label_variables\"\u003e$(location)\u003c/a\u003e and\n\u003ca href\u003d\"/reference/be/make-variables\"\u003e\"Make variable\"\u003c/a\u003e substitution; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e{}\u003c/code\u003e\u003c/p\u003e\n\n\u003cp\u003eSpecifies additional environment variables to set when the target is\n  executed by \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel run\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_binary\u003c/code\u003e, \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_binary\u003c/code\u003e,\n  and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_binary\u003c/code\u003e.  It does not apply to Starlark-defined executable rules. For your own\n  Starlark rules, you can add an \"env\" attribute and use it to populate a\n\n    \u003ca href\u003d\"/rules/lib/providers/RunEnvironmentInfo\"\u003eRunEnvironmentInfo\u003c/a\u003e\n\n  Provider.\n\u003c/p\u003e\n\n\u003cp\u003e\n\u003cem class\u003d\"harmful\"\u003eNOTE: The environment variables are not set when you run the target\noutside of Bazel (for example, by manually executing the binary in\n\u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel-bin/\u003c/code\u003e).\u003c/em\u003e\n\u003c/p\u003e",
         "defaultValue": "{}",
         "named": true,
         "positional": false,
@@ -842,6 +843,7 @@
       },
       {
         "name": "env",
+        "doc": "\u003cp\u003e\n  Dictionary of strings; values are subject to\n  \u003ca href\u003d\"/reference/be/make-variables#predefined_label_variables\"\u003e$(location)\u003c/a\u003e and\n  \u003ca href\u003d\"/reference/be/make-variables\"\u003e\"Make variable\"\u003c/a\u003e substitution; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e{}\u003c/code\u003e\n\u003c/p\u003e\n\n\u003cp\u003e\n  Specifies additional environment variables to set when the test is executed by\n  \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel test\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_test\u003c/code\u003e,\n  \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_test\u003c/code\u003e, and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_test\u003c/code\u003e. It does not apply to\n  Starlark-defined test rules. For your own Starlark rules, you can add an \"env\"\n  attribute and use it to populate a\n\n    \u003ca href\u003d\"/rules/lib/providers/RunEnvironmentInfo\"\u003eRunEnvironmentInfo\u003c/a\u003e\n  Provider.\n\u003c/p\u003e\n    \u003ca href\u003d\"/rules/lib/toplevel/testing#TestEnvironment\"\u003eTestEnvironment\u003c/a\u003e\n\n  Provider.\n\u003cp\u003e\u003c/p\u003e",
         "defaultValue": "{}",
         "named": true,
         "positional": false,
@@ -871,6 +873,7 @@
       },
       {
         "name": "env_inherit",
+        "doc": "\u003cp\u003eList of strings; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e[]\u003c/code\u003e\u003c/p\u003e\n\n\u003cp\u003eSpecifies additional environment variables to inherit from the\n  external environment when the test is executed by \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel test\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_test\u003c/code\u003e, \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_test\u003c/code\u003e,\n  and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_test\u003c/code\u003e.  It does not apply to Starlark-defined test rules.\n\u003c/p\u003e",
         "defaultValue": "[]",
         "named": true,
         "positional": false,
@@ -2448,6 +2451,7 @@
       },
       {
         "name": "env",
+        "doc": "\u003cp\u003eDictionary of strings; values are subject to\n\u003ca href\u003d\"/reference/be/make-variables#predefined_label_variables\"\u003e$(location)\u003c/a\u003e and\n\u003ca href\u003d\"/reference/be/make-variables\"\u003e\"Make variable\"\u003c/a\u003e substitution; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e{}\u003c/code\u003e\u003c/p\u003e\n\n\u003cp\u003eSpecifies additional environment variables to set when the target is\n  executed by \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel run\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_binary\u003c/code\u003e, \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_binary\u003c/code\u003e,\n  and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_binary\u003c/code\u003e.  It does not apply to Starlark-defined executable rules. For your own\n  Starlark rules, you can add an \"env\" attribute and use it to populate a\n\n    \u003ca href\u003d\"/rules/lib/providers/RunEnvironmentInfo\"\u003eRunEnvironmentInfo\u003c/a\u003e\n\n  Provider.\n\u003c/p\u003e\n\n\u003cp\u003e\n\u003cem class\u003d\"harmful\"\u003eNOTE: The environment variables are not set when you run the target\noutside of Bazel (for example, by manually executing the binary in\n\u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel-bin/\u003c/code\u003e).\u003c/em\u003e\n\u003c/p\u003e",
         "defaultValue": "{}",
         "named": true,
         "positional": false,
@@ -2540,6 +2544,7 @@
       },
       {
         "name": "env",
+        "doc": "\u003cp\u003e\n  Dictionary of strings; values are subject to\n  \u003ca href\u003d\"/reference/be/make-variables#predefined_label_variables\"\u003e$(location)\u003c/a\u003e and\n  \u003ca href\u003d\"/reference/be/make-variables\"\u003e\"Make variable\"\u003c/a\u003e substitution; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e{}\u003c/code\u003e\n\u003c/p\u003e\n\n\u003cp\u003e\n  Specifies additional environment variables to set when the test is executed by\n  \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel test\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_test\u003c/code\u003e,\n  \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_test\u003c/code\u003e, and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_test\u003c/code\u003e. It does not apply to\n  Starlark-defined test rules. For your own Starlark rules, you can add an \"env\"\n  attribute and use it to populate a\n\n    \u003ca href\u003d\"/rules/lib/providers/RunEnvironmentInfo\"\u003eRunEnvironmentInfo\u003c/a\u003e\n  Provider.\n\u003c/p\u003e\n    \u003ca href\u003d\"/rules/lib/toplevel/testing#TestEnvironment\"\u003eTestEnvironment\u003c/a\u003e\n\n  Provider.\n\u003cp\u003e\u003c/p\u003e",
         "defaultValue": "{}",
         "named": true,
         "positional": false,
@@ -2547,6 +2552,7 @@
       },
       {
         "name": "env_inherit",
+        "doc": "\u003cp\u003eList of strings; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e[]\u003c/code\u003e\u003c/p\u003e\n\n\u003cp\u003eSpecifies additional environment variables to inherit from the\n  external environment when the test is executed by \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel test\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_test\u003c/code\u003e, \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_test\u003c/code\u003e,\n  and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_test\u003c/code\u003e.  It does not apply to Starlark-defined test rules.\n\u003c/p\u003e",
         "defaultValue": "[]",
         "named": true,
         "positional": false,
@@ -2721,6 +2727,7 @@
       },
       {
         "name": "env",
+        "doc": "\u003cp\u003eDictionary of strings; values are subject to\n\u003ca href\u003d\"/reference/be/make-variables#predefined_label_variables\"\u003e$(location)\u003c/a\u003e and\n\u003ca href\u003d\"/reference/be/make-variables\"\u003e\"Make variable\"\u003c/a\u003e substitution; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e{}\u003c/code\u003e\u003c/p\u003e\n\n\u003cp\u003eSpecifies additional environment variables to set when the target is\n  executed by \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel run\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_binary\u003c/code\u003e, \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_binary\u003c/code\u003e,\n  and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_binary\u003c/code\u003e.  It does not apply to Starlark-defined executable rules. For your own\n  Starlark rules, you can add an \"env\" attribute and use it to populate a\n\n    \u003ca href\u003d\"/rules/lib/providers/RunEnvironmentInfo\"\u003eRunEnvironmentInfo\u003c/a\u003e\n\n  Provider.\n\u003c/p\u003e\n\n\u003cp\u003e\n\u003cem class\u003d\"harmful\"\u003eNOTE: The environment variables are not set when you run the target\noutside of Bazel (for example, by manually executing the binary in\n\u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel-bin/\u003c/code\u003e).\u003c/em\u003e\n\u003c/p\u003e",
         "defaultValue": "{}",
         "named": true,
         "positional": false,
@@ -3194,6 +3201,7 @@
       },
       {
         "name": "env_inherit",
+        "doc": "\u003cp\u003eList of strings; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e[]\u003c/code\u003e\u003c/p\u003e\n\n\u003cp\u003eSpecifies additional environment variables to inherit from the\n  external environment when the test is executed by \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel test\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_test\u003c/code\u003e, \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_test\u003c/code\u003e,\n  and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_test\u003c/code\u003e.  It does not apply to Starlark-defined test rules.\n\u003c/p\u003e",
         "defaultValue": "[]",
         "named": true,
         "positional": false,
@@ -3344,6 +3352,7 @@
       },
       {
         "name": "env",
+        "doc": "\u003cp\u003e\n  Dictionary of strings; values are subject to\n  \u003ca href\u003d\"/reference/be/make-variables#predefined_label_variables\"\u003e$(location)\u003c/a\u003e and\n  \u003ca href\u003d\"/reference/be/make-variables\"\u003e\"Make variable\"\u003c/a\u003e substitution; default is \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003e{}\u003c/code\u003e\n\u003c/p\u003e\n\n\u003cp\u003e\n  Specifies additional environment variables to set when the test is executed by\n  \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ebazel test\u003c/code\u003e.\n\u003c/p\u003e\n\n\u003cp\u003e\n  This attribute only applies to native rules, like \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003ecc_test\u003c/code\u003e,\n  \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003epy_test\u003c/code\u003e, and \u003ccode translate\u003d\"no\" dir\u003d\"ltr\"\u003esh_test\u003c/code\u003e. It does not apply to\n  Starlark-defined test rules. For your own Starlark rules, you can add an \"env\"\n  attribute and use it to populate a\n\n    \u003ca href\u003d\"/rules/lib/providers/RunEnvironmentInfo\"\u003eRunEnvironmentInfo\u003c/a\u003e\n  Provider.\n\u003c/p\u003e\n    \u003ca href\u003d\"/rules/lib/toplevel/testing#TestEnvironment\"\u003eTestEnvironment\u003c/a\u003e\n\n  Provider.\n\u003cp\u003e\u003c/p\u003e",
         "defaultValue": "{}",
         "named": true,
         "positional": false,
