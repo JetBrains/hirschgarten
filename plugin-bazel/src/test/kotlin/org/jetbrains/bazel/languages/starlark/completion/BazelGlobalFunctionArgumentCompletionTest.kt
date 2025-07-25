@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.completion
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -21,8 +21,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
 
     // then
     val expectedArgNames =
-      service<BazelGlobalFunctionsService>()
-        .moduleGlobalFunctions["module"]!!
+      BazelGlobalFunctions.moduleGlobalFunctions["module"]!!
         .params
         .filter { it.name.contains('a') }
         .map { it.name }
@@ -40,8 +39,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
 
     // then
     val expectedArgNames =
-      service<BazelGlobalFunctionsService>()
-        .moduleGlobalFunctions["module"]!!
+      BazelGlobalFunctions.moduleGlobalFunctions["module"]!!
         .params
         .filter { it.name.contains('a') && it.name != "name" }
         .map { it.name }
