@@ -35,7 +35,7 @@ class ProjectViewParser(private val builder: PsiBuilder) {
               parseItem(ProjectViewElementTypes.SECTION_ITEM)
             }
             is ProjectViewSection.SectionType.List<*> -> {
-              skipToNextLine()
+              maybeParseItem(ProjectViewElementTypes.SECTION_ITEM)
               parseListItems()
             }
           }
@@ -77,6 +77,13 @@ class ProjectViewParser(private val builder: PsiBuilder) {
     val item = builder.mark()
     skipToEndOfLine()
     item.done(itemType)
+  }
+
+  fun maybeParseItem(itemType: ProjectViewElementType) {
+    if (matches(ProjectViewTokenType.NEWLINE)) {
+      return
+    }
+    parseItem(itemType)
   }
 
   fun skipBlockAndError(marker: PsiBuilder.Marker, message: String) {
