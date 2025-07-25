@@ -12,6 +12,7 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionItem
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
@@ -23,12 +24,12 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
 // Tested in ExternalRepoResolveTest
-class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
-  PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
+class BazelLabelReference(element: PsiElement, soft: Boolean) :
+  PsiReferenceBase<PsiElement>(element, TextRange(0, element.textLength), soft) {
   override fun resolve(): PsiElement? {
     val project = element.project
     if (!project.isBazelProject || isInNameArgument()) return null
-    val label = Label.parseOrNull(element.getStringContents()) ?: return null
+    val label = Label.parseOrNull(getElementText()) ?: return null
     val acceptOnlyFileTarget = element.getParentOfType<StarlarkLoadStatement>(strict = true) != null
     return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, acceptOnlyFileTarget)
   }
@@ -40,6 +41,14 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     if (isTargetCompletionLocation()) return targetCompletion()
     if (isLoadFilenameCompletionLocation()) return loadFilenameCompletion()
     return emptyArray()
+  }
+
+  private fun getElementText(): String? {
+    return when (element) {
+      is StarlarkStringLiteralExpression -> (element as StarlarkStringLiteralExpression).getStringContents()
+      is ProjectViewPsiSectionItem -> (element as ProjectViewPsiSectionItem).text
+      else -> null // SHOULD NEVER HAPPEN!
+    }
   }
 
   // Checks whether it is the value of "src", "srcs" or "hdrs".
