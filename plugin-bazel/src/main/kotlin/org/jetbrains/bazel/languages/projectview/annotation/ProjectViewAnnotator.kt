@@ -14,7 +14,7 @@ class ProjectViewAnnotator : Annotator {
       return
     }
 
-    val sectionName = element.getKeyword().text
+    val sectionName = element.getKeyword()?.text ?: ""
     if (!ProjectViewSection.isSectionSupported(sectionName)) {
       holder.annotateWarning(element.firstChild, ProjectViewBundle.getMessage("annotator.unsupported.section.warning"))
     }

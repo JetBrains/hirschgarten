@@ -13,7 +13,7 @@ class ProjectViewPsiSection(node: ASTNode) : ProjectViewBaseElement(node) {
     visitor.visitSection(this)
   }
 
-  fun getKeyword(): PsiElement = firstChild
+  fun getKeyword(): ProjectViewPsiSectionName? = getChildrenOfType<ProjectViewPsiSectionName>().firstOrNull()
 
   fun getItems(): Array<ProjectViewPsiSectionItem> = getChildrenOfType<ProjectViewPsiSectionItem>()
 

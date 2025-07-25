@@ -28,6 +28,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
         workspaceRoot = workspaceRoot,
         projectViewFile = connectionResetConfig.projectViewFile,
         featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
+        project = project,
       )
     }
 

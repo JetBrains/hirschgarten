@@ -1,8 +1,14 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.findPsiFile
+import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.DefaultProjectViewParser
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
@@ -22,8 +28,27 @@ class DefaultWorkspaceContextProvider(
   var projectViewPath: Path,
   dotBazelBspDirPath: Path,
   var featureFlags: FeatureFlags,
+  val project: Project? = null,
 ) : WorkspaceContextProvider {
   private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath, projectViewPath)
+
+  private fun getSectionsFromPsiFile(): ProjectViewRawSections? {
+    val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(projectViewPath)!!
+    val psiFile = virtualFile.findPsiFile(project!!) as? ProjectViewPsiFile
+    val sections =
+      psiFile
+        ?.getSections()
+        ?.map {
+          val name = it.getKeyword()?.text ?: return@map null
+          val items = it.getItems().map { item -> item.text }
+          ProjectViewRawSection(name, items.joinToString("\n"))
+        }?.filterNotNull()
+    return if (sections != null) {
+      ProjectViewRawSections(sections)
+    } else {
+      null
+    }
+  }
 
   override fun readWorkspaceContext(): WorkspaceContext {
     val projectView = ensureProjectViewExistsAndParse()
@@ -37,7 +62,8 @@ class DefaultWorkspaceContextProvider(
     if (projectViewPath.notExists()) {
       generateEmptyProjectView()
     }
-    return DefaultProjectViewParser(workspaceRoot).parse(projectViewPath)
+    val rawSections = getSectionsFromPsiFile()
+    return DefaultProjectViewParser(workspaceRoot, rawSections).parse(projectViewPath)
   }
 
   private fun generateEmptyProjectView() {

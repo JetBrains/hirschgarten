@@ -8,6 +8,7 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/generator",
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser",
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner:params",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",

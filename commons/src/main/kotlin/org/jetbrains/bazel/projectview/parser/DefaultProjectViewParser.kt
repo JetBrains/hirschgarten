@@ -39,13 +39,16 @@ import kotlin.io.path.Path
  * @see ProjectViewParser
  * @see ProjectViewSectionSplitter
  */
-open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : ProjectViewParser {
+open class DefaultProjectViewParser(
+  private val workspaceRoot: Path? = null,
+  private val rawSectionsProvided: ProjectViewRawSections? = null,
+) : ProjectViewParser {
   private val log = LoggerFactory.getLogger(DefaultProjectViewParser::class.java)
 
   override fun parse(projectViewFileContent: String): ProjectView {
     log.trace("Parsing project view for the content: '{}'", projectViewFileContent.escapeNewLines())
 
-    val rawSections = ProjectViewSectionSplitter.getRawSectionsForFileContent(projectViewFileContent)
+    val rawSections = rawSectionsProvided ?: ProjectViewSectionSplitter.getRawSectionsForFileContent(projectViewFileContent)
 
     return ProjectView
       .Builder(

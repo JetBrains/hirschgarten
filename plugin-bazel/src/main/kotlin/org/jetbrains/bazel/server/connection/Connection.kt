@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.connection
 
+import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -18,6 +19,7 @@ suspend fun startServer(
   workspaceRoot: Path,
   projectViewFile: Path?,
   featureFlags: FeatureFlags,
+  project: Project? = null,
 ): BspServerApi {
   val bspInfo = BspInfo(workspaceRoot)
   val workspaceContextProvider =
@@ -26,6 +28,7 @@ suspend fun startServer(
       projectViewPath = projectViewFile ?: workspaceRoot.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
       dotBazelBspDirPath = bspInfo.bazelBspDir(),
       featureFlags = featureFlags,
+      project = project,
     )
   // Run it here to force the workspace context to be initialized
   // It should download bazelisk if bazel is missing
