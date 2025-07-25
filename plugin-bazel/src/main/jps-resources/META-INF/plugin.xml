@@ -188,6 +188,10 @@
                     interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.starlarkGlobalFunctionProvider"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkGlobalFunctionProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -259,6 +263,8 @@
     <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
 
     <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
+
+    <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
