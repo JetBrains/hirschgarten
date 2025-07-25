@@ -645,6 +645,10 @@
       implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor"
       language="ProjectView"
     />
+    <!--<psi.referenceContributor-->
+    <!--  implementation="org.jetbrains.bazel.languages.projectview.references.ProjectViewFilePathReferenceContributor"-->
+    <!--  language="ProjectView"-->
+    <!--/>-->
 
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
