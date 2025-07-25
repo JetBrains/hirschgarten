@@ -33,7 +33,6 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     val newRepoNameToPathMap = mapOf("" to myRootPath)
     project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
     BazelBzlFileService.getInstance(project).forceUpdateCache()
-    IndexingTestUtil.forceSkipWaiting = true
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("d")
@@ -98,7 +97,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
       project.workspaceModel.updateProjectModel("add BazelProjectDirectoriesEntity") { it.addEntity(entity) }
     }
 
-    // should not wait for indexing
-    IndexingTestUtil.forceSkipWaiting = true
+    // should not wait for indexing, otherwise tests freezes.
+    // IndexingTestUtil.forceSkipWaiting = true
   }
 }
