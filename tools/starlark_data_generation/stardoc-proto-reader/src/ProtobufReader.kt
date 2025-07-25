@@ -838,87 +838,91 @@ object ProtobufReader {
       ),
     )
 
-  val binaryParams = listOf(
-    BazelGlobalFunctionParameter(
-      name = "args",
-      required = false,
-      positional = false,
-      named = true,
-      defaultValue = "[]",
-      doc = """
-        <p>
-          List of strings; subject to
+  val binaryParams =
+    listOf(
+      BazelGlobalFunctionParameter(
+        name = "args",
+        required = false,
+        positional = false,
+        named = true,
+        defaultValue = "[]",
+        doc =
+          """
+          <p>
+            List of strings; subject to
+            <a href="/reference/be/make-variables#predefined_label_variables">$(location)</a> and
+            <a href="/reference/be/make-variables">"Make variable"</a> substitution, and
+            <a href="#sh-tokenization">Bourne shell tokenization</a>;
+            <a href="#configurable-attributes">nonconfigurable</a>;
+            default is <code translate="no" dir="ltr">[]</code>
+          </p>
+
+          <p>
+          Command line arguments that Bazel will pass to the target when it is executed
+          either by the <code translate="no" dir="ltr">run</code> command or as a test. These arguments are
+          passed before the ones that are specified on the <code translate="no" dir="ltr">bazel run</code> or
+          <code translate="no" dir="ltr">bazel test</code> command line.
+          </p>
+
+          <p>
+          <em class="harmful">NOTE: The arguments are not passed when you run the target
+          outside of Bazel (for example, by manually executing the binary in
+          <code translate="no" dir="ltr">bazel-bin/</code>).</em>
+          </p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "env",
+        required = false,
+        positional = false,
+        named = true,
+        defaultValue = "{}",
+        doc =
+          """
+          <p>Dictionary of strings; values are subject to
           <a href="/reference/be/make-variables#predefined_label_variables">$(location)</a> and
-          <a href="/reference/be/make-variables">"Make variable"</a> substitution, and
-          <a href="#sh-tokenization">Bourne shell tokenization</a>;
-          <a href="#configurable-attributes">nonconfigurable</a>;
-          default is <code translate="no" dir="ltr">[]</code>
-        </p>
+          <a href="/reference/be/make-variables">"Make variable"</a> substitution; default is <code translate="no" dir="ltr">{}</code></p>
 
-        <p>
-        Command line arguments that Bazel will pass to the target when it is executed
-        either by the <code translate="no" dir="ltr">run</code> command or as a test. These arguments are
-        passed before the ones that are specified on the <code translate="no" dir="ltr">bazel run</code> or
-        <code translate="no" dir="ltr">bazel test</code> command line.
-        </p>
+          <p>Specifies additional environment variables to set when the target is
+            executed by <code translate="no" dir="ltr">bazel run</code>.
+          </p>
 
-        <p>
-        <em class="harmful">NOTE: The arguments are not passed when you run the target
-        outside of Bazel (for example, by manually executing the binary in
-        <code translate="no" dir="ltr">bazel-bin/</code>).</em>
-        </p>
-      """.trimIndent(),
-    ),
-    BazelGlobalFunctionParameter(
-      name = "env",
-      required = false,
-      positional = false,
-      named = true,
-      defaultValue = "{}",
-      doc = """
-        <p>Dictionary of strings; values are subject to
-        <a href="/reference/be/make-variables#predefined_label_variables">$(location)</a> and
-        <a href="/reference/be/make-variables">"Make variable"</a> substitution; default is <code translate="no" dir="ltr">{}</code></p>
+          <p>
+            This attribute only applies to native rules, like <code translate="no" dir="ltr">cc_binary</code>, <code translate="no" dir="ltr">py_binary</code>,
+            and <code translate="no" dir="ltr">sh_binary</code>.  It does not apply to Starlark-defined executable rules. For your own
+            Starlark rules, you can add an "env" attribute and use it to populate a
 
-        <p>Specifies additional environment variables to set when the target is
-          executed by <code translate="no" dir="ltr">bazel run</code>.
-        </p>
+              <a href="/rules/lib/providers/RunEnvironmentInfo">RunEnvironmentInfo</a>
 
-        <p>
-          This attribute only applies to native rules, like <code translate="no" dir="ltr">cc_binary</code>, <code translate="no" dir="ltr">py_binary</code>,
-          and <code translate="no" dir="ltr">sh_binary</code>.  It does not apply to Starlark-defined executable rules. For your own
-          Starlark rules, you can add an "env" attribute and use it to populate a
+            Provider.
+          </p>
 
-            <a href="/rules/lib/providers/RunEnvironmentInfo">RunEnvironmentInfo</a>
+          <p>
+          <em class="harmful">NOTE: The environment variables are not set when you run the target
+          outside of Bazel (for example, by manually executing the binary in
+          <code translate="no" dir="ltr">bazel-bin/</code>).</em>
+          </p>
+          """.trimIndent(),
+      ),
+      BazelGlobalFunctionParameter(
+        name = "output_licenses",
+        required = false,
+        positional = false,
+        named = true,
+        defaultValue = "[]",
+        doc =
+          """
+          <p>List of strings; default is <code translate="no" dir="ltr">[]</code></p>
 
-          Provider.
-        </p>
+          <p>
+          The licenses of the output files that this binary generates.
 
-        <p>
-        <em class="harmful">NOTE: The environment variables are not set when you run the target
-        outside of Bazel (for example, by manually executing the binary in
-        <code translate="no" dir="ltr">bazel-bin/</code>).</em>
-        </p>
-      """.trimIndent(),
-    ),
-    BazelGlobalFunctionParameter(
-      name = "output_licenses",
-      required = false,
-      positional = false,
-      named = true,
-      defaultValue = "[]",
-      doc = """
-        <p>List of strings; default is <code translate="no" dir="ltr">[]</code></p>
-
-        <p>
-        The licenses of the output files that this binary generates.
-
-        This is part of a deprecated licensing API that Bazel no longer uses. Don't
-        use this.
-        </p>
-      """.trimIndent(),
-    ),
-  )
+          This is part of a deprecated licensing API that Bazel no longer uses. Don't
+          use this.
+          </p>
+          """.trimIndent(),
+      ),
+    )
 
   private fun removeLinks(input: String): String {
     var result = input.replace(Regex("<a[^>]*>(.*?)</a>", RegexOption.DOT_MATCHES_ALL), "$1")
