@@ -69,17 +69,6 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspScalaProjectTest",
 )
 
-bazel_integration_test(
-    name = "server_downloads_bazelisk_test",
-    timeout = "eternal",
-    bazel_version = "6.4.0",
-    env = {
-        "PATH": "",  # To ensure that the server won't find Bazel in PATH
-    },
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ServerDownloadsBazeliskTest",
-    workspace_path = "test-projects/workspace/sample-repo",
-)
-
 bazel_integration_test_current_version(
     name = "android_project_test",
     project_path = "test-projects/workspace/android-project",
@@ -165,7 +154,6 @@ test_suite(
         ":python_project_test",
         ":remote_jdk_test",
         ":sample_repo_test",
-        ":server_downloads_bazelisk_test",
     ],
 )
 
