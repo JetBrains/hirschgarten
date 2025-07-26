@@ -76,21 +76,6 @@ object RemoteJdkGitHub : RemoteJdk(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-open class ServerDownloadsBazelisk(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:server_downloads_bazelisk_test",
-    failureConditions = {
-      testFailure = false
-      nonZeroExitCode = false
-      javaCrash = false
-    },
-  )
-
-object ServerDownloadsBazeliskGitHub : ServerDownloadsBazelisk(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
 open class KotlinProject(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,

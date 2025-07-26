@@ -63,7 +63,6 @@ project {
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
-//            buildType(ServerE2eTests.ServerDownloadsBazeliskGitHub)
 //        buildType(ServerE2eTests.AndroidProjectGitHub)
 //        buildType(ServerE2eTests.AndroidKotlinProjectGitHub)
         buildType(ServerE2eTests.ScalaProjectGitHub)
@@ -145,7 +144,6 @@ project {
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
-      // ServerE2eTests.ServerDownloadsBazeliskGitHub,
 //      ServerE2eTests.AndroidProjectGitHub,
 //      ServerE2eTests.AndroidKotlinProjectGitHub,
       ServerE2eTests.ScalaProjectGitHub,
