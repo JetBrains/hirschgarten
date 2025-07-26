@@ -1,15 +1,17 @@
 [![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
-# Bazel by JetBrains (EAP) for IntelliJ IDEA
+# Bazel by JetBrains for IntelliJ IDEA
 
 <!-- Plugin description -->
-Bazel by JetBrains (EAP) for IntelliJ IDEA.
+Bazel by JetBrains for IntelliJ IDEA.
 
-This plugin lets you import and work with Bazel projects.
+This plugin lets you import and work with Bazel projects with IntelliJ IDEA, GoLand, and PyCharm.
 
-This plugin is available as public EAP (Early Access Program).
-It is tested on some large production code bases for Java and Kotlin.
-Other languages and frameworks are under development and will be supported soon.
+It supports working with Bazel projects that include Java, Kotlin, Scala, Python, and Go targets. Support for other 
+languages and frameworks is planned and will be released over time.
+
+As of the 2025.2 release of IntelliJ IDEA, this plugin is generally available and running on production deployments on 
+large enterprise repositories.
 
 ## Features
 
@@ -22,7 +24,7 @@ Other languages and frameworks are under development and will be supported soon.
 - Starlark support, including syntax highlighting, completion, navigation
 - Starlark debugging
 
-To learn more about available features, please check the [feature overview](https://jb.gg/new-bazel-feature).
+To learn more about available features, please check the [documentation](https://www.jetbrains.com/help/idea/bazel.html).
 
 <!-- Plugin description end -->
 
@@ -31,9 +33,8 @@ To learn more about available features, please check the [feature overview](http
 
 1. in IntelliJ IDEA, go to Preferences | Plugins
 2. Go to Marketplace tab.
-3. Then look for "Bazel" (check that the publisher is JetBrains) and click Install.
+3. Then look for "Bazel" (check the description to be sure you don't install the legacy plugin version) and click Install.
 4. Restart IntelliJ IDEA. You're ready!
-
 
 ## Building, running, contributing changes
 
