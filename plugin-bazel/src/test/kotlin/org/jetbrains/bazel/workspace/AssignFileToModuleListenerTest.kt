@@ -3,6 +3,7 @@
 package org.jetbrains.bazel.workspace
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.events.ChildInfo
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
@@ -33,6 +34,8 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
@@ -46,6 +49,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -66,6 +70,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     super.beforeEach()
     project.isBazelProject = true
     project.replaceService(BazelServerService::class.java, InverseSourcesServer(projectBasePath).serverService, disposable)
+    addMockTargetToProject(project)
 
     target1.createModule()
     target2.createModule()
@@ -205,6 +210,22 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `should ignore projects without any targets`() {
+    project.targetUtils.setTargets(emptyMap())
+    val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
+    createEvent(file).process().shouldBeNull()
+    deleteEvent(file).process().shouldBeNull()
+  }
+
+  @Test
+  fun `should ignore non-Bazel projects`() {
+    project.isBazelProject = false
+    val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
+    createEvent(file).process().shouldBeNull()
+    deleteEvent(file).process().shouldBeNull()
+  }
+
+  @Test
   fun `should not add file to model if its parent is already there`() {
     val src = project.rootDir.createDirectory("src")
     val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
@@ -259,6 +280,19 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
     eventA.shouldNotBeNull()
     eventB.shouldBeNull()
+  }
+
+  private fun addMockTargetToProject(project: Project) {
+    val mockLabel = Label.parse("//mock:target")
+    val mockBuildTarget =
+      PartialBuildTarget(
+        id = mockLabel,
+        tags = emptyList(),
+        kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
+        baseDirectory = projectBasePath,
+      )
+    val mockTargetMap = mapOf(mockLabel to mockBuildTarget)
+    project.targetUtils.setTargets(mockTargetMap)
   }
 
   private fun VirtualFile.createFile(name: String, extension: String): VirtualFile {

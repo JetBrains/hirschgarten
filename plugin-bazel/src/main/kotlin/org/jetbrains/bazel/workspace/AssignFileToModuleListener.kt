@@ -190,7 +190,10 @@ fun getRelatedProjects(file: VirtualFile): List<Project> =
   ProjectManager // ProjectLocator::getProjectsForFile won't work, since it only recognises files already added to content roots
     .getInstance()
     .openProjects
-    .filter { projectIsBazelAndContainsFile(it, file) }
+    .filter {
+      projectIsBazelAndContainsFile(it, file) &&
+        it.hasAnyTargets() // if a project has no targets, there is no point in processing (also, it could interrupt the initial sync)
+    }
 
 private fun projectIsBazelAndContainsFile(project: Project, file: VirtualFile): Boolean {
   val rootDir =
@@ -201,6 +204,8 @@ private fun projectIsBazelAndContainsFile(project: Project, file: VirtualFile): 
     }
   return project.isBazelProject && VfsUtil.isAncestor(rootDir, file, false)
 }
+
+private fun Project.hasAnyTargets(): Boolean = this.targetUtils.allTargets().any()
 
 private fun List<Project>.associateProjectIdWithJob(action: (Project) -> Job?): Map<String, Job> =
   mapNotNull {
