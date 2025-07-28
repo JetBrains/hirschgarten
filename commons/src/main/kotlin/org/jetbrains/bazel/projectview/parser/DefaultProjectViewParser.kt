@@ -41,14 +41,13 @@ import kotlin.io.path.Path
  */
 open class DefaultProjectViewParser(
   private val workspaceRoot: Path? = null,
-  private val rawSectionsProvided: ProjectViewRawSections? = null,
 ) : ProjectViewParser {
   private val log = LoggerFactory.getLogger(DefaultProjectViewParser::class.java)
 
   override fun parse(projectViewFileContent: String): ProjectView {
     log.trace("Parsing project view for the content: '{}'", projectViewFileContent.escapeNewLines())
 
-    val rawSections = rawSectionsProvided ?: ProjectViewSectionSplitter.getRawSectionsForFileContent(projectViewFileContent)
+    val rawSections = ProjectViewSectionSplitter.getRawSectionsForFileContent(projectViewFileContent)
 
     return ProjectView
       .Builder(

@@ -32,7 +32,7 @@ class DefaultWorkspaceContextProvider(
 ) : WorkspaceContextProvider {
   private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath, projectViewPath)
 
-  private fun getSectionsFromPsiFile(): ProjectViewRawSections? {
+  private fun getSectionsFromPsiFile(): Map<String, List<String>>? {
     val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(projectViewPath)!!
     val psiFile = virtualFile.findPsiFile(project!!) as? ProjectViewPsiFile
     val sections =
@@ -41,19 +41,16 @@ class DefaultWorkspaceContextProvider(
         ?.map {
           val name = it.getKeyword()?.text ?: return@map null
           val items = it.getItems().map { item -> item.text }
-          ProjectViewRawSection(name, items.joinToString("\n"))
+          Pair(name, items)
         }?.filterNotNull()
-    return if (sections != null) {
-      ProjectViewRawSections(sections)
-    } else {
-      null
-    }
+    return sections?.associate { it }
   }
 
   override fun readWorkspaceContext(): WorkspaceContext {
     val projectView = ensureProjectViewExistsAndParse()
+    val rawSections = getSectionsFromPsiFile()
 
-    return workspaceContextConstructor.construct(projectView)
+    return workspaceContextConstructor.construct(projectView, rawSections!!)
   }
 
   override fun currentFeatureFlags(): FeatureFlags = featureFlags
@@ -62,8 +59,7 @@ class DefaultWorkspaceContextProvider(
     if (projectViewPath.notExists()) {
       generateEmptyProjectView()
     }
-    val rawSections = getSectionsFromPsiFile()
-    return DefaultProjectViewParser(workspaceRoot, rawSections).parse(projectViewPath)
+    return DefaultProjectViewParser(workspaceRoot).parse(projectViewPath)
   }
 
   private fun generateEmptyProjectView() {

@@ -1,6 +1,10 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
+import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
@@ -15,15 +19,22 @@ class WorkspaceContextConstructor(
 
   private val log = LoggerFactory.getLogger(WorkspaceContextConstructor::class.java)
 
-  fun construct(projectView: ProjectView): WorkspaceContext {
+  fun construct(projectView: ProjectView, rawSections: Map<String, List<String>>? = null): WorkspaceContext {
     log.info("Constructing workspace context for: {}.", projectView)
+
+    val sectionsMetadata = ProjectViewSection.KEYWORD_MAP
+    val rawDebugFlags = rawSections?.get("debug_flags")!!
+    val parser = sectionsMetadata["debug_flag"]!!.sectionValueParser
+    val flagDebugFlags: List<Flag> = rawDebugFlags.map {
+      parser.parse(it) as Flag
+    }
 
     return WorkspaceContext(
       targets = TargetsSpecExtractor.fromProjectView(projectView),
       directories = directoriesSpecExtractor.fromProjectView(projectView),
       buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
       syncFlags = SyncFlagsSpecExtractor.fromProjectView(projectView),
-      debugFlags = DebugFlagsSpecExtractor.fromProjectView(projectView),
+      debugFlags = DebugFlagsSpec(flagDebugFlags.map{ it.name }),
       bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
       allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
       dotBazelBspDirPath = DotBazelBspDirPathSpec(dotBazelBspDirPath),
