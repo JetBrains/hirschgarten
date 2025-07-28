@@ -15,6 +15,6 @@ class ProjectViewLabelReference(val element: ProjectViewPsiSectionItem) :
     if (!project.isBazelProject) return null
     val text = element.text ?: return null
     val label = Label.parseOrNull(text) ?: return null
-    return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, false)
+    return resolveLabel(project, label, null, false)
   }
 }
