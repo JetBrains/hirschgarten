@@ -58,7 +58,14 @@ class SeLabelProvider(private val contributorWrapper: SeAsyncWeightedContributor
             val legacyItem = t.item ?: return true
             if (legacyItem !is LabelWithPreview) return true
             val weight = t.weight
-            return collector.put(SeLabelItem(legacyItem, weight, getExtendedDescription(legacyItem), contributorWrapper.contributor.isMultiSelectionSupported))
+            return collector.put(
+              SeLabelItem(
+                legacyItem,
+                weight,
+                getExtendedDescription(legacyItem),
+                contributorWrapper.contributor.isMultiSelectionSupported,
+              ),
+            )
           }
         },
       )
