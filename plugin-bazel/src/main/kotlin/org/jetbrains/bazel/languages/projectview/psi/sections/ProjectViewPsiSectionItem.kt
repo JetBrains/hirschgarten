@@ -11,5 +11,13 @@ class ProjectViewPsiSectionItem(node: ASTNode) : ProjectViewBaseElement(node) {
     visitor.visitSectionItem(this)
   }
 
-  override fun getReference(): PsiReference = ProjectViewLabelReference(this)
+  private fun getSection(): ProjectViewPsiSection? = parent as? ProjectViewPsiSection
+
+  override fun getReference(): PsiReference? {
+    val sectionKeyword = getSection()?.getKeyword()?.text ?: return ProjectViewLabelReference(this)
+    if (sectionKeyword == "targets") {
+      return ProjectViewLabelReference(this)
+    }
+    return null
+  }
 }
