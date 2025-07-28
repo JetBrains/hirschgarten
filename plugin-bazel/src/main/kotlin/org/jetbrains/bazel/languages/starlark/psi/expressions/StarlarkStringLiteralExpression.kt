@@ -69,5 +69,13 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   private fun isInVisibilityList(): Boolean =
     (parent is StarlarkListLiteralExpression && (parent.parent as? StarlarkNamedArgumentExpression)?.name == "visibility")
 
-  private fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name == "classname"
+  private val classParametersList = listOf(
+    "classname",
+    "main_class",
+    "test_class",
+    "processor_class",
+    "genclass",
+    "tag_class"
+  )
+  private fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name in classParametersList
 }
