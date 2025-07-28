@@ -972,6 +972,8 @@ object ProtobufReader {
       }
     }
 
+    res.addAll(b.filter { rule -> a.none { it.name == rule.name } })
+
     return res
   }
 
