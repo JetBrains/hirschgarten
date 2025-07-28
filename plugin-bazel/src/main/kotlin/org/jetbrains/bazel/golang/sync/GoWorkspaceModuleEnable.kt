@@ -13,6 +13,8 @@ class GoWorkspaceModuleEnable : WorkspaceModuleProjectSyncHook.EnableWorkspaceMo
     if (!project.isBazelProject) return false
     return BazelFeatureFlags.isGoSupportEnabled &&
       environment.diff.targetUtilsDiff.bspTargets
-        .any { it.data is GoBuildTarget }
+        .filter { it.id.isMainWorkspace }
+        .mapNotNull { it.data as? GoBuildTarget }
+        .any { it.generatedSources.isNotEmpty() }
   }
 }
