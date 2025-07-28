@@ -972,12 +972,7 @@ object ProtobufReader {
       }
     }
 
-    for (rule in b) {
-      val corresponding = a.firstOrNull { it.name == rule.name }
-      if (corresponding == null) {
-        res.add(rule)
-      }
-    }
+    res.addAll(b.filter { rule -> a.none { it.name == rule.name } })
 
     return res
   }
