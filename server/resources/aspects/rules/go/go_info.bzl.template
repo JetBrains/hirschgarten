@@ -1,7 +1,25 @@
 load("@${rulesetName}//go:def.bzl", "go_context")
 load("//aspects:utils/utils.bzl", "collect_targets_from_attrs", "create_struct", "file_location", "update_sync_output_groups")
 
+def is_go_rule_kind(ctx):
+    rule_kind = ctx.rule.kind
+    return rule_kind in [
+        "gazelle_binary",
+        "go_binary",
+        "go_library",
+        "go_test",
+        "go_source",
+        "go_appengine_binary",
+        "go_appengine_library",
+        "go_appengine_test",
+        "go_proto_library",
+        "go_wrap_cc",
+        "go_web_test",
+    ]
+
 def extract_go_info(target, ctx, output_groups, **kwargs):
+    if not is_go_rule_kind(ctx):
+        return None, None
     extracted_import_path = get_go_import_path(ctx)
     sdk_home_path = _extract_sdk(ctx)
     sources = []
