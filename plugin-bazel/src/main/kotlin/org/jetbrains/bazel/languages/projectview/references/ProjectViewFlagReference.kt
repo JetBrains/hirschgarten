@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionItem
 
 @Suppress("UnstableApiUsage")
-class ProjectViewFlagReference(val element: ProjectViewPsiSectionItem) : PsiSymbolReference {
+class ProjectViewFlagReference(private val element: ProjectViewPsiSectionItem) : PsiSymbolReference {
   override fun getElement(): PsiElement = element
 
   override fun getRangeInElement(): TextRange = element.firstChild.textRangeInParent
