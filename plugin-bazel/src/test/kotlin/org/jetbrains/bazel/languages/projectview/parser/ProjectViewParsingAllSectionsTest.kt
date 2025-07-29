@@ -34,4 +34,8 @@ class ProjectViewParsingAllSectionsTest : ProjectViewParsingTestCase("sections")
   fun testSingleListValueInTheSameLine() {
     doTest(true)
   }
+
+  fun testWrongSyntax() {
+    doTest(true)
+  }
 }
