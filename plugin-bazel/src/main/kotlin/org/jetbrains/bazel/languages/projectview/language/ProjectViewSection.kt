@@ -71,6 +71,42 @@ object ProjectViewSection {
 
   fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean = supportedSections.contains(sectionName)
 
+  const val ALLOW_MANUAL_TARGETS_SYNC = "allow_manual_targets_sync"
+  const val ANDROID_MIN_SDK = "android_min_sdk"
+  const val BAZEL_BINARY = "bazel_binary"
+  const val BUILD_FLAGS = "build_flags"
+  const val TEST_FLAGS = "test_flags"
+  const val DERIVE_TARGETS_FROM_DIRECTORIES = "derive_targets_from_directories"
+  const val DIRECTORIES = "directories"
+  const val ENABLE_NATIVE_ANDROID_RULES = "enable_native_android_rules"
+  const val ENABLED_RULES = "enabled_rules"
+  const val EXPERIMENTAL_ADD_TRANSITIVE_COMPILE_TIME_JARS = "experimental_add_transitive_compile_time_jars"
+  const val EXPERIMENTAL_NO_PRUNE_TRANSITIVE_COMPILE_TIME_JARS_PATTERNS = "experimental_no_prune_transitive_compile_time_jars_patterns"
+  const val EXPERIMENTAL_TRANSITIVE_COMPILE_TIME_JARS_TARGET_KINDS = "experimental_transitive_compile_time_jars_target_kinds"
+  const val EXPERIMENTAL_PRIORITIZE_LIBRARIES_OVER_MODULES_TARGET_KINDS = "experimental_prioritize_libraries_over_modules_target_kinds"
+  const val IDE_JAVA_HOME_OVERRIDE = "ide_java_home_override"
+  const val IMPORT_DEPTH = "import_depth"
+  const val SHARD_APPROACH = "shard_approach"
+  const val SHARD_SYNC = "shard_sync"
+  const val SYNC_FLAGS = "sync_flags"
+  const val TARGET_SHARD_SIZE = "target_shard_size"
+  const val TARGETS = "targets"
+  const val IMPORT_RUN_CONFIGURATIONS = "import_run_configurations"
+  const val TEST_SOURCES = "test_sources"
+  const val GAZELLE_TARGET = "gazelle_target"
+  const val INDEX_ALL_FILES_IN_DIRECTORIES = "index_all_files_in_directories"
+  const val PYTHON_CODE_GENERATOR_RULE_NAMES = "python_code_generator_rule_names"
+  const val USE_QUERY_SYNC = "use_query_sync"
+  const val WORKSPACE_TYPE = "workspace_type"
+  const val ADDITIONAL_LANGUAGES = "additional_languages"
+  const val JAVA_LANGUAGE_LEVEL = "java_language_level"
+  const val EXCLUDE_LIBRARY = "exclude_library"
+  const val ANDROID_SDK_PLATFORM = "android_sdk_platform"
+  const val GENERATED_ANDROID_RESOURCE_DIRECTORIES = "generated_android_resource_directories"
+  const val TS_CONFIG_RULES = "ts_config_rules"
+  const val IMPORT_IJARS = "import_ijars"
+  const val DEBUG_FLAGS = "debug_flags"
+
   /*
    * The map below should contain all syntax-wise valid section names.
    * However, the ones that are actually supported by the plugin are defined in the ProjectView data class.
@@ -79,147 +115,147 @@ object ProjectViewSection {
   val KEYWORD_MAP: Map<ProjectViewSyntaxKey, SectionMetadata> =
     listOf(
       SectionMetadata(
-        sectionName = "allow_manual_targets_sync",
+        sectionName = ALLOW_MANUAL_TARGETS_SYNC,
         sectionType = SectionType.Scalar.Boolean,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
-        sectionName = "android_min_sdk",
+        sectionName = ANDROID_MIN_SDK,
         sectionType = SectionType.Scalar.Integer,
         completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
-        sectionName = "bazel_binary",
+        sectionName = BAZEL_BINARY,
         sectionType = SectionType.Scalar.String,
         completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
-        sectionName = "build_flags",
+        sectionName = BUILD_FLAGS,
         sectionType = SectionType.List.String,
         completionProvider = FlagCompletionProvider("build"),
         sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
-        sectionName = "test_flags",
+        sectionName = TEST_FLAGS,
         sectionType = SectionType.List.String,
         completionProvider = FlagCompletionProvider("test"),
         sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
-        sectionName = "derive_targets_from_directories",
+        sectionName = DERIVE_TARGETS_FROM_DIRECTORIES,
         sectionType = SectionType.Scalar.Boolean,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
-        sectionName = "directories",
+        sectionName = DIRECTORIES,
         sectionType = SectionType.List.String,
         completionProvider = null,
         sectionValueParser = IncludedExcludedParser(PathValueParser()),
       ),
       SectionMetadata(
-        sectionName = "enable_native_android_rules",
+        sectionName = ENABLE_NATIVE_ANDROID_RULES,
         sectionType = SectionType.Scalar.Boolean,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
-        sectionName = "enabled_rules",
+        sectionName = ENABLED_RULES,
         sectionType = SectionType.List.String,
         completionProvider = null,
         sectionValueParser = IdentityValueParser(),
       ),
       SectionMetadata(
-        sectionName = "experimental_add_transitive_compile_time_jars",
+        sectionName = EXPERIMENTAL_ADD_TRANSITIVE_COMPILE_TIME_JARS,
         sectionType = SectionType.Scalar.Boolean,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
-        sectionName = "experimental_no_prune_transitive_compile_time_jars_patterns",
+        sectionName = EXPERIMENTAL_NO_PRUNE_TRANSITIVE_COMPILE_TIME_JARS_PATTERNS,
         sectionType = SectionType.List.String,
       ),
       SectionMetadata(
-        sectionName = "experimental_transitive_compile_time_jars_target_kinds",
+        sectionName = EXPERIMENTAL_TRANSITIVE_COMPILE_TIME_JARS_TARGET_KINDS,
         sectionType = SectionType.List.String,
       ),
       SectionMetadata(
-        sectionName = "experimental_prioritize_libraries_over_modules_target_kinds",
+        sectionName = EXPERIMENTAL_PRIORITIZE_LIBRARIES_OVER_MODULES_TARGET_KINDS,
         sectionType = SectionType.List.String,
       ),
       SectionMetadata(
-        sectionName = "ide_java_home_override",
+        sectionName = IDE_JAVA_HOME_OVERRIDE,
         sectionType = SectionType.Scalar.String,
         completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
-        sectionName = "import_depth",
+        sectionName = IMPORT_DEPTH,
         sectionType = SectionType.Scalar.Integer,
         completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
-        sectionName = "shard_approach",
+        sectionName = SHARD_APPROACH,
         sectionType = SectionType.Scalar.String,
       ),
       SectionMetadata(
-        sectionName = "shard_sync",
+        sectionName = SHARD_SYNC,
         sectionType = SectionType.Scalar.Boolean,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
-        sectionName = "sync_flags",
+        sectionName = SYNC_FLAGS,
         sectionType = SectionType.List.String,
         completionProvider = FlagCompletionProvider("sync"),
         sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
-        sectionName = "target_shard_size",
+        sectionName = TARGET_SHARD_SIZE,
         sectionType = SectionType.Scalar.Integer,
         completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
-        sectionName = "targets",
+        sectionName = TARGETS,
         sectionType = SectionType.List.String,
       ),
       SectionMetadata(
-        sectionName = "import_run_configurations",
+        sectionName = IMPORT_RUN_CONFIGURATIONS,
         sectionType = SectionType.List.String,
         completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
-        sectionName = "test_sources",
+        sectionName = TEST_SOURCES,
         sectionType = SectionType.List.String, // used by Google's plugin
       ),
       SectionMetadata(
-        sectionName = "gazelle_target",
+        sectionName = GAZELLE_TARGET,
         sectionType = SectionType.Scalar.String,
       ),
       SectionMetadata(
-        sectionName = "index_all_files_in_directories",
+        sectionName = INDEX_ALL_FILES_IN_DIRECTORIES,
         sectionType = SectionType.Scalar.Boolean,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
-        sectionName = "python_code_generator_rule_names",
+        sectionName = PYTHON_CODE_GENERATOR_RULE_NAMES,
         sectionType = SectionType.List.String,
       ),
       SectionMetadata(
-        sectionName = "use_query_sync",
+        sectionName = USE_QUERY_SYNC,
         sectionType = SectionType.Scalar.Boolean,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
-        sectionName = "workspace_type",
+        sectionName = WORKSPACE_TYPE,
         sectionType = SectionType.Scalar.String,
         completionProvider =
           SimpleCompletionProvider(
@@ -227,7 +263,7 @@ object ProjectViewSection {
           ),
       ),
       SectionMetadata(
-        sectionName = "additional_languages",
+        sectionName = ADDITIONAL_LANGUAGES,
         sectionType = SectionType.List.String,
         completionProvider =
           SimpleCompletionProvider(
@@ -245,33 +281,33 @@ object ProjectViewSection {
           ),
       ),
       SectionMetadata(
-        sectionName = "java_language_level",
+        sectionName = JAVA_LANGUAGE_LEVEL,
         sectionType = SectionType.Scalar.String,
       ),
       SectionMetadata(
-        sectionName = "exclude_library",
+        sectionName = EXCLUDE_LIBRARY,
         sectionType = SectionType.List.String,
       ),
       SectionMetadata(
-        sectionName = "android_sdk_platform",
+        sectionName = ANDROID_SDK_PLATFORM,
         sectionType = SectionType.Scalar.String,
       ),
       SectionMetadata(
-        sectionName = "generated_android_resource_directories",
+        sectionName = GENERATED_ANDROID_RESOURCE_DIRECTORIES,
         sectionType = SectionType.List.String,
       ),
       SectionMetadata(
-        sectionName = "ts_config_rules",
+        sectionName = TS_CONFIG_RULES,
         sectionType = SectionType.List.String,
       ),
       SectionMetadata(
-        sectionName = "import_ijars",
+        sectionName = IMPORT_IJARS,
         sectionType = SectionType.Scalar.Boolean,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
-        sectionName = "debug_flags",
+        sectionName = DEBUG_FLAGS,
         sectionType = SectionType.List.String,
         completionProvider = FlagCompletionProvider("debug"),
         sectionValueParser = FlagValueParser(),
