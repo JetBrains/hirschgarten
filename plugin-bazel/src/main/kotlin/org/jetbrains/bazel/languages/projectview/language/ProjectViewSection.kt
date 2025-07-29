@@ -47,6 +47,21 @@ object ProjectViewSection {
     override fun parse(value: String): Path? = Path.of(value)
   }
 
+  sealed interface Value<T> {
+    class Included<T>(val value: T) : Value<T>
+
+    class Excluded<T>(val value: T) : Value<T>
+  }
+
+  private class IncludedExcludedParser<T>(private val actualParser: SectionValueParser<T>) : SectionValueParser<Value<T>> {
+    override fun parse(value: String): Value<T>? =
+      if (value.startsWith("-")) {
+        actualParser.parse(value.substring(1))?.let { Value.Excluded(it) }
+      } else {
+        actualParser.parse(value)?.let { Value.Included(it) }
+      }
+  }
+
   data class SectionMetadata(
     val sectionName: ProjectViewSyntaxKey,
     val sectionType: SectionType,
@@ -103,7 +118,7 @@ object ProjectViewSection {
         sectionName = "directories",
         sectionType = SectionType.List.String,
         completionProvider = null,
-        sectionValueParser = PathValueParser(),
+        sectionValueParser = IncludedExcludedParser(PathValueParser()),
       ),
       SectionMetadata(
         sectionName = "enable_native_android_rules",
@@ -206,19 +221,28 @@ object ProjectViewSection {
       SectionMetadata(
         sectionName = "workspace_type",
         sectionType = SectionType.Scalar.String,
-        completionProvider = SimpleCompletionProvider(
-          listOf("java", "python", "dart", "android", "javascript")
-        ),
+        completionProvider =
+          SimpleCompletionProvider(
+            listOf("java", "python", "dart", "android", "javascript"),
+          ),
       ),
       SectionMetadata(
         sectionName = "additional_languages",
         sectionType = SectionType.List.String,
-        completionProvider = SimpleCompletionProvider(
-          listOf(
-            "android", "dart", "java", "javascript", "kotlin",
-            "python", "typescript", "go", "c"
-          )
-        ),
+        completionProvider =
+          SimpleCompletionProvider(
+            listOf(
+              "android",
+              "dart",
+              "java",
+              "javascript",
+              "kotlin",
+              "python",
+              "typescript",
+              "go",
+              "c",
+            ),
+          ),
       ),
       SectionMetadata(
         sectionName = "java_language_level",
