@@ -17,6 +17,9 @@ import com.intellij.psi.util.PsiUtilCore
 import org.jetbrains.bazel.languages.bazelversion.BazelVersionLanguage
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionFile
 
+/**
+ * @see com.intellij.openapi.fileTypes.PlainTextParserDefinition
+ */
 class BazelVersionParserDefinition : ParserDefinition {
   // avoid creating new IFileElementType on each getFileNodeType
   // to ensure IFileElementType is registered only once inside an internal registry
