@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspacecontext.provider
 
 import org.apache.commons.io.FileUtils.copyURLToFile
 import org.jetbrains.bazel.commons.EnvironmentProvider
+import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.commons.FileUtils
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.projectview.model.ProjectView
@@ -106,15 +107,7 @@ internal object BazelBinarySpecExtractor : WorkspaceContextEntityExtractor<Bazel
   }
 
   private fun bazelFile(path: String, executable: String): Path? {
-    val file = File(path, calculateExecutableName(executable))
+    val file = File(path, ExecUtils.calculateExecutableName(executable))
     return if (file.exists() && file.canExecute()) file.toPath() else null
-  }
-
-  private fun calculateExecutableName(name: String): String {
-    val systemInfoProvider = SystemInfoProvider.getInstance()
-    return when {
-      systemInfoProvider.isWindows -> "$name.exe"
-      else -> name
-    }
   }
 }

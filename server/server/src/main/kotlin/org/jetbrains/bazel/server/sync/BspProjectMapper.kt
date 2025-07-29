@@ -100,18 +100,6 @@ class BspProjectMapper(
     return WorkspaceLibrariesResult(libraries)
   }
 
-  fun workspaceGoLibraries(project: AspectSyncProject): WorkspaceGoLibrariesResult {
-    val libraries =
-      project.goLibraries.values.map {
-        GoLibraryItem(
-          id = it.label,
-          goImportPath = it.goImportPath,
-          goRoot = it.goRoot,
-        )
-      }
-    return WorkspaceGoLibrariesResult(libraries)
-  }
-
   fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
     // bazel symlinks exclusion logic is now taken care by BazelSymlinkExcludeService,
     // so there is no need for excluding them here anymore
@@ -337,4 +325,7 @@ class BspProjectMapper(
 
   suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo =
     JvmToolchainQuery.jvmToolchainQuery(bspInfo, bazelRunner, project.workspaceContext)
+
+  suspend fun jvmBuilderParamsForTarget(project: Project, target: Label): JvmToolchainInfo =
+    JvmToolchainQuery.jvmToolchainQueryForTarget(bspInfo, bazelRunner, project.workspaceContext, target)
 }

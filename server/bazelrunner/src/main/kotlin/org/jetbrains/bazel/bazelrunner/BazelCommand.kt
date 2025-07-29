@@ -315,6 +315,24 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
+  class AQuery(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasMultipleTargets {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("aquery")
+      commandLine.addAll(options)
+      commandLine.addAll(targetCommandLine())
+
+      return BazelCommandExecutionDescriptor(commandLine)
+    }
+  }
+
   abstract class SimpleCommand(bazelBinary: String, val command: List<String>) : BazelCommand(bazelBinary) {
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)

@@ -13,9 +13,3 @@ data class Library(
   val mavenCoordinates: MavenCoordinates? = null,
   val isFromInternalTarget: Boolean = false,
 )
-
-data class GoLibrary(
-  val label: Label,
-  val goImportPath: String? = null,
-  val goRoot: Path? = null,
-)

@@ -92,9 +92,9 @@ bazel_integration_test_current_version(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspAndroidKotlinProjectTest",
 )
 
-bazel_integration_test_current_version(
+bazel_integration_test_all_versions(
     name = "go_project_test",
-    project_path = "test-projects/workspace/go-project",
+    bzlmod_project_path = "test-projects/bzlmod/go-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspGoProjectTest",
 )
 

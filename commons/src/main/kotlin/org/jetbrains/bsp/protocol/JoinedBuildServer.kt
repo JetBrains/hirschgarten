@@ -35,8 +35,6 @@ interface JoinedBuildServer {
 
   suspend fun workspaceLibraries(): WorkspaceLibrariesResult
 
-  suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult
-
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult
 
   suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult
@@ -60,4 +58,6 @@ interface JoinedBuildServer {
   suspend fun workspaceContext(): WorkspaceContext
 
   suspend fun jvmToolchainInfo(): JvmToolchainInfo
+
+  suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo
 }

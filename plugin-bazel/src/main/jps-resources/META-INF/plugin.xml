@@ -2,13 +2,10 @@
   <id>org.jetbrains.bazel</id>
   <category>Build Tools</category>
   <vendor>JetBrains</vendor>
-  <name>Bazel (EAP)</name>
+  <name>Bazel</name>
   <description
   ><![CDATA[
-  <p>Bazel by JetBrains (EAP) for IntelliJ IDEA</p>
-
-  <p>This plugin is available as EAP (Early Access Program). This means that it may already be useful, but many
-  corner cases might not be supported yet.</p>
+  <p>Bazel by JetBrains for IntelliJ IDEA</p>
 
   <p>Main features</p>
   <ul>
@@ -20,7 +17,7 @@
       <li>Run and debug tests running in Bazel</li>
   </ul>
 
-  <p>To learn more about how to use the features, please check <a href="https://www.jetbrains.com/help/idea/2024.3/bazel.html">the documentation page</a>.</p>
+  <p>To learn more about how to use the features, please check <a href="https://www.jetbrains.com/help/idea/bazel.html">the documentation page</a>.</p>
   ]]>
   </description>
 
@@ -188,6 +185,10 @@
                     interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.starlarkGlobalFunctionProvider"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkGlobalFunctionProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -259,6 +260,8 @@
     <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
 
     <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
+
+    <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -278,7 +281,7 @@
       key="bsp.android.support"
     />
     <registryKey
-      defaultValue="false"
+      defaultValue="true"
       description="Go modules support"
       key="bsp.go.support"
     />
@@ -359,7 +362,7 @@
       key="bazel.project.auto.open.if.present"
     />
     <registryKey
-      defaultValue="false"
+      defaultValue="true"
       description="Whether the Bazel Query tab should be enabled in tool window (where target tree is)"
       key="bazel.query.tab.enabled"
     />

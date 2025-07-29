@@ -5,8 +5,6 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.codeInsight.completion.InsertHandler
-import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -19,7 +17,7 @@ import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -86,16 +84,16 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
 }
 
 private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().starlarkGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.starlarkGlobalFunctions.values })
 
 private object BazelBzlFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().extensionGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.extensionGlobalFunctions.values })
 
 private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().buildGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.buildGlobalFunctions.values })
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions.values })
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().moduleGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions.values })

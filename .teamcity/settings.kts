@@ -68,6 +68,7 @@ project {
 //        buildType(ServerE2eTests.AndroidKotlinProjectGitHub)
         buildType(ServerE2eTests.ScalaProjectGitHub)
         buildType(ServerE2eTests.KotlinProjectGitHub)
+        buildType(ServerE2eTests.GoProjectGitHub)
         buildType(ServerE2eTests.PythonProjectGitHub)
         buildType(ServerE2eTests.JavaDiagnosticsGitHub)
         buildType(ServerE2eTests.ManualTargetsGitHub)
@@ -149,6 +150,7 @@ project {
 //      ServerE2eTests.AndroidKotlinProjectGitHub,
       ServerE2eTests.ScalaProjectGitHub,
       ServerE2eTests.KotlinProjectGitHub,
+      ServerE2eTests.GoProjectGitHub,
       ServerE2eTests.PythonProjectGitHub,
       ServerE2eTests.JavaDiagnosticsGitHub,
       ServerE2eTests.ManualTargetsGitHub,

@@ -75,11 +75,6 @@ class ProjectSyncService(
     return bspMapper.workspaceLibraries(project)
   }
 
-  suspend fun workspaceBuildGoLibraries(): WorkspaceGoLibrariesResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceGoLibrariesResult(emptyList())
-    return bspMapper.workspaceGoLibraries(project)
-  }
-
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
     val project = projectProvider.get()
     return bspMapper.workspaceDirectories(project)
@@ -136,6 +131,11 @@ class ProjectSyncService(
   suspend fun buildJvmToolchainInfo(): JvmToolchainInfo {
     val project = projectProvider.get()
     return bspMapper.jvmBuilderParams(project)
+  }
+
+  suspend fun buildJvmToolchainInfoForTarget(target: Label): JvmToolchainInfo {
+    val project = projectProvider.get()
+    return bspMapper.jvmBuilderParamsForTarget(project, target)
   }
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
