@@ -44,9 +44,10 @@ class SeLabelItem(
 
 @ApiStatus.Internal
 class SeLabelProvider(private val contributorWrapper: SeAsyncWeightedContributorWrapper<Any>) : SeItemsProvider {
+  private val contributor = contributorWrapper.contributor
   override val id: String get() = SE_LABEL_PROVIDER_ID
   override val displayName: String
-    get() = contributorWrapper.contributor.fullGroupName
+    get() = contributor.fullGroupName
 
   override suspend fun collectItems(params: SeParams, collector: SeItemsProvider.Collector) {
     coroutineToIndicator {
@@ -63,7 +64,7 @@ class SeLabelProvider(private val contributorWrapper: SeAsyncWeightedContributor
               SeLabelItem(
                 legacyItem,
                 weight,
-                contributorWrapper.contributor.getExtendedInfo(legacyItem),
+                contributor.getExtendedInfo(legacyItem),
                 contributorWrapper.contributor.isMultiSelectionSupported,
               ),
             )
@@ -81,11 +82,11 @@ class SeLabelProvider(private val contributorWrapper: SeAsyncWeightedContributor
     val legacyItem = (item as? SeLabelItem)?.legacyItem ?: return false
 
     return withContext(Dispatchers.EDT) {
-      contributorWrapper.contributor.processSelectedItem(legacyItem, modifiers, searchText)
+      contributor.processSelectedItem(legacyItem, modifiers, searchText)
     }
   }
 
-  override suspend fun canBeShownInFindResults(): Boolean = contributorWrapper.contributor.showInFindResults()
+  override suspend fun canBeShownInFindResults(): Boolean = contributor.showInFindResults()
 
   override fun dispose() {
     Disposer.dispose(contributorWrapper)
