@@ -25,16 +25,17 @@ class WorkspaceContextConstructor(
     val sectionsMetadata = ProjectViewSection.KEYWORD_MAP
     val rawDebugFlags = rawSections?.get("debug_flags")!!
     val parser = sectionsMetadata["debug_flag"]!!.sectionValueParser
-    val flagDebugFlags: List<Flag> = rawDebugFlags.map {
-      parser.parse(it) as Flag
-    }
+    val flagDebugFlags: List<Flag> =
+      rawDebugFlags.map {
+        parser.parse(it) as Flag
+      }
 
     return WorkspaceContext(
       targets = TargetsSpecExtractor.fromProjectView(projectView),
       directories = directoriesSpecExtractor.fromProjectView(projectView),
       buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
       syncFlags = SyncFlagsSpecExtractor.fromProjectView(projectView),
-      debugFlags = DebugFlagsSpec(flagDebugFlags.map{ it.name }),
+      debugFlags = DebugFlagsSpec(flagDebugFlags.map { it.name }),
       bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
       allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
       dotBazelBspDirPath = DotBazelBspDirPathSpec(dotBazelBspDirPath),

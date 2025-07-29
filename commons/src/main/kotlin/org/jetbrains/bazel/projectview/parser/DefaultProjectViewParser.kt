@@ -39,9 +39,7 @@ import kotlin.io.path.Path
  * @see ProjectViewParser
  * @see ProjectViewSectionSplitter
  */
-open class DefaultProjectViewParser(
-  private val workspaceRoot: Path? = null,
-) : ProjectViewParser {
+open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : ProjectViewParser {
   private val log = LoggerFactory.getLogger(DefaultProjectViewParser::class.java)
 
   override fun parse(projectViewFileContent: String): ProjectView {
