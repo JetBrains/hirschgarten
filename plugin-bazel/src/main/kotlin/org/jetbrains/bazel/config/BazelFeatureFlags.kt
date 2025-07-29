@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.config
 
-import com.intellij.codeInsight.multiverse.CodeInsightContextManager
+import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
@@ -116,7 +116,7 @@ object FeatureFlagsProvider {
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
-        isSharedSourceSupportEnabled = CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled,
+        isSharedSourceSupportEnabled = isSharedSourceSupportEnabled(project),
         isBazelQueryTabEnabled = isBazelQueryTabEnabled,
       )
     }
