@@ -82,7 +82,7 @@ class RemoveWithSdkCompatTest {
   private fun extractVersions(): Set<String> {
     val labels = Paths.get(SDK_COMPAT_STRUCTURE_OUTPUT).readText().split("\n")
     val regex = Regex("sdkcompat/(v\\d+)")
-    return labels
+    val versions = labels
       .mapNotNull { label ->
         regex
           .find(label)
@@ -90,5 +90,9 @@ class RemoveWithSdkCompatTest {
           ?.get(1)
           ?.value
       }.toSet()
+    if (versions.isEmpty()) {
+      throw IllegalStateException("No sdkcompat versions found")
+    }
+    return versions
   }
 }
