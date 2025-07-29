@@ -381,6 +381,13 @@
       restartRequired="true"
     />
 
+    <registryKey
+      defaultValue="true"
+      description="Exclude Bazel symlinks from IDEA's file watcher via reflection to work around platform bugs"
+      key="bazel.exclude.symlinks.from.file.watcher.via.reflection"
+      restartRequired="true"
+    />
+
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
 
     <projectService
