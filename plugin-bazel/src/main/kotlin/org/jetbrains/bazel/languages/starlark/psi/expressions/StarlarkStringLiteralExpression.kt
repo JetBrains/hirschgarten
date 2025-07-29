@@ -6,6 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiReference
+import org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
@@ -75,5 +76,11 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
         )
     )
 
-  private fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name == "classname"
+  private val classParametersList by lazy {
+    StarlarkClassParametersProvider.EP_NAME.extensionList
+      .flatMap { it.getClassnameParameters() }
+      .toSet()
+  }
+
+  private fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name in classParametersList
 }
