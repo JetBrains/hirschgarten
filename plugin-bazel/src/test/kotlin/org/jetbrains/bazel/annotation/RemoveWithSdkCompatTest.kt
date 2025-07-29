@@ -1,17 +1,17 @@
 package org.jetbrains.bazel.annotation
 
 import com.google.common.reflect.ClassPath
+import com.google.devtools.build.runfiles.Runfiles
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.annotations.RemoveWithSdkCompat
 import org.jetbrains.bazel.resourceUtil.ResourceUtil
 import org.junit.jupiter.api.Test
 import java.net.URLClassLoader
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.readText
 
-private const val PLUGIN_BAZEL_JAR = "plugin-bazel/plugin-bazel.jar"
 private const val PACKAGE_PREFIX = "org.jetbrains.bazel"
-private const val SDK_COMPAT_STRUCTURE_OUTPUT = "plugin-bazel/src/test/kotlin/org/jetbrains/bazel/annotation/sdkCompatStructure"
 
 /**
  * Test for the [RemoveWithSdkCompat] annotation.
@@ -41,7 +41,7 @@ class RemoveWithSdkCompatTest {
   @Test
   fun `should remove classes or methods along with the removal of sdkcompat layer`() {
     val currentSdkCompatVersions = extractVersions()
-    ResourceUtil.useResource(PLUGIN_BAZEL_JAR) { pluginJar ->
+    ResourceUtil.useResource("", resourceUrl = calculatePathFromProperty("bazel.plugin.jar")?.toUri()?.toURL()) { pluginJar ->
       val classLoader = URLClassLoader(arrayOf(pluginJar.toUri().toURL()))
       val classPath = ClassPath.from(classLoader)
       val classNames = classPath.allClasses.map { it.name }.filter { it.startsWith(PACKAGE_PREFIX) }
@@ -80,7 +80,7 @@ class RemoveWithSdkCompatTest {
   }
 
   private fun extractVersions(): Set<String> {
-    val labels = Paths.get(SDK_COMPAT_STRUCTURE_OUTPUT).readText().split("\n")
+    val labels = calculatePathFromProperty("sdk.compat.structure.output")!!.readText().split("\n")
     val regex = Regex("sdkcompat/(v\\d+)")
     val versions =
       labels
@@ -96,4 +96,7 @@ class RemoveWithSdkCompatTest {
     }
     return versions
   }
+
+  private fun calculatePathFromProperty(property: String): Path? =
+    System.getProperty(property)?.let { Paths.get(Runfiles.preload().unmapped().rlocation(it)) }
 }
