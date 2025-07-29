@@ -34,9 +34,6 @@ intellij_integration_test_suite(
 intellij_integration_test_suite(
     name = "RemoveWithSdkCompatTest",
     srcs = ["RemoveWithSdkCompatTest.kt"],
-    associates = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",
-    ],
     data = [":sdkCompatStructure"],
     resources = [
         "//plugin-bazel",
@@ -44,6 +41,7 @@ intellij_integration_test_suite(
     test_package_root = "org.jetbrains",
     runtime_deps = ["//plugin-bazel"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil",
         "//rules_intellij/intellij_platform_sdk:java_for_tests",
         "//rules_intellij/intellij_platform_sdk:kotlin_for_tests",

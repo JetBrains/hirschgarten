@@ -5,4 +5,5 @@ package org.jetbrains.bazel.annotations
  * @param version corresponding sdkcompat version, e.g., `v251`, `v252`
  */
 @Retention(AnnotationRetention.RUNTIME)
-internal annotation class RemoveWithSdkCompat(val version: String)
+@InternalApi
+annotation class RemoveWithSdkCompat(val version: String)
