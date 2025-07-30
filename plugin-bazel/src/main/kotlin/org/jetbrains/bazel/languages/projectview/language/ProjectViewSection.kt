@@ -176,13 +176,11 @@ object ProjectViewSection {
       SectionMetadata(
         sectionName = ANDROID_MIN_SDK,
         sectionType = SectionType.Scalar,
-        completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
         sectionName = BAZEL_BINARY,
         sectionType = SectionType.Scalar,
-        completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
@@ -206,7 +204,6 @@ object ProjectViewSection {
       SectionMetadata(
         sectionName = DIRECTORIES,
         sectionType = SectionType.List,
-        completionProvider = null,
         sectionValueParser = IncludedExcludedParser(PathValueParser()),
       ),
       SectionMetadata(
@@ -218,7 +215,6 @@ object ProjectViewSection {
       SectionMetadata(
         sectionName = ENABLED_RULES,
         sectionType = SectionType.List,
-        completionProvider = null,
         sectionValueParser = IdentityValueParser(),
       ),
       SectionMetadata(
@@ -242,13 +238,11 @@ object ProjectViewSection {
       SectionMetadata(
         sectionName = IDE_JAVA_HOME_OVERRIDE,
         sectionType = SectionType.Scalar,
-        completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
         sectionName = IMPORT_DEPTH,
         sectionType = SectionType.Scalar,
-        completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
@@ -270,19 +264,16 @@ object ProjectViewSection {
       SectionMetadata(
         sectionName = TARGET_SHARD_SIZE,
         sectionType = SectionType.Scalar,
-        completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
         sectionName = TARGETS,
         sectionType = SectionType.List,
-        completionProvider = null,
         sectionValueParser = IncludedExcludedParser(LabelValueParser()),
       ),
       SectionMetadata(
         sectionName = IMPORT_RUN_CONFIGURATIONS,
         sectionType = SectionType.List,
-        completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
