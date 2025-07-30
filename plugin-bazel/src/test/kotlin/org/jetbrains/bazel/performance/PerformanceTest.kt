@@ -6,6 +6,7 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.project.GitProjectInfo
@@ -21,11 +22,11 @@ import com.intellij.tools.ide.metrics.collector.publishing.PerformanceMetricsDto
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.junit.jupiter.api.BeforeEach
@@ -51,19 +52,20 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProject() {
-    val commands =
-      CommandChain()
-        .startRecordingMaxMemory()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .recordMemory("bsp.used.after.sync.mb")
-        .openBspToolWindow()
-        .takeScreenshot("openBspToolWindow")
-        .stopRecordingMaxMemory()
-        .waitForSmartMode()
-        .recordMemory("bsp.used.after.indexing.mb")
-        .exitApp(forceExit = false)
-    val startResult = createContext().runIDE(commands = commands, runTimeout = timeout)
+
+    val startResult =  createContext()
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+         execute { startRecordingMaxMemory() }
+         execute { takeScreenshot("startSync") }
+         execute { waitForBazelSync() }
+         execute { recordMemory("bsp.used.after.sync.mb") }
+         execute { openBspToolWindow() }
+         execute { takeScreenshot("openBspToolWindow") }
+         execute { stopRecordingMaxMemory() }
+         execute { waitForSmartMode() }
+         execute { recordMemory("bsp.used.after.indexing.mb") }
+      }
 
     val spans = OpenTelemetrySpanCollector(SpanFilter.nameEquals("bsp.sync.project.ms")).collect(startResult.runContext.logsDir)
 
