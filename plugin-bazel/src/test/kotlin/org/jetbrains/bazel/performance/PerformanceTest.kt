@@ -21,7 +21,7 @@ import com.intellij.tools.ide.metrics.collector.publishing.PerformanceMetricsDto
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.exitAppWithTimeout
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
@@ -62,7 +62,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
         .stopRecordingMaxMemory()
         .waitForSmartMode()
         .recordMemory("bsp.used.after.indexing.mb")
-        .exitApp()
+        .exitAppWithTimeout(15)
     val startResult = createContext().runIDE(commands = commands, runTimeout = timeout)
 
     val spans = OpenTelemetrySpanCollector(SpanFilter.nameEquals("bsp.sync.project.ms")).collect(startResult.runContext.logsDir)
