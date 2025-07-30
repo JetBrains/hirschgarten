@@ -10,8 +10,10 @@ import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.util.Key
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.annotations.RemoveWithSdkCompat
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.target.targetUtils
@@ -24,6 +26,7 @@ private const val PROVIDER_NAME = "KotlinCoroutineLibraryFinderBeforeRunTaskProv
 
 private val PROVIDER_ID = Key.create<KotlinCoroutineLibraryFinderBeforeRunTaskProvider.Task>(PROVIDER_NAME)
 
+@RemoveWithSdkCompat("v252")
 internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
   BeforeRunTaskProvider<KotlinCoroutineLibraryFinderBeforeRunTaskProvider.Task>() {
   override fun getId(): Key<Task> = PROVIDER_ID
