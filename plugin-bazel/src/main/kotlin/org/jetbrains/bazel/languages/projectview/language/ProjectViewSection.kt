@@ -2,11 +2,104 @@ package org.jetbrains.bazel.languages.projectview.language
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.projectview.model.supportedSections
 import java.nio.file.Path
+
+const val ALLOW_MANUAL_TARGETS_SYNC = "allow_manual_targets_sync"
+typealias ALLOW_MANUAL_TARGETS_SYNC_TYPE = Boolean
+
+const val ANDROID_MIN_SDK = "android_min_sdk"
+typealias ANDROID_MIN_SDK_TYPE = Int
+
+const val BAZEL_BINARY = "bazel_binary"
+typealias BAZEL_BINARY_TYPE = Path
+
+const val BUILD_FLAGS = "build_flags"
+typealias BUILD_FLAGS_TYPE = Flag
+
+const val TEST_FLAGS = "test_flags"
+typealias TEST_FLAGS_TYPE = Flag
+
+const val SYNC_FLAGS = "sync_flags"
+typealias SYNC_FLAGS_TYPE = Flag
+
+const val DEBUG_FLAGS = "debug_flags"
+typealias DEBUG_FLAGS_TYPE = Flag
+
+const val DERIVE_TARGETS_FROM_DIRECTORIES = "derive_targets_from_directories"
+typealias DERIVE_TARGETS_FROM_DIRECTORIES_TYPE = Boolean
+
+const val DIRECTORIES = "directories"
+typealias DIRECTORIES_INNER_TYPE = Path
+typealias DIRECTORIES_TYPE = ProjectViewSection.Value<DIRECTORIES_INNER_TYPE>
+
+const val ENABLE_NATIVE_ANDROID_RULES = "enable_native_android_rules"
+typealias ENABLE_NATIVE_ANDROID_RULES_TYPE = Boolean
+
+const val ENABLED_RULES = "enabled_rules"
+typealias ENABLED_RULES_TYPE = String
+
+const val EXPERIMENTAL_ADD_TRANSITIVE_COMPILE_TIME_JARS = "experimental_add_transitive_compile_time_jars"
+typealias EXPERIMENTAL_ADD_TRANSITIVE_COMPILE_TIME_JARS_TYPE = Boolean
+
+const val EXPERIMENTAL_NO_PRUNE_TRANSITIVE_COMPILE_TIME_JARS_PATTERNS = "experimental_no_prune_transitive_compile_time_jars_patterns"
+typealias EXPERIMENTAL_NO_PRUNE_TRANSITIVE_COMPILE_TIME_JARS_PATTERNS_TYPE = String
+
+const val EXPERIMENTAL_TRANSITIVE_COMPILE_TIME_JARS_TARGET_KINDS = "experimental_transitive_compile_time_jars_target_kinds"
+typealias EXPERIMENTAL_TRANSITIVE_COMPILE_TIME_JARS_TARGET_KINDS_TYPE = String
+
+const val EXPERIMENTAL_PRIORITIZE_LIBRARIES_OVER_MODULES_TARGET_KINDS = "experimental_prioritize_libraries_over_modules_target_kinds"
+typealias EXPERIMENTAL_PRIORITIZE_LIBRARIES_OVER_MODULES_TARGET_KINDS_TYPE = String
+
+const val IDE_JAVA_HOME_OVERRIDE = "ide_java_home_override"
+typealias IDE_JAVA_HOME_OVERRIDE_TYPE = Path
+
+const val IMPORT_DEPTH = "import_depth"
+typealias IMPORT_DEPTH_TYPE = Int
+
+const val SHARD_APPROACH = "shard_approach"
+typealias SHARD_APPROACH_TYPE = String
+
+const val SHARD_SYNC = "shard_sync"
+typealias SHARD_SYNC_TYPE = Boolean
+
+const val TARGET_SHARD_SIZE = "target_shard_size"
+typealias TARGET_SHARD_SIZE_TYPE = Int
+
+const val TARGETS = "targets"
+typealias TARGETS_INNER_TYPE = Label
+typealias TARGETS_TYPE = ProjectViewSection.Value<TARGETS_INNER_TYPE>
+
+const val IMPORT_RUN_CONFIGURATIONS = "import_run_configurations"
+typealias IMPORT_RUN_CONFIGURATIONS_TYPE = Path
+
+const val TEST_SOURCES = "test_sources"
+
+const val GAZELLE_TARGET = "gazelle_target"
+typealias GAZELLE_TARGET_TYPE = String
+
+const val INDEX_ALL_FILES_IN_DIRECTORIES = "index_all_files_in_directories"
+typealias INDEX_ALL_FILES_IN_DIRECTORIES_TYPE = Boolean
+
+const val PYTHON_CODE_GENERATOR_RULE_NAMES = "python_code_generator_rule_names"
+typealias PYTHON_CODE_GENERATOR_RULE_NAMES_TYPE = String
+
+const val IMPORT_IJARS = "import_ijars"
+typealias IMPORT_IJARS_TYPE = Boolean
+
+// Not supported by our plugin.
+const val USE_QUERY_SYNC = "use_query_sync"
+const val WORKSPACE_TYPE = "workspace_type"
+const val ADDITIONAL_LANGUAGES = "additional_languages"
+const val JAVA_LANGUAGE_LEVEL = "java_language_level"
+const val EXCLUDE_LIBRARY = "exclude_library"
+const val ANDROID_SDK_PLATFORM = "android_sdk_platform"
+const val GENERATED_ANDROID_RESOURCE_DIRECTORIES = "generated_android_resource_directories"
+const val TS_CONFIG_RULES = "ts_config_rules"
 
 object ProjectViewSection {
   sealed interface SectionType {
@@ -27,24 +120,28 @@ object ProjectViewSection {
     fun parse(value: String): T?
   }
 
-  private class IdentityValueParser : SectionValueParser<String> {
+  class IdentityValueParser : SectionValueParser<String> {
     override fun parse(value: String): String = value
   }
 
-  private class BooleanValueParser : SectionValueParser<Boolean> {
+  class BooleanValueParser : SectionValueParser<Boolean> {
     override fun parse(value: String): Boolean? = value.toBooleanStrictOrNull()
   }
 
-  private class IntegerValueParser : SectionValueParser<Int> {
+  class IntegerValueParser : SectionValueParser<Int> {
     override fun parse(value: String): Int? = value.toIntOrNull()
   }
 
-  private class FlagValueParser : SectionValueParser<Flag> {
+  class FlagValueParser : SectionValueParser<Flag> {
     override fun parse(value: String): Flag? = Flag.byName(value)
   }
 
-  private class PathValueParser : SectionValueParser<Path> {
+  class PathValueParser : SectionValueParser<Path> {
     override fun parse(value: String): Path? = Path.of(value)
+  }
+
+  class LabelValueParser : SectionValueParser<Label> {
+    override fun parse(value: String): Label = Label.parse(value)
   }
 
   sealed interface Value<T> {
@@ -53,7 +150,7 @@ object ProjectViewSection {
     class Excluded<T>(val value: T) : Value<T>
   }
 
-  private class IncludedExcludedParser<T>(private val actualParser: SectionValueParser<T>) : SectionValueParser<Value<T>> {
+  class IncludedExcludedParser<T>(private val actualParser: SectionValueParser<T>) : SectionValueParser<Value<T>> {
     override fun parse(value: String): Value<T>? =
       if (value.startsWith("-")) {
         actualParser.parse(value.substring(1))?.let { Value.Excluded(it) }
@@ -70,42 +167,6 @@ object ProjectViewSection {
   )
 
   fun isSectionSupported(sectionName: ProjectViewSyntaxKey): Boolean = supportedSections.contains(sectionName)
-
-  const val ALLOW_MANUAL_TARGETS_SYNC = "allow_manual_targets_sync"
-  const val ANDROID_MIN_SDK = "android_min_sdk"
-  const val BAZEL_BINARY = "bazel_binary"
-  const val BUILD_FLAGS = "build_flags"
-  const val TEST_FLAGS = "test_flags"
-  const val DERIVE_TARGETS_FROM_DIRECTORIES = "derive_targets_from_directories"
-  const val DIRECTORIES = "directories"
-  const val ENABLE_NATIVE_ANDROID_RULES = "enable_native_android_rules"
-  const val ENABLED_RULES = "enabled_rules"
-  const val EXPERIMENTAL_ADD_TRANSITIVE_COMPILE_TIME_JARS = "experimental_add_transitive_compile_time_jars"
-  const val EXPERIMENTAL_NO_PRUNE_TRANSITIVE_COMPILE_TIME_JARS_PATTERNS = "experimental_no_prune_transitive_compile_time_jars_patterns"
-  const val EXPERIMENTAL_TRANSITIVE_COMPILE_TIME_JARS_TARGET_KINDS = "experimental_transitive_compile_time_jars_target_kinds"
-  const val EXPERIMENTAL_PRIORITIZE_LIBRARIES_OVER_MODULES_TARGET_KINDS = "experimental_prioritize_libraries_over_modules_target_kinds"
-  const val IDE_JAVA_HOME_OVERRIDE = "ide_java_home_override"
-  const val IMPORT_DEPTH = "import_depth"
-  const val SHARD_APPROACH = "shard_approach"
-  const val SHARD_SYNC = "shard_sync"
-  const val SYNC_FLAGS = "sync_flags"
-  const val TARGET_SHARD_SIZE = "target_shard_size"
-  const val TARGETS = "targets"
-  const val IMPORT_RUN_CONFIGURATIONS = "import_run_configurations"
-  const val TEST_SOURCES = "test_sources"
-  const val GAZELLE_TARGET = "gazelle_target"
-  const val INDEX_ALL_FILES_IN_DIRECTORIES = "index_all_files_in_directories"
-  const val PYTHON_CODE_GENERATOR_RULE_NAMES = "python_code_generator_rule_names"
-  const val USE_QUERY_SYNC = "use_query_sync"
-  const val WORKSPACE_TYPE = "workspace_type"
-  const val ADDITIONAL_LANGUAGES = "additional_languages"
-  const val JAVA_LANGUAGE_LEVEL = "java_language_level"
-  const val EXCLUDE_LIBRARY = "exclude_library"
-  const val ANDROID_SDK_PLATFORM = "android_sdk_platform"
-  const val GENERATED_ANDROID_RESOURCE_DIRECTORIES = "generated_android_resource_directories"
-  const val TS_CONFIG_RULES = "ts_config_rules"
-  const val IMPORT_IJARS = "import_ijars"
-  const val DEBUG_FLAGS = "debug_flags"
 
   /*
    * The map below should contain all syntax-wise valid section names.
@@ -223,6 +284,8 @@ object ProjectViewSection {
       SectionMetadata(
         sectionName = TARGETS,
         sectionType = SectionType.List.String,
+        completionProvider = null,
+        sectionValueParser = IncludedExcludedParser(LabelValueParser()),
       ),
       SectionMetadata(
         sectionName = IMPORT_RUN_CONFIGURATIONS,
