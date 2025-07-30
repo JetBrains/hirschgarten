@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
+import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -24,6 +25,7 @@ fun getCompletionLookupElemenent(
   name: String,
   icon: Icon,
   priority: Double = 0.0,
+  isNotFinishedExpression: Boolean = false,
 ): LookupElement =
   PrioritizedLookupElement.withPriority(
     LookupElementBuilder
@@ -36,6 +38,11 @@ fun getCompletionLookupElemenent(
         val offset = context.tailOffset
         if (offset < document.textLength && document.charsSequence[offset] == '"') {
           document.deleteString(offset, offset + 1)
+        }
+
+        if (isNotFinishedExpression) {
+          context.editor.caretModel.moveToOffset(context.tailOffset - 1)
+          AutoPopupController.getInstance(context.project).scheduleAutoPopup(context.editor)
         }
       },
     priority,
