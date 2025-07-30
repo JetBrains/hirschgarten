@@ -103,17 +103,9 @@ const val TS_CONFIG_RULES = "ts_config_rules"
 
 object ProjectViewSection {
   sealed interface SectionType {
-    sealed interface Scalar : SectionType {
-      data object Integer : Scalar
+    data object Scalar : SectionType
 
-      data object Boolean : Scalar
-
-      data object String : Scalar
-    }
-
-    sealed interface List<T : Scalar> : SectionType {
-      data object String : List<Scalar.String>
-    }
+    data object List : SectionType
   }
 
   interface SectionValueParser<T> {
@@ -177,149 +169,149 @@ object ProjectViewSection {
     listOf(
       SectionMetadata(
         sectionName = ALLOW_MANUAL_TARGETS_SYNC,
-        sectionType = SectionType.Scalar.Boolean,
+        sectionType = SectionType.Scalar,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
         sectionName = ANDROID_MIN_SDK,
-        sectionType = SectionType.Scalar.Integer,
+        sectionType = SectionType.Scalar,
         completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
         sectionName = BAZEL_BINARY,
-        sectionType = SectionType.Scalar.String,
+        sectionType = SectionType.Scalar,
         completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
         sectionName = BUILD_FLAGS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider = FlagCompletionProvider("build"),
         sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
         sectionName = TEST_FLAGS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider = FlagCompletionProvider("test"),
         sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
         sectionName = DERIVE_TARGETS_FROM_DIRECTORIES,
-        sectionType = SectionType.Scalar.Boolean,
+        sectionType = SectionType.Scalar,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
         sectionName = DIRECTORIES,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider = null,
         sectionValueParser = IncludedExcludedParser(PathValueParser()),
       ),
       SectionMetadata(
         sectionName = ENABLE_NATIVE_ANDROID_RULES,
-        sectionType = SectionType.Scalar.Boolean,
+        sectionType = SectionType.Scalar,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
         sectionName = ENABLED_RULES,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider = null,
         sectionValueParser = IdentityValueParser(),
       ),
       SectionMetadata(
         sectionName = EXPERIMENTAL_ADD_TRANSITIVE_COMPILE_TIME_JARS,
-        sectionType = SectionType.Scalar.Boolean,
+        sectionType = SectionType.Scalar,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
         sectionName = EXPERIMENTAL_NO_PRUNE_TRANSITIVE_COMPILE_TIME_JARS_PATTERNS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
       ),
       SectionMetadata(
         sectionName = EXPERIMENTAL_TRANSITIVE_COMPILE_TIME_JARS_TARGET_KINDS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
       ),
       SectionMetadata(
         sectionName = EXPERIMENTAL_PRIORITIZE_LIBRARIES_OVER_MODULES_TARGET_KINDS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
       ),
       SectionMetadata(
         sectionName = IDE_JAVA_HOME_OVERRIDE,
-        sectionType = SectionType.Scalar.String,
+        sectionType = SectionType.Scalar,
         completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
         sectionName = IMPORT_DEPTH,
-        sectionType = SectionType.Scalar.Integer,
+        sectionType = SectionType.Scalar,
         completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
         sectionName = SHARD_APPROACH,
-        sectionType = SectionType.Scalar.String,
+        sectionType = SectionType.Scalar,
       ),
       SectionMetadata(
         sectionName = SHARD_SYNC,
-        sectionType = SectionType.Scalar.Boolean,
+        sectionType = SectionType.Scalar,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
         sectionName = SYNC_FLAGS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider = FlagCompletionProvider("sync"),
         sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
         sectionName = TARGET_SHARD_SIZE,
-        sectionType = SectionType.Scalar.Integer,
+        sectionType = SectionType.Scalar,
         completionProvider = null,
         sectionValueParser = IntegerValueParser(),
       ),
       SectionMetadata(
         sectionName = TARGETS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider = null,
         sectionValueParser = IncludedExcludedParser(LabelValueParser()),
       ),
       SectionMetadata(
         sectionName = IMPORT_RUN_CONFIGURATIONS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider = null,
         sectionValueParser = PathValueParser(),
       ),
       SectionMetadata(
         sectionName = TEST_SOURCES,
-        sectionType = SectionType.List.String, // used by Google's plugin
+        sectionType = SectionType.List, // used by Google's plugin
       ),
       SectionMetadata(
         sectionName = GAZELLE_TARGET,
-        sectionType = SectionType.Scalar.String,
+        sectionType = SectionType.Scalar,
       ),
       SectionMetadata(
         sectionName = INDEX_ALL_FILES_IN_DIRECTORIES,
-        sectionType = SectionType.Scalar.Boolean,
+        sectionType = SectionType.Scalar,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
         sectionName = PYTHON_CODE_GENERATOR_RULE_NAMES,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
       ),
       SectionMetadata(
         sectionName = USE_QUERY_SYNC,
-        sectionType = SectionType.Scalar.Boolean,
+        sectionType = SectionType.Scalar,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
         sectionName = WORKSPACE_TYPE,
-        sectionType = SectionType.Scalar.String,
+        sectionType = SectionType.Scalar,
         completionProvider =
           SimpleCompletionProvider(
             listOf("java", "python", "dart", "android", "javascript"),
@@ -327,7 +319,7 @@ object ProjectViewSection {
       ),
       SectionMetadata(
         sectionName = ADDITIONAL_LANGUAGES,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider =
           SimpleCompletionProvider(
             listOf(
@@ -345,33 +337,33 @@ object ProjectViewSection {
       ),
       SectionMetadata(
         sectionName = JAVA_LANGUAGE_LEVEL,
-        sectionType = SectionType.Scalar.String,
+        sectionType = SectionType.Scalar,
       ),
       SectionMetadata(
         sectionName = EXCLUDE_LIBRARY,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
       ),
       SectionMetadata(
         sectionName = ANDROID_SDK_PLATFORM,
-        sectionType = SectionType.Scalar.String,
+        sectionType = SectionType.Scalar,
       ),
       SectionMetadata(
         sectionName = GENERATED_ANDROID_RESOURCE_DIRECTORIES,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
       ),
       SectionMetadata(
         sectionName = TS_CONFIG_RULES,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
       ),
       SectionMetadata(
         sectionName = IMPORT_IJARS,
-        sectionType = SectionType.Scalar.Boolean,
+        sectionType = SectionType.Scalar,
         completionProvider = booleanCompletionProvider(),
         sectionValueParser = BooleanValueParser(),
       ),
       SectionMetadata(
         sectionName = DEBUG_FLAGS,
-        sectionType = SectionType.List.String,
+        sectionType = SectionType.List,
         completionProvider = FlagCompletionProvider("debug"),
         sectionValueParser = FlagValueParser(),
       ),

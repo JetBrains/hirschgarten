@@ -27,7 +27,7 @@ class ProjectViewLexerTest : LexerTestCase() {
       fun create(key: ProjectViewSyntaxKey, sectionType: ProjectViewSection.SectionType): Section =
         when (sectionType) {
           is ProjectViewSection.SectionType.Scalar -> Scalar(key)
-          is ProjectViewSection.SectionType.List<*> -> List(key)
+          is ProjectViewSection.SectionType.List -> List(key)
         }
 
       private val SCALAR_SECTION =
