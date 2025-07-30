@@ -21,7 +21,7 @@ import com.intellij.tools.ide.metrics.collector.publishing.PerformanceMetricsDto
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.exitAppWithTimeout
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
@@ -34,6 +34,7 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * ```sh
@@ -62,8 +63,8 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
         .stopRecordingMaxMemory()
         .waitForSmartMode()
         .recordMemory("bsp.used.after.indexing.mb")
-        .exitAppWithTimeout(15)
-    val startResult = createContext().runIDE(commands = commands, runTimeout = timeout)
+        .exitApp()
+    val startResult = createContext().runIDE(commands = commands, runTimeout = 15.minutes)
 
     val spans = OpenTelemetrySpanCollector(SpanFilter.nameEquals("bsp.sync.project.ms")).collect(startResult.runContext.logsDir)
 
