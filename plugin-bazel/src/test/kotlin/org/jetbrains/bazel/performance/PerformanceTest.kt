@@ -62,7 +62,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
         .stopRecordingMaxMemory()
         .waitForSmartMode()
         .recordMemory("bsp.used.after.indexing.mb")
-        .exitApp()
+        .exitApp(forceExit = false)
     val startResult = createContext().runIDE(commands = commands, runTimeout = timeout)
 
     val spans = OpenTelemetrySpanCollector(SpanFilter.nameEquals("bsp.sync.project.ms")).collect(startResult.runContext.logsDir)
