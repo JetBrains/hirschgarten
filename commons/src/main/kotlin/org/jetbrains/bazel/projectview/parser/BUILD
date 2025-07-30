@@ -10,7 +10,8 @@ kt_library(
     ],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/model",
-        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser/sections",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser/splitter",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview",
         "//server/commons",
         "@maven//:org_slf4j_slf4j_api",
     ],

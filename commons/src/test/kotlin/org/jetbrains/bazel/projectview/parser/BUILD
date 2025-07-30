@@ -8,6 +8,7 @@ kt_junit5_test(
     resources = ["//commons/src/test/resources:projectview"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser/splitter",
         "//commons/src/test/kotlin/org/jetbrains/bazel/projectview/parser:parser_test_mock",
     ],
 )
@@ -18,5 +19,6 @@ kt_jvm_library(
     srcs = ["ProjectViewParserTestMock.kt"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser/splitter",
     ],
 )
