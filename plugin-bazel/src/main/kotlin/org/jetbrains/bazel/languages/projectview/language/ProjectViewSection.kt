@@ -19,16 +19,16 @@ const val BAZEL_BINARY = "bazel_binary"
 typealias BAZEL_BINARY_TYPE = Path
 
 const val BUILD_FLAGS = "build_flags"
-typealias BUILD_FLAGS_TYPE = Flag
+typealias BUILD_FLAGS_TYPE = String
 
 const val TEST_FLAGS = "test_flags"
-typealias TEST_FLAGS_TYPE = Flag
+typealias TEST_FLAGS_TYPE = String
 
 const val SYNC_FLAGS = "sync_flags"
-typealias SYNC_FLAGS_TYPE = Flag
+typealias SYNC_FLAGS_TYPE = String
 
 const val DEBUG_FLAGS = "debug_flags"
-typealias DEBUG_FLAGS_TYPE = Flag
+typealias DEBUG_FLAGS_TYPE = String
 
 const val DERIVE_TARGETS_FROM_DIRECTORIES = "derive_targets_from_directories"
 typealias DERIVE_TARGETS_FROM_DIRECTORIES_TYPE = Boolean
@@ -124,10 +124,6 @@ object ProjectViewSection {
     override fun parse(value: String): Int? = value.toIntOrNull()
   }
 
-  class FlagValueParser : SectionValueParser<Flag> {
-    override fun parse(value: String): Flag? = Flag.byName(value)
-  }
-
   class PathValueParser : SectionValueParser<Path> {
     override fun parse(value: String): Path? = Path.of(value)
   }
@@ -187,13 +183,11 @@ object ProjectViewSection {
         sectionName = BUILD_FLAGS,
         sectionType = SectionType.List,
         completionProvider = FlagCompletionProvider("build"),
-        sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
         sectionName = TEST_FLAGS,
         sectionType = SectionType.List,
         completionProvider = FlagCompletionProvider("test"),
-        sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
         sectionName = DERIVE_TARGETS_FROM_DIRECTORIES,
@@ -259,7 +253,6 @@ object ProjectViewSection {
         sectionName = SYNC_FLAGS,
         sectionType = SectionType.List,
         completionProvider = FlagCompletionProvider("sync"),
-        sectionValueParser = FlagValueParser(),
       ),
       SectionMetadata(
         sectionName = TARGET_SHARD_SIZE,
@@ -356,7 +349,6 @@ object ProjectViewSection {
         sectionName = DEBUG_FLAGS,
         sectionType = SectionType.List,
         completionProvider = FlagCompletionProvider("debug"),
-        sectionValueParser = FlagValueParser(),
       ),
     ).associateBy { it.sectionName }
 

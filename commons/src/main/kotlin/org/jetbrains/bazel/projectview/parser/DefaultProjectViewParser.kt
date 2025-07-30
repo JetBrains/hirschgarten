@@ -95,13 +95,12 @@ import kotlin.io.path.Path
 open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : ProjectViewParser {
   private val log = LoggerFactory.getLogger(DefaultProjectViewParser::class.java)
 
-  lateinit var rawProjectViewSections: ProjectViewRawSections
-
   override fun parse(projectViewFileContent: String): ProjectView {
     log.trace("Parsing project view for the content: '{}'", projectViewFileContent.escapeNewLines())
 
-    rawProjectViewSections = ProjectViewSectionSplitter.getRawSectionsForFileContent(projectViewFileContent)
-    return buildProjectView()
+    val rawSections = ProjectViewSectionSplitter.getRawSectionsForFileContent(projectViewFileContent)
+    val imports = findImportedProjectViews(rawSections) + findTryImportedProjectViews(rawSections)
+    return PsiProjectViewParser(rawSections, imports).buildProjectView()
   }
 
   private fun String.escapeNewLines(): String = this.replace("\n", "\\n")
@@ -142,6 +141,13 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
     }
   }
 
+  companion object {
+    private const val IMPORT_STATEMENT = "import"
+    private const val TRY_IMPORT_STATEMENT = "try_import"
+  }
+}
+
+class PsiProjectViewParser(private val rawProjectViewSections: ProjectViewRawSections, private val imports: List<ProjectView>) {
   // TODO silent failing is a bad idea here.
   // private fun getSectionsFromPsiFile(): Map<String, List<String>> {
   //  val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(projectViewPath!!) ?: error("cannot find file $projectViewPath")
@@ -161,7 +167,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
   fun buildProjectView(): ProjectView =
     ProjectView
       .Builder(
-        imports = findImportedProjectViews(rawProjectViewSections) + findTryImportedProjectViews(rawProjectViewSections),
+        imports = imports,
         allowManualTargetsSync = extractAllowManualTargetsSync(),
         targets = extractTargets(),
         bazelBinary = extractBazelBinary(),
@@ -244,17 +250,17 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
 
   private fun extractBuildFlags(): ProjectViewBuildFlagsSection {
     val flags = getValues<BUILD_FLAGS_TYPE>(BUILD_FLAGS)
-    return ProjectViewBuildFlagsSection(flags.map { it.name })
+    return ProjectViewBuildFlagsSection(flags)
   }
 
   private fun extractSyncFlags(): ProjectViewSyncFlagsSection {
     val flags = getValues<SYNC_FLAGS_TYPE>(SYNC_FLAGS)
-    return ProjectViewSyncFlagsSection(flags.map { it.name })
+    return ProjectViewSyncFlagsSection(flags)
   }
 
   private fun extractDebugFlags(): ProjectViewDebugFlagsSection {
     val flags = getValues<DEBUG_FLAGS_TYPE>(DEBUG_FLAGS)
-    return ProjectViewDebugFlagsSection(flags.map { it.name })
+    return ProjectViewDebugFlagsSection(flags)
   }
 
   private fun extractDirectories(): ProjectViewDirectoriesSection {
@@ -360,10 +366,5 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
   private fun extractImportIjars(): ImportIjarsSection? {
     val shouldImport = getValue<IMPORT_IJARS_TYPE>(IMPORT_IJARS)
     return shouldImport?.let { ImportIjarsSection(it) }
-  }
-
-  companion object {
-    private const val IMPORT_STATEMENT = "import"
-    private const val TRY_IMPORT_STATEMENT = "try_import"
   }
 }
