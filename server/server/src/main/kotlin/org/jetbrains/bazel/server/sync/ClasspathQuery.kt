@@ -1,12 +1,14 @@
 package org.jetbrains.bazel.server.sync
 
 import com.google.gson.JsonSyntaxException
+import com.google.gson.annotations.SerializedName
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BspJvmClasspath
 import java.nio.file.Path
 
 object ClasspathQuery {
@@ -15,8 +17,8 @@ object ClasspathQuery {
     bspInfo: BspInfo,
     bazelRunner: BazelRunner,
     workspaceContext: WorkspaceContext,
-  ): JvmClasspath {
-    val queryFile = bspInfo.bazelBspDir().resolve("aspects/runtime_classpath_query.bzl")
+  ): BspJvmClasspath {
+    val queryFile = bspInfo.bazelBspDir.resolve("aspects/runtime_classpath_query.bzl")
     val command =
       bazelRunner.buildBazelCommand(workspaceContext = workspaceContext, inheritProjectviewOptionsOverride = true) {
         cquery {
@@ -30,8 +32,9 @@ object ClasspathQuery {
         .waitAndGetResult(ensureAllOutputRead = true)
     if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for runtime classpath")
     try {
-      val classpaths = bazelGson.fromJson(cqueryResult.stdout.toJson(), JvmClasspath::class.java)
-      return classpaths
+      return bazelGson
+        .fromJson(cqueryResult.stdout.toJson(), JvmClasspath::class.java)
+        .toProtocolModel()
     } catch (e: JsonSyntaxException) {
       // sometimes Bazel returns two values to a query when multiple configurations apply to a target
       return if (cqueryResult.stdoutLines.size > 1) {
@@ -43,12 +46,19 @@ object ClasspathQuery {
               null
             }
           }
-        allOpts.maxByOrNull { it.runtime_classpath.size + it.compile_classpath.size }!!
+        allOpts
+          .maxByOrNull { it.runtimeClasspath.size + it.compileClasspath.size }!!
+          .toProtocolModel()
       } else {
         throw e
       }
     }
   }
 
-  data class JvmClasspath(val runtime_classpath: List<Path>, val compile_classpath: List<Path>)
+  data class JvmClasspath(
+    @SerializedName("runtime_classpath") val runtimeClasspath: List<Path>,
+    @SerializedName("runtime_classpath") val compileClasspath: List<Path>,
+  ) {
+    fun toProtocolModel() = BspJvmClasspath(runtimeClasspath, compileClasspath)
+  }
 }

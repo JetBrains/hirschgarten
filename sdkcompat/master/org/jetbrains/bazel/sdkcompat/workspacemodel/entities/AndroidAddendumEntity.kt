@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sdkcompat.workspacemodel.entities
+1package org.jetbrains.bazel.sdkcompat.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource

@@ -13,6 +13,7 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -51,6 +52,9 @@ class BazelTestCommandLineState(
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,
       )
-    server.buildTargetTest(params)
+
+    BazelWorkspaceResolveService
+      .getInstance(environment.project)
+      .withEndpointProxy { it.buildTargetTest(params) }
   }
 }

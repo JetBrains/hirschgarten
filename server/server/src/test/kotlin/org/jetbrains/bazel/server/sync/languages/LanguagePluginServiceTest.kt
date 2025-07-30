@@ -2,11 +2,11 @@ package org.jetbrains.bazel.server.sync.languages
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.commons.orLatestSupported
 import org.jetbrains.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.cpp.CppLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.go.GoLanguagePlugin

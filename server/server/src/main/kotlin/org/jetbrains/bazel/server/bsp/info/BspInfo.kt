@@ -1,20 +1,7 @@
-package org.jetbrains.bazel.server.bsp.info;
+package org.jetbrains.bazel.server.bsp.info
 
-import java.nio.file.Path;
+import java.nio.file.Path
 
-public class BspInfo {
-
-  private final Path bspProjectRoot;
-
-  public BspInfo(Path bspProjectRoot) {
-    this.bspProjectRoot = bspProjectRoot;
-  }
-
-  public Path bspProjectRoot() {
-    return bspProjectRoot;
-  }
-
-  public Path bazelBspDir() {
-    return bspProjectRoot().resolve(".bazelbsp");
-  }
+class BspInfo(val bspProjectRoot: Path) {
+  val bazelBspDir: Path = bspProjectRoot.resolve(".bazelbsp")
 }

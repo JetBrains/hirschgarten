@@ -12,7 +12,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
@@ -79,7 +79,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           )
 
         val workspaceBuildTargetsPartialParams =
-          WorkspaceBuildTargetsPartialParams(listOf(Label.parse("$targetPrefix//java_targets:java_binary")))
+          WorkspaceBuildTargetParams(listOf(Label.parse("$targetPrefix//java_targets:java_binary")))
         val expectedTargetsResult = WorkspaceBuildTargetsResult(listOf(javaTargetsJavaBinary))
 
         val workspaceBuildTargetsPartialResult = session.server.workspaceBuildTargetsPartial(workspaceBuildTargetsPartialParams)

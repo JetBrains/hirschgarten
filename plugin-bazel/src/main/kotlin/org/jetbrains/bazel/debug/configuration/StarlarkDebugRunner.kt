@@ -30,6 +30,7 @@ import org.jetbrains.bazel.debug.connector.StarlarkSocketConnector
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -124,7 +125,12 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
       BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
       val params = AnalysisDebugParams(originId, port, listOf(target))
 
-      val buildDeferred = async { server.buildTargetAnalysisDebug(params) }
+      val buildDeferred =
+        async {
+          BazelWorkspaceResolveService
+            .getInstance(project)
+            .withEndpointProxy { it.buildTargetAnalysisDebug(params) }
+        }
       try {
         val result = buildDeferred.await()
         futureProxy.complete(result)

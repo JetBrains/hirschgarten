@@ -1,0 +1,13 @@
+package org.jetbrains.bazel.sync.workspace
+
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.GoLibraryItem
+import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
+
+data class BazelResolvedWorkspace(
+  val targets: Map<Label, RawBuildTarget>,
+  val libraries: List<LibraryItem>,
+  val goLibraries: List<GoLibraryItem>,
+  val hasError: Boolean,
+)

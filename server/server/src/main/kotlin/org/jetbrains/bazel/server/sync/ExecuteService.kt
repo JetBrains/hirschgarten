@@ -10,22 +10,17 @@ import org.jetbrains.bazel.bazelrunner.HasEnvironment
 import org.jetbrains.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.bsp.managers.BepReader
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.BspMappings
-import org.jetbrains.bazel.server.model.Module
-import org.jetbrains.bazel.server.model.Tag
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.DebugHelper.buildBeforeRun
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -48,7 +43,6 @@ class ExecuteService(
   private val bazelRunner: BazelRunner,
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
 ) {
   private suspend fun <T> withBepServer(originId: String, body: suspend (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
@@ -217,38 +211,14 @@ class ExecuteService(
     return TestResult(statusCode = result.bazelStatus, originId = params.originId)
   }
 
-  suspend fun mobileInstall(params: MobileInstallParams): MobileInstallResult {
-    val startType =
-      when (params.startType) {
-        MobileInstallStartType.NO -> "no"
-        MobileInstallStartType.COLD -> "cold"
-        MobileInstallStartType.WARM -> "warm"
-        MobileInstallStartType.DEBUG -> "debug"
-      }
-
-    val command =
-      bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
-        mobileInstall(params.target) {
-          options.add(BazelFlag.device(params.targetDeviceSerialNumber))
-          options.add(BazelFlag.start(startType))
-          params.adbPath?.let { adbPath ->
-            options.add(BazelFlag.adb(adbPath.toString()))
-          }
-          options.add(BazelFlag.color(true))
-        }
-      }
-
-    val bazelProcessResult =
-      bazelRunner.runBazelCommand(command, originId = params.originId, serverPidFuture = null).waitAndGetResult()
-    return MobileInstallResult(bazelProcessResult.bazelStatus, params.originId)
-  }
-
   private suspend fun build(
     bspIds: List<Label>,
     originId: String,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
-    val allTargets = bspIds + getAdditionalBuildTargets(bspIds)
+    // val allTargets = bspIds + getAdditionalBuildTargets(bspIds)
+    // you must compute all targets  before passing them to bound
+    val allTargets = bspIds
     return withBepServer(originId) { bepReader ->
       val command =
         bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
@@ -263,30 +233,4 @@ class ExecuteService(
         .waitAndGetResult(true)
     }
   }
-
-  private suspend fun getAdditionalBuildTargets(bspIds: List<Label>): List<Label> =
-    if (workspaceContextProvider.currentFeatureFlags().isAndroidSupportEnabled) {
-      additionalBuildTargetsProvider.getAdditionalBuildTargets(bspIds)
-    } else {
-      emptyList()
-    }
-
-  private suspend fun selectModules(targets: List<Label>): List<Module> {
-    val project = projectProvider.get() as? AspectSyncProject ?: return emptyList()
-    val modules = BspMappings.getModules(project, targets)
-    val ignoreManualTag = targets.size == 1
-    return modules.filter { isBuildable(it, ignoreManualTag, project.workspaceContext) }
-  }
-
-  private fun isBuildable(
-    m: Module,
-    ignoreManualTag: Boolean = true,
-    workspaceContext: WorkspaceContext,
-  ): Boolean = !m.isSynthetic && !m.tags.contains(Tag.NO_BUILD) && (ignoreManualTag || isBuildableIfManual(m, workspaceContext))
-
-  private fun isBuildableIfManual(m: Module, workspaceContext: WorkspaceContext): Boolean =
-    (
-      !m.tags.contains(Tag.MANUAL) ||
-        workspaceContext.allowManualTargetsSync.value
-    )
 }

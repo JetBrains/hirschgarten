@@ -22,6 +22,7 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.CompileParams
@@ -47,7 +48,9 @@ class PythonDebugCommandLineState(
         arguments = transformProgramArguments(programArguments),
       )
 
-    server.buildTargetCompile(buildParams)
+    BazelWorkspaceResolveService
+      .getInstance(environment.project)
+      .withEndpointProxy { it.buildTargetCompile(buildParams) }
   }
 
   fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)

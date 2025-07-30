@@ -32,15 +32,8 @@ enum class Language(
     ),
     hashSetOf(JAVA.id),
   ),
-  CPP("cpp", hashSetOf(".C", ".cc", ".cpp", ".CPP", ".c++", ".cp", "cxx", ".h", ".hpp")),
   PYTHON("python", hashSetOf(".py")),
   THRIFT("thrift", hashSetOf(".thrift")),
-  ANDROID(
-    "android",
-    emptySet(),
-    setOf("android_binary", "android_library", "android_local_test", "kt_android_library", "kt_android_local_test"),
-    hashSetOf(JAVA.id),
-  ),
   GO("go", hashSetOf(".go"), setOf("go_binary")),
   ;
 

@@ -7,7 +7,6 @@ import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
-import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -108,18 +107,6 @@ class TestClient(
   fun testWorkspaceName(timeout: Duration, expectedResult: WorkspaceNameResult) {
     test(timeout) { session ->
       val result = session.server.workspaceName()
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testCppOptions(
-    timeout: Duration,
-    params: CppOptionsParams,
-    expectedResult: CppOptionsResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetCppOptions(transformedParams)
       assertJsonEquals(expectedResult, result)
     }
   }

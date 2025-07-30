@@ -35,15 +35,15 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
+import org.jetbrains.kotlin.idea.gradleTooling.get
 import java.nio.file.Path
 
 private const val GO_SOURCE_ROOT_TYPE = "go-source"
@@ -60,7 +60,12 @@ class GoProjectSync : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     environment.withSubtask("Process Go targets") {
       // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1961
-      val bspBuildTargets = environment.server.workspaceBuildTargets()
+      val bspBuildTargets =
+        BazelWorkspaceResolveService
+          .getInstance(environment.project)
+          .getOrFetchResolvedWorkspace()
+          .targets.values
+          .toList()
       val goTargets = bspBuildTargets.calculateGoTargets()
       val idToGoTargetMap = goTargets.associateBy({ it.id }, { it })
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
@@ -94,7 +99,7 @@ class GoProjectSync : ProjectSyncHook {
     }
   }
 
-  private fun WorkspaceBuildTargetsResult.calculateGoTargets(): List<RawBuildTarget> = targets.filter { it.kind.includesGo() }
+  private fun Collection<RawBuildTarget>.calculateGoTargets(): List<RawBuildTarget> = this.filter { it.kind.includesGo() }
 
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,
@@ -209,7 +214,7 @@ class GoProjectSync : ProjectSyncHook {
       }
 
     val vgoModuleLibraries =
-      queryGoLibraries(environment).libraries.map {
+      queryGoLibraries(environment).map {
         VgoDependencyEntity(
           importPath = it.goImportPath ?: "",
           entitySource = entitySource,
@@ -230,11 +235,12 @@ class GoProjectSync : ProjectSyncHook {
     }
   }
 
-  private suspend fun queryGoLibraries(environment: ProjectSyncHook.ProjectSyncHookEnvironment): WorkspaceGoLibrariesResult =
+  private suspend fun queryGoLibraries(environment: ProjectSyncHook.ProjectSyncHookEnvironment): List<GoLibraryItem> =
     coroutineScope {
-      query("workspace/goLibraries") {
-        environment.server.workspaceGoLibraries()
-      }
+      BazelWorkspaceResolveService
+        .getInstance(environment.project)
+        .getOrFetchResolvedWorkspace()
+        .goLibraries
     }
 
   private suspend fun calculateAndAddGoSdk(

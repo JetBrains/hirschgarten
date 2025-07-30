@@ -2,7 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.slf4j.Logger

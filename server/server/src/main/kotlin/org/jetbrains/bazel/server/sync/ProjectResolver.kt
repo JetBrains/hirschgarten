@@ -4,7 +4,8 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -17,8 +18,7 @@ import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.FirstPhaseProject
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.IllegalTargetsSizeException
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
@@ -32,7 +32,6 @@ class ProjectResolver(
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
   private val workspaceContextProvider: WorkspaceContextProvider,
-  private val bazelProjectMapper: BazelProjectMapper,
   private val targetInfoReader: TargetInfoReader,
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
@@ -44,7 +43,7 @@ class ProjectResolver(
   suspend fun resolve(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
-    firstPhaseProject: FirstPhaseProject?,
+    phasedSyncProject: PhasedSyncProject?,
     originId: String?,
   ): AspectSyncProject =
     bspTracer.spanBuilder("Resolve project").useWithScope {
@@ -121,7 +120,7 @@ class ProjectResolver(
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, firstPhaseProject, originId) }
+        ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, phasedSyncProject, originId) }
 
       val aspectOutputs =
         measured(
@@ -156,21 +155,19 @@ class ProjectResolver(
                   }.build()
             }.toMap()
         }
-      // resolve root targets (expand wildcards)
+
+      val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
       val rootTargets = buildAspectResult.bepOutput.rootTargets()
-      return@useWithScope measured(
-        "Mapping to internal model",
-      ) {
-        bazelProjectMapper.createProject(
-          targets,
-          rootTargets,
-          workspaceContext,
-          featureFlags,
-          bazelInfo,
-          repoMapping,
-          buildAspectResult.isFailure,
-        )
-      }
+      return@useWithScope AspectSyncProject(
+        workspaceRoot = bazelInfo.workspaceRoot,
+        bazelRelease = bazelInfo.release,
+        repoMapping = repoMapping,
+        workspaceContext = workspaceContext,
+        workspaceName = workspaceName,
+        hasError = buildAspectResult.isFailure,
+        targets = targets,
+        rootTargets = rootTargets,
+      )
     }
 
   private suspend fun buildProjectWithAspect(
@@ -178,7 +175,7 @@ class ProjectResolver(
     featureFlags: FeatureFlags,
     build: Boolean,
     targetsToSync: TargetsSpec,
-    firstPhaseProject: FirstPhaseProject?,
+    phasedSyncProject: PhasedSyncProject?,
     originId: String?,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
@@ -219,7 +216,7 @@ class ProjectResolver(
               featureFlags,
               bazelRunner,
               bspClientLogger,
-              firstPhaseProject,
+              phasedSyncProject,
             )
           var remainingShardedTargetsSpecs = shardedResult.targets.toTargetsSpecs().toMutableList()
           var shardNumber = 1

@@ -4,11 +4,11 @@ import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
-import org.jetbrains.bazel.server.model.FirstPhaseProject
+import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import java.nio.file.Path
 
@@ -19,7 +19,7 @@ class FirstPhaseProjectResolver(
   private val bazelInfo: BazelInfo,
   private val bspClientLogger: BspClientLogger,
 ) {
-  suspend fun resolve(originId: String): FirstPhaseProject =
+  suspend fun resolve(originId: String): PhasedSyncProject =
     coroutineScope {
       val workspaceContext = workspaceContextProvider.readWorkspaceContext()
       val command =
@@ -42,7 +42,7 @@ class FirstPhaseProjectResolver(
       val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
 
       val project =
-        FirstPhaseProject(
+        PhasedSyncProject(
           workspaceRoot = workspaceRoot,
           bazelRelease = bazelInfo.release,
           modules = modules,

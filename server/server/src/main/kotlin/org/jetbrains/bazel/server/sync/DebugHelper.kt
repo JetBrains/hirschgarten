@@ -1,10 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.commons.Language
-import org.jetbrains.bazel.commons.isJvmLanguage
-import org.jetbrains.bazel.server.model.Module
-import org.jetbrains.bazel.server.model.isJvmLanguages
 import org.jetbrains.bsp.protocol.DebugType
 
 object DebugHelper {

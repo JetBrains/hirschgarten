@@ -5,7 +5,10 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
@@ -18,16 +21,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import java.nio.file.Path
 import kotlin.io.path.Path
-
-sealed interface RepoMapping
-
-data class BzlmodRepoMapping(
-  val canonicalRepoNameToLocalPath: Map<String, Path>,
-  val apparentRepoNameToCanonicalName: BidirectionalMap<String, String>,
-  val canonicalRepoNameToPath: Map<String, Path>,
-) : RepoMapping
-
-data object RepoMappingDisabled : RepoMapping
 
 fun Label.canonicalize(repoMapping: RepoMapping): Label =
   when (repoMapping) {

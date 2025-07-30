@@ -2,6 +2,7 @@ package org.jetbrains.bazel.target.sync
 
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -9,7 +10,13 @@ import java.nio.file.Path
 
 private class TargetUtilsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    val bspTargets = environment.server.workspaceBuildTargets().targets
+    val bspTargets =
+      BazelWorkspaceResolveService
+        .getInstance(environment.project)
+        .getOrFetchResolvedWorkspace()
+        .targets
+        .values
+        .toList()
     val targetUtilsDiff = environment.diff.targetUtilsDiff
     targetUtilsDiff.bspTargets = bspTargets
     targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets, withLowPrioritySharedSources = true)

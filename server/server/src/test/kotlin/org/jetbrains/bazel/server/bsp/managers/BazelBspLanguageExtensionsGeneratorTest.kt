@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.equals.shouldBeEqual
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo

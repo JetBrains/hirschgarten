@@ -2,7 +2,7 @@ package org.jetbrains.bazel.server.sync
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bazel.server.model.Tag
+import org.jetbrains.bazel.sync.workspace.model.Tag
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
