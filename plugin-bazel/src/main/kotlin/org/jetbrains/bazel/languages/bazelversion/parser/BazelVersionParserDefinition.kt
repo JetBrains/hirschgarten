@@ -23,9 +23,10 @@ import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionFile
 class BazelVersionParserDefinition : ParserDefinition {
   // avoid creating new IFileElementType on each getFileNodeType
   // to ensure IFileElementType is registered only once inside an internal registry
-  val file = object : IFileElementType(BazelVersionLanguage) {
-    override fun parseContents(chameleon: ASTNode): ASTNode = ASTFactory.leaf(PlainTextTokenTypes.PLAIN_TEXT, chameleon.chars)
-  }
+  val file =
+    object : IFileElementType(BazelVersionLanguage) {
+      override fun parseContents(chameleon: ASTNode): ASTNode = ASTFactory.leaf(PlainTextTokenTypes.PLAIN_TEXT, chameleon.chars)
+    }
 
   override fun createLexer(project: Project?): Lexer = EmptyLexer()
 
