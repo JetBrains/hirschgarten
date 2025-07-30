@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.psi.PsiClass
+import com.intellij.testFramework.ExtensionTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -85,5 +87,42 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
     resolved.shouldNotBeNull()
     resolved shouldBe instanceOf<PsiClass>()
     (resolved as? PsiClass)?.name shouldBe "JavaClass"
+  }
+
+  @Test
+  fun `test should resolve reference for custom registered parameter name`() {
+    // given
+    val provider =
+      object : StarlarkClassParametersProvider {
+        override fun getClassnameParameters(): List<String> = listOf("name_of_the_class")
+      }
+    ExtensionTestUtil.maskExtensions(StarlarkClassParametersProvider.EP_NAME, listOf(provider), testRootDisposable)
+
+    myFixture.addFileToProject(
+      "com/example/MyClass.java",
+      """
+      package com.example;
+
+      public class MyClass {}
+      """.trimIndent(),
+    )
+
+    myFixture.configureByText(
+      "BUILD",
+      """
+      custom_rule(
+          name = "my_rule",
+          name_of_the_class = "com.example.My<caret>Class"
+      )
+      """.trimIndent(),
+    )
+
+    // when
+    val element = myFixture.getReferenceAtCaretPosition("BUILD")?.resolve()
+
+    // then
+    assertNotNull(element)
+    assertTrue(element is PsiClass)
+    assertEquals("MyClass", (element as PsiClass).name)
   }
 }
