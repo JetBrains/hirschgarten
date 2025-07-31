@@ -7,6 +7,7 @@ JUNIT5_DEPS = [
     "@maven//:org_junit_jupiter_junit_jupiter_params",
     "@maven//:org_junit_platform_junit_platform_console",
     "@maven//:org_mockito_mockito_core",
+    "@maven//:org_mockito_kotlin_mockito_kotlin",
 ]
 
 def kt_junit5_test(deps = [], runtime_deps = [], jvm_flags = [], **kwargs):
