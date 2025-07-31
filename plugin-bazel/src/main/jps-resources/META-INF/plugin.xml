@@ -649,9 +649,9 @@
       language="ProjectView"
     />
 
-    <platform.backend.documentation.psiTargetProvider
-      id="ProjectViewFlagPsiDocumentationTargetProvider"
-      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewFlagPsiDocumentationTargetProvider"
+    <platform.backend.documentation.targetProvider
+      id="ProjectViewFlagDocumentationTargetProvider"
+      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewFlagDocumentationTargetProvider"
     />
 
     <runLineMarkerContributor
