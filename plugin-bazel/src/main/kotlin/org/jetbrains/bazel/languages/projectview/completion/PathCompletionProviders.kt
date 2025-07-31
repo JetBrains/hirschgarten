@@ -26,10 +26,11 @@ private fun getRelativePaths(root: VirtualFile, filter: (VirtualFile) -> Boolean
 }
 
 private fun getProjectRoot(parameters: CompletionParameters): VirtualFile? {
-  if (!parameters.position.project.isBazelProject) {
+  val project = parameters.position.project
+  if (!project.isBazelProject) {
     return null
   }
-  return parameters.position.project.rootDir
+  return project.rootDir
 }
 
 internal class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
