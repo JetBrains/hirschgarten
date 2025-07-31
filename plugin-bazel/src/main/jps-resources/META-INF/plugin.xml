@@ -799,6 +799,10 @@
       </components>
     </obsoleteStorage>
     <projectViewNodeDecorator implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator" />
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNodeDecorator" />
+    <editorTabColorProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabColorProvider"/>
+    <editorTabTitleProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabTitleProvider"/>
+    <editorNotificationProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNotificationProvider"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher" />
     <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider" />
     <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType" />

@@ -4,6 +4,7 @@
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.golang.ui.gutters.BazelGoRunLineMarkerContributor"
       language="go"
+      order="first"
     />
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoBinaryBeforeRunTaskProvider" />
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoTestBeforeRunTaskProvider" />
