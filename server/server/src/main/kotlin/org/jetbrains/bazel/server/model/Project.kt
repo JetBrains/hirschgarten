@@ -30,7 +30,6 @@ data class AspectSyncProject(
   override val bazelRelease: BazelRelease,
   val modules: List<Module>,
   val libraries: Map<Label, Library>,
-  val goLibraries: Map<Label, GoLibrary>,
   val nonModuleTargets: List<NonModuleTarget>, // targets that should be displayed in the project view but are neither modules nor libraries
   override val repoMapping: RepoMapping = RepoMappingDisabled,
   override val workspaceContext: WorkspaceContext,
@@ -52,13 +51,11 @@ data class AspectSyncProject(
 
     val newModules = modules.toSet() + project.modules.toSet()
     val newLibraries = libraries + project.libraries
-    val newGoLibraries = goLibraries + project.goLibraries
     val newNonModuleTargets = nonModuleTargets.toSet() + project.nonModuleTargets.toSet()
 
     return copy(
       modules = newModules.toList(),
       libraries = newLibraries,
-      goLibraries = newGoLibraries,
       nonModuleTargets = newNonModuleTargets.toList(),
       workspaceContext = project.workspaceContext,
     )

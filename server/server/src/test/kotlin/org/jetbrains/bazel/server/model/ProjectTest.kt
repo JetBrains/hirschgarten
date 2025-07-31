@@ -47,11 +47,10 @@ class ProjectTest {
       val project1 =
         AspectSyncProject(
           workspaceRoot = Path("/path/to/workspace"),
+          bazelRelease = BazelRelease(0),
           modules = emptyList(),
           libraries = emptyMap(),
-          goLibraries = emptyMap(),
           nonModuleTargets = emptyList(),
-          bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
           workspaceName = "_main",
           targets = emptyMap(),
@@ -60,11 +59,10 @@ class ProjectTest {
       val project2 =
         AspectSyncProject(
           workspaceRoot = Path("/path/to/another/workspace"),
+          bazelRelease = BazelRelease(0),
           modules = emptyList(),
           libraries = emptyMap(),
-          goLibraries = emptyMap(),
           nonModuleTargets = emptyList(),
-          bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
           workspaceName = "_main",
           targets = emptyMap(),
@@ -84,11 +82,10 @@ class ProjectTest {
       val project1 =
         AspectSyncProject(
           workspaceRoot = Path("/path/to/workspace"),
+          bazelRelease = BazelRelease(21),
           modules = emptyList(),
           libraries = emptyMap(),
-          goLibraries = emptyMap(),
           nonModuleTargets = emptyList(),
-          bazelRelease = BazelRelease(21),
           workspaceContext = createMockWorkspaceContext(),
           workspaceName = "_main",
           targets = emptyMap(),
@@ -97,11 +94,10 @@ class ProjectTest {
       val project2 =
         AspectSyncProject(
           workspaceRoot = Path("/path/to/workspace"),
+          bazelRelease = BazelRelease(37),
           modules = emptyList(),
           libraries = emptyMap(),
-          goLibraries = emptyMap(),
           nonModuleTargets = emptyList(),
-          bazelRelease = BazelRelease(37),
           workspaceContext = createMockWorkspaceContext(),
           workspaceName = "_main",
           targets = emptyMap(),
@@ -121,19 +117,14 @@ class ProjectTest {
       val project1 =
         AspectSyncProject(
           workspaceRoot = Path("/path/to/workspace"),
+          bazelRelease = BazelRelease(1),
           modules = listOf("//project1:module1".toMockModule(), "//project1:module2".toMockModule(), "//module".toMockModule()),
           libraries =
             mapOf(
               "@library1//lib".toLabel() to "@library1//lib".toMockLibrary(),
               "@library2//lib".toLabel() to "@library2//lib".toMockLibrary(),
             ),
-          goLibraries =
-            mapOf(
-              "@golibrary1//lib".toLabel() to "@golibrary1//lib".toMockGoLibrary(),
-              "@golibrary2//lib".toLabel() to "@golibrary2//lib".toMockGoLibrary(),
-            ),
           nonModuleTargets = listOf("//nonmodule1".toMockNonModuleTarget(), "//nonmodule2".toMockNonModuleTarget()),
-          bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//..."),
           workspaceName = "_main",
           targets = emptyMap(),
@@ -142,6 +133,7 @@ class ProjectTest {
       val project2 =
         AspectSyncProject(
           workspaceRoot = Path("/path/to/workspace"),
+          bazelRelease = BazelRelease(1),
           modules =
             listOf(
               "//project2:module1".toMockModule(),
@@ -154,13 +146,7 @@ class ProjectTest {
               "@library3//lib".toLabel() to "@library3//lib".toMockLibrary(),
               "@library4//lib".toLabel() to "@library4//lib".toMockLibrary(),
             ),
-          goLibraries =
-            mapOf(
-              "@golibrary3//lib".toLabel() to "@golibrary3//lib".toMockGoLibrary(),
-              "@golibrary4//lib".toLabel() to "@golibrary4//lib".toMockGoLibrary(),
-            ),
           nonModuleTargets = listOf("//nonmodule3".toMockNonModuleTarget()),
-          bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
           workspaceName = "_main",
           targets = emptyMap(),
@@ -170,6 +156,7 @@ class ProjectTest {
       val expectedNewProject =
         AspectSyncProject(
           workspaceRoot = Path("/path/to/workspace"),
+          bazelRelease = BazelRelease(1),
           modules =
             listOf(
               "//project1:module1".toMockModule(),
@@ -186,20 +173,12 @@ class ProjectTest {
               "@library3//lib".toLabel() to "@library3//lib".toMockLibrary(),
               "@library4//lib".toLabel() to "@library4//lib".toMockLibrary(),
             ),
-          goLibraries =
-            mapOf(
-              "@golibrary1//lib".toLabel() to "@golibrary1//lib".toMockGoLibrary(),
-              "@golibrary2//lib".toLabel() to "@golibrary2//lib".toMockGoLibrary(),
-              "@golibrary3//lib".toLabel() to "@golibrary3//lib".toMockGoLibrary(),
-              "@golibrary4//lib".toLabel() to "@golibrary4//lib".toMockGoLibrary(),
-            ),
           nonModuleTargets =
             listOf(
               "//nonmodule3".toMockNonModuleTarget(),
               "//nonmodule1".toMockNonModuleTarget(),
               "//nonmodule2".toMockNonModuleTarget(),
             ),
-          bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
           workspaceName = "_main",
           targets = emptyMap(),
@@ -209,7 +188,6 @@ class ProjectTest {
       newProject.workspaceRoot shouldBe expectedNewProject.workspaceRoot
       newProject.modules shouldContainExactlyInAnyOrder expectedNewProject.modules
       newProject.libraries shouldBe expectedNewProject.libraries
-      newProject.goLibraries shouldBe expectedNewProject.goLibraries
       newProject.nonModuleTargets shouldContainExactlyInAnyOrder expectedNewProject.nonModuleTargets
       newProject.bazelRelease shouldBe expectedNewProject.bazelRelease
     }
@@ -238,8 +216,6 @@ class ProjectTest {
       sources = emptySet(),
       dependencies = emptyList(),
     )
-
-  private fun String.toMockGoLibrary(): GoLibrary = GoLibrary(label = toLabel())
 
   private fun String.toMockNonModuleTarget(): NonModuleTarget =
     NonModuleTarget(

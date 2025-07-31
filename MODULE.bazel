@@ -95,6 +95,7 @@ maven.install(
         "org.junit.platform:junit-platform-suite-engine:1.13.3",
         "org.kodein.di:kodein-di:7.26.1",
         "org.mockito:mockito-core:5.18.0",
+        "com.github.javaparser:javaparser-core:3.27.0",
         "org.mockito.kotlin:mockito-kotlin:5.4.0",
     ],
     fail_if_repin_required = True,

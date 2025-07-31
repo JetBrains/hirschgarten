@@ -1,16 +1,14 @@
-# Project View
+# `.bazelproject` view
 
-The project view file (*.bazelproject) is used to import a subset of bazel targets into the IDE, configure a project,
-and specify how the bsp server will be started.
+The `.bazelproject` view file is used to import a subset of Bazel targets into the IDE, and configure how the project will be imported.
 
 This is our adaptation of the project view mechanism known
 from [Bazel Plugin for Intellij](https://ij.bazel.build/docs/project-views.html)
 
-> The project view file uses a python-like format with 2 spaces indentation and # comments. You can share the
-> *.bazelproject file between projects, use your own copy, or both.
+> The project view file uses a Python-like format with 2 spaces indentation and # comments. You can share the
+> `*.bazelproject` file between projects, use your own copy, or both.
 >
-> In general, you can start with just ~~directories and~~ targets and add more sections as you want to further tweak
-> your IDE workspace.
+> In general, you can start with just `directories` and add more sections as you want to further tweak your IDE workspace.
 
 ## Usage
 

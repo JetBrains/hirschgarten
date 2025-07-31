@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -43,7 +44,7 @@ import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
-class BuildServerMock(
+open class BuildServerMock(
   private val bazelProject: BazelProject? = null,
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
@@ -98,8 +99,6 @@ class BuildServerMock(
 
   override suspend fun workspaceLibraries(): WorkspaceLibrariesResult = wrapInFuture(workspaceLibrariesResult)
 
-  override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = wrapInFuture(workspaceGoLibrariesResult)
-
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = wrapInFuture(workspaceDirectoriesResult)
 
   override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = wrapInFuture(analysisDebugResult)
@@ -132,6 +131,9 @@ class BuildServerMock(
   override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
 
   override suspend fun jvmToolchainInfo() = JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
+
+  override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo =
+    JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

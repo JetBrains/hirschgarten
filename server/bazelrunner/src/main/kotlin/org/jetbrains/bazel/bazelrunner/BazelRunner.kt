@@ -66,6 +66,9 @@ class BazelRunner(
     fun cquery(builder: BazelCommand.CQuery.() -> Unit = {}) =
       BazelCommand.CQuery(bazelBinary).apply { builder() }.also { inheritWorkspaceOptions = true }
 
+    fun aquery(builder: BazelCommand.AQuery.() -> Unit = {}) =
+      BazelCommand.AQuery(bazelBinary).apply { builder() }.also { inheritWorkspaceOptions = true }
+
     fun build(builder: BazelCommand.Build.() -> Unit = {}) =
       BazelCommand
         .Build(bazelInfo, bazelBinary)

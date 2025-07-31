@@ -24,7 +24,6 @@ import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.GoLibrary
 import org.jetbrains.bazel.server.model.Library
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.model.NonModuleTarget
@@ -146,10 +145,6 @@ class BazelProjectMapper(
       measure("Create android libraries") {
         calculateAndroidLibrariesMapper(targetsToImport)
       }
-    val goLibrariesMapper =
-      measure("Create go libraries") {
-        calculateGoLibrariesMapper(targetsToImport)
-      }
     val librariesFromDeps =
       measure("Merge libraries from deps") {
         concatenateMaps(
@@ -217,18 +212,6 @@ class BazelProjectMapper(
           extraLibrariesFromJdeps.values.flatten().associateBy { it.label } +
           librariesFromTransitiveCompileTimeJars.values.flatten().associateBy { it.label }
       }
-    val goLibrariesToImport =
-      measureIf(
-        description = "Merge all Go libraries",
-        predicate = { featureFlags.isGoSupportEnabled },
-        ifFalse = emptyMap(),
-      ) {
-        goLibrariesMapper.values
-          .flatten()
-          .distinct()
-          .associateBy { it.label } +
-          createGoLibraries(targetsAsLibraries, repoMapping)
-      }
 
     val nonModuleTargetIds =
       (removeDotBazelBspTarget(targets.keys) - mergedModulesFromBazel.map { it.label }.toSet() - librariesToImport.keys).toSet()
@@ -249,12 +232,11 @@ class BazelProjectMapper(
       bazelRelease = bazelInfo.release,
       modules = mergedModulesFromBazel.toList(),
       libraries = librariesToImport,
-      goLibraries = goLibrariesToImport,
       nonModuleTargets = nonModuleTargets,
       repoMapping = repoMapping,
-      hasError = hasError,
-      workspaceName = workspaceName,
       workspaceContext = workspaceContext,
+      workspaceName = workspaceName,
+      hasError = hasError,
       targets = targets,
     )
   }
@@ -451,22 +433,6 @@ class BazelProjectMapper(
       interfaceJars = emptySet(),
     )
   }
-
-  private fun calculateGoLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<GoLibrary>> =
-    targetsToImport
-      .mapNotNull { target ->
-        if (!target.hasGoTargetInfo()) return@mapNotNull null
-        val label = target.label()
-        val libraries =
-          target.goTargetInfo.generatedLibrariesList.map {
-            GoLibrary(
-              label = label,
-              goImportPath = target.goTargetInfo.importPath,
-              goRoot = bazelPathsResolver.resolve(it).parent,
-            )
-          }
-        label to libraries
-      }.toMap()
 
   /**
    * In some cases, the jar dependencies of a target might be injected by bazel or rules and not are not
@@ -725,27 +691,6 @@ class BazelProjectMapper(
   ): Boolean = dependencies.isNotEmpty() || !outputs.isEmptyJarList() || !interfaceJars.isEmptyJarList() || !sources.isEmptyJarList()
 
   private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
-
-  private fun createGoLibraries(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, GoLibrary> =
-    targets
-      .mapValues { (targetId, targetInfo) ->
-        createGoLibrary(targetId, targetInfo, repoMapping)
-      }.filterValues {
-        it.isGoLibrary()
-      }
-
-  private fun GoLibrary.isGoLibrary(): Boolean = !goImportPath.isNullOrEmpty() && goRoot.toString().isNotEmpty()
-
-  private fun createGoLibrary(
-    label: Label,
-    targetInfo: TargetInfo,
-    repoMapping: RepoMapping,
-  ): GoLibrary =
-    GoLibrary(
-      label = label,
-      goImportPath = targetInfo.goTargetInfo?.importPath,
-      goRoot = getGoRootPath(targetInfo, repoMapping),
-    )
 
   private fun createLibrariesFromTransitiveCompileTimeJars(
     targetsToImport: Sequence<TargetInfo>,

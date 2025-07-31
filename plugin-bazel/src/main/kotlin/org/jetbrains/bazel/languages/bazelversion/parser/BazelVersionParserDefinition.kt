@@ -17,15 +17,22 @@ import com.intellij.psi.util.PsiUtilCore
 import org.jetbrains.bazel.languages.bazelversion.BazelVersionLanguage
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionFile
 
+/**
+ * @see com.intellij.openapi.fileTypes.PlainTextParserDefinition
+ */
 class BazelVersionParserDefinition : ParserDefinition {
+  // avoid creating new IFileElementType on each getFileNodeType
+  // to ensure IFileElementType is registered only once inside an internal registry
+  val file =
+    object : IFileElementType(BazelVersionLanguage) {
+      override fun parseContents(chameleon: ASTNode): ASTNode = ASTFactory.leaf(PlainTextTokenTypes.PLAIN_TEXT, chameleon.chars)
+    }
+
   override fun createLexer(project: Project?): Lexer = EmptyLexer()
 
   override fun createParser(project: Project?): PsiParser = throw UnsupportedOperationException()
 
-  override fun getFileNodeType(): IFileElementType =
-    object : IFileElementType(BazelVersionLanguage) {
-      override fun parseContents(chameleon: ASTNode): ASTNode = ASTFactory.leaf(PlainTextTokenTypes.PLAIN_TEXT, chameleon.chars)
-    }
+  override fun getFileNodeType(): IFileElementType = file
 
   override fun getCommentTokens(): TokenSet = TokenSet.EMPTY
 

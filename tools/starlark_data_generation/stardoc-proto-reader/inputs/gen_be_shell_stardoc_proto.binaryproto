@@ -1,0 +1,141 @@
+
+ã
+binary_rules.sh_binary¾<p>
+  The <code>sh_binary</code> rule is used to declare executable shell scripts.
+  (<code>sh_binary</code> is a misnomer: its outputs aren't necessarily binaries.) This rule ensures
+  that all dependencies are built, and appear in the <code>runfiles</code> area at execution time.
+  We recommend that you name your <code>sh_binary()</code> rules after the name of the script minus
+  the extension (e.g. <code>.sh</code>); the rule name and the file name must be distinct.
+  <code>sh_binary</code> respects shebangs, so any available interpreter may be used (eg.
+  <code>#!/bin/zsh</code>)
+</p>
+<h4 id="sh_binary_examples">Example</h4>
+<p>For a simple shell script with no dependencies and some data files:
+</p>
+<pre class="code">
+sh_binary(
+    name = "foo",
+    srcs = ["foo.sh"],
+    data = glob(["datafiles/*.txt"]),
+)
+</pre>*
+nameA unique name for this target. ó
+srcsäThe list of input files.
+<p>
+  This attribute should be used to list shell script source files that belong to
+  this library. Scripts can load other scripts using the shell's <code>source</code>
+  or <code>.</code> command.
+</p>2[]
+data2[]û
+depsìThe list of "library" targets to be aggregated into this target.
+See general comments about <code>deps</code>
+at <a href="${link common-definitions#typical.deps}">Typical attributes defined by
+most build rules</a>.
+<p>
+  This attribute should be used to list other <code>sh_library</code> rules that provide
+  interpreted program source code depended on by the code in <code>srcs</code>. The files
+  provided by these rules will be present among the <code>runfiles</code> of this target.
+</p>2[]
+env
+2{}
+env_inherit2[]"6
+	sh_binary)@rules_shell//shell/private:sh_binary.bzl8
+Ñ
+library_rules.sh_libraryÌ
+<p>
+  The main use for this rule is to aggregate together a logical
+  "library" consisting of related scripts&mdash;programs in an
+  interpreted language that does not require compilation or linking,
+  such as the Bourne shell&mdash;and any data those programs need at
+  run-time. Such "libraries" can then be used from
+  the <code>data</code> attribute of one or
+  more <code>sh_binary</code> rules.
+</p>
+
+<p>
+  You can use the <a href="${link filegroup}"><code>filegroup</code></a> rule to aggregate data
+  files.
+</p>
+
+<p>
+  In interpreted programming languages, there's not always a clear
+  distinction between "code" and "data": after all, the program is
+  just "data" from the interpreter's point of view. For this reason
+  this rule has three attributes which are all essentially equivalent:
+  <code>srcs</code>, <code>deps</code> and <code>data</code>.
+  The current implementation does not distinguish between the elements of these lists.
+  All three attributes accept rules, source files and generated files.
+  It is however good practice to use the attributes for their usual purpose (as with other rules).
+</p>
+
+<h4 id="sh_library_examples">Examples</h4>
+
+<pre class="code">
+sh_library(
+    name = "foo",
+    data = [
+        ":foo_service_script",  # an sh_binary with srcs
+        ":deploy_foo",  # another sh_binary with srcs
+    ],
+)
+</pre>*
+nameA unique name for this target. ó
+srcsäThe list of input files.
+<p>
+  This attribute should be used to list shell script source files that belong to
+  this library. Scripts can load other scripts using the shell's <code>source</code>
+  or <code>.</code> command.
+</p>2[]
+data2[]û
+depsìThe list of "library" targets to be aggregated into this target.
+See general comments about <code>deps</code>
+at <a href="${link common-definitions#typical.deps}">Typical attributes defined by
+most build rules</a>.
+<p>
+  This attribute should be used to list other <code>sh_library</code> rules that provide
+  interpreted program source code depended on by the code in <code>srcs</code>. The files
+  provided by these rules will be present among the <code>runfiles</code> of this target.
+</p>2[]"8
+
+sh_library*@rules_shell//shell/private:sh_library.bzl
+Ý
+test_rules.sh_test¾<p>
+  The <code>sh_binary</code> rule is used to declare executable shell scripts.
+  (<code>sh_binary</code> is a misnomer: its outputs aren't necessarily binaries.) This rule ensures
+  that all dependencies are built, and appear in the <code>runfiles</code> area at execution time.
+  We recommend that you name your <code>sh_binary()</code> rules after the name of the script minus
+  the extension (e.g. <code>.sh</code>); the rule name and the file name must be distinct.
+  <code>sh_binary</code> respects shebangs, so any available interpreter may be used (eg.
+  <code>#!/bin/zsh</code>)
+</p>
+<h4 id="sh_binary_examples">Example</h4>
+<p>For a simple shell script with no dependencies and some data files:
+</p>
+<pre class="code">
+sh_binary(
+    name = "foo",
+    srcs = ["foo.sh"],
+    data = glob(["datafiles/*.txt"]),
+)
+</pre>*
+nameA unique name for this target. ó
+srcsäThe list of input files.
+<p>
+  This attribute should be used to list shell script source files that belong to
+  this library. Scripts can load other scripts using the shell's <code>source</code>
+  or <code>.</code> command.
+</p>2[]
+data2[]û
+depsìThe list of "library" targets to be aggregated into this target.
+See general comments about <code>deps</code>
+at <a href="${link common-definitions#typical.deps}">Typical attributes defined by
+most build rules</a>.
+<p>
+  This attribute should be used to list other <code>sh_library</code> rules that provide
+  interpreted program source code depended on by the code in <code>srcs</code>. The files
+  provided by these rules will be present among the <code>runfiles</code> of this target.
+</p>2[]
+env
+2{}
+env_inherit2[]"2
+sh_test'@rules_shell//shell/private:sh_test.bzl08*Shell2!//src/main/starlark/docgen:sh.bzl

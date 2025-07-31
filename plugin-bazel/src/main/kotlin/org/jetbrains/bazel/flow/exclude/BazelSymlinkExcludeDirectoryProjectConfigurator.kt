@@ -24,14 +24,14 @@ internal class BazelSymlinkExcludeDirectoryProjectConfigurator : DirectoryProjec
     moduleRef: Ref<Module>,
     isProjectCreatedWithWizard: Boolean,
   ) {
-    // Fake Module is going to be removed by CounterPlatformProjectConfigurator anyway
-    if (project.isBazelProject) return
-    val module = moduleRef.get() ?: return
-
+    // Call BazelSymlinkExcludeService even if isBazelProject == true because it adds excludes to file watcher
     val bazelWorkspace = findProjectFolderFromVFile(baseDir) ?: return
     val symlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude(bazelWorkspace.toNioPath())
     if (symlinksToExclude.isEmpty()) return
 
+    // Fake Module is going to be removed by CounterPlatformProjectConfigurator anyway
+    if (project.isBazelProject) return
+    val module = moduleRef.get() ?: return
     val model = ModuleRootManager.getInstance(module).modifiableModel
     val entry = MarkRootsManager.findContentEntry(model, baseDir)
     if (entry != null) {
