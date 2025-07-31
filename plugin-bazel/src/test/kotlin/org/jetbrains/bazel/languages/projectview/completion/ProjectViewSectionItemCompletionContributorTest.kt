@@ -4,6 +4,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.junit.Before
@@ -15,6 +16,7 @@ import org.junit.runners.JUnit4
 class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
   @Before
   fun setupRootDir() {
+    myFixture.project.isBazelProject = true
     myFixture.project.rootDir = myFixture.tempDirFixture.getFile(".")!!
   }
 

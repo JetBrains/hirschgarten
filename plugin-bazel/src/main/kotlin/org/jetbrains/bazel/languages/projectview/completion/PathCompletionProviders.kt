@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
@@ -21,16 +22,15 @@ private fun getRelativePaths(root: VirtualFile, filter: (VirtualFile) -> Boolean
     }
     true
   }
-
-  // `VfsUtilCore.getRelativePath` can return null in the following two cases:
-  // 1. The two arguments (file and ancestor) belong to different file systems.
-  // 2. The second argument is not an ancestor of the first one.
-  // However, since the first argument is created by traversing down the directory
-  // tree starting from the second one, neither of these conditions should occur.
   return result.mapNotNull { VfsUtilCore.getRelativePath(it, root) }
 }
 
-private fun getProjectRoot(parameters: CompletionParameters): VirtualFile? = parameters.position.project.rootDir
+private fun getProjectRoot(parameters: CompletionParameters): VirtualFile? {
+  if (!parameters.position.project.isBazelProject) {
+    return null
+  }
+  return parameters.position.project.rootDir
+}
 
 internal class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
