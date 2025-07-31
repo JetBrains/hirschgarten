@@ -24,6 +24,7 @@ import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.TestParams
@@ -85,6 +86,7 @@ class ExecuteServiceTest {
     Mockito.`when`(mockCompilationManager.workspaceRoot).thenReturn(workspaceRoot)
     Mockito.`when`(mockCompilationManager.client).thenReturn(mock(JoinedBuildClient::class.java))
     Mockito.`when`(mockWorkspaceContextProvider.readWorkspaceContext()).thenReturn(workspaceContext)
+    Mockito.doReturn(true).`when`(executeService).isCoveragePerPackageEnabled()
   }
 
   @Test
@@ -97,6 +99,7 @@ class ExecuteServiceTest {
           targets = listOf(targetLabel),
           originId = "test-origin",
           coverage = true,
+          debug = DebugType.JDWP(1234),
         )
 
       val mockModule =
@@ -128,6 +131,7 @@ class ExecuteServiceTest {
           targets = listOf(targetLabel1, targetLabel2),
           originId = "test-origin",
           coverage = true,
+          debug = DebugType.JDWP(1234),
         )
 
       val mockModule1 =

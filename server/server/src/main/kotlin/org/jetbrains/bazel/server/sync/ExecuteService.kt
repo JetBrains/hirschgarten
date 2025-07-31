@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -13,6 +14,7 @@ import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.arg
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
@@ -150,9 +152,10 @@ class ExecuteService(
    * If `debugArguments` is empty, test task will be executed normally without any debugging options
    */
   suspend fun testWithDebug(params: TestParams): TestResult {
-    val singleModule = extractSingleModule(params)
     val debugArguments =
       if (params.debug != null) {
+        val modules = selectModules(params.targets)
+        val singleModule = modules.singleOrResponseError(params.targets.first())
         val requestedDebugType = params.debug
         verifyDebugRequest(requestedDebugType, singleModule)
         generateRunArguments(requestedDebugType)
@@ -160,27 +163,17 @@ class ExecuteService(
         null
       }
 
-    return testImpl(singleModule, params, debugArguments)
+    return testImpl(params, debugArguments)
   }
 
-  private suspend fun extractSingleModule(params: TestParams): Module {
-    val modules = selectModules(params.targets)
-    val singleModule = modules.singleOrResponseError(params.targets.first())
-    return singleModule
-  }
-
-  private suspend fun testImpl(
-    singleModule: Module,
-    params: TestParams,
-    additionalProgramArguments: List<String>?,
-  ): TestResult {
+  private suspend fun testImpl(params: TestParams, additionalProgramArguments: List<String>?): TestResult {
     val targetsSpec = TargetsSpec(params.targets, emptyList())
     val workspaceContext = workspaceContextProvider.readWorkspaceContext()
     val command =
       when (params.coverage) {
         true ->
           bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
-            addCoverageOptions(it, singleModule)
+            addCoverageOptions(it, targetsSpec)
           }
 
         else -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
@@ -234,19 +227,19 @@ class ExecuteService(
     return TestResult(statusCode = result.bazelStatus, originId = params.originId)
   }
 
-  private fun addCoverageOptions(command: BazelCommand, singleModule: Module) {
+  private fun addCoverageOptions(command: BazelCommand, targetsSpec: TargetsSpec) {
     command.options.add(BazelFlag.combinedReportLcov())
-    if (singleModule.label.packagePath.pathSegments
-        .isEmpty()
-    ) {
-      command.options.add(BazelFlag.instrumentationFilterAll())
+    if (isCoveragePerPackageEnabled() && targetsSpec.values.none { it.packagePath.pathSegments.isEmpty() }) {
+      val packageNames = targetsSpec.values.map { it -> it.packagePath.pathSegments.first() }.joinToString(separator = "|")
+
+      command.options.add(arg("instrumentation_filter", "^//" + packageNames + "[/:]"))
     } else {
-      val packageName =
-        singleModule.label.packagePath.pathSegments
-          .first()
-      command.options.add(arg("instrumentation_filter", "^//" + packageName + "[/:]"))
+      command.options.add(BazelFlag.instrumentationFilterAll())
     }
   }
+
+  @VisibleForTesting
+  fun isCoveragePerPackageEnabled(): Boolean = BazelFeatureFlags.coveragePerPackage
 
   suspend fun mobileInstall(params: MobileInstallParams): MobileInstallResult {
     val startType =

@@ -12,6 +12,7 @@ kt_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/utils",
