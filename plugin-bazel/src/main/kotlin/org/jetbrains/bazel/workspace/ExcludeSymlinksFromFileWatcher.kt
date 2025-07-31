@@ -11,8 +11,9 @@ import java.util.NavigableMap
 /**
  * WatchRootsManager doesn't check whether the symlinks it's watching are excluded.
  * Because IDEA 2025.2 has code freeze in place it can't be fixed on platform side :(
- * See: https://youtrack.jetbrains.com/issue/BAZEL-2235/Overly-aggressive-fsnotifier
- * (TODO: create and link IJPL issue with repro steps).
+ * See:
+ * https://youtrack.jetbrains.com/issue/IJPL-199364/Excluded-symlinks-are-watched-by-WatchRootsManager
+ * https://youtrack.jetbrains.com/issue/BAZEL-2235/Overly-aggressive-fsnotifier
  */
 fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
   if (!BazelFeatureFlags.excludeSymlinksFromFileWatcherViaReflection) return
