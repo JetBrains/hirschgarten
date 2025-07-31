@@ -16,16 +16,17 @@ class ProjectViewPsiSectionItem(node: ASTNode) : ProjectViewBaseElement(node) {
     visitor.visitSectionItem(this)
   }
 
-  private fun getSection(): ProjectViewPsiSection? = parent as? ProjectViewPsiSection
-
-  private fun isLeaf(): Boolean = firstChild != null && firstChild == lastChild && firstChild.elementType == ProjectViewTokenType.IDENTIFIER
+  fun getSection(): ProjectViewPsiSection? = parent as? ProjectViewPsiSection
 
   override fun getOwnReferences(): Collection<ProjectViewFlagReference> {
-    val sectionName = getSection()?.getKeyword()?.text ?: return listOf()
-    if (sectionName.contains("flag") && ProjectViewSection.KEYWORD_MAP.contains(sectionName) && isLeaf()) {
-      return listOf(ProjectViewFlagReference(this))
-    }
-    return listOf()
+    //if (!(firstChild != null && firstChild == lastChild && firstChild.elementType == ProjectViewTokenType.IDENTIFIER)) {
+    //  return emptyList()
+    //}
+    //val sectionName = getSection()?.getKeyword()?.text ?: return emptyList()
+    //if (sectionName.contains("flag") && ProjectViewSection.KEYWORD_MAP.contains(sectionName)) {
+    //  return listOf(ProjectViewFlagReference(this))
+    //}
+    return emptyList()
   }
 
   override fun getReference(): PsiReference? {
