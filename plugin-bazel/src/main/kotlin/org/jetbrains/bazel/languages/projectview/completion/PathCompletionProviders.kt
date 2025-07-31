@@ -27,7 +27,7 @@ private fun getRelativePaths(root: VirtualFile, filter: (VirtualFile) -> Boolean
   // 2. The second argument is not an ancestor of the first one.
   // However, since the first argument is created by traversing down the directory
   // tree starting from the second one, neither of these conditions should occur.
-  return result.map { VfsUtilCore.getRelativePath(it, root)!! }
+  return result.mapNotNull { VfsUtilCore.getRelativePath(it, root) }
 }
 
 private fun getProjectRoot(parameters: CompletionParameters): VirtualFile? = parameters.position.project.rootDir
