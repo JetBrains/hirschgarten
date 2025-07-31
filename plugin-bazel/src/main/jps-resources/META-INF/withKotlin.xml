@@ -14,9 +14,6 @@
     <bazelCoverageClassNodeDecoratorPsiElementClassifier
       implementation="org.jetbrains.bazel.kotlin.coverage.KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
-    <unresolvedImportChecker
-      implementation="org.jetbrains.bazel.kotlin.ui.notifications.KotlinUnresolvedImportChecker"
-    />
     <psiElementConfigurationLocator
       implementation="org.jetbrains.bazel.kotlin.junit.KotlinPsiElementConfigurationLocator"
     />

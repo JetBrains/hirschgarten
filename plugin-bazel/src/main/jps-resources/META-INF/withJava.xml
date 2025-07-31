@@ -14,7 +14,6 @@
     <bazelExperimentalSettingsProvider
       implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"
     />
-    <unresolvedImportChecker implementation="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker" />
     <bazelCoverageClassNodeDecoratorPsiElementClassifier
       implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
