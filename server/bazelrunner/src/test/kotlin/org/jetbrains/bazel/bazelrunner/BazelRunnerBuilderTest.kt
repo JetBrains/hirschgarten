@@ -3,8 +3,8 @@ package org.jetbrains.bazel.bazelrunner
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
