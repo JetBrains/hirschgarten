@@ -7,6 +7,7 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.canonicalize
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
@@ -16,7 +17,6 @@ import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerat
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
-import org.jetbrains.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
