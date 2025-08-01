@@ -44,7 +44,11 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
   //    configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
   //  )
 
-  private val context by lazy { createContext() }
+  private val context by lazy {
+    createContext().apply {
+      vcsAddFileDialogEnabled(false)
+    }
+  }
 
   @Test
   fun openBazelProject() {
