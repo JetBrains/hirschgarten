@@ -17,6 +17,7 @@ package org.jetbrains.bazel.sync.libraries
 
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.SyntheticLibrary
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.utils.toVirtualFile
@@ -28,10 +29,10 @@ import javax.swing.Icon
  * instance per value of presentableText.
  */
 
-class BazelExternalSyntheticLibrary(private val text: String, private val files: List<Path>) :
+class BazelExternalSyntheticLibrary(private val text: String, private val files: List<VirtualFile>) :
   SyntheticLibrary(),
   ItemPresentation {
-  override fun getSourceRoots(): List<VirtualFile> = files.mapNotNull { it.toVirtualFile() }
+  override fun getSourceRoots(): List<VirtualFile> = files
 
   override fun equals(other: Any?): Boolean {
     // intended to be only a single instance added to the project for each value of presentableText
