@@ -198,22 +198,6 @@ abstract class IdeStarterBaseProjectTest {
     return this
   }
 
-  /**
-   * Method will find and set 'ConfirmationsSetting' option which is responsible for dialog 'Add File to Git'
-   * By default this option placed in StoragePathMacros.WORKSPACE_FILE
-   */
-  fun IDETestContext.vcsAddFileDialogEnabled(isEnabled: Boolean) {
-    val workSpaceFilePath = Path("${resolvedProjectHome.normalize()}/.idea/workspace.xml")
-    val parameter = if (isEnabled) 0 else 1
-
-    workSpaceFilePath
-      .readText()
-      .replace(
-        "<ConfirmationsSetting value=\"[0-9]\" id=\"Add\" />".toRegex(),
-        "<ConfirmationsSetting value=\"${parameter}\" id=\"Add\" />",
-      ).also { workSpaceFilePath.writeText(it) }
-  }
-
   protected fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
     if (localProjectPath != null) {

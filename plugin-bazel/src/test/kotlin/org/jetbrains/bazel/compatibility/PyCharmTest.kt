@@ -31,7 +31,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "73ad49439188c91342d46f63a32230e5b535dc03",
+        commitHash = "226f7ff221c4f63c60ad5a6662e11deea2a7779c",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = true,
@@ -44,11 +44,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
   //    configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
   //  )
 
-  private val context by lazy {
-    createContext().apply {
-      vcsAddFileDialogEnabled(false)
-    }
-  }
+  private val context by lazy { createContext() }
 
   @Test
   fun openBazelProject() {
