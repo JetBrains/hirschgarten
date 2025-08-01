@@ -78,7 +78,9 @@ def extract_java_runtime(target, ctx, dep_targets, **kwargs):
     runtime = None
 
     if JAVA_RUNTIME_TOOLCHAIN_TYPE in ctx.toolchains:  # Bazel 6.0.0 way
-        runtime = ctx.toolchains[JAVA_RUNTIME_TOOLCHAIN_TYPE].java_runtime
+        toolchain = ctx.toolchains[JAVA_RUNTIME_TOOLCHAIN_TYPE]
+        if toolchain:
+            runtime = toolchain.java_runtime
     else:
         runtime_jdk = getattr(ctx.rule.attr, "runtime_jdk", None)
         if runtime_jdk and java_common.JavaRuntimeInfo in runtime_jdk:
