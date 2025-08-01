@@ -20,6 +20,8 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.GoBuildTarget
@@ -34,7 +36,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 private data class GoTestSet(
-  val buildTargets: WorkspaceBuildTargetsResult,
+  val buildTargets: List<RawBuildTarget>,
   val expectedVgoStandaloneEntities: List<ExpectedVgoStandaloneModuleEntity>,
   val expectedVgoDependencyEntities: List<ExpectedVgoDependencyEntity>,
 )
@@ -78,11 +80,12 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   fun `should add VgoStandaloneModuleEntities to workspace model diff`() {
     // given
     val goTestTargets = generateTestSet()
-    val server =
-      BuildServerMock(
-        workspaceBuildTargetsResult = goTestTargets.buildTargets,
-        workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()),
+    val server = BuildServerMock()
+    val resolver = BazelWorkspaceResolverMock(
+      resolvedWorkspace = BazelResolvedWorkspace(
+        targets = goTestTargets.buildTargets.associateBy { it.id }
       )
+    )
     val diff = AllProjectStructuresProvider(project).newDiff()
 
     // when
@@ -93,6 +96,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
+            resolver = resolver,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -120,9 +124,14 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     val goTestTargets = generateTestSet()
     val server =
       BuildServerMock(
-        workspaceBuildTargetsResult = goTestTargets.buildTargets,
-        workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()),
+        //workspaceBuildTargetsResult = goTestTargets.buildTargets,
+        //workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()),
       )
+    val resolver = BazelWorkspaceResolverMock(
+      resolvedWorkspace = BazelResolvedWorkspace(
+        targets = goTestTargets.buildTargets.associateBy { it.id }
+      )
+    )
     val diff = AllProjectStructuresProvider(project).newDiff()
 
     // when
@@ -133,6 +142,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
+            resolver = resolver,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -177,7 +187,6 @@ class GoProjectSyncTest : MockProjectBaseTest() {
 
     val targetInfos = listOf(goLibrary1, goLibrary2, goApplication)
     val targets = targetInfos.map { generateTarget(it) }
-    val buildTargets = WorkspaceBuildTargetsResult(targets, false)
     val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     val expectedRoot = Path("/targets_base_dir").toVirtualFileUrl(virtualFileUrlManager)
@@ -188,7 +197,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
         generateVgoDependencyResult(goLibrary1, goApplication, expectedRoot),
         generateVgoDependencyResult(goLibrary2, goApplication, expectedRoot),
       )
-    return GoTestSet(buildTargets, expectedVgoStandaloneEntities, expectedVgoDependencyEntities)
+    return GoTestSet(targets, expectedVgoStandaloneEntities, expectedVgoDependencyEntities)
   }
 
   private fun generateTarget(info: GeneratedTargetInfo): RawBuildTarget =
