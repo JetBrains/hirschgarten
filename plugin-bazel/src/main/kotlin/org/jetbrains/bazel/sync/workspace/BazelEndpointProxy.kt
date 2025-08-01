@@ -27,37 +27,52 @@ import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 
-class BazelEndpointProxy(
+interface BazelEndpointProxy {
+  fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
+  fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult
+  fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult
+  fun buildJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult
+  fun dependencySources(params: DependencySourcesParams): DependencySourcesResult
+  suspend fun jvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
+  suspend fun jvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult
+  suspend fun buildTargetCompile(params: CompileParams): CompileResult
+  suspend fun buildTargetTest(params: TestParams): TestResult
+  suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult
+  suspend fun buildTargetRun(params: RunParams): RunResult
+  suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
+}
+
+class DefaultBazelEndpointProxy(
   val mapper: AspectClientProjectMapper,
   val project: BazelMappedProject,
   val server: JoinedBuildServer,
-) {
-  fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult = mapper.buildTargetJavacOptions(project, params)
+) : BazelEndpointProxy {
+  override fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult = mapper.buildTargetJavacOptions(project, params)
 
-  fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult = mapper.resolveLocalToRemote(params)
+  override fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult = mapper.resolveLocalToRemote(params)
 
-  fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult = mapper.resolveRemoteToLocal(params)
+  override fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult = mapper.resolveRemoteToLocal(params)
 
-  fun buildJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult = mapper.buildJvmBinaryJars(project, params)
+  override fun buildJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult = mapper.buildJvmBinaryJars(project, params)
 
-  fun dependencySources(params: DependencySourcesParams): DependencySourcesResult = mapper.dependencySources(project, params)
+  override fun dependencySources(params: DependencySourcesParams): DependencySourcesResult = mapper.dependencySources(project, params)
 
-  suspend fun jvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
+  override suspend fun jvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
     mapper.jvmRunEnvironment(server, project, params)
 
-  suspend fun jvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
+  override suspend fun jvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
     mapper.jvmTestEnvironment(server, project, params)
 
-  suspend fun buildTargetCompile(params: CompileParams): CompileResult =
+  override suspend fun buildTargetCompile(params: CompileParams): CompileResult =
     server.buildTargetCompile(params)
 
-  suspend fun buildTargetTest(params: TestParams): TestResult =
+  override suspend fun buildTargetTest(params: TestParams): TestResult =
     server.buildTargetTest(params)
 
-  suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult =
+  override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult =
     server.buildTargetAnalysisDebug(params)
 
-  suspend fun buildTargetRun(params: RunParams): RunResult = server.buildTargetRun(params)
+  override suspend fun buildTargetRun(params: RunParams): RunResult = server.buildTargetRun(params)
 
-  suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = server.buildTargetRunWithDebug(params)
+  override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = server.buildTargetRunWithDebug(params)
 }
