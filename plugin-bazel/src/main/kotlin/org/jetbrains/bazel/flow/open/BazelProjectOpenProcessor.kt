@@ -9,7 +9,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
-import org.jetbrains.bazel.utils.toVirtualFile
+import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.io.IOException
 import javax.swing.Icon
 import kotlin.io.path.isRegularFile
@@ -105,7 +105,7 @@ fun getBuildFileForPackageDirectory(packageDirectory: VirtualFile): VirtualFile?
       .listDirectoryEntries(
         glob = BUILD_FILE_GLOB,
       ).firstOrNull { it.isRegularFile() }
-      ?.toVirtualFile()
+      ?.refreshAndFindVirtualFile()
   } catch (e: IOException) {
     log.warn("Cannot retrieve Bazel BUILD file from directory ${packageDirectory.toNioPath()}", e)
     return null

@@ -6,7 +6,7 @@ import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sync.status.SyncStatusListener
-import org.jetbrains.bazel.utils.toVirtualFile
+import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
@@ -30,7 +30,7 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
         .extensionList
         .mapNotNull { it as? BazelExternalLibraryProvider }
         .mapNotNull { provider ->
-          val files = provider.getLibraryFiles(project).mapNotNull { it.toVirtualFile() }
+          val files = provider.getLibraryFiles(project).mapNotNull { it.refreshAndFindVirtualFile() }
           if (files.isNotEmpty()) {
             provider.javaClass to BazelExternalSyntheticLibrary(provider.libraryName, files)
           } else {
