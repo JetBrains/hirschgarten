@@ -3,6 +3,7 @@ package org.jetbrains.bazel.ui.notifications
 import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.IncompleteDependenciesService
 import com.intellij.openapi.project.Project
@@ -24,7 +25,9 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import java.util.function.Function
 import javax.swing.JComponent
 
-class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotificationProvider {
+class BuildAndResyncOnUnresolvedImportNotificationsProvider :
+  EditorNotificationProvider,
+  DumbAware {
   private val disableNotificationForFile = mutableSetOf<VirtualFile>()
 
   override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
