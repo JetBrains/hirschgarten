@@ -40,10 +40,12 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -194,6 +196,22 @@ abstract class IdeStarterBaseProjectTest {
       addSystemProperty(IS_IN_IDE_STARTER_TEST, "true")
     }
     return this
+  }
+
+  /**
+   * Method will find and set 'ConfirmationsSetting' option which is responsible for dialog 'Add File to Git'
+   * By default this option placed in StoragePathMacros.WORKSPACE_FILE
+   */
+  fun IDETestContext.vcsAddFileDialogEnabled(isEnabled: Boolean) {
+    val workSpaceFilePath = Path("${resolvedProjectHome.normalize()}/.idea/workspace.xml")
+    val parameter = if (isEnabled) 0 else 1
+
+    workSpaceFilePath
+      .readText()
+      .replace(
+        "<ConfirmationsSetting value=\"[0-9]\" id=\"Add\" />".toRegex(),
+        "<ConfirmationsSetting value=\"${parameter}\" id=\"Add\" />",
+      ).also { workSpaceFilePath.writeText(it) }
   }
 
   protected fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
