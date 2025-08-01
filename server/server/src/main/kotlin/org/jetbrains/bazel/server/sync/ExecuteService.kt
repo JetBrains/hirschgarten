@@ -3,6 +3,8 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.HasAdditionalBazelOptions
@@ -10,7 +12,9 @@ import org.jetbrains.bazel.bazelrunner.HasEnvironment
 import org.jetbrains.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag.arg
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
@@ -169,8 +173,7 @@ class ExecuteService(
       when (params.coverage) {
         true ->
           bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
-            it.options.add(BazelFlag.combinedReportLcov())
-            it.options.add(BazelFlag.instrumentationFilterAll())
+            addCoverageOptions(it, targetsSpec)
           }
 
         else -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
@@ -223,6 +226,20 @@ class ExecuteService(
 
     return TestResult(statusCode = result.bazelStatus, originId = params.originId)
   }
+
+  private fun addCoverageOptions(command: BazelCommand, targetsSpec: TargetsSpec) {
+    command.options.add(BazelFlag.combinedReportLcov())
+    if (isCoveragePerPackageEnabled() && targetsSpec.values.none { it.packagePath.pathSegments.isEmpty() }) {
+      val packageNames = targetsSpec.values.map { it -> it.packagePath.pathSegments.first() }.joinToString(separator = "|")
+
+      command.options.add(arg("instrumentation_filter", "^//" + packageNames + "[/:]"))
+    } else {
+      command.options.add(BazelFlag.instrumentationFilterAll())
+    }
+  }
+
+  @VisibleForTesting
+  fun isCoveragePerPackageEnabled(): Boolean = BazelFeatureFlags.coveragePerPackage
 
   suspend fun mobileInstall(params: MobileInstallParams): MobileInstallResult {
     val startType =

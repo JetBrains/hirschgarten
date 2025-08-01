@@ -31,6 +31,9 @@ object BazelFeatureFlags {
 
   @VisibleForTesting
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
+
+  @VisibleForTesting
+  const val COVERAGE_PER_PACKAGE = "bazel.coverage.per.package"
   private const val CHECK_SHARED_SOURCES = "bazel.check.shared.sources"
   private const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
   private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
@@ -88,6 +91,9 @@ object BazelFeatureFlags {
 
   val fastBuildEnabled: Boolean
     get() = isEnabled(FAST_BUILD_ENABLED)
+
+  val coveragePerPackage: Boolean
+    get() = isEnabled(COVERAGE_PER_PACKAGE)
 
   val checkSharedSources: Boolean
     get() = isEnabled(CHECK_SHARED_SOURCES)
