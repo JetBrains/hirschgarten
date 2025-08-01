@@ -661,6 +661,9 @@
       implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor"
       language="ProjectView"
     />
+    <typedHandler
+      implementation="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor$AutoPopup"
+    />
 
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
