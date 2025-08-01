@@ -15,7 +15,8 @@ import kotlin.io.path.createTempDirectory
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BazelBspLanguageExtensionsGeneratorTest {
   internal class BspInfoMock(private val dotBazelBspPath: Path, projectRootPath: Path) : BspInfo(projectRootPath) {
-    override fun bazelBspDir(): Path = dotBazelBspPath
+    override val bazelBspDir: Path
+      get() = dotBazelBspPath
   }
 
   internal class BazelExternalRulesetsQueryMock(private val rulesetNames: List<String>) : BazelExternalRulesetsQuery {
