@@ -34,7 +34,7 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 
 @Service(Service.Level.PROJECT)
-class BazelWorkspaceResolveService(private val project: Project) {
+class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspaceResolver {
   val connection: BazelServerConnection
     get() = BazelServerService.getInstance(project).connection
 
@@ -155,40 +155,38 @@ class BazelWorkspaceResolveService(private val project: Project) {
     )
   }
 
-  // TODO: check if locking is necessary
-  // TODO: also try to invent better way of lazy resolving workspace
-  suspend fun getOrFetchResolvedWorkspace(
-    scope: ProjectSyncScope = SecondPhaseSync,
-    taskId: String = PROJECT_SYNC_TASK_ID,
-    force: Boolean = false,
+  override suspend fun getOrFetchResolvedWorkspace(
+    scope: ProjectSyncScope,
+    taskId: String,
+    force: Boolean,
   ): BazelResolvedWorkspace {
     return resolveWorkspace(scope, taskId, force).let { state.resolvedWorkspace }
   }
 
-  suspend fun getOrFetchMappedProject(
-    scope: ProjectSyncScope = SecondPhaseSync,
-    taskId: String = PROJECT_SYNC_TASK_ID,
-    force: Boolean = false,
+  override suspend fun getOrFetchMappedProject(
+    scope: ProjectSyncScope,
+    taskId: String,
+    force: Boolean,
   ): BazelMappedProject {
     return resolveWorkspace(scope, taskId, force).let { state.mappedProject }
   }
 
-  suspend fun getOrFetchSyncedProject(
-    build: Boolean = false,
-    taskId: String = PROJECT_SYNC_TASK_ID,
-    force: Boolean = false,
+  override suspend fun getOrFetchSyncedProject(
+    build: Boolean,
+    taskId: String,
+    force: Boolean,
   ): EarlyBazelSyncProject {
     return syncWorkspace(build, taskId, force).let { state.earlyProject }
   }
 
-  suspend fun <T> withEndpointProxy(func: suspend (BazelEndpointProxy) -> T): T {
+  override suspend fun <T> withEndpointProxy(func: suspend (BazelEndpointProxy) -> T): T {
     val project = getOrFetchMappedProject(
       scope = SecondPhaseSync,
       taskId = PROJECT_SYNC_TASK_ID,
       force = false,
     )
     return connection.runWithServer {
-      val endpoints = BazelEndpointProxy(clientMapper, project, it)
+      val endpoints = DefaultBazelEndpointProxy(clientMapper, project, it)
       func(endpoints)
     }
   }
