@@ -61,9 +61,7 @@ class GoProjectSync : ProjectSyncHook {
     environment.withSubtask("Process Go targets") {
       // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1961
       val bspBuildTargets =
-        BazelWorkspaceResolveService
-          .getInstance(environment.project)
-          .getOrFetchResolvedWorkspace()
+        environment.resolver.getOrFetchResolvedWorkspace()
           .targets.values
           .toList()
       val goTargets = bspBuildTargets.calculateGoTargets()
@@ -237,10 +235,7 @@ class GoProjectSync : ProjectSyncHook {
 
   private suspend fun queryGoLibraries(environment: ProjectSyncHook.ProjectSyncHookEnvironment): List<GoLibraryItem> =
     coroutineScope {
-      BazelWorkspaceResolveService
-        .getInstance(environment.project)
-        .getOrFetchResolvedWorkspace()
-        .goLibraries
+      environment.resolver.getOrFetchResolvedWorkspace().goLibraries
     }
 
   private suspend fun calculateAndAddGoSdk(

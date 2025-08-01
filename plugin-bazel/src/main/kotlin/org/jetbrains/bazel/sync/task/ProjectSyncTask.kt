@@ -175,6 +175,7 @@ class ProjectSyncTask(private val project: Project) {
     buildProject: Boolean,
   ): SyncResultStatus {
     val diff = AllProjectStructuresProvider(project).newDiff()
+    val resolver  = BazelWorkspaceResolveService.getInstance(project)
     val syncStatus =
       project.connection.runWithServer { server ->
         bspTracer.spanBuilder("collect.project.details.ms").use {
@@ -185,8 +186,7 @@ class ProjectSyncTask(private val project: Project) {
               subtaskId = BASE_PROJECT_SYNC_SUBTASK_ID,
               message = BazelPluginBundle.message("console.task.base.sync"),
             ) {
-              BazelWorkspaceResolveService.getInstance(project)
-                .getOrFetchSyncedProject(build = buildProject, taskId = PROJECT_SYNC_TASK_ID, force = true)
+              resolver.getOrFetchSyncedProject(build = buildProject, taskId = PROJECT_SYNC_TASK_ID, force = true)
             }
           if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
           project.withSubtask(
@@ -198,6 +198,7 @@ class ProjectSyncTask(private val project: Project) {
               ProjectSyncHookEnvironment(
                 project = project,
                 server = server,
+                resolver = resolver,
                 diff = diff,
                 taskId = it,
                 progressReporter = progressReporter,

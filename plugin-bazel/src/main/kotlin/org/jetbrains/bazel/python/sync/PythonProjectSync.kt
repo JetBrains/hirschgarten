@@ -67,10 +67,7 @@ class PythonProjectSync : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Process Python targets") {
       // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
-      val workspace =
-        BazelWorkspaceResolveService
-          .getInstance(environment.project)
-          .getOrFetchResolvedWorkspace()
+      val workspace = environment.resolver.getOrFetchResolvedWorkspace()
       val bspBuildTargets = workspace.targets.values.toList()
       val pythonTargets = bspBuildTargets.calculatePythonTargets()
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
@@ -175,9 +172,7 @@ class PythonProjectSync : ProjectSyncHook {
     }
 
   private suspend fun queryDependenciesSources(environment: ProjectSyncHookEnvironment, targets: List<Label>): DependencySourcesResult =
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.dependencySources(DependencySourcesParams(targets)) }
+    environment.resolver.withEndpointProxy { it.dependencySources(DependencySourcesParams(targets)) }
 
   private fun calculateSourceDependencyLibrary(
     target: Label,

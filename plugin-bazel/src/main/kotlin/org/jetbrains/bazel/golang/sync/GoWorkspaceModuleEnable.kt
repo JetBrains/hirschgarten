@@ -14,9 +14,7 @@ class GoWorkspaceModuleEnable : WorkspaceModuleProjectSyncHook.EnableWorkspaceMo
     if (BazelFeatureFlags.isGoSupportEnabled) {
       return true
     }
-    return BazelWorkspaceResolveService
-      .getInstance(project)
-      .getOrFetchResolvedWorkspace()
+    return environment.resolver.getOrFetchResolvedWorkspace()
       .targets
       .values
       .any { it.data is GoBuildTarget }
