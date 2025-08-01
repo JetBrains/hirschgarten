@@ -9,7 +9,6 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
@@ -107,7 +106,7 @@ class BazelBspAspectsManager(
     rulesetLanguages: List<RulesetLanguage>,
     externalRulesetNames: List<String>,
     workspaceContext: WorkspaceContext,
-    toolchains: Map<RulesetLanguage, Label?>,
+    toolchains: Map<RulesetLanguage, String?>,
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
     featureFlags: FeatureFlags,
@@ -138,7 +137,7 @@ class BazelBspAspectsManager(
           // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
-          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl]?.toString()?.let { "\"" + it + "\"" } },
+          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
           "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.values.toStarlarkString(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
