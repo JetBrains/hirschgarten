@@ -14,8 +14,6 @@ import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.MobileInstallParams
-import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams

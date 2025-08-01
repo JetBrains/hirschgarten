@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
@@ -71,12 +72,9 @@ private val mockWorkspaceContext =
 private val mockBuildServer =
   BuildServerMock(
     bazelProject = BazelProject(emptyMap(), false),
-    workspaceBuildTargetsResult = WorkspaceBuildTargetsResult(emptyList()),
+    workspaceBuildTargetsResult = WorkspaceBuildTargetsResult(emptyMap(), emptySet(), false),
     workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
-    workspaceLibrariesResult = WorkspaceLibrariesResult(emptyList()),
-    jvmBinaryJarsResult = JvmBinaryJarsResult(emptyList()),
-    workspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap()),
-    dependencySourcesResult = DependencySourcesResult(emptyList()),
+    workspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(RepoMappingDisabled),
     workspaceContextResult = mockWorkspaceContext,
   )
 

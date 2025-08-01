@@ -27,9 +27,6 @@ import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.DebugType
-import org.jetbrains.bsp.protocol.MobileInstallParams
-import org.jetbrains.bsp.protocol.MobileInstallResult
-import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
