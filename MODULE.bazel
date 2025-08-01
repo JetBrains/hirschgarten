@@ -88,7 +88,7 @@ maven.install(
         "org.slf4j:slf4j-api:2.0.17",
         "org.apache.velocity:velocity-engine-core:2.4.1",
         "org.jetbrains.kotlin:kotlin-stdlib:2.2.0-RC2",
-        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0",
         "org.junit.jupiter:junit-jupiter:5.13.3",
         "org.junit.platform:junit-platform-console:1.13.3",
         "org.junit.platform:junit-platform-suite-api:1.13.3",
