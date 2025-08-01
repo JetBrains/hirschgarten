@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.server.bzlmod
+package org.jetbrains.bazel.commons
 
 import com.intellij.util.containers.BidirectionalMap
 import io.kotest.matchers.shouldBe
