@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.server.sync.languages
+package org.jetbrains.bazel.sync.workspace.languages
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.AfterEach

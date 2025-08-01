@@ -6,7 +6,7 @@ kt_junit5_test(
     src = "JVMLanguagePluginParserTest.kt",
     tags = ["exclusive"],
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace",
     ],
 )
 
@@ -16,7 +16,8 @@ kt_junit5_test(
     src = "LanguagePluginServiceTest.kt",
     tags = ["exclusive"],
     deps = [
+        "//plugin-bazel/src:test_fixtures",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace",
         "//server/bazelrunner",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
     ],
 )

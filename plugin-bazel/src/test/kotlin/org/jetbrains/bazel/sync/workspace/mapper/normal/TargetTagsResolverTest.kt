@@ -1,8 +1,8 @@
-package org.jetbrains.bazel.server.sync
+package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bazel.sync.workspace.model.Tag
+import org.jetbrains.bazel.commons.Tag
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -32,7 +32,7 @@ class TargetTagsResolverTest {
   @Test
   fun `should map executable targets`() {
     val targetInfo =
-      TargetInfo
+      BspTargetInfo.TargetInfo
         .newBuilder()
         .also {
           it.executable = true
@@ -46,7 +46,7 @@ class TargetTagsResolverTest {
   @Test
   fun `should map a target with _binary to library if it is not executable`() {
     val targetInfo =
-      TargetInfo
+      BspTargetInfo.TargetInfo
         .newBuilder()
         .apply {
           kind = "it_only_looks_like_binary"
@@ -61,7 +61,7 @@ class TargetTagsResolverTest {
   @Test
   fun `should map test targets`() {
     val targetInfo =
-      TargetInfo
+      BspTargetInfo.TargetInfo
         .newBuilder()
         .also {
           it.kind = "blargh_test"
@@ -76,7 +76,7 @@ class TargetTagsResolverTest {
   @Test
   fun `should map intellij_plugin_debug_target`() {
     val targetInfo =
-      TargetInfo
+      BspTargetInfo.TargetInfo
         .newBuilder()
         .also {
           it.kind = "intellij_plugin_debug_target"
@@ -90,7 +90,7 @@ class TargetTagsResolverTest {
   @Test
   fun `should map no-ide and manual tags for library`() {
     val targetInfo =
-      TargetInfo
+      BspTargetInfo.TargetInfo
         .newBuilder()
         .also {
           it.addTags("no-ide")
@@ -105,7 +105,7 @@ class TargetTagsResolverTest {
   @Test
   fun `should map no-ide and manual tags for application`() {
     val targetInfo =
-      TargetInfo
+      BspTargetInfo.TargetInfo
         .newBuilder()
         .also {
           it.executable = true
@@ -124,7 +124,7 @@ class TargetTagsResolverTest {
   @ValueSource(strings = ["resources_union", "java_import", "aar_import"])
   fun `should handle special cases`(name: String) {
     val targetInfo =
-      TargetInfo
+      BspTargetInfo.TargetInfo
         .newBuilder()
         .also {
           it.kind = name
@@ -138,7 +138,7 @@ class TargetTagsResolverTest {
   @Test
   fun `should mark android_binary as executable`() {
     val targetInfo =
-      TargetInfo
+      BspTargetInfo.TargetInfo
         .newBuilder()
         .apply {
           kind = "android_binary"

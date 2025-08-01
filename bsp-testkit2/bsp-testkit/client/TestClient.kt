@@ -6,7 +6,6 @@ import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
-import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.FeatureFlags

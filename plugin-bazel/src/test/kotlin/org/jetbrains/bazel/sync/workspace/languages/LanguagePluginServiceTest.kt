@@ -1,22 +1,17 @@
-package org.jetbrains.bazel.server.sync.languages
+package org.jetbrains.bazel.sync.workspace.languages
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import org.jetbrains.bazel.commons.BazelInfo
-import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.orLatestSupported
-import org.jetbrains.bazel.server.sync.languages.android.AndroidLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.cpp.CppLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.go.GoLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.java.JdkResolver
-import org.jetbrains.bazel.server.sync.languages.java.JdkVersionResolver
-import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.java.JdkResolver
+import org.jetbrains.bazel.sync.workspace.languages.java.JdkVersionResolver
+import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -25,8 +20,6 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 
 class LanguagePluginServiceTest {
@@ -40,36 +33,21 @@ class LanguagePluginServiceTest {
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
-    val bazelInfo =
-      BazelInfo(
-        execRoot = Paths.get(""),
-        outputBase = Paths.get(""),
-        workspaceRoot = Paths.get(""),
-        bazelBin = Path("bazel-bin"),
-        release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
-        false,
-        true,
-        emptyList(),
-      )
-    val bazelPathsResolver = BazelPathsResolver(bazelInfo)
+    val bazelPathsResolver = BazelPathsResolverMock.create()
     val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
     val javaLanguagePlugin = JavaLanguagePlugin(bazelPathsResolver, jdkResolver)
     val scalaLanguagePlugin = ScalaLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
-    val cppLanguagePlugin = CppLanguagePlugin(bazelPathsResolver)
     val kotlinLanguagePlugin = KotlinLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
     val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
-    val androidLanguagePlugin = AndroidLanguagePlugin(javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
     val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
     languagePluginsService =
       LanguagePluginsService(
         scalaLanguagePlugin,
         javaLanguagePlugin,
-        cppLanguagePlugin,
         kotlinLanguagePlugin,
         thriftLanguagePlugin,
         pythonLanguagePlugin,
-        androidLanguagePlugin,
         goLanguagePlugin,
       )
   }
@@ -108,18 +86,6 @@ class LanguagePluginServiceTest {
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? ScalaLanguagePlugin
-
-      // then
-      plugin shouldNotBe null
-    }
-
-    @Test
-    fun `should return CppLanguagePlugin for Cpp Language`() {
-      // given
-      val languages: Set<LanguageClass> = hashSetOf(LanguageClass.C)
-
-      // when
-      val plugin = languagePluginsService.getPlugin(languages) as? CppLanguagePlugin
 
       // then
       plugin shouldNotBe null

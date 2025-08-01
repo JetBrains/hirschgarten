@@ -7,10 +7,10 @@ intellij_integration_test_suite(
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext/provider",
     ],
     tags = ["exclusive"],
-    test_package_root = "org.jetbrains.bazel.server.sync",
+    test_package_root = "org.jetbrains.bazel.sync.workspace.mapper.normal",
     deps = [
         "//plugin-bazel/src:test_fixtures",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],
 )
