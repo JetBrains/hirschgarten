@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElement
@@ -23,11 +24,11 @@ class StarlarkClassnameReference(element: StarlarkStringLiteralExpression) :
     return JavaPsiFacade.getInstance(project).findClass(element.getStringContents(), scope)
   }
 
-  override fun getVariants(): Array<out Any?> {
+  override fun getVariants(): Array<LookupElement> {
     val project = element.project
     if (!project.isBazelProject) return emptyArray()
 
-    val suggestions = mutableListOf<Any>()
+    val suggestions = mutableListOf<LookupElement>()
     val fragments = element.getStringContents().split('.')
     val packagePrefix = fragments.dropLast(1).joinToString(".")
     val packageToSearch = JavaPsiFacade.getInstance(project).findPackage(packagePrefix)
@@ -41,8 +42,8 @@ class StarlarkClassnameReference(element: StarlarkStringLiteralExpression) :
     return suggestions.toTypedArray()
   }
 
-  private fun getClassesVariants(packagePrefix: String, packageToSearch: PsiPackage): List<Any> {
-    val suggestions = mutableListOf<Any>()
+  private fun getClassesVariants(packagePrefix: String, packageToSearch: PsiPackage): List<LookupElement> {
+    val suggestions = mutableListOf<LookupElement>()
 
     for (psiClass in packageToSearch.classes) {
       val qualifiedName = psiClass.qualifiedName.orEmpty()
@@ -61,8 +62,8 @@ class StarlarkClassnameReference(element: StarlarkStringLiteralExpression) :
     return suggestions
   }
 
-  private fun getSubPackagesVariants(packagePrefix: String, packageToSearch: PsiPackage): List<Any> {
-    val suggestions = mutableListOf<Any>()
+  private fun getSubPackagesVariants(packagePrefix: String, packageToSearch: PsiPackage): List<LookupElement> {
+    val suggestions = mutableListOf<LookupElement>()
 
     for (subPackage in packageToSearch.subPackages) {
       val subPackageName = subPackage.qualifiedName + "."
@@ -73,7 +74,7 @@ class StarlarkClassnameReference(element: StarlarkStringLiteralExpression) :
             subPackageName,
             PlatformIcons.PACKAGE_ICON,
             1.0,
-            true,
+            false,
           )
 
         suggestions.add(lookupElement)

@@ -25,7 +25,13 @@ fun getCompletionLookupElemenent(
   name: String,
   icon: Icon,
   priority: Double = 0.0,
-  isNotFinishedExpression: Boolean = false,
+  /**
+   * isExpressionFinished indicates whether the lookup element finishes the expression:
+   * `true` if the lookup element completes the entire expression (or its final part),
+   * `false` if the lookup element completes only a part of the expression (for example,
+   * when completing the package path to a class with subsequent subpackages)
+   */
+  isExpressionFinished: Boolean = true,
 ): LookupElement =
   PrioritizedLookupElement.withPriority(
     LookupElementBuilder
@@ -40,8 +46,9 @@ fun getCompletionLookupElemenent(
           document.deleteString(offset, offset + 1)
         }
 
-        if (isNotFinishedExpression) {
-          context.editor.caretModel.moveToOffset(context.tailOffset - 1)
+        // If the expression is not finished, continue completion inside the quotation mark.
+        if (!isExpressionFinished) {
+          context.editor.caretModel.moveToOffset(offset - 1)
           AutoPopupController.getInstance(context.project).scheduleAutoPopup(context.editor)
         }
       },
