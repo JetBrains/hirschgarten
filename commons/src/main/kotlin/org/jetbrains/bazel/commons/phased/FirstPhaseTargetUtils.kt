@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.server.sync.firstPhase
+package org.jetbrains.bazel.commons.phased
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 
