@@ -6,8 +6,6 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bazel.server.model.Tag
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider

@@ -50,7 +50,6 @@ class AspectClientProjectMapper(
     BazelResolvedWorkspace(
       targets = mapWorkspaceTargets(project),
       libraries = mapWorkspaceLibraries(project),
-      goLibraries = mapWorkspaceGoLibraries(project),
       hasError = project.hasError,
     )
 
@@ -85,18 +84,6 @@ class AspectClientProjectMapper(
           sourceJars = it.sources.toList(),
           mavenCoordinates = it.mavenCoordinates,
           isFromInternalTarget = it.isFromInternalTarget,
-        )
-      }
-    return libraries
-  }
-
-  private fun mapWorkspaceGoLibraries(project: AspectBazelMappedProject): List<GoLibraryItem> {
-    val libraries =
-      project.goLibraries.values.map {
-        GoLibraryItem(
-          id = it.label,
-          goImportPath = it.goImportPath,
-          goRoot = it.goRoot,
         )
       }
     return libraries

@@ -8,6 +8,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -19,11 +20,11 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
-import org.jetbrains.bazel.sync.workspace.model.GoLibrary
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.Module
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.commons
 
-import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label

@@ -37,7 +37,6 @@ class PhasedBazelProjectMapper(
     return BazelResolvedWorkspace(
       targets = targets.associateBy { it.id },
       libraries = emptyList(),
-      goLibraries = emptyList(),
       hasError = project.hasError,
     )
   }

@@ -5,7 +5,6 @@ import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested

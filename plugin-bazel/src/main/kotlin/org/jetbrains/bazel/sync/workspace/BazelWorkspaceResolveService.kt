@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
@@ -66,6 +67,7 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
         languagePluginsService = languagePluginsService,
         bazelPathsResolver = paths.bazelPathsResolver,
         targetTagsResolver = TargetTagsResolver(),
+        environmentProvider = EnvironmentProvider.getInstance(),
         mavenCoordinatesResolver = MavenCoordinatesResolver(),
       )
     clientMapper =

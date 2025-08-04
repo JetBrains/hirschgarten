@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
