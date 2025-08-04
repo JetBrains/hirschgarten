@@ -127,10 +127,6 @@ class BazelBspAspectsManager(
         mapOf(
           "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty(),
           "rulesetNameApparent" to ruleLanguage?.rulesetName.orEmpty(),
-          "addTransitiveCompileTimeJars" to
-            workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
-          "transitiveCompileTimeJarsTargetKinds" to
-            workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toStarlarkString(),
           "kotlinEnabled" to kotlinEnabled.toString(),
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),

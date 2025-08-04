@@ -16,8 +16,6 @@ data class EnabledRulesSpec(override val values: List<String>) : WorkspaceContex
 
 data class ImportRunConfigurationsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
 
-data class NoPruneTransitiveCompileTimeJarsPatternsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
-
 data class PrioritizeLibrariesOverModulesTargetKindsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
 
 data class PythonCodeGeneratorRuleNamesSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
@@ -25,5 +23,3 @@ data class PythonCodeGeneratorRuleNamesSpec(override val values: List<String>) :
 data class SyncFlagsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
 
 data class DebugFlagsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
-
-data class TransitiveCompileTimeJarsTargetKindsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()

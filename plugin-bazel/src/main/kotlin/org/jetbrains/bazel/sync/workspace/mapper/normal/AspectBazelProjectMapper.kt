@@ -42,8 +42,6 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 
-private val THIRD_PARTY_LIBRARIES_PATTERN = "external/[^/]+/(.+)/([^/]+)/[^/]+$".toRegex()
-
 class AspectBazelProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
@@ -81,7 +79,6 @@ class AspectBazelProjectMapper(
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, targets)
       }
-    val transitiveCompileTimeJarsTargetKinds = workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toSet()
     val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
         // the import depth mechanism does not apply for go targets sync
@@ -97,19 +94,19 @@ class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 targets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
+                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
                 } == true
               },
             )
         val (nonGoTargetsToImport, nonWorkspaceTargets) =
           nonGoTargetsAtDepth.targets.partition {
-            isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
+            isWorkspaceTarget(it, repoMapping, featureFlags)
           }
         val goTargetsToImport =
           dependencyGraph
             .allTransitiveTargets(goTargetLabels.toSet())
             .targets
-            .filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags) }
+            .filter { isWorkspaceTarget(it, repoMapping, featureFlags) }
         val libraries = (nonWorkspaceTargets + nonGoTargetsAtDepth.directDependencies).associateBy { it.label() }
         (nonGoTargetsToImport + goTargetsToImport).asSequence() to libraries
       }
@@ -162,22 +159,8 @@ class AspectBazelProjectMapper(
           librariesFromDeps,
           librariesFromDepsAndTargets,
           interfacesAndBinariesFromTargetsToImport,
-          transitiveCompileTimeJarsTargetKinds,
         )
       }
-    val librariesFromTransitiveCompileTimeJars =
-      measure("Libraries from transitive compile-time jars") {
-        createLibrariesFromTransitiveCompileTimeJars(
-          targetsToImport,
-          targets,
-          extraLibrariesFromJdeps,
-          dependencyGraph,
-          workspaceContext.experimentalAddTransitiveCompileTimeJars.value,
-          transitiveCompileTimeJarsTargetKinds,
-          workspaceContext.experimentalNoPruneTransitiveCompileTimeJarsPatterns.values,
-        )
-      }
-    val workspaceRoot = bazelPathsResolver.workspaceRoot()
     val modulesFromBazel =
       measure("Create modules") {
         createModules(
@@ -186,9 +169,7 @@ class AspectBazelProjectMapper(
           concatenateMaps(
             librariesFromDeps,
             extraLibrariesFromJdeps,
-            librariesFromTransitiveCompileTimeJars,
           ),
-          transitiveCompileTimeJarsTargetKinds,
           repoMapping,
           workspaceContext,
         )
@@ -196,8 +177,7 @@ class AspectBazelProjectMapper(
     val librariesToImport =
       measure("Merge all libraries") {
         librariesFromDepsAndTargets +
-          extraLibrariesFromJdeps.values.flatten().associateBy { it.label } +
-          librariesFromTransitiveCompileTimeJars.values.flatten().associateBy { it.label }
+          extraLibrariesFromJdeps.values.flatten().associateBy { it.label }
       }
 
     val nonModuleTargetIds =
@@ -216,16 +196,11 @@ class AspectBazelProjectMapper(
 
     return AspectBazelMappedProject(
       workspaceName = workspaceName,
-      // workspaceRoot = workspaceRoot,
       modules = modulesFromBazel.toList(),
       libraries = librariesToImport,
       nonModuleTargets = nonModuleTargets,
-      // repoMapping = repoMapping,
       hasError = hasError,
       moduleCache = modulesFromBazel.associateBy { it.label },
-      // workspaceName = workspaceName,
-      // workspaceContext = workspaceContext,
-      // targets = targets,
     )
   }
 
@@ -401,10 +376,9 @@ class AspectBazelProjectMapper(
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
     interfacesAndBinariesFromTargetsToImport: Map<Label, Set<Path>>,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Map<Label, List<Library>> {
     val targetsToJdepsJars =
-      getAllJdepsDependencies(targetsToImport, libraryDependencies, librariesToImport, transitiveCompileTimeJarsTargetKinds)
+      getAllJdepsDependencies(targetsToImport, libraryDependencies, librariesToImport)
     val libraryNameToLibraryValueMap = HashMap<Label, Library>()
     return targetsToJdepsJars.mapValues { target ->
       val interfacesAndBinariesFromTarget =
@@ -436,12 +410,11 @@ class AspectBazelProjectMapper(
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Map<Label, Set<Path>> {
     val jdepsJars =
       withContext(Dispatchers.IO) {
         targetsToImport.values
-          .filter { targetSupportsJdeps(it, transitiveCompileTimeJarsTargetKinds) }
+          .filter { targetSupportsJdeps(it) }
           .map { target ->
             async {
               target.label() to dependencyJarsFromJdepsFiles(target)
@@ -540,9 +513,8 @@ class AspectBazelProjectMapper(
    */
   private fun Deps.Dependency.isRelevant() = kind in sequenceOf(Deps.Dependency.Kind.EXPLICIT, Deps.Dependency.Kind.IMPLICIT)
 
-  private fun targetSupportsJdeps(targetInfo: TargetInfo, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean {
-    if (targetInfo.kind in transitiveCompileTimeJarsTargetKinds) return false
-    val languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds)
+  private fun targetSupportsJdeps(targetInfo: TargetInfo): Boolean {
+    val languages = inferLanguages(targetInfo)
     return setOf(LanguageClass.JAVA, LanguageClass.KOTLIN, LanguageClass.SCALA).containsAll(languages)
   }
 
@@ -646,101 +618,6 @@ class AspectBazelProjectMapper(
 
   private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 
-  private fun createLibrariesFromTransitiveCompileTimeJars(
-    targetsToImport: Sequence<TargetInfo>,
-    targetsMap: Map<Label, TargetInfo>,
-    extraLibrariesFromJdeps: Map<Label, List<Library>>,
-    dependencyGraph: DependencyGraph,
-    transitiveCompileTimeJarsEnabled: Boolean,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
-    noPrunePatterns: List<String>,
-  ): Map<Label, List<Library>> =
-    if (transitiveCompileTimeJarsEnabled) {
-      val res = HashMap<Label, Library>()
-      targetsToImport.filter { it.kind in transitiveCompileTimeJarsTargetKinds }.associate { targetInfo ->
-        val targetLabel = targetInfo.label()
-        val explicitCompileTimeInterfaces = calculateExplicitCompileTimeInterfaces(targetInfo, targetsMap)
-        val jdepsJars = collectReverseDepsJdepsJars(targetLabel, dependencyGraph, extraLibrariesFromJdeps)
-        val explicitlyDefinedThirdPartyLibraries = extractExplicitThirdPartyLibraries(explicitCompileTimeInterfaces)
-        targetLabel to
-          targetInfo.jvmTargetInfo.transitiveCompileTimeJarsList
-            .map { bazelPathsResolver.resolve(it) }
-            .filter { path ->
-              explicitCompileTimeInterfaces.contains(path) ||
-                jdepsJars.contains(path) ||
-                matchesExplicitThirdPartyLibrary(path, explicitlyDefinedThirdPartyLibraries) ||
-                doNotPrune(path, noPrunePatterns)
-            }.map { path ->
-              val label = syntheticLabel(path)
-              res.computeIfAbsent(label) {
-                Library(
-                  label = label,
-                  outputs = setOf(path),
-                  sources = setOf(),
-                  dependencies = listOf(),
-                )
-              }
-            }
-      }
-    } else {
-      emptyMap()
-    }
-
-  private fun calculateExplicitCompileTimeInterfaces(target: TargetInfo, targetsMap: Map<Label, TargetInfo>) =
-    target.dependenciesList
-      .asSequence()
-      .mapNotNull { targetsMap[it.label()] }
-      .filter { !it.isCompilableByJps() }
-      .flatMap { getTargetInterfaceJarsList(it) }
-      .toSet()
-
-  private fun TargetInfo.isCompilableByJps(): Boolean {
-    val languages = inferLanguages(this, emptySet())
-    if (languages.isEmpty()) return false
-    return setOf(LanguageClass.JAVA, LanguageClass.KOTLIN).containsAll(languages)
-  }
-
-  private fun collectReverseDepsJdepsJars(
-    targetLabel: Label,
-    dependencyGraph: DependencyGraph,
-    extraLibrariesFromJdeps: Map<Label, List<Library>>,
-  ): Set<Path> =
-    dependencyGraph
-      .getReverseDependencies(targetLabel)
-      .mapNotNull { extraLibrariesFromJdeps[it] }
-      .flatMap { it.flatMap { library -> library.outputs } }
-      .toSet()
-
-  private fun extractExplicitThirdPartyLibraries(explicitCompileTimeInterfaces: Set<Path>): Set<String> =
-    explicitCompileTimeInterfaces
-      .filter { it.toString().contains("/external/") }
-      .mapNotNull { jarPath ->
-        THIRD_PARTY_LIBRARIES_PATTERN.find(jarPath.toString())?.groupValues?.getOrNull(1)
-      }.toSet()
-
-  /**
-   * When pruning transitive compile time jars list, ignore jars that are in the pruning exception list
-   */
-  private fun doNotPrune(jar: Path, noPrunePatterns: List<String>): Boolean {
-    val pathString = jar.toString()
-    return noPrunePatterns.any { pathString.contains(it) }
-  }
-
-  private fun matchesExplicitThirdPartyLibrary(jar: Path, explicitThirdPartyLibraries: Set<String>): Boolean {
-    val pathString = jar.toString()
-    // TODO: generalize the logic to support more general cases
-    // related ticket: https://youtrack.jetbrains.com/issue/BAZEL-1739/Generalize-logic-to-retrieve-transitive-compile-time-jars-prune-them-better
-    if (pathString.contains("/external/maven") || pathString.contains("/external/multiversion_maven")) {
-      val matcher = THIRD_PARTY_LIBRARIES_PATTERN.find(pathString)
-      if (matcher != null) {
-        // e.g. "com/google/guava/guava"
-        val id = matcher.groupValues.getOrNull(1) ?: return false
-        return explicitThirdPartyLibraries.contains(id)
-      }
-    }
-    return false
-  }
-
   private fun List<FileLocation>.resolvePaths() = map { bazelPathsResolver.resolve(it) }.toSet()
 
   private fun getTargetOutputJarPaths(targetInfo: TargetInfo) =
@@ -817,13 +694,12 @@ class AspectBazelProjectMapper(
   private fun isWorkspaceTarget(
     target: TargetInfo,
     repoMapping: RepoMapping,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
     featureFlags: FeatureFlags,
   ): Boolean =
     (
       isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
         (
-          shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
+          shouldImportTargetKind(target.kind) ||
             target.hasJvmTargetInfo() &&
             (
               target.dependenciesCount > 0 ||
@@ -838,8 +714,7 @@ class AspectBazelProjectMapper(
       target.hasPythonTargetInfo() &&
       hasKnownPythonSources(target)
 
-  private fun shouldImportTargetKind(kind: String, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean =
-    kind in workspaceTargetKinds || kind in transitiveCompileTimeJarsTargetKinds
+  private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
 
   private val workspaceTargetKinds =
     setOf(
@@ -871,7 +746,6 @@ class AspectBazelProjectMapper(
     targetsToImport: Sequence<TargetInfo>,
     dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
   ): List<Module> =
@@ -884,7 +758,6 @@ class AspectBazelProjectMapper(
               it,
               dependencyGraph,
               generatedLibraries[it.label()].orEmpty(),
-              transitiveCompileTimeJarsTargetKinds,
               repoMapping,
               workspaceContext,
             )
@@ -897,7 +770,6 @@ class AspectBazelProjectMapper(
     target: TargetInfo,
     dependencyGraph: DependencyGraph,
     extraLibraries: Collection<Library>,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
   ): Module {
@@ -905,7 +777,7 @@ class AspectBazelProjectMapper(
     val resolvedDependencies = resolveDirectDependencies(target)
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
-    val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
+    val languages = inferLanguages(target)
     val tags = targetTagsResolver.resolveTags(target, workspaceContext)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getPlugin(languages)
@@ -959,12 +831,9 @@ class AspectBazelProjectMapper(
       "py_library" to setOf(LanguageClass.PYTHON),
     )
 
-  private fun inferLanguages(target: TargetInfo, transitiveCompileTimeJarsTargetKinds: Set<String>): Set<LanguageClass> =
+  private fun inferLanguages(target: TargetInfo): Set<LanguageClass> =
     buildSet {
       // TODO It's a hack preserved from before TargetKind refactorking, to be removed
-      if (transitiveCompileTimeJarsTargetKinds.contains(target.kind)) {
-        add(LanguageClass.JAVA)
-      }
       if (target.hasJvmTargetInfo()) {
         add(LanguageClass.JAVA)
       }

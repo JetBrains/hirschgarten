@@ -115,12 +115,8 @@ def extract_runtime_jars(target, provider):
 
 def extract_compile_jars(provider):
     compilation_info = getattr(provider, "compilation_info", None)
-    transitive_compile_time_jars = extract_transitive_compile_time_jars(provider)
 
-    return compilation_info.compilation_classpath if compilation_info else transitive_compile_time_jars
-
-def extract_transitive_compile_time_jars(provider):
-    return getattr(provider, "transitive_compile_time_jars", depset())
+    return compilation_info.compilation_classpath if compilation_info else []
 
 def get_jvm_provider(target):
     if hasattr(target, "scala"):
@@ -180,11 +176,6 @@ def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
     jvm_flags = do_starlark_string_expansion(ctx, "jvm_flags", raw_jvm_flags, data_deps)
     args = getattr(ctx.rule.attr, "args", [])
     main_class = getattr(ctx.rule.attr, "main_class", None)
-    if ${addTransitiveCompileTimeJars} and ctx.rule.kind in ${transitiveCompileTimeJarsTargetKinds}:
-        transitive_compile_time_jars = extract_transitive_compile_time_jars(provider).to_list()
-    else:
-        transitive_compile_time_jars = []
-
     resolve_files = []
     resolve_files_transitive = []
     if is_external(target):
