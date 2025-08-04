@@ -2,7 +2,15 @@ package org.jetbrains.bazel.sync.workspace.mapper.phased
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.phased.*
+import org.jetbrains.bazel.commons.phased.interestingDeps
+import org.jetbrains.bazel.commons.phased.isBinary
+import org.jetbrains.bazel.commons.phased.isManual
+import org.jetbrains.bazel.commons.phased.isNoIde
+import org.jetbrains.bazel.commons.phased.isTest
+import org.jetbrains.bazel.commons.phased.kind
+import org.jetbrains.bazel.commons.phased.name
+import org.jetbrains.bazel.commons.phased.srcs
+import org.jetbrains.bazel.commons.phased.tags
 import org.junit.jupiter.api.Test
 
 class FirstPhaseTargetUtilsTest {
