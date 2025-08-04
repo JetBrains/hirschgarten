@@ -16,13 +16,11 @@ import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
 import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -41,11 +39,11 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     when {
       executor is DefaultDebugExecutor -> {
         environment.putCopyableUserData(KOTLIN_COROUTINE_LIB_KEY, AtomicReference())
-        JvmRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), state)
+        JvmRunWithDebugCommandLineState(environment, state)
       }
 
       else -> {
-        BazelRunCommandLineState(environment, UUID.randomUUID().toString(), state)
+        BazelRunCommandLineState(environment, state)
       }
     }
 
@@ -71,22 +69,18 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   }
 }
 
-class JvmRunWithDebugCommandLineState(
-  environment: ExecutionEnvironment,
-  originId: OriginId,
-  val settings: JvmRunState,
-) : JvmDebuggableCommandLineState(environment, originId, settings.debugPort) {
+class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val settings: JvmRunState) :
+  JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
   override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
     val configuration = environment.runProfile as BazelRunConfiguration
-    val targetId = configuration.targets.single()
     val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
     val additionalBazelParams = settings.additionalBazelParams ?: ""
     val runParams =
       RunParams(
-        targetId,
-        originId = originId,
+        target = configuration.targets.single(),
+        originId = originId.toString(),
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
         workingDirectory = settings.workingDirectory,
@@ -94,7 +88,12 @@ class JvmRunWithDebugCommandLineState(
         pidDeferred = pidDeferred,
       )
     val remoteDebugData = DebugType.JDWP(getConnectionPort())
-    val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
+    val runWithDebugParams =
+      RunWithDebugParams(
+        originId = originId.toString(),
+        runParams = runParams,
+        debug = remoteDebugData,
+      )
 
     server.buildTargetRunWithDebug(runWithDebugParams)
   }

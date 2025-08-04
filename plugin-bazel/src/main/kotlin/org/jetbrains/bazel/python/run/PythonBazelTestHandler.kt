@@ -16,8 +16,8 @@ class PythonBazelTestHandler : PythonBazelHandler() {
 
   override val state = GenericTestState()
 
-  override fun createCommandLineState(environment: ExecutionEnvironment, originId: String): BazelCommandLineStateBase =
-    BazelTestCommandLineState(environment, originId, state)
+  override fun createCommandLineState(environment: ExecutionEnvironment): BazelCommandLineStateBase =
+    BazelTestCommandLineState(environment, state)
 
   override fun getProgramArguments(): String? = state.programArguments
 

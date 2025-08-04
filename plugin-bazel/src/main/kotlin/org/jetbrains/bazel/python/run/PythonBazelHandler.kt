@@ -7,19 +7,16 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.python.debug.PythonDebugCommandLineState
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelRunHandler
-import java.util.UUID
 
 abstract class PythonBazelHandler : BazelRunHandler {
-  override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-    val originId = UUID.randomUUID().toString()
-    return if (executor.id == DefaultDebugExecutor.EXECUTOR_ID) {
-      PythonDebugCommandLineState(environment, originId, getProgramArguments())
+  override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
+    if (executor.id == DefaultDebugExecutor.EXECUTOR_ID) {
+      PythonDebugCommandLineState(environment, getProgramArguments())
     } else {
-      createCommandLineState(environment, originId)
+      createCommandLineState(environment)
     }
-  }
 
-  protected abstract fun createCommandLineState(environment: ExecutionEnvironment, originId: String): BazelCommandLineStateBase
+  protected abstract fun createCommandLineState(environment: ExecutionEnvironment): BazelCommandLineStateBase
 
   protected abstract fun getProgramArguments(): String?
 }

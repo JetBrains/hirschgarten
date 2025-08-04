@@ -19,10 +19,8 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.io.File
-import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 /** Used to store a runner to an [ExecutionEnvironment].  */
@@ -44,14 +42,19 @@ class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler
     when {
       executor is DefaultDebugExecutor -> {
         environment.putCopyableUserData(EXECUTABLE_KEY, AtomicReference())
-        val config = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType())
         val target = getTargetId(environment)
-        val module = WorkspaceModuleUtils.findModule(environment.project) ?: error("Could not find module for target $target")
-        GoTestWithDebugCommandLineState(environment, UUID.randomUUID().toString(), module, config, state)
+        val project = environment.project
+        val module = WorkspaceModuleUtils.findModule(project) ?: error("Could not find module for target $target")
+        GoTestWithDebugCommandLineState(
+          environment = environment,
+          module = module,
+          configuration = GoApplicationConfiguration(project, "default", BazelRunConfigurationType()),
+          settings = state,
+        )
       }
 
       else -> {
-        BazelTestCommandLineState(environment, UUID.randomUUID().toString(), state)
+        BazelTestCommandLineState(environment, state)
       }
     }
 
@@ -76,11 +79,10 @@ class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler
 
 open class GoTestWithDebugCommandLineState(
   environment: ExecutionEnvironment,
-  originId: OriginId,
   module: Module,
   configuration: GoApplicationConfiguration,
   val settings: GenericTestState,
-) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
+) : GoDebuggableCommandLineState(environment, module, configuration) {
   override fun patchAdditionalConfigs() {
     with(configuration) {
       val testFilter = settings.testFilter

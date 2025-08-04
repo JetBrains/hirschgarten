@@ -18,12 +18,10 @@ import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
 import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.TestParams
-import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -42,11 +40,11 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     when {
       executor is DefaultDebugExecutor -> {
         environment.putCopyableUserData(KOTLIN_COROUTINE_LIB_KEY, AtomicReference())
-        JvmTestWithDebugCommandLineState(environment, UUID.randomUUID().toString(), state)
+        JvmTestWithDebugCommandLineState(environment, state)
       }
 
       else -> {
-        BazelTestCommandLineState(environment, UUID.randomUUID().toString(), state)
+        BazelTestCommandLineState(environment, state)
       }
     }
 
@@ -67,24 +65,20 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   }
 }
 
-class JvmTestWithDebugCommandLineState(
-  environment: ExecutionEnvironment,
-  originId: OriginId,
-  val settings: JvmTestState,
-) : JvmDebuggableCommandLineState(environment, originId, settings.debugPort) {
+class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val settings: JvmTestState) :
+  JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelTestTaskListener(handler)
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
   override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
     val configuration = environment.runProfile as BazelRunConfiguration
-    val targetIds = configuration.targets
     val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
     val additionalBazelParams = settings.additionalBazelParams ?: ""
     val testParams =
       TestParams(
-        targets = targetIds,
-        originId = originId,
+        targets = configuration.targets,
+        originId = originId.toString(),
         workingDirectory = settings.workingDirectory,
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,

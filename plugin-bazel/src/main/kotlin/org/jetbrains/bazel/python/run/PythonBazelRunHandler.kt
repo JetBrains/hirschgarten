@@ -16,8 +16,8 @@ class PythonBazelRunHandler : PythonBazelHandler() {
 
   override val state = GenericRunState()
 
-  override fun createCommandLineState(environment: ExecutionEnvironment, originId: String): BazelCommandLineStateBase =
-    BazelRunCommandLineState(environment, originId, state)
+  override fun createCommandLineState(environment: ExecutionEnvironment): BazelCommandLineStateBase =
+    BazelRunCommandLineState(environment, state)
 
   override fun getProgramArguments(): String? = state.programArguments
 

@@ -3,13 +3,8 @@ package org.jetbrains.bazel.jvm.run
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
-import org.jetbrains.bazel.taskEvents.OriginId
 
-abstract class JvmDebuggableCommandLineState(
-  environment: ExecutionEnvironment,
-  originId: OriginId,
-  debugPort: Int,
-) : BazelCommandLineStateBase(environment, originId) {
+abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, debugPort: Int) : BazelCommandLineStateBase(environment) {
   // create remote connection with client mode
   val remoteConnection: RemoteConnection =
     RemoteConnection(
