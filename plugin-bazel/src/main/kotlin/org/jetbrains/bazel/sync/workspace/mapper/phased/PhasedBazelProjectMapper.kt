@@ -6,18 +6,12 @@ import org.jetbrains.bazel.commons.Language
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.phased.*
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.server.sync.firstPhase.interestingDeps
-import org.jetbrains.bazel.server.sync.firstPhase.isBinary
-import org.jetbrains.bazel.server.sync.firstPhase.isManual
-import org.jetbrains.bazel.server.sync.firstPhase.isTest
-import org.jetbrains.bazel.server.sync.firstPhase.kind
-import org.jetbrains.bazel.server.sync.firstPhase.name
-import org.jetbrains.bazel.server.sync.firstPhase.resources
-import org.jetbrains.bazel.server.sync.firstPhase.srcs
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.languages.JVMLanguagePluginParser
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -26,14 +20,27 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
-class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolver) {
-  fun resolveWorkspace(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): BazelResolvedWorkspace =
-    BazelResolvedWorkspace(
-      targets = project.targets.mapValues { it.value.target.toBspBuildTarget(context, project) },
+class PhasedBazelProjectMapper(
+  private val bazelPathsResolver: BazelPathsResolver,
+  private val workspaceContext: WorkspaceContext
+) {
+  fun resolveWorkspace(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): BazelResolvedWorkspace {
+    val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync.value
+    val targets = project.targets
+      .asSequence()
+      .map { it.value.target }
+      .filter { it.isSupported() }
+      .filter { shouldSyncManualTargets || !it.isManual }
+      .filterNot { it.isNoIde }
+      .map { it.toBspBuildTarget(context, project) }
+      .toList()
+    return BazelResolvedWorkspace(
+      targets = targets.associateBy { it.id },
       libraries = emptyList(),
       goLibraries = emptyList(),
       hasError = project.hasError,
     )
+  }
 
   private fun Build.Target.toBspBuildTarget(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): RawBuildTarget {
     val label = Label.parse(name).assumeResolved()

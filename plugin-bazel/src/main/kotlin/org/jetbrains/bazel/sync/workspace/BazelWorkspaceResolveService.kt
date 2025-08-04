@@ -59,6 +59,7 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
       }
     }
     val paths = connection.runWithServer { server -> server.workspaceBazelPaths() }
+    val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
     val languagePluginsService = createLanguagePluginsService(paths.bazelPathsResolver)
     bazelMapper =
       AspectBazelProjectMapper(
@@ -74,9 +75,7 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
         bazelPathsResolver = paths.bazelPathsResolver,
       )
     phasedMapper =
-      PhasedBazelProjectMapper(
-        bazelPathsResolver = paths.bazelPathsResolver,
-      )
+      PhasedBazelProjectMapper(bazelPathsResolver = paths.bazelPathsResolver, workspaceContext = workspaceContext)
     state = BazelWorkspaceSyncState.Initialized
   }
 
