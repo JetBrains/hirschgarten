@@ -17,7 +17,6 @@ import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
 import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
@@ -87,12 +86,11 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
         additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
         pidDeferred = pidDeferred,
       )
-    val remoteDebugData = DebugType.JDWP(getConnectionPort())
     val runWithDebugParams =
       RunWithDebugParams(
         originId = originId.toString(),
         runParams = runParams,
-        debug = remoteDebugData,
+        debug = debugType,
       )
 
     server.buildTargetRunWithDebug(runWithDebugParams)
