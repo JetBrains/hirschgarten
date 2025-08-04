@@ -19,7 +19,6 @@ import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
 import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.TestParams
 import java.util.concurrent.atomic.AtomicReference
@@ -82,7 +81,7 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
         workingDirectory = settings.workingDirectory,
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
-        debug = DebugType.JDWP(getConnectionPort()),
+        debug = debugType,
         testFilter = settings.testFilter,
         additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
       )
