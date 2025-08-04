@@ -49,6 +49,7 @@ open class BuildServerMock(
   private val jvmClasspathResult: BspJvmClasspath? = null,
 ) : JoinedBuildServer {
   override suspend fun runSync(build: Boolean, originId: String): BazelProject = wrapInFuture(bazelProject)
+
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsResult)
 
@@ -92,6 +93,7 @@ open class BuildServerMock(
   override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
 
   override suspend fun jvmToolchainInfo() = JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
+
   override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath =
     wrapInFuture(jvmClasspathResult)
 

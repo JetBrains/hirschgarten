@@ -15,7 +15,8 @@ fun createMockTarget(
   tags: List<String> = emptyList(),
 ): Target {
   val rule =
-    Rule.newBuilder()
+    Rule
+      .newBuilder()
       .setName(name)
       .setRuleClass(kind)
       .addAttribute(("deps" to deps).toListAttribute())

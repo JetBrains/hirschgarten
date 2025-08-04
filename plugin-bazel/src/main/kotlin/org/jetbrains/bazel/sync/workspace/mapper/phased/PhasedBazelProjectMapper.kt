@@ -28,20 +28,18 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
-class PhasedBazelProjectMapper(
-  private val bazelPathsResolver: BazelPathsResolver,
-  private val workspaceContext: WorkspaceContext
-) {
+class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) {
   fun resolveWorkspace(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): BazelResolvedWorkspace {
     val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync.value
-    val targets = project.targets
-      .asSequence()
-      .map { it.value.target }
-      .filter { it.isSupported() }
-      .filter { shouldSyncManualTargets || !it.isManual }
-      .filterNot { it.isNoIde }
-      .map { it.toBspBuildTarget(context, project) }
-      .toList()
+    val targets =
+      project.targets
+        .asSequence()
+        .map { it.value.target }
+        .filter { it.isSupported() }
+        .filter { shouldSyncManualTargets || !it.isManual }
+        .filterNot { it.isNoIde }
+        .map { it.toBspBuildTarget(context, project) }
+        .toList()
     return BazelResolvedWorkspace(
       targets = targets.associateBy { it.id },
       libraries = emptyList(),

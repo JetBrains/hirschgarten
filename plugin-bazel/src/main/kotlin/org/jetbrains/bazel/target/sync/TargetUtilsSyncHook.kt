@@ -11,7 +11,8 @@ import java.nio.file.Path
 private class TargetUtilsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val bspTargets =
-      environment.resolver.getOrFetchResolvedWorkspace()
+      environment.resolver
+        .getOrFetchResolvedWorkspace()
         .targets
         .values
         .toList()

@@ -85,9 +85,11 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
 
 private fun createMockProject(lightweightModules: List<Build.Target>): PhasedBazelMappedProject =
   PhasedBazelMappedProject(
-    targets = lightweightModules.map { RawPhasedTarget(it) }
-      .associateBy { Label.parse(it.target.rule.name) },
-    hasError = false
+    targets =
+      lightweightModules
+        .map { RawPhasedTarget(it) }
+        .associateBy { Label.parse(it.target.rule.name) },
+    hasError = false,
   )
 
 // Helper: creates a mock source file at the given relative path with the given package.
@@ -174,7 +176,7 @@ class FirstPhaseTargetToBspMapperTest {
             // target7 should have its own sources – we now create files for it
             srcs = listOf("//target7:src1.java", "//target7:a/src2.java"),
           ),
-          //// filegroup targets: note we set kind exactly to "filegroup" so they are filtered out from top-level.
+          // // filegroup targets: note we set kind exactly to "filegroup" so they are filtered out from top-level.
           createMockTarget(
             name = "//filegroupSources",
             kind = "filegroup",
@@ -285,7 +287,7 @@ class FirstPhaseTargetToBspMapperTest {
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target2")),
           ),
-          //// target3
+          // // target3
           RawBuildTarget(
             id = Label.parse("//target3"),
             tags = listOf(),
@@ -304,7 +306,7 @@ class FirstPhaseTargetToBspMapperTest {
               ),
             baseDirectory = workspaceRoot.resolve(Path("target3")),
           ),
-          //// target4
+          // // target4
           RawBuildTarget(
             id = Label.parse("//target4"),
             tags = listOf(),
@@ -319,7 +321,7 @@ class FirstPhaseTargetToBspMapperTest {
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target4")),
           ),
-          //// target5
+          // // target5
           RawBuildTarget(
             id = Label.parse("//target5"),
             tags = listOf(),
@@ -334,7 +336,7 @@ class FirstPhaseTargetToBspMapperTest {
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target5")),
           ),
-          //// target6
+          // // target6
           RawBuildTarget(
             id = Label.parse("//target6"),
             tags = listOf(),
@@ -349,7 +351,7 @@ class FirstPhaseTargetToBspMapperTest {
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target6")),
           ),
-          //// target7: now with its created source files
+          // // target7: now with its created source files
           RawBuildTarget(
             id = Label.parse("//target7"),
             tags = listOf(),
@@ -368,7 +370,7 @@ class FirstPhaseTargetToBspMapperTest {
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target7")),
           ),
-          //// target8: merging its own source and the sources from filegroupSources dependency
+          // // target8: merging its own source and the sources from filegroupSources dependency
           RawBuildTarget(
             id = Label.parse("//target8"),
             tags = listOf(),
@@ -433,7 +435,6 @@ class FirstPhaseTargetToBspMapperTest {
           ),
         )
       val project = createMockProject(targets)
-
 
       // when
       val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(), createMockWorkspaceContext(true))

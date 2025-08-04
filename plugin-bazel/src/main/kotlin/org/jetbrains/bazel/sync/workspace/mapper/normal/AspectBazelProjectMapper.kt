@@ -49,7 +49,7 @@ class AspectBazelProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
-  private val environmentProvider: EnvironmentProvider
+  private val environmentProvider: EnvironmentProvider,
 ) {
   val logger = LoggerFactory.getLogger(AspectBazelProjectMapper::class.java)
 
@@ -137,10 +137,6 @@ class AspectBazelProjectMapper(
       measure("Create scala libraries") {
         calculateScalaLibrariesMapper(targetsToImport)
       }
-    val androidLibrariesMapper =
-      measure("Create android libraries") {
-        calculateAndroidLibrariesMapper(targetsToImport)
-      }
     val librariesFromDeps =
       measure("Merge libraries from deps") {
         concatenateMaps(
@@ -149,7 +145,6 @@ class AspectBazelProjectMapper(
           kotlinStdlibsMapper,
           kotlincPluginLibrariesMapper,
           scalaLibrariesMapper,
-          androidLibrariesMapper,
         )
       }
     val librariesFromDepsAndTargets =
@@ -393,40 +388,6 @@ class AspectBazelProjectMapper(
         it.compilerJars
       }.toSet()
 
-  private fun calculateAndroidLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
-    targetsToImport
-      .mapNotNull { target ->
-        val aidlLibrary = createAidlLibrary(target) ?: return@mapNotNull null
-        target.label() to listOf(aidlLibrary)
-      }.toMap()
-
-  private fun createAidlLibrary(target: TargetInfo): Library? {
-    if (!target.hasAndroidTargetInfo()) return null
-    val androidTargetInfo = target.androidTargetInfo
-    if (!androidTargetInfo.hasAidlBinaryJar()) return null
-
-    val libraryLabel = Label.parse(target.id + "_aidl")
-    if (target.sourcesList.isEmpty()) {
-      // Bazel doesn't create the AIDL jar if there's no sources, since it'd be the same as the output jar
-      return null
-    }
-
-    val outputs = listOf(target.androidTargetInfo.aidlBinaryJar).resolvePaths()
-    val sources =
-      if (target.androidTargetInfo.hasAidlSourceJar()) {
-        listOf(target.androidTargetInfo.aidlSourceJar).resolvePaths()
-      } else {
-        emptySet()
-      }
-    return Library(
-      label = libraryLabel,
-      outputs = outputs,
-      sources = sources,
-      dependencies = emptyList(),
-      interfaceJars = emptySet(),
-    )
-  }
-
   /**
    * In some cases, the jar dependencies of a target might be injected by bazel or rules and not are not
    * available via `deps` field of a target. For this reason, we read JavaOutputInfo's jdeps file and
@@ -642,7 +603,7 @@ class AspectBazelProjectMapper(
     onlyOutputJars: Boolean,
     isInternalTarget: Boolean,
   ): Library? {
-    val outputs = getTargetOutputJarPaths(targetInfo) + getAndroidAarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
+    val outputs = getTargetOutputJarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
     val sources = getSourceJarPaths(targetInfo)
     val interfaceJars = getTargetInterfaceJarsSet(targetInfo).toSet()
     val dependencies: List<BspTargetInfo.Dependency> = if (!onlyOutputJars) targetInfo.dependenciesList else emptyList()
@@ -786,21 +747,6 @@ class AspectBazelProjectMapper(
     getTargetOutputJarsList(targetInfo)
       .toSet()
 
-  private fun getAndroidAarPaths(targetInfo: TargetInfo): Set<Path> {
-    if (!targetInfo.hasAndroidAarImportInfo()) return emptySet()
-    val androidAarImportInfo = targetInfo.androidAarImportInfo
-
-    val result = mutableSetOf<Path>()
-    result.add(bazelPathsResolver.resolve(androidAarImportInfo.manifest))
-    if (androidAarImportInfo.hasResourceFolder()) {
-      result.add(bazelPathsResolver.resolve(androidAarImportInfo.resourceFolder).resolve("res"))
-    }
-    if (androidAarImportInfo.hasRTxt()) {
-      result.add(bazelPathsResolver.resolve(targetInfo.androidAarImportInfo.rTxt))
-    }
-    return result
-  }
-
   private fun getIntellijPluginJars(targetInfo: TargetInfo): Set<Path> {
     // _repackaged_files is created upon calling repackaged_files in rules_intellij
     if (targetInfo.kind != "_repackaged_files") return emptySet()
@@ -909,11 +855,6 @@ class AspectBazelProjectMapper(
       "scala_library",
       "scala_binary",
       "scala_test",
-      "android_library",
-      "android_binary",
-      "android_local_test",
-      "kt_android_library",
-      "kt_android_local_test",
       "intellij_plugin_debug_target",
       "go_proto_library",
       "go_library",

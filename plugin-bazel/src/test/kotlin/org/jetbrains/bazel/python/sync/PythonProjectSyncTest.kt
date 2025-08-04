@@ -77,15 +77,18 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     // given
     val pythonTestTargets = generateTestSet()
     val server = BuildServerMock()
-    val endpointProxy = BazelEndpointProxyMock(
-      dependencySourcesResult = DependencySourcesResult(listOf())
-    )
-    val resolver = BazelWorkspaceResolverMock(
-      resolvedWorkspace = BazelResolvedWorkspace(
-        targets = pythonTestTargets.buildTargets.associateBy { it.id }
-      ),
-      endpointProxy = endpointProxy
-    )
+    val endpointProxy =
+      BazelEndpointProxyMock(
+        dependencySourcesResult = DependencySourcesResult(listOf()),
+      )
+    val resolver =
+      BazelWorkspaceResolverMock(
+        resolvedWorkspace =
+          BazelResolvedWorkspace(
+            targets = pythonTestTargets.buildTargets.associateBy { it.id },
+          ),
+        endpointProxy = endpointProxy,
+      )
     val diff = AllProjectStructuresProvider(project).newDiff()
 
     // when
@@ -123,15 +126,18 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     // given
     val pythonTestTargets = generateTestSetWithSources()
     val server = BuildServerMock()
-    val endpointProxy = BazelEndpointProxyMock(
-      dependencySourcesResult = DependencySourcesResult(listOf())
-    )
-    val resolver = BazelWorkspaceResolverMock(
-      resolvedWorkspace = BazelResolvedWorkspace(
-        targets = pythonTestTargets.buildTargets.associateBy { it.id }
-      ),
-      endpointProxy = endpointProxy
-    )
+    val endpointProxy =
+      BazelEndpointProxyMock(
+        dependencySourcesResult = DependencySourcesResult(listOf()),
+      )
+    val resolver =
+      BazelWorkspaceResolverMock(
+        resolvedWorkspace =
+          BazelResolvedWorkspace(
+            targets = pythonTestTargets.buildTargets.associateBy { it.id },
+          ),
+        endpointProxy = endpointProxy,
+      )
     val diff = AllProjectStructuresProvider(project).newDiff()
 
     // when

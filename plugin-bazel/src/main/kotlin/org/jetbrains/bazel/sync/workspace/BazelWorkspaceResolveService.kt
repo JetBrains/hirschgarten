@@ -53,10 +53,10 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
       BazelWorkspaceSyncState.Unsynced,
       is BazelWorkspaceSyncState.Resolved,
       is BazelWorkspaceSyncState.Synced,
-        -> return
+      -> return
 
       BazelWorkspaceSyncState.NotInitialized -> {
-        /* fall through */
+        // fall through
       }
     }
     val paths = connection.runWithServer { server -> server.workspaceBazelPaths() }
@@ -89,7 +89,7 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
       BazelWorkspaceSyncState.NotInitialized -> initWorkspace()
 
       BazelWorkspaceSyncState.Unsynced, BazelWorkspaceSyncState.Initialized -> {
-        /* fall through */
+        // fall through
       }
     }
     val bazelProject = connection.runWithServer { server -> server.runSync(build, taskId) }
@@ -99,17 +99,18 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
   }
 
   private suspend fun resolveWorkspace(scope: ProjectSyncScope, taskId: String): ResolvedWorkspaceState {
-    val synced = when (val state = state) {
-      is BazelWorkspaceSyncState.Resolved,
+    val synced =
+      when (val state = state) {
+        is BazelWorkspaceSyncState.Resolved,
         -> return state.resolved
 
-      is BazelWorkspaceSyncState.NotInitialized,
-      BazelWorkspaceSyncState.Initialized,
-      BazelWorkspaceSyncState.Unsynced,
+        is BazelWorkspaceSyncState.NotInitialized,
+        BazelWorkspaceSyncState.Initialized,
+        BazelWorkspaceSyncState.Unsynced,
         -> syncWorkspace(false, taskId)
 
-      is BazelWorkspaceSyncState.Synced -> state.synced
-    }
+        is BazelWorkspaceSyncState.Synced -> state.synced
+      }
 
     val repoMapping = connection.runWithServer { server -> server.workspaceBazelRepoMapping() }
     val (project, workspace) =
@@ -159,32 +160,21 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
     }
   }
 
-  override suspend fun getOrFetchResolvedWorkspace(
-    scope: ProjectSyncScope,
-    taskId: String,
-  ): BazelResolvedWorkspace {
-    return resolveWorkspace(scope, taskId).resolvedWorkspace
-  }
+  override suspend fun getOrFetchResolvedWorkspace(scope: ProjectSyncScope, taskId: String): BazelResolvedWorkspace =
+    resolveWorkspace(scope, taskId).resolvedWorkspace
 
-  override suspend fun getOrFetchMappedProject(
-    scope: ProjectSyncScope,
-    taskId: String,
-  ): BazelMappedProject {
-    return resolveWorkspace(scope, taskId).mappedProject
-  }
+  override suspend fun getOrFetchMappedProject(scope: ProjectSyncScope, taskId: String): BazelMappedProject =
+    resolveWorkspace(scope, taskId).mappedProject
 
-  override suspend fun getOrFetchSyncedProject(
-    build: Boolean,
-    taskId: String,
-  ): EarlyBazelSyncProject {
-    return syncWorkspace(build, taskId).earlyProject
-  }
+  override suspend fun getOrFetchSyncedProject(build: Boolean, taskId: String): EarlyBazelSyncProject =
+    syncWorkspace(build, taskId).earlyProject
 
   override suspend fun <T> withEndpointProxy(func: suspend (BazelEndpointProxy) -> T): T {
-    val project = getOrFetchMappedProject(
-      scope = SecondPhaseSync,
-      taskId = PROJECT_SYNC_TASK_ID,
-    )
+    val project =
+      getOrFetchMappedProject(
+        scope = SecondPhaseSync,
+        taskId = PROJECT_SYNC_TASK_ID,
+      )
     return connection.runWithServer {
       val endpoints = DefaultBazelEndpointProxy(clientMapper, project, it)
       func(endpoints)

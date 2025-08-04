@@ -176,7 +176,7 @@ class ProjectSyncTask(private val project: Project) {
     buildProject: Boolean,
   ): SyncResultStatus {
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val resolver  = BazelWorkspaceResolveService.getInstance(project)
+    val resolver = BazelWorkspaceResolveService.getInstance(project)
     val syncStatus =
       project.connection.runWithServer { server ->
         bspTracer.spanBuilder("collect.project.details.ms").use {

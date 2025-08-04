@@ -36,28 +36,21 @@ class BazelWorkspaceResolverMock(
   private val earlyBazelSyncProject: EarlyBazelSyncProject? = null,
   private val endpointProxy: BazelEndpointProxy? = null,
 ) : BazelWorkspaceResolver {
-  override suspend fun getOrFetchResolvedWorkspace(
-    scope: ProjectSyncScope,
-    taskId: String
-  ): BazelResolvedWorkspace = resolvedWorkspace ?: error("resolved workspace is not set")
+  override suspend fun getOrFetchResolvedWorkspace(scope: ProjectSyncScope, taskId: String): BazelResolvedWorkspace =
+    resolvedWorkspace ?: error("resolved workspace is not set")
 
-  override suspend fun getOrFetchMappedProject(
-    scope: ProjectSyncScope,
-    taskId: String
-  ): BazelMappedProject = mappedProject ?: error("mapped project is not set")
+  override suspend fun getOrFetchMappedProject(scope: ProjectSyncScope, taskId: String): BazelMappedProject =
+    mappedProject ?: error("mapped project is not set")
 
-  override suspend fun getOrFetchSyncedProject(
-    build: Boolean,
-    taskId: String
-  ): EarlyBazelSyncProject = earlyBazelSyncProject ?: error("early bazel sync project is not set")
+  override suspend fun getOrFetchSyncedProject(build: Boolean, taskId: String): EarlyBazelSyncProject =
+    earlyBazelSyncProject ?: error("early bazel sync project is not set")
 
   override suspend fun invalidateCachedState() {
     // no-op
   }
 
-  override suspend fun <T> withEndpointProxy(func: suspend (BazelEndpointProxy) -> T): T {
-    return func(endpointProxy ?: error("endpoint proxy is not set"))
-  }
+  override suspend fun <T> withEndpointProxy(func: suspend (BazelEndpointProxy) -> T): T =
+    func(endpointProxy ?: error("endpoint proxy is not set"))
 }
 
 class BazelEndpointProxyMock(
@@ -95,17 +88,14 @@ class BazelEndpointProxyMock(
   override suspend fun jvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
     jvmTestEnvironmentResult ?: error("jvmTestEnvironmentResult is not set")
 
-  override suspend fun buildTargetCompile(params: CompileParams): CompileResult =
-    compileResult ?: error("compileResult is not set")
+  override suspend fun buildTargetCompile(params: CompileParams): CompileResult = compileResult ?: error("compileResult is not set")
 
-  override suspend fun buildTargetTest(params: TestParams): TestResult =
-    testResult ?: error("testResult is not set")
+  override suspend fun buildTargetTest(params: TestParams): TestResult = testResult ?: error("testResult is not set")
 
   override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult =
     analysisDebugResult ?: error("analysisDebugResult is not set")
 
-  override suspend fun buildTargetRun(params: RunParams): RunResult =
-    runResult ?: error("runResult is not set")
+  override suspend fun buildTargetRun(params: RunParams): RunResult = runResult ?: error("runResult is not set")
 
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult =
     runWithDebugResult ?: error("runWithDebugResult is not set")
