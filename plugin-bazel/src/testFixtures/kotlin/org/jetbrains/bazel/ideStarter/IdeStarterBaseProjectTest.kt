@@ -32,18 +32,20 @@ import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.resourceUtil.ResourceUtil
+import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -56,6 +58,7 @@ abstract class IdeStarterBaseProjectTest {
     when (System.getProperty("bazel.ide.starter.test.ide.id")) {
       "IC" -> IdeProductProvider.IC
       "PY" -> IdeProductProvider.PY
+      "GO" -> IdeProductProvider.GO
       else -> error("IDE id is not set properly. Please use ide_starter_test rule to setup the test.")
     }
 
@@ -80,8 +83,9 @@ abstract class IdeStarterBaseProjectTest {
       .patchPathVariable()
       .withKotlinPluginK2()
       .withBazelPluginInstalled()
+      .addIdeStarterTestMarker()
   // uncomment for debugging
-  //  .applyVMOptionsPatch { debug(8000, suspend = true) }
+  // .applyVMOptionsPatch { debug(8000, suspend = true) }
 
   @BeforeEach
   fun initialize() {
@@ -187,6 +191,13 @@ abstract class IdeStarterBaseProjectTest {
     return this
   }
 
+  private fun IDETestContext.addIdeStarterTestMarker(): IDETestContext {
+    applyVMOptionsPatch {
+      addSystemProperty(IS_IN_IDE_STARTER_TEST, "true")
+    }
+    return this
+  }
+
   protected fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
     if (localProjectPath != null) {
@@ -223,8 +234,15 @@ inline fun Driver.execute(builder: CommandChain.() -> Unit) {
 
 fun Driver.syncBazelProject() {
   execute(CommandChain().takeScreenshot("startSync"))
+  execute(CommandChain().openBspToolWindow())
+  execute(CommandChain().takeScreenshot("openBspToolWindow"))
   execute(CommandChain().waitForBazelSync())
   execute(CommandChain().waitForSmartMode())
+}
+
+fun <T : CommandChain> T.openBspToolWindow(): T {
+  addCommand(CMD_PREFIX + "openBspToolWindow")
+  return this
 }
 
 fun <T : CommandChain> T.waitForBazelSync(): T {

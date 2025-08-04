@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.workspace.excludeSymlinksFromFileWatcher
 import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
@@ -20,6 +21,7 @@ class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
 
     if (symlinksToExclude.isNotEmpty()) {
       this.symlinksToExclude = symlinksToExclude
+      excludeSymlinksFromFileWatcher(symlinksToExclude)
     }
     return symlinksToExclude
   }

@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.bsp.managers
 import io.kotest.matchers.equals.shouldBeEqual
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.junit.jupiter.api.BeforeAll
@@ -28,7 +27,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
             load("//aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
             load("//aspects:rules/python/python_info.bzl","extract_python_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info]
-            TOOLCHAINS=["@bazel_tools//tools/jdk:runtime_toolchain_type"]
+            TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False)]
         """.replace(" ", "").replace("\n", "")
   private val cppFileContent =
     """ load("//aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
@@ -36,7 +35,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
             load("//aspects:rules/python/python_info.bzl","extract_python_info")
             load("//aspects:rules/cpp/cpp_info.bzl","extract_cpp_info","extract_c_toolchain_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info,extract_cpp_info,extract_c_toolchain_info]
-            TOOLCHAINS=["@bazel_tools//tools/jdk:runtime_toolchain_type"]
+            TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False)]
         """.replace(" ", "").replace("\n", "")
   private val goFileContent =
     """ load("//aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
@@ -44,7 +43,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
             load("//aspects:rules/python/python_info.bzl","extract_python_info")
             load("//aspects:rules/go/go_info.bzl","extract_go_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info,extract_go_info]
-            TOOLCHAINS=["@bazel_tools//tools/jdk:runtime_toolchain_type","@io_bazel_rules_go//go:toolchain"]
+            TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False),"@io_bazel_rules_go//go:toolchain"]
         """.replace(" ", "").replace("\n", "")
   private val allExtensionsFileContent =
     """ load("//aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
@@ -55,7 +54,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
             load("//aspects:rules/scala/scala_info.bzl","extract_scala_info")
             load("//aspects:rules/go/go_info.bzl","extract_go_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info,extract_cpp_info,extract_c_toolchain_info,extract_kotlin_info,extract_scala_info,extract_go_info]
-            TOOLCHAINS=["@bazel_tools//tools/jdk:runtime_toolchain_type","@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type","@io_bazel_rules_scala//scala:toolchain_type","@io_bazel_rules_go//go:toolchain"]
+            TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False),"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type","@io_bazel_rules_scala//scala:toolchain_type","@io_bazel_rules_go//go:toolchain"]
         """.replace(" ", "").replace("\n", "")
   private val defaultRulesetLanguages =
     listOf(
@@ -65,10 +64,13 @@ class BazelBspLanguageExtensionsGeneratorTest {
     )
   private val defaultToolchains =
     mapOf(
-      RulesetLanguage(null, Language.Java) to Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type"),
-      RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin) to Label.parse("@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"),
-      RulesetLanguage("io_bazel_rules_scala", Language.Scala) to Label.parse("@io_bazel_rules_scala//scala:toolchain_type"),
-      RulesetLanguage("io_bazel_rules_go", Language.Go) to Label.parse("@io_bazel_rules_go//go:toolchain"),
+      RulesetLanguage(
+        null,
+        Language.Java,
+      ) to """config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False)""",
+      RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin) to """"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"""",
+      RulesetLanguage("io_bazel_rules_scala", Language.Scala) to """"@io_bazel_rules_scala//scala:toolchain_type"""",
+      RulesetLanguage("io_bazel_rules_go", Language.Go) to """"@io_bazel_rules_go//go:toolchain"""",
     )
   private lateinit var dotBazelBspAspectsPath: Path
   private lateinit var internalAspectsResolverMock: InternalAspectsResolver

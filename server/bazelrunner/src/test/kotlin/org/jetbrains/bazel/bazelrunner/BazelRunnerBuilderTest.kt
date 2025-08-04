@@ -6,6 +6,9 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.startup.FileUtilIntellij
+import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
+import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
@@ -32,7 +35,9 @@ import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -85,6 +90,14 @@ val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot)
 val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelInfo)
 
 class BazelRunnerBuilderTest {
+  @BeforeEach
+  fun beforeEach() {
+    // Initialize providers for tests
+    SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
+    FileUtil.provideFileUtil(FileUtilIntellij)
+    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
+  }
+
   @Test
   fun `most bare bones build without targets (even though it's not correct)`() {
     val command =
@@ -164,7 +177,7 @@ class BazelRunnerBuilderTest {
       in2
       -ex1
       -ex2
-      
+
       """.trimIndent()
     executionDescriptor.finishCallback()
     targetPatternFile.exists() shouldBe false

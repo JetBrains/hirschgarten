@@ -2,13 +2,10 @@
   <id>org.jetbrains.bazel</id>
   <category>Build Tools</category>
   <vendor>JetBrains</vendor>
-  <name>Bazel (EAP)</name>
+  <name>Bazel</name>
   <description
   ><![CDATA[
-  <p>Bazel by JetBrains (EAP) for IntelliJ IDEA</p>
-
-  <p>This plugin is available as EAP (Early Access Program). This means that it may already be useful, but many
-  corner cases might not be supported yet.</p>
+  <p>Bazel by JetBrains for IntelliJ IDEA</p>
 
   <p>Main features</p>
   <ul>
@@ -20,10 +17,11 @@
       <li>Run and debug tests running in Bazel</li>
   </ul>
 
-  <p>To learn more about how to use the features, please check <a href="https://www.jetbrains.com/help/idea/2024.3/bazel.html">the documentation page</a>.</p>
+  <p>To learn more about how to use the features, please check <a href="https://www.jetbrains.com/help/idea/bazel.html">the documentation page</a>.</p>
   ]]>
   </description>
 
+  <resource-bundle>messages.BazelPluginBundle</resource-bundle>
   <dependencies>
     <plugin id="com.intellij.modules.lang" />
     <module name="intellij.platform.searchEverywhere" />
@@ -187,6 +185,14 @@
                     interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.starlarkGlobalFunctionProvider"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkGlobalFunctionProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.starlarkClassParametersProvider"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -225,6 +231,7 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionFetchSyncHook"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider$NotificationUpdateSyncHook"/>
 
 
     <projectStructureProvider
@@ -254,15 +261,14 @@
     />
     <projectAwareExtension implementation="org.jetbrains.bazel.flow.open.BazelProjectAwareExtension" />
 
-    <additionalProjectTaskRunnerProvider
-      implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"
-    />
-    <targetKindProvider
-      implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"
-    />
+    <additionalProjectTaskRunnerProvider implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
 
     <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
+
+    <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
+
+    <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -282,7 +288,7 @@
       key="bsp.android.support"
     />
     <registryKey
-      defaultValue="false"
+      defaultValue="true"
       description="Go modules support"
       key="bsp.go.support"
     />
@@ -363,7 +369,7 @@
       key="bazel.project.auto.open.if.present"
     />
     <registryKey
-      defaultValue="false"
+      defaultValue="true"
       description="Whether the Bazel Query tab should be enabled in tool window (where target tree is)"
       key="bazel.query.tab.enabled"
     />
@@ -373,6 +379,13 @@
       defaultValue="false"
       description="Bazel Query autocompletion in new 2024 terminal"
       key="bazel.query.terminal.completion"
+      restartRequired="true"
+    />
+
+    <registryKey
+      defaultValue="true"
+      description="Exclude Bazel symlinks from IDEA's file watcher via reflection to work around platform bugs"
+      key="bazel.exclude.symlinks.from.file.watcher.via.reflection"
       restartRequired="true"
     />
 
@@ -397,6 +410,7 @@
     <notificationGroup
       displayType="STICKY_BALLOON"
       id="Bazel"
+      key="notificationGroup.Bazel.title"
     />
 
     <workspaceModel.fileIndexContributor
@@ -467,7 +481,8 @@
 
     <notificationGroup
       displayType="BALLOON"
-      id="Bazel Plugin"
+      id="BazelPlugin"
+      key="notificationGroup.BazelPlugin.title"
     />
     <editorNotificationProvider
       implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"
@@ -492,7 +507,8 @@
     <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
     <notificationGroup
       displayType="BALLOON"
-      id="Bazel slow plugins warning"
+      id="BazelSlowPlugins"
+      key="notificationGroup.BazelSlowPlugins.title"
     />
 
     <externalSystemUnlinkedProjectAware
@@ -646,6 +662,9 @@
       implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor"
       language="ProjectView"
     />
+    <typedHandler
+      implementation="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor$AutoPopup"
+    />
 
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
@@ -707,7 +726,7 @@
                            implementationClass="org.jetbrains.bazel.languages.bazelversion.parser.BazelVersionParserDefinition"/>
 
     <localInspection language="BazelVersion"
-                     displayName="Bazel Version Check"
+                     key="inspection.display.name.bazel.version.check"
                      groupName="Bazel"
                      enabledByDefault="true"
                      level="WARNING"
@@ -753,14 +772,14 @@
     />
 
     <projectConfigurable
-      displayName="Bazel"
+      key="project.configurable.display.name.bazel"
       id="bazel.project.settings"
       instance="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurable"
       parentId="build.tools"
       provider="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurableProvider"
     >
       <configurable
-        displayName="Experimental Settings"
+        key="configurable.display.name.bazel.experimental.project.settings"
         id="bazel.experimental.project.settings"
         instance="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurable"
         provider="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurableProvider"
@@ -768,7 +787,7 @@
     </projectConfigurable>
 
     <applicationConfigurable
-      displayName="Advanced Settings"
+      key="advanced.settings.display.name"
       id="bazel.application.settings"
       instance="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsConfigurable"
       parentId="bazel.project.settings"
@@ -784,6 +803,10 @@
       </components>
     </obsoleteStorage>
     <projectViewNodeDecorator implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator" />
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNodeDecorator" />
+    <editorTabColorProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabColorProvider"/>
+    <editorTabTitleProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabTitleProvider"/>
+    <editorNotificationProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNotificationProvider"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher" />
     <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider" />
     <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType" />
@@ -828,7 +851,6 @@
     <action
       class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
       id="Bazel.NewBazelPackageAction"
-      text="New Bazel Package"
     >
       <add-to-group
         anchor="after"
@@ -893,15 +915,11 @@
     </action>
 
     <action id="Bazel.AddToProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
-            text="Add to the Project View Directories"
-            description="Add this directory to the project view file.">
+            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction">
     </action>
 
     <action id="Bazel.ExcludeFromProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
-            text="Exclude from the Project View Directories"
-            description="Exclude this directory from the project view file.">
+            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction">
     </action>
 
     <action id="Bazel.OpenBazelQueryToolWindowAction"

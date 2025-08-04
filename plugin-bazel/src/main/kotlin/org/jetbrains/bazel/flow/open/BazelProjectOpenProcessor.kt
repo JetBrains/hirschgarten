@@ -9,7 +9,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
-import org.jetbrains.bazel.utils.toVirtualFile
+import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.io.IOException
 import javax.swing.Icon
 import kotlin.io.path.isRegularFile
@@ -29,9 +29,7 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
 
   override val icon: Icon = BazelPluginIcons.bazel
 
-  // during EAP phase, show "Bazel (EAP)" during import only to disambiguate from OG Bazel plugin,
-  // in case both are installed. See also: https://github.com/bazelbuild/intellij/pull/7092
-  override val name: String = BazelPluginConstants.BAZEL_DISPLAY_NAME + " (EAP)"
+  override val name: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
   override val isStrongProjectInfoHolder: Boolean
     get() = BazelFeatureFlags.autoOpenProjectIfPresent
@@ -107,7 +105,7 @@ fun getBuildFileForPackageDirectory(packageDirectory: VirtualFile): VirtualFile?
       .listDirectoryEntries(
         glob = BUILD_FILE_GLOB,
       ).firstOrNull { it.isRegularFile() }
-      ?.toVirtualFile()
+      ?.refreshAndFindVirtualFile()
   } catch (e: IOException) {
     log.warn("Cannot retrieve Bazel BUILD file from directory ${packageDirectory.toNioPath()}", e)
     return null

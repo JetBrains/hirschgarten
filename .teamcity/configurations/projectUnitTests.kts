@@ -56,6 +56,3 @@ object GitHub : UnitTests(
   },
 )
 
-object Space : UnitTests(
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)

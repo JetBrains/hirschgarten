@@ -39,7 +39,8 @@ class FirstPhaseProjectResolver(
       val targets = generateSequence { Target.parseDelimitedFrom(inputStream) }
       val modules = targets.associateBy { Label.parse(it.rule.name) }
 
-      val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+      val repoMapping =
+        calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
 
       val project =
         PhasedSyncProject(

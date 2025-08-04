@@ -4,11 +4,13 @@ kt_jvm_library(
     name = "testFixtures",
     testonly = 1,
     srcs = glob([
-        #         "testFixtures/kotlin/**/*.kt",
+        # "testFixtures/kotlin/**/*.kt",
         "testFixtures/kotlin/**/*.java",
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//rules_intellij/testing:lib",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",

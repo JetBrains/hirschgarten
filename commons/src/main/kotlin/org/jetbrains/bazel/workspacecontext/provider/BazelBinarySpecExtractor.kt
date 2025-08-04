@@ -1,9 +1,10 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
-import com.intellij.openapi.util.SystemInfo
-import com.intellij.util.EnvironmentUtil
 import org.apache.commons.io.FileUtils.copyURLToFile
+import org.jetbrains.bazel.commons.EnvironmentProvider
+import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.commons.FileUtils
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextEntityExtractorException
@@ -74,14 +75,15 @@ internal object BazelBinarySpecExtractor : WorkspaceContextEntityExtractor<Bazel
 
   private fun calculateBazeliskDownloadLink(): String? {
     val base = "https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-"
-    val isArm = SystemInfo.isAarch64
+    val systemInfoProvider = SystemInfoProvider.getInstance()
+    val isArm = systemInfoProvider.isAarch64
     val suffix =
       when {
-        SystemInfo.isMac -> "darwin"
-        SystemInfo.isWindows && !isArm -> "windows-amd64.exe"
-        SystemInfo.isWindows && isArm -> "windows-arm64.exe"
-        SystemInfo.isLinux && !isArm -> "linux-amd64"
-        SystemInfo.isLinux && isArm -> "linux-arm64"
+        systemInfoProvider.isMac -> "darwin"
+        systemInfoProvider.isWindows && !isArm -> "windows-amd64.exe"
+        systemInfoProvider.isWindows && isArm -> "windows-arm64.exe"
+        systemInfoProvider.isLinux && !isArm -> "linux-amd64"
+        systemInfoProvider.isLinux && isArm -> "linux-arm64"
         else -> null
       }
     if (suffix == null) {
@@ -99,16 +101,13 @@ internal object BazelBinarySpecExtractor : WorkspaceContextEntityExtractor<Bazel
       .filterNotNull()
       .firstOrNull()
 
-  private fun splitPath(): List<String> = EnvironmentUtil.getValue("PATH")?.split(File.pathSeparator).orEmpty()
-
-  private fun bazelFile(path: String, executable: String): Path? {
-    val file = File(path, calculateExecutableName(executable))
-    return if (file.exists() && file.canExecute()) file.toPath() else null
+  private fun splitPath(): List<String> {
+    val environmentProvider = EnvironmentProvider.getInstance()
+    return environmentProvider.getValue("PATH")?.split(File.pathSeparator).orEmpty()
   }
 
-  private fun calculateExecutableName(name: String): String =
-    when {
-      SystemInfo.isWindows -> "$name.exe"
-      else -> name
-    }
+  private fun bazelFile(path: String, executable: String): Path? {
+    val file = File(path, ExecUtils.calculateExecutableName(executable))
+    return if (file.exists() && file.canExecute()) file.toPath() else null
+  }
 }

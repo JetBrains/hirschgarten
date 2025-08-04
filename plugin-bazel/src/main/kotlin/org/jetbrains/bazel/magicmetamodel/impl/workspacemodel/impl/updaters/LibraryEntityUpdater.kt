@@ -81,14 +81,14 @@ internal class LibraryEntityUpdater(
     }
 
   private fun toLibraryClassesRoots(entityToAdd: Library): List<LibraryRoot> =
-    libraryJarsOrIjars(entityToAdd).map {
+    classJarsOrIJars(entityToAdd).map {
       LibraryRoot(
         url = Library.formatJarString(it).toResolvedVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         type = LibraryRootTypeId.COMPILED,
       )
     }
 
-  private fun libraryJarsOrIjars(entityToAdd: Library): List<Path> =
+  private fun classJarsOrIJars(entityToAdd: Library): List<Path> =
     if (importIjars) {
       entityToAdd.iJars.ifEmpty { entityToAdd.classJars }
     } else {

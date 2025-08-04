@@ -91,6 +91,11 @@ class ProjectSyncService(
     return bspMapper.jvmBuilderParams(project)
   }
 
+  suspend fun buildJvmToolchainInfoForTarget(target: Label): JvmToolchainInfo {
+    val project = projectProvider.get()
+    return bspMapper.jvmBuilderParamsForTarget(project, target)
+  }
+
   fun workspaceContext(): WorkspaceContext =
     projectProvider.getIfLoaded()?.workspaceContext ?: workspaceContextProvider.readWorkspaceContext()
 

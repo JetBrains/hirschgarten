@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.bsp
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -70,4 +71,6 @@ class BspServerApi(
 
   override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath =
     projectSyncService.workspaceTargetClasspathQuery(params)
+
+  override suspend fun jvmToolchainInfoForTarget(target: Label) = projectSyncService.buildJvmToolchainInfoForTarget(target)
 }

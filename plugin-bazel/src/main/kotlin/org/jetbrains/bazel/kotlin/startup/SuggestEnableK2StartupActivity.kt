@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.idea.KotlinIcons
 import org.jetbrains.kotlin.idea.configuration.ui.KotlinPluginKindSwitcherController
 import org.jetbrains.kotlin.idea.configuration.ui.USE_K2_PLUGIN_VM_OPTION_PREFIX
 
-private const val SUGGEST_ENABLE_K2_NOTIFICATION_GROUP = "Enable K2 Compiler Mode with Bazel"
+private const val SUGGEST_ENABLE_K2_NOTIFICATION_GROUP = "BazelEnableK2Compiler"
 
 /**
  * Based on org.jetbrains.kotlin.onboarding.k2.EnableK2NotificationService

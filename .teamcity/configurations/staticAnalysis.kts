@@ -27,17 +27,9 @@ open class Analyze(
     },
     artifactRules = "+:.teamcity/qodana/*.zip",
     dependencies = {
-        // select build dependency based on vcs used
-        if (vcsRoot == BaseConfiguration.SpaceVcs){
-            snapshot(ProjectBuild.Space) {}
-            artifacts(ProjectBuild.Space) {
-                artifactRules = Utils.CommonParams.QodanaArtifactRules
-          }
-        } else {
-            snapshot(ProjectBuild.GitHub) {}
-            artifacts(ProjectBuild.GitHub) {
-                artifactRules = Utils.CommonParams.QodanaArtifactRules
-            }
+        snapshot(ProjectBuild.GitHub) {}
+        artifacts(ProjectBuild.GitHub) {
+            artifactRules = Utils.CommonParams.QodanaArtifactRules
         }
     },
     steps = {
@@ -169,10 +161,6 @@ object HirschgartenGitHub : Hirschgarten(
     vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object HirschgartenSpace : Hirschgarten(
-    vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class Bazel(
   vcsRoot: GitVcsRoot
 ): Analyze(
@@ -186,10 +174,6 @@ open class Bazel(
 
 object BazelGitHub : Bazel(
     vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object BazelSpace : Bazel(
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class AndroidBazelRules(
@@ -215,9 +199,6 @@ object AndroidBazelRulesGitHub : AndroidBazelRules (
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object AndroidBazelRulesSpace : AndroidBazelRules (
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
 
 open class AndroidTestdpc(
   vcsRoot: GitVcsRoot
@@ -242,10 +223,6 @@ object AndroidTestdpcGitHub : AndroidTestdpc (
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object AndroidTestdpcSpace : AndroidTestdpc (
-  vcsRoot = BaseConfiguration.SpaceVcs,
-)
-
 open class JetpackCompose(
   vcsRoot: GitVcsRoot
 ): Analyze(
@@ -266,8 +243,4 @@ open class JetpackCompose(
 
 object JetpackComposeGitHub : JetpackCompose (
   vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-object JetpackComposeSpace : JetpackCompose (
-  vcsRoot = BaseConfiguration.SpaceVcs,
 )

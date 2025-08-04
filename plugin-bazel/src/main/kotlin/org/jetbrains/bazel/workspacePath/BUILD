@@ -9,6 +9,7 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

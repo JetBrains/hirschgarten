@@ -4,6 +4,7 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.orLatestSupported
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -32,7 +33,7 @@ import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
 import java.nio.file.Paths
 import kotlin.io.path.Path
 
-class BuildServerMock(
+open class BuildServerMock(
   private val bazelProject: BazelProject? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
   private val compileResult: CompileResult? = null,
@@ -68,7 +69,7 @@ class BuildServerMock(
   override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = wrapInFuture(analysisDebugResult)
 
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = wrapInFuture(runResultWithDebug)
-  
+
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
   override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult {
@@ -93,6 +94,9 @@ class BuildServerMock(
   override suspend fun jvmToolchainInfo() = JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
   override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath =
     wrapInFuture(jvmClasspathResult)
+
+  override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo =
+    JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

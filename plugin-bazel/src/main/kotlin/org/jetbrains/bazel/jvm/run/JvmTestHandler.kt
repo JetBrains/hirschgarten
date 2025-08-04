@@ -1,15 +1,11 @@
 package org.jetbrains.bazel.jvm.run
 
-import com.intellij.debugger.engine.AsyncStacksUtils
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -28,9 +24,6 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.TestParams
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
-
-/** Used to store a runner to an [ExecutionEnvironment].  */
-internal val KOTLIN_COROUTINE_LIB_KEY: Key<AtomicReference<String>> = Key.create("bazel.debug.kotlin.coroutine.lib")
 
 class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
@@ -103,16 +96,4 @@ class JvmTestWithDebugCommandLineState(
       .getInstance(environment.project)
       .withEndpointProxy { it.buildTargetTest(testParams) }
   }
-}
-
-private fun createJvmFlag(flag: String) = "--jvmopt=$flag"
-
-internal fun createJavaAgentFlag(jarPath: String) = createJvmFlag("-javaagent:$jarPath")
-
-internal fun calculateKotlinCoroutineParams(environment: ExecutionEnvironment, project: Project): List<String> {
-  val javaParameters = JavaParameters()
-  AsyncStacksUtils.addDebuggerAgent(javaParameters, project, false)
-  return listOfNotNull(
-    environment.getCopyableUserData(KOTLIN_COROUTINE_LIB_KEY)?.get()?.let { createJavaAgentFlag(it) },
-  ) + javaParameters.vmParametersList.parameters.map { createJvmFlag(it) }
 }

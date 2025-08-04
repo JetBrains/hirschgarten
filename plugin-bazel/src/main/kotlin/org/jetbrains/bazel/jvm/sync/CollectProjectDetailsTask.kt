@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.jvm.sync
 
 import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.codeInsight.multiverse.CodeInsightContextManager
+import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
@@ -350,7 +350,7 @@ class CollectProjectDetailsTask(
     }
 
   private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
-    if (CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled) return
+    if (isSharedSourceSupportEnabled(project)) return
     if (!BazelFeatureFlags.checkSharedSources) return
     for ((file, labels) in fileToTargetWithoutLowPrioritySharedSources) {
       if (labels.size <= 1) {

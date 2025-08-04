@@ -5,7 +5,7 @@ import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolService
 import com.intellij.openapi.components.service
 import com.intellij.psi.PsiReference
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -35,7 +35,7 @@ class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   override fun getOwnReferences(): Collection<PsiSymbolReference> {
     val name = name ?: return emptyList()
-    val function = service<BazelGlobalFunctionsService>().getFunctionByName(name) ?: return emptyList()
+    val function = BazelGlobalFunctions.getFunctionByName(name) ?: return emptyList()
     return listOfNotNull(
       BazelGlobalFunctionReference(this, function),
       reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },

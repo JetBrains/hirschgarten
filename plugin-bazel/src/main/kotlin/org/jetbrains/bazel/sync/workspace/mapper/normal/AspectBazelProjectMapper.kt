@@ -2,8 +2,6 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
-import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
-import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -50,6 +48,7 @@ class AspectBazelProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
+  private val environmentProvider: EnvironmentProvider
 ) {
   val logger = LoggerFactory.getLogger(AspectBazelProjectMapper::class.java)
 
@@ -84,11 +83,15 @@ class AspectBazelProjectMapper(
     val transitiveCompileTimeJarsTargetKinds = workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toSet()
     val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
-        val targetsAtDepth =
+        // the import depth mechanism does not apply for go targets sync
+        // for now, go sync assumes to retrieve all transitive targets, which is equivalent to `import_depth: -1`
+        // in fact, go sync should not even go through this highly overfitted JVM model: https://youtrack.jetbrains.com/issue/BAZEL-2210
+        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { targets[it]?.hasGoTargetInfo() == true }
+        val nonGoTargetsAtDepth =
           dependencyGraph
             .allTargetsAtDepth(
               workspaceContext.importDepth.value,
-              rootTargets,
+              nonGoTargetLabels.toSet(),
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
               targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
@@ -97,12 +100,17 @@ class AspectBazelProjectMapper(
                 } == true
               },
             )
-        val (targetsToImport, nonWorkspaceTargets) =
-          targetsAtDepth.targets.partition {
+        val (nonGoTargetsToImport, nonWorkspaceTargets) =
+          nonGoTargetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
           }
-        val libraries = (nonWorkspaceTargets + targetsAtDepth.directDependencies).associateBy { it.label() }
-        targetsToImport.asSequence() to libraries
+        val goTargetsToImport =
+          dependencyGraph
+            .allTransitiveTargets(goTargetLabels.toSet())
+            .targets
+            .filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags) }
+        val libraries = (nonWorkspaceTargets + nonGoTargetsAtDepth.directDependencies).associateBy { it.label() }
+        (nonGoTargetsToImport + goTargetsToImport).asSequence() to libraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -131,10 +139,6 @@ class AspectBazelProjectMapper(
     val androidLibrariesMapper =
       measure("Create android libraries") {
         calculateAndroidLibrariesMapper(targetsToImport)
-      }
-    val goLibrariesMapper =
-      measure("Create go libraries") {
-        calculateGoLibrariesMapper(targetsToImport)
       }
     val librariesFromDeps =
       measure("Merge libraries from deps") {
@@ -199,18 +203,6 @@ class AspectBazelProjectMapper(
           extraLibrariesFromJdeps.values.flatten().associateBy { it.label } +
           librariesFromTransitiveCompileTimeJars.values.flatten().associateBy { it.label }
       }
-    val goLibrariesToImport =
-      measureIf(
-        description = "Merge all Go libraries",
-        predicate = { featureFlags.isGoSupportEnabled },
-        ifFalse = emptyMap(),
-      ) {
-        goLibrariesMapper.values
-          .flatten()
-          .distinct()
-          .associateBy { it.label } +
-          createGoLibraries(targetsAsLibraries, repoMapping)
-      }
 
     val nonModuleTargetIds =
       (removeDotBazelBspTarget(targets.keys) - librariesToImport.keys).toSet()
@@ -231,7 +223,6 @@ class AspectBazelProjectMapper(
       // workspaceRoot = workspaceRoot,
       modules = modulesFromBazel.toList(),
       libraries = librariesToImport,
-      goLibraries = goLibrariesToImport,
       nonModuleTargets = nonModuleTargets,
       // repoMapping = repoMapping,
       hasError = hasError,
@@ -263,8 +254,8 @@ class AspectBazelProjectMapper(
     !targetInfo.kind.endsWith("_resources") &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-          targetInfo.hasJvmTargetInfo() &&
-          !hasKnownJvmSources(targetInfo)
+          (targetInfo.hasJvmTargetInfo() && !hasKnownJvmSources(targetInfo)) ||
+          (targetInfo.hasJvmTargetInfo() && targetInfo.jvmTargetInfo.hasApiGeneratingPlugins)
       )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
@@ -434,22 +425,6 @@ class AspectBazelProjectMapper(
       interfaceJars = emptySet(),
     )
   }
-
-  private fun calculateGoLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<GoLibrary>> =
-    targetsToImport
-      .mapNotNull { target ->
-        if (!target.hasGoTargetInfo()) return@mapNotNull null
-        val label = target.label()
-        val libraries =
-          target.goTargetInfo.generatedLibrariesList.map {
-            GoLibrary(
-              label = label,
-              goImportPath = target.goTargetInfo.importPath,
-              goRoot = bazelPathsResolver.resolve(it).parent,
-            )
-          }
-        label to libraries
-      }.toMap()
 
   /**
    * In some cases, the jar dependencies of a target might be injected by bazel or rules and not are not
@@ -709,27 +684,6 @@ class AspectBazelProjectMapper(
 
   private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 
-  private fun createGoLibraries(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, GoLibrary> =
-    targets
-      .mapValues { (targetId, targetInfo) ->
-        createGoLibrary(targetId, targetInfo, repoMapping)
-      }.filterValues {
-        it.isGoLibrary()
-      }
-
-  private fun GoLibrary.isGoLibrary(): Boolean = !goImportPath.isNullOrEmpty() && goRoot.toString().isNotEmpty()
-
-  private fun createGoLibrary(
-    label: Label,
-    targetInfo: TargetInfo,
-    repoMapping: RepoMapping,
-  ): GoLibrary =
-    GoLibrary(
-      label = label,
-      goImportPath = targetInfo.goTargetInfo?.importPath,
-      goRoot = getGoRootPath(targetInfo, repoMapping),
-    )
-
   private fun createLibrariesFromTransitiveCompileTimeJars(
     targetsToImport: Sequence<TargetInfo>,
     targetsMap: Map<Label, TargetInfo>,
@@ -966,6 +920,8 @@ class AspectBazelProjectMapper(
       "go_test",
     )
 
+  // TODO BAZEL-2208
+  // The only language that supports strict deps by default is Java, in Kotlin and Scala strict deps are disabled by default.
   private fun targetSupportsStrictDeps(target: TargetInfo): Boolean =
     target.hasJvmTargetInfo() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
 
@@ -1119,7 +1075,7 @@ class AspectBazelProjectMapper(
   }
 
   private fun collectInheritedEnvs(targetInfo: TargetInfo): Map<String, String> =
-    targetInfo.envInheritList.associateWith { EnvironmentUtil.getValue(it).orEmpty() }
+    targetInfo.envInheritList.associateWith { environmentProvider.getValue(it) ?: "" }
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
