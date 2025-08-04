@@ -30,7 +30,8 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
       )
   }
 
-  override val name: String = "Jvm Run Handler"
+  override val name: String
+    get() = "Jvm Run Handler"
 
   override val state = JvmRunState()
 
@@ -47,7 +48,9 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     }
 
   class JvmRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
-    override val id: String = "JvmRunHandlerProvider"
+
+    override val id: String
+      get() = "JvmRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmRunHandler(configuration)
 
