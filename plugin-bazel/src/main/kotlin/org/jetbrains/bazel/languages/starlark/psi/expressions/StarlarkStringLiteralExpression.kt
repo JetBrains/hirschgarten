@@ -83,4 +83,15 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   }
 
   private fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name in classParametersList
+
+  /**
+   * Checks whether the string literal expression can be resolved to a file.
+   */
+  fun isResolvableToFile(): Boolean {
+    val resolved = reference?.resolve()
+    if (resolved != null) {
+      return resolved.containingFile.virtualFile.exists()
+    }
+    return false
+  }
 }

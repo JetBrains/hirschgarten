@@ -69,4 +69,15 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
       return reference
     }
   }
+
+  /**
+   * The glob is invalid if there are no files matching the pattern,
+   * unless the 'allow_empty' keyword argument is set to true.
+   */
+  fun isGlobValid(): Boolean {
+    val allowEmpty: String? = getArgValue(getKeywordArgument("allow_empty"))?.text
+    if (allowEmpty?.lowercase()?.toBooleanStrictOrNull() ?: false) return true
+    val matchedFiles = StarlarkGlobReference(this).multiResolve(false)
+    return matchedFiles.isNotEmpty()
+  }
 }

@@ -598,6 +598,10 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkLoadAnnotator"
       language="Starlark"
     />
+    <annotator
+      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkSrcsAnnotator"
+      language="Starlark"
+    />
     <completion.confidence
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"
       language="Starlark"
