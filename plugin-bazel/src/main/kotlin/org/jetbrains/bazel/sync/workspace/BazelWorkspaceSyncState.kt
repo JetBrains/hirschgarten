@@ -3,7 +3,7 @@ package org.jetbrains.bazel.sync.workspace
 import org.jetbrains.bazel.sync.workspace.mapper.BazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.EarlyBazelSyncProject
 
-sealed interface BazelWorkspaceSyncState {
+internal sealed interface BazelWorkspaceSyncState {
   val earlyProject: EarlyBazelSyncProject
   val mappedProject: BazelMappedProject
   val resolvedWorkspace: BazelResolvedWorkspace
