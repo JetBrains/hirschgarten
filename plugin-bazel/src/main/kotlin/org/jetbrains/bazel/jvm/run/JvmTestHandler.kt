@@ -31,7 +31,8 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
       )
   }
 
-  override val name: String = "Jvm Test Handler"
+  override val name: String
+    get() = "Jvm Test Handler"
 
   override val state = JvmTestState()
 
@@ -48,7 +49,9 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     }
 
   class JvmTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
-    override val id: String = "JvmTestHandlerProvider"
+
+    override val id: String
+      get() = "JvmTestHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmTestHandler(configuration)
 

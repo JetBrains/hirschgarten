@@ -10,7 +10,8 @@ import org.jetbrains.bazel.run.state.GenericRunState
 class GenericBazelRunHandler : BazelRunHandler {
   override val state: GenericRunState = GenericRunState()
 
-  override val name: String = "Generic BSP Run Handler"
+  override val name: String
+    get() = "Generic BSP Run Handler"
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     BazelRunCommandLineState(environment, state)

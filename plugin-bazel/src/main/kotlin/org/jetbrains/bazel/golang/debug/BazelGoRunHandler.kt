@@ -29,7 +29,8 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
       )
   }
 
-  override val name: String = "Bazel Go Run Handler"
+  override val name: String
+    get() = "Bazel Go Run Handler"
 
   override val state = GenericRunState()
 
@@ -57,7 +58,9 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
       ?: throw ExecutionException(BazelPluginBundle.message("go.runner.wrong.configuration"))
 
   class BazelGoRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
-    override val id: String = "BazelGoRunHandlerProvider"
+
+    override val id: String
+      get() = "BazelGoRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = BazelGoRunHandler(configuration)
 
