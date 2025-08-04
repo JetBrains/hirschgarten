@@ -186,7 +186,9 @@ class ProjectSyncTask(private val project: Project) {
               subtaskId = BASE_PROJECT_SYNC_SUBTASK_ID,
               message = BazelPluginBundle.message("console.task.base.sync"),
             ) {
-              resolver.getOrFetchSyncedProject(build = buildProject, taskId = PROJECT_SYNC_TASK_ID, force = true)
+              // force full re-sync
+              resolver.invalidateCachedState()
+              resolver.getOrFetchSyncedProject(build = buildProject, taskId = PROJECT_SYNC_TASK_ID)
             }
           if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
           project.withSubtask(

@@ -3,19 +3,18 @@ package org.jetbrains.bazel.sync.workspace
 import org.jetbrains.bazel.sync.workspace.mapper.BazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.EarlyBazelSyncProject
 
-internal sealed interface BazelWorkspaceSyncState {
+data class SyncedWorkspaceState(
   val earlyProject: EarlyBazelSyncProject
-  val mappedProject: BazelMappedProject
-  val resolvedWorkspace: BazelResolvedWorkspace
+)
 
-  sealed class Nothing(val error: String) : BazelWorkspaceSyncState {
-    override val earlyProject: EarlyBazelSyncProject
-      get() = error(error)
-    override val mappedProject: BazelMappedProject
-      get() = error(error)
-    override val resolvedWorkspace: BazelResolvedWorkspace
-      get() = error(error)
-  }
+data class ResolvedWorkspaceState(
+  val mappedProject: BazelMappedProject,
+  val resolvedWorkspace: BazelResolvedWorkspace,
+)
+
+internal sealed interface BazelWorkspaceSyncState {
+
+  sealed class Nothing(val reason: String) : BazelWorkspaceSyncState
 
   object NotInitialized : Nothing("project is not initialized")
 
@@ -27,18 +26,12 @@ internal sealed interface BazelWorkspaceSyncState {
 
   // project only has raw target data
   data class Synced(
-      override val earlyProject: EarlyBazelSyncProject,
-  ) : BazelWorkspaceSyncState {
-    override val mappedProject: BazelMappedProject
-      get() = error("project is not resolved")
-    override val resolvedWorkspace: BazelResolvedWorkspace
-      get() = error("project is not resolved")
-  }
+      val synced: SyncedWorkspaceState
+  ) : BazelWorkspaceSyncState
 
   // project is fully resolved
   data class Resolved(
-      override val earlyProject: EarlyBazelSyncProject,
-      override val mappedProject: BazelMappedProject,
-      override val resolvedWorkspace: BazelResolvedWorkspace,
+    val synced: SyncedWorkspaceState,
+    val resolved: ResolvedWorkspaceState
   ) : BazelWorkspaceSyncState
 }

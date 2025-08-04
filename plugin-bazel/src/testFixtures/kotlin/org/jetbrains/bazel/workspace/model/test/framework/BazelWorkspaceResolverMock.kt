@@ -38,21 +38,22 @@ class BazelWorkspaceResolverMock(
 ) : BazelWorkspaceResolver {
   override suspend fun getOrFetchResolvedWorkspace(
     scope: ProjectSyncScope,
-    taskId: String,
-    force: Boolean,
+    taskId: String
   ): BazelResolvedWorkspace = resolvedWorkspace ?: error("resolved workspace is not set")
 
   override suspend fun getOrFetchMappedProject(
     scope: ProjectSyncScope,
-    taskId: String,
-    force: Boolean,
+    taskId: String
   ): BazelMappedProject = mappedProject ?: error("mapped project is not set")
 
   override suspend fun getOrFetchSyncedProject(
     build: Boolean,
-    taskId: String,
-    force: Boolean,
+    taskId: String
   ): EarlyBazelSyncProject = earlyBazelSyncProject ?: error("early bazel sync project is not set")
+
+  override suspend fun invalidateCachedState() {
+    // no-op
+  }
 
   override suspend fun <T> withEndpointProxy(func: suspend (BazelEndpointProxy) -> T): T {
     return func(endpointProxy ?: error("endpoint proxy is not set"))
