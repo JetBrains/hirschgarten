@@ -134,6 +134,7 @@ private fun findReferredAbsolutePackage(
       project.canonicalRepoNameToPath[canonicalLabel.repoName]
     }
 
+  // BAZEL-2280 LabelResolveUtilsKt#findReferredAbsolutePackage may not be able to resolve repo root
   val repoRoot = foundRepoRoot?.findVirtualFile() ?: return null
 
   return repoRoot.findFileByRelativePath(label.packagePath.toString())
