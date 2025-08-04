@@ -18,9 +18,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
-import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -39,14 +37,18 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
     when {
       executor is DefaultDebugExecutor -> {
         environment.putCopyableUserData(EXECUTABLE_KEY, AtomicReference())
-        val config = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType())
         val target = getTargetId(environment)
         val module = WorkspaceModuleUtils.findModule(environment.project) ?: error("Could not find module for target $target")
-        GoRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), module, config, state)
+        GoRunWithDebugCommandLineState(
+          environment = environment,
+          module = module,
+          configuration = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType()),
+          settings = state,
+        )
       }
 
       else -> {
-        BazelRunCommandLineState(environment, UUID.randomUUID().toString(), state)
+        BazelRunCommandLineState(environment, state)
       }
     }
 
@@ -71,11 +73,10 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
 
 class GoRunWithDebugCommandLineState(
   environment: ExecutionEnvironment,
-  originId: OriginId,
   module: Module,
   configuration: GoApplicationConfiguration,
   val settings: GenericRunState,
-) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
+) : GoDebuggableCommandLineState(environment, module, configuration) {
   override fun patchAdditionalConfigs() {
     with(configuration) {
       val envVarsData = settings.env
