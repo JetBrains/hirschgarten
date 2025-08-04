@@ -46,7 +46,7 @@ import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.flow.sync.BazelBinPathService
+import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.concurrency.AsyncPromise
