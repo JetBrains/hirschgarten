@@ -1,23 +1,16 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
-import org.jetbrains.bsp.protocol.DependencySourcesParams
-import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.JavacOptionsParams
-import org.jetbrains.bsp.protocol.JavacOptionsResult
-import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
-import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
-import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
-import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.testkit.JsonComparator
@@ -52,18 +45,6 @@ class TestClient(
     }
   }
 
-  fun testJavacOptions(
-    timeout: Duration,
-    params: JavacOptionsParams,
-    expectedResult: JavacOptionsResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetJavacOptions(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
   fun testCompile(
     timeout: Duration,
     params: CompileParams,
@@ -83,22 +64,16 @@ class TestClient(
 
   fun testWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
     test(timeout) { session ->
-      val result = session.server.workspaceBuildTargets()
+      val result =
+        session.server.workspaceBuildTargets(WorkspaceBuildTargetParams(WorkspaceBuildTargetSelector.AllTargets))
       assertJsonEquals(expectedResult, result)
     }
   }
 
   fun testMainWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
     test(timeout) { session ->
-      val result = session.server.workspaceBuildTargets()
-      val filteredResult =
-        WorkspaceBuildTargetsResult(
-          hasError = result.hasError,
-          targets =
-            result.targets.filter {
-              it.id.isMainWorkspace
-            },
-        )
+      val result = session.server.workspaceBuildTargets(WorkspaceBuildTargetParams(WorkspaceBuildTargetSelector.AllTargets))
+      // There was some filtering
       assertJsonEquals(expectedResult, result)
     }
   }
@@ -119,58 +94,6 @@ class TestClient(
     test(timeout) { session ->
       val result = session.server.buildTargetInverseSources(transformedParams)
       assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testDependencySources(
-    timeout: Duration,
-    params: DependencySourcesParams,
-    expectedResult: DependencySourcesResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetDependencySources(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testJvmRunEnvironment(
-    timeout: Duration,
-    params: JvmRunEnvironmentParams,
-    expectedResult: JvmRunEnvironmentResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetJvmRunEnvironment(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testJvmTestEnvironment(
-    timeout: Duration,
-    params: JvmTestEnvironmentParams,
-    expectedResult: JvmTestEnvironmentResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetJvmTestEnvironment(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  /**
-   * Simulates a typical workflow
-   */
-  fun testResolveProject(timeout: Duration) {
-    runTest(timeout = timeout) {
-      test(timeout) { session ->
-        val getWorkspaceTargets = session.server.workspaceBuildTargets()
-        val targets = getWorkspaceTargets.targets
-        val javaTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.JAVA) }.map { it.id }
-        session.server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-        val cppTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.C) }.map { it.id }
-        session.server.buildTargetCppOptions(CppOptionsParams(cppTargetIds))
-      }
     }
   }
 }

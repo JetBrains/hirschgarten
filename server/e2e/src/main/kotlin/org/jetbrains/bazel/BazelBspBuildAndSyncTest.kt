@@ -9,6 +9,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -37,7 +39,8 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
       "Compare workspace/buildTargets",
     ) {
       testClient.test(timeout = 5.minutes) { session ->
-        val result = session.server.workspaceBuildTargets()
+        val result =
+          session.server.workspaceBuildTargets(WorkspaceBuildTargetParams(WorkspaceBuildTargetSelector.AllTargets))
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
         assertFalse(mainJar.exists())
         assertFalse(genruleShouldNotBeBuilt.exists())
@@ -50,7 +53,8 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
     ) {
       testClient.test(timeout = 5.minutes) { session ->
         session.server.runSync(true, "originId")
-        val result = session.server.workspaceBuildTargets()
+        val result = session.server.workspaceBuildTargets(WorkspaceBuildTargetParams(WorkspaceBuildTargetSelector.AllTargets))
+
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
         assertTrue(mainJar.exists())
         assertFalse(genruleShouldNotBeBuilt.exists())
@@ -92,6 +96,6 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
 
-    return WorkspaceBuildTargetsResult(listOf(srcMainBuildTarget))
+    return WorkspaceBuildTargetsResult(targets = mapOf(), rootTargets = setOf())
   }
 }

@@ -13,6 +13,7 @@ interface JoinedBuildServer {
 
   suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): WorkspacePhasedBuildTargetsResult
 
+  // TODO: should be replaced with some query that can be crafted on the client side
   suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 
   suspend fun buildTargetCompile(params: CompileParams): CompileResult

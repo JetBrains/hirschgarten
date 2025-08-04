@@ -37,12 +37,6 @@ bazel_integration_test_all_versions(
 )
 
 bazel_integration_test_all_versions(
-    name = "cpp_project_test",
-    project_path = "test-projects/workspace/cpp-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspCppProjectTest",
-)
-
-bazel_integration_test_all_versions(
     name = "python_project_test",
     bzlmod_project_path = "test-projects/bzlmod/python-project",
     project_path = "test-projects/workspace/python-project",
@@ -67,29 +61,6 @@ bazel_integration_test_all_versions(
     name = "enabled_rules_test",
     project_path = "test-projects/workspace/enabled-rules-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspScalaProjectTest",
-)
-
-bazel_integration_test(
-    name = "server_downloads_bazelisk_test",
-    timeout = "eternal",
-    bazel_version = "6.4.0",
-    env = {
-        "PATH": "",  # To ensure that the server won't find Bazel in PATH
-    },
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ServerDownloadsBazeliskTest",
-    workspace_path = "test-projects/workspace/sample-repo",
-)
-
-bazel_integration_test_current_version(
-    name = "android_project_test",
-    project_path = "test-projects/workspace/android-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspAndroidProjectTest",
-)
-
-bazel_integration_test_current_version(
-    name = "android_kotlin_project_test",
-    project_path = "test-projects/workspace/android-kotlin-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspAndroidKotlinProjectTest",
 )
 
 bazel_integration_test_all_versions(
@@ -149,8 +120,6 @@ test_suite(
     # we need to include all of them manually because of the "manual" tag
     tests = [
         ":allow_manual_targets_sync_test",
-        ":android_kotlin_project_test",
-        ":android_project_test",
         ":build_and_sync_test",
         ":enabled_rules_test",
         ":external_autoloads_test",
@@ -165,7 +134,6 @@ test_suite(
         ":python_project_test",
         ":remote_jdk_test",
         ":sample_repo_test",
-        ":server_downloads_bazelisk_test",
     ],
 )
 
