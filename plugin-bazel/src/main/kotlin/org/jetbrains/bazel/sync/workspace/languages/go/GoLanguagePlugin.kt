@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.go
 
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
@@ -10,14 +12,11 @@ import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.nio.file.Paths
 
 class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoModule>() {
-  companion object {
-    private val LOGGER = LoggerFactory.getLogger(GoLanguagePlugin::class.java)
-  }
+  private val logger: Logger = logger<GoLanguagePlugin>()
 
   override fun applyModuleData(moduleData: GoModule, buildTarget: RawBuildTarget) {
     val goBuildTarget =
@@ -77,7 +76,7 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
           mapping[local] = localAbs.toString().replace("\\", "/")
         }
       } catch (e: Exception) {
-        LOGGER.warn("Failed to resolve local path '$local': ${e.message}", e)
+        logger.warn("Failed to resolve local path '$local': ${e.message}", e)
         mapping[local] = local
       }
     }
@@ -96,7 +95,7 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
         val localPath = localFile.absoluteFile.normalize().path
         mapping[remote] = localPath
       } catch (e: Exception) {
-        LOGGER.warn("Failed to resolve remote path '$remote': ${e.message}", e)
+        logger.warn("Failed to resolve remote path '$remote': ${e.message}", e)
         mapping[remote] = "" // fallback
       }
     }

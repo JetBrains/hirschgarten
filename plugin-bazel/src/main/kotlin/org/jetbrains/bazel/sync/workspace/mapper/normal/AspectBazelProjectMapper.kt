@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
+import com.intellij.openapi.diagnostic.logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -31,7 +32,6 @@ import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.SourceItem
-import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -49,7 +49,7 @@ class AspectBazelProjectMapper(
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
   private val environmentProvider: EnvironmentProvider,
 ) {
-  val logger = LoggerFactory.getLogger(AspectBazelProjectMapper::class.java)
+  val logger = logger<AspectBazelProjectMapper>()
 
   private suspend fun <T> measure(description: String, body: suspend () -> T): T =
     bspTracer.spanBuilder(description).useWithScope { body() }
