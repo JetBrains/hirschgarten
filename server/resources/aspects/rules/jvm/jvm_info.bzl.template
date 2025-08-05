@@ -200,7 +200,6 @@ def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
         main_class = main_class,
         args = args,
         jdeps = [file_location(j) for j in jdeps],
-        transitive_compile_time_jars = [file_location(j) for j in transitive_compile_time_jars],
         has_api_generating_plugins = has_api_generating_plugins(target, ctx, dep_targets, provider),
     )
 
