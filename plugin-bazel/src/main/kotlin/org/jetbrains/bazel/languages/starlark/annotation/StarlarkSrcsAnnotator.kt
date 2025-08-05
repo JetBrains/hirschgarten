@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.annotation
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.starlark.bazel.StarlarkFilesListParametersProvider
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
@@ -10,6 +11,12 @@ import org.jetbrains.bazel.languages.starlark.quickFixes.StarlarkCreateFileQuick
 import org.jetbrains.bazel.languages.starlark.quickFixes.StarlarkGlobAllowEmptyQuickFix
 
 class StarlarkSrcsAnnotator : StarlarkAnnotator() {
+  private val filesListParameters by lazy {
+    StarlarkFilesListParametersProvider.EP_NAME.extensionList
+      .flatMap { it.getFilesListParameters() }
+      .toSet()
+  }
+
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element is StarlarkGlobExpression && !element.isGlobValid()) {
       holder.annotateError(
@@ -20,7 +27,7 @@ class StarlarkSrcsAnnotator : StarlarkAnnotator() {
             StarlarkGlobAllowEmptyQuickFix(element).asIntention(),
           ),
       )
-    } else if (element.parent.firstChild.text == "srcs" && element is StarlarkListLiteralExpression) {
+    } else if (element.parent.firstChild.text in filesListParameters && element is StarlarkListLiteralExpression) {
       for (child in element.children) {
         if (child is StarlarkStringLiteralExpression && !child.isResolvableToFile()) {
           holder.annotateError(
