@@ -2,8 +2,8 @@ package org.jetbrains.bazel.languages.starlark.annotation
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.languages.starlark.bazel.StarlarkFilesListParametersProvider
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import org.jetbrains.bazel.languages.starlark.bazel.StarlarkFilesListParametersProvider
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression

@@ -17,6 +17,6 @@ class DefaultStarlarkFilesListParametersProvider : StarlarkFilesListParametersPr
       "srcs",
       "hdrs",
       "resources",
-      "textual_hdrs"
+      "textual_hdrs",
     )
 }
