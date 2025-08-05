@@ -14,7 +14,7 @@ import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.flow.sync.BazelBinPathService
+import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget

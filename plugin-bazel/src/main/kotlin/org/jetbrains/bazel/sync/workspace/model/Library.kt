@@ -12,4 +12,5 @@ data class Library(
   val interfaceJars: Set<Path> = emptySet(),
   val mavenCoordinates: MavenCoordinates? = null,
   val isFromInternalTarget: Boolean = false,
+  val isLowPriority: Boolean = false,
 )

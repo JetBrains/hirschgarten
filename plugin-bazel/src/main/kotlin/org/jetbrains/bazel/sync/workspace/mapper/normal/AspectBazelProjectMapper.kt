@@ -277,6 +277,9 @@ class AspectBazelProjectMapper(
         outputs = kotlinStdlibsJars,
         sources = inferredSourceJars,
         dependencies = emptyList(),
+        // https://youtrack.jetbrains.com/issue/BAZEL-2284: if a dependency module depends on a jetbrains-annotations library,
+        // then it should still override Kotlin stdlib's older version of the same library
+        isLowPriority = true,
       )
     } else {
       null
@@ -775,8 +778,9 @@ class AspectBazelProjectMapper(
   ): Module {
     val label = target.label().assumeResolved()
     val resolvedDependencies = resolveDirectDependencies(target)
-    // extra libraries can override some library versions, so they should be put before
-    val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
+    // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
+    val (extraLibraries, lowPriorityExtraLibraries) = extraLibraries.partition { !it.isLowPriority }
+    val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
     val languages = inferLanguages(target)
     val tags = targetTagsResolver.resolveTags(target, workspaceContext)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)

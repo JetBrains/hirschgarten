@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.libraries
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
+import com.intellij.util.WaitFor
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -27,8 +28,10 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
 
   @Synchronized
   private fun initializeVariables() {
+    underLibraryUpdate.set(true)
+    // this must be done asynchronously to be able to refresh and find virtual file under read lock
+    // https://youtrack.jetbrains.com/issue/BAZEL-2265
     BazelCoroutineService.getInstance(project).start {
-      underLibraryUpdate.set(true)
       libraries =
         AdditionalLibraryRootsProvider.EP_NAME
           .extensionList
@@ -71,9 +74,22 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
     )
   }
 
-  @Synchronized
+  private fun isLibrariesAvailable(): Boolean = !duringSync.get() && !underLibraryUpdate.get()
+
+  /**
+   * waits for libraries to be available before returning the corresponding library,
+   * maximum waiting time is 10 seconds
+   * https://youtrack.jetbrains.com/issue/BAZEL-2283
+   */
+  fun getLibraryBlocking(providerClass: Class<out BazelExternalLibraryProvider>): BazelExternalSyntheticLibrary? {
+    object : WaitFor(10000) {
+      override fun condition(): Boolean = isLibrariesAvailable()
+    }
+    return getLibrary(providerClass)
+  }
+
   fun getLibrary(providerClass: Class<out BazelExternalLibraryProvider>): BazelExternalSyntheticLibrary? =
-    if (duringSync.get() || underLibraryUpdate.get()) null else libraries[providerClass]
+    if (isLibrariesAvailable()) libraries[providerClass] else null
 
   companion object {
     @JvmStatic
