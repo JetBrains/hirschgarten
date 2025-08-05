@@ -166,14 +166,14 @@ class ExecuteService(
     val targetsSpec = TargetsSpec(params.targets, emptyList())
     val workspaceContext = workspaceContextProvider.readWorkspaceContext()
     val command =
-      when (params.coverage) {
-        true ->
+      when (val instrumentationFilter = params.coverageInstrumentationFilter) {
+        null -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
+
+        else ->
           bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
             it.options.add(BazelFlag.combinedReportLcov())
-            it.options.add(BazelFlag.instrumentationFilterAll())
+            it.options.add(BazelFlag.instrumentationFilter(instrumentationFilter))
           }
-
-        else -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
       }
 
     val debugType = params.debug
