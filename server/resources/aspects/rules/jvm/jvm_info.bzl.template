@@ -116,7 +116,7 @@ def extract_runtime_jars(target, provider):
 def extract_compile_jars(provider):
     compilation_info = getattr(provider, "compilation_info", None)
 
-    return compilation_info.compilation_classpath if compilation_info else []
+    return compilation_info.compilation_classpath if compilation_info else depset()
 
 def get_jvm_provider(target):
     if hasattr(target, "scala"):
