@@ -6,15 +6,11 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import java.io.IOException
-import java.nio.file.Path
-import java.nio.file.Paths
 
 class StarlarkCreateFileQuickFix(element: StarlarkStringLiteralExpression) : LocalQuickFixAndIntentionActionOnPsiElement(element) {
   override fun getText(): String = familyName
@@ -30,42 +26,41 @@ class StarlarkCreateFileQuickFix(element: StarlarkStringLiteralExpression) : Loc
     startElement: PsiElement,
     endElement: PsiElement,
   ) {
-    val absolutePath = getAbsolutePath() ?: return
-    val parentDirectory = absolutePath.parent ?: return
-    val fileName = absolutePath.fileName.toString()
+    val element = startElement as? StarlarkStringLiteralExpression ?: return
+    val relativePath = element.text.trim('"')
+    val baseDir = psiFile.containingDirectory ?: return
 
     try {
-      val newPsiFile = createFile(project, parentDirectory, fileName)
-      newPsiFile?.virtualFile?.let {
+      val newFile =
+        WriteAction.compute<PsiFile, Throwable> {
+          createFile(baseDir, relativePath)
+        }
+      newFile.virtualFile?.let {
         OpenFileDescriptor(project, it).navigate(true)
       }
     } catch (e: Exception) {
-      showErrorDialog(project, StarlarkBundle.message("error.dialog.message.create.file", e.message!!))
+      showErrorDialog(project, StarlarkBundle.message("error.dialog.message.create.file", e.message ?: e.javaClass.name))
     }
   }
 
-  private fun getAbsolutePath(): Path? {
-    val element = startElement as? StarlarkStringLiteralExpression ?: return null
-    val str = element.text.trim('"')
-    if (str.isBlank()) return null
+  private fun createFile(baseDir: PsiDirectory, relativePath: String): PsiFile {
+    val pathParts = relativePath.replace('\\', '/').split('/')
+    val fileName = pathParts.last()
+    val dirParts = pathParts.dropLast(1)
 
-    val currentDir = element.containingFile.containingDirectory?.virtualFile ?: return null
-    return Paths.get(currentDir.path).resolve(str).normalize()
-  }
-
-  private fun createFile(
-    project: Project,
-    parentDirectory: Path,
-    fileName: String,
-  ): PsiFile? =
-    WriteAction.compute<PsiFile?, Throwable> {
-      val parentDirVFile = VfsUtil.createDirectories(parentDirectory.toString())
-      val parentPsiDir =
-        PsiManager.getInstance(project).findDirectory(parentDirVFile)
-          ?: throw IOException(StarlarkBundle.message("error.dialog.message.find.psi.dir", parentDirVFile.path))
-
-      parentPsiDir.findFile(fileName) ?: parentPsiDir.createFile(fileName)
+    var currentDir = baseDir
+    for (dirName in dirParts) {
+      if (dirName.isEmpty() || dirName == ".") continue
+      if (dirName == "..") {
+        currentDir = currentDir.parent ?: currentDir
+        continue
+      }
+      val subDir = currentDir.findSubdirectory(dirName)
+      currentDir = subDir ?: currentDir.createSubdirectory(dirName)
     }
+
+    return currentDir.findFile(fileName) ?: currentDir.createFile(fileName)
+  }
 
   private fun showErrorDialog(project: Project, message: String) {
     Messages.showErrorDialog(project, message, StarlarkBundle.message("error.dialog.name"))
