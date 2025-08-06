@@ -5,6 +5,8 @@ import kotlinx.coroutines.ensureActive
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
@@ -14,6 +16,7 @@ import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
+import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bazel.server.model.AspectSyncProject
@@ -131,8 +134,10 @@ class ProjectResolver(
         measured(
           "Parsing aspect outputs",
         ) {
-          targetInfoReader
-            .readTargetMapFromAspectOutputs(aspectOutputs)
+          val rawTargetsMap =
+            targetInfoReader
+              .readTargetMapFromAspectOutputs(aspectOutputs)
+          rawTargetsMap
             .map { (k, v) ->
               // TODO: make sure we canonicalize everything
               //  (https://youtrack.jetbrains.com/issue/BAZEL-1597/Make-sure-all-labels-in-the-server-are-canonicalized)
@@ -144,15 +149,9 @@ class ProjectResolver(
                   .toBuilder()
                   .apply {
                     id = label.toString()
-                    val canonicalizedDependencies =
-                      dependenciesBuilderList.map {
-                        it
-                          .apply {
-                            id = Label.parse(it.id).canonicalize(repoMapping).toString()
-                          }.build()
-                      }
+                    val processedDependencies = processDependenciesList(dependenciesBuilderList, rawTargetsMap, repoMapping)
                     clearDependencies()
-                    addAllDependencies(canonicalizedDependencies)
+                    addAllDependencies(processedDependencies)
                   }.build()
             }.toMap()
         }
@@ -332,5 +331,35 @@ class ProjectResolver(
 
     // language-specific output groups
     private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
+
+    @JvmStatic
+    fun processDependenciesList(
+      dependenciesBuilderList: List<BspTargetInfo.Dependency.Builder>,
+      targets: Map<Label, TargetInfo>,
+      repoMapping: RepoMapping,
+    ): List<BspTargetInfo.Dependency> {
+      val projectSuffix = "-project"
+      return dependenciesBuilderList.map { dependency ->
+        dependency
+          .apply {
+            // canonicalize the dependency id
+            val label = Label.parse(id)
+            val canonicalizedLabel = label.canonicalize(repoMapping)
+            val canonicalizedId = canonicalizedLabel.toString()
+
+            // Replace dependencies from maven_project_jar with their java_library counterparts
+            // this is to support the macro java_export from rules_jvm_external
+            // refer to its definition for more context: https://github.com/bazel-contrib/rules_jvm_external/blob/935db476ba732576a1f868b092301ce1bc44fe72/private/rules/java_export.bzl#L8
+            // use the original label here instead of canonicalized label as `targets` is still in the original form
+            val target = targets[label]
+            id =
+              if (target?.kind == "maven_project_jar" && canonicalizedId.endsWith(projectSuffix)) {
+                canonicalizedId.dropLast(projectSuffix.length) + "-lib"
+              } else {
+                canonicalizedId
+              }
+          }.build()
+      }
+    }
   }
 }
