@@ -61,21 +61,24 @@ private class StarlarkClassnameCompletionProvider : CompletionProvider<Completio
     packageToSearch.classes.mapNotNull { psiClass ->
       psiClass.qualifiedName?.let { qualifiedName ->
         getCompletionLookupElemenent(
-          qualifiedName,
-          PlatformIcons.CLASS_ICON,
-          1.0,
+          name = qualifiedName,
+          icon = PlatformIcons.CLASS_ICON,
+          priority = 1.0,
+          presentableText = psiClass.name,
+          tailText = " ($qualifiedName)",
         )
       }
     }
 
   private fun getSubPackagesVariants(packageToSearch: PsiPackage): List<LookupElement> =
     packageToSearch.subPackages.map { subPackage ->
-      val subPackageName = subPackage.qualifiedName + "."
       getCompletionLookupElemenent(
-        subPackageName,
-        PlatformIcons.PACKAGE_ICON,
-        1.0,
-        false,
+        name = subPackage.qualifiedName + ".",
+        icon = PlatformIcons.PACKAGE_ICON,
+        priority = 1.0,
+        presentableText = subPackage.name + ".",
+        tailText = " (${subPackage.qualifiedName})",
+        isExpressionFinished = false,
       )
     }
 }
