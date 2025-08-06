@@ -12,7 +12,6 @@ import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bsp.protocol.BuildTarget
 
 class PythonBazelRunHandler : PythonBazelHandler() {
-
   override val name: String
     get() = "Python Run Handler"
 
@@ -24,7 +23,6 @@ class PythonBazelRunHandler : PythonBazelHandler() {
   override fun getProgramArguments(): String? = state.programArguments
 
   class Provider : GooglePluginAwareRunHandlerProvider {
-
     override val id: String
       get() = "PythonBazelRunHandlerProvider"
 

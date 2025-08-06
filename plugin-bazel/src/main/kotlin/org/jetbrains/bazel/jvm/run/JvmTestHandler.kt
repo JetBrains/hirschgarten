@@ -49,7 +49,6 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     }
 
   class JvmTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
-
     override val id: String
       get() = "JvmTestHandlerProvider"
 

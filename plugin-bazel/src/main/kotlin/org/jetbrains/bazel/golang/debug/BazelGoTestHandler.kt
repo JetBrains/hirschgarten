@@ -64,7 +64,6 @@ class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler
       ?: throw ExecutionException(BazelPluginBundle.message("go.test.handler.error.target.missing.from.config"))
 
   class BazelGoTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
-
     override val id: String
       get() = "BazelGoTestHandlerProvider"
 

@@ -48,7 +48,6 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     }
 
   class JvmRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
-
     override val id: String
       get() = "JvmRunHandlerProvider"
 
