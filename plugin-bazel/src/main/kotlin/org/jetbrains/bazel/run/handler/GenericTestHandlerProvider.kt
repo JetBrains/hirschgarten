@@ -7,12 +7,10 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 
 class GenericTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
-
   override val id: String
     get() = "GenericTestHandlerProvider"
 
-  override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler =
-    GenericBazelTestHandler()
+  override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = GenericBazelTestHandler()
 
   override fun canRun(targetInfos: List<BuildTarget>): Boolean = targetInfos.all { it.kind.ruleType == RuleType.TEST }
 

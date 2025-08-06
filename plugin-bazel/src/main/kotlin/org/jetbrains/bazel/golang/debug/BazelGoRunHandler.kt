@@ -58,7 +58,6 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
       ?: throw ExecutionException(BazelPluginBundle.message("go.runner.wrong.configuration"))
 
   class BazelGoRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
-
     override val id: String
       get() = "BazelGoRunHandlerProvider"
 
