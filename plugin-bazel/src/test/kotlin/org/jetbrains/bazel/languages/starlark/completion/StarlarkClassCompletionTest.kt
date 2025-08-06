@@ -48,7 +48,42 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
     // then
-    lookups shouldContainExactlyInAnyOrder listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\"")
+    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\""))
+  }
+
+  @Test
+  fun `should suggest kt classes for classname attribute`() {
+    // given
+    myFixture.addFileToProject(
+      "com/example/MyClass.kt",
+      """
+      package com.example
+      class MyClass
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "com/example/MyOtherClass.kt",
+      """
+      package com.example
+      class MyOtherClass
+      """.trimIndent(),
+    )
+
+    // when
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "test_example",
+        classname = "com.example.<caret>",
+      )
+      """.trimMargin(),
+    )
+
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+
+    // then
+    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\""))
   }
 
   @Test
@@ -63,10 +98,10 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
     )
 
     myFixture.addFileToProject(
-      "com/example2/MyOtherClass.java",
+      "com/exampleKt/MyKtClass.kt",
       """
-      package com.example;
-      public class MyOtherClass {}
+      package com.exampleKt
+      class MyKtClass
       """.trimIndent(),
     )
 
@@ -84,7 +119,7 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
     // then
-    lookups shouldContainExactlyInAnyOrder listOf("\"com.example.\"", "\"com.example2.\"")
+    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.\"", "\"com.exampleKt.\""))
   }
 
   @Test
@@ -112,7 +147,7 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
     // then
-    lookups shouldContainExactlyInAnyOrder listOf("\"com.\"")
+    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.\""))
   }
 
   @Test
@@ -140,5 +175,77 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
     // then
     lookups.shouldBeEmpty()
+  }
+
+  @Test
+  fun `should insert selected class and finish classname completion`() {
+    // given
+    myFixture.addFileToProject(
+      "com/example/MyClass.kt",
+      """
+      package com.example
+      class MyClass
+      """.trimIndent(),
+    )
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "test_example",
+        classname = "com.example.My<caret>",
+      )
+      """.trimMargin(),
+    )
+
+    // when
+    myFixture.completeBasic()
+    myFixture.type('\n')
+
+    // then
+    myFixture.checkResult(
+      """
+      java_binary(
+        name = "test_example",
+        classname = "com.example.MyClass"<caret>,
+      )
+      """.trimMargin(),
+    )
+  }
+
+  @Test
+  fun `should insert selected subpackage and continue completion`() {
+    // given
+    myFixture.addFileToProject(
+      "com/example/MyClass.kt",
+      """
+      package com.example
+      class MyClass
+      """.trimIndent(),
+    )
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "test_example",
+        classname = "com.<caret>",
+      )
+      """.trimMargin(),
+    )
+
+    // when
+    myFixture.completeBasic()
+    myFixture.type('\n')
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+
+    // then
+    myFixture.checkResult(
+      """
+      java_binary(
+        name = "test_example",
+        classname = "com.example.<caret>",
+      )
+      """.trimMargin(),
+    )
+    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\""))
   }
 }
