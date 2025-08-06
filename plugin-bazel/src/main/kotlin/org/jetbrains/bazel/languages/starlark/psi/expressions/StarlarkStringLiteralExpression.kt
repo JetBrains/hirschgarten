@@ -96,5 +96,5 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
       .toSet()
   }
 
-  private fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name in classParametersList
+  fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name in classParametersList
 }
