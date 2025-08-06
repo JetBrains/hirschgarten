@@ -17,17 +17,13 @@ import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
-class BazelTestCommandLineState(
-  environment: ExecutionEnvironment,
-  originId: OriginId,
-  val state: AbstractGenericTestState<*>,
-) : BazelCommandLineStateBase(environment, originId) {
+class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: AbstractGenericTestState<*>) :
+  BazelCommandLineStateBase(environment) {
   var coverageReportListener: ((Path) -> Unit)? = null
 
   private val configuration = environment.runProfile as BazelRunConfiguration
@@ -53,8 +49,8 @@ class BazelTestCommandLineState(
     // TODO: add pidDeferred to TestParams
     val params =
       TestParams(
-        targets,
-        originId = originId,
+        targets = configuration.targets,
+        originId = originId.toString(),
         workingDirectory = state.workingDirectory,
         arguments = transformProgramArguments(state.programArguments),
         environmentVariables = state.env.envs,

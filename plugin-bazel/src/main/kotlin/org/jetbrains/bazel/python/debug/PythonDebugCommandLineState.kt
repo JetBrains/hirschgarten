@@ -24,17 +24,13 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
-class PythonDebugCommandLineState(
-  env: ExecutionEnvironment,
-  originId: OriginId,
-  private val programArguments: String?,
-) : BazelCommandLineStateBase(env, originId) {
-  val target: Label? = (env.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
-  private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
+class PythonDebugCommandLineState(environment: ExecutionEnvironment, private val programArguments: String?) :
+  BazelCommandLineStateBase(environment) {
+  val target: Label? = (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
+  private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(environment.project, it) }
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
@@ -44,10 +40,9 @@ class PythonDebugCommandLineState(
     val buildParams =
       CompileParams(
         targets = listOf(targetId),
-        originId = originId,
+        originId = originId.toString(),
         arguments = transformProgramArguments(programArguments),
       )
-
     BazelWorkspaceResolveService
       .getInstance(environment.project)
       .withEndpointProxy { it.buildTargetCompile(buildParams) }

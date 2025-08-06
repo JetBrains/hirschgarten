@@ -1,12 +1,10 @@
 package org.jetbrains.bazel.jvm.run
 
 import com.intellij.debugger.DebuggerManagerEx
-import com.intellij.debugger.DefaultDebugEnvironment
 import com.intellij.debugger.engine.JavaDebugProcess
 import com.intellij.debugger.impl.DebuggerSession
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
-import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RunnerSettings
@@ -37,21 +35,13 @@ class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
     // cast should always succeed, because canRun(...) checks for a compatible profile
-    val debugState = state as JvmDebuggableCommandLineState
-    val connection = debugState.remoteConnection
-    return attachVM(state, environment, connection)
-  }
+    state as JvmDebuggableCommandLineState
 
-  private fun attachVM(
-    state: RunProfileState,
-    executionEnvironment: ExecutionEnvironment,
-    connection: RemoteConnection,
-  ): RunContentDescriptor {
     val ex = AtomicReference<ExecutionException>()
     val result = AtomicReference<RunContentDescriptor>()
-    val project = executionEnvironment.project
+    val project = environment.project
     ApplicationManager.getApplication().invokeAndWait {
-      val debugEnvironment = DefaultDebugEnvironment(executionEnvironment, state, connection, true)
+      val debugEnvironment = state.createDebugEnvironment(environment)
       try {
         val debuggerSession =
           DebuggerManagerEx
@@ -61,7 +51,7 @@ class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
         result.set(
           XDebuggerManager
             .getInstance(project)
-            .startSession(executionEnvironment, BspDebugProcessStarter(debuggerSession))
+            .startSession(environment, BspDebugProcessStarter(debuggerSession))
             .runContentDescriptor,
         )
       } catch (_: ProcessCanceledException) {
