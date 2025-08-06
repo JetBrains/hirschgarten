@@ -613,6 +613,10 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
       language="Starlark"
     />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkClassnameCompletionContributor"
+      language="Starlark"
+    />
     <editorTabTitleProvider
       implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
     <extendWordSelectionHandler

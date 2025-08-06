@@ -25,15 +25,18 @@ class StarlarkClassnameCompletionContributor : CompletionContributor() {
 
 private class StarlarkClassnameCompletionProvider : CompletionProvider<CompletionParameters>() {
   companion object {
-    val psiPattern = psiElement()
-      .withLanguage(StarlarkLanguage)
-      .inside(
-        psiElement(StarlarkStringLiteralExpression::class.java)
-          .with(object : PatternCondition<StarlarkStringLiteralExpression>("isClassnameValue") {
-            override fun accepts(element: StarlarkStringLiteralExpression, context: ProcessingContext?): Boolean =
-              element.isClassnameValue()
-          })
-      )
+    val psiPattern =
+      psiElement()
+        .withLanguage(StarlarkLanguage)
+        .inside(
+          psiElement(StarlarkStringLiteralExpression::class.java)
+            .with(
+              object : PatternCondition<StarlarkStringLiteralExpression>("isClassnameValue") {
+                override fun accepts(element: StarlarkStringLiteralExpression, context: ProcessingContext?): Boolean =
+                  element.isClassnameValue()
+              },
+            ),
+        )
   }
 
   override fun addCompletions(
