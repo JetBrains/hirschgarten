@@ -338,7 +338,7 @@ class ProjectResolver(
       targets: Map<Label, TargetInfo>,
       repoMapping: RepoMapping,
     ): List<BspTargetInfo.Dependency> {
-      val projectSuffixRegex = "-project$".toRegex()
+      val projectSuffix = "-project"
       return dependenciesBuilderList.map { dependency ->
         dependency
           .apply {
@@ -347,14 +347,14 @@ class ProjectResolver(
             val canonicalizedLabel = label.canonicalize(repoMapping)
             val canonicalizedId = canonicalizedLabel.toString()
 
-            // Replace dependencies from maven_project_jar
+            // Replace dependencies from maven_project_jar with their java_library counterparts
             // this is to support the macro java_export from rules_jvm_external
             // refer to its definition for more context: https://github.com/bazel-contrib/rules_jvm_external/blob/935db476ba732576a1f868b092301ce1bc44fe72/private/rules/java_export.bzl#L8
             // use the original label here instead of canonicalized label as `targets` is still in the original form
             val target = targets[label]
             id =
-              if (target?.kind == "maven_project_jar") {
-                canonicalizedId.replace(projectSuffixRegex, "-lib")
+              if (target?.kind == "maven_project_jar" && canonicalizedId.endsWith(projectSuffix)) {
+                canonicalizedId.dropLast(projectSuffix.length) + "-lib"
               } else {
                 canonicalizedId
               }
