@@ -69,8 +69,7 @@ class AspectClientProjectMapper(
       project.nonModuleTargets
         .map { it.toBuildTarget() }
         .filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
-    return (buildTargets + nonModuleTargets)
-      .associateBy { it.id }
+    return (nonModuleTargets.associateBy { it.id } + buildTargets.associateBy { it.id })
   }
 
   private fun mapWorkspaceLibraries(project: AspectBazelMappedProject): List<LibraryItem> {
