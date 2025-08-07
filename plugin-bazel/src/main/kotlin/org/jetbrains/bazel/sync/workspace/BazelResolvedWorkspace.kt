@@ -11,34 +11,29 @@ data class BazelResolvedWorkspace(
   val hasError: Boolean = false,
 )
 
-enum class BuildTargetClassifier {
-  BUILD_TARGET,
-  NON_MODULE_TARGET
-}
+class BuildTargetCollection(
+  internal val buildTargets: MutableList<RawBuildTarget> = mutableListOf(),
+  internal val nonModuleTargets: MutableList<RawBuildTarget> = mutableListOf(),
+) {
 
-class BuildTargetCollection{
-  internal val specifierToTargets: MutableMap<BuildTargetClassifier, MutableMap<Label, RawBuildTarget>> = EnumMap(BuildTargetClassifier::class.java)
-
-  fun addTargets(classifier: BuildTargetClassifier, targets: Collection<RawBuildTarget>) {
-    targets.associateBy { it.id }
-    specifierToTargets.getOrPut(classifier) { mutableMapOf() }
-      .putAll(targets.associateBy { it.id })
+  fun addBuildTargets(targets: Collection<RawBuildTarget>) {
+    buildTargets.addAll(targets)
   }
 
-  fun getTargets(classifier: BuildTargetClassifier): Collection<RawBuildTarget> = specifierToTargets[classifier]?.values ?: emptyList()
+  fun addNonModuleTargets(targets: Collection<RawBuildTarget>) {
+    nonModuleTargets.addAll(targets)
+  }
 
   fun getTargets(): Sequence<RawBuildTarget> = sequence {
     // we want to overwrite non-module targets with build targets in case of a latter associateBy call
-    yieldAll(getTargets(BuildTargetClassifier.NON_MODULE_TARGET))
-    yieldAll(getTargets(BuildTargetClassifier.BUILD_TARGET))
+    yieldAll(nonModuleTargets)
+    yieldAll(buildTargets)
   }
 
-  fun getTargetIDs(): Sequence<Label> = specifierToTargets.values
-    .asSequence()
-    .flatMap { it.keys }
+  fun getTargetIDs(): Sequence<Label> = getTargets().map { it.id }
 
   companion object {
     fun ofBuildTargets(targets: Collection<RawBuildTarget>) = BuildTargetCollection()
-      .also { it.addTargets(BuildTargetClassifier.BUILD_TARGET, targets) }
+      .also { it.addBuildTargets(targets) }
   }
 }

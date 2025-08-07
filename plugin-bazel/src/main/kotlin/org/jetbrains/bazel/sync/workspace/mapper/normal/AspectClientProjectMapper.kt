@@ -8,7 +8,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
-import org.jetbrains.bazel.sync.workspace.BuildTargetClassifier
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaModule
 import org.jetbrains.bazel.sync.workspace.languages.jvm.javaModule
@@ -59,7 +58,7 @@ class AspectClientProjectMapper(
       if (featureFlags.isSharedSourceSupportEnabled) {
         emptySet()
       } else {
-        project.modules
+        project.modules.asSequence()
           .filter { !it.hasLowSharedSourcesPriority() }
           .flatMap { it.sources }
           .map { it.path }
@@ -67,12 +66,13 @@ class AspectClientProjectMapper(
       }
     val buildTargets = project.modules.map { it.toBuildTarget(highPrioritySources) }
     val nonModuleTargets =
-      project.nonModuleTargets
+      project.nonModuleTargets.asSequence()
         .map { it.toBuildTarget() }
         .filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
+        .toList()
     return BuildTargetCollection().apply {
-      addTargets(BuildTargetClassifier.BUILD_TARGET, buildTargets)
-      addTargets(BuildTargetClassifier.NON_MODULE_TARGET, nonModuleTargets)
+      addBuildTargets(buildTargets)
+      addNonModuleTargets(nonModuleTargets)
     }
   }
 

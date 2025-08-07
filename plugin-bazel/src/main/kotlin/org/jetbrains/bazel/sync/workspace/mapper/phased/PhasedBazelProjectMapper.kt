@@ -18,7 +18,6 @@ import org.jetbrains.bazel.commons.phased.srcs
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.BuildTargetClassifier
 import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.sync.workspace.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
