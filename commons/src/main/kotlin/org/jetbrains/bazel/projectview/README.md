@@ -304,5 +304,25 @@ import_ijars: true
 ##### default:
 
 ```
-import_interface_jars: false
+import_ijars: false
+```
+
+#### derive_instrumentation_filter_from_targets
+
+- When `true`, adds Bazel packages of all imported targets (either from `targets` or `directories`) as `--instrumentation_filter`
+  when running tests with coverage 
+  (see [Bazel documentation](https://bazel.build/reference/command-line-reference#flag--instrumentation_filter)).
+- When `false`, doesn't add `--instrumentation_filter` to flags when running test with coverage.
+  Instead, you can specify one in `.bazelrc` (e.g., `coverage --instrumentation_filter="^//"`).
+
+##### example:
+
+```
+derive_instrumentation_filter_from_targets: false
+```
+
+##### default:
+
+```
+derive_instrumentation_filter_from_targets: true
 ```

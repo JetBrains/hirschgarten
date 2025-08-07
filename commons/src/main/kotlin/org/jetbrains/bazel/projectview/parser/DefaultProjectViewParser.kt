@@ -2,6 +2,7 @@ package org.jetbrains.bazel.projectview.parser
 
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.sections.AndroidMinSdkSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.DeriveInstrumentationFilterFromTargetsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.EnableNativeAndroidRulesParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalAddTransitiveCompileTimeJarsParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser
@@ -75,6 +76,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         indexAllFilesInDirectories = IndexAllFilesInDirectoriesSectionParser.parse(rawSections),
         pythonCodeGeneratorRuleNamesSection = PythonCodeGeneratorRuleNamesSectionParser.parse(rawSections),
         importIjars = ImportIjarsSectionParser.parse(rawSections),
+        deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSectionParser.parse(rawSections),
       ).build()
   }
 
