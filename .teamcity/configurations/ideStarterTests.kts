@@ -87,6 +87,14 @@ sealed class ReopenWithoutResyncTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/reopen/noResync"
 )
 
+sealed class RecoverDotBazelBspTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Recover .bazelbsp gracefully test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/sync/recoverDotBazelBsp"
+)
+
 sealed class ExternalRepoResolveTest(
   vcsRoot: GitVcsRoot,
 ) : IdeStarterTests(
@@ -220,6 +228,10 @@ object CoroutineDebugTestGitHub : CoroutineDebugTest(
 )
 
 object ReopenWithoutResyncTestGitHub : ReopenWithoutResyncTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object RecoverDotBazelBspTestGitHub : RecoverDotBazelBspTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
 
