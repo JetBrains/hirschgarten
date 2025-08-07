@@ -401,9 +401,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
     try {
       val service = BazelWorkspaceResolveService.getInstance(project)
       val workspace = service.getOrFetchResolvedWorkspace(syncScope, taskId)
-      val targets = workspace.targets.values
-      val javaTargetIds = targets.calculateJavaTargetIds()
-      val scalaTargetIds = targets.calculateScalaTargetIds()
+      val targets = workspace.targets
+      val javaTargetIds = targets.getTargets().calculateJavaTargetIds().toList()
+      val scalaTargetIds = targets.getTargets().calculateScalaTargetIds().toList()
 
       val jvmBinaryJarsResult =
         queryIf(
@@ -431,8 +431,8 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       ProjectDetails(
-        targetIds = targets.map { it.id },
-        targets = targets.toSet(),
+        targetIds = targets.getTargetIDs().toList(),
+        targets = targets.getTargets().toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         libraries = workspace.libraries,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
@@ -450,6 +450,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun Collection<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.kind.includesJava() }.map { it.id }.toList()
+private fun Sequence<BuildTarget>.calculateJavaTargetIds(): Sequence<Label> = filter { it.kind.includesJava() }.map { it.id }
 
-private fun Collection<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.kind.includesScala() }.map { it.id }.toList()
+private fun Sequence<BuildTarget>.calculateScalaTargetIds(): Sequence<Label> = filter { it.kind.includesScala() }.map { it.id }

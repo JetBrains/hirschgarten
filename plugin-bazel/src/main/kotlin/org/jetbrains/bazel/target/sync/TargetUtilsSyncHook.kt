@@ -14,7 +14,7 @@ private class TargetUtilsSyncHook : ProjectSyncHook {
       environment.resolver
         .getOrFetchResolvedWorkspace()
         .targets
-        .values
+        .getTargets()
         .toList()
     val targetUtilsDiff = environment.diff.targetUtilsDiff
     targetUtilsDiff.bspTargets = bspTargets

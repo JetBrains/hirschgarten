@@ -237,7 +237,7 @@ class FirstPhaseTargetToBspMapperTest {
       val result: BazelResolvedWorkspace = mapper.resolveWorkspace(context, project)
 
       // then: update expected build targets as per the new merged behavior
-      result.targets.values shouldContainExactlyInAnyOrder
+      result.targets.getTargets().toList() shouldContainExactlyInAnyOrder
         listOf(
           // target1: unchanged
           RawBuildTarget(
@@ -436,7 +436,7 @@ class FirstPhaseTargetToBspMapperTest {
       val result: BazelResolvedWorkspace = mapper.resolveWorkspace(context, project)
 
       // then
-      val strings = result.targets.map { it.key.toString() }
+      val strings = result.targets.getTargets().map { it.id.toString() }.toList()
       strings shouldContainExactlyInAnyOrder
         listOf(
           "@//target1",

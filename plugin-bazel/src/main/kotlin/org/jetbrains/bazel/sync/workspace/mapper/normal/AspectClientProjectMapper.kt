@@ -7,6 +7,8 @@ import org.jetbrains.bazel.commons.Tag
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
+import org.jetbrains.bazel.sync.workspace.BuildTargetClassifier
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaModule
 import org.jetbrains.bazel.sync.workspace.languages.jvm.javaModule
@@ -22,7 +24,6 @@ import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JavacOptionsResult
@@ -53,7 +54,7 @@ class AspectClientProjectMapper(
       hasError = project.hasError,
     )
 
-  private fun mapWorkspaceTargets(project: AspectBazelMappedProject): Map<Label, RawBuildTarget> {
+  private fun mapWorkspaceTargets(project: AspectBazelMappedProject): BuildTargetCollection {
     val highPrioritySources =
       if (featureFlags.isSharedSourceSupportEnabled) {
         emptySet()
@@ -69,7 +70,10 @@ class AspectClientProjectMapper(
       project.nonModuleTargets
         .map { it.toBuildTarget() }
         .filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
-    return (nonModuleTargets.associateBy { it.id } + buildTargets.associateBy { it.id })
+    return BuildTargetCollection().apply {
+      addTargets(BuildTargetClassifier.BUILD_TARGET, buildTargets)
+      addTargets(BuildTargetClassifier.NON_MODULE_TARGET, nonModuleTargets)
+    }
   }
 
   private fun mapWorkspaceLibraries(project: AspectBazelMappedProject): List<LibraryItem> {

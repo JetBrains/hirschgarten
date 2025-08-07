@@ -30,6 +30,7 @@ import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDi
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -85,7 +86,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       BazelWorkspaceResolverMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
-            targets = pythonTestTargets.buildTargets.associateBy { it.id },
+            targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
           ),
         endpointProxy = endpointProxy,
       )
@@ -134,7 +135,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       BazelWorkspaceResolverMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
-            targets = pythonTestTargets.buildTargets.associateBy { it.id },
+            targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
           ),
         endpointProxy = endpointProxy,
       )
