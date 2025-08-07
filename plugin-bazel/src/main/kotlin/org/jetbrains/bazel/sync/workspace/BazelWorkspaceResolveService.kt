@@ -49,6 +49,7 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
 
   private suspend fun initWorkspace() {
     when (this.state) {
+      // workspace is already initialized - abort
       BazelWorkspaceSyncState.Initialized,
       BazelWorkspaceSyncState.Unsynced,
       is BazelWorkspaceSyncState.Resolved,
@@ -83,11 +84,14 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
 
   private suspend fun syncWorkspace(build: Boolean, taskId: String): SyncedWorkspaceState {
     when (val state = state) {
+      // if workspace was already sync or even resolved - return the available state and avoid recomputation
       is BazelWorkspaceSyncState.Resolved -> return state.synced
       is BazelWorkspaceSyncState.Synced -> return state.synced
 
+      // if the workspace hasn't been initialized - initialize and proceed
       BazelWorkspaceSyncState.NotInitialized -> initWorkspace()
 
+      // workspace is in a correct state to sync - proceed
       BazelWorkspaceSyncState.Unsynced, BazelWorkspaceSyncState.Initialized -> {
         // fall through
       }
@@ -101,14 +105,17 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
   private suspend fun resolveWorkspace(scope: ProjectSyncScope, taskId: String): ResolvedWorkspaceState {
     val synced =
       when (val state = state) {
+        // workspace is already resolved - return the available state and avoid recomputation
         is BazelWorkspaceSyncState.Resolved,
         -> return state.resolved
 
+        // workspace is not in the correct state - try to pull the required state
         is BazelWorkspaceSyncState.NotInitialized,
         BazelWorkspaceSyncState.Initialized,
         BazelWorkspaceSyncState.Unsynced,
         -> syncWorkspace(false, taskId)
 
+        // workspace is in available state - pass previous state data
         is BazelWorkspaceSyncState.Synced -> state.synced
       }
 
