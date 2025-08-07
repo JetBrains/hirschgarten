@@ -57,7 +57,7 @@ object ClasspathQuery {
 
   data class JvmClasspath(
     @SerializedName("runtime_classpath") val runtimeClasspath: List<Path>,
-    @SerializedName("runtime_classpath") val compileClasspath: List<Path>,
+    @SerializedName("compile_classpath") val compileClasspath: List<Path>,
   ) {
     fun toProtocolModel() = BspJvmClasspath(runtimeClasspath, compileClasspath)
   }
