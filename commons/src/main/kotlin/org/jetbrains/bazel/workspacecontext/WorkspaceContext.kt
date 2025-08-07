@@ -99,6 +99,7 @@ data class WorkspaceContext(
   val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSpec,
   val pythonCodeGeneratorRuleNames: PythonCodeGeneratorRuleNamesSpec,
   val importIjarsSpec: ImportIjarsSpec,
+  val deriveInstrumentationFilterFromTargets: DeriveInstrumentationFilterFromTargetsSpec,
 )
 
 /**

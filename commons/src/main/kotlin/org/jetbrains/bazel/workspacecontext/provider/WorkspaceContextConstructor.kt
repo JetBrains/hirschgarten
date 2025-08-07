@@ -51,6 +51,7 @@ class WorkspaceContextConstructor(
       indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpecExtractor.fromProjectView(projectView),
       pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpecExtractor.fromProjectView(projectView),
       importIjarsSpec = ImportIjarsSpecExtractor.fromProjectView(projectView),
+      deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsExtractor.fromProjectView(projectView),
     )
   }
 }

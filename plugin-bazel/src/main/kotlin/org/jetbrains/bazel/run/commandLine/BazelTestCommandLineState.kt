@@ -68,8 +68,9 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
         .toSet()
         .filterPathsThatDontContainEachOther2()
     if (packages.isEmpty() || packages.singleOrNull() == emptyList<String>()) {
-      return "[:]"
+      // Cover all packages
+      return "^//"
     }
-    return "^//(${packages.joinToString("|") { it.joinToString("/") } })([/:])"
+    return "^//(${packages.joinToString("|") { it.joinToString("/") }})[/:]"
   }
 }

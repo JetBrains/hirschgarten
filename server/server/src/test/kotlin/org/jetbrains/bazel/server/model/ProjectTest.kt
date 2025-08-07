@@ -10,6 +10,7 @@ import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
 import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
+import org.jetbrains.bazel.workspacecontext.DeriveInstrumentationFilterFromTargetsSpec
 import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
@@ -254,5 +255,6 @@ class ProjectTest {
       pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
       importIjarsSpec = ImportIjarsSpec(false),
       debugFlags = DebugFlagsSpec(emptyList()),
+      deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSpec(false),
     )
 }
