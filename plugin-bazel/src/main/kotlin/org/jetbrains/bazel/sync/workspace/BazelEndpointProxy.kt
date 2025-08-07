@@ -27,6 +27,11 @@ import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 
+/**
+ * Indirection between plugin and [JoinedBuildServer],
+ * allows intercepting server calls in single place.
+ * Also contains refactored endpoints from bsp server to plugin.
+ */
 interface BazelEndpointProxy {
   fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
 
