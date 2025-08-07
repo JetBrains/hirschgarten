@@ -20,15 +20,18 @@ class BuildTargetCollection{
   internal val specifierToTargets: MutableMap<BuildTargetClassifier, MutableMap<Label, RawBuildTarget>> = EnumMap(BuildTargetClassifier::class.java)
 
   fun addTargets(classifier: BuildTargetClassifier, targets: Collection<RawBuildTarget>) {
+    targets.associateBy { it.id }
     specifierToTargets.getOrPut(classifier) { mutableMapOf() }
       .putAll(targets.associateBy { it.id })
   }
 
   fun getTargets(classifier: BuildTargetClassifier): Collection<RawBuildTarget> = specifierToTargets[classifier]?.values ?: emptyList()
 
-  fun getTargets(): Sequence<RawBuildTarget> = specifierToTargets.values
-    .asSequence()
-    .flatMap { it.values }
+  fun getTargets(): Sequence<RawBuildTarget> = sequence {
+    // we want to overwrite non-module targets with build targets in case of a latter associateBy call
+    yieldAll(getTargets(BuildTargetClassifier.NON_MODULE_TARGET))
+    yieldAll(getTargets(BuildTargetClassifier.BUILD_TARGET))
+  }
 
   fun getTargetIDs(): Sequence<Label> = specifierToTargets.values
     .asSequence()
