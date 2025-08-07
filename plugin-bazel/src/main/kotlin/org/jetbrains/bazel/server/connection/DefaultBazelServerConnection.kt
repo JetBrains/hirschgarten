@@ -21,6 +21,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   private val bspClient = createBspClient()
   private val workspaceRoot = project.rootDir.toNioPath()
   private var connectionResetConfig = generateNewConnectionResetConfig()
+  private val environmentCreator = EnvironmentCreator(workspaceRoot)
   private val server =
     runBlocking {
       startServer(
@@ -32,7 +33,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     }
 
   init {
-    EnvironmentCreator(workspaceRoot).create()
+    environmentCreator.create()
   }
 
   private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
@@ -52,6 +53,9 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   }
 
   override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T {
+    // ensure `.bazelbsp` directory exists and functions
+    environmentCreator.create()
+
     log.debug("ensuring the connection is established")
     val newConnectionResetConfig = generateNewConnectionResetConfig()
 
