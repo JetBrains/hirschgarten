@@ -125,5 +125,9 @@
     <orderEntry type="module" module-name="intellij.terminal.completion" />
     <orderEntry type="module" module-name="intellij.driver.sdk" />
     <orderEntry type="module" module-name="intellij.platform.refactoring" />
+    <orderEntry type="library" name="jackson" level="project" />
+    <orderEntry type="library" name="jackson-databind" level="project" />
+    <orderEntry type="library" name="jackson-dataformat-xml" level="project" />
+    <orderEntry type="library" name="jackson-module-kotlin" level="project" />
   </component>
 </module>

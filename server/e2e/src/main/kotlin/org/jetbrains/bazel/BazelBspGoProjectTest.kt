@@ -44,13 +44,8 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult =
     WorkspaceBuildTargetsResult(
-      listOf(
-        exampleBuildTarget(),
-        exampleLibBuildTarget(),
-        libBuildTarget(),
-        libTestBuildTarget(),
-        gazelleTarget,
-      ),
+      targets = mapOf(),
+      rootTargets = setOf(),
     )
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =

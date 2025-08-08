@@ -21,8 +21,6 @@ data class DotBazelBspDirPathSpec(override val value: Path) : WorkspaceContextSi
 
 data class EnableNativeAndroidRules(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
 
-data class ExperimentalAddTransitiveCompileTimeJars(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
-
 data class GazelleTargetSpec(override val value: Label?) : WorkspaceContextSingletonEntity<Label?>()
 
 data class IdeJavaHomeOverrideSpec(override val value: Path?) : WorkspaceContextSingletonEntity<Path?>()
