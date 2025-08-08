@@ -89,17 +89,17 @@ object IdeStarter {
   )
 
   object BazelCoverageTest : IdeStarterTest(
-    name = "Bazel code coverage test",
+    name = "Bazel Coverage test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/coverage"
   )
 
   object TestResultsTreeTest : IdeStarterTest(
-    name = "Test results tree test",
+    name = "Test Results Tree test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/tests:TestResultsTreeTest"
   )
 
   object RunLineMarkerTest : IdeStarterTest(
-    name = "Go file run/debug marker test",
+    name = "Run Line Marker test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/runconfig:RunLineMarkerTest"
   )
 
@@ -109,27 +109,27 @@ object IdeStarter {
   )
 
   object NonModuleTargetsTest : IdeStarterTest(
-    name = "Do not remove non-module targets from run configuration",
+    name = "Sync non module targets test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/runconfig:NonModuleTargetsTest"
   )
 
   object RunAllTestsActionTest : IdeStarterTest(
-    name = "Run all tests from test file action test",
+    name = "Run all tests action test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/actions:RunAllTestsActionTest"
   )
 
   object DisabledKotlinPluginTest : IdeStarterTest(
-    name = "Bazel runs normally with disabled Kotlin plugin",
+    name = "Sync project with disabled kotlin plugin test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/kotlin:DisabledKotlinPluginTest"
   )
 
   object PyCharmTest : IdeStarterTest(
-    name = "PyCharm test",
+    name = "Sync project in PyCharm test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/python:PyCharmPluginTest"
   )
 
   object PyCharmImportRedCodeTest : IdeStarterTest(
-    name = "PyCharm import does not highlight in red",
+    name = "Check red code in PyCharm test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/python:PyCharmImportIsNotRedTest"
   )
 
@@ -144,7 +144,7 @@ object IdeStarter {
   )
 
   object MoveKotlinFileTest : IdeStarterTest(
-    name = "Move kotlin file test",
+    name = "Move Kotlin file test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/kotlin:MoveKotlinFileTest",
     testSpecificArgs = "--test_timeout=600"
   )
