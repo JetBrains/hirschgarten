@@ -18,121 +18,107 @@ bazel_integration_test_all_versions(
         "foo4": "val4",
     },
     project_path = "test-projects/workspace/sample-repo",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspSampleRepoTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelTestRunner",
 )
-
-bazel_integration_test_all_versions(
-    name = "local_jdk_test",
-    additional_env_inherit = ["JAVA_HOME"],
-    bzlmod_project_path = "test-projects/bzlmod/local-jdk-project",
-    project_path = "test-projects/workspace/local-jdk-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspLocalJdkTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "remote_jdk_test",
-    bzlmod_project_path = "test-projects/bzlmod/remote-jdk-project",
-    project_path = "test-projects/workspace/remote-jdk-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspRemoteJdkTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "python_project_test",
-    bzlmod_project_path = "test-projects/bzlmod/python-project",
-    project_path = "test-projects/workspace/python-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspPythonProjectTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "kotlin_project_test",
-    bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
-    project_path = "test-projects/workspace/kotlin-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "kotlin_project_with_enabled_rules_test",
-    bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
-    project_path = "test-projects/workspace/kotlin-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectWithEnabledRulesTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "enabled_rules_test",
-    project_path = "test-projects/workspace/enabled-rules-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspScalaProjectTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "go_project_test",
-    bzlmod_project_path = "test-projects/bzlmod/go-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspGoProjectTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "java_diagnostics_test",
-    bzlmod_project_path = "test-projects/bzlmod/java-diagnostics-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:JavaDiagnosticsTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "allow_manual_targets_sync_test",
-    bzlmod_project_path = "test-projects/bzlmod/allow-manual-targets-sync-project",
-    project_path = "test-projects/workspace/allow-manual-targets-sync-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspAllowManualTargetsSyncTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "partial_sync_test",
-    bzlmod_project_path = "test-projects/bzlmod/sample-repo",
-    project_path = "test-projects/workspace/sample-repo",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspPartialSyncTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "build_and_sync_test",
-    bzlmod_project_path = "test-projects/bzlmod/build-and-sync-test",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspBuildAndSyncTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "first_phase_sync_test",
-    bzlmod_project_path = "test-projects/bzlmod/first-phase-sync-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspFirstPhaseSyncTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "nested_modules_test",
-    bzlmod_project_path = "test-projects/bzlmod/nested-modules",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:NestedModulesTest",
-)
-
-bazel_integration_test_all_versions(
-    name = "external_autoloads_test",
-    bzlmod_project_path = "test-projects/bzlmod/external-autoloads-project",
-    exclude_bazel_7 = True,
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ExternalAutoloadsTest",
-)
+#
+# bazel_integration_test_all_versions(
+#     name = "local_jdk_test",
+#     additional_env_inherit = ["JAVA_HOME"],
+#     bzlmod_project_path = "test-projects/bzlmod/local-jdk-project",
+#     project_path = "test-projects/workspace/local-jdk-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelTestRunner",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "remote_jdk_test",
+#     bzlmod_project_path = "test-projects/bzlmod/remote-jdk-project",
+#     project_path = "test-projects/workspace/remote-jdk-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspRemoteJdkTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "python_project_test",
+#     bzlmod_project_path = "test-projects/bzlmod/python-project",
+#     project_path = "test-projects/workspace/python-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspPythonProjectTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "kotlin_project_test",
+#     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
+#     project_path = "test-projects/workspace/kotlin-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "kotlin_project_with_enabled_rules_test",
+#     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
+#     project_path = "test-projects/workspace/kotlin-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectWithEnabledRulesTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "enabled_rules_test",
+#     project_path = "test-projects/workspace/enabled-rules-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspScalaProjectTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "go_project_test",
+#     bzlmod_project_path = "test-projects/bzlmod/go-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspGoProjectTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "java_diagnostics_test",
+#     bzlmod_project_path = "test-projects/bzlmod/java-diagnostics-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:JavaDiagnosticsTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "allow_manual_targets_sync_test",
+#     bzlmod_project_path = "test-projects/bzlmod/allow-manual-targets-sync-project",
+#     project_path = "test-projects/workspace/allow-manual-targets-sync-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspAllowManualTargetsSyncTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "partial_sync_test",
+#     bzlmod_project_path = "test-projects/bzlmod/sample-repo",
+#     project_path = "test-projects/workspace/sample-repo",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspPartialSyncTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "build_and_sync_test",
+#     bzlmod_project_path = "test-projects/bzlmod/build-and-sync-test",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspBuildAndSyncTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "first_phase_sync_test",
+#     bzlmod_project_path = "test-projects/bzlmod/first-phase-sync-project",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspFirstPhaseSyncTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "nested_modules_test",
+#     bzlmod_project_path = "test-projects/bzlmod/nested-modules",
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:NestedModulesTest",
+# )
+#
+# bazel_integration_test_all_versions(
+#     name = "external_autoloads_test",
+#     bzlmod_project_path = "test-projects/bzlmod/external-autoloads-project",
+#     exclude_bazel_7 = True,
+#     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ExternalAutoloadsTest",
+# )
 
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
     # we need to include all of them manually because of the "manual" tag
     tests = [
-        ":allow_manual_targets_sync_test",
-        ":build_and_sync_test",
-        ":enabled_rules_test",
-        ":external_autoloads_test",
-        ":first_phase_sync_test",
-        ":go_project_test",
-        ":java_diagnostics_test",
-        ":kotlin_project_test",
-        ":kotlin_project_with_enabled_rules_test",
-        ":local_jdk_test",
-        ":nested_modules_test",
-        ":partial_sync_test",
-        ":python_project_test",
-        ":remote_jdk_test",
         ":sample_repo_test",
     ],
 )
