@@ -80,72 +80,71 @@ object IdeStarter {
 
   object JarSourceExcludeTest : IdeStarterTest(
     name = "Compiled source code inside jar exclude test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:CompiledSourceCodeInsideJarExcludeTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:CompiledSourceCodeInsideJarExcludeTest",
   )
 
   object BazelProjectModelModifierTest : IdeStarterTest(
     name = "Bazel Project Model Modifier test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:BazelProjectModelModifierTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/flow/modify:BazelProjectModelModifierTest"
   )
 
   object BazelCoverageTest : IdeStarterTest(
     name = "Bazel Coverage test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/coverage"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/run/coverage:BazelCoverageTest"
   )
 
   object TestResultsTreeTest : IdeStarterTest(
     name = "Test Results Tree test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/tests:TestResultsTreeTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree"
   )
 
   object RunLineMarkerTest : IdeStarterTest(
     name = "Run Line Marker test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/runconfig:RunLineMarkerTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testRunLineMarker"
   )
 
   object ImportRunConfigurationsTest : IdeStarterTest(
     name = "Import run configurations test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/runconfig:ImportRunConfigurationsTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/run/import:ImportRunConfigurationsSyncHookTest"
   )
 
   object NonModuleTargetsTest : IdeStarterTest(
     name = "Sync non module targets test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/runconfig:NonModuleTargetsTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/nonmodule/sync:NonModuleTargetsTest"
   )
 
   object RunAllTestsActionTest : IdeStarterTest(
     name = "Run all tests action test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/actions:RunAllTestsActionTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree:runAllTestsActionTest"
   )
 
   object DisabledKotlinPluginTest : IdeStarterTest(
     name = "Sync project with disabled kotlin plugin test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/kotlin:DisabledKotlinPluginTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:DisabledKotlinPluginTest"
   )
 
   object PyCharmTest : IdeStarterTest(
     name = "Sync project in PyCharm test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/python:PyCharmPluginTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:PyCharmTest"
   )
 
   object PyCharmImportRedCodeTest : IdeStarterTest(
     name = "Check red code in PyCharm test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/python:PyCharmImportIsNotRedTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:SimplePythonTest"
   )
 
   object FastBuildTest : IdeStarterTest(
     name = "Fast build test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/build:FastBuildTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/fastbuild"
   )
 
   object ProjectViewOpenTest : IdeStarterTest(
     name = "Project view open test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/projectview:ProjectViewOpenTest"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/settings:project_view_open_test"
   )
 
   object MoveKotlinFileTest : IdeStarterTest(
     name = "Move Kotlin file test",
-    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/kotlin:MoveKotlinFileTest",
-    testSpecificArgs = "--test_timeout=600"
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/move:moveKotlinFileTest"
   )
 }
