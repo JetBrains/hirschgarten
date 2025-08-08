@@ -1,6 +1,7 @@
 import configurations.*
 import configurations.IdeStarterTests.IdeStarterTestFactory
 import configurations.PluginBenchmark.PluginBenchmarkFactory
+import configurations.StaticAnalysis.StaticAnalysisFactory
 import configurations.ProjectFormat.CheckFormating
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
@@ -47,8 +48,8 @@ project {
         PluginBenchmarkFactory.AllBenchmarkTests.forEach { buildType(it) }
         // Add all IDE starter tests from factory
         IdeStarterTestFactory.AllIdeStarterTests.forEach { buildType(it) }
-        buildType(StaticAnalysis.Hirschgarten)
-        buildType(StaticAnalysis.Bazel)
+        // Add only enabled static analysis tests from factory
+        StaticAnalysisFactory.EnabledAnalysisTests.forEach { buildType(it) }
       }
 
       buildType(
@@ -77,8 +78,7 @@ project {
       ProjectUnitTests.ProjectUnitTests,
       *PluginBenchmarkFactory.AllBenchmarkTests.toTypedArray(),
       *IdeStarterTestFactory.AllIdeStarterTests.toTypedArray(),
-      StaticAnalysis.Hirschgarten,
-      StaticAnalysis.Bazel,
+      *StaticAnalysisFactory.EnabledAnalysisTests.toTypedArray(),
       ResultsAggregator.Aggregator
     )
 }
