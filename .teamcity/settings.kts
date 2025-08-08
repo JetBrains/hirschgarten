@@ -66,7 +66,7 @@ project {
       }
 
       buildType(
-        ResultsAggregator.ResultsAggregatorBuild, options = {
+        ResultsAggregator.Aggregator, options = {
         onDependencyFailure = FailureAction.ADD_PROBLEM
         onDependencyCancel = FailureAction.ADD_PROBLEM
       })
@@ -76,7 +76,7 @@ project {
   allSteps.forEach { buildType(it) }
 
 
-  ResultsAggregator.ResultsAggregatorBuild.triggers {
+  ResultsAggregator.Aggregator.triggers {
     vcs {
       branchFilter = ProjectBranchFilters.githubBranchFilter
       triggerRules = ProjectTriggerRules.triggerRules
@@ -111,7 +111,7 @@ project {
       IdeStarter.MoveKotlinFileTest,
       StaticAnalysis.Hirschgarten,
       StaticAnalysis.Bazel,
-      ResultsAggregator.ResultsAggregatorBuild
+      ResultsAggregator.Aggregator
     )
 }
 
