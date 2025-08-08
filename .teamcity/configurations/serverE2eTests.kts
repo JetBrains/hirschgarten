@@ -1,240 +1,130 @@
 package configurations
 
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
-import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
-import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-
+// Base class for E2E test builds
 open class E2ETest(
-  vcsRoot: GitVcsRoot,
   targets: String,
   failureConditions: FailureConditions.() -> Unit = {},
-  requirements: (Requirements.() -> Unit)? = null,
-) : BaseConfiguration.BaseBuildType(
-    name = "[e2e tests] $targets",
-    vcsRoot = vcsRoot,
-    failureConditions = failureConditions,
-    artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
-    steps = {
-      bazel {
-        this.name = "test $targets"
-        this.command = "test"
-        this.targets = targets
-        // This fixes FileUtils.getCacheDirectory in integration tests
-        this.arguments =
-          "--sandbox_writable_path=/home/hirschuser/.cache ${Utils.CommonParams.BazelCiSpecificArgs}"
-        logging = BazelStep.Verbosity.Diagnostic
-        toolPath = "/usr/local/bin"
-        Utils.DockerParams.get().forEach { (key, value) ->
-          param(key, value)
-        }
+  androidTest: Boolean = false
+) : BaseBuildType(
+  name = "[e2e tests] $targets",
+  failureConditions = failureConditions,
+  artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
+  requirements = if (androidTest) {
+    {
+      endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Android")
+      equals("container.engine.osType", "linux")
+    }
+  } else null,
+  steps = {
+    bazel {
+      this.name = "test $targets"
+      this.command = "test"
+      this.targets = targets
+      // This fixes FileUtils.getCacheDirectory in integration tests
+      this.arguments =
+        "--sandbox_writable_path=/home/hirschuser/.cache ${Utils.CommonParams.BazelCiSpecificArgs}"
+      logging = BazelStep.Verbosity.Diagnostic
+      toolPath = "/usr/local/bin"
+      Utils.DockerParams.get().forEach { (key, value) ->
+        param(key, value)
       }
-      script {
-        id = "simpleRunner"
-        scriptContent =
-          """
+    }
+    script {
+      id = "simpleRunner"
+      scriptContent =
+        """
           #!/bin/bash
           set -euxo
           
           cp -R /home/teamcity/agent/system/.persistent_cache/bazel/_bazel_hirschuser/*/execroot/_main/bazel-out/k8-fastbuild/testlogs .
           """.trimIndent()
-      }
-    },
-    requirements = requirements,
-  )
-
-open class SampleRepo(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:sample_repo_test",
-  )
-
-object SampleRepoGitHub : SampleRepo(
-  vcsRoot = BaseConfiguration.GitHubVcs,
+    }
+  }
 )
 
-open class LocalJdk(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:local_jdk_test",
+// Define all E2E test objects
+object ServerE2eTests {
+  object SampleRepo : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:sampleRepoTest"
   )
 
-object LocalJdkGitHub : LocalJdk(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class RemoteJdk(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:remote_jdk_test",
+  object LocalJdk : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:localJdkTest"
   )
 
-object RemoteJdkGitHub : RemoteJdk(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
+  object RemoteJdk : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:remoteJdkTest"
+  )
 
-open class ServerDownloadsBazelisk(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:server_downloads_bazelisk_test",
+  object ServerDownloadsBazelisk : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:serverDownloadsBazeliskTest",
     failureConditions = {
-      testFailure = false
-      nonZeroExitCode = false
-      javaCrash = false
-    },
+      executionTimeoutMin = 120
+    }
   )
 
-object ServerDownloadsBazeliskGitHub : ServerDownloadsBazelisk(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class KotlinProject(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:kotlin_project_test",
+  object KotlinProject : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:kotlinProjectTest"
   )
 
-object KotlinProjectGitHub : KotlinProject(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class GoProject(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:go_project_test",
+  object GoProject : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:goProjectTest"
   )
 
-object GoProjectGitHub : GoProject(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class AndroidProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:android_project_test",
-    requirements = requirements,
+  object AndroidProject : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:androidProjectTest",
     failureConditions = {
-      testFailure = false
-      nonZeroExitCode = false
+      executionTimeoutMin = 120
     },
+    androidTest = true
   )
 
-object AndroidProjectGitHub : AndroidProject(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-  requirements = {
-    endsWith("cloud.amazon.agent-name-prefix", "-Large")
-    equals("container.engine.osType", "linux")
-  },
-)
-
-open class AndroidKotlinProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:android_kotlin_project_test",
-    requirements = requirements,
+  object AndroidKotlinProject : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:androidKotlinProjectTest",
     failureConditions = {
-      testFailure = false
-      nonZeroExitCode = false
+      executionTimeoutMin = 120
     },
+    androidTest = true
   )
 
-object AndroidKotlinProjectGitHub : AndroidKotlinProject(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-  requirements = {
-    endsWith("cloud.amazon.agent-name-prefix", "-Large")
-    equals("container.engine.osType", "linux")
-  },
-)
-
-open class ScalaProject(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:enabled_rules_test",
+  object ScalaProject : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:scalaProjectTest"
   )
 
-object ScalaProjectGitHub : ScalaProject(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class PythonProject(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:python_project_test",
+  object PythonProject : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:pythonProjectTest"
   )
 
-object PythonProjectGitHub : PythonProject(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class JavaDiagnostics(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:java_diagnostics_test",
+  object JavaDiagnostics : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:javaDiagnosticsTest"
   )
 
-object JavaDiagnosticsGitHub : JavaDiagnostics(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class ManualTargets(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:allow_manual_targets_sync_test",
+  object ManualTargets : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:manualTargetsTest"
   )
 
-object ManualTargetsGitHub : ManualTargets(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class BuildSync(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:build_and_sync_test",
+  object BuildSync : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:buildTargetsSyncTest"
   )
 
-object BuildSyncGitHub : BuildSync(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class FirstPhaseSync(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:first_phase_sync_test",
+  object FirstPhaseSync : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:firstPhaseSyncTest"
   )
 
-object FirstPhaseSyncGitHub : FirstPhaseSync(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class PartialSync(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:partial_sync_test",
+  object PartialSync : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:partialSyncTest"
   )
 
-object PartialSyncGitHub : PartialSync(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class NestedModules(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:nested_modules_test",
+  object ExternalAutoloads : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:externalAutoloadsProjectTest"
   )
 
-object NestedModulesGitHub : NestedModules(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
-
-open class ExternalAutoloads(vcsRoot: GitVcsRoot) :
-  E2ETest(
-    vcsRoot = vcsRoot,
-    targets = "//server/e2e:external_autoloads_test",
+  object NestedModules : E2ETest(
+    targets = "//server/integration/tests/src/test/kotlin/org/jetbrains/bsp/bazel:nestedModulesProjectTest"
   )
-
-object ExternalAutoloadsGitHub : ExternalAutoloads(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
+}

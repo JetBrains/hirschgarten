@@ -1,5 +1,6 @@
 import configurations.*
-import jetbrains.buildServer.configs.kotlin.v10.toExtId
+import configurations.IdeStarterTests.IdeStarterTests
+import configurations.PluginBenchmark.PluginBenchmark
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 
@@ -38,54 +39,51 @@ project {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
-        buildType(ProjectBuild.GitHub)
-        buildType(ProjectUnitTests.GitHub)
-        buildType(PluginBenchmark.BenchmarkDefaultGitHub)
-        buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
-        buildType(IdeStarterTests.HotswapTestGitHub)
-        buildType(IdeStarterTests.GoLandSyncTestGitHub)
-        buildType(IdeStarterTests.CoroutineDebugTestGitHub)
-        buildType(IdeStarterTests.ReopenWithoutResyncTestGitHub)
-        buildType(IdeStarterTests.RecoverDotBazelBspTestGitHub)
-        buildType(IdeStarterTests.RunLineMarkerTestGitHub)
-        buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
-        buildType(IdeStarterTests.JarSourceExcludeTestGitHub)
-        buildType(IdeStarterTests.BazelProjectModelModifierTestGitHub)
-        buildType(IdeStarterTests.BazelCoverageTestGitHub)
-        buildType(IdeStarterTests.TestResultsTreeTestGitHub)
-        buildType(IdeStarterTests.ImportRunConfigurationsTestGitHub)
-        buildType(IdeStarterTests.NonModuleTargetsTestGitHub)
-        buildType(IdeStarterTests.RunAllTestsActionTestGitHub)
-        buildType(IdeStarterTests.DisabledKotlinPluginTestGitHub)
-        buildType(IdeStarterTests.PyCharmTestGitHub)
-        buildType(IdeStarterTests.FastBuildTestGitHub)
-        buildType(IdeStarterTests.ProjectViewOpenTestGitHub)
-        buildType(IdeStarterTests.MoveKotlinFileTestGitHub)
-        buildType(ServerE2eTests.SampleRepoGitHub)
-        buildType(ServerE2eTests.LocalJdkGitHub)
-        buildType(ServerE2eTests.RemoteJdkGitHub)
-//            buildType(ServerE2eTests.ServerDownloadsBazeliskGitHub)
-//        buildType(ServerE2eTests.AndroidProjectGitHub)
-//        buildType(ServerE2eTests.AndroidKotlinProjectGitHub)
-        buildType(ServerE2eTests.ScalaProjectGitHub)
-        buildType(ServerE2eTests.KotlinProjectGitHub)
-        buildType(ServerE2eTests.GoProjectGitHub)
-        buildType(ServerE2eTests.PythonProjectGitHub)
-        buildType(ServerE2eTests.JavaDiagnosticsGitHub)
-        buildType(ServerE2eTests.ManualTargetsGitHub)
-        buildType(ServerE2eTests.BuildSyncGitHub)
-        buildType(ServerE2eTests.FirstPhaseSyncGitHub)
-        buildType(ServerE2eTests.PartialSyncGitHub)
-        buildType(ServerE2eTests.ExternalAutoloadsGitHub)
-        buildType(ServerE2eTests.NestedModulesGitHub)
-        buildType(StaticAnalysis.HirschgartenGitHub)
-//        buildType(StaticAnalysis.AndroidBazelRulesGitHub)
-//        buildType(StaticAnalysis.AndroidTestdpcGitHub)
-        buildType(StaticAnalysis.BazelGitHub)
+        buildType(ProjectBuild.ProjectBuild)
+        buildType(ProjectUnitTests.ProjectUnitTests)
+        buildType(PluginBenchmark.BenchmarkDefault)
+        buildType(IdeStarterTests.GoLandSyncTest)
+        buildType(IdeStarterTests.CoroutineDebugTest)
+        buildType(IdeStarterTests.ReopenWithoutResyncTest)
+        buildType(IdeStarterTests.RunLineMarkerTest)
+        buildType(IdeStarterTests.ExternalRepoResolveTest)
+        buildType(IdeStarterTests.JarSourceExcludeTest)
+        buildType(IdeStarterTests.BazelProjectModelModifierTest)
+        buildType(IdeStarterTests.BazelCoverageTest)
+        buildType(IdeStarterTests.TestResultsTreeTest)
+        buildType(IdeStarterTests.ImportRunConfigurationsTest)
+        buildType(IdeStarterTests.NonModuleTargetsTest)
+        buildType(IdeStarterTests.RunAllTestsActionTest)
+        buildType(IdeStarterTests.DisabledKotlinPluginTest)
+        buildType(IdeStarterTests.PyCharmTest)
+        buildType(IdeStarterTests.FastBuildTest)
+        buildType(IdeStarterTests.ProjectViewOpenTest)
+        buildType(IdeStarterTests.MoveKotlinFileTest)
+        buildType(ServerE2eTests.SampleRepo)
+        buildType(ServerE2eTests.LocalJdk)
+        buildType(ServerE2eTests.RemoteJdk)
+//            buildType(ServerE2eTests.ServerDownloadsBazelisk)
+//        buildType(ServerE2eTests.AndroidProject)
+//        buildType(ServerE2eTests.AndroidKotlinProject)
+        buildType(ServerE2eTests.ScalaProject)
+        buildType(ServerE2eTests.KotlinProject)
+        buildType(ServerE2eTests.GoProject)
+        buildType(ServerE2eTests.PythonProject)
+        buildType(ServerE2eTests.JavaDiagnostics)
+        buildType(ServerE2eTests.ManualTargets)
+        buildType(ServerE2eTests.BuildSync)
+        buildType(ServerE2eTests.FirstPhaseSync)
+        buildType(ServerE2eTests.PartialSync)
+        buildType(ServerE2eTests.ExternalAutoloads)
+        buildType(ServerE2eTests.NestedModules)
+        buildType(StaticAnalysis.Hirschgarten)
+//        buildType(StaticAnalysis.AndroidBazelRules)
+//        buildType(StaticAnalysis.AndroidTestdpc)
+        buildType(StaticAnalysis.Bazel)
 //        buildType(StaticAnalysis.JetpackComposeGitHub)
       }
 
-      buildType(ResultsAggregator.GitHub, options = {
+      buildType(ResultsAggregator, options = {
         onDependencyFailure = FailureAction.ADD_PROBLEM
         onDependencyCancel = FailureAction.ADD_PROBLEM
       })
@@ -102,7 +100,7 @@ project {
 //    }
 //  }
 
-//  ResultsAggregator.GitHub.triggers {
+//  ResultsAggregator.triggers {
 //    finishBuildTrigger {
 //      buildType = "${ProjectFormat.GitHub.id}"
 //      successfulOnly = true
@@ -110,7 +108,7 @@ project {
 //    }
 //  }
 
-  ResultsAggregator.GitHub.triggers {
+  ResultsAggregator.triggers {
     vcs {
       branchFilter = ProjectBranchFilters.githubBranchFilter
       triggerRules = ProjectTriggerRules.triggerRules
@@ -120,53 +118,52 @@ project {
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      //ProjectFormat.GitHub,
-      ProjectBuild.GitHub,
-      ProjectUnitTests.GitHub,
-      PluginBenchmark.BenchmarkDefaultGitHub,
-      PluginBenchmark.BenchmarkWithVersionGitHub,
-      IdeStarterTests.HotswapTestGitHub,
-      IdeStarterTests.GoLandSyncTestGitHub,
-      IdeStarterTests.CoroutineDebugTestGitHub,
-      IdeStarterTests.ReopenWithoutResyncTestGitHub,
-      IdeStarterTests.RecoverDotBazelBspTestGitHub,
-      IdeStarterTests.RunLineMarkerTestGitHub,
-      IdeStarterTests.ExternalRepoResolveTestGitHub,
-      IdeStarterTests.JarSourceExcludeTestGitHub,
-      IdeStarterTests.BazelProjectModelModifierTestGitHub,
-      IdeStarterTests.BazelCoverageTestGitHub,
-      IdeStarterTests.TestResultsTreeTestGitHub,
-      IdeStarterTests.ImportRunConfigurationsTestGitHub,
-      IdeStarterTests.NonModuleTargetsTestGitHub,
-      IdeStarterTests.RunAllTestsActionTestGitHub,
-      IdeStarterTests.DisabledKotlinPluginTestGitHub,
-      IdeStarterTests.PyCharmTestGitHub,
-      IdeStarterTests.FastBuildTestGitHub,
-      IdeStarterTests.ProjectViewOpenTestGitHub,
-      IdeStarterTests.MoveKotlinFileTestGitHub,
-      ServerE2eTests.SampleRepoGitHub,
-      ServerE2eTests.LocalJdkGitHub,
-      ServerE2eTests.RemoteJdkGitHub,
-      // ServerE2eTests.ServerDownloadsBazeliskGitHub,
-//      ServerE2eTests.AndroidProjectGitHub,
-//      ServerE2eTests.AndroidKotlinProjectGitHub,
-      ServerE2eTests.ScalaProjectGitHub,
-      ServerE2eTests.KotlinProjectGitHub,
-      ServerE2eTests.GoProjectGitHub,
-      ServerE2eTests.PythonProjectGitHub,
-      ServerE2eTests.JavaDiagnosticsGitHub,
-      ServerE2eTests.ManualTargetsGitHub,
-      ServerE2eTests.BuildSyncGitHub,
-      ServerE2eTests.FirstPhaseSyncGitHub,
-      ServerE2eTests.PartialSyncGitHub,
-      ServerE2eTests.NestedModulesGitHub,
-      ServerE2eTests.ExternalAutoloadsGitHub,
-      StaticAnalysis.HirschgartenGitHub,
-//      StaticAnalysis.AndroidBazelRulesGitHub,
-//      StaticAnalysis.AndroidTestdpcGitHub,
-      StaticAnalysis.BazelGitHub,
-//      StaticAnalysis.JetpackComposeGitHub,
-      ResultsAggregator.GitHub
+      //ProjectFormat,
+      ProjectBuild,
+      ProjectUnitTests,
+      PluginBenchmark.BenchmarkDefault,
+      PluginBenchmark.BenchmarkWithVersion,
+      IdeStarterTests.HotswapTest,
+      IdeStarterTests.GoLandSyncTest,
+      IdeStarterTests.CoroutineDebugTest,
+      IdeStarterTests.ReopenWithoutResyncTest,
+      IdeStarterTests.RunLineMarkerTest,
+      IdeStarterTests.ExternalRepoResolveTest,
+      IdeStarterTests.JarSourceExcludeTest,
+      IdeStarterTests.BazelProjectModelModifierTest,
+      IdeStarterTests.BazelCoverageTest,
+      IdeStarterTests.TestResultsTreeTest,
+      IdeStarterTests.ImportRunConfigurationsTest,
+      IdeStarterTests.NonModuleTargetsTest,
+      IdeStarterTests.RunAllTestsActionTest,
+      IdeStarterTests.DisabledKotlinPluginTest,
+      IdeStarterTests.PyCharmTest,
+      IdeStarterTests.FastBuildTest,
+      IdeStarterTests.ProjectViewOpenTest,
+      IdeStarterTests.MoveKotlinFileTest,
+      ServerE2eTests.SampleRepo,
+      ServerE2eTests.LocalJdk,
+      ServerE2eTests.RemoteJdk,
+      // ServerE2eTests.ServerDownloadsBazelisk,
+//      ServerE2eTests.AndroidProject,
+//      ServerE2eTests.AndroidKotlinProject,
+      ServerE2eTests.ScalaProject,
+      ServerE2eTests.KotlinProject,
+      ServerE2eTests.GoProject,
+      ServerE2eTests.PythonProject,
+      ServerE2eTests.JavaDiagnostics,
+      ServerE2eTests.ManualTargets,
+      ServerE2eTests.BuildSync,
+      ServerE2eTests.FirstPhaseSync,
+      ServerE2eTests.PartialSync,
+      ServerE2eTests.NestedModules,
+      ServerE2eTests.ExternalAutoloads,
+      StaticAnalysis.Hirschgarten,
+//      StaticAnalysis.AndroidBazelRules,
+//      StaticAnalysis.AndroidTestdpc,
+      StaticAnalysis.Bazel,
+//      StaticAnalysis.JetpackCompose,
+      ResultsAggregator
     )
 }
 

@@ -15,7 +15,6 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 open class BaseBuildType(
   name: String,
-  vcsRoot: GitVcsRoot,
   steps: BuildSteps.() -> Unit,
   artifactRules: String = "",
   failureConditions: FailureConditions.() -> Unit = {},
@@ -42,10 +41,10 @@ open class BaseBuildType(
     }
 
     vcs {
-      root(vcsRoot)
+      root(GitHubVcs)
     }
 
-    id("GitHub$name".toExtId())
+    id(name.toExtId())
     if (requirements == null) {
       requirements {
         endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
@@ -72,7 +71,7 @@ open class BaseBuildType(
         param("github_oauth_user", "hb-man")
       }
       pullRequests {
-        vcsRootExtId = "${vcsRoot.id}"
+        vcsRootExtId = "${GitHubVcs.id}"
         provider =
           github {
             authType =

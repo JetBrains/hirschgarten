@@ -4,12 +4,9 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.BuildStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
-import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-open class Build(vcsRoot: GitVcsRoot) :
-    BaseConfiguration.BaseBuildType(
+object ProjectBuild : BaseConfiguration.BaseBuildType(
         name = "[build] build project",
-        vcsRoot = vcsRoot,
         artifactRules = "+:%system.teamcity.build.checkoutDir%/plugin-*.zip",
         steps = {
             Utils.CommonParams.CrossBuildPlatforms.forEach { platform ->
@@ -43,8 +40,4 @@ open class Build(vcsRoot: GitVcsRoot) :
         }
     },
   )
-
-object GitHub : Build(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-)
 

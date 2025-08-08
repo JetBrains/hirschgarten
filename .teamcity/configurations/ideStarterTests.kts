@@ -3,22 +3,18 @@ package configurations
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
-import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-sealed class IdeStarterTests(
-  vcsRoot: GitVcsRoot,
+// Base class for IDE starter tests
+open class IdeStarterTest(
   targets: String,
   name: String,
   testSpecificArgs: String = ""
-) : BaseConfiguration.BaseBuildType(
+) : BaseBuildType(
   name = "[ide-starter] $name",
-  vcsRoot = vcsRoot,
-  requirements = if (vcsRoot == BaseConfiguration.GitHubVcs) {
-    {
-      endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
-      equals("container.engine.osType", "linux")
-    }
-  } else null,
+  requirements = {
+    endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
+    equals("container.engine.osType", "linux")
+  },
   artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
   steps = {
     bazel {
@@ -55,243 +51,101 @@ sealed class IdeStarterTests(
   }
 )
 
-sealed class HotswapTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Hotswap test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"
-)
+// Define all IDE starter test objects
+object IdeStarterTests {
+  object HotswapTest : IdeStarterTest(
+    name = "Hotswap test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"
+  )
 
-sealed class GoLandSyncTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "GoLand sync test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/resolve/golandSync"
-)
+  object GoLandSyncTest : IdeStarterTest(
+    name = "GoLand sync test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/resolve/golandSync"
+  )
 
-sealed class CoroutineDebugTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Coroutine debug test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/coroutineDebug"
-)
+  object CoroutineDebugTest : IdeStarterTest(
+    name = "Coroutine debug test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/coroutineDebug"
+  )
 
-sealed class ReopenWithoutResyncTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Reopen without Resync test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/reopen/noResync"
-)
+  object ReopenWithoutResyncTest : IdeStarterTest(
+    name = "Reopen without Resync test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/reopen/noResync"
+  )
 
-sealed class RecoverDotBazelBspTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Recover .bazelbsp gracefully test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/sync/recoverDotBazelBsp"
-)
+  object ExternalRepoResolveTest : IdeStarterTest(
+    name = "External repo resolve test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/references:ExternalRepoResolveTest"
+  )
 
-sealed class ExternalRepoResolveTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "External repo resolve test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/references:ExternalRepoResolveTest"
-)
+  object JarSourceExcludeTest : IdeStarterTest(
+    name = "Compiled source code inside jar exclude test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:CompiledSourceCodeInsideJarExcludeTest"
+  )
 
-sealed class JarSourceExcludeTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Compiled source code inside jar exclude test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:CompiledSourceCodeInsideJarExcludeTest",
-)
+  object BazelProjectModelModifierTest : IdeStarterTest(
+    name = "Bazel Project Model Modifier test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:BazelProjectModelModifierTest"
+  )
 
-sealed class BazelProjectModelModifierTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Bazel Project Model Modifier test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/flow/modify:BazelProjectModelModifierTest"
-)
+  object BazelCoverageTest : IdeStarterTest(
+    name = "Bazel code coverage test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/coverage"
+  )
 
-sealed class BazelCoverageTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Bazel Coverage test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/run/coverage:BazelCoverageTest"
-)
+  object TestResultsTreeTest : IdeStarterTest(
+    name = "Test results tree test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/tests:TestResultsTreeTest"
+  )
 
-sealed class TestResultsTreeTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Test Results Tree test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree"
-)
+  object RunLineMarkerTest : IdeStarterTest(
+    name = "Go file run/debug marker test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/runconfig:RunLineMarkerTest"
+  )
 
-sealed class RunLineMarkerTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Run Line Marker test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testRunLineMarker"
-)
+  object ImportRunConfigurationsTest : IdeStarterTest(
+    name = "Import run configurations test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/runconfig:ImportRunConfigurationsTest"
+  )
 
-sealed class ImportRunConfigurationsTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Import run configurations test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/run/import:ImportRunConfigurationsSyncHookTest"
-)
+  object NonModuleTargetsTest : IdeStarterTest(
+    name = "Do not remove non-module targets from run configuration",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/runconfig:NonModuleTargetsTest"
+  )
 
-sealed class NonModuleTargetsTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Sync non module targets test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/nonmodule/sync:NonModuleTargetsTest"
-)
+  object RunAllTestsActionTest : IdeStarterTest(
+    name = "Run all tests from test file action test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/actions:RunAllTestsActionTest"
+  )
 
-sealed class RunAllTestsActionTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Run all tests action test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree:runAllTestsActionTest"
-)
+  object DisabledKotlinPluginTest : IdeStarterTest(
+    name = "Bazel runs normally with disabled Kotlin plugin",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/kotlin:DisabledKotlinPluginTest"
+  )
 
-sealed class DisabledKotlinPluginTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Sync project with disabled kotlin plugin test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:DisabledKotlinPluginTest"
-)
+  object PyCharmTest : IdeStarterTest(
+    name = "PyCharm test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/python:PyCharmPluginTest"
+  )
 
-sealed class PyCharmPluginTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Sync project in PyCharm test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:PyCharmTest"
-)
+  object PyCharmImportRedCodeTest : IdeStarterTest(
+    name = "PyCharm import does not highlight in red",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/python:PyCharmImportIsNotRedTest"
+  )
 
-sealed class PyCharmImportRedCodeTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Check red code in PyCharm test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:SimplePythonTest"
-)
+  object FastBuildTest : IdeStarterTest(
+    name = "Fast build test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/build:FastBuildTest"
+  )
 
-sealed class FastBuildTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Fast build test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/fastbuild"
-)
+  object ProjectViewOpenTest : IdeStarterTest(
+    name = "Project view open test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/projectview:ProjectViewOpenTest"
+  )
 
-sealed class ProjectViewOpenTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Project view open test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/settings:project_view_open_test"
-)
-
-sealed class MoveKotlinFileTest(
-  vcsRoot: GitVcsRoot,
-) : IdeStarterTests(
-  name = "Move Kotlin file test",
-  vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/move:moveKotlinFileTest"
-)
-
-object HotswapTestGitHub : HotswapTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object GoLandSyncTestGitHub : GoLandSyncTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object CoroutineDebugTestGitHub : CoroutineDebugTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object ReopenWithoutResyncTestGitHub : ReopenWithoutResyncTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object RecoverDotBazelBspTestGitHub : RecoverDotBazelBspTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object ExternalRepoResolveTestGitHub : ExternalRepoResolveTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object JarSourceExcludeTestGitHub : JarSourceExcludeTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object BazelProjectModelModifierTestGitHub : BazelProjectModelModifierTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object BazelCoverageTestGitHub : BazelCoverageTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object TestResultsTreeTestGitHub : TestResultsTreeTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object RunLineMarkerTestGitHub : RunLineMarkerTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object ImportRunConfigurationsTestGitHub : ImportRunConfigurationsTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object NonModuleTargetsTestGitHub : NonModuleTargetsTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object RunAllTestsActionTestGitHub : RunAllTestsActionTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object DisabledKotlinPluginTestGitHub : DisabledKotlinPluginTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object PyCharmTestGitHub : PyCharmPluginTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object PyCharmImportRedCodeTestGitHub : PyCharmImportRedCodeTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object FastBuildTestGitHub : FastBuildTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object ProjectViewOpenTestGitHub : ProjectViewOpenTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
-object MoveKotlinFileTestGitHub : MoveKotlinFileTest(
-  vcsRoot = BaseConfiguration.GitHubVcs
-)
-
+  object MoveKotlinFileTest : IdeStarterTest(
+    name = "Move kotlin file test",
+    targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/kotlin:MoveKotlinFileTest",
+    testSpecificArgs = "--test_timeout=600"
+  )
+}
