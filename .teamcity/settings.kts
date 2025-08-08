@@ -46,6 +46,7 @@ project {
         buildType(IdeStarterTests.GoLandSyncTestGitHub)
         buildType(IdeStarterTests.CoroutineDebugTestGitHub)
         buildType(IdeStarterTests.ReopenWithoutResyncTestGitHub)
+        buildType(IdeStarterTests.RecoverDotBazelBspTestGitHub)
         buildType(IdeStarterTests.RunLineMarkerTestGitHub)
         buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
         buildType(IdeStarterTests.JarSourceExcludeTestGitHub)
@@ -128,6 +129,7 @@ project {
       IdeStarterTests.GoLandSyncTestGitHub,
       IdeStarterTests.CoroutineDebugTestGitHub,
       IdeStarterTests.ReopenWithoutResyncTestGitHub,
+      IdeStarterTests.RecoverDotBazelBspTestGitHub,
       IdeStarterTests.RunLineMarkerTestGitHub,
       IdeStarterTests.ExternalRepoResolveTestGitHub,
       IdeStarterTests.JarSourceExcludeTestGitHub,

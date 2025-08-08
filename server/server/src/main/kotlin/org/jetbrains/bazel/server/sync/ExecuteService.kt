@@ -156,7 +156,9 @@ class ExecuteService(
         else ->
           bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
             it.options.add(BazelFlag.combinedReportLcov())
-            it.options.add(BazelFlag.instrumentationFilter(instrumentationFilter))
+            if (workspaceContext.deriveInstrumentationFilterFromTargets.value) {
+              it.options.add(BazelFlag.instrumentationFilter(instrumentationFilter))
+            }
           }
       }
 

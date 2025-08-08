@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.projectview.model
 
 import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
+import org.jetbrains.bazel.projectview.model.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
@@ -50,6 +51,7 @@ val supportedSections =
     IndexAllFilesInDirectoriesSection.SECTION_NAME,
     PythonCodeGeneratorRuleNamesSection.SECTION_NAME,
     ImportIjarsSection.SECTION_NAME,
+    DeriveInstrumentationFilterFromTargetsSection.SECTION_NAME,
   )
 
 /**
@@ -100,6 +102,7 @@ data class ProjectView(
   val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSection? = null,
   val pythonCodeGeneratorRuleNamesSection: PythonCodeGeneratorRuleNamesSection? = null,
   val importIjars: ImportIjarsSection? = null,
+  val deriveInstrumentationFilterFromTargets: DeriveInstrumentationFilterFromTargetsSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -125,6 +128,7 @@ data class ProjectView(
     private val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSection? = null,
     private val pythonCodeGeneratorRuleNamesSection: PythonCodeGeneratorRuleNamesSection? = null,
     private val importIjars: ImportIjarsSection? = null,
+    private val deriveInstrumentationFilterFromTargets: DeriveInstrumentationFilterFromTargetsSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -155,6 +159,7 @@ data class ProjectView(
       val indexAllFilesInDirectories = combineIndexAllFilesInDirectoriesSection(importedProjectViews)
       val pythonCodeGeneratorRuleNamesSection = combinePythonCodeGeneratorRuleNamesSection(importedProjectViews)
       val importIjars = combineImportIjarsSection(importedProjectViews)
+      val deriveInstrumentationFilterFromTargets = combineDeriveInstrumentationFilterFromTargetsSection(importedProjectViews)
 
       return ProjectView(
         targets,
@@ -179,6 +184,7 @@ data class ProjectView(
         indexAllFilesInDirectories,
         pythonCodeGeneratorRuleNamesSection,
         importIjars,
+        deriveInstrumentationFilterFromTargets,
       )
     }
 
@@ -263,6 +269,14 @@ data class ProjectView(
       importIjars ?: getLastImportedSingletonValue(
         importedProjectViews,
         ProjectView::importIjars,
+      )
+
+    private fun combineDeriveInstrumentationFilterFromTargetsSection(
+      importedProjectViews: List<ProjectView>,
+    ): DeriveInstrumentationFilterFromTargetsSection? =
+      deriveInstrumentationFilterFromTargets ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::deriveInstrumentationFilterFromTargets,
       )
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {
@@ -414,7 +428,12 @@ data class ProjectView(
     private fun <T : ProjectViewSingletonSection<*>> getLastImportedSingletonValue(
       importedProjectViews: List<ProjectView>,
       sectionGetter: (ProjectView) -> T?,
-    ): T? = importedProjectViews.asSequence().mapNotNull(sectionGetter).lastOrNull()
+    ): T? =
+      importedProjectViews
+        .asReversed()
+        .asSequence()
+        .mapNotNull(sectionGetter)
+        .firstOrNull()
   }
 
   companion object {

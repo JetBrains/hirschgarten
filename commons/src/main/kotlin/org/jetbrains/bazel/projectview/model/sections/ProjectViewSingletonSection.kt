@@ -87,3 +87,9 @@ data class ImportIjarsSection(override val value: Boolean) : ProjectViewSingleto
     const val SECTION_NAME = "import_ijars"
   }
 }
+
+data class DeriveInstrumentationFilterFromTargetsSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "derive_instrumentation_filter_from_targets"
+  }
+}

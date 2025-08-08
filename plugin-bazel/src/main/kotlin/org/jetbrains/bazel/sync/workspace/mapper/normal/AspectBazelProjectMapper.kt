@@ -277,8 +277,8 @@ class AspectBazelProjectMapper(
         outputs = kotlinStdlibsJars,
         sources = inferredSourceJars,
         dependencies = emptyList(),
-        // https://youtrack.jetbrains.com/issue/BAZEL-2284: if a dependency module depends on a jetbrains-annotations library,
-        // then it should still override Kotlin stdlib's older version of the same library
+        // https://youtrack.jetbrains.com/issue/BAZEL-2284/NotNull-not-applicable-to-type-use#focus=Comments-27-12502660.0-0
+        // Make sure that if the user provides Kotlin stdlib in deps then it overrides the one inferred from rules_kotlin
         isLowPriority = true,
       )
     } else {

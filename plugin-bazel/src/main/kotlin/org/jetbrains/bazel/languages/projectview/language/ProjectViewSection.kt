@@ -81,6 +81,7 @@ object ProjectViewSection {
       SectionMetadata("ts_config_rules", SectionType.List.String, TargetCompletionProvider()),
       SectionMetadata("import_ijars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("debug_flags", SectionType.List.String, FlagCompletionProvider("debug")),
+      SectionMetadata("derive_instrumentation_filter_from_targets", SectionType.Scalar.Boolean, booleanCompletionProvider()),
     ).associateBy { it.sectionName }
 
   private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))
