@@ -24,15 +24,16 @@ open class Analyze(
   },
   artifactRules = "+:.teamcity/qodana/*.zip",
   dependencies = {
-    snapshot(ProjectBuild.ProjectBuild) {}
-    artifacts(ProjectBuild.ProjectBuild) {
+    // Depend on the latest platform build (last in the list)
+    val latestPlatformBuild = PluginBuild.Factory.ForAllPlatforms.last()
+    snapshot(latestPlatformBuild) {}
+    artifacts(latestPlatformBuild) {
       artifactRules = Utils.CommonParams.QodanaArtifactRules
     }
   },
   steps = {
-//      Utils.CommonParams.CrossBuildPlatforms.forEach { platform ->
-    // TODO: remove this hardcoded value for platform once we move to ultimate-teamcity-config
-    val platform = "252"
+    // Use the latest platform from CrossBuildPlatforms
+    val platform = Utils.CommonParams.CrossBuildPlatforms.last()
     val platformDot = "20${platform.take(2)}.${platform.last()}"
     script {
       name = "add plugins to qodana"
@@ -70,18 +71,6 @@ open class Analyze(
               fi
             """.trimIndent()
       }
-      //} else {
-      //  script {
-      //    name = "enable remcache $platform"
-      //    id = "enable_remcache_$platform"
-      //    scriptContent = """
-      //      #!/bin/bash
-      //      set -euxo
-      //
-      //      sed -i 's/:remotecache//g' ".ci.bazelrc"
-      //      sed -i 's/:nocacheupload//g' ".ci.bazelrc"
-      //    """.trimIndent()
-      //  }
     }
     qodana {
       name = "run qodana"
@@ -126,7 +115,6 @@ open class Analyze(
         }
       }
     }
-//      }
   },
   params = {
     param("env.GIT_REPO_URL", "")
