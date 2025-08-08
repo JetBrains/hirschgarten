@@ -70,6 +70,14 @@ data class TestDef(
  * Factory for creating IDE-starter test build types.
  */
 object IdeStarterTestFactory {
+  /** All IDE-starter test build types. */
+  val AllIdeStarterTests: List<BaseConfiguration.BaseBuildType> by lazy { createIdeStarterTests() }
+
+  private fun createIdeStarterTests(): List<BaseConfiguration.BaseBuildType> =
+    ideStarterTests.map { testDef ->
+      IdeStarterTest(testDef.name, testDef.target, testDef.testSpecificArgs)
+    }
+
   // Define the available IDE-starter tests
   private val ideStarterTests = listOf(
     TestDef("Hotswap test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"),
@@ -93,12 +101,4 @@ object IdeStarterTestFactory {
     TestDef("Move Kotlin file test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/move:moveKotlinFileTest"),
     TestDef("Recover bazelbsp", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/sync/recoverDotBazelBsp")
   )
-
-  /** All IDE-starter test build types. */
-  val AllIdeStarterTests: List<BaseConfiguration.BaseBuildType> by lazy { createIdeStarterTests() }
-
-  private fun createIdeStarterTests(): List<BaseConfiguration.BaseBuildType> =
-    ideStarterTests.map { testDef ->
-      IdeStarterTest(testDef.name, testDef.target, testDef.testSpecificArgs)
-    }
 }
