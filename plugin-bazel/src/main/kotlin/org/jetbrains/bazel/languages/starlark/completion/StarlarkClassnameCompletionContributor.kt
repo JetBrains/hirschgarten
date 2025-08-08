@@ -9,7 +9,10 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiPackage
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.config.isBazelProject
@@ -49,36 +52,78 @@ private class StarlarkClassnameCompletionProvider : CompletionProvider<Completio
 
     val fullText = element.getStringContents()
     val fragments = fullText.split('.')
-    val packagePrefix = fragments.dropLast(1).joinToString(".")
+    val prefix = fragments.dropLast(1).joinToString(".")
 
-    val packageToSearch = JavaPsiFacade.getInstance(element.project).findPackage(packagePrefix) ?: return
+    val psiFacade = JavaPsiFacade.getInstance(element.project)
+    val scope = GlobalSearchScope.allScope(element.project)
 
-    resultSet.addAllElements(getClassesVariants(packageToSearch))
-    resultSet.addAllElements(getSubPackagesVariants(packageToSearch))
-  }
-
-  private fun getClassesVariants(packageToSearch: PsiPackage): List<LookupElement> =
-    packageToSearch.classes.mapNotNull { psiClass ->
-      psiClass.qualifiedName?.let { qualifiedName ->
-        getCompletionLookupElemenent(
-          name = qualifiedName,
-          icon = PlatformIcons.CLASS_ICON,
-          priority = 1.0,
-          presentableText = psiClass.name,
-          tailText = " ($qualifiedName)",
-        )
-      }
+    // Handle packages and their top-level classes
+    psiFacade.findPackage(prefix)?.let { packageToSearch ->
+      resultSet.addAllElements(getClassesVariants(packageToSearch.classes))
+      resultSet.addAllElements(getSubPackagesVariants(packageToSearch.subPackages))
     }
 
-  private fun getSubPackagesVariants(packageToSearch: PsiPackage): List<LookupElement> =
-    packageToSearch.subPackages.map { subPackage ->
+    // Handle nested classes
+    psiFacade.findClass(prefix, scope)?.let { classToSearch ->
+      resultSet.addAllElements(getClassesVariants(classToSearch.innerClasses))
+    }
+  }
+
+  private fun getSubPackagesVariants(subpackages: Array<PsiPackage>): List<LookupElement> =
+    subpackages.map { subPackage ->
       getCompletionLookupElemenent(
-        name = subPackage.qualifiedName + ".",
+        name = "${subPackage.qualifiedName}.",
         icon = PlatformIcons.PACKAGE_ICON,
         priority = 1.0,
-        presentableText = subPackage.name + ".",
+        presentableText = "${subPackage.name}.",
         tailText = " (${subPackage.qualifiedName})",
         isExpressionFinished = false,
       )
     }
+
+  private fun getClassesVariants(classes: Array<PsiClass>): List<LookupElement> =
+    classes
+      .filter { it.isCompletableClass() }
+      .flatMap { psiClass ->
+        val result = mutableListOf<LookupElement>()
+        psiClass.qualifiedName?.let { qualifiedName ->
+          val name = qualifiedName.replace('$', '.')
+
+          // Add the class itself
+          result.add(
+            getCompletionLookupElemenent(
+              name = name,
+              icon = PlatformIcons.CLASS_ICON,
+              priority = 1.0,
+              presentableText = psiClass.name,
+              tailText = " ($name)",
+            ),
+          )
+
+          // Add the class as a path segment if it has completable inner classes
+          if (psiClass.innerClasses.any { it.isCompletableClass() }) {
+            result.add(
+              getCompletionLookupElemenent(
+                name = "$name.",
+                icon = PlatformIcons.CLASS_ICON,
+                priority = 1.0,
+                presentableText = "${psiClass.name}.",
+                tailText = " ($name)",
+                isExpressionFinished = false,
+              ),
+            )
+          }
+        }
+        result
+      }
+
+  private fun PsiClass.isCompletableClass(): Boolean {
+    // Filter out interfaces and abstract classes
+    if (this.isInterface || this.hasModifierProperty(PsiModifier.ABSTRACT)) return false
+
+    // Filter out synthetic classes
+    if (name == "WhenMappings" || name == "DefaultImpls") return false
+
+    return true
+  }
 }

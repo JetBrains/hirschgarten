@@ -151,6 +151,64 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `should suggest two versions of completing the class with a nested class`() {
+    // given
+    myFixture.addFileToProject(
+      "com/example/MyClass.kt",
+      """
+      package com.example
+      class MyClass  {
+        class NestedClass 
+      }
+      """.trimIndent(),
+    )
+
+    // when
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "test_example",
+        classname = "com.example.My<caret>",
+      )
+      """.trimMargin(),
+    )
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+
+    // then
+    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyClass.\""))
+  }
+
+  @Test
+  fun `should suggest nested class`() {
+    // given
+    myFixture.addFileToProject(
+      "com/example/MyClass.kt",
+      """
+      package com.example
+      class MyClass  {
+        class NestedClass 
+      }
+      """.trimIndent(),
+    )
+
+    // when
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "test_example",
+        classname = "com.example.MyClass.<caret>",
+      )
+      """.trimMargin(),
+    )
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+
+    // then
+    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass.NestedClass\""))
+  }
+
+  @Test
   fun `should not suggest class names outside classname attribute`() {
     // given
     myFixture.addFileToProject(
@@ -187,6 +245,8 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       class MyClass
       """.trimIndent(),
     )
+
+    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -196,8 +256,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       )
       """.trimMargin(),
     )
-
-    // when
     myFixture.completeBasic()
     myFixture.type('\n')
 
