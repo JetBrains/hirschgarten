@@ -1,0 +1,60 @@
+RawAspectTarget(target=id: "@//java_targets:java_library"
+kind: "java_library"
+sources {
+  relative_path: "java_targets/JavaLibrary.java"
+  is_source: true
+}
+workspace_name: "_main"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "java_targets/libjava_library.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "java_targets/libjava_library-hjar.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "java_targets/libjava_library-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  jdeps {
+    relative_path: "java_targets/libjava_library.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "11"
+  target_version: "11"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@@rules_java+//toolchains:current_java_toolchain"
+kind: "java_toolchain_alias"
+workspace_name: "_main"
+java_toolchain_info {
+  source_version: "11"
+  target_version: "11"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+)

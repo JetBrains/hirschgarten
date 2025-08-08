@@ -1,0 +1,1091 @@
+RawAspectTarget(target=id: "@//.bazelbsp/aspects:aspects"
+kind: "filegroup"
+sources {
+  relative_path: ".bazelbsp/aspects/BUILD"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/core.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/core.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/extensions.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/android/android_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/android/android_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/cpp/cpp_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/go/go_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/go/go_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/java/java_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/java/java_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/jvm/jvm_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/jvm/jvm_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/kt/kt_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/kt/kt_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/python/python_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/python/python_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/scala/scala_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/scala/scala_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/runtime_classpath_query.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/toolchain_query.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/utils/utils.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/utils/utils.bzl.template"
+  is_source: true
+}
+workspace_name: "__main__"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//environment_variables:java_binary"
+kind: "java_binary"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "environment_variables/JavaEnv.java"
+  is_source: true
+}
+env {
+  key: "foo1"
+  value: "val1"
+}
+env {
+  key: "foo2"
+  value: "val2"
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "environment_variables/java_binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "environment_variables/java_binary-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  main_class: "environment_variables.JavaEnv"
+  jdeps {
+    relative_path: "environment_variables/java_binary.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//environment_variables:java_test"
+kind: "java_test"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "environment_variables/JavaTest.java"
+  is_source: true
+}
+env {
+  key: "foo1"
+  value: "val1"
+}
+env {
+  key: "foo2"
+  value: "val2"
+}
+env {
+  key: "target_location"
+  value: "bazel-out/fastbuild/bin/environment_variables/java_binary bazel-out/fastbuild/bin/environment_variables/java_binary.jar"
+}
+env_inherit: "foo3"
+env_inherit: "foo4"
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "environment_variables/java_test.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "environment_variables/java_test-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  jdeps {
+    relative_path: "environment_variables/java_test.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//genrule:foo"
+kind: "genrule"
+executable: true
+workspace_name: "__main__"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//java_targets/subpackage:java_library"
+kind: "java_library"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "java_targets/subpackage/JavaLibrary2.java"
+  is_source: true
+}
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "java_targets/subpackage/libjava_library.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "java_targets/subpackage/libjava_library-hjar.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "java_targets/subpackage/libjava_library-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  jdeps {
+    relative_path: "java_targets/subpackage/libjava_library.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//java_targets:java_binary"
+kind: "java_binary"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "java_targets/JavaBinary.java"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "java_targets/java_binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "java_targets/java_binary-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  javac_opts: "-Werror"
+  javac_opts: "-Xlint:all"
+  jvm_flags: "--some_flag=bazel-out/fastbuild/bin/java_targets/libjava_library.jar"
+  main_class: "java_targets.JavaBinary"
+  jdeps {
+    relative_path: "java_targets/java_binary.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//java_targets:java_binary_with_flag"
+kind: "java_binary"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "java_targets/JavaBinaryWithFlag.java"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "java_targets/java_binary_with_flag.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "java_targets/java_binary_with_flag-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  javac_opts: "-Werror"
+  javac_opts: "-Xlint:all"
+  javac_opts: "-target 8"
+  main_class: "java_targets.JavaBinaryWithFlag"
+  jdeps {
+    relative_path: "java_targets/java_binary_with_flag.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//java_targets:java_library"
+kind: "java_library"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "java_targets/JavaLibrary.java"
+  is_source: true
+}
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "java_targets/libjava_library.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "java_targets/libjava_library-hjar.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "java_targets/libjava_library-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  jdeps {
+    relative_path: "java_targets/libjava_library.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//java_targets:java_library_exported"
+kind: "java_library"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+dependencies {
+  id: "@//java_targets/subpackage:java_library"
+}
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "java_targets/libjava_library_exported.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "java_targets/libjava_library_exported-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//scala_targets:scala_binary"
+kind: "scala_binary"
+sources {
+  relative_path: "scala_targets/ScalaBinary.scala"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "scala_targets/scala_binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "scala_targets/scala_binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "scala_targets/scala_binary-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  jvm_flags: "-Xms2G -Xmx5G"
+  main_class: "example.Example"
+  args: "arg1"
+  args: "arg2"
+  jdeps {
+    relative_path: "scala_targets/scala_binary.jdep"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+scala_target_info {
+  scalac_opts: "-target:jvm-1.8"
+  compiler_classpath {
+    relative_path: "scala-compiler-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_compiler"
+  }
+  compiler_classpath {
+    relative_path: "scala-library-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_library"
+  }
+  compiler_classpath {
+    relative_path: "scala-reflect-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_reflect"
+  }
+}
+)
+RawAspectTarget(target=id: "@//scala_targets:scala_test"
+kind: "scala_test"
+sources {
+  relative_path: "scala_targets/ScalaTest.scala"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "scala_targets/scala_test.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "scala_targets/scala_test.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "scala_targets/scala_test-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  main_class: "io.bazel.rulesscala.scala_test.Runner"
+  jdeps {
+    relative_path: "scala_targets/scala_test.jdep"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+scala_target_info {
+  compiler_classpath {
+    relative_path: "scala-compiler-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_compiler"
+  }
+  compiler_classpath {
+    relative_path: "scala-library-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_library"
+  }
+  compiler_classpath {
+    relative_path: "scala-reflect-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_reflect"
+  }
+  scalatest_classpath {
+    relative_path: "scalactic_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalactic"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-compatible-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_compatible"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-core_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_core"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-featurespec_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_featurespec"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-flatspec_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_flatspec"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-freespec_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_freespec"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-funspec_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_funspec"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-funsuite_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_funsuite"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-matchers-core_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_matchers_core"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-mustmatchers_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_mustmatchers"
+  }
+  scalatest_classpath {
+    relative_path: "scalatest-shouldmatchers_2.13-3.2.9.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scalatest_shouldmatchers"
+  }
+  scalatest_classpath {
+    relative_path: "external/io_bazel_rules_scala/src/java/io/bazel/rulesscala/scala_test/librunner.jar"
+    is_external: true
+    root_execution_path_fragment: "bazel-out/opt-exec/bin"
+  }
+  scalatest_classpath {
+    relative_path: "external/io_bazel_rules_scala/scala/support/test_reporter.jar"
+    is_external: true
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_with_dependency:java_binary"
+kind: "java_binary"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+dependencies {
+  id: "@//java_targets:java_library_exported"
+}
+dependencies {
+  id: "@guava//:guava"
+}
+sources {
+  relative_path: "target_with_dependency/JavaBinary.java"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "target_with_dependency/java_binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "target_with_dependency/java_binary-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  main_class: "target_with_dependency.JavaBinary"
+  jdeps {
+    relative_path: "target_with_dependency/java_binary.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_with_javac_exports:java_library"
+kind: "java_library"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "target_with_javac_exports/JavaLibrary.java"
+  is_source: true
+}
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "target_with_javac_exports/libjava_library.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "target_with_javac_exports/libjava_library-hjar.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "target_with_javac_exports/libjava_library-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  javac_opts: "-XepDisableAllChecks"
+  javac_opts: "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"
+  javac_opts: "--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"
+  javac_opts: "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
+  jdeps {
+    relative_path: "target_with_javac_exports/libjava_library.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_with_resources:java_binary"
+kind: "java_binary"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "target_with_resources/JavaBinary.java"
+  is_source: true
+}
+resources {
+  relative_path: "target_with_resources/file1.txt"
+  is_source: true
+}
+resources {
+  relative_path: "target_with_resources/file2.txt"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "target_with_resources/java_binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "target_with_resources/java_binary-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  main_class: "target_with_resources.JavaBinary"
+  jdeps {
+    relative_path: "target_with_resources/java_binary.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_with_resources:resources"
+kind: "filegroup"
+sources {
+  relative_path: "target_with_resources/file1.txt"
+  is_source: true
+}
+sources {
+  relative_path: "target_with_resources/file2.txt"
+  is_source: true
+}
+workspace_name: "__main__"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_without_args:binary"
+kind: "scala_binary"
+sources {
+  relative_path: "target_without_args/Example.scala"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "target_without_args/binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "target_without_args/binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "target_without_args/binary-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  jvm_flags: "-Xms2G -Xmx5G"
+  main_class: "example.Example"
+  jdeps {
+    relative_path: "target_without_args/binary.jdep"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+scala_target_info {
+  compiler_classpath {
+    relative_path: "scala-compiler-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_compiler"
+  }
+  compiler_classpath {
+    relative_path: "scala-library-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_library"
+  }
+  compiler_classpath {
+    relative_path: "scala-reflect-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_reflect"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_without_java_info:filegroup"
+kind: "filegroup"
+sources {
+  relative_path: "target_without_java_info/Example.java"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_without_java_info:genrule"
+kind: "genrule"
+sources {
+  relative_path: "target_without_java_info/Example.kt"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_without_jvm_flags:binary"
+kind: "scala_binary"
+sources {
+  relative_path: "target_without_jvm_flags/Example.scala"
+  is_source: true
+}
+executable: true
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "target_without_jvm_flags/binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "target_without_jvm_flags/binary.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "target_without_jvm_flags/binary-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  main_class: "example.Example"
+  args: "arg1"
+  args: "arg2"
+  jdeps {
+    relative_path: "target_without_jvm_flags/binary.jdep"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+scala_target_info {
+  compiler_classpath {
+    relative_path: "scala-compiler-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_compiler"
+  }
+  compiler_classpath {
+    relative_path: "scala-library-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_library"
+  }
+  compiler_classpath {
+    relative_path: "scala-reflect-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_reflect"
+  }
+}
+)
+RawAspectTarget(target=id: "@//target_without_main_class:library"
+kind: "scala_library"
+sources {
+  relative_path: "target_without_main_class/Example.scala"
+  is_source: true
+}
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "target_without_main_class/library.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    interface_jars {
+      relative_path: "target_without_main_class/library-ijar.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "target_without_main_class/library-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  jdeps {
+    relative_path: "target_without_main_class/library.jdep"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+scala_target_info {
+  compiler_classpath {
+    relative_path: "scala-compiler-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_compiler"
+  }
+  compiler_classpath {
+    relative_path: "scala-library-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_library"
+  }
+  compiler_classpath {
+    relative_path: "scala-reflect-2.13.6.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_reflect"
+  }
+}
+)
+RawAspectTarget(target=id: "@bazel_tools//tools/jdk:current_java_runtime"
+kind: "java_runtime_alias"
+workspace_name: "__main__"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@bazel_tools//tools/jdk:current_java_toolchain"
+kind: "java_toolchain_alias"
+workspace_name: "__main__"
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@guava//:guava"
+kind: "java_import"
+tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+tags: "maven_coordinates=com.google.guava:guava:28.0-jre"
+workspace_name: "__main__"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "guava-28.0-jre.jar"
+      is_source: true
+      is_external: true
+      root_execution_path_fragment: "external/guava"
+    }
+    interface_jars {
+      relative_path: "external/guava/_ijar/guava/guava-28.0-jre-ijar.jar"
+      is_external: true
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "guava-28.0-jre-src.jar"
+      is_source: true
+      is_external: true
+      root_execution_path_fragment: "external/guava"
+    }
+  }
+}
+java_toolchain_info {
+  source_version: "8"
+  target_version: "8"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
