@@ -9,7 +9,7 @@ open class IdeStarterTest(
   targets: String,
   name: String,
   testSpecificArgs: String = ""
-) : BaseBuildType(
+) : BaseConfiguration.BaseBuildType(
   name = "[ide-starter] $name",
   requirements = {
     endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
@@ -52,7 +52,7 @@ open class IdeStarterTest(
 )
 
 // Define all IDE starter test objects
-object IdeStarterTests {
+object IdeStarter {
   object HotswapTest : IdeStarterTest(
     name = "Hotswap test",
     targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"

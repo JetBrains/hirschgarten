@@ -6,7 +6,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.PullRequests
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.pullRequests
 
-object ResultsAggregator : BuildType({
+open class ResultsAggregator : BuildType({
 
     name = "Results"
 
@@ -35,3 +35,4 @@ object ResultsAggregator : BuildType({
     type = Type.COMPOSITE
   })
 
+object ResultsAggregatorBuild : ResultsAggregator()

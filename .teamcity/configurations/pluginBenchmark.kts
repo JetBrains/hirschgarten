@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 open class Benchmark(
   name: String,
   dockerParams: Map<String, String>
-) : BaseBuildType(
+) : BaseConfiguration.BaseBuildType(
   name = "[benchmark] $name",
   requirements = {
     endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
