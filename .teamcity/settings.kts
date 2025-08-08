@@ -42,6 +42,8 @@ project {
         buildType(ProjectBuild.ProjectBuild)
         buildType(ProjectUnitTests.ProjectUnitTests)
         buildType(PluginBenchmark.BenchmarkDefault)
+        buildType(PluginBenchmark.BenchmarkWithVersion)
+        buildType(IdeStarter.HotswapTest)
         buildType(IdeStarter.GoLandSyncTest)
         buildType(IdeStarter.CoroutineDebugTest)
         buildType(IdeStarter.ReopenWithoutResyncTest)

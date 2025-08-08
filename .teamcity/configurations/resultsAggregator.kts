@@ -17,7 +17,7 @@ open class ResultsAggregator : BuildType({
       showDependenciesChanges = false
     }
 
-    id(name.toExtId())
+    id("GitHub" + name.toExtId())
     features {
       pullRequests {
         vcsRootExtId = "${BaseConfiguration.GitHubVcs.id}"
