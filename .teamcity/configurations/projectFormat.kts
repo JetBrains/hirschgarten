@@ -2,8 +2,8 @@ package configurations
 
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 
-object ProjectFormat : BaseConfiguration.BaseBuildType(
-  name = "[format] check formatting",
+object CheckFormating : BaseConfiguration.BaseBuildType(
+  name = "[format] `bazel run :format`",
   steps = {
     script {
       this.name = "checking formatting with buildifier"

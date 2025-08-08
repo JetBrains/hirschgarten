@@ -1,6 +1,7 @@
 import configurations.*
 import configurations.IdeStarterTests.IdeStarterTestFactory
-import configurations.PluginBenchmark.PluginBenchmark
+import configurations.PluginBenchmark.PluginBenchmarkFactory
+import configurations.ProjectFormat.CheckFormating
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 
@@ -33,16 +34,17 @@ project {
   val allSteps =
     sequential {
       // 1. Run formatter first
-      // buildType(ProjectFormat.GitHub)
+       buildType(CheckFormating)
       // 2. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
-        buildType(ProjectBuild.ProjectBuild)
+        // Add all platform builds from factory
+        PluginBuild.Factory.ForAllPlatforms.forEach { buildType(it) }
         buildType(ProjectUnitTests.ProjectUnitTests)
-        buildType(PluginBenchmark.BenchmarkDefault)
-        buildType(PluginBenchmark.BenchmarkWithVersion)
+        // Add all benchmark tests from factory
+        PluginBenchmarkFactory.AllBenchmarkTests.forEach { buildType(it) }
         // Add all IDE starter tests from factory
         IdeStarterTestFactory.AllIdeStarterTests.forEach { buildType(it) }
         buildType(StaticAnalysis.Hirschgarten)
@@ -70,11 +72,10 @@ project {
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      //ProjectFormat,
-      ProjectBuild.ProjectBuild,
+      CheckFormating,
+      *PluginBuild.Factory.ForAllPlatforms.toTypedArray(),
       ProjectUnitTests.ProjectUnitTests,
-      PluginBenchmark.BenchmarkDefault,
-      PluginBenchmark.BenchmarkWithVersion,
+      *PluginBenchmarkFactory.AllBenchmarkTests.toTypedArray(),
       *IdeStarterTestFactory.AllIdeStarterTests.toTypedArray(),
       StaticAnalysis.Hirschgarten,
       StaticAnalysis.Bazel,
