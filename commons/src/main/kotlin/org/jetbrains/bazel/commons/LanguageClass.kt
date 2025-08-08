@@ -18,9 +18,7 @@ package org.jetbrains.bazel.commons
 /** Language classes.  */
 enum class LanguageClass(val languageName: String, private val recognizedFilenameExtensions: Set<String>) {
   GENERIC("generic", setOf()),
-  C("c", setOf("c", "cc", "cpp", "h", "hh", "hpp")),
   JAVA("java", setOf("java")),
-  ANDROID("android", setOf("aidl")),
   JAVASCRIPT("javascript", setOf("js", "applejs")),
   TYPESCRIPT("typescript", setOf("ts", "ats")),
   DART("dart", setOf("dart")),
@@ -65,11 +63,9 @@ enum class LanguageClass(val languageName: String, private val recognizedFilenam
         Language.JAVA -> JAVA
         Language.GO -> GO
         Language.SCALA -> SCALA
-        Language.CPP -> C
         Language.KOTLIN -> KOTLIN
         Language.PYTHON -> PYTHON
         Language.THRIFT -> THRIFT
-        Language.ANDROID -> ANDROID
       }
 
     /** Returns the LanguageClass associated with the given filename extension, if it's recognized.  */

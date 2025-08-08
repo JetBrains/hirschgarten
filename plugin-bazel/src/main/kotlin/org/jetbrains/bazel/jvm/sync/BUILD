@@ -21,6 +21,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure/workspaceModel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target/sync/projectStructure",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",

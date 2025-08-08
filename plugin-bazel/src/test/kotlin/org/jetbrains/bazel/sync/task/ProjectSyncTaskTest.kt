@@ -4,6 +4,7 @@ import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
@@ -13,6 +14,7 @@ import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
+import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
@@ -32,6 +34,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
 
     // Initialize ProcessSpawner and TelemetryManager
     ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
+    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
     TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
 
     // pre-sync hooks

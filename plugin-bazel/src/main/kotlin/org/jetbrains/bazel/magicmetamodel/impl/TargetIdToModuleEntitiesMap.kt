@@ -43,7 +43,7 @@ object TargetIdToModuleEntitiesMap {
           async {
             val moduleDetails = targetIdToModuleDetails.getValue(it)
             val module =
-              if (moduleDetails.target.kind.isJvmOrAndroidTarget()) {
+              if (moduleDetails.target.kind.isJvmTarget()) {
                 moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
               } else {
                 return@async null

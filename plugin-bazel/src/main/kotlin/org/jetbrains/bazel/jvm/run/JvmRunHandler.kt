@@ -15,6 +15,7 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
 import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -59,8 +60,7 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     // TODO: perhaps better solved by having a tag
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
-        (it.kind.isJvmTarget() && it.kind.ruleType != RuleType.TEST) ||
-          (it.kind.includesAndroid() && it.kind.ruleType == RuleType.TEST)
+        it.kind.isJvmTarget() && it.kind.ruleType != RuleType.TEST
       }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
@@ -95,6 +95,8 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
         debug = debugType,
       )
 
-    server.buildTargetRunWithDebug(runWithDebugParams)
+    BazelWorkspaceResolveService
+      .getInstance(environment.project)
+      .withEndpointProxy { it.buildTargetRunWithDebug(runWithDebugParams) }
   }
 }

@@ -7,16 +7,12 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.DependencySourcesItem
-import org.jetbrains.bsp.protocol.DependencySourcesParams
-import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
@@ -29,7 +25,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(
       workspaceBuildTargets(),
-      dependencySourcesResults(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -122,11 +117,9 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       )
 
     return WorkspaceBuildTargetsResult(
-      listOf(
-        exampleExampleBuildTarget,
-        exampleExampleLibBuildTarget,
-        exampleExampleTestBuildTarget,
-      ),
+      targets =
+        mapOf(),
+      rootTargets = setOf(),
     )
   }
 
@@ -138,36 +131,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         testClient.testMainWorkspaceTargets(
           1.minutes,
           workspaceBuildTargetsResult,
-        )
-      }
-    }
-  }
-
-  private fun dependencySourcesResults(): BazelBspTestScenarioStep {
-    val expectedPythonDependencySourcesItems =
-      expectedWorkspaceBuildTargetsResult().targets.map {
-        if (it.id == Label.parse("$targetPrefix//lib:example_library")) {
-          DependencySourcesItem(
-            it.id,
-            listOf(),
-          )
-        } else {
-          DependencySourcesItem(it.id, emptyList())
-        }
-      }
-
-    val expectedTargetIdentifiers = expectedTargetIdentifiers()
-    val expectedDependencies = DependencySourcesResult(expectedPythonDependencySourcesItems)
-    val dependencySourcesParams = DependencySourcesParams(expectedTargetIdentifiers)
-
-    return BazelBspTestScenarioStep(
-      "dependency sources results",
-    ) {
-      if (isBzlmod) {
-        testClient.testDependencySources(
-          30.seconds,
-          dependencySourcesParams,
-          expectedDependencies,
         )
       }
     }

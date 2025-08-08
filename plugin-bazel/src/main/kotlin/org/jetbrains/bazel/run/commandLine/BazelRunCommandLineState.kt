@@ -9,6 +9,7 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
@@ -34,6 +35,8 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
         additionalBazelParams = runState.additionalBazelParams,
         pidDeferred = pidDeferred,
       )
-    server.buildTargetRun(runParams)
+    BazelWorkspaceResolveService
+      .getInstance(environment.project)
+      .withEndpointProxy { it.buildTargetRun(runParams) }
   }
 }

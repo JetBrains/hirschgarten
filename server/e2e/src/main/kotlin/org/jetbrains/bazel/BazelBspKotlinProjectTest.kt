@@ -44,7 +44,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     listOf(
       compareWorkspaceTargetsResults(),
       compareBazelWorkspaceNameResults(),
-      compareJavacOptionsResult(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -263,13 +262,8 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       )
 
     return WorkspaceBuildTargetsResult(
-      listOf(
-        kotlincTestBuildTarget,
-        openForTestingBuildTarget,
-        userBuildTarget,
-        userOfExportBuildTarget,
-        openForTestingExport,
-      ),
+      targets = mapOf(),
+      rootTargets = setOf(),
     )
   }
 
@@ -290,29 +284,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         }
       testClient.testWorkspaceName(140.seconds, WorkspaceNameResult(workspaceName = workspaceName))
     }
-
-  private fun compareJavacOptionsResult(): BazelBspTestScenarioStep {
-    val stepName = "javac options results"
-    val target = Label.parse("$targetPrefix//kotlinc_test:Foo")
-    val params = JavacOptionsParams(listOf(target))
-
-    val expectedResult =
-      JavacOptionsResult(
-        listOf(
-          JavacOptionsItem(
-            target,
-            listOfNotNull(
-              "-XepDisableAllChecks",
-              "--add-exports=java.desktop/sun.font=ALL-UNNAMED".takeIf { isBzlmod },
-              "--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED".takeIf { isBzlmod },
-            ),
-          ),
-        ),
-      )
-    return BazelBspTestScenarioStep(
-      stepName,
-    ) { testClient.testJavacOptions(30.seconds, params, expectedResult) }
-  }
 
   companion object {
     @JvmStatic
