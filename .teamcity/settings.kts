@@ -1,5 +1,5 @@
 import configurations.*
-import configurations.IdeStarterTests.IdeStarter
+import configurations.IdeStarterTests.IdeStarterTestFactory
 import configurations.PluginBenchmark.PluginBenchmark
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
@@ -43,24 +43,8 @@ project {
         buildType(ProjectUnitTests.ProjectUnitTests)
         buildType(PluginBenchmark.BenchmarkDefault)
         buildType(PluginBenchmark.BenchmarkWithVersion)
-        buildType(IdeStarter.HotswapTest)
-        buildType(IdeStarter.GoLandSyncTest)
-        buildType(IdeStarter.CoroutineDebugTest)
-        buildType(IdeStarter.ReopenWithoutResyncTest)
-        buildType(IdeStarter.RunLineMarkerTest)
-        buildType(IdeStarter.ExternalRepoResolveTest)
-        buildType(IdeStarter.JarSourceExcludeTest)
-        buildType(IdeStarter.BazelProjectModelModifierTest)
-        buildType(IdeStarter.BazelCoverageTest)
-        buildType(IdeStarter.TestResultsTreeTest)
-        buildType(IdeStarter.ImportRunConfigurationsTest)
-        buildType(IdeStarter.NonModuleTargetsTest)
-        buildType(IdeStarter.RunAllTestsActionTest)
-        buildType(IdeStarter.DisabledKotlinPluginTest)
-        buildType(IdeStarter.PyCharmTest)
-        buildType(IdeStarter.FastBuildTest)
-        buildType(IdeStarter.ProjectViewOpenTest)
-        buildType(IdeStarter.MoveKotlinFileTest)
+        // Add all IDE starter tests from factory
+        IdeStarterTestFactory.AllIdeStarterTests.forEach { buildType(it) }
         buildType(StaticAnalysis.Hirschgarten)
         buildType(StaticAnalysis.Bazel)
       }
@@ -91,24 +75,7 @@ project {
       ProjectUnitTests.ProjectUnitTests,
       PluginBenchmark.BenchmarkDefault,
       PluginBenchmark.BenchmarkWithVersion,
-      IdeStarter.HotswapTest,
-      IdeStarter.GoLandSyncTest,
-      IdeStarter.CoroutineDebugTest,
-      IdeStarter.ReopenWithoutResyncTest,
-      IdeStarter.RunLineMarkerTest,
-      IdeStarter.ExternalRepoResolveTest,
-      IdeStarter.JarSourceExcludeTest,
-      IdeStarter.BazelProjectModelModifierTest,
-      IdeStarter.BazelCoverageTest,
-      IdeStarter.TestResultsTreeTest,
-      IdeStarter.ImportRunConfigurationsTest,
-      IdeStarter.NonModuleTargetsTest,
-      IdeStarter.RunAllTestsActionTest,
-      IdeStarter.DisabledKotlinPluginTest,
-      IdeStarter.PyCharmTest,
-      IdeStarter.FastBuildTest,
-      IdeStarter.ProjectViewOpenTest,
-      IdeStarter.MoveKotlinFileTest,
+      *IdeStarterTestFactory.AllIdeStarterTests.toTypedArray(),
       StaticAnalysis.Hirschgarten,
       StaticAnalysis.Bazel,
       ResultsAggregator.Aggregator
