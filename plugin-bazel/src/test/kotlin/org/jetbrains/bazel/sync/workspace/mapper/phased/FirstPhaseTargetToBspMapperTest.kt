@@ -438,7 +438,11 @@ class FirstPhaseTargetToBspMapperTest {
       val result: BazelResolvedWorkspace = mapper.resolveWorkspace(context, project)
 
       // then
-      val strings = result.targets.getTargets().map { it.id.toString() }.toList()
+      val strings =
+        result.targets
+          .getTargets()
+          .map { it.id.toString() }
+          .toList()
       strings shouldContainExactlyInAnyOrder
         listOf(
           "@//target1",

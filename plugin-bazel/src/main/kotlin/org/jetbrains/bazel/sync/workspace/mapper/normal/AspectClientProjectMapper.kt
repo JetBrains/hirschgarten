@@ -58,7 +58,8 @@ class AspectClientProjectMapper(
       if (featureFlags.isSharedSourceSupportEnabled) {
         emptySet()
       } else {
-        project.modules.asSequence()
+        project.modules
+          .asSequence()
           .filter { !it.hasLowSharedSourcesPriority() }
           .flatMap { it.sources }
           .map { it.path }
@@ -66,7 +67,8 @@ class AspectClientProjectMapper(
       }
     val buildTargets = project.modules.map { it.toBuildTarget(highPrioritySources) }
     val nonModuleTargets =
-      project.nonModuleTargets.asSequence()
+      project.nonModuleTargets
+        .asSequence()
         .map { it.toBuildTarget() }
         .filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
         .toList()

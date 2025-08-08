@@ -15,7 +15,6 @@ class BuildTargetCollection(
   internal val buildTargets: MutableList<RawBuildTarget> = mutableListOf(),
   internal val nonModuleTargets: MutableList<RawBuildTarget> = mutableListOf(),
 ) {
-
   fun addBuildTargets(targets: Collection<RawBuildTarget>) {
     buildTargets.addAll(targets)
   }
@@ -24,16 +23,18 @@ class BuildTargetCollection(
     nonModuleTargets.addAll(targets)
   }
 
-  fun getTargets(): Sequence<RawBuildTarget> = sequence {
-    // we want to overwrite non-module targets with build targets in case of a latter associateBy call
-    yieldAll(nonModuleTargets)
-    yieldAll(buildTargets)
-  }
+  fun getTargets(): Sequence<RawBuildTarget> =
+    sequence {
+      // we want to overwrite non-module targets with build targets in case of a latter associateBy call
+      yieldAll(nonModuleTargets)
+      yieldAll(buildTargets)
+    }
 
   fun getTargetIDs(): Sequence<Label> = getTargets().map { it.id }
 
   companion object {
-    fun ofBuildTargets(targets: Collection<RawBuildTarget>) = BuildTargetCollection()
-      .also { it.addBuildTargets(targets) }
+    fun ofBuildTargets(targets: Collection<RawBuildTarget>) =
+      BuildTargetCollection()
+        .also { it.addBuildTargets(targets) }
   }
 }
