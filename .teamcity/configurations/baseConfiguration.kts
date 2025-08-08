@@ -44,7 +44,7 @@ open class BaseBuildType(
       root(GitHubVcs)
     }
 
-    id(name.toExtId())
+    id("GitHub$name".toExtId())
     if (requirements == null) {
       requirements {
         endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
