@@ -62,14 +62,14 @@ abstract class OutputProcessor(private val process: SpawnedProcess, vararg logge
       try {
         return@coroutineScope process.awaitExit()
       } catch (e: CancellationException) {
-        val processSpawner = ProcessSpawner.getInstance()
+        throw e
+       /* val processSpawner = ProcessSpawner.getInstance()
         processSpawner.killProcessTree(process)
         processSpawner.killProcess(process)
         if (serverPidFuture?.isDone == true) {
           val pid = serverPidFuture.get()
           processSpawner.killProcess(pid.toInt())
-        }
-        throw e
+        }*/
       } finally {
         shutdown()
       }
