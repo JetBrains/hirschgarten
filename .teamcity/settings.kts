@@ -1,8 +1,4 @@
 import configurations.*
-import configurations.IdeStarterTests.IdeStarterTestFactory
-import configurations.PluginBenchmark.PluginBenchmarkFactory
-import configurations.StaticAnalysis.StaticAnalysisFactory
-import configurations.ProjectFormat.CheckFormating
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 
@@ -29,9 +25,9 @@ object ProjectTriggerRules {
 
 
 project {
-  vcsRoot(VcsRoots.GitHubVcs)
-  vcsRoot(VcsRoots.BazelQodana)
-  vcsRoot(VcsRoots.BuildBuddyQodana)
+  vcsRoot(VcsRootHirschgarten)
+  vcsRoot(VcsRootBazelQodana)
+  vcsRoot(VcsRootBuildBuddyQodana)
 
 // setup pipeline chain for bazel-bsp
   val allSteps =
@@ -44,8 +40,8 @@ project {
         onDependencyCancel = FailureAction.CANCEL
       }) {
         // Add all platform builds from factory
-        PluginBuild.Factory.ForAllPlatforms.forEach { buildType(it) }
-        buildType(ProjectUnitTests.ProjectUnitTests)
+        PluginBuildFactory.ForAllPlatforms.forEach { buildType(it) }
+        buildType(ProjectUnitTests)
         // Add all benchmark tests from factory
         PluginBenchmarkFactory.AllBenchmarkTests.forEach { buildType(it) }
         // Add all IDE starter tests from factory
@@ -55,7 +51,7 @@ project {
       }
 
       buildType(
-        ResultsAggregator.Aggregator, options = {
+        Aggregator, options = {
         onDependencyFailure = FailureAction.ADD_PROBLEM
         onDependencyCancel = FailureAction.ADD_PROBLEM
       })
@@ -65,7 +61,7 @@ project {
   allSteps.forEach { buildType(it) }
 
 
-  ResultsAggregator.Aggregator.triggers {
+  Aggregator.triggers {
     vcs {
       branchFilter = ProjectBranchFilters.githubBranchFilter
       triggerRules = ProjectTriggerRules.triggerRules
@@ -76,12 +72,12 @@ project {
   buildTypesOrderIds =
     arrayListOf(
       CheckFormating,
-      *PluginBuild.Factory.ForAllPlatforms.toTypedArray(),
-      ProjectUnitTests.ProjectUnitTests,
+      *PluginBuildFactory.ForAllPlatforms.toTypedArray(),
+      ProjectUnitTests,
       *PluginBenchmarkFactory.AllBenchmarkTests.toTypedArray(),
       *IdeStarterTestFactory.AllIdeStarterTests.toTypedArray(),
       *StaticAnalysisFactory.EnabledAnalysisTests.toTypedArray(),
-      ResultsAggregator.Aggregator
+      Aggregator
     )
 }
 

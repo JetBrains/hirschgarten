@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
  * 
  * @param platform The IntelliJ platform version (e.g., "251", "252")
  */
-class PluginBuild(private val platform: String) : BaseConfiguration.BaseBuildType(
+class PluginBuild(private val platform: String) : BaseBuildType(
     name = "[build] build project - $platform",
     artifactRules = "+:%system.agent.persistent.cache%/bazel/_bazel_hirschuser/*/execroot/_main/bazel-out/k8-fastbuild/bin/plugin-bazel/plugin-bazel.zip",
     steps = {
@@ -19,9 +19,9 @@ class PluginBuild(private val platform: String) : BaseConfiguration.BaseBuildTyp
             id = "build_all_$platform"
             command = "build"
             targets = "//..."
-            arguments = "--define=ij_product=intellij-20$platformDot ${Utils.CommonParams.BazelCiBuildSpecificArgs}"
+            arguments = "--define=ij_product=intellij-20$platformDot ${CommonParams.BazelCiBuildSpecificArgs}"
             logging = BazelStep.Verbosity.Diagnostic
-            Utils.DockerParams.get().forEach { (key, value) ->
+            DockerParams.get().forEach { (key, value) ->
                 param(key, value)
             }
         }
@@ -31,12 +31,12 @@ class PluginBuild(private val platform: String) : BaseConfiguration.BaseBuildTyp
 /**
  * Factory for creating project build configurations for all platforms.
  */
-object Factory {
+object PluginBuildFactory {
     /** All project build configurations for different platforms. */
-    val ForAllPlatforms: List<BaseConfiguration.BaseBuildType> by lazy { createBuildsForAllPlatforms() }
+    val ForAllPlatforms: List<BaseBuildType> by lazy { createBuildsForAllPlatforms() }
     
-    private fun createBuildsForAllPlatforms(): List<BaseConfiguration.BaseBuildType> =
-        Utils.CommonParams.CrossBuildPlatforms.map { platform ->
+    private fun createBuildsForAllPlatforms(): List<BaseBuildType> =
+        CommonParams.CrossBuildPlatforms.map { platform ->
           PluginBuild(platform)
         }
 }

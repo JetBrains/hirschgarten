@@ -20,21 +20,21 @@ data class BenchmarkDef(
  */
 class PluginBenchmarkTest(
   private val benchmarkDef: BenchmarkDef
-) : BaseConfiguration.BaseBuildType(
+) : BaseBuildType(
   name = "[benchmark] ${benchmarkDef.name}",
   requirements = {
     endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
     equals("container.engine.osType", "linux")
   },
-  artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
+  artifactRules = CommonParams.BazelTestlogsArtifactRules,
   steps = {
     val dockerParams = if (benchmarkDef.useCurrentBazelVersion) {
-      Utils.DockerParams.get().toMutableMap().apply {
+      DockerParams.get().toMutableMap().apply {
         set("plugin.docker.run.parameters",
             get("plugin.docker.run.parameters") + "\n-v %teamcity.build.checkoutDir%/.bazelversion:/home/hirschuser/project_10/.bazelversion")
       }
     } else {
-      Utils.DockerParams.get()
+      DockerParams.get()
     }
 
     script {
@@ -45,7 +45,7 @@ class PluginBenchmarkTest(
           #!/bin/bash
           set -euxo
           
-          echo "${Utils.CommonParams.BazelVersion}" > /home/hirschuser/project_10/.bazelversion
+          echo "${CommonParams.BazelVersion}" > /home/hirschuser/project_10/.bazelversion
         """.trimIndent()
       dockerParams.forEach { (key, value) ->
         param(key, value)
@@ -68,7 +68,7 @@ class PluginBenchmarkTest(
       id = "run_benchmark"
       command = "test"
       targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/performance"
-      arguments = "$sysArgs ${Utils.CommonParams.BazelCiSpecificArgs} ${benchmarkDef.testSpecificArgs}"
+      arguments = "$sysArgs ${CommonParams.BazelCiSpecificArgs} ${benchmarkDef.testSpecificArgs}"
       toolPath = "/usr/local/bin"
       logging = BazelStep.Verbosity.Diagnostic
       dockerParams.forEach { (key, value) ->
@@ -101,9 +101,9 @@ object PluginBenchmarkFactory {
   )
   
   /** All benchmark test build types. */
-  val AllBenchmarkTests: List<BaseConfiguration.BaseBuildType> by lazy { createBenchmarkTests() }
+  val AllBenchmarkTests: List<BaseBuildType> by lazy { createBenchmarkTests() }
   
-  private fun createBenchmarkTests(): List<BaseConfiguration.BaseBuildType> =
+  private fun createBenchmarkTests(): List<BaseBuildType> =
     benchmarkTests.map { benchmarkDef ->
       PluginBenchmarkTest(benchmarkDef)
     }

@@ -21,7 +21,7 @@ open class BaseBuildType(
   params: ParametrizedWithType.() -> Unit = {},
   dockerSupport: DockerSupportFeature.() -> Unit = {},
   dependencies: Dependencies.() -> Unit = {},
-  customVcsRoot: VcsRoot? = VcsRoots.GitHubVcs,
+  customVcsRoot: VcsRoot? = VcsRootHirschgarten,
 ) : BuildType({
 
     this.name = name
@@ -64,18 +64,18 @@ open class BaseBuildType(
             githubUrl = "https://api.github.com"
             authType =
               personalToken {
-                token = Utils.CredentialsStore.GitHubPassword
+                token = CredentialsStore.GitHubPassword
               }
           }
         param("github_oauth_user", "hb-man")
       }
       pullRequests {
-        vcsRootExtId = "${VcsRoots.GitHubVcs.id}"
+        vcsRootExtId = "${VcsRootHirschgarten.id}"
         provider =
           github {
             authType =
               token {
-                token = Utils.CredentialsStore.GitHubPassword
+                token = CredentialsStore.GitHubPassword
               }
             filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
           }

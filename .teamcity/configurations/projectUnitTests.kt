@@ -4,9 +4,9 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 
-object ProjectUnitTests : BaseConfiguration.BaseBuildType(
+object ProjectUnitTests : BaseBuildType(
     name = "[unit tests] project unit tests",
-    artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
+    artifactRules = CommonParams.BazelTestlogsArtifactRules,
     requirements = {
       endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
       equals("container.engine.osType", "linux")
@@ -16,10 +16,10 @@ object ProjectUnitTests : BaseConfiguration.BaseBuildType(
         name = "bazel test //... (without single-job targets)"
         command = "test"
         targets = "//... -//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... -//server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/..."
-        arguments = Utils.CommonParams.BazelCiSpecificArgs
+        arguments = CommonParams.BazelCiSpecificArgs
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
-        Utils.DockerParams.get().forEach { (key, value) ->
+        DockerParams.get().forEach { (key, value) ->
           param(key, value)
         }
       }
@@ -27,10 +27,10 @@ object ProjectUnitTests : BaseConfiguration.BaseBuildType(
         name = "bazel test single-job targets"
         command = "test"
         targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... //server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/..."
-        arguments = Utils.CommonParams.BazelCiSpecificArgs + " --jobs 1"
+        arguments = CommonParams.BazelCiSpecificArgs + " --jobs 1"
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
-        Utils.DockerParams.get().forEach { (key, value) ->
+        DockerParams.get().forEach { (key, value) ->
           param(key, value)
         }
       }

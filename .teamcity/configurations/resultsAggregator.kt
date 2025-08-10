@@ -13,19 +13,19 @@ open class Results : BuildType({
     allowExternalStatus = true
 
     vcs {
-      root(VcsRoots.GitHubVcs)
+      root(VcsRootHirschgarten)
       showDependenciesChanges = false
     }
 
     id("GitHub" + name.toExtId())
     features {
       pullRequests {
-        vcsRootExtId = "${VcsRoots.GitHubVcs.id}"
+        vcsRootExtId = "${VcsRootHirschgarten.id}"
         provider =
           github {
             authType =
               token {
-                token = Utils.CredentialsStore.GitHubPassword
+                token = CredentialsStore.GitHubPassword
               }
             filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
           }

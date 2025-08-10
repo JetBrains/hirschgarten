@@ -15,13 +15,13 @@ class IdeStarterTest(
   private val testName: String,
   private val targets: String,
   private val testSpecificArgs: String = ""
-) : BaseConfiguration.BaseBuildType(
+) : BaseBuildType(
   name = "[ide-starter] $testName",
   requirements = {
     endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
     equals("container.engine.osType", "linux")
   },
-  artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
+  artifactRules = CommonParams.BazelTestlogsArtifactRules,
   steps = {
     bazel {
       val reportErrors = "--jvmopt=\"-DDO_NOT_REPORT_ERRORS=true\""
@@ -36,10 +36,10 @@ class IdeStarterTest(
       id = "run_${targets.replace(":", "_")}"
       command = "test"
       this.targets = targets
-      arguments = "$sysArgs ${Utils.CommonParams.BazelCiSpecificArgs} $testSpecificArgs"
+      arguments = "$sysArgs ${CommonParams.BazelCiSpecificArgs} $testSpecificArgs"
       toolPath = "/usr/local/bin"
       logging = BazelStep.Verbosity.Diagnostic
-      Utils.DockerParams.get().forEach { (key, value) ->
+      DockerParams.get().forEach { (key, value) ->
         param(key, value)
       }
     }
@@ -71,9 +71,9 @@ data class TestDef(
  */
 object IdeStarterTestFactory {
   /** All IDE-starter test build types. */
-  val AllIdeStarterTests: List<BaseConfiguration.BaseBuildType> by lazy { createIdeStarterTests() }
+  val AllIdeStarterTests: List<BaseBuildType> by lazy { createIdeStarterTests() }
 
-  private fun createIdeStarterTests(): List<BaseConfiguration.BaseBuildType> =
+  private fun createIdeStarterTests(): List<BaseBuildType> =
     ideStarterTests.map { testDef ->
       IdeStarterTest(testDef.name, testDef.target, testDef.testSpecificArgs)
     }

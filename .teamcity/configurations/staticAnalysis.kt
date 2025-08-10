@@ -15,7 +15,7 @@ data class AnalysisDef(
   val vcsRoot: GitVcsRoot,
   val cloudTokenKey: String,
   val cloudTokenCredentials: String,
-  val linterImage: String = Utils.CommonParams.DockerQodanaImage,
+  val linterImage: String = CommonParams.DockerQodanaImage,
   val unchanged: String? = null,
   val diff: String = "0",
   val allowFailure: Boolean = false,
@@ -31,7 +31,7 @@ data class AnalysisDef(
  */
 class StaticAnalysisTest(
   private val analysisDef: AnalysisDef
-) : BaseConfiguration.BaseBuildType(
+) : BaseBuildType(
   name = "[analysis] Qodana ${analysisDef.name}",
   requirements = {
     endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
@@ -41,15 +41,15 @@ class StaticAnalysisTest(
   artifactRules = "+:.teamcity/qodana/*.zip",
   dependencies = {
     // Depend on the latest platform build (last in the list)
-    val latestPlatformBuild = PluginBuild.Factory.ForAllPlatforms.last()
+    val latestPlatformBuild = PluginBuildFactory.ForAllPlatforms.last()
     snapshot(latestPlatformBuild) {}
     artifacts(latestPlatformBuild) {
-      artifactRules = Utils.CommonParams.QodanaArtifactRules
+      artifactRules = CommonParams.QodanaArtifactRules
     }
   },
   steps = {
     // Use the latest platform from CrossBuildPlatforms
-    val platform = Utils.CommonParams.CrossBuildPlatforms.last()
+    val platform = CommonParams.CrossBuildPlatforms.last()
     val platformDot = "20${platform.take(2)}.${platform.last()}"
     
     script {
@@ -138,7 +138,7 @@ object StaticAnalysisFactory {
   private val analysisTests = listOf(
     AnalysisDef(
       name = "Hirschgarten",
-      vcsRoot = VcsRoots.GitHubVcs,  // Uses default VCS root
+      vcsRoot = VcsRootHirschgarten,  // Uses default VCS root
       cloudTokenKey = "qodana.cloud.token.hirschgarten",
       cloudTokenCredentials = "credentialsJSON:d57ead0e-b567-440d-817e-f92e084a1cc0",
       enabled = true,
@@ -147,30 +147,30 @@ object StaticAnalysisFactory {
     ),
     AnalysisDef(
       name = "Bazel",
-      vcsRoot = VcsRoots.BazelQodana,
+      vcsRoot = VcsRootBazelQodana,
       cloudTokenKey = "qodana.cloud.token.bazel",
       cloudTokenCredentials = "credentialsJSON:34041ec3-8e8c-4934-b3e2-0143ff2aee5e",
       enabled = true
     ),
     AnalysisDef(
       name = "BuildBuddy",
-      vcsRoot = VcsRoots.BuildBuddyQodana,
+      vcsRoot = VcsRootBuildBuddyQodana,
       cloudTokenKey = "qodana.cloud.token.buildbuddy",
       cloudTokenCredentials = "credentialsJSON:8f62c38e-0dd7-4f3f-8432-cfb1c04cc021",
       enabled = true,
-      linterImage = Utils.CommonParams.DockerQodanaGoImage
+      linterImage = CommonParams.DockerQodanaGoImage
     )
   )
   
   /** All static analysis test build types. */
-  val AllAnalysisTests: List<BaseConfiguration.BaseBuildType> by lazy { createAnalysisTests() }
+  val AllAnalysisTests: List<BaseBuildType> by lazy { createAnalysisTests() }
   
   /** Only enabled analysis tests for the pipeline. */
-  val EnabledAnalysisTests: List<BaseConfiguration.BaseBuildType> by lazy { 
+  val EnabledAnalysisTests: List<BaseBuildType> by lazy {
     createAnalysisTests(onlyEnabled = true) 
   }
   
-  private fun createAnalysisTests(onlyEnabled: Boolean = false): List<BaseConfiguration.BaseBuildType> =
+  private fun createAnalysisTests(onlyEnabled: Boolean = false): List<BaseBuildType> =
     analysisTests
       .filter { if (onlyEnabled) it.enabled else true }
       .map { analysisDef ->

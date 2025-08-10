@@ -5,31 +5,31 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 /**
  * VCS roots used in the project.
  */
-object BazelQodana : GitVcsRoot({
+object VcsRootBazelQodana : GitVcsRoot({
     name = "Bazel for Qodana"
     url = "https://github.com/JetBrainsBazelBot/bazel"
     branch = "master"
     authMethod = password {
         userName = "hb-man"
-        password = Utils.CredentialsStore.GitHubPassword
+        password = CredentialsStore.GitHubPassword
     }
   param("oauthProviderId", "tc-cloud-github-connection")
   param("tokenType", "permanent")
 })
 
-object BuildBuddyQodana : GitVcsRoot({
+object VcsRootBuildBuddyQodana : GitVcsRoot({
     name = "BuildBuddy for Qodana"
     url = "https://github.com/JetBrainsBazelBot/buildbuddy"
     branch = "master"
     authMethod = password {
         userName = "hb-man"
-        password = Utils.CredentialsStore.GitHubPassword
+        password = CredentialsStore.GitHubPassword
     }
     param("oauthProviderId", "tc-cloud-github-connection")
     param("tokenType", "permanent")
 })
 
-object GitHubVcs : GitVcsRoot({
+object VcsRootHirschgarten : GitVcsRoot({
     name = "hirschgarten-github"
     url = "https://github.com/JetBrains/hirschgarten.git"
     branch = "main"
@@ -37,7 +37,7 @@ object GitHubVcs : GitVcsRoot({
     authMethod =
       password {
         userName = "hb-man"
-        password = Utils.CredentialsStore.GitHubPassword
+        password = CredentialsStore.GitHubPassword
       }
     param("oauthProviderId", "tc-cloud-github-connection")
     param("tokenType", "permanent")
