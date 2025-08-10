@@ -37,6 +37,7 @@ class StaticAnalysisTest(
     endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
     equals("container.engine.osType", "linux")
   },
+  customVcsRoot = analysisDef.vcsRoot,
   artifactRules = "+:.teamcity/qodana/*.zip",
   dependencies = {
     // Depend on the latest platform build (last in the list)
@@ -128,14 +129,7 @@ class StaticAnalysisTest(
   } else {
     {}
   }
-) {
-  init {
-    // Configure VCS root if provided
-    vcs {
-      root(this@StaticAnalysisTest.analysisDef.vcsRoot)
-    }
-  }
-}
+)
 
 /**
  * Factory for creating static analysis test build types.
@@ -162,8 +156,8 @@ object StaticAnalysisFactory {
     AnalysisDef(
       name = "BuildBuddy",
       vcsRoot = VcsRoots.BuildBuddyQodana,
-      cloudTokenKey = "qodana.cloud.token.bazel",
-      cloudTokenCredentials = "credentialsJSON:34041ec3-8e8c-4934-b3e2-0143ff2aee5e",
+      cloudTokenKey = "qodana.cloud.token.buildbuddy",
+      cloudTokenCredentials = "credentialsJSON:8f62c38e-0dd7-4f3f-8432-cfb1c04cc021",
       enabled = true
     )
   )
