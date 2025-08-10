@@ -59,10 +59,14 @@ class StaticAnalysisTest(
         #!/bin/bash
         set -euxo
         
-        rm -rf %system.agent.persistent.cache%/plugins 
         mkdir %system.agent.persistent.cache%/plugins
+
+        cd %system.teamcity.build.checkoutDir%/tc-artifacts
         
-        unzip %system.teamcity.build.checkoutDir%/tc-artifacts/plugin-bazel-$platform.zip -d %system.agent.persistent.cache%/plugins
+        shopt -s globstar nullglob
+        cp -- **/plugin-bazel.zip .
+        
+        unzip plugin-bazel.zip -d %system.agent.persistent.cache%/plugins
       """.trimIndent()
     }
     
