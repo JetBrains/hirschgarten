@@ -70,24 +70,19 @@ class StaticAnalysisTest(
       name = "run qodana"
       id = "run_qodana_$platform"
       reportAsTests = false
-      workingDir = if (analysisDef.vcsRoot != null) { "" } else { "" }
       linter = customLinter {
         image = "${analysisDef.linterImage}:$platformDot-nightly"
       }
-      additionalDockerArguments = listOf(
-        "-v %system.agent.persistent.cache%/plugins/plugin-bazel:/opt/idea/custom-plugins/plugin-bazel",
-        "-v %system.teamcity.build.checkoutDir%/${analysisDef.qodanaConfig}:%system.teamcity.build.checkoutDir%/${analysisDef.qodanaConfig}",
+      additionalDockerArguments = "-v %system.agent.persistent.cache%/plugins/plugin-bazel:/opt/idea/custom-plugins/plugin-bazel"
+      additionalQodanaArguments = listOf(
+        "--property=bsp.build.project.on.sync=true",
+        "--property=idea.is.internal=true",
+        "--property=idea.kotlin.plugin.use.k2=true",
+        "--report-dir /data/results/report",
+        "--save-report",
+        "--baseline ${analysisDef.qodanaBaseline}",
+        "--config ${analysisDef.qodanaConfig}"
       ).joinToString("\n")
-      additionalQodanaArguments = """
-        --property=bsp.build.project.on.sync=true
-        --property=idea.is.internal=true
-        --property=idea.kotlin.plugin.use.k2=true
-        --report-dir /data/results/report
-        --save-report
-        ${if (analysisDef.vcsRoot != null) {"--property=bsp.android.support=true"} else {""}}
-        --baseline ${analysisDef.qodanaBaseline ?: "tools/qodana/qodana.sarif.json"}
-        --config ${analysisDef.qodanaConfig ?: "tools/qodana/qodana.yaml"}
-      """.trimIndent()
       this.cloudToken = "%${analysisDef.cloudTokenKey}%"
       collectAnonymousStatistics = true
     }
