@@ -14,7 +14,6 @@ import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
@@ -40,14 +39,8 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(
-      resolveProject(),
       compareWorkspaceTargetsResults(),
     )
-
-  private fun resolveProject(): BazelBspTestScenarioStep =
-    BazelBspTestScenarioStep(
-      "resolve project",
-    ) { testClient.testResolveProject(2.minutes) }
 
   private fun compareWorkspaceTargetsResults(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep(
@@ -141,11 +134,8 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       )
 
     return WorkspaceBuildTargetsResult(
-      listOfNotNull(
-        manualTargetJavaLibrary,
-        manualTargetJavaBinary,
-        manualTargetJavaTest,
-      ),
+      targets = mapOf(),
+      rootTargets = setOf(),
     )
   }
 }

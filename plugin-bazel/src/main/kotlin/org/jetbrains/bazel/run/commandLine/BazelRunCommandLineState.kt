@@ -9,16 +9,13 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 
-class BazelRunCommandLineState(
-  environment: ExecutionEnvironment,
-  originId: OriginId,
-  private val runState: AbstractGenericRunState<*>,
-) : BazelCommandLineStateBase(environment, originId) {
+class BazelRunCommandLineState(environment: ExecutionEnvironment, private val runState: AbstractGenericRunState<*>) :
+  BazelCommandLineStateBase(environment) {
   private val configuration = environment.runProfile as BazelRunConfiguration
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
@@ -28,17 +25,18 @@ class BazelRunCommandLineState(
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
 
-    val targetId = configuration.targets.single()
     val runParams =
       RunParams(
-        targetId,
-        originId = originId,
+        target = configuration.targets.single(),
+        originId = originId.toString(),
         arguments = transformProgramArguments(runState.programArguments),
         environmentVariables = runState.env.envs,
         workingDirectory = runState.workingDirectory,
         additionalBazelParams = runState.additionalBazelParams,
         pidDeferred = pidDeferred,
       )
-    server.buildTargetRun(runParams)
+    BazelWorkspaceResolveService
+      .getInstance(environment.project)
+      .withEndpointProxy { it.buildTargetRun(runParams) }
   }
 }

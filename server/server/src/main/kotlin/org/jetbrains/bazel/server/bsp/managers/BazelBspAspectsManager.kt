@@ -6,15 +6,14 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
-import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
-import org.jetbrains.bazel.server.bzlmod.RepoMapping
-import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -107,7 +106,7 @@ class BazelBspAspectsManager(
     rulesetLanguages: List<RulesetLanguage>,
     externalRulesetNames: List<String>,
     workspaceContext: WorkspaceContext,
-    toolchains: Map<RulesetLanguage, Label?>,
+    toolchains: Map<RulesetLanguage, String?>,
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
     featureFlags: FeatureFlags,
@@ -128,17 +127,13 @@ class BazelBspAspectsManager(
         mapOf(
           "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty(),
           "rulesetNameApparent" to ruleLanguage?.rulesetName.orEmpty(),
-          "addTransitiveCompileTimeJars" to
-            workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
-          "transitiveCompileTimeJarsTargetKinds" to
-            workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toStarlarkString(),
           "kotlinEnabled" to kotlinEnabled.toString(),
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
           // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
-          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl]?.toString()?.let { "\"" + it + "\"" } },
+          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
           "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.values.toStarlarkString(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)

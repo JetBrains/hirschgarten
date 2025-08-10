@@ -48,9 +48,6 @@ object ProjectViewSection {
       SectionMetadata("directories", SectionType.List.String, DirectoriesCompletionProvider()),
       SectionMetadata("enable_native_android_rules", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("enabled_rules", SectionType.List.String),
-      SectionMetadata("experimental_add_transitive_compile_time_jars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
-      SectionMetadata("experimental_no_prune_transitive_compile_time_jars_patterns", SectionType.List.String),
-      SectionMetadata("experimental_transitive_compile_time_jars_target_kinds", SectionType.List.String),
       SectionMetadata("experimental_prioritize_libraries_over_modules_target_kinds", SectionType.List.String),
       SectionMetadata("ide_java_home_override", SectionType.Scalar.String),
       SectionMetadata("import_depth", SectionType.Scalar.Integer),
@@ -84,6 +81,7 @@ object ProjectViewSection {
       SectionMetadata("ts_config_rules", SectionType.List.String, TargetCompletionProvider()),
       SectionMetadata("import_ijars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("debug_flags", SectionType.List.String, FlagCompletionProvider("debug")),
+      SectionMetadata("derive_instrumentation_filter_from_targets", SectionType.Scalar.Boolean, booleanCompletionProvider()),
     ).associateBy { it.sectionName }
 
   private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))

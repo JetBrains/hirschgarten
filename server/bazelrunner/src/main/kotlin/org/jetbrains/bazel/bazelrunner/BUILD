@@ -13,7 +13,6 @@ kt_library(
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/outputs",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/params",
-        "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/utils",
         "//server/commons",
         "//server/logger",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/info",

@@ -1,13 +1,13 @@
 package org.jetbrains.bazel.server.connection
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.BazelBspServer
 import org.jetbrains.bazel.server.bsp.BspServerApi
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -24,7 +24,7 @@ suspend fun startServer(
     DefaultWorkspaceContextProvider(
       workspaceRoot = workspaceRoot,
       projectViewPath = projectViewFile ?: workspaceRoot.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
-      dotBazelBspDirPath = bspInfo.bazelBspDir(),
+      dotBazelBspDirPath = bspInfo.bazelBspDir,
       featureFlags = featureFlags,
     )
   // Run it here to force the workspace context to be initialized
@@ -53,6 +53,7 @@ suspend fun startServer(
       services.projectSyncService,
       services.executeService,
       workspaceContextProvider,
+      bazelPathsResolver,
     )
   return bspServerApi
 }

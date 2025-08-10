@@ -17,11 +17,8 @@ package org.jetbrains.bazel.sync.libraries
 
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.SyntheticLibrary
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.utils.toVirtualFile
-import java.nio.file.Path
 import javax.swing.Icon
 
 /**
@@ -32,7 +29,7 @@ import javax.swing.Icon
 class BazelExternalSyntheticLibrary(private val text: String, private val files: List<VirtualFile>) :
   SyntheticLibrary(),
   ItemPresentation {
-  override fun getSourceRoots(): List<VirtualFile> = files
+  override fun getSourceRoots(): List<VirtualFile> = files.filter { it.isValid }
 
   override fun equals(other: Any?): Boolean {
     // intended to be only a single instance added to the project for each value of presentableText

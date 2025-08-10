@@ -231,6 +231,7 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionFetchSyncHook"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider$NotificationUpdateSyncHook"/>
 
 
     <projectStructureProvider

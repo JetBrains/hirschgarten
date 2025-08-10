@@ -30,15 +30,6 @@ class WorkspaceContextConstructor(
       importDepth = ImportDepthSpecExtractor.fromProjectView(projectView),
       enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
-      experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
-      experimentalTransitiveCompileTimeJarsTargetKinds =
-        ExperimentalTransitiveCompileTimeJarsTargetKindsExtractor.fromProjectView(
-          projectView,
-        ),
-      experimentalNoPruneTransitiveCompileTimeJarsPatterns =
-        ExperimentalNoPruneTransitiveCompileTimeJarsPatternsExtractor.fromProjectView(
-          projectView,
-        ),
       experimentalPrioritizeLibrariesOverModulesTargetKinds =
         ExperimentalPrioritizeLibrariesOverModulesTargetKindsExtractor.fromProjectView(projectView),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
@@ -51,6 +42,7 @@ class WorkspaceContextConstructor(
       indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpecExtractor.fromProjectView(projectView),
       pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpecExtractor.fromProjectView(projectView),
       importIjarsSpec = ImportIjarsSpecExtractor.fromProjectView(projectView),
+      deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsExtractor.fromProjectView(projectView),
     )
   }
 }

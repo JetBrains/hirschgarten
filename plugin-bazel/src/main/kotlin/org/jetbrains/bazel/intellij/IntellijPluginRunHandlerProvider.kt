@@ -8,7 +8,8 @@ import org.jetbrains.bsp.protocol.BuildTarget
 private const val INTELLIJ_PLUGIN_TAG = "intellij-plugin"
 
 class IntellijPluginRunHandlerProvider : RunHandlerProvider {
-  override val id: String = "IntellijPluginRunHandlerProvider"
+  override val id: String
+    get() = "IntellijPluginRunHandlerProvider"
 
   override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = IntellijPluginRunHandler(configuration)
 
