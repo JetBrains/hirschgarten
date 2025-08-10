@@ -153,7 +153,8 @@ object StaticAnalysisFactory {
       vcsRoot = VcsRoots.BuildBuddyQodana,
       cloudTokenKey = "qodana.cloud.token.buildbuddy",
       cloudTokenCredentials = "credentialsJSON:8f62c38e-0dd7-4f3f-8432-cfb1c04cc021",
-      enabled = true
+      enabled = true,
+      linterImage = Utils.CommonParams.DockerQodanaGoImage
     )
   )
   
