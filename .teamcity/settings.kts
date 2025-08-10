@@ -29,7 +29,9 @@ object ProjectTriggerRules {
 
 
 project {
-  vcsRoot(BaseConfiguration.GitHubVcs)
+  vcsRoot(VcsRoots.GitHubVcs)
+  vcsRoot(VcsRoots.BazelQodana)
+  vcsRoot(VcsRoots.BuildBuddyQodana)
 
 // setup pipeline chain for bazel-bsp
   val allSteps =

@@ -8,9 +8,9 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParametrizedWithType
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
+import jetbrains.buildServer.configs.kotlin.v2019_2.VcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.ant
-import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
 open class BaseBuildType(
@@ -22,6 +22,7 @@ open class BaseBuildType(
   params: ParametrizedWithType.() -> Unit = {},
   dockerSupport: DockerSupportFeature.() -> Unit = {},
   dependencies: Dependencies.() -> Unit = {},
+  customVcsRoot: VcsRoot? = VcsRoots.GitHubVcs,
 ) : BuildType({
 
     this.name = name
@@ -41,7 +42,7 @@ open class BaseBuildType(
     }
 
     vcs {
-      root(GitHubVcs)
+      customVcsRoot?.let { root(it) }
     }
 
     id("GitHub$name".toExtId())
@@ -71,7 +72,7 @@ open class BaseBuildType(
         param("github_oauth_user", "hb-man")
       }
       pullRequests {
-        vcsRootExtId = "${GitHubVcs.id}"
+        vcsRootExtId = "${VcsRoots.GitHubVcs.id}"
         provider =
           github {
             authType =
@@ -106,18 +107,4 @@ open class BaseBuildType(
       steps()
     }
   })
-
-object GitHubVcs : GitVcsRoot({
-  name = "hirschgarten-github"
-  url = "https://github.com/JetBrains/hirschgarten.git"
-  branch = "main"
-  branchSpec = "+:refs/heads/*"
-  authMethod =
-    password {
-      userName = "hb-man"
-      password = Utils.CredentialsStore.GitHubPassword
-    }
-  param("oauthProviderId", "tc-cloud-github-connection")
-  param("tokenType", "permanent")
-})
 

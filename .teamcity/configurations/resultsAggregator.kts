@@ -13,14 +13,14 @@ open class Results : BuildType({
     allowExternalStatus = true
 
     vcs {
-      root(BaseConfiguration.GitHubVcs)
+      root(VcsRoots.GitHubVcs)
       showDependenciesChanges = false
     }
 
     id("GitHub" + name.toExtId())
     features {
       pullRequests {
-        vcsRootExtId = "${BaseConfiguration.GitHubVcs.id}"
+        vcsRootExtId = "${VcsRoots.GitHubVcs.id}"
         provider =
           github {
             authType =
