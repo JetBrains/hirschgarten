@@ -17,10 +17,10 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
 import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
+import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.TestParams
 import java.util.concurrent.atomic.AtomicReference
 
@@ -73,7 +73,7 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(endpoints: BazelEndpointProxy, pidDeferred: CompletableDeferred<Long?>) {
     val configuration = environment.runProfile as BazelRunConfiguration
     val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
     val additionalBazelParams = settings.additionalBazelParams ?: ""
@@ -88,9 +88,6 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
         testFilter = settings.testFilter,
         additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
       )
-
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetTest(testParams) }
+    endpoints.buildTargetTest(testParams)
   }
 }

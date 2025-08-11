@@ -51,6 +51,7 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
@@ -347,10 +348,8 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
   }
 
 private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult =
-  project.connection.runWithServer { bspServer ->
-    bspServer
-      .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.toPath())))
-  }
+  BazelWorkspaceResolveService.getInstance(project)
+    .withEndpointProxy { it.buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.toPath()))) }
 
 private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
   val moduleId = ModuleId(this.formatAsModuleName(project))

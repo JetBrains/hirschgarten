@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.mapper.BazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.EarlyBazelSyncProject
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
@@ -16,6 +18,8 @@ import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -24,6 +28,7 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
@@ -66,6 +71,8 @@ class BazelEndpointProxyMock(
   private val analysisDebugResult: AnalysisDebugResult? = null,
   private val runResult: RunResult? = null,
   private val runWithDebugResult: RunResult? = null,
+  private val jvmToolchainInfoForTarget: Map<Label, JvmToolchainInfo> = mapOf(),
+  private val inverseSources: InverseSourcesResult? = null,
 ) : BazelEndpointProxy {
   override fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult =
     javacOptionsResult ?: error("javacOptionsResult is not set")
@@ -99,4 +106,10 @@ class BazelEndpointProxyMock(
 
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult =
     runWithDebugResult ?: error("runWithDebugResult is not set")
+
+  override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo =
+    jvmToolchainInfoForTarget[target] ?: error("jvmToolchainInfo not set for target $target")
+
+  override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult =
+    inverseSources ?: error("inverseSources is not set")
 }

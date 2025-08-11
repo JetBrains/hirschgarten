@@ -105,19 +105,15 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     taskListener: StarlarkDebugTaskListener,
     target: Label,
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
-  ): Job =
-    project.connection.runWithServer { server ->
-      BazelCoroutineService.getInstance(project).start {
-        analysisDebug(project, port, taskListener, target, server, futureProxy)
-      }
-    }
+  ): Job = BazelCoroutineService.getInstance(project).start {
+    analysisDebug(project, port, taskListener, target, futureProxy)
+  }
 
   private suspend fun analysisDebug(
     project: Project,
     port: Int,
     taskListener: StarlarkDebugTaskListener,
     target: Label,
-    server: JoinedBuildServer,
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
   ) {
     coroutineScope {

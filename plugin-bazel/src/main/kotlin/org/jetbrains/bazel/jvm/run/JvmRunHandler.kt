@@ -15,10 +15,10 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
 import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
+import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.concurrent.atomic.AtomicReference
@@ -74,7 +74,7 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(endpoints: BazelEndpointProxy, pidDeferred: CompletableDeferred<Long?>) {
     val configuration = environment.runProfile as BazelRunConfiguration
     val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
     val additionalBazelParams = settings.additionalBazelParams ?: ""
@@ -94,9 +94,6 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
         runParams = runParams,
         debug = debugType,
       )
-
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetRunWithDebug(runWithDebugParams) }
+    endpoints.buildTargetRunWithDebug(runWithDebugParams)
   }
 }

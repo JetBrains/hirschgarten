@@ -28,14 +28,12 @@ import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileResult
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
 import java.util.UUID
 
 @InternalApi
 class BuildTargetTask(private val project: Project) {
   suspend fun execute(
-    server: JoinedBuildServer,
     targetsIds: List<Label>,
     arguments: List<String>,
   ): CompileResult =
@@ -163,7 +161,7 @@ suspend fun runBuildTargetTask(
     // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
     // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
     val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags.values } else listOf()
-    project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds, debugFlag) }
+    project.connection.runWithServer { BuildTargetTask(project).execute(targetIds, debugFlag) }
   }.also {
     VirtualFileManager.getInstance().asyncRefresh()
   }

@@ -30,6 +30,7 @@ import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -80,20 +81,18 @@ object ClassFileManifestBuilder {
     }
     val jvmEnvDeferred: Deferred<JvmEnvironmentResult?> =
       BazelCoroutineService.getInstance(project).startAsync {
-        project.connection.runWithServer { server ->
-          val targets = configuration.getAffectedTargets()
-          if (targets.isEmpty()) {
-            progress?.addMessage(
-              session.session,
-              MessageCategory.WARNING,
-              BazelHotSwapBundle.message("hotswap.message.manifest.empty.target.error"),
-            )
-            return@runWithServer null
-          }
-          val target = targets.first()
-          val isTest = target.isTestTarget(project)
-          return@runWithServer queryJvmEnvironment(project, target, server, isTest)
+        val targets = configuration.getAffectedTargets()
+        if (targets.isEmpty()) {
+          progress?.addMessage(
+            session.session,
+            MessageCategory.WARNING,
+            BazelHotSwapBundle.message("hotswap.message.manifest.empty.target.error"),
+          )
+          return@startAsync null
         }
+        val target = targets.first()
+        val isTest = target.isTestTarget(project)
+        return@startAsync queryJvmEnvironment(project, target, isTest)
       }
     progress?.setCancelWorker { jvmEnvDeferred.cancel() }
     val result =
@@ -132,7 +131,6 @@ object ClassFileManifestBuilder {
   private suspend fun queryJvmEnvironment(
     project: Project,
     target: Label,
-    server: JoinedBuildServer,
     isTest: Boolean,
   ): JvmEnvironmentResult =
     BazelWorkspaceResolveService

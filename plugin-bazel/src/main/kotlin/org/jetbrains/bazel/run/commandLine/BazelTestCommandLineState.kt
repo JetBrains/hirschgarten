@@ -14,11 +14,11 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
+import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
@@ -33,7 +33,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     BazelTestTaskListener(handler, coverageReportListener)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(endpoints: BazelEndpointProxy, pidDeferred: CompletableDeferred<Long?>) {
     if (configuration.targets.isEmpty()) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
@@ -58,10 +58,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,
       )
-
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetTest(params) }
+    endpoints.buildTargetTest(params)
   }
 
   private fun getCoverageInstrumentationFilter(project: Project): String {

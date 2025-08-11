@@ -18,10 +18,10 @@ import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.util.UUID
 
 abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : CommandLineState(environment) {
@@ -30,7 +30,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
-  protected abstract suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>)
+  protected abstract suspend fun startBsp(endpoints: BazelEndpointProxy, pidDeferred: CompletableDeferred<Long?>)
 
   final override fun startProcess(): BazelProcessHandler = doStartProcess(false)
 
@@ -47,13 +47,14 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
     val pid = CompletableDeferred<Long?>()
     val runDeferred =
       bazelCoroutineService.startAsync(lazy = true) {
-        project.connection.runWithServer { server: JoinedBuildServer ->
-          saveAllFiles()
-          withContext(Dispatchers.EDT) {
-            RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
+        BazelWorkspaceResolveService.getInstance(project)
+          .withEndpointProxy {
+            saveAllFiles()
+            withContext(Dispatchers.EDT) {
+              RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
+            }
+            startBsp(it, pid)
           }
-          startBsp(server, pid)
-        }
       }
 
     handler =

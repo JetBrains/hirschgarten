@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.sync.workspace
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.mapper.BazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.normal.AspectClientProjectMapper
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
@@ -12,6 +14,8 @@ import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -21,6 +25,7 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
@@ -56,6 +61,10 @@ interface BazelEndpointProxy {
   suspend fun buildTargetRun(params: RunParams): RunResult
 
   suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
+
+  suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo
+
+  suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 }
 
 class DefaultBazelEndpointProxy(
@@ -90,4 +99,9 @@ class DefaultBazelEndpointProxy(
   override suspend fun buildTargetRun(params: RunParams): RunResult = server.buildTargetRun(params)
 
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = server.buildTargetRunWithDebug(params)
+
+  override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo = server.jvmToolchainInfoForTarget(target)
+
+  override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult =
+    server.buildTargetInverseSources(params)
 }

@@ -9,7 +9,9 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
+import org.jetbrains.kotlin.idea.gradleTooling.get
 
 class ToolchainInfoSyncHook : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.fastBuildEnabled
@@ -48,10 +50,11 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
       // query the server for per-target toolchain info
       val toolchainInfo =
         runBlocking {
-          project.connection.runWithServer { server ->
-            logger.info("Fetching toolchain for ${target.targetName}")
-            server.jvmToolchainInfoForTarget(target)
-          }
+          BazelWorkspaceResolveService.getInstance(project)
+            .withEndpointProxy {
+              logger.info("Fetching toolchain for ${target.targetName}")
+              it.jvmToolchainInfoForTarget(target)
+            }
         }
 
       // cache the result
