@@ -92,7 +92,9 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
 
 private fun executeOnSyncedProject(project: Project) {
   // Only enable searching after all the excludes from the project view are applied
-  setFindInFilesNonIndexable(project)
+  if (BazelFeatureFlags.findInFilesNonIndexable) {
+    setFindInFilesNonIndexable(project)
+  }
 }
 
 /**

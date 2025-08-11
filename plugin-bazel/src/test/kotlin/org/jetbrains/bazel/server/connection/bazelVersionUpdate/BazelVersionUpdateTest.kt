@@ -8,6 +8,8 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.tools.ide.performanceTesting.commands.gotoLine
 import com.intellij.tools.ide.performanceTesting.commands.replaceText
+import com.intellij.tools.ide.performanceTesting.commands.saveDocumentsAndSettings
+import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
@@ -36,9 +38,11 @@ class BazelVersionUpdateTest : IdeStarterBaseProjectTest() {
     createContext().runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       step("Import Bazel project") {
         execute {
-          it.waitForBazelSync().waitForSmartMode()
+          it
+            .waitForBazelSync()
+            .waitForSmartMode()
+            .takeScreenshot("afterImport")
         }
-        takeScreenshot("afterImport")
       }
 
       step("Update bazel version") {
@@ -47,8 +51,9 @@ class BazelVersionUpdateTest : IdeStarterBaseProjectTest() {
           it
             .gotoLine(1)
             .replaceText(0, 5, "8.3.1")
+            .saveDocumentsAndSettings()
+            .takeScreenshot("afterUpdateBazelVersion")
         }
-        takeScreenshot("afterUpdateBazelVersion")
       }
 
       step("Resync project and check if the sync is successful") {
@@ -56,8 +61,8 @@ class BazelVersionUpdateTest : IdeStarterBaseProjectTest() {
           it
             .buildAndSync()
             .waitForSmartMode()
+            .takeScreenshot("afterResync")
         }
-        takeScreenshot("afterResync")
         ideFrame {
           val buildView = x { byType("com.intellij.build.BuildView") }
           assert(
