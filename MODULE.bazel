@@ -123,13 +123,13 @@ maven.artifact(
     artifact = "kotlinx-coroutines-core",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.10.1",
+    version = "1.10.2",
 )
 maven.artifact(
     artifact = "kotlinx-coroutines-core-jvm",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.10.1",
+    version = "1.10.2",
 )
 maven.artifact(
     name = "server_maven",
