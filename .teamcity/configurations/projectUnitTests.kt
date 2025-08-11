@@ -1,25 +1,25 @@
 package configurations
 
-import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
-import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-open class UnitTests(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
-  BaseConfiguration.BaseBuildType(
+object ProjectUnitTests : BaseBuildType(
     name = "[unit tests] project unit tests",
-    artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
-    requirements = requirements,
+    artifactRules = CommonParams.BazelTestlogsArtifactRules,
+    requirements = {
+      endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
+      equals("container.engine.osType", "linux")
+    },
     steps = {
       bazel {
         name = "bazel test //... (without single-job targets)"
         command = "test"
         targets = "//... -//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... -//server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/..."
-        arguments = Utils.CommonParams.BazelCiSpecificArgs
+        arguments = CommonParams.BazelCiSpecificArgs
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
-        Utils.DockerParams.get().forEach { (key, value) ->
+        DockerParams.get().forEach { (key, value) ->
           param(key, value)
         }
       }
@@ -27,10 +27,10 @@ open class UnitTests(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit
         name = "bazel test single-job targets"
         command = "test"
         targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... //server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/..."
-        arguments = Utils.CommonParams.BazelCiSpecificArgs + " --jobs 1"
+        arguments = CommonParams.BazelCiSpecificArgs + " --jobs 1"
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
-        Utils.DockerParams.get().forEach { (key, value) ->
+        DockerParams.get().forEach { (key, value) ->
           param(key, value)
         }
       }
@@ -45,14 +45,5 @@ open class UnitTests(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit
           """.trimIndent()
       }
     },
-    vcsRoot = vcsRoot,
   )
-
-object GitHub : UnitTests(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-  requirements = {
-    endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
-    equals("container.engine.osType", "linux")
-  },
-)
 

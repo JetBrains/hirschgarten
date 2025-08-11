@@ -5,17 +5,15 @@ import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
-import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParametrizedWithType
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
+import jetbrains.buildServer.configs.kotlin.v2019_2.VcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.ant
-import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
 open class BaseBuildType(
   name: String,
-  vcsRoot: GitVcsRoot,
   steps: BuildSteps.() -> Unit,
   artifactRules: String = "",
   failureConditions: FailureConditions.() -> Unit = {},
@@ -23,6 +21,7 @@ open class BaseBuildType(
   params: ParametrizedWithType.() -> Unit = {},
   dockerSupport: DockerSupportFeature.() -> Unit = {},
   dependencies: Dependencies.() -> Unit = {},
+  customVcsRoot: VcsRoot? = VcsRootHirschgarten,
 ) : BuildType({
 
     this.name = name
@@ -30,7 +29,6 @@ open class BaseBuildType(
     this.failureConditions(failureConditions)
     this.params {
       params()
-      password("remote.cache.netrc", "credentialsJSON:8f47c6e1-d7b2-4d3a-9b5a-12c8f3d45e92", label = "dotnetrc", description = "nenrc credentials for remote cache", display = ParameterDisplay.HIDDEN)
       param("env.CONTAINER_UID", "")
       param("env.CONTAINER_GID", "")
     }
@@ -42,7 +40,7 @@ open class BaseBuildType(
     }
 
     vcs {
-      root(vcsRoot)
+      customVcsRoot?.let { root(it) }
     }
 
     id("GitHub$name".toExtId())
@@ -66,18 +64,18 @@ open class BaseBuildType(
             githubUrl = "https://api.github.com"
             authType =
               personalToken {
-                token = Utils.CredentialsStore.GitHubPassword
+                token = CredentialsStore.GitHubPassword
               }
           }
         param("github_oauth_user", "hb-man")
       }
       pullRequests {
-        vcsRootExtId = "${vcsRoot.id}"
+        vcsRootExtId = "${VcsRootHirschgarten.id}"
         provider =
           github {
             authType =
               token {
-                token = Utils.CredentialsStore.GitHubPassword
+                token = CredentialsStore.GitHubPassword
               }
             filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
           }
@@ -107,18 +105,4 @@ open class BaseBuildType(
       steps()
     }
   })
-
-object GitHubVcs : GitVcsRoot({
-  name = "hirschgarten-github"
-  url = "https://github.com/JetBrains/hirschgarten.git"
-  branch = "main"
-  branchSpec = "+:refs/heads/*"
-  authMethod =
-    password {
-      userName = "hb-man"
-      password = Utils.CredentialsStore.GitHubPassword
-    }
-  param("oauthProviderId", "tc-cloud-github-connection")
-  param("tokenType", "permanent")
-})
 
