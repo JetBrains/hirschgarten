@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.util.Key
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -99,4 +100,10 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
     }
     return false
   }
+}
+
+internal fun calculateKotlinCoroutineParams(environment: ExecutionEnvironment, project: Project): List<String> {
+  if (!project.bazelJVMProjectSettings.enableKotlinCoroutineDebug) return emptyList()
+  return org.jetbrains.bazel.sdkcompat
+    .calculateKotlinCoroutineParams(environment, project)
 }
