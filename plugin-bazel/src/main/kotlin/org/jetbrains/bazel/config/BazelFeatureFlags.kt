@@ -35,6 +35,7 @@ object BazelFeatureFlags {
   private const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
   private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
   private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
+  private const val FIND_IN_FILES_NON_INDEXABLE = "bazel.find.in.files.non.indexable"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -106,6 +107,9 @@ object BazelFeatureFlags {
 
   val excludeSymlinksFromFileWatcherViaReflection: Boolean
     get() = isEnabled(EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION)
+
+  val findInFilesNonIndexable: Boolean
+    get() = isEnabled(FIND_IN_FILES_NON_INDEXABLE)
 
   private fun isEnabled(key: String): Boolean = Registry.`is`(key) || System.getProperty(key, "false").toBoolean()
 }
