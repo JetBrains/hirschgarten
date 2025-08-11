@@ -56,7 +56,9 @@ private val log = logger<ProjectSyncTask>()
 class ProjectSyncTask(private val project: Project) {
   suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
     if (project.isTrusted()) {
-      bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
+      bspTracer.spanBuilder("bsp.sync.project.ms")
+        .setAttribute("project.name", project.name)
+        .useWithScope {
         var syncAlreadyInProgress = false
         try {
           log.debug("Starting sync project task")
