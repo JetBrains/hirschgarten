@@ -389,6 +389,13 @@
       restartRequired="true"
     />
 
+    <registryKey
+      defaultValue="true"
+      description="&quot;Find in files&quot; also searches directories that are neither included nor excluded in the project view"
+      key="bazel.find.in.files.non.indexable"
+      restartRequired="true"
+    />
+
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
 
     <projectService
