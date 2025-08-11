@@ -1,6 +1,7 @@
 import configurations.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
+import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.finishBuildTrigger
 
 version = "2024.12"
 
@@ -30,11 +31,13 @@ project {
   vcsRoot(VcsRootBuildBuddyQodana)
 
 // setup pipeline chain for bazel-bsp
+  // CheckFormating is standalone, triggered by PR
+  buildType(CheckFormating)
+  
+  // Aggregator and all other builds form a pipeline
   val allSteps =
     sequential {
-      // 1. Run formatter first
-       buildType(CheckFormating)
-      // 2. Run everything else in parallel
+      // Run everything in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
@@ -60,11 +63,20 @@ project {
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
 
-
-  Aggregator.triggers {
+  // Configure formatter to trigger on PR
+  CheckFormating.triggers {
     vcs {
       branchFilter = ProjectBranchFilters.githubBranchFilter
       triggerRules = ProjectTriggerRules.triggerRules
+    }
+  }
+
+  // Configure Aggregator to trigger on successful CheckFormating build
+  Aggregator.triggers {
+    finishBuildTrigger {
+      buildType = "${CheckFormating.id}"
+      successfulOnly = true
+      branchFilter = ProjectBranchFilters.githubBranchFilter
     }
   }
 
