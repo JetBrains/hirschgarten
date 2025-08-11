@@ -105,6 +105,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelquery",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelversion",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelversion/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel",

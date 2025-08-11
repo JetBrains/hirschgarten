@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.server.connection
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
+import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.ConsoleService
@@ -22,7 +24,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   private val workspaceRoot = project.rootDir.toNioPath()
   private var connectionResetConfig = generateNewConnectionResetConfig()
   private val environmentCreator = EnvironmentCreator(workspaceRoot)
-  private val server =
+  private var server =
     runBlocking {
       startServer(
         bspClient,
@@ -56,7 +58,10 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     // ensure `.bazelbsp` directory exists and functions
     environmentCreator.create()
 
-    log.debug("ensuring the connection is established")
+    // reset server if needed
+    resetServerIfNeeded()
+
+    // update connection reset config if needed
     val newConnectionResetConfig = generateNewConnectionResetConfig()
 
     if (newConnectionResetConfig != connectionResetConfig) {
@@ -66,5 +71,12 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     }
 
     return task(server)
+  }
+
+  private suspend fun resetServerIfNeeded() {
+    if (project.service<BazelVersionCheckerService>().updateCurrentVersion()) {
+      log.info("Resetting Bazel server")
+      server = startServer(bspClient, workspaceRoot, connectionResetConfig.projectViewFile, connectionResetConfig.featureFlags)
+    }
   }
 }
