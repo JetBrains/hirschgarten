@@ -20,7 +20,6 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij:intellij_plugin_deploy_target_info",
@@ -31,5 +30,6 @@ kt_jvm_library(
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//rules_intellij/third_party/devkit",
         "//sdkcompat",
+        "@maven//:com_google_code_gson_gson",
     ],
 )
