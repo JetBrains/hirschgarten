@@ -47,7 +47,8 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
     val pid = CompletableDeferred<Long?>()
     val runDeferred =
       bazelCoroutineService.startAsync(lazy = true) {
-        BazelWorkspaceResolveService.getInstance(project)
+        BazelWorkspaceResolveService
+          .getInstance(project)
           .withEndpointProxy {
             saveAllFiles()
             withContext(Dispatchers.EDT) {

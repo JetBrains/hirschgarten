@@ -33,10 +33,7 @@ import java.util.UUID
 
 @InternalApi
 class BuildTargetTask(private val project: Project) {
-  suspend fun execute(
-    targetsIds: List<Label>,
-    arguments: List<String>,
-  ): CompileResult =
+  suspend fun execute(targetsIds: List<Label>, arguments: List<String>): CompileResult =
     coroutineScope {
       val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
       val originId = "build-" + UUID.randomUUID().toString()

@@ -48,7 +48,8 @@ class ToolchainInfoSyncHook : ProjectSyncHook {
       // query the server for per-target toolchain info
       val toolchainInfo =
         runBlocking {
-          BazelWorkspaceResolveService.getInstance(project)
+          BazelWorkspaceResolveService
+            .getInstance(project)
             .withEndpointProxy {
               logger.info("Fetching toolchain for ${target.targetName}")
               it.jvmToolchainInfoForTarget(target)

@@ -348,7 +348,8 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
   }
 
 private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult =
-  BazelWorkspaceResolveService.getInstance(project)
+  BazelWorkspaceResolveService
+    .getInstance(project)
     .withEndpointProxy { it.buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.toPath()))) }
 
 private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {

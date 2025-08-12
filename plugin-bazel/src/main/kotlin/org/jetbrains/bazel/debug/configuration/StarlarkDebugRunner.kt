@@ -105,9 +105,10 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     taskListener: StarlarkDebugTaskListener,
     target: Label,
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
-  ): Job = BazelCoroutineService.getInstance(project).start {
-    analysisDebug(project, port, taskListener, target, futureProxy)
-  }
+  ): Job =
+    BazelCoroutineService.getInstance(project).start {
+      analysisDebug(project, port, taskListener, target, futureProxy)
+    }
 
   private suspend fun analysisDebug(
     project: Project,
