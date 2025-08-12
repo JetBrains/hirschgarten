@@ -875,7 +875,7 @@ class AspectBazelProjectMapper(
 
   private fun logNonExistingFile(file: Path, targetId: String) {
     val message = "[WARN] target $targetId: $file does not exist."
-    logger.error(message)
+    logger.warn(message)
   }
 
   private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
