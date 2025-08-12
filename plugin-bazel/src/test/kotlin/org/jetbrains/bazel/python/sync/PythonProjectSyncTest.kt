@@ -28,21 +28,19 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.BazelEndpointProxyMock
-import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolverMock
+import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolverServiceMock
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -83,7 +81,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         dependencySourcesResult = DependencySourcesResult(listOf()),
       )
     val resolver =
-      BazelWorkspaceResolverMock(
+      BazelWorkspaceResolverServiceMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
             targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
@@ -132,7 +130,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         dependencySourcesResult = DependencySourcesResult(listOf()),
       )
     val resolver =
-      BazelWorkspaceResolverMock(
+      BazelWorkspaceResolverServiceMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
             targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),

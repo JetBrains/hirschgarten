@@ -41,14 +41,14 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
-import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
+import org.jetbrains.bazel.workspace.model.test.framework.BazelEndpointProxyMock
+import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolverServiceMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -69,7 +69,8 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   override fun beforeEach() {
     super.beforeEach()
     project.isBazelProject = true
-    project.replaceService(BazelServerService::class.java, InverseSourcesServer(projectBasePath).serverService, disposable)
+    val mock = BazelWorkspaceResolverServiceMock(endpointProxy = InverseSourcesServer(projectBasePath))
+    project.replaceService(BazelWorkspaceResolveService::class.java, mock, disposable)
     addMockTargetToProject(project)
 
     target1.createModule()
@@ -265,7 +266,8 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should not start a new processing if another is ongoing`() {
     val channel = Channel<Unit>()
-    project.replaceService(BazelServerService::class.java, BlockedServerSimulator(channel).serverService, disposable)
+    val mock = BazelWorkspaceResolverServiceMock(endpointProxy = BlockedEndpointProxy(channel))
+    project.replaceService(BazelWorkspaceResolveService::class.java, mock, disposable)
 
     val src = project.rootDir.createDirectory("src")
 
@@ -390,7 +392,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   }
 }
 
-private class InverseSourcesServer(private val projectBasePath: Path) : BuildServerMock() {
+private class InverseSourcesServer(private val projectBasePath: Path) : BazelEndpointProxyMock() {
   private val inverseSourcesData =
     mapOf(
       "src/aaa.java" to listOf("//src:target1", "//src:target2"),
@@ -398,19 +400,9 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
       "src/bbb.java" to listOf("//src:target1", "//src:target4"),
     ).mapValues { it.value.map { target -> Label.parse(target) } }
 
-  private val connection =
-    object : BazelServerConnection {
-      override suspend fun <T> runWithServer(task: suspend (JoinedBuildServer) -> T): T = task(this@InverseSourcesServer)
-    }
-
-  val serverService =
-    object : BazelServerService {
-      override val connection: BazelServerConnection = this@InverseSourcesServer.connection
-    }
-
-  override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
+  override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult {
     val relativePath =
-      inverseSourcesParams.textDocument.path
+      params.textDocument.path
         .relativeTo(projectBasePath)
         .toString()
     return InverseSourcesResult(inverseSourcesData.getOrDefault(relativePath, emptyList()))
@@ -418,18 +410,8 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
 }
 
 /** Not supposed to provide any valuable information - only simulates Bazel being blocked */
-private class BlockedServerSimulator(private val rendezvous: Channel<*>) : BuildServerMock() {
-  private val connection =
-    object : BazelServerConnection {
-      override suspend fun <T> runWithServer(task: suspend (JoinedBuildServer) -> T): T = task(this@BlockedServerSimulator)
-    }
-
-  val serverService =
-    object : BazelServerService {
-      override val connection: BazelServerConnection = this@BlockedServerSimulator.connection
-    }
-
-  override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
+private class BlockedEndpointProxy(private val rendezvous: Channel<*>) : BazelEndpointProxyMock() {
+  override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult {
     rendezvous.receive()
     return InverseSourcesResult(emptyList())
   }
