@@ -22,6 +22,7 @@ import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.nio.ByteBuffer
 import java.nio.file.Path
+import java.util.EnumSet
 import kotlin.io.path.invariantSeparatorsPathString
 
 internal fun WriteBuffer.writeString(value: String) {
@@ -198,14 +199,20 @@ private fun writeTargetKind(kind: TargetKind, buffer: WriteBuffer) {
   buffer.writeString(kind.kindString)
   buffer.putVarInt(kind.languageClasses.size)
   for (languageClass in kind.languageClasses) {
-    buffer.put(languageClass.ordinal.toByte())
+    buffer.put(languageClass.serialId.toByte())
   }
   buffer.put(kind.ruleType.ordinal.toByte())
 }
 
 private fun readTargetKind(buffer: ByteBuffer): TargetKind {
   val kindString = buffer.readString()
-  val languageClasses = ObjectArraySet<LanguageClass>(Array(readVarInt(buffer)) { LanguageClass.entries[buffer.get().toInt()] })
+  val languageClasses = EnumSet.noneOf(LanguageClass::class.java)
+  repeat(readVarInt(buffer)) {
+    val langaugeClass = LanguageClass.fromSerialId(buffer.get().toInt())
+    if (langaugeClass != null) {
+      languageClasses.add(langaugeClass)
+    }
+  }
   val ruleType = RuleType.entries[buffer.get().toInt()]
   return TargetKind(kindString = kindString, languageClasses = languageClasses, ruleType = ruleType)
 }
