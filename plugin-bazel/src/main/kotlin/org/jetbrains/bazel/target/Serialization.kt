@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.target
 
 import com.dynatrace.hash4j.hashing.HashValue128
-import it.unimi.dsi.fastutil.objects.ObjectArraySet
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
 import org.h2.mvstore.WriteBuffer
@@ -208,9 +207,9 @@ private fun readTargetKind(buffer: ByteBuffer): TargetKind {
   val kindString = buffer.readString()
   val languageClasses = EnumSet.noneOf(LanguageClass::class.java)
   repeat(readVarInt(buffer)) {
-    val langaugeClass = LanguageClass.fromSerialId(buffer.get().toInt())
-    if (langaugeClass != null) {
-      languageClasses.add(langaugeClass)
+    val languageClass = LanguageClass.fromSerialId(buffer.get().toInt())
+    if (languageClass != null) {
+      languageClasses.add(languageClass)
     }
   }
   val ruleType = RuleType.entries[buffer.get().toInt()]
