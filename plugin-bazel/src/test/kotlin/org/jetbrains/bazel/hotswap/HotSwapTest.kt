@@ -10,10 +10,8 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
-import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.metrics.collector.telemetry.OpentelemetrySpanJsonParser
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
-import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.DebugStepTypes
 import com.intellij.tools.ide.performanceTesting.commands.Keys
 import com.intellij.tools.ide.performanceTesting.commands.build
@@ -120,9 +118,4 @@ class HotSwapTest : IdeStarterBaseProjectTest() {
     }
     assert(hotSwapSuccess) { "Cannot find hotswap success message" }
   }
-}
-
-private fun <T : CommandChain> T.debugLocalJvmSimpleKotlinTest(): T {
-  addCommand(CMD_PREFIX + "debugLocalJvmSimpleKotlinTest")
-  return this
 }

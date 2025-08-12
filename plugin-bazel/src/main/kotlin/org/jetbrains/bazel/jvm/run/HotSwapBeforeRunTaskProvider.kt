@@ -11,7 +11,6 @@ import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
-import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.hotswap.HotSwapUtils
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
@@ -59,12 +58,12 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
     // skipping this task for non-debugging run config
     if (environment.executor !is DefaultDebugExecutor) return true
     val scriptPath = createTempScriptFile()
-    val scriptPathParam = "--script_path=$scriptPath"
+    val scriptPathParam = listOf("--script_path=$scriptPath")
     val project = environment.project
     val targetUtils = project.targetUtils
     val targetInfos = runConfiguration.targets.mapNotNull { targetUtils.getBuildTargetForLabel(it) }
     if (targetInfos.any {
-        !it.kind.isJvmTarget() || (it.kind.ruleType != RuleType.TEST && it.kind.ruleType != RuleType.BINARY)
+        !it.kind.isJvmTarget() || (!it.kind.isExecutable)
       }
     ) {
       return false
@@ -75,6 +74,8 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
       runBlocking {
         val executionParams = executionParams(runConfiguration)
         val additionalProgramArguments = DebugHelper.generateRunArguments(DebugType.JDWP(executionParams.debugPort))
+        val additionalBazelParams = transformProgramArguments(executionParams.additionalBazelParams)
+        val coroutineDebugParams = calculateKotlinCoroutineParams(environment, configuration.project)
         val result =
           withBackgroundProgress(
             project,
@@ -87,7 +88,7 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
                 workingDirectory = executionParams.workingDirectory,
                 arguments = executionParams.arguments?.let { transformProgramArguments(it) }.orEmpty() + additionalProgramArguments,
                 environmentVariables = executionParams.environmentVariables,
-                additionalBazelParams = "$scriptPathParam ${executionParams.additionalBazelParams.orEmpty()}".trim(),
+                additionalBazelParams = (scriptPathParam + coroutineDebugParams + additionalBazelParams).joinToString(" "),
               )
             BazelWorkspaceResolveService
               .getInstance(project)

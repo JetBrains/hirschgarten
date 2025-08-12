@@ -25,10 +25,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
+    // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before HotSwapTestBeforeRunTaskProvider
     configuration.beforeRunTasks =
       listOfNotNull(
-        HotSwapTestBeforeRunTaskProvider().createTask(configuration),
         KotlinCoroutineLibraryFinderBeforeRunTaskProvider().createTask(configuration),
+        HotSwapTestBeforeRunTaskProvider().createTask(configuration),
       )
   }
 
