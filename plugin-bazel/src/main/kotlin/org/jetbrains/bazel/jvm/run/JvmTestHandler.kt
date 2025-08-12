@@ -25,9 +25,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
+    // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before HotSwapTestBeforeRunTaskProvider
     configuration.beforeRunTasks =
       listOfNotNull(
         KotlinCoroutineLibraryFinderBeforeRunTaskProvider().createTask(configuration),
+        HotSwapTestBeforeRunTaskProvider().createTask(configuration),
       )
   }
 
@@ -39,6 +41,7 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
+        environment.putCopyableUserData(SCRIPT_PATH_KEY, AtomicReference())
         environment.putCopyableUserData(KOTLIN_COROUTINE_LIB_KEY, AtomicReference())
         JvmTestWithDebugCommandLineState(environment, state)
       }
@@ -72,24 +75,33 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
-    val configuration = environment.runProfile as BazelRunConfiguration
-    val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
-    val additionalBazelParams = settings.additionalBazelParams ?: ""
-    val testParams =
-      TestParams(
-        targets = configuration.targets,
-        originId = originId.toString(),
-        workingDirectory = settings.workingDirectory,
-        arguments = transformProgramArguments(settings.programArguments),
-        environmentVariables = settings.env.envs,
-        debug = debugType,
-        testFilter = settings.testFilter,
-        additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
-      )
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
+    val scriptPath = environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()
+    if (scriptPath != null) {
+      debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), handler)
+    } else {
+      val configuration = environment.runProfile as BazelRunConfiguration
+      val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
+      val additionalBazelParams = settings.additionalBazelParams ?: ""
+      val testParams =
+        TestParams(
+          targets = configuration.targets,
+          originId = originId.toString(),
+          workingDirectory = settings.workingDirectory,
+          arguments = transformProgramArguments(settings.programArguments),
+          environmentVariables = settings.env.envs,
+          debug = debugType,
+          testFilter = settings.testFilter,
+          additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
+        )
 
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetTest(testParams) }
+      BazelWorkspaceResolveService
+        .getInstance(environment.project)
+        .withEndpointProxy { it.buildTargetTest(testParams) }
+    }
   }
 }
