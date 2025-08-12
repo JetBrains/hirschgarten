@@ -99,6 +99,7 @@ object IdeStarterTestFactory {
     TestDef("Fast build test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/fastbuild"),
     TestDef("Project view open test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/settings:project_view_open_test"),
     TestDef("Move Kotlin file test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/move:moveKotlinFileTest"),
-    TestDef("Recover bazelbsp", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/sync/recoverDotBazelBsp")
+    TestDef("Recover bazelbsp", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/sync/recoverDotBazelBsp"),
+    TestDef("Update Bazel version test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/server/connection/bazelVersionUpdate")
   )
 }

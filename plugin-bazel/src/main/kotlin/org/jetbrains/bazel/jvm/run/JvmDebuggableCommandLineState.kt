@@ -6,6 +6,9 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bsp.protocol.DebugType
 
+// Longer timeout to account for Bazel build
+private const val DEBUGGER_ATTACH_TIMEOUT: Long = 60 * 60 * 1000
+
 abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, private val port: Int) :
   BazelCommandLineStateBase(environment) {
   fun createDebugEnvironment(environment: ExecutionEnvironment): DefaultDebugEnvironment {
@@ -22,7 +25,7 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
       environment,
       this,
       remoteConnection,
-      true,
+      DEBUGGER_ATTACH_TIMEOUT,
     )
   }
 

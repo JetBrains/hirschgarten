@@ -30,13 +30,11 @@ project {
   vcsRoot(VcsRootBazelQodana)
   vcsRoot(VcsRootBuildBuddyQodana)
 
-// setup pipeline chain for bazel-bsp
-  // CheckFormating is standalone, triggered by PR
-  buildType(CheckFormating)
-  
   // Aggregator and all other builds form a pipeline
   val allSteps =
     sequential {
+      // CheckFormating is standalone, triggered by PR
+      buildType(CheckFormating)
       // Run everything in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
