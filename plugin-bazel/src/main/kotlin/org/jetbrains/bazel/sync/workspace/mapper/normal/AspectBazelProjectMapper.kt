@@ -874,7 +874,7 @@ class AspectBazelProjectMapper(
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {
-    val message = "[WARN] target $targetId: $file does not exist."
+    val message = "target $targetId: $file does not exist."
     logger.warn(message)
   }
 
