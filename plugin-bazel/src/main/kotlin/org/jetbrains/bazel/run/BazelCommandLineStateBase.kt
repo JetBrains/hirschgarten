@@ -30,7 +30,11 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
-  protected abstract suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>)
+  protected abstract suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  )
 
   final override fun startProcess(): BazelProcessHandler = doStartProcess(false)
 
@@ -52,7 +56,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
-          startBsp(server, pid)
+          startBsp(server, pid, handler)
         }
       }
 
