@@ -8,7 +8,7 @@ data class SyncedWorkspaceState(val earlyProject: EarlyBazelSyncProject)
 data class ResolvedWorkspaceState(val mappedProject: BazelMappedProject, val resolvedWorkspace: BazelResolvedWorkspace)
 
 /**
- * Internal representation of [BazelWorkspaceResolver] state.
+ * Internal representation of [BazelWorkspaceResolverService] state.
  * [BazelWorkspaceSyncState] is used to lazily evaluate currently
  * required state without recomputing already available data
  */

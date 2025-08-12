@@ -4,10 +4,9 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolver
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.sync.workspace.mapper.BazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.EarlyBazelSyncProject
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
@@ -35,12 +34,12 @@ import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 
-class BazelWorkspaceResolverMock(
+class BazelWorkspaceResolverServiceMock(
   private val resolvedWorkspace: BazelResolvedWorkspace? = null,
   private val mappedProject: BazelMappedProject? = null,
   private val earlyBazelSyncProject: EarlyBazelSyncProject? = null,
   private val endpointProxy: BazelEndpointProxy? = null,
-) : BazelWorkspaceResolver {
+) : BazelWorkspaceResolveService {
   override suspend fun getOrFetchResolvedWorkspace(scope: ProjectSyncScope, taskId: String): BazelResolvedWorkspace =
     resolvedWorkspace ?: error("resolved workspace is not set")
 
@@ -58,7 +57,7 @@ class BazelWorkspaceResolverMock(
     func(endpointProxy ?: error("endpoint proxy is not set"))
 }
 
-class BazelEndpointProxyMock(
+open class BazelEndpointProxyMock(
   private val javacOptionsResult: JavacOptionsResult? = null,
   private val resolveLocalToRemoteResult: BazelResolveLocalToRemoteResult? = null,
   private val resolveRemoteToLocalResult: BazelResolveRemoteToLocalResult? = null,

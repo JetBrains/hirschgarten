@@ -505,6 +505,11 @@
       serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
     />
 
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
+      serviceInterface="org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService"
+    />
+
     <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider" />
 
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />

@@ -35,7 +35,7 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 
 @Service(Service.Level.PROJECT)
-class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspaceResolver {
+class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelWorkspaceResolveService {
   val connection: BazelServerConnection
     get() = BazelServerService.getInstance(project).connection
 
@@ -205,10 +205,5 @@ class BazelWorkspaceResolveService(private val project: Project) : BazelWorkspac
       pythonLanguagePlugin,
       goLanguagePlugin,
     )
-  }
-
-  companion object {
-    @JvmStatic
-    fun getInstance(project: Project): BazelWorkspaceResolveService = project.getService(BazelWorkspaceResolveService::class.java)
   }
 }
