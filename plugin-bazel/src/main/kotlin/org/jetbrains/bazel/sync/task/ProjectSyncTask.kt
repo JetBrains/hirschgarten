@@ -60,68 +60,68 @@ class ProjectSyncTask(private val project: Project) {
         .spanBuilder("bsp.sync.project.ms")
         .setAttribute("project.name", project.name)
         .useWithScope {
-        var syncAlreadyInProgress = false
-        try {
-          log.debug("Starting sync project task")
-          project.syncConsole.startTask(
-            taskId = PROJECT_SYNC_TASK_ID,
-            title = BazelPluginBundle.message("console.task.sync.title"),
-            message = BazelPluginBundle.message("console.task.sync.in.progress"),
-            cancelAction = {
-              SyncStatusService.getInstance(project).cancel()
-              coroutineContext.cancel()
-            },
-            redoAction = { sync(syncScope, buildProject) },
-          )
+          var syncAlreadyInProgress = false
+          try {
+            log.debug("Starting sync project task")
+            project.syncConsole.startTask(
+              taskId = PROJECT_SYNC_TASK_ID,
+              title = BazelPluginBundle.message("console.task.sync.title"),
+              message = BazelPluginBundle.message("console.task.sync.in.progress"),
+              cancelAction = {
+                SyncStatusService.getInstance(project).cancel()
+                coroutineContext.cancel()
+              },
+              redoAction = { sync(syncScope, buildProject) },
+            )
 
-          preSync()
-          doSync(syncScope, buildProject)
+            preSync()
+            doSync(syncScope, buildProject)
 
-          project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BazelPluginBundle.message("console.task.sync.success"))
-        } catch (e: CancellationException) {
-          project.syncConsole.finishTask(
-            PROJECT_SYNC_TASK_ID,
-            BazelPluginBundle.message("console.task.sync.cancelled"),
-            SkippedResultImpl(),
-          )
-          throw e
-        } catch (_: SyncAlreadyInProgressException) {
-          syncAlreadyInProgress = true
-        } catch (_: SyncPartialFailureException) {
-          project.syncConsole.addWarnMessage(
-            PROJECT_SYNC_TASK_ID,
-            BazelPluginBundle.message("console.task.sync.partialsuccess"),
-          )
-          project.syncConsole.finishTask(
-            PROJECT_SYNC_TASK_ID,
-            BazelPluginBundle.message("console.task.sync.partialsuccess"),
-            SuccessResultImpl(true),
-          )
-        } catch (_: SyncFatalFailureException) {
-          project.syncConsole.finishTask(
-            PROJECT_SYNC_TASK_ID,
-            BazelPluginBundle.message("console.task.sync.fatalfailure"),
-            FailureResultImpl(),
-          )
-        } catch (e: ProjectViewParser.ImportNotFound) {
-          val projectViewFile = project.bazelProjectSettings.projectViewPath.toString()
-          project.syncConsole.finishTask(
-            PROJECT_SYNC_TASK_ID,
-            BazelPluginBundle.message("console.task.sync.failed"),
-            FailureResultImpl(BazelPluginBundle.message("console.task.sync.import.fail", e.file, projectViewFile)),
-          )
-        } catch (e: Exception) {
-          project.syncConsole.finishTask(
-            PROJECT_SYNC_TASK_ID,
-            BazelPluginBundle.message("console.task.sync.failed"),
-            FailureResultImpl(e),
-          )
-        } finally {
-          if (!syncAlreadyInProgress) {
-            postSync()
+            project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BazelPluginBundle.message("console.task.sync.success"))
+          } catch (e: CancellationException) {
+            project.syncConsole.finishTask(
+              PROJECT_SYNC_TASK_ID,
+              BazelPluginBundle.message("console.task.sync.cancelled"),
+              SkippedResultImpl(),
+            )
+            throw e
+          } catch (_: SyncAlreadyInProgressException) {
+            syncAlreadyInProgress = true
+          } catch (_: SyncPartialFailureException) {
+            project.syncConsole.addWarnMessage(
+              PROJECT_SYNC_TASK_ID,
+              BazelPluginBundle.message("console.task.sync.partialsuccess"),
+            )
+            project.syncConsole.finishTask(
+              PROJECT_SYNC_TASK_ID,
+              BazelPluginBundle.message("console.task.sync.partialsuccess"),
+              SuccessResultImpl(true),
+            )
+          } catch (_: SyncFatalFailureException) {
+            project.syncConsole.finishTask(
+              PROJECT_SYNC_TASK_ID,
+              BazelPluginBundle.message("console.task.sync.fatalfailure"),
+              FailureResultImpl(),
+            )
+          } catch (e: ProjectViewParser.ImportNotFound) {
+            val projectViewFile = project.bazelProjectSettings.projectViewPath.toString()
+            project.syncConsole.finishTask(
+              PROJECT_SYNC_TASK_ID,
+              BazelPluginBundle.message("console.task.sync.failed"),
+              FailureResultImpl(BazelPluginBundle.message("console.task.sync.import.fail", e.file, projectViewFile)),
+            )
+          } catch (e: Exception) {
+            project.syncConsole.finishTask(
+              PROJECT_SYNC_TASK_ID,
+              BazelPluginBundle.message("console.task.sync.failed"),
+              FailureResultImpl(e),
+            )
+          } finally {
+            if (!syncAlreadyInProgress) {
+              postSync()
+            }
           }
         }
-      }
     }
   }
 
