@@ -96,7 +96,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -111,20 +111,20 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "src/libhello.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "src/libhello-hjar.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "src/libhello-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jdeps {
     relative_path: "src/libhello.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -132,13 +132,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -150,13 +150,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )

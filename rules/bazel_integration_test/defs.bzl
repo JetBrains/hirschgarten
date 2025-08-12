@@ -179,10 +179,21 @@ def _testBazel(name, bazel_version, test_runner, workspace_file_path, workspace_
         suffix = integration_test_utils.semantic_version_to_name(bazel_version),
         testonly = True,
     )
+    espaced_genrule = genrule_name + "_espaced"
+
+    escape_script = "@//rules/bazel_integration_test:escape_system_specifics.sh"
+    native.genrule(
+        name = espaced_genrule,
+        srcs = [genrule_name],
+        outs = ["{}_actual_outputs_escaped.txt".format(rule_name)],
+        tools = [escape_script],
+        testonly = True,
+        cmd = "$(location {}) $(location {}) > $@".format(escape_script, genrule_name),
+    )
 
     diff_test(
         name = rule_name,
-        file1 = ":{}".format(genrule_name),
+        file1 = ":{}".format(espaced_genrule),
         file2 = ":{}".format(expected_outputs_name),
         tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
     )

@@ -96,7 +96,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java~~toolchains~remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java~~toolchains~remotejdk"
   }
 }
 )

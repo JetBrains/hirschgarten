@@ -96,7 +96,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -106,7 +106,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -116,7 +116,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -126,7 +126,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -142,15 +142,15 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "kotlinc_test/Foo.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "kotlinc_test/Foo.abi.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "kotlinc_test/Foo-sources.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   javac_opts: "-XepDisableAllChecks"
@@ -159,7 +159,7 @@ jvm_target_info {
   main_class: "Foo"
   jdeps {
     relative_path: "kotlinc_test/Foo.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -167,13 +167,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 kotlin_target_info {
@@ -221,20 +221,20 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "plugin_allopen_test/open_for_testing.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "plugin_allopen_test/open_for_testing.abi.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "plugin_allopen_test/open_for_testing-sources.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jdeps {
     relative_path: "plugin_allopen_test/open_for_testing.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -242,13 +242,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 kotlin_target_info {
@@ -306,7 +306,7 @@ jvm_target_info {
   }
   jdeps {
     relative_path: "plugin_allopen_test/open_for_testing_export.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -314,13 +314,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 kotlin_target_info {
@@ -364,7 +364,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -382,20 +382,20 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "plugin_allopen_test/user.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "plugin_allopen_test/user.abi.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "plugin_allopen_test/user-sources.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jdeps {
     relative_path: "plugin_allopen_test/user.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -403,13 +403,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 kotlin_target_info {
@@ -470,20 +470,20 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "plugin_allopen_test/user_of_export.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "plugin_allopen_test/user_of_export.abi.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "plugin_allopen_test/user_of_export-sources.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jdeps {
     relative_path: "plugin_allopen_test/user_of_export.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -491,13 +491,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 kotlin_target_info {
@@ -552,13 +552,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -575,7 +575,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -598,7 +598,7 @@ jvm_target_info {
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 kotlin_target_info {

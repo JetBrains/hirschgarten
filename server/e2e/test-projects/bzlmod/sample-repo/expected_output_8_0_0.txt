@@ -96,7 +96,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -120,17 +120,17 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "environment_variables/java_binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "environment_variables/java_binary-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   main_class: "environment_variables.JavaEnv"
   jdeps {
     relative_path: "environment_variables/java_binary.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -138,13 +138,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -164,7 +164,7 @@ env {
 }
 env {
   key: "target_location"
-  value: "bazel-out/darwin_arm64-fastbuild/bin/environment_variables/java_binary bazel-out/darwin_arm64-fastbuild/bin/environment_variables/java_binary.jar"
+  value: "bazel-out/fastbuild/bin/environment_variables/java_binary bazel-out/fastbuild/bin/environment_variables/java_binary.jar"
 }
 env_inherit: "foo3"
 env_inherit: "foo4"
@@ -174,16 +174,16 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "environment_variables/java_test.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "environment_variables/java_test-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jdeps {
     relative_path: "environment_variables/java_test.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -191,13 +191,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -208,7 +208,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -223,20 +223,20 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "java_targets/subpackage/libjava_library.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "java_targets/subpackage/libjava_library-hjar.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "java_targets/subpackage/libjava_library-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jdeps {
     relative_path: "java_targets/subpackage/libjava_library.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -244,13 +244,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -266,20 +266,20 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "java_targets/java_binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "java_targets/java_binary-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   javac_opts: "-Werror"
   javac_opts: "-Xlint:all"
-  jvm_flags: "--some_flag=bazel-out/darwin_arm64-fastbuild/bin/java_targets/libjava_library.jar"
+  jvm_flags: "--some_flag=bazel-out/fastbuild/bin/java_targets/libjava_library.jar"
   main_class: "java_targets.JavaBinary"
   jdeps {
     relative_path: "java_targets/java_binary.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -287,13 +287,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -309,11 +309,11 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "java_targets/java_binary_with_flag.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "java_targets/java_binary_with_flag-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   javac_opts: "-Werror"
@@ -322,7 +322,7 @@ jvm_target_info {
   main_class: "java_targets.JavaBinaryWithFlag"
   jdeps {
     relative_path: "java_targets/java_binary_with_flag.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -330,13 +330,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -351,20 +351,20 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "java_targets/libjava_library.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "java_targets/libjava_library-hjar.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "java_targets/libjava_library-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jdeps {
     relative_path: "java_targets/libjava_library.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -372,13 +372,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -392,11 +392,11 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "java_targets/libjava_library_exported.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "java_targets/libjava_library_exported-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
@@ -405,13 +405,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -427,15 +427,15 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "scala_targets/scala_binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "scala_targets/scala_binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "scala_targets/scala_binary-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jvm_flags: "-Xms2G -Xmx5G"
@@ -446,7 +446,7 @@ jvm_target_info {
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 scala_target_info {
@@ -483,15 +483,15 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "scala_targets/scala_test.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "scala_targets/scala_test.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "scala_targets/scala_test-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   main_class: "io.bazel.rulesscala.scala_test.Runner"
@@ -499,7 +499,7 @@ jvm_target_info {
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 scala_target_info {
@@ -596,12 +596,12 @@ scala_target_info {
   scalatest_classpath {
     relative_path: "external/rules_scala+/src/java/io/bazel/rulesscala/scala_test/librunner.jar"
     is_external: true
-    root_execution_path_fragment: "bazel-out/darwin_arm64-opt-exec-ST-d57f47055a04/bin"
+    root_execution_path_fragment: "bazel-out/opt-exec/bin"
   }
   scalatest_classpath {
     relative_path: "external/rules_scala+/scala/support/test_reporter.jar"
     is_external: true
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 )
@@ -623,17 +623,17 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "target_with_dependency/java_binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "target_with_dependency/java_binary-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   main_class: "target_with_dependency.JavaBinary"
   jdeps {
     relative_path: "target_with_dependency/java_binary.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -641,13 +641,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -662,15 +662,15 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "target_with_javac_exports/libjava_library.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "target_with_javac_exports/libjava_library-hjar.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "target_with_javac_exports/libjava_library-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   javac_opts: "-XepDisableAllChecks"
@@ -679,7 +679,7 @@ jvm_target_info {
   javac_opts: "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
   jdeps {
     relative_path: "target_with_javac_exports/libjava_library.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -687,13 +687,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -717,17 +717,17 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "target_with_resources/java_binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "target_with_resources/java_binary-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   main_class: "target_with_resources.JavaBinary"
   jdeps {
     relative_path: "target_with_resources/java_binary.jdeps"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -735,13 +735,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -759,7 +759,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -775,15 +775,15 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "target_without_args/binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "target_without_args/binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "target_without_args/binary-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jvm_flags: "-Xms2G -Xmx5G"
@@ -792,7 +792,7 @@ jvm_target_info {
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 scala_target_info {
@@ -827,7 +827,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -842,7 +842,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -858,15 +858,15 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "target_without_jvm_flags/binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "target_without_jvm_flags/binary.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "target_without_jvm_flags/binary-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   main_class: "example.Example"
@@ -876,7 +876,7 @@ jvm_target_info {
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 scala_target_info {
@@ -911,22 +911,22 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "target_without_main_class/library.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "target_without_main_class/library-ijar.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "target_without_main_class/library-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 scala_target_info {
@@ -956,7 +956,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -968,13 +968,13 @@ java_toolchain_info {
   target_version: "11"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -990,19 +990,19 @@ jvm_target_info {
     binary_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/header_jsr305-3.0.2.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -1018,19 +1018,19 @@ jvm_target_info {
     binary_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/header_error_prone_annotations-2.7.1.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -1046,19 +1046,19 @@ jvm_target_info {
     binary_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/header_failureaccess-1.0.1.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -1092,19 +1092,19 @@ jvm_target_info {
     binary_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/header_guava-31.0.1-jre.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -1120,19 +1120,19 @@ jvm_target_info {
     binary_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/header_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -1148,19 +1148,19 @@ jvm_target_info {
     binary_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/header_j2objc-annotations-1.3.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -1176,19 +1176,19 @@ jvm_target_info {
     binary_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/header_checker-qual-3.12.0.jar"
       is_external: true
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )

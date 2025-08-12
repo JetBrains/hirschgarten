@@ -96,7 +96,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 )
@@ -114,7 +114,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 python_target_info {
@@ -122,7 +122,7 @@ python_target_info {
     relative_path: "bin/python3"
     is_source: true
     is_external: true
-    root_execution_path_fragment: "external/rules_python++python+python_3_9_aarch64-apple-darwin"
+    root_execution_path_fragment: "external/rules_python++python+python"
   }
   version: "PY3"
 }
@@ -137,7 +137,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 python_target_info {
@@ -154,7 +154,7 @@ workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
   }
 }
 python_target_info {
@@ -162,7 +162,7 @@ python_target_info {
     relative_path: "bin/python3"
     is_source: true
     is_external: true
-    root_execution_path_fragment: "external/rules_python++python+python_3_9_aarch64-apple-darwin"
+    root_execution_path_fragment: "external/rules_python++python+python"
   }
   version: "PY3"
 }

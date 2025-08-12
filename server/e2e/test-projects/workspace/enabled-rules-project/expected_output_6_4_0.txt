@@ -96,7 +96,7 @@ workspace_name: "__main__"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 )
@@ -111,20 +111,20 @@ jvm_target_info {
   jars {
     binary_jars {
       relative_path: "scala_targets/library.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     interface_jars {
       relative_path: "scala_targets/library-ijar.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
     source_jars {
       relative_path: "scala_targets/library-src.jar"
-      root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
   jdeps {
     relative_path: "scala_targets/library.jdep"
-    root_execution_path_fragment: "bazel-out/darwin_arm64-fastbuild/bin"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
   }
 }
 java_toolchain_info {
@@ -132,13 +132,13 @@ java_toolchain_info {
   target_version: "8"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 )
@@ -150,13 +150,13 @@ java_toolchain_info {
   target_version: "8"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 )

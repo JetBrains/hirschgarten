@@ -96,7 +96,7 @@ workspace_name: "python_test"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 )
@@ -115,7 +115,7 @@ workspace_name: "python_test"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 python_target_info {
@@ -123,7 +123,7 @@ python_target_info {
     relative_path: "bin/python3"
     is_source: true
     is_external: true
-    root_execution_path_fragment: "external/python3_9_aarch64-apple-darwin"
+    root_execution_path_fragment: "external/python"
   }
   version: "PY3"
 }
@@ -142,7 +142,7 @@ workspace_name: "python_test"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 python_target_info {
@@ -160,7 +160,7 @@ workspace_name: "python_test"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 python_target_info {
@@ -168,7 +168,7 @@ python_target_info {
     relative_path: "bin/python3"
     is_source: true
     is_external: true
-    root_execution_path_fragment: "external/python3_9_aarch64-apple-darwin"
+    root_execution_path_fragment: "external/python"
   }
   version: "PY3"
 }
@@ -3086,7 +3086,7 @@ workspace_name: "python_test"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk11_macos_aarch64"
+    root_execution_path_fragment: "external/remotejdk"
   }
 }
 python_target_info {
