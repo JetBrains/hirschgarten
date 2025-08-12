@@ -20,7 +20,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 /** Language classes.
  * serialId is being used in serialization - keep it unchanged
  * */
-enum class LanguageClass(val serialId: Int, val languageName: String, private val recognizedFilenameExtensions: Set<String>) {
+enum class LanguageClass(
+  val serialId: Int,
+  val languageName: String,
+  private val recognizedFilenameExtensions: Set<String>,
+) {
   GENERIC(0, "generic", setOf()),
   JAVA(2, "java", setOf("java")),
   JAVASCRIPT(4, "javascript", setOf("js", "applejs")),
