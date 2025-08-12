@@ -26,6 +26,7 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     configuration.beforeRunTasks =
       listOfNotNull(
+        HotSwapRunBeforeRunTaskProvider().createTask(configuration),
         KotlinCoroutineLibraryFinderBeforeRunTaskProvider().createTask(configuration),
       )
   }
@@ -38,6 +39,7 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
+        environment.putCopyableUserData(SCRIPT_PATH_KEY, AtomicReference())
         environment.putCopyableUserData(KOTLIN_COROUTINE_LIB_KEY, AtomicReference())
         JvmRunWithDebugCommandLineState(environment, state)
       }
@@ -73,29 +75,38 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
-    val configuration = environment.runProfile as BazelRunConfiguration
-    val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
-    val additionalBazelParams = settings.additionalBazelParams ?: ""
-    val runParams =
-      RunParams(
-        target = configuration.targets.single(),
-        originId = originId.toString(),
-        arguments = transformProgramArguments(settings.programArguments),
-        environmentVariables = settings.env.envs,
-        workingDirectory = settings.workingDirectory,
-        additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
-        pidDeferred = pidDeferred,
-      )
-    val runWithDebugParams =
-      RunWithDebugParams(
-        originId = originId.toString(),
-        runParams = runParams,
-        debug = debugType,
-      )
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
+    val scriptPath = environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()
+    if (scriptPath != null) {
+      debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), handler)
+    } else {
+      val configuration = environment.runProfile as BazelRunConfiguration
+      val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
+      val additionalBazelParams = settings.additionalBazelParams ?: ""
+      val runParams =
+        RunParams(
+          target = configuration.targets.single(),
+          originId = originId.toString(),
+          arguments = transformProgramArguments(settings.programArguments),
+          environmentVariables = settings.env.envs,
+          workingDirectory = settings.workingDirectory,
+          additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
+          pidDeferred = pidDeferred,
+        )
+      val runWithDebugParams =
+        RunWithDebugParams(
+          originId = originId.toString(),
+          runParams = runParams,
+          debug = debugType,
+        )
 
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetRunWithDebug(runWithDebugParams) }
+      BazelWorkspaceResolveService
+        .getInstance(environment.project)
+        .withEndpointProxy { it.buildTargetRunWithDebug(runWithDebugParams) }
+    }
   }
 }

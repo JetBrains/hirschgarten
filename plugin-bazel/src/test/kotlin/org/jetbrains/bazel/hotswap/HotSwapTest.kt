@@ -1,7 +1,11 @@
 package org.jetbrains.bazel.hotswap
 
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.editorTabs
+import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.elements.popup
+import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
@@ -29,6 +33,7 @@ import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * ```sh
@@ -61,8 +66,17 @@ class HotSwapTest : IdeStarterBaseProjectTest() {
               execute { openFile("SimpleKotlinTest.kt") }
               execute { setBreakpoint(line = 7, "SimpleKotlinTest.kt") }
               execute { setBreakpoint(line = 11, "SimpleKotlinTest.kt") }
-              execute { debugLocalJvmSimpleKotlinTest() }
-              execute { sleep(5000) }
+
+              wait(10.seconds)
+              editorTabs()
+                .gutter()
+                .getGutterIcons()
+                .first { it.getIconPath().contains("run") }
+                .click()
+              popup().waitOneContainsText("Debug test").click()
+
+              wait(30.seconds)
+
               takeScreenshot("afterSetBreakpointsAndStartDebugSession")
             }
 
