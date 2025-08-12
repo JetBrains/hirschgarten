@@ -9,15 +9,14 @@ import com.intellij.openapi.util.text.equalsIgnoreWhitespaces
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import org.jetbrains.bazel.languages.starlark.StarlarkConstants.ALLOW_EMPTY_KEYWORD
+import org.jetbrains.bazel.languages.starlark.StarlarkConstants.TRUE_VALUE
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
 
 class StarlarkGlobAllowEmptyQuickFix(callExpression: StarlarkGlobExpression) :
   PsiUpdateModCommandAction<StarlarkGlobExpression>(callExpression) {
-  private val argumentName = "allow_empty"
-  private val argumentValue = "True"
-
   override fun getPresentation(context: ActionContext, element: StarlarkGlobExpression): Presentation = Presentation.of(familyName)
 
   override fun getFamilyName(): String = StarlarkBundle.message("quickfix.glob.allow.empty")
@@ -29,10 +28,10 @@ class StarlarkGlobAllowEmptyQuickFix(callExpression: StarlarkGlobExpression) :
   ) {
     val writableElement = updater.getWritable(element)
     val argumentList = writableElement.getArguments()
-    val allowEmptyArgument = writableElement.getKeywordArgument(argumentName)
+    val allowEmptyArgument = writableElement.getKeywordArgument(ALLOW_EMPTY_KEYWORD)
 
     if (allowEmptyArgument != null) {
-      val newArgument = createFromText(allowEmptyArgument.project, "$argumentName = $argumentValue")
+      val newArgument = createFromText(allowEmptyArgument.project, "$ALLOW_EMPTY_KEYWORD = $TRUE_VALUE")
       updater.getWritable(allowEmptyArgument).replace(newArgument)
     } else {
       addAllowEmptyArgument(updater, writableElement, argumentList)
@@ -48,7 +47,7 @@ class StarlarkGlobAllowEmptyQuickFix(callExpression: StarlarkGlobExpression) :
     val lastArgument = argumentList.lastOrNull()
 
     if (lastArgument != null) {
-      val newArgumentElement = createFromText(project, "$argumentName = $argumentValue")
+      val newArgumentElement = createFromText(project, "$ALLOW_EMPTY_KEYWORD = $TRUE_VALUE")
       val writableLastArgument = updater.getWritable(lastArgument)
       val parent = writableLastArgument.parent
       var anchor: PsiElement = writableLastArgument
@@ -66,7 +65,7 @@ class StarlarkGlobAllowEmptyQuickFix(callExpression: StarlarkGlobExpression) :
       val space = createFromText(project, " ")
       parent.addBefore(space, addedArgument)
     } else {
-      val newArgumentList = createFromText(project, "($argumentName = $argumentValue)")
+      val newArgumentList = createFromText(project, "($ALLOW_EMPTY_KEYWORD = $TRUE_VALUE)")
       val writableElement = updater.getWritable(element)
 
       val next = writableElement.nextSibling

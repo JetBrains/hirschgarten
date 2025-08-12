@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.starlark.StarlarkConstants.ALLOW_EMPTY_KEYWORD
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.globbing.StarlarkUnixGlob
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -102,7 +103,7 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
   }
 
   private fun isAllowedEmpty(): Boolean {
-    val allowEmpty: String? = getArgValue(getKeywordArgument("allow_empty"))?.text
+    val allowEmpty: String? = getArgValue(getKeywordArgument(ALLOW_EMPTY_KEYWORD))?.text
     return allowEmpty?.lowercase()?.toBooleanStrictOrNull() ?: false
   }
 }

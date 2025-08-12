@@ -37,21 +37,11 @@ class StarlarkGlobAnnotator : StarlarkAnnotator() {
   }
 
   private fun findGlob(element: StarlarkStringLiteralExpression): StarlarkGlobExpression? {
-    val listExpr = element.parent
-    if (listExpr !is StarlarkListLiteralExpression) return null
-
-    val argExpr = listExpr.parent
-    if (argExpr !is StarlarkArgumentElement) return null
-
-    val argList = argExpr.parent
-    if (argList !is StarlarkArgumentList) return null
-
-    val callExpr = argList.parent
-    if (callExpr !is StarlarkCallExpression) return null
-
-    val glob = callExpr.firstChild
-    if (glob !is StarlarkGlobExpression) return null
-
+    val listExpr = element.parent as? StarlarkListLiteralExpression ?: return null
+    val argExpr = listExpr.parent as? StarlarkArgumentElement ?: return null
+    val argList = argExpr.parent as? StarlarkArgumentList ?: return null
+    val callExpr = argList.parent as? StarlarkCallExpression ?: return null
+    val glob = callExpr.firstChild as? StarlarkGlobExpression ?: return null
     return glob
   }
 }
