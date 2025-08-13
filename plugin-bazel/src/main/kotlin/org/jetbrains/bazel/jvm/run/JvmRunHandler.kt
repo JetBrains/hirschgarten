@@ -13,7 +13,7 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
+import org.jetbrains.bazel.sdkcompat.COROUTINE_JVM_FLAGS_KEY
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -41,7 +41,7 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     when {
       executor is DefaultDebugExecutor -> {
         environment.putCopyableUserData(SCRIPT_PATH_KEY, AtomicReference())
-        environment.putCopyableUserData(KOTLIN_COROUTINE_LIB_KEY, AtomicReference())
+        environment.putCopyableUserData(COROUTINE_JVM_FLAGS_KEY, AtomicReference())
         JvmRunWithDebugCommandLineState(environment, state)
       }
 
@@ -86,7 +86,7 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
       debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), handler)
     } else {
       val configuration = environment.runProfile as BazelRunConfiguration
-      val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
+      val kotlinCoroutineLibParam = retrieveKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
       val additionalBazelParams = settings.additionalBazelParams ?: ""
       val runParams =
         RunParams(
