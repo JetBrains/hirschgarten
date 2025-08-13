@@ -193,6 +193,11 @@
                     interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelModuleResolver"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.modules.BazelModuleResolver"
+                    dynamic="true"
+    />
+
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -232,6 +237,7 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.sync.BazelVersionFetchSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider$NotificationUpdateSyncHook"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.languages.starlark.bazel.modules.BazelModuleFetchSyncHook" />
 
 
     <projectStructureProvider
@@ -265,6 +271,8 @@
     <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
 
     <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
+
+    <bazelModuleResolver implementation="org.jetbrains.bazel.languages.starlark.bazel.modules.resolver.BazelCentralRegistryModuleResolver"/>
 
     <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
 
@@ -619,6 +627,10 @@
     />
     <completion.contributor
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
+      language="Starlark"
+    />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelDepCompletionContributor"
       language="Starlark"
     />
     <editorTabTitleProvider
