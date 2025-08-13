@@ -18,7 +18,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should suggest classes for classname attribute`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.java",
       """
@@ -34,7 +33,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -47,13 +45,11 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    // then
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\""))
   }
 
   @Test
   fun `should suggest kt classes for classname attribute`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.kt",
       """
@@ -69,7 +65,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -82,13 +77,11 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    // then
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\""))
   }
 
   @Test
   fun `should suggest subpackage for classname attribute`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.java",
       """
@@ -105,7 +98,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -118,13 +110,11 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    // then
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.\"", "\"com.exampleKt.\""))
   }
 
   @Test
   fun `should suggest package for classname attribute`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.java",
       """
@@ -133,7 +123,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -146,13 +135,11 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    // then
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.\""))
   }
 
   @Test
   fun `should suggest two versions of completing the class with a nested class`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.kt",
       """
@@ -163,7 +150,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -175,13 +161,11 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
     )
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    // then
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyClass.\""))
   }
 
   @Test
   fun `should suggest nested class`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.kt",
       """
@@ -192,7 +176,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -204,13 +187,11 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
     )
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    // then
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass.NestedClass\""))
   }
 
   @Test
   fun `should not suggest class names outside classname attribute`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.java",
       """
@@ -219,7 +200,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -231,13 +211,11 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    // then
     lookups.shouldBeEmpty()
   }
 
   @Test
   fun `should insert selected class and finish classname completion`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.kt",
       """
@@ -246,7 +224,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -259,7 +236,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
     myFixture.completeBasic()
     myFixture.type('\n')
 
-    // then
     myFixture.checkResult(
       """
       java_binary(
@@ -272,7 +248,6 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should insert selected subpackage and continue completion`() {
-    // given
     myFixture.addFileToProject(
       "com/example/MyClass.kt",
       """
@@ -290,12 +265,10 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    // when
     myFixture.completeBasic()
     myFixture.type('\n')
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    // then
     myFixture.checkResult(
       """
       java_binary(
