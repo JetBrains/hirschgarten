@@ -61,8 +61,7 @@ def bazel_integration_test_all_versions(
         inherited_env_names = [],
         enabled_rules = [],
         targets = [],
-        exclude_bazel_7 = False):
-    bazel_versions = []
+        skipped_versions_for_bzlmod = []):
     envs = " ".join(["{}={}".format(k, v) for k, v in env.items()])
     targets_string = ""
     if targets:
@@ -74,12 +73,11 @@ def bazel_integration_test_all_versions(
     test_names = []
     if project_path != None:
         workspace_bazel_versions = ["6.4.0"]
-        bazel_versions = workspace_bazel_versions
         workspace_path = _convey_test_sources(
             name = name + "_workspace",
             project_path = project_path,
         )
-        for bazel_version in bazel_versions:
+        for bazel_version in workspace_bazel_versions:
             test_name = _testBazel(
                 name = name + "_workspace",
                 bazel_version = bazel_version,
@@ -92,16 +90,19 @@ def bazel_integration_test_all_versions(
             test_names = [test_name]
 
     if bzlmod_project_path != None:
-        bzlmod_bazel_versions = ["8.0.0"]
-        if not exclude_bazel_7:
-            bzlmod_bazel_versions.append("7.4.0")
-        bazel_versions += bzlmod_bazel_versions
+        bzlmod_bazel_versions = []
+        if "8.0.0" not in skipped_versions_for_bzlmod:
+            bzlmod_bazel_versions = ["8.0.0"]
+        if "7.4.0" not in skipped_versions_for_bzlmod:
+            bzlmod_bazel_versions += ["7.4.0"]
+        if "6.4.0" not in skipped_versions_for_bzlmod:
+            bzlmod_bazel_versions += ["6.4.0"]
         bzlmod_name = name + "_bzlmod"
         workspace_bzlmod = _convey_test_sources(
             name = bzlmod_name,
             project_path = bzlmod_project_path,
         )
-        for bazel_version in bazel_versions:
+        for bazel_version in bzlmod_bazel_versions:
             test_name = _testBazel(
                 name = name,
                 bazel_version = bazel_version,
@@ -118,15 +119,6 @@ def bazel_integration_test_all_versions(
         tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
         tests = test_names,
     )
-
-    for old_test_name in integration_test_utils.bazel_integration_test_names(name, bazel_versions):
-        new_name = _calculate_new_version_name(old_test_name)
-
-        native.test_suite(
-            name = new_name,
-            tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
-            tests = [old_test_name],
-        )
 
 def _convey_test_sources(name, project_path):
     workspace_files = integration_test_utils.glob_workspace_files(project_path)

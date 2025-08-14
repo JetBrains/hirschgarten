@@ -92,23 +92,22 @@ sources {
   relative_path: ".bazelbsp/aspects/utils/utils.bzl.template"
   is_source: true
 }
-workspace_name: "__main__"
+workspace_name: "_main"
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/local_jdk"
+    root_execution_path_fragment: "external/rules_java~8.11.0~toolchains~local_jdk"
   }
 }
 )
 RawAspectTarget(target=id: "@//example:example"
 kind: "java_binary"
-tags: "__JAVA_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
 sources {
   relative_path: "example/Example.java"
   is_source: true
 }
 executable: true
-workspace_name: "__main__"
+workspace_name: "_main"
 jvm_target_info {
   jars {
     binary_jars {
@@ -134,31 +133,31 @@ java_toolchain_info {
   target_version: "8"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk"
+    root_execution_path_fragment: "external/rules_java~~toolchains~remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/local_jdk"
+    root_execution_path_fragment: "external/rules_java~8.11.0~toolchains~local_jdk"
   }
 }
 )
-RawAspectTarget(target=id: "@bazel_tools//tools/jdk:current_java_toolchain"
+RawAspectTarget(target=id: "@@bazel_tools//tools/jdk:current_java_toolchain"
 kind: "java_toolchain_alias"
-workspace_name: "__main__"
+workspace_name: "_main"
 java_toolchain_info {
   source_version: "8"
   target_version: "8"
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/remotejdk"
+    root_execution_path_fragment: "external/rules_java~~toolchains~remotejdk"
   }
 }
 java_runtime_info {
   java_home {
     is_external: true
-    root_execution_path_fragment: "external/local_jdk"
+    root_execution_path_fragment: "external/rules_java~8.11.0~toolchains~local_jdk"
   }
 }
 )
