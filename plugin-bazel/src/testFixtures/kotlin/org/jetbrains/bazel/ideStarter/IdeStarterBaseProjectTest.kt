@@ -84,7 +84,6 @@ abstract class IdeStarterBaseProjectTest {
       .withKotlinPluginK2()
       .withBazelPluginInstalled()
       .addIdeStarterTestMarker()
-      .applyVMOptionsPatch { addSystemProperty("JETBRAINS_LICENSE_SERVER", "https://flsv1.labs.jb.gg") }
   // uncomment for debugging
   // .applyVMOptionsPatch { debug(8000, suspend = true) }
 
