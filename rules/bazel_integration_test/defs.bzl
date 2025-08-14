@@ -59,9 +59,18 @@ def bazel_integration_test_all_versions(
         bzlmod_project_path = None,
         env = {},
         inherited_env_names = [],
+        enabled_rules = [],
+        targets = [],
         exclude_bazel_7 = False):
     bazel_versions = []
     envs = " ".join(["{}={}".format(k, v) for k, v in env.items()])
+    targets_string = ""
+    if targets:
+        targets_string = "TARGETS=\"" + ",".join(targets) + "\""
+    enabled_rules_string = ""
+    if enabled_rules:
+        enabled_rules_string = "ENABLED_RULES=\"" + ",".join(enabled_rules) + "\""
+    envs = " ".join([envs, targets_string, enabled_rules_string])
     test_names = []
     if project_path != None:
         workspace_bazel_versions = ["6.4.0"]
@@ -176,7 +185,7 @@ def _testBazel(name, bazel_version, test_runner, workspace_file_path, workspace_
     find_expected_output(
         name = expected_outputs_name,
         srcs = workspace_filegroup,
-        suffix = integration_test_utils.semantic_version_to_name(bazel_version),
+        suffix = rule_name,
         testonly = True,
     )
     espaced_genrule = genrule_name + "_espaced"

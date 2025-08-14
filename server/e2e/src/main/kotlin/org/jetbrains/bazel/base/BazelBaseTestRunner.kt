@@ -16,12 +16,16 @@ import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import org.jetbrains.bsp.testkit.client.TestClient
 import java.nio.file.Paths
-
+import kotlin.time.Duration.Companion.seconds
 
 abstract class BazelBaseTestRunner {
   val basePath = Paths.get("").toAbsolutePath()
+  val targets = (System.getenv("TARGETS") ?: "//...").split(",")
+  val enabledRules = (System.getenv("ENABLED_RULES") ?: "").split(",")
   val bazelBinary = basePath.resolve(System.getenv("BIT_BAZEL_BINARY"))
   val workspaceDir = basePath.resolve(System.getenv("BIT_WORKSPACE_DIR")).parent
 
@@ -37,21 +41,34 @@ abstract class BazelBaseTestRunner {
     installServer()
   }
 
-  protected open fun installServer() {
+  private fun installServer() {
     Install.runInstall(
       cliOptions = CliOptions(
         workspaceDir = workspaceDir,
-        projectViewCliOptions =
-          ProjectViewCliOptions(
-            bazelBinary = bazelBinary,
-            targets = listOf("//..."),
-          ),
+        projectViewCliOptions = projectViewCliOptions(),
       ),
       silent = true,
     )
   }
 
-  protected fun createTestkitClient(): TestClient {
+  protected open fun projectViewCliOptions() = ProjectViewCliOptions(
+    bazelBinary = bazelBinary,
+    targets = targets,
+    enabledRules = enabledRules,
+  )
+
+
+  protected open fun performTest() {
+    createTestkitClient().test(60.seconds) { session ->
+      val result =
+        session.server.workspaceBuildTargets(WorkspaceBuildTargetParams(WorkspaceBuildTargetSelector.AllTargets))
+      result.targets.toSortedMap().forEach {
+        println(it.value)
+      }
+    }
+  }
+
+  private fun createTestkitClient(): TestClient {
     val featureFlags =
       FeatureFlags(
         isPythonSupportEnabled = true,
@@ -67,8 +84,4 @@ abstract class BazelBaseTestRunner {
     )
   }
 
-  companion object {
-    private const val SUCCESS_EXIT_CODE = 0
-    private const val FAIL_EXIT_CODE = 1
-  }
 }

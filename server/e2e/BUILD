@@ -11,6 +11,11 @@ package(default_visibility = ["//visibility:public"])
 bazel_integration_test_all_versions(
     name = "sample_repo_test",
     bzlmod_project_path = "test-projects/bzlmod/sample-repo",
+    enabled_rules = [
+        "io_bazel_rules_scala",
+        "rules_java",
+        "rules_jvm",
+    ],
     env = {
         "foo1": "invalid_val1",
         "foo2": "invalid_val2",
@@ -18,6 +23,23 @@ bazel_integration_test_all_versions(
         "foo4": "val4",
     },
     project_path = "test-projects/workspace/sample-repo",
+)
+
+bazel_integration_test_all_versions(
+    name = "sample_repo_partial_sync_test",
+    bzlmod_project_path = "test-projects/bzlmod/sample-repo",
+    enabled_rules = [
+        "io_bazel_rules_scala",
+        "rules_java",
+        "rules_jvm",
+    ],
+    env = {
+        "foo1": "invalid_val1",
+        "foo2": "invalid_val2",
+        "foo3": "val3",
+        "foo4": "val4",
+    },
+    targets = ["@//java_targets:java_library"],
 )
 
 bazel_integration_test_all_versions(
@@ -46,24 +68,27 @@ bazel_integration_test_all_versions(
 )
 
 bazel_integration_test_all_versions(
+    name = "kotlin_project_with_enabled_rules_test",
+    bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
+    enabled_rules = ["rules_kotlin"],
+    project_path = "test-projects/workspace/kotlin-project",
+)
+
+bazel_integration_test_all_versions(
     name = "enabled_rules_test",
+    enabled_rules = [
+        "io_bazel_rules_scala",
+        "rules_java",
+        "rules_jvm",
+    ],
     project_path = "test-projects/workspace/enabled-rules-project",
 )
 
 bazel_integration_test_all_versions(
     name = "go_project_test",
     bzlmod_project_path = "test-projects/bzlmod/go-project",
-)
-
-bazel_integration_test_all_versions(
-    name = "java_diagnostics_test",
-    bzlmod_project_path = "test-projects/bzlmod/java-diagnostics-project",
-)
-
-bazel_integration_test_all_versions(
-    name = "allow_manual_targets_sync_test",
-    bzlmod_project_path = "test-projects/bzlmod/allow-manual-targets-sync-project",
-    project_path = "test-projects/workspace/allow-manual-targets-sync-project",
+    enabled_rules = ["io_bazel_rules_go"],
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelGazelleTestRunner",
 )
 
 bazel_integration_test_all_versions(
@@ -72,13 +97,17 @@ bazel_integration_test_all_versions(
 )
 
 bazel_integration_test_all_versions(
-    name = "first_phase_sync_test",
+    name = "first_phase_syncb_test",
     bzlmod_project_path = "test-projects/bzlmod/first-phase-sync-project",
 )
 
 # bazel_integration_test_all_versions(
 #     name = "nested_modules_test",
 #     bzlmod_project_path = "test-projects/bzlmod/nested-modules",
+#     targets = [
+#         "@//...",
+#         "@inner//...",
+#     ],
 # )
 
 bazel_integration_test_all_versions(
@@ -92,17 +121,18 @@ test_suite(
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
     # we need to include all of them manually because of the "manual" tag
     tests = [
-        ":allow_manual_targets_sync_test",
         ":build_and_sync_test",
         ":enabled_rules_test",
         ":external_autoloads_test",
         ":first_phase_sync_test",
         ":go_project_test",
-        ":java_diagnostics_test",
         ":kotlin_project_test",
+        ":kotlin_project_with_enabled_rules_test",
         ":local_jdk_test",
+        # ":nested_modules_test",
         ":python_project_test",
         ":remote_jdk_test",
+        ":sample_repo_partial_sync_test",
         ":sample_repo_test",
     ],
 )

@@ -19,3 +19,23 @@ java_binary(
         ":BazelTestRunnerKt",
     ],
 )
+
+kt_jvm_library(
+    name = "BazelGazelleTestRunnerKt",
+    srcs = ["BazelGazelleTestRunner.kt"],
+    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
+    deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
+        "//server/commons",
+        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
+    ],
+)
+
+java_binary(
+    name = "BazelGazelleTestRunner",
+    main_class = "org.jetbrains.bazel.BazelGazelleTestRunner",
+    visibility = ["//server/e2e:__subpackages__"],
+    runtime_deps = [
+        ":BazelGazelleTestRunnerKt",
+    ],
+)
