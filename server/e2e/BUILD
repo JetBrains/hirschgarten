@@ -115,7 +115,7 @@ bazel_integration_test_all_versions(
 )
 
 bazel_integration_test_all_versions(
-    name = "first_phase_syncb_test",
+    name = "first_phase_sync_test",
     bzlmod_project_path = "test-projects/bzlmod/first-phase-sync-project",
     skipped_versions_for_bzlmod = [
         "6.4.0",
