@@ -1,0 +1,14 @@
+version: "1.0"
+profile:
+  name: qodana.recommended
+include:
+  - name: QodanaSanity
+  - name: HighlightVisitorInternal
+exclude:
+  - name: CheckDependencyLicenses
+  - name: UnnecessaryUnicodeEscape
+  - name: UnstableApiUsage
+  - name: DialogTitleCapitalization
+failureConditions:
+  severityThresholds:
+    critical: 1
