@@ -9,9 +9,12 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bsp.protocol.DebugType
+import java.nio.file.Path
 
 abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, private val port: Int) :
   BazelCommandLineStateBase(environment) {
@@ -36,12 +39,12 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
   val debugType: DebugType
     get() = DebugType.JDWP(port)
 
-  fun debugWithScriptPath(
+  suspend fun debugWithScriptPath(
     workingDirectory: String?,
     scriptPath: String,
     handler: BazelProcessHandler,
   ) {
-    val commandLine = GeneralCommandLine().withWorkDirectory(workingDirectory).withExePath(scriptPath)
+    val commandLine = GeneralCommandLine().withWorkingDirectory(workingDirectory?.let { Path.of(it) }).withExePath(scriptPath)
     val scriptHandler = OSProcessHandler(commandLine)
     scriptHandler.addProcessListener(
       object : ProcessListener {
@@ -52,7 +55,19 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
       },
     )
 
+    // necessary for terminating the debug process from scriptHandler when handler.destroyProcess() is called
+    handler.addProcessListener(
+      object : ProcessListener {
+        override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
+          if (willBeDestroyed) {
+            handler.notifyTextAvailable("Debug process will stop", ProcessOutputType.STDOUT)
+            scriptHandler.destroyProcess()
+          }
+        }
+      },
+    )
+
     scriptHandler.startNotify()
-    scriptHandler.waitFor()
+    runInterruptible(Dispatchers.IO) { scriptHandler.waitFor() }
   }
 }
