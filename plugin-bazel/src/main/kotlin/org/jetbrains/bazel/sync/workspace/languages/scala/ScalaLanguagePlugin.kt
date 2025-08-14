@@ -15,9 +15,9 @@ import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 
 class ScalaLanguagePlugin(
-  private val javaLanguagePlugin: JavaLanguagePlugin, 
+  private val javaLanguagePlugin: JavaLanguagePlugin,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver()
+  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver(),
 ) : LanguagePlugin<ScalaModule>() {
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
@@ -70,6 +70,5 @@ class ScalaLanguagePlugin(
     buildTarget.data = scalaBuildTarget
   }
 
-  override fun calculateJvmPackagePrefix(source: Path): String? =
-    packageResolver.calculateJvmPackagePrefix(source, true)
+  override fun calculateJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source, true)
 }

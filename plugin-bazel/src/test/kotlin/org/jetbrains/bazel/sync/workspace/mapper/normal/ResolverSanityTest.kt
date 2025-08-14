@@ -1,16 +1,12 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
-import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.collections.shouldNotBeEmpty
-import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.string.shouldEndWith
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -72,6 +68,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.nio.file.Paths
+
 /**
  * Sanity test that verifies the pipeline of mapping from Bazel targets to resolved workspace.
  *
@@ -82,56 +79,48 @@ import java.nio.file.Paths
  * Then verifies the output matches the expected structure.
  */
 
-
 /**
  * Test implementation of JvmPackageResolver that returns hardcoded packages
  * based on the file path, avoiding file system access.
  */
 class TestJvmPackageResolver : JvmPackageResolver {
-  private val packageMapping = mapOf(
-    // Scala targets
-    "scala_targets/ScalaBinary.scala" to "scala_targets",
-    "scala_targets/ScalaTest.scala" to "scala_targets",
-
-    // Java targets
-    "java_targets/JavaBinary.java" to "java_targets",
-    "java_targets/JavaBinaryWithFlag.java" to "java_targets",
-    "java_targets/JavaLibrary.java" to "java_targets",
-    "java_targets/subpackage/JavaLibrary2.java" to "java_targets.subpackage",
-
-    // Target with resources
-    "target_with_resources/JavaBinary.java" to "target_with_resources",
-
-    // Environment variables
-    "environment_variables/JavaEnv.java" to "environment_variables",
-    "environment_variables/JavaTest.java" to "environment_variables",
-
-    // Target with javac exports
-    "target_with_javac_exports/JavaLibrary.java" to "target_with_javac_exports",
-
-    // Target with dependency
-    "target_with_dependency/JavaBinary.java" to "target_with_dependency",
-
-    // Target without JVM flags
-    "target_without_jvm_flags/Example.scala" to "target_without_jvm_flags",
-
-    // Target without args
-    "target_without_args/Example.scala" to "target_without_args",
-
-    // Target without main class
-    "target_without_main_class/Example.scala" to "target_without_main_class",
-  )
+  private val packageMapping =
+    mapOf(
+      // Scala targets
+      "scala_targets/ScalaBinary.scala" to "scala_targets",
+      "scala_targets/ScalaTest.scala" to "scala_targets",
+      // Java targets
+      "java_targets/JavaBinary.java" to "java_targets",
+      "java_targets/JavaBinaryWithFlag.java" to "java_targets",
+      "java_targets/JavaLibrary.java" to "java_targets",
+      "java_targets/subpackage/JavaLibrary2.java" to "java_targets.subpackage",
+      // Target with resources
+      "target_with_resources/JavaBinary.java" to "target_with_resources",
+      // Environment variables
+      "environment_variables/JavaEnv.java" to "environment_variables",
+      "environment_variables/JavaTest.java" to "environment_variables",
+      // Target with javac exports
+      "target_with_javac_exports/JavaLibrary.java" to "target_with_javac_exports",
+      // Target with dependency
+      "target_with_dependency/JavaBinary.java" to "target_with_dependency",
+      // Target without JVM flags
+      "target_without_jvm_flags/Example.scala" to "target_without_jvm_flags",
+      // Target without args
+      "target_without_args/Example.scala" to "target_without_args",
+      // Target without main class
+      "target_without_main_class/Example.scala" to "target_without_main_class",
+    )
 
   override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? {
     val pathString = source.toString()
 
     // Find the matching package by checking if the path ends with any of our known files
-    return packageMapping.entries.firstOrNull { (file, _) ->
-      pathString.endsWith(file)
-    }?.value
+    return packageMapping.entries
+      .firstOrNull { (file, _) ->
+        pathString.endsWith(file)
+      }?.value
   }
 }
-
 
 class ResolverSanityTest {
   private lateinit var workspaceRoot: Path
@@ -695,8 +684,16 @@ class ResolverSanityTest {
 
       // Convert to exact format expected by the specification at line 1441
       val result = resolvedWorkspace
-      val resultBuildTargets = result.targets.getTargets().filter { it.kind.languageClasses.isNotEmpty() }.toList()
-      val resultNonModuleTargets = result.targets.getTargets().filter { it.kind.languageClasses.isEmpty() }.toList()
+      val resultBuildTargets =
+        result.targets
+          .getTargets()
+          .filter { it.kind.languageClasses.isNotEmpty() }
+          .toList()
+      val resultNonModuleTargets =
+        result.targets
+          .getTargets()
+          .filter { it.kind.languageClasses.isEmpty() }
+          .toList()
 
       // Verify exact structure matches expected output specification at line 1320
       resultBuildTargets shouldHaveSize 21
@@ -711,7 +708,7 @@ class ResolverSanityTest {
         ruleType: RuleType,
         dependencies: List<String> = emptyList(),
         sourcesCount: Int = 0,
-        expectedData: Any? = null
+        expectedData: Any? = null,
       ) {
         val target = resultBuildTargets.find { it.id.toString() == id }
         target shouldNotBe null
@@ -727,19 +724,31 @@ class ResolverSanityTest {
       }
 
       // Create expected ScalaBuildTarget data
-      val scalaJavaBinaryData = ScalaBuildTarget(
-        scalaVersion = "2.13.14",
-        sdkJars = listOf(
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar")
-        ),
-        jvmBuildTarget = JvmBuildTarget(
-          javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-          javaVersion = "11"
-        ),
-        scalacOptions = listOf("-target:jvm-1.8")
-      )
+      val scalaJavaBinaryData =
+        ScalaBuildTarget(
+          scalaVersion = "2.13.14",
+          sdkJars =
+            listOf(
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar",
+              ),
+            ),
+          jvmBuildTarget =
+            JvmBuildTarget(
+              javaHome =
+                Paths.get(
+                  "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+                ),
+              javaVersion = "11",
+            ),
+          scalacOptions = listOf("-target:jvm-1.8"),
+        )
 
       // Verify ALL buildTargets as specified in expected output
       verifyBuildTarget(
@@ -749,34 +758,60 @@ class ResolverSanityTest {
         RuleType.BINARY,
         listOf("scala-compiler-2.13.14.jar[synthetic]", "scala-library-2.13.14.jar[synthetic]", "scala-reflect-2.13.14.jar[synthetic]"),
         1,
-        scalaJavaBinaryData
+        scalaJavaBinaryData,
       )
-      
+
       // For kotlin targets, specify the expected JvmBuildTarget data
-      val kotlinJavaBinaryData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      val kotlinJavaBinaryWithFlagData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "17"
-      )
-      
-      verifyBuildTarget("@//kotlin:java_binary", "java_binary", setOf(LanguageClass.JAVA), RuleType.BINARY, sourcesCount = 1, expectedData = kotlinJavaBinaryData)
-      verifyBuildTarget("@//kotlin:java_binary_with_flag", "java_binary", setOf(LanguageClass.JAVA), RuleType.BINARY, sourcesCount = 1, expectedData = kotlinJavaBinaryWithFlagData)
-      // Create expected JvmBuildTarget for java_targets:java_binary_with_flag
-      val javaBinaryWithFlagData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val kotlinJavaBinaryData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+      val kotlinJavaBinaryWithFlagData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "17",
+        )
+
       verifyBuildTarget(
-        "@//java_targets:java_binary_with_flag", 
-        "java_binary", 
-        setOf(LanguageClass.JAVA), 
-        RuleType.BINARY, 
+        "@//kotlin:java_binary",
+        "java_binary",
+        setOf(LanguageClass.JAVA),
+        RuleType.BINARY,
+        sourcesCount = 1,
+        expectedData = kotlinJavaBinaryData,
+      )
+      verifyBuildTarget(
+        "@//kotlin:java_binary_with_flag",
+        "java_binary",
+        setOf(LanguageClass.JAVA),
+        RuleType.BINARY,
+        sourcesCount = 1,
+        expectedData = kotlinJavaBinaryWithFlagData,
+      )
+      // Create expected JvmBuildTarget for java_targets:java_binary_with_flag
+      val javaBinaryWithFlagData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
+      verifyBuildTarget(
+        "@//java_targets:java_binary_with_flag",
+        "java_binary",
+        setOf(LanguageClass.JAVA),
+        RuleType.BINARY,
         sourcesCount = 0,
-        expectedData = null
+        expectedData = null,
       )
       verifyBuildTarget(
         "@//java_targets:java_binary",
@@ -784,38 +819,60 @@ class ResolverSanityTest {
         setOf(LanguageClass.JAVA),
         RuleType.BINARY,
         emptyList(), // Dependencies are actually empty based on current resolver output
-        1
+        1,
       )
       // Create expected JvmBuildTarget for environment_variables:java_binary
-      val environmentVariablesJavaBinaryData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val environmentVariablesJavaBinaryData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
-        "@//environment_variables:java_binary", 
-        "java_binary", 
-        setOf(LanguageClass.JAVA), 
-        RuleType.BINARY, 
-        sourcesCount = 1, 
-        expectedData = environmentVariablesJavaBinaryData
+        "@//environment_variables:java_binary",
+        "java_binary",
+        setOf(LanguageClass.JAVA),
+        RuleType.BINARY,
+        sourcesCount = 1,
+        expectedData = environmentVariablesJavaBinaryData,
       )
-      verifyBuildTarget("@//kotlin:asd", "kt_jvm_library", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY, expectedData = null)
-      
+      verifyBuildTarget(
+        "@//kotlin:asd",
+        "kt_jvm_library",
+        setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+        RuleType.LIBRARY,
+        expectedData = null,
+      )
+
       // Create expected ScalaBuildTarget data for target_without_jvm_flags:binary
-      val targetWithoutJvmFlagsScalaBinaryData = ScalaBuildTarget(
-        scalaVersion = "2.13.14",
-        sdkJars = listOf(
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar")
-        ),
-        jvmBuildTarget = JvmBuildTarget(
-          javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-          javaVersion = "11"
-        ),
-        scalacOptions = emptyList() // No scalac options for this target
-      )
+      val targetWithoutJvmFlagsScalaBinaryData =
+        ScalaBuildTarget(
+          scalaVersion = "2.13.14",
+          sdkJars =
+            listOf(
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar",
+              ),
+            ),
+          jvmBuildTarget =
+            JvmBuildTarget(
+              javaHome =
+                Paths.get(
+                  "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+                ),
+              javaVersion = "11",
+            ),
+          scalacOptions = emptyList(), // No scalac options for this target
+        )
 
       verifyBuildTarget(
         "@//target_without_jvm_flags:binary",
@@ -824,52 +881,72 @@ class ResolverSanityTest {
         RuleType.BINARY,
         listOf("scala-compiler-2.13.14.jar[synthetic]", "scala-library-2.13.14.jar[synthetic]", "scala-reflect-2.13.14.jar[synthetic]"),
         1,
-        targetWithoutJvmFlagsScalaBinaryData
+        targetWithoutJvmFlagsScalaBinaryData,
       )
-      
+
       // Create expected JvmBuildTarget for target_with_javac_exports:java_library
-      val targetWithJavacExportsLibraryData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val targetWithJavacExportsLibraryData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
-        "@//target_with_javac_exports:java_library", 
-        "java_library", 
-        setOf(LanguageClass.JAVA), 
-        RuleType.LIBRARY, 
+        "@//target_with_javac_exports:java_library",
+        "java_library",
+        setOf(LanguageClass.JAVA),
+        RuleType.LIBRARY,
         sourcesCount = 1,
-        expectedData = null
+        expectedData = null,
       )
       // Create expected JvmBuildTarget for environment_variables:java_test
-      val environmentVariablesJavaTestData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val environmentVariablesJavaTestData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
-        "@//environment_variables:java_test", 
-        "java_test", 
-        setOf(LanguageClass.JAVA), 
-        RuleType.TEST, 
+        "@//environment_variables:java_test",
+        "java_test",
+        setOf(LanguageClass.JAVA),
+        RuleType.TEST,
         sourcesCount = 1,
-        expectedData = environmentVariablesJavaTestData
+        expectedData = environmentVariablesJavaTestData,
       )
-      
+
       // Create expected ScalaBuildTarget data for scala_targets:scala_test
-      val scalaTestData = ScalaBuildTarget(
-        scalaVersion = "2.13.14",
-        sdkJars = listOf(
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar")
-        ),
-        jvmBuildTarget = JvmBuildTarget(
-          javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-          javaVersion = "11"
-        ),
-        scalacOptions = emptyList()
-      )
+      val scalaTestData =
+        ScalaBuildTarget(
+          scalaVersion = "2.13.14",
+          sdkJars =
+            listOf(
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar",
+              ),
+            ),
+          jvmBuildTarget =
+            JvmBuildTarget(
+              javaHome =
+                Paths.get(
+                  "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+                ),
+              javaVersion = "11",
+            ),
+          scalacOptions = emptyList(),
+        )
 
       verifyBuildTarget(
         "@//scala_targets:scala_test",
@@ -893,41 +970,57 @@ class ResolverSanityTest {
           "scalatest-mustmatchers_2.13-3.2.9.jar[synthetic]",
           "scalatest-shouldmatchers_2.13-3.2.9.jar[synthetic]",
           "librunner.jar[synthetic]",
-          "test_reporter.jar[synthetic]"
+          "test_reporter.jar[synthetic]",
         ),
         1,
-        scalaTestData
+        scalaTestData,
       )
-      
+
       // Create expected JvmBuildTarget for java_targets/subpackage:java_library
-      val javaSubpackageLibraryData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val javaSubpackageLibraryData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
-        "@//java_targets/subpackage:java_library", 
-        "java_library", 
-        setOf(LanguageClass.JAVA), 
-        RuleType.LIBRARY, 
+        "@//java_targets/subpackage:java_library",
+        "java_library",
+        setOf(LanguageClass.JAVA),
+        RuleType.LIBRARY,
         sourcesCount = 1,
-        expectedData = javaSubpackageLibraryData
+        expectedData = javaSubpackageLibraryData,
       )
-      
+
       // Create expected ScalaBuildTarget data for target_without_args:binary
-      val targetWithoutArgsScalaBinaryData = ScalaBuildTarget(
-        scalaVersion = "2.13.14",
-        sdkJars = listOf(
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar")
-        ),
-        jvmBuildTarget = JvmBuildTarget(
-          javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-          javaVersion = "11"
-        ),
-        scalacOptions = emptyList()
-      )
+      val targetWithoutArgsScalaBinaryData =
+        ScalaBuildTarget(
+          scalaVersion = "2.13.14",
+          sdkJars =
+            listOf(
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar",
+              ),
+            ),
+          jvmBuildTarget =
+            JvmBuildTarget(
+              javaHome =
+                Paths.get(
+                  "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+                ),
+              javaVersion = "11",
+            ),
+          scalacOptions = emptyList(),
+        )
 
       verifyBuildTarget(
         "@//target_without_args:binary",
@@ -936,38 +1029,54 @@ class ResolverSanityTest {
         RuleType.BINARY,
         listOf("scala-compiler-2.13.14.jar[synthetic]", "scala-library-2.13.14.jar[synthetic]", "scala-reflect-2.13.14.jar[synthetic]"),
         1,
-        targetWithoutArgsScalaBinaryData
+        targetWithoutArgsScalaBinaryData,
       )
-      
+
       // Create expected JvmBuildTarget for java_targets:java_library
-      val javaTargetsLibraryData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val javaTargetsLibraryData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
-        "@//java_targets:java_library", 
-        "java_library", 
-        setOf(LanguageClass.JAVA), 
-        RuleType.LIBRARY, 
+        "@//java_targets:java_library",
+        "java_library",
+        setOf(LanguageClass.JAVA),
+        RuleType.LIBRARY,
         sourcesCount = 1,
-        expectedData = javaTargetsLibraryData
+        expectedData = javaTargetsLibraryData,
       )
-      
+
       // Create expected ScalaBuildTarget data for target_without_main_class:library
-      val targetWithoutMainClassLibraryData = ScalaBuildTarget(
-        scalaVersion = "2.13.14",
-        sdkJars = listOf(
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar"),
-          Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar")
-        ),
-        jvmBuildTarget = JvmBuildTarget(
-          javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-          javaVersion = "11"
-        ),
-        scalacOptions = emptyList()
-      )
+      val targetWithoutMainClassLibraryData =
+        ScalaBuildTarget(
+          scalaVersion = "2.13.14",
+          sdkJars =
+            listOf(
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar",
+              ),
+              Paths.get(
+                "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar",
+              ),
+            ),
+          jvmBuildTarget =
+            JvmBuildTarget(
+              javaHome =
+                Paths.get(
+                  "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+                ),
+              javaVersion = "11",
+            ),
+          scalacOptions = emptyList(),
+        )
 
       verifyBuildTarget(
         "@//target_without_main_class:library",
@@ -976,59 +1085,75 @@ class ResolverSanityTest {
         RuleType.LIBRARY,
         listOf("scala-compiler-2.13.14.jar[synthetic]", "scala-library-2.13.14.jar[synthetic]", "scala-reflect-2.13.14.jar[synthetic]"),
         1,
-        targetWithoutMainClassLibraryData
+        targetWithoutMainClassLibraryData,
       )
-      
+
       // Create expected JvmBuildTarget for java_targets:java_library_exported
-      val javaLibraryExportedData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val javaLibraryExportedData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
         "@//java_targets:java_library_exported",
         "java_library",
         setOf(LanguageClass.JAVA),
         RuleType.LIBRARY,
         listOf("@//java_targets:java_library_exported_output_jars", "@//java_targets/subpackage:java_library"),
-        expectedData = javaLibraryExportedData
+        expectedData = javaLibraryExportedData,
       )
-      
+
       // Create expected JvmBuildTarget for kotlin:java_library
-      val kotlinJavaLibraryData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val kotlinJavaLibraryData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
-        "@//kotlin:java_library", 
-        "java_library", 
-        setOf(LanguageClass.JAVA), 
+        "@//kotlin:java_library",
+        "java_library",
+        setOf(LanguageClass.JAVA),
         RuleType.LIBRARY,
-        expectedData = null
+        expectedData = null,
       )
-      
+
       // Create expected JvmBuildTarget for target_with_resources:java_binary
-      val targetWithResourcesJavaBinaryData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val targetWithResourcesJavaBinaryData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
-        "@//target_with_resources:java_binary", 
-        "java_binary", 
-        setOf(LanguageClass.JAVA), 
-        RuleType.BINARY, 
+        "@//target_with_resources:java_binary",
+        "java_binary",
+        setOf(LanguageClass.JAVA),
+        RuleType.BINARY,
         sourcesCount = 1,
-        expectedData = targetWithResourcesJavaBinaryData
+        expectedData = targetWithResourcesJavaBinaryData,
       )
-      
+
       // Create expected JvmBuildTarget for target_with_dependency:java_binary
-      val targetWithDependencyJavaBinaryData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val targetWithDependencyJavaBinaryData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
         "@//target_with_dependency:java_binary",
         "java_binary",
@@ -1037,29 +1162,37 @@ class ResolverSanityTest {
         listOf(
           "@//java_targets:java_library_exported",
           "@@rules_jvm_external++maven+maven//:com_google_guava_guava",
-          "@//java_targets/subpackage:java_library"
+          "@//java_targets/subpackage:java_library",
         ),
         1,
-        targetWithDependencyJavaBinaryData
+        targetWithDependencyJavaBinaryData,
       )
-      
+
       // Create expected JvmBuildTarget for kotlin:java_library_exported
-      val kotlinJavaLibraryExportedData = JvmBuildTarget(
-        javaHome = Paths.get("/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux"),
-        javaVersion = "11"
-      )
-      
+      val kotlinJavaLibraryExportedData =
+        JvmBuildTarget(
+          javaHome =
+            Paths.get(
+              "/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux",
+            ),
+          javaVersion = "11",
+        )
+
       verifyBuildTarget(
         "@//kotlin:java_library_exported",
         "java_library",
         setOf(LanguageClass.JAVA),
         RuleType.LIBRARY,
         listOf("@//kotlin:java_library_exported_output_jars", "@//java_targets/subpackage:java_library"),
-        expectedData = kotlinJavaLibraryExportedData
+        expectedData = kotlinJavaLibraryExportedData,
       )
 
       // Verify ALL nonModuleTargets
-      fun verifyNonModuleTarget(id: String, kindString: String, ruleType: RuleType) {
+      fun verifyNonModuleTarget(
+        id: String,
+        kindString: String,
+        ruleType: RuleType,
+      ) {
         val target = resultNonModuleTargets.find { it.id.toString() == id }
         target shouldNotBe null
         target!!.kind.kindString shouldBe kindString
@@ -1089,12 +1222,12 @@ class ResolverSanityTest {
 
       // Verify ALL 26 libraries
       result.libraries shouldHaveSize 26
-      
+
       fun verifyLibrary(
         id: String,
         dependencies: List<String> = emptyList(),
         hasMavenCoordinates: Boolean = false,
-        isFromInternalTarget: Boolean = false
+        isFromInternalTarget: Boolean = false,
       ) {
         val library = result.libraries.find { it.id.toString() == id }
         library shouldNotBe null
@@ -1106,7 +1239,7 @@ class ResolverSanityTest {
         }
         library.isFromInternalTarget shouldBe isFromInternalTarget
       }
-      
+
       // Verify Maven libraries (Guava and its dependencies)
       verifyLibrary("@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305", hasMavenCoordinates = true)
       verifyLibrary("@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations", hasMavenCoordinates = true)
@@ -1114,7 +1247,7 @@ class ResolverSanityTest {
       verifyLibrary("@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture", hasMavenCoordinates = true)
       verifyLibrary("@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations", hasMavenCoordinates = true)
       verifyLibrary("@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual", hasMavenCoordinates = true)
-      
+
       // Guava with its 6 dependencies
       verifyLibrary(
         "@@rules_jvm_external++maven+maven//:com_google_guava_guava",
@@ -1124,28 +1257,28 @@ class ResolverSanityTest {
           "@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess",
           "@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture",
           "@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations",
-          "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual"
+          "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual",
         ),
-        hasMavenCoordinates = true
+        hasMavenCoordinates = true,
       )
-      
+
       // Internal output_jars libraries
       verifyLibrary(
         "@//java_targets:java_library_exported_output_jars",
         listOf("@//java_targets/subpackage:java_library"),
-        isFromInternalTarget = true
+        isFromInternalTarget = true,
       )
       verifyLibrary(
         "@//kotlin:java_library_exported_output_jars",
         listOf("@//java_targets/subpackage:java_library"),
-        isFromInternalTarget = true
+        isFromInternalTarget = true,
       )
-      
+
       // Scala synthetic libraries
       verifyLibrary("scala-compiler-2.13.14.jar[synthetic]")
       verifyLibrary("scala-library-2.13.14.jar[synthetic]")
       verifyLibrary("scala-reflect-2.13.14.jar[synthetic]")
-      
+
       // ScalaTest synthetic libraries
       verifyLibrary("scalactic_2.13-3.2.9.jar[synthetic]")
       verifyLibrary("scalatest_2.13-3.2.9.jar[synthetic]")
@@ -1161,50 +1294,50 @@ class ResolverSanityTest {
       verifyLibrary("scalatest-shouldmatchers_2.13-3.2.9.jar[synthetic]")
       verifyLibrary("librunner.jar[synthetic]")
       verifyLibrary("test_reporter.jar[synthetic]")
-      
-      
+
       // expected
-     //  workspace = BazelResolvedWorkspace(targets=BuildTargetCollection(buildTargets=
-      //  [RawBuildTarget(id=@//scala_targets:scala_binary, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic]], kind=TargetKind(kindString=scala_binary, languageClasses=[JAVA, SCALA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets/ScalaBinary.scala, generated=false, jvmPackagePrefix=scala_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[-target:jvm-1.8]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_binary_with_flag, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=17), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_binary_with_flag, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/JavaBinaryWithFlag.java, generated=false, jvmPackagePrefix=java_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=17), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_binary, tags=[], dependencies=[@//java_targets/subpackage:java_library], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/JavaBinary.java, generated=false, jvmPackagePrefix=java_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//environment_variables:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables/JavaEnv.java, generated=false, jvmPackagePrefix=environment_variables)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:asd, tags=[], dependencies=[], kind=TargetKind(kindString=kt_jvm_library, languageClasses=[JAVA, KOTLIN], ruleType=LIBRARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_jvm_flags:binary, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic]], kind=TargetKind(kindString=scala_binary, languageClasses=[JAVA, SCALA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_without_jvm_flags/Example.scala, generated=false, jvmPackagePrefix=target_without_jvm_flags)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_jvm_flags, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_javac_exports:java_library, tags=[], dependencies=[], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_with_javac_exports/JavaLibrary.java, generated=false, jvmPackagePrefix=target_with_javac_exports)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_javac_exports, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//environment_variables:java_test, tags=[], dependencies=[], kind=TargetKind(kindString=java_test, languageClasses=[JAVA], ruleType=TEST), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables/JavaTest.java, generated=false, jvmPackagePrefix=environment_variables)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//scala_targets:scala_test, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic], scalactic_2.13-3.2.9.jar[synthetic], scalatest_2.13-3.2.9.jar[synthetic], scalatest-compatible-3.2.9.jar[synthetic], scalatest-core_2.13-3.2.9.jar[synthetic], scalatest-featurespec_2.13-3.2.9.jar[synthetic], scalatest-flatspec_2.13-3.2.9.jar[synthetic], scalatest-freespec_2.13-3.2.9.jar[synthetic], scalatest-funspec_2.13-3.2.9.jar[synthetic], scalatest-funsuite_2.13-3.2.9.jar[synthetic], scalatest-matchers-core_2.13-3.2.9.jar[synthetic], scalatest-mustmatchers_2.13-3.2.9.jar[synthetic], scalatest-shouldmatchers_2.13-3.2.9.jar[synthetic], librunner.jar[synthetic], test_reporter.jar[synthetic]], kind=TargetKind(kindString=scala_test, languageClasses=[JAVA, SCALA], ruleType=TEST), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets/ScalaTest.scala, generated=false, jvmPackagePrefix=scala_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets/subpackage:java_library, tags=[], dependencies=[], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/subpackage/JavaLibrary2.java, generated=false, jvmPackagePrefix=java_targets.subpackage)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/subpackage, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_args:binary, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic]], kind=TargetKind(kindString=scala_binary, languageClasses=[JAVA, SCALA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_without_args/Example.scala, generated=false, jvmPackagePrefix=target_without_args)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_args, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_library, tags=[], dependencies=[], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/JavaLibrary.java, generated=false, jvmPackagePrefix=java_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_main_class:library, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic]], kind=TargetKind(kindString=scala_library, languageClasses=[JAVA, SCALA], ruleType=LIBRARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_without_main_class/Example.scala, generated=false, jvmPackagePrefix=target_without_main_class)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_main_class, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_library_exported, tags=[], dependencies=[@//java_targets:java_library_exported_output_jars, @//java_targets/subpackage:java_library], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_library, tags=[], dependencies=[], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_resources:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_with_resources/JavaBinary.java, generated=false, jvmPackagePrefix=target_with_resources)], resources=[/home/andrzej.gluszak/code/junk/sample-repo/target_with_resources/file1.txt, /home/andrzej.gluszak/code/junk/sample-repo/target_with_resources/file2.txt], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_resources, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_dependency:java_binary, tags=[], dependencies=[@//java_targets:java_library_exported, @@rules_jvm_external++maven+maven//:com_google_guava_guava, @//java_targets/subpackage:java_library], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_with_dependency/JavaBinary.java, generated=false, jvmPackagePrefix=target_with_dependency)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_dependency, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_library_exported, tags=[], dependencies=[@//kotlin:java_library_exported_output_jars, @//java_targets/subpackage:java_library], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[])], nonModuleTargets=[RawBuildTarget(id=@//kotlin:java_binary_with_flag, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_binary_with_flag, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_args:binary, tags=[], dependencies=[], kind=TargetKind(kindString=scala_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_args, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//genrule:foo, tags=[], dependencies=[], kind=TargetKind(kindString=genrule, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/genrule, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//scala_targets:scala_binary, tags=[], dependencies=[], kind=TargetKind(kindString=scala_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//environment_variables:java_test, tags=[], dependencies=[], kind=TargetKind(kindString=java_test, languageClasses=[], ruleType=TEST), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//scala_targets:scala_test, tags=[], dependencies=[], kind=TargetKind(kindString=scala_test, languageClasses=[], ruleType=TEST), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_java_info:filegroup, tags=[], dependencies=[], kind=TargetKind(kindString=filegroup, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_java_info, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//environment_variables:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_jvm_flags:binary, tags=[], dependencies=[], kind=TargetKind(kindString=scala_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_jvm_flags, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_dependency:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_dependency, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_java_info:genrule, tags=[], dependencies=[], kind=TargetKind(kindString=genrule, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_java_info, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_resources:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_resources, noBuild=false, data=null, lowPrioritySharedSources=[])]), 
+      //  workspace = BazelResolvedWorkspace(targets=BuildTargetCollection(buildTargets=
+      //  [RawBuildTarget(id=@//scala_targets:scala_binary, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic]], kind=TargetKind(kindString=scala_binary, languageClasses=[JAVA, SCALA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets/ScalaBinary.scala, generated=false, jvmPackagePrefix=scala_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[-target:jvm-1.8]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_binary_with_flag, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=17), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_binary_with_flag, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/JavaBinaryWithFlag.java, generated=false, jvmPackagePrefix=java_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=17), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_binary, tags=[], dependencies=[@//java_targets/subpackage:java_library], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/JavaBinary.java, generated=false, jvmPackagePrefix=java_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//environment_variables:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables/JavaEnv.java, generated=false, jvmPackagePrefix=environment_variables)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:asd, tags=[], dependencies=[], kind=TargetKind(kindString=kt_jvm_library, languageClasses=[JAVA, KOTLIN], ruleType=LIBRARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_jvm_flags:binary, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic]], kind=TargetKind(kindString=scala_binary, languageClasses=[JAVA, SCALA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_without_jvm_flags/Example.scala, generated=false, jvmPackagePrefix=target_without_jvm_flags)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_jvm_flags, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_javac_exports:java_library, tags=[], dependencies=[], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_with_javac_exports/JavaLibrary.java, generated=false, jvmPackagePrefix=target_with_javac_exports)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_javac_exports, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//environment_variables:java_test, tags=[], dependencies=[], kind=TargetKind(kindString=java_test, languageClasses=[JAVA], ruleType=TEST), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables/JavaTest.java, generated=false, jvmPackagePrefix=environment_variables)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//scala_targets:scala_test, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic], scalactic_2.13-3.2.9.jar[synthetic], scalatest_2.13-3.2.9.jar[synthetic], scalatest-compatible-3.2.9.jar[synthetic], scalatest-core_2.13-3.2.9.jar[synthetic], scalatest-featurespec_2.13-3.2.9.jar[synthetic], scalatest-flatspec_2.13-3.2.9.jar[synthetic], scalatest-freespec_2.13-3.2.9.jar[synthetic], scalatest-funspec_2.13-3.2.9.jar[synthetic], scalatest-funsuite_2.13-3.2.9.jar[synthetic], scalatest-matchers-core_2.13-3.2.9.jar[synthetic], scalatest-mustmatchers_2.13-3.2.9.jar[synthetic], scalatest-shouldmatchers_2.13-3.2.9.jar[synthetic], librunner.jar[synthetic], test_reporter.jar[synthetic]], kind=TargetKind(kindString=scala_test, languageClasses=[JAVA, SCALA], ruleType=TEST), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets/ScalaTest.scala, generated=false, jvmPackagePrefix=scala_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets/subpackage:java_library, tags=[], dependencies=[], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/subpackage/JavaLibrary2.java, generated=false, jvmPackagePrefix=java_targets.subpackage)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/subpackage, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_args:binary, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic]], kind=TargetKind(kindString=scala_binary, languageClasses=[JAVA, SCALA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_without_args/Example.scala, generated=false, jvmPackagePrefix=target_without_args)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_args, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_library, tags=[], dependencies=[], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/java_targets/JavaLibrary.java, generated=false, jvmPackagePrefix=java_targets)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_main_class:library, tags=[], dependencies=[scala-compiler-2.13.14.jar[synthetic], scala-library-2.13.14.jar[synthetic], scala-reflect-2.13.14.jar[synthetic]], kind=TargetKind(kindString=scala_library, languageClasses=[JAVA, SCALA], ruleType=LIBRARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_without_main_class/Example.scala, generated=false, jvmPackagePrefix=target_without_main_class)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_main_class, noBuild=false, data=ScalaBuildTarget(scalaVersion=2.13.14, sdkJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar, /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], jvmBuildTarget=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), scalacOptions=[]), lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_library_exported, tags=[], dependencies=[@//java_targets:java_library_exported_output_jars, @//java_targets/subpackage:java_library], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_library, tags=[], dependencies=[], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_resources:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_with_resources/JavaBinary.java, generated=false, jvmPackagePrefix=target_with_resources)], resources=[/home/andrzej.gluszak/code/junk/sample-repo/target_with_resources/file1.txt, /home/andrzej.gluszak/code/junk/sample-repo/target_with_resources/file2.txt], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_resources, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_dependency:java_binary, tags=[], dependencies=[@//java_targets:java_library_exported, @@rules_jvm_external++maven+maven//:com_google_guava_guava, @//java_targets/subpackage:java_library], kind=TargetKind(kindString=java_binary, languageClasses=[JAVA], ruleType=BINARY), sources=[SourceItem(path=/home/andrzej.gluszak/code/junk/sample-repo/target_with_dependency/JavaBinary.java, generated=false, jvmPackagePrefix=target_with_dependency)], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_dependency, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_library_exported, tags=[], dependencies=[@//kotlin:java_library_exported_output_jars, @//java_targets/subpackage:java_library], kind=TargetKind(kindString=java_library, languageClasses=[JAVA], ruleType=LIBRARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=JvmBuildTarget(javaHome=/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_java++toolchains+remotejdk11_linux, javaVersion=11), lowPrioritySharedSources=[])], nonModuleTargets=[RawBuildTarget(id=@//kotlin:java_binary_with_flag, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_binary_with_flag, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_args:binary, tags=[], dependencies=[], kind=TargetKind(kindString=scala_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_args, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//java_targets:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/java_targets, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//genrule:foo, tags=[], dependencies=[], kind=TargetKind(kindString=genrule, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/genrule, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//scala_targets:scala_binary, tags=[], dependencies=[], kind=TargetKind(kindString=scala_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//kotlin:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/kotlin, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//environment_variables:java_test, tags=[], dependencies=[], kind=TargetKind(kindString=java_test, languageClasses=[], ruleType=TEST), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//scala_targets:scala_test, tags=[], dependencies=[], kind=TargetKind(kindString=scala_test, languageClasses=[], ruleType=TEST), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/scala_targets, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_java_info:filegroup, tags=[], dependencies=[], kind=TargetKind(kindString=filegroup, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_java_info, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//environment_variables:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/environment_variables, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_jvm_flags:binary, tags=[], dependencies=[], kind=TargetKind(kindString=scala_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_jvm_flags, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_dependency:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_dependency, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_without_java_info:genrule, tags=[], dependencies=[], kind=TargetKind(kindString=genrule, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_without_java_info, noBuild=false, data=null, lowPrioritySharedSources=[]), RawBuildTarget(id=@//target_with_resources:java_binary, tags=[], dependencies=[], kind=TargetKind(kindString=java_binary, languageClasses=[], ruleType=BINARY), sources=[], resources=[], baseDirectory=/home/andrzej.gluszak/code/junk/sample-repo/target_with_resources, noBuild=false, data=null, lowPrioritySharedSources=[])]),
       //  libraries=[
-// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/header_jsr305-3.0.2.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.code.findbugs, artifactId=jsr305, version=3.0.2), isFromInternalTarget=false), 
-// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/header_error_prone_annotations-2.7.1.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.errorprone, artifactId=error_prone_annotations, version=2.7.1), isFromInternalTarget=false), 
-// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/header_failureaccess-1.0.1.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.guava, artifactId=failureaccess, version=1.0.1), isFromInternalTarget=false), 
-// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/header_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.guava, artifactId=listenablefuture, version=9999.0-empty-to-avoid-conflict-with-guava), isFromInternalTarget=false), 
-// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/header_j2objc-annotations-1.3.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.j2objc, artifactId=j2objc-annotations, version=1.3), isFromInternalTarget=false), 
-// LibraryItem(id=@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/header_checker-qual-3.12.0.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=org.checkerframework, artifactId=checker-qual, version=3.12.0), isFromInternalTarget=false), 
-// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_guava_guava, dependencies=[@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305, @@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations, @@rules_jvm_external++maven+maven//:com_google_guava_failureaccess, @@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture, @@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations, @@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/header_guava-31.0.1-jre.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.guava, artifactId=guava, version=31.0.1-jre), isFromInternalTarget=false), 
-// LibraryItem(id=@//java_targets:java_library_exported_output_jars, dependencies=[@//java_targets/subpackage:java_library], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/java_targets/libjava_library_exported.jar], sourceJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/java_targets/libjava_library_exported-src.jar], mavenCoordinates=null, isFromInternalTarget=true), 
-// LibraryItem(id=@//kotlin:java_library_exported_output_jars, dependencies=[@//java_targets/subpackage:java_library], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/kotlin/libjava_library_exported.jar], sourceJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/kotlin/libjava_library_exported-src.jar], mavenCoordinates=null, isFromInternalTarget=true), 
-// LibraryItem(id=scala-compiler-2.13.14.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scala-library-2.13.14.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scala-reflect-2.13.14.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalactic_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalactic_2_13_14/scalactic_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_2_13_14/scalatest_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-compatible-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_compatible_2_13_14/scalatest-compatible-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-core_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_core_2_13_14/scalatest-core_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-featurespec_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_featurespec_2_13_14/scalatest-featurespec_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-flatspec_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_flatspec_2_13_14/scalatest-flatspec_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-freespec_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_freespec_2_13_14/scalatest-freespec_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-funspec_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funspec_2_13_14/scalatest-funspec_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-funsuite_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funsuite_2_13_14/scalatest-funsuite_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-matchers-core_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_matchers_core_2_13_14/scalatest-matchers-core_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-mustmatchers_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_mustmatchers_2_13_14/scalatest-mustmatchers_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=scalatest-shouldmatchers_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_shouldmatchers_2_13_14/scalatest-shouldmatchers_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
-// LibraryItem(id=librunner.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-opt-exec-ST-d57f47055a04/bin/external/rules_scala+/src/java/io/bazel/rulesscala/scala_test/librunner.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false), 
+// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/header_jsr305-3.0.2.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.code.findbugs, artifactId=jsr305, version=3.0.2), isFromInternalTarget=false),
+// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/header_error_prone_annotations-2.7.1.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.errorprone, artifactId=error_prone_annotations, version=2.7.1), isFromInternalTarget=false),
+// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/header_failureaccess-1.0.1.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.guava, artifactId=failureaccess, version=1.0.1), isFromInternalTarget=false),
+// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/header_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.guava, artifactId=listenablefuture, version=9999.0-empty-to-avoid-conflict-with-guava), isFromInternalTarget=false),
+// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/header_j2objc-annotations-1.3.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.j2objc, artifactId=j2objc-annotations, version=1.3), isFromInternalTarget=false),
+// LibraryItem(id=@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual, dependencies=[], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/header_checker-qual-3.12.0.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=org.checkerframework, artifactId=checker-qual, version=3.12.0), isFromInternalTarget=false),
+// LibraryItem(id=@@rules_jvm_external++maven+maven//:com_google_guava_guava, dependencies=[@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305, @@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations, @@rules_jvm_external++maven+maven//:com_google_guava_failureaccess, @@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture, @@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations, @@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual], ijars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/header_guava-31.0.1-jre.jar], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar], sourceJars=[], mavenCoordinates=MavenCoordinates(groupId=com.google.guava, artifactId=guava, version=31.0.1-jre), isFromInternalTarget=false),
+// LibraryItem(id=@//java_targets:java_library_exported_output_jars, dependencies=[@//java_targets/subpackage:java_library], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/java_targets/libjava_library_exported.jar], sourceJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/java_targets/libjava_library_exported-src.jar], mavenCoordinates=null, isFromInternalTarget=true),
+// LibraryItem(id=@//kotlin:java_library_exported_output_jars, dependencies=[@//java_targets/subpackage:java_library], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/kotlin/libjava_library_exported.jar], sourceJars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/kotlin/libjava_library_exported-src.jar], mavenCoordinates=null, isFromInternalTarget=true),
+// LibraryItem(id=scala-compiler-2.13.14.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scala-library-2.13.14.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scala-reflect-2.13.14.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalactic_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalactic_2_13_14/scalactic_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_2_13_14/scalatest_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-compatible-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_compatible_2_13_14/scalatest-compatible-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-core_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_core_2_13_14/scalatest-core_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-featurespec_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_featurespec_2_13_14/scalatest-featurespec_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-flatspec_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_flatspec_2_13_14/scalatest-flatspec_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-freespec_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_freespec_2_13_14/scalatest-freespec_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-funspec_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funspec_2_13_14/scalatest-funspec_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-funsuite_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funsuite_2_13_14/scalatest-funsuite_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-matchers-core_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_matchers_core_2_13_14/scalatest-matchers-core_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-mustmatchers_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_mustmatchers_2_13_14/scalatest-mustmatchers_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=scalatest-shouldmatchers_2.13-3.2.9.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_shouldmatchers_2_13_14/scalatest-shouldmatchers_2.13-3.2.9.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
+// LibraryItem(id=librunner.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-opt-exec-ST-d57f47055a04/bin/external/rules_scala+/src/java/io/bazel/rulesscala/scala_test/librunner.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false),
 // LibraryItem(id=test_reporter.jar[synthetic], dependencies=[], ijars=[], jars=[/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/15c45786dac63f4dc419213eb9183942/execroot/_main/bazel-out/k8-fastbuild/bin/external/rules_scala+/scala/support/test_reporter.jar], sourceJars=[], mavenCoordinates=null, isFromInternalTarget=false)], hasError=false)
 
       // Verify Guava library with its exact dependencies as specified (use different variable name)
       val guavaLib = result.libraries.find { it.id.toString() == "@@rules_jvm_external++maven+maven//:com_google_guava_guava" }
       guavaLib shouldNotBe null
-      guavaLib!!.dependencies.map { it.toString() } shouldContainExactly listOf(
-        "@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305",
-        "@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations",
-        "@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess",
-        "@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture",
-        "@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations",
-        "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual"
-      )
+      guavaLib!!.dependencies.map { it.toString() } shouldContainExactly
+        listOf(
+          "@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305",
+          "@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations",
+          "@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess",
+          "@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture",
+          "@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations",
+          "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual",
+        )
       guavaLib.mavenCoordinates!!.groupId shouldBe "com.google.guava"
       guavaLib.mavenCoordinates!!.artifactId shouldBe "guava"
       guavaLib.mavenCoordinates!!.version shouldBe "31.0.1-jre"
@@ -1225,47 +1358,68 @@ class ResolverSanityTest {
       internalLibrary.isFromInternalTarget shouldBe true
 
       // ======== Additional Comprehensive Verification ========
-      
+
       // Verify specific source file paths and jvmPackagePrefix values
-      fun verifySourceDetails(targetId: String, expectedSourcePath: String, expectedPackagePrefix: String) {
+      fun verifySourceDetails(
+        targetId: String,
+        expectedSourcePath: String,
+        expectedPackagePrefix: String,
+      ) {
         val target = resultBuildTargets.find { it.id.toString() == targetId }
         target shouldNotBe null
         target!!.sources shouldHaveSize 1
-        target.sources.first().path.toString() shouldEndWith expectedSourcePath
+        target.sources
+          .first()
+          .path
+          .toString() shouldEndWith expectedSourcePath
         target.sources.first().generated shouldBe false
         target.sources.first().jvmPackagePrefix shouldBe expectedPackagePrefix
       }
-      
+
       // Verify key source files match expected structure from OUTPUT comments
       verifySourceDetails("@//scala_targets:scala_binary", "scala_targets/ScalaBinary.scala", "scala_targets")
       verifySourceDetails("@//java_targets:java_binary", "java_targets/JavaBinary.java", "java_targets")
       verifySourceDetails("@//java_targets/subpackage:java_library", "java_targets/subpackage/JavaLibrary2.java", "java_targets.subpackage")
       verifySourceDetails("@//target_with_resources:java_binary", "target_with_resources/JavaBinary.java", "target_with_resources")
       verifySourceDetails("@//environment_variables:java_binary", "environment_variables/JavaEnv.java", "environment_variables")
-      verifySourceDetails("@//target_with_javac_exports:java_library", "target_with_javac_exports/JavaLibrary.java", "target_with_javac_exports")
+      verifySourceDetails(
+        "@//target_with_javac_exports:java_library",
+        "target_with_javac_exports/JavaLibrary.java",
+        "target_with_javac_exports",
+      )
 
       // Verify resource files for targets that should have them
-      fun verifyResources(targetId: String, expectedResourceCount: Int, expectedResourcePaths: List<String> = emptyList()) {
+      fun verifyResources(
+        targetId: String,
+        expectedResourceCount: Int,
+        expectedResourcePaths: List<String> = emptyList(),
+      ) {
         val target = resultBuildTargets.find { it.id.toString() == targetId }
         target shouldNotBe null
         target!!.resources shouldHaveSize expectedResourceCount
         if (expectedResourcePaths.isNotEmpty()) {
-          target.resources.map { it.toString() } shouldContainAll expectedResourcePaths.map { path ->
-            listOf(path).filter { filePath -> target.resources.any { it.toString().endsWith(filePath) } }
-          }.flatten()
+          target.resources.map { it.toString() } shouldContainAll
+            expectedResourcePaths
+              .map { path ->
+                listOf(path).filter { filePath -> target.resources.any { it.toString().endsWith(filePath) } }
+              }.flatten()
         }
       }
-      
+
       // Verify target_with_resources has its resource files
-      verifyResources("@//target_with_resources:java_binary", 2, listOf("target_with_resources/file1.txt", "target_with_resources/file2.txt"))
-      
+      verifyResources(
+        "@//target_with_resources:java_binary",
+        2,
+        listOf("target_with_resources/file1.txt", "target_with_resources/file2.txt"),
+      )
+
       // Verify base directories match expected structure
       fun verifyBaseDirectory(targetId: String, expectedBaseDirSuffix: String) {
         val target = resultBuildTargets.find { it.id.toString() == targetId }
         target shouldNotBe null
         target!!.baseDirectory.toString() shouldEndWith expectedBaseDirSuffix
       }
-      
+
       // Verify base directories for key targets
       verifyBaseDirectory("@//scala_targets:scala_binary", "scala_targets")
       verifyBaseDirectory("@//kotlin:java_binary", "kotlin")
@@ -1273,7 +1427,7 @@ class ResolverSanityTest {
       verifyBaseDirectory("@//java_targets/subpackage:java_library", "java_targets/subpackage")
       verifyBaseDirectory("@//target_with_resources:java_binary", "target_with_resources")
       verifyBaseDirectory("@//environment_variables:java_binary", "environment_variables")
-      
+
       // Verify Java version distinctions for different targets
       fun verifyJavaVersion(targetId: String, expectedJavaVersion: String) {
         val target = resultBuildTargets.find { it.id.toString() == targetId }
@@ -1282,27 +1436,27 @@ class ResolverSanityTest {
         jvmTarget shouldNotBe null
         jvmTarget!!.javaVersion shouldBe expectedJavaVersion
       }
-      
+
       // Verify different Java versions are correctly mapped (from input comments)
       verifyJavaVersion("@//kotlin:java_binary", "11")
-      verifyJavaVersion("@//kotlin:java_binary_with_flag", "17")  // This one has different java version
+      verifyJavaVersion("@//kotlin:java_binary_with_flag", "17") // This one has different java version
       verifyJavaVersion("@//environment_variables:java_binary", "11")
-      
+
       // Additional verification that build targets match expected exact counts by type
       val scalaBinaryTargets = resultBuildTargets.filter { it.kind.kindString == "scala_binary" }
-      scalaBinaryTargets shouldHaveSize 3  // scala_binary, target_without_jvm_flags:binary, target_without_args:binary
-      
+      scalaBinaryTargets shouldHaveSize 3 // scala_binary, target_without_jvm_flags:binary, target_without_args:binary
+
       val javaBinaryTargets = resultBuildTargets.filter { it.kind.kindString == "java_binary" }
-      javaBinaryTargets shouldHaveSize 5  // kotlin:java_binary, kotlin:java_binary_with_flag, java_targets:java_binary, environment_variables:java_binary, target_with_resources:java_binary, target_with_dependency:java_binary
-      
+      javaBinaryTargets shouldHaveSize 5 // kotlin:java_binary, kotlin:java_binary_with_flag, java_targets:java_binary, environment_variables:java_binary, target_with_resources:java_binary, target_with_dependency:java_binary
+
       val javaLibraryTargets = resultBuildTargets.filter { it.kind.kindString == "java_library" }
-      javaLibraryTargets shouldHaveSize 5  // java_targets/subpackage:java_library, java_targets:java_library, target_with_javac_exports:java_library, java_targets:java_library_exported, kotlin:java_library_exported
-      
+      javaLibraryTargets shouldHaveSize 5 // java_targets/subpackage:java_library, java_targets:java_library, target_with_javac_exports:java_library, java_targets:java_library_exported, kotlin:java_library_exported
+
       val scalaTestTargets = resultBuildTargets.filter { it.kind.kindString == "scala_test" }
-      scalaTestTargets shouldHaveSize 1  // scala_targets:scala_test
-      
+      scalaTestTargets shouldHaveSize 1 // scala_targets:scala_test
+
       val javaTestTargets = resultBuildTargets.filter { it.kind.kindString == "java_test" }
-      javaTestTargets shouldHaveSize 1  // environment_variables:java_test
+      javaTestTargets shouldHaveSize 1 // environment_variables:java_test
     }
   }
 
@@ -1525,7 +1679,7 @@ class ResolverSanityTest {
   // to produce the expected output at line 1320
   private fun createJavaScalaKotlinTestTargets(): Map<Label, BspTargetInfo.TargetInfo> {
     val targets = mutableMapOf<Label, BspTargetInfo.TargetInfo>()
-    
+
     // Create all the targets as specified in the input section (before line 1437)
 
     // aspects target
@@ -1559,20 +1713,28 @@ class ResolverSanityTest {
             BspTargetInfo.JvmTargetInfo
               .newBuilder()
               .apply {
-                addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-                  addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "scala_targets/scala_binary.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                  addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "scala_targets/scala_binary.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                  addSourceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "scala_targets/scala_binary-src.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                })
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "scala_targets/scala_binary.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "scala_targets/scala_binary.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addSourceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "scala_targets/scala_binary-src.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
                 mainClass = "example.Example"
                 addJvmFlags("-Xms2G")
                 addJvmFlags("-Xmx5G")
@@ -1585,24 +1747,30 @@ class ResolverSanityTest {
               .newBuilder()
               .apply {
                 addScalacOpts("-target:jvm-1.8")
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-compiler-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14"
-                })
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-library-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14"
-                })
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-reflect-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14"
-                })
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-compiler-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14"
+                  },
+                )
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-library-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14"
+                  },
+                )
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-reflect-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14"
+                  },
+                )
               }.build()
 
           javaRuntimeInfo =
@@ -1628,48 +1796,73 @@ class ResolverSanityTest {
           kind = "java_binary"
           executable = true
           workspaceName = "_main"
-          
-          addSources(BspTargetInfo.FileLocation.newBuilder().apply {
-            relativePath = "kotlin/JavaBinary.java"
-            isSource = true
-          })
-          
+
+          addSources(
+            BspTargetInfo.FileLocation.newBuilder().apply {
+              relativePath = "kotlin/JavaBinary.java"
+              isSource = true
+            },
+          )
+
           // Add jvmTargetInfo as specified in input
-          jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-            addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-              addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                relativePath = "kotlin/java_binary.jar"
-                rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-              })
-              addSourceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                relativePath = "kotlin/java_binary-src.jar"
-                rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-              })
-            })
-            addJavacOpts("-Werror")
-            addJavacOpts("-Xlint:all")
-            mainClass = "java_targets.JavaBinary"
-            addJdeps(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "kotlin/java_binary.jdeps"
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          }.build()
-          
-          javaToolchainInfo = BspTargetInfo.JavaToolchainInfo.newBuilder().apply {
-            sourceVersion = "11"
-            targetVersion = "11"
-            javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-              isExternal = true
-              rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk21_linux"
-            }.build()
-          }.build()
-          
-          javaRuntimeInfo = BspTargetInfo.JavaRuntimeInfo.newBuilder().apply {
-            javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-              isExternal = true
-              rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
-            }.build()
-          }.build()
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "kotlin/java_binary.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addSourceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "kotlin/java_binary-src.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+                addJavacOpts("-Werror")
+                addJavacOpts("-Xlint:all")
+                mainClass = "java_targets.JavaBinary"
+                addJdeps(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "kotlin/java_binary.jdeps"
+                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                  },
+                )
+              }.build()
+
+          javaToolchainInfo =
+            BspTargetInfo.JavaToolchainInfo
+              .newBuilder()
+              .apply {
+                sourceVersion = "11"
+                targetVersion = "11"
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk21_linux"
+                    }.build()
+              }.build()
+
+          javaRuntimeInfo =
+            BspTargetInfo.JavaRuntimeInfo
+              .newBuilder()
+              .apply {
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
+                    }.build()
+              }.build()
         }.build()
 
     // kotlin:java_binary_with_flag
@@ -1681,33 +1874,46 @@ class ResolverSanityTest {
           kind = "java_binary"
           executable = true
           workspaceName = "_main"
-          
-          addSources(BspTargetInfo.FileLocation.newBuilder().apply {
-            relativePath = "kotlin/JavaBinaryWithFlag.java"
-            isSource = true
-          })
-          
+
+          addSources(
+            BspTargetInfo.FileLocation.newBuilder().apply {
+              relativePath = "kotlin/JavaBinaryWithFlag.java"
+              isSource = true
+            },
+          )
+
           // Add jvmTargetInfo as specified in input
-          jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-            addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-              addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                relativePath = "kotlin/java_binary_with_flag.jar"
-                rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-              })
-              addSourceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                relativePath = "kotlin/java_binary_with_flag-src.jar"
-                rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-              })
-            })
-            addJavacOpts("-Werror")
-            addJavacOpts("-Xlint:all")
-            addJavacOpts("-target 17")
-            mainClass = "java_targets.JavaBinaryWithFlag"
-            addJdeps(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "kotlin/java_binary_with_flag.jdeps"
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          }.build()
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "kotlin/java_binary_with_flag.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addSourceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "kotlin/java_binary_with_flag-src.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+                addJavacOpts("-Werror")
+                addJavacOpts("-Xlint:all")
+                addJavacOpts("-target 17")
+                mainClass = "java_targets.JavaBinaryWithFlag"
+                addJdeps(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "kotlin/java_binary_with_flag.jdeps"
+                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                  },
+                )
+              }.build()
 
           javaToolchainInfo =
             BspTargetInfo.JavaToolchainInfo
@@ -1798,17 +2004,21 @@ class ResolverSanityTest {
           id = "@//target_with_resources:resources"
           kind = "filegroup"
           workspaceName = "_main"
-          
-          addSources(BspTargetInfo.FileLocation.newBuilder().apply {
-            relativePath = "target_with_resources/file1.txt"
-            isSource = true
-          })
-          
-          addSources(BspTargetInfo.FileLocation.newBuilder().apply {
-            relativePath = "target_with_resources/file2.txt"
-            isSource = true
-          })
-          
+
+          addSources(
+            BspTargetInfo.FileLocation.newBuilder().apply {
+              relativePath = "target_with_resources/file1.txt"
+              isSource = true
+            },
+          )
+
+          addSources(
+            BspTargetInfo.FileLocation.newBuilder().apply {
+              relativePath = "target_with_resources/file2.txt"
+              isSource = true
+            },
+          )
+
           javaRuntimeInfo =
             BspTargetInfo.JavaRuntimeInfo
               .newBuilder()
@@ -2145,20 +2355,28 @@ class ResolverSanityTest {
             BspTargetInfo.JvmTargetInfo
               .newBuilder()
               .apply {
-                addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-                  addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "target_without_args/binary.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                  addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "target_without_args/binary.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                  addSourceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "target_without_args/binary-src.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                })
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "target_without_args/binary.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "target_without_args/binary.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addSourceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "target_without_args/binary-src.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
                 mainClass = "example.Example"
                 addJvmFlags("-Xms2G")
                 addJvmFlags("-Xmx5G")
@@ -2168,24 +2386,30 @@ class ResolverSanityTest {
             BspTargetInfo.ScalaTargetInfo
               .newBuilder()
               .apply {
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-compiler-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14"
-                })
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-library-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14"
-                })
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-reflect-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14"
-                })
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-compiler-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14"
+                  },
+                )
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-library-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14"
+                  },
+                )
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-reflect-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14"
+                  },
+                )
               }.build()
 
           javaRuntimeInfo =
@@ -2298,44 +2522,58 @@ class ResolverSanityTest {
             BspTargetInfo.JvmTargetInfo
               .newBuilder()
               .apply {
-                addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-                  addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "target_without_main_class/library.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                  addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "target_without_main_class/library-ijar.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                  addSourceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "target_without_main_class/library-src.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                })
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "target_without_main_class/library.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "target_without_main_class/library-ijar.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addSourceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "target_without_main_class/library-src.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
               }.build()
 
           scalaTargetInfo =
             BspTargetInfo.ScalaTargetInfo
               .newBuilder()
               .apply {
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-compiler-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14"
-                })
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-library-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14"
-                })
-                addCompilerClasspath(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "scala-reflect-2.13.14.jar"
-                  isSource = true
-                  isExternal = true
-                  rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14"
-                })
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-compiler-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14"
+                  },
+                )
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-library-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14"
+                  },
+                )
+                addCompilerClasspath(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "scala-reflect-2.13.14.jar"
+                    isSource = true
+                    isExternal = true
+                    rootExecutionPathFragment = "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14"
+                  },
+                )
               }.build()
 
           javaRuntimeInfo =
@@ -2360,34 +2598,51 @@ class ResolverSanityTest {
           id = "@//java_targets:java_library_exported"
           kind = "java_library"
           workspaceName = "_main"
-          
+
           // Add dependency as specified in input
-          addDependencies(BspTargetInfo.Dependency.newBuilder().apply {
-            id = "@//java_targets/subpackage:java_library"
-          })
-          
+          addDependencies(
+            BspTargetInfo.Dependency.newBuilder().apply {
+              id = "@//java_targets/subpackage:java_library"
+            },
+          )
+
           // Add jvmTargetInfo with jars but NO sources - this triggers creation of _output_jars library
-          jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-            addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-              addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                relativePath = "java_targets/libjava_library_exported.jar"
-                rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-              })
-              addSourceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                relativePath = "java_targets/libjava_library_exported-src.jar"
-                rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-              })
-            })
-          }.build()
-          
-          javaToolchainInfo = BspTargetInfo.JavaToolchainInfo.newBuilder().apply {
-            sourceVersion = "11"
-            targetVersion = "11"
-            javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-              isExternal = true
-              rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk21_linux"
-            }.build()
-          }.build()
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "java_targets/libjava_library_exported.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addSourceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "java_targets/libjava_library_exported-src.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaToolchainInfo =
+            BspTargetInfo.JavaToolchainInfo
+              .newBuilder()
+              .apply {
+                sourceVersion = "11"
+                targetVersion = "11"
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk21_linux"
+                    }.build()
+              }.build()
 
           javaRuntimeInfo =
             BspTargetInfo.JavaRuntimeInfo
@@ -2411,7 +2666,7 @@ class ResolverSanityTest {
           id = "@//kotlin:java_library"
           kind = "java_library"
           workspaceName = "_main"
-          
+
           // Add jvmTargetInfo even though there are no sources
           jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().build()
 
@@ -2464,21 +2719,29 @@ class ResolverSanityTest {
             BspTargetInfo.JvmTargetInfo
               .newBuilder()
               .apply {
-                addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-                  addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "target_with_resources/java_binary.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                  addSourceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                    relativePath = "target_with_resources/java_binary-src.jar"
-                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                  })
-                })
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "target_with_resources/java_binary.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addSourceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "target_with_resources/java_binary-src.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
                 mainClass = "target_with_resources.JavaBinary"
-                addJdeps(BspTargetInfo.FileLocation.newBuilder().apply {
-                  relativePath = "target_with_resources/java_binary.jdeps"
-                  rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-                })
+                addJdeps(
+                  BspTargetInfo.FileLocation.newBuilder().apply {
+                    relativePath = "target_with_resources/java_binary.jdeps"
+                    rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                  },
+                )
               }.build()
 
           javaToolchainInfo =
@@ -2549,34 +2812,51 @@ class ResolverSanityTest {
           id = "@//kotlin:java_library_exported"
           kind = "java_library"
           workspaceName = "_main"
-          
+
           // Add dependency as specified in input
-          addDependencies(BspTargetInfo.Dependency.newBuilder().apply {
-            id = "@//java_targets/subpackage:java_library"
-          })
-          
+          addDependencies(
+            BspTargetInfo.Dependency.newBuilder().apply {
+              id = "@//java_targets/subpackage:java_library"
+            },
+          )
+
           // Add jvmTargetInfo with jars but NO sources - this triggers creation of _output_jars library
-          jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-            addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-              addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                relativePath = "kotlin/libjava_library_exported.jar"
-                rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-              })
-              addSourceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-                relativePath = "kotlin/libjava_library_exported-src.jar"
-                rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-              })
-            })
-          }.build()
-          
-          javaToolchainInfo = BspTargetInfo.JavaToolchainInfo.newBuilder().apply {
-            sourceVersion = "11"
-            targetVersion = "11"
-            javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-              isExternal = true
-              rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk21_linux"
-            }.build()
-          }.build()
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "kotlin/libjava_library_exported.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addSourceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "kotlin/libjava_library_exported-src.jar"
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaToolchainInfo =
+            BspTargetInfo.JavaToolchainInfo
+              .newBuilder()
+              .apply {
+                sourceVersion = "11"
+                targetVersion = "11"
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk21_linux"
+                    }.build()
+              }.build()
 
           javaRuntimeInfo =
             BspTargetInfo.JavaRuntimeInfo
@@ -3326,272 +3606,413 @@ class ResolverSanityTest {
 
     // Add all Maven dependencies as specified in the input comments
     // These are needed to produce the 26 libraries in the expected output
-    
+
     // @@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305
     targets[Label.parse("@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305")] =
-      BspTargetInfo.TargetInfo.newBuilder().apply {
-        id = "@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305"
-        kind = "jvm_import"
-        addTags("maven_coordinates=com.google.code.findbugs:jsr305:3.0.2")
-        addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
-        addTags("maven_sha256=766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7")
-        addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar")
-        workspaceName = "_main"
-        
-        jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-          addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-            addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-            addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/header_jsr305-3.0.2.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          })
+      BspTargetInfo.TargetInfo
+        .newBuilder()
+        .apply {
+          id = "@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305"
+          kind = "jvm_import"
+          addTags("maven_coordinates=com.google.code.findbugs:jsr305:3.0.2")
+          addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
+          addTags("maven_sha256=766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7")
+          addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar")
+          workspaceName = "_main"
+
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/header_jsr305-3.0.2.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaRuntimeInfo =
+            BspTargetInfo.JavaRuntimeInfo
+              .newBuilder()
+              .apply {
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
+                    }.build()
+              }.build()
         }.build()
-        
-        javaRuntimeInfo = BspTargetInfo.JavaRuntimeInfo.newBuilder().apply {
-          javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-            isExternal = true
-            rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
-          }.build()
-        }.build()
-      }.build()
 
     // @@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations
     targets[Label.parse("@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations")] =
-      BspTargetInfo.TargetInfo.newBuilder().apply {
-        id = "@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations"
-        kind = "jvm_import"
-        addTags("maven_coordinates=com.google.errorprone:error_prone_annotations:2.7.1")
-        addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
-        addTags("maven_sha256=cd5257c08a246cf8628817ae71cb822be192ef91f6881ca4a3fcff4f1de1cff3")
-        addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/error_prone_annotations-2.7.1.jar")
-        workspaceName = "_main"
-        
-        jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-          addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-            addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-            addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/header_error_prone_annotations-2.7.1.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          })
+      BspTargetInfo.TargetInfo
+        .newBuilder()
+        .apply {
+          id = "@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations"
+          kind = "jvm_import"
+          addTags("maven_coordinates=com.google.errorprone:error_prone_annotations:2.7.1")
+          addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
+          addTags("maven_sha256=cd5257c08a246cf8628817ae71cb822be192ef91f6881ca4a3fcff4f1de1cff3")
+          addTags(
+            "maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/error_prone_annotations-2.7.1.jar",
+          )
+          workspaceName = "_main"
+
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/header_error_prone_annotations-2.7.1.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaRuntimeInfo =
+            BspTargetInfo.JavaRuntimeInfo
+              .newBuilder()
+              .apply {
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
+                    }.build()
+              }.build()
         }.build()
-        
-        javaRuntimeInfo = BspTargetInfo.JavaRuntimeInfo.newBuilder().apply {
-          javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-            isExternal = true
-            rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
-          }.build()
-        }.build()
-      }.build()
 
     // @@rules_jvm_external++maven+maven//:com_google_guava_failureaccess
     targets[Label.parse("@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess")] =
-      BspTargetInfo.TargetInfo.newBuilder().apply {
-        id = "@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess"
-        kind = "jvm_import"
-        addTags("maven_coordinates=com.google.guava:failureaccess:1.0.1")
-        addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
-        addTags("maven_sha256=a171ee4c734dd2da837e4b16be9df4661afab72a41adaf31eb84dfdaf936ca26")
-        addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar")
-        workspaceName = "_main"
-        
-        jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-          addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-            addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-            addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/header_failureaccess-1.0.1.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          })
+      BspTargetInfo.TargetInfo
+        .newBuilder()
+        .apply {
+          id = "@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess"
+          kind = "jvm_import"
+          addTags("maven_coordinates=com.google.guava:failureaccess:1.0.1")
+          addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
+          addTags("maven_sha256=a171ee4c734dd2da837e4b16be9df4661afab72a41adaf31eb84dfdaf936ca26")
+          addTags(
+            "maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar",
+          )
+          workspaceName = "_main"
+
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/header_failureaccess-1.0.1.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaRuntimeInfo =
+            BspTargetInfo.JavaRuntimeInfo
+              .newBuilder()
+              .apply {
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
+                    }.build()
+              }.build()
         }.build()
-        
-        javaRuntimeInfo = BspTargetInfo.JavaRuntimeInfo.newBuilder().apply {
-          javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-            isExternal = true
-            rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
-          }.build()
-        }.build()
-      }.build()
 
     // @@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture
     targets[Label.parse("@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture")] =
-      BspTargetInfo.TargetInfo.newBuilder().apply {
-        id = "@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture"
-        kind = "jvm_import"
-        addTags("maven_coordinates=com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
-        addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
-        addTags("maven_sha256=b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99")
-        addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar")
-        workspaceName = "_main"
-        
-        jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-          addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-            addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-            addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/header_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          })
+      BspTargetInfo.TargetInfo
+        .newBuilder()
+        .apply {
+          id = "@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture"
+          kind = "jvm_import"
+          addTags("maven_coordinates=com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
+          addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
+          addTags("maven_sha256=b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99")
+          addTags(
+            "maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+          )
+          workspaceName = "_main"
+
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/header_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaRuntimeInfo =
+            BspTargetInfo.JavaRuntimeInfo
+              .newBuilder()
+              .apply {
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
+                    }.build()
+              }.build()
         }.build()
-        
-        javaRuntimeInfo = BspTargetInfo.JavaRuntimeInfo.newBuilder().apply {
-          javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-            isExternal = true
-            rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
-          }.build()
-        }.build()
-      }.build()
 
     // @@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations
     targets[Label.parse("@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations")] =
-      BspTargetInfo.TargetInfo.newBuilder().apply {
-        id = "@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations"
-        kind = "jvm_import"
-        addTags("maven_coordinates=com.google.j2objc:j2objc-annotations:1.3")
-        addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
-        addTags("maven_sha256=21af30c92267bd6122c0e0b4d20cccb6641a37eaf956c6540ec471d584e64a7b")
-        addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar")
-        workspaceName = "_main"
-        
-        jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-          addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-            addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-            addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/header_j2objc-annotations-1.3.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          })
+      BspTargetInfo.TargetInfo
+        .newBuilder()
+        .apply {
+          id = "@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations"
+          kind = "jvm_import"
+          addTags("maven_coordinates=com.google.j2objc:j2objc-annotations:1.3")
+          addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
+          addTags("maven_sha256=21af30c92267bd6122c0e0b4d20cccb6641a37eaf956c6540ec471d584e64a7b")
+          addTags(
+            "maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar",
+          )
+          workspaceName = "_main"
+
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/header_j2objc-annotations-1.3.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaRuntimeInfo =
+            BspTargetInfo.JavaRuntimeInfo
+              .newBuilder()
+              .apply {
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
+                    }.build()
+              }.build()
         }.build()
-        
-        javaRuntimeInfo = BspTargetInfo.JavaRuntimeInfo.newBuilder().apply {
-          javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-            isExternal = true
-            rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
-          }.build()
-        }.build()
-      }.build()
 
     // @@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual
     targets[Label.parse("@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual")] =
-      BspTargetInfo.TargetInfo.newBuilder().apply {
-        id = "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual"
-        kind = "jvm_import"
-        addTags("maven_coordinates=org.checkerframework:checker-qual:3.12.0")
-        addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
-        addTags("maven_sha256=ff10785ac2a357ec5de9c293cb982a2cbb605c0309ea4cc1cb9b9bc6dbe7f3cb")
-        addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar")
-        workspaceName = "_main"
-        
-        jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-          addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-            addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-            addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/header_checker-qual-3.12.0.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          })
+      BspTargetInfo.TargetInfo
+        .newBuilder()
+        .apply {
+          id = "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual"
+          kind = "jvm_import"
+          addTags("maven_coordinates=org.checkerframework:checker-qual:3.12.0")
+          addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
+          addTags("maven_sha256=ff10785ac2a357ec5de9c293cb982a2cbb605c0309ea4cc1cb9b9bc6dbe7f3cb")
+          addTags(
+            "maven_url=https://cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar",
+          )
+          workspaceName = "_main"
+
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/header_checker-qual-3.12.0.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaRuntimeInfo =
+            BspTargetInfo.JavaRuntimeInfo
+              .newBuilder()
+              .apply {
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
+                    }.build()
+              }.build()
         }.build()
-        
-        javaRuntimeInfo = BspTargetInfo.JavaRuntimeInfo.newBuilder().apply {
-          javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-            isExternal = true
-            rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
-          }.build()
-        }.build()
-      }.build()
 
     // @@rules_jvm_external++maven+maven//:com_google_guava_guava - The main Guava library with dependencies
     targets[Label.parse("@@rules_jvm_external++maven+maven//:com_google_guava_guava")] =
-      BspTargetInfo.TargetInfo.newBuilder().apply {
-        id = "@@rules_jvm_external++maven+maven//:com_google_guava_guava"
-        kind = "jvm_import"
-        addTags("maven_coordinates=com.google.guava:guava:31.0.1-jre")
-        addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
-        addTags("maven_sha256=d5be94d65e87bd219fb3193ad1517baa55a3b88fc91d21cf735826ab5af087b9")
-        addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/guava-31.0.1-jre.jar")
-        
-        // Add all 6 dependencies as specified in the input
-        addDependencies(BspTargetInfo.Dependency.newBuilder().apply {
-          id = "@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305"
-        })
-        addDependencies(BspTargetInfo.Dependency.newBuilder().apply {
-          id = "@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations"
-        })
-        addDependencies(BspTargetInfo.Dependency.newBuilder().apply {
-          id = "@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess"
-        })
-        addDependencies(BspTargetInfo.Dependency.newBuilder().apply {
-          id = "@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture"
-        })
-        addDependencies(BspTargetInfo.Dependency.newBuilder().apply {
-          id = "@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations"
-        })
-        addDependencies(BspTargetInfo.Dependency.newBuilder().apply {
-          id = "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual"
-        })
-        
-        workspaceName = "_main"
-        
-        jvmTargetInfo = BspTargetInfo.JvmTargetInfo.newBuilder().apply {
-          addJars(BspTargetInfo.JvmOutputs.newBuilder().apply {
-            addBinaryJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-            addInterfaceJars(BspTargetInfo.FileLocation.newBuilder().apply {
-              relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/header_guava-31.0.1-jre.jar"
-              isExternal = true
-              rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
-            })
-          })
+      BspTargetInfo.TargetInfo
+        .newBuilder()
+        .apply {
+          id = "@@rules_jvm_external++maven+maven//:com_google_guava_guava"
+          kind = "jvm_import"
+          addTags("maven_coordinates=com.google.guava:guava:31.0.1-jre")
+          addTags("maven_repository=https://cache-redirector.jetbrains.com/maven-central")
+          addTags("maven_sha256=d5be94d65e87bd219fb3193ad1517baa55a3b88fc91d21cf735826ab5af087b9")
+          addTags("maven_url=https://cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/guava-31.0.1-jre.jar")
+
+          // Add all 6 dependencies as specified in the input
+          addDependencies(
+            BspTargetInfo.Dependency.newBuilder().apply {
+              id = "@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305"
+            },
+          )
+          addDependencies(
+            BspTargetInfo.Dependency.newBuilder().apply {
+              id = "@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations"
+            },
+          )
+          addDependencies(
+            BspTargetInfo.Dependency.newBuilder().apply {
+              id = "@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess"
+            },
+          )
+          addDependencies(
+            BspTargetInfo.Dependency.newBuilder().apply {
+              id = "@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture"
+            },
+          )
+          addDependencies(
+            BspTargetInfo.Dependency.newBuilder().apply {
+              id = "@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations"
+            },
+          )
+          addDependencies(
+            BspTargetInfo.Dependency.newBuilder().apply {
+              id = "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual"
+            },
+          )
+
+          workspaceName = "_main"
+
+          jvmTargetInfo =
+            BspTargetInfo.JvmTargetInfo
+              .newBuilder()
+              .apply {
+                addJars(
+                  BspTargetInfo.JvmOutputs.newBuilder().apply {
+                    addBinaryJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                    addInterfaceJars(
+                      BspTargetInfo.FileLocation.newBuilder().apply {
+                        relativePath = "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/header_guava-31.0.1-jre.jar"
+                        isExternal = true
+                        rootExecutionPathFragment = "bazel-out/k8-fastbuild/bin"
+                      },
+                    )
+                  },
+                )
+              }.build()
+
+          javaRuntimeInfo =
+            BspTargetInfo.JavaRuntimeInfo
+              .newBuilder()
+              .apply {
+                javaHome =
+                  BspTargetInfo.FileLocation
+                    .newBuilder()
+                    .apply {
+                      isExternal = true
+                      rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
+                    }.build()
+              }.build()
         }.build()
-        
-        javaRuntimeInfo = BspTargetInfo.JavaRuntimeInfo.newBuilder().apply {
-          javaHome = BspTargetInfo.FileLocation.newBuilder().apply {
-            isExternal = true
-            rootExecutionPathFragment = "external/rules_java++toolchains+remotejdk11_linux"
-          }.build()
-        }.build()
-      }.build()
 
     // Add internal library targets that appear in the expected output
     // These are referenced as dependencies in java_library_exported targets
-    
+
     // This doesn't actually exist as a separate target in the input, but is created by the mapper
     // We don't need to add it here as it's created internally
-    
+
     return targets
   }
 }

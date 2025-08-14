@@ -9,7 +9,7 @@ import java.nio.file.Path
 interface JvmPackageResolver {
   /**
    * Calculates the JVM package prefix for a given source file.
-   * 
+   *
    * @param source The path to the source file
    * @param multipleLines Whether to check multiple lines for package declarations (used for Scala)
    * @return The package prefix, or null if not found

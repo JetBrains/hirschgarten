@@ -13,9 +13,9 @@ import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class JavaLanguagePlugin(
-  private val bazelPathsResolver: BazelPathsResolver, 
+  private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
-  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver()
+  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver(),
 ) : LanguagePlugin<JavaModule>() {
   private var jdk: Jdk? = null
 
