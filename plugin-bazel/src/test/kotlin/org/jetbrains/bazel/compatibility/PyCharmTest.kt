@@ -18,6 +18,7 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -92,7 +93,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
+          syncBazelProjectCloseDialog()
           waitForIndicators(10.minutes)
 
           step("Open main.py and navigate to bbb") {
