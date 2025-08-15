@@ -53,7 +53,12 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
   private fun String.toVirtualFileInTheProject(): VirtualFile? {
     if ('/' !in this) return null
     if (trim() == "/") return null
-    return LocalFileSystem.getInstance().findFileByPath(toAbsolutePath())?.takeIf { it.exists() }
+
+    return LocalFileSystem
+      .getInstance()
+      .findFileByPath(toAbsolutePath())
+      ?.canonicalFile
+      ?.takeIf { it.exists() }
   }
 
   private fun String.toAbsolutePath(): String = if (startsWith("/")) this else "${project.rootDir.path}/$this"
