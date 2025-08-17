@@ -2,18 +2,21 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.Tag
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -23,14 +26,22 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
+import org.jetbrains.bazel.sync.workspace.languages.createBuildDataUnsafe
+import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.Module
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
@@ -43,28 +54,16 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 class AspectBazelProjectMapper(
-  private val languagePluginsService: LanguagePluginsService,
+  private val project: Project,
+  private val featureFlags: FeatureFlags,
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
-  private val environmentProvider: EnvironmentProvider,
 ) {
   val logger = logger<AspectBazelProjectMapper>()
 
   private suspend fun <T> measure(description: String, body: suspend () -> T): T =
     bspTracer.spanBuilder(description).useWithScope { body() }
-
-  private suspend fun <T> measureIf(
-    description: String,
-    predicate: () -> Boolean,
-    ifFalse: T,
-    body: suspend () -> T,
-  ): T =
-    if (predicate()) {
-      measure(description, body)
-    } else {
-      ifFalse
-    }
 
   suspend fun createProject(
     targets: Map<Label, TargetInfo>,
@@ -73,8 +72,9 @@ class AspectBazelProjectMapper(
     featureFlags: FeatureFlags,
     repoMapping: RepoMapping,
     hasError: Boolean,
-  ): AspectBazelMappedProject {
-    languagePluginsService.prepareSync(targets.values.asSequence(), workspaceContext)
+  ): BazelResolvedWorkspace {
+    project.service<LanguagePluginsService>().all
+      .forEach { it.prepareSync(targets.values.asSequence(), workspaceContext) }
     val dependencyGraph =
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, targets)
@@ -165,7 +165,6 @@ class AspectBazelProjectMapper(
       measure("Create modules") {
         createModules(
           targetsToImport,
-          dependencyGraph,
           concatenateMaps(
             librariesFromDeps,
             extraLibrariesFromJdeps,
@@ -194,14 +193,18 @@ class AspectBazelProjectMapper(
 
     val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
 
-    return AspectBazelMappedProject(
+    val aspectMappedProject = AspectBazelMappedProject(
       workspaceName = workspaceName,
       modules = modulesFromBazel.toList(),
       libraries = librariesToImport,
       nonModuleTargets = nonModuleTargets,
       hasError = hasError,
       moduleCache = modulesFromBazel.associateBy { it.label },
+      graph = dependencyGraph,
+      repoMapping = repoMapping,
     )
+
+    return resolveWorkspace(aspectMappedProject)
   }
 
   private fun <K, V> concatenateMaps(vararg maps: Map<K, List<V>>): Map<K, List<V>> =
@@ -227,7 +230,7 @@ class AspectBazelProjectMapper(
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.hasJvmTargetInfo() && !hasKnownJvmSources(targetInfo)) ||
           (targetInfo.hasJvmTargetInfo() && targetInfo.jvmTargetInfo.hasApiGeneratingPlugins)
-      )
+        )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -315,19 +318,22 @@ class AspectBazelProjectMapper(
         )
       }
 
+  // TODO: refactor to language-specific logic
   private fun calculateScalaLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
     val projectLevelScalaSdkLibraries = calculateProjectLevelScalaSdkLibraries()
     val projectLevelScalaTestLibraries = calculateProjectLevelScalaTestLibraries()
     val scalaTargets = targetsToImport.filter { it.hasScalaTargetInfo() }.map { it.label() }
+    val scalaPlugin = project.service<LanguagePluginsService>()
+      .getLangaugePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
     return scalaTargets.associateWith {
       val sdkLibraries =
-        languagePluginsService.scalaLanguagePlugin.scalaSdks[it]
+        scalaPlugin.scalaSdks[it]
           ?.compilerJars
           ?.mapNotNull {
             projectLevelScalaSdkLibraries[it]
           }.orEmpty()
       val testLibraries =
-        languagePluginsService.scalaLanguagePlugin.scalaTestJars[it]
+        scalaPlugin.scalaTestJars[it]
           ?.mapNotNull {
             projectLevelScalaTestLibraries[it]
           }.orEmpty()
@@ -346,8 +352,11 @@ class AspectBazelProjectMapper(
       )
     }
 
-  private fun calculateProjectLevelScalaTestLibraries(): Map<Path, Library> =
-    languagePluginsService.scalaLanguagePlugin.scalaTestJars.values
+  // TODO: refactor to language-specific logic
+  private fun calculateProjectLevelScalaTestLibraries(): Map<Path, Library> {
+    val scalaPlugin = project.service<LanguagePluginsService>()
+      .getLangaugePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
+    return scalaPlugin.scalaTestJars.values
       .flatten()
       .toSet()
       .associateWith {
@@ -358,13 +367,18 @@ class AspectBazelProjectMapper(
           dependencies = emptyList(),
         )
       }
+  }
 
-  private fun getProjectLevelScalaSdkLibrariesJars(): Set<Path> =
-    languagePluginsService.scalaLanguagePlugin.scalaSdks.values
+  // TODO: refactor to language-specific logic
+  private fun getProjectLevelScalaSdkLibrariesJars(): Set<Path> {
+    val scalaPlugin = project.service<LanguagePluginsService>()
+      .getLangaugePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
+    return scalaPlugin.scalaSdks.values
       .toSet()
       .flatMap {
         it.compilerJars
       }.toSet()
+  }
 
   /**
    * In some cases, the jar dependencies of a target might be injected by bazel or rules and not are not
@@ -655,9 +669,6 @@ class AspectBazelProjectMapper(
       .flatMap { it.interfaceJarsList }
       .map { bazelPathsResolver.resolve(it) }
 
-  private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =
-    bazelPathsResolver.toDirectoryPath(targetInfo.label().assumeResolved(), repoMapping)
-
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
     targets
       .associate { target ->
@@ -707,9 +718,9 @@ class AspectBazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-            )
-        )
-    ) ||
+              )
+          )
+      ) ||
       featureFlags.isGoSupportEnabled &&
       target.hasGoTargetInfo() &&
       hasKnownGoSources(target) ||
@@ -747,7 +758,6 @@ class AspectBazelProjectMapper(
 
   private suspend fun createModules(
     targetsToImport: Sequence<TargetInfo>,
-    dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
@@ -757,53 +767,49 @@ class AspectBazelProjectMapper(
         .toList()
         .map {
           async {
-            createModule(
-              it,
-              dependencyGraph,
-              generatedLibraries[it.label()].orEmpty(),
-              repoMapping,
-              workspaceContext,
-            )
+            createModules(it, generatedLibraries[it.label()].orEmpty(), repoMapping, workspaceContext)
           }
         }.awaitAll()
+        .flatMap { it }
         .filterNot { it.tags.contains(Tag.NO_IDE) }
     }
 
-  private fun createModule(
+  private fun createModules(
     target: TargetInfo,
-    dependencyGraph: DependencyGraph,
     extraLibraries: Collection<Library>,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
-  ): Module {
+  ): Sequence<Module> {
+    val languagePluginService = project.service<LanguagePluginsService>()
     val label = target.label().assumeResolved()
     val resolvedDependencies = resolveDirectDependencies(target)
     // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
     val (extraLibraries, lowPriorityExtraLibraries) = extraLibraries.partition { !it.isLowPriority }
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
-    val languages = inferLanguages(target)
     val tags = targetTagsResolver.resolveTags(target, workspaceContext)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
-    val languagePlugin = languagePluginsService.getPlugin(languages)
-    val sources = resolveSourceSet(target, languagePlugin)
-    val resources = resolveResources(target, languagePlugin)
-    val languageData = languagePlugin.resolveModule(target)
-    val sourceDependencies = languagePlugin.dependencySources(target, dependencyGraph)
-    val environment = environmentItem(target)
-    return Module(
-      label = label,
-      isSynthetic = false,
-      directDependencies = directDependencies,
-      languages = languages,
-      tags = tags,
-      baseDirectory = baseDirectory,
-      sources = sources,
-      resources = resources,
-      sourceDependencies = sourceDependencies,
-      languageData = languageData,
-      environmentVariables = environment,
-      kindString = target.kind,
-    )
+
+    return inferLanguages(target)
+      .asSequence()
+      .map {
+        val languagePlugin = languagePluginService.getLangaugePlugin(it) ?: return@map null
+        val sources = resolveSourceSet(target, languagePlugin)
+        val resources = resolveResources(target, languagePlugin)
+        val languageData = languagePlugin.createIntermediateModel(target)
+        return@map Module(
+          label = label,
+          directDependencies = directDependencies,
+          language = it,
+          tags = tags,
+          baseDirectory = baseDirectory,
+          sources = sources,
+          resources = resources,
+          languageData = languageData,
+          kindString = target.kind,
+          target = target,
+        )
+      }
+      .filterNotNull()
   }
 
   private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
@@ -852,7 +858,7 @@ class AspectBazelProjectMapper(
       }
     }
 
-  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
+  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*, *>): List<SourceItem> {
     val sources =
       (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
         .toSet()
@@ -878,22 +884,131 @@ class AspectBazelProjectMapper(
     logger.warn(message)
   }
 
-  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
+  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*, *>): Set<Path> =
     (bazelPathsResolver.resolvePaths(target.resourcesList) + languagePlugin.resolveAdditionalResources(target))
       .filter { it.exists() }
       .toSet()
-
-  private fun environmentItem(target: TargetInfo): Map<String, String> {
-    val inheritedEnvs = collectInheritedEnvs(target)
-    val targetEnv = target.envMap
-    return inheritedEnvs + targetEnv
-  }
-
-  private fun collectInheritedEnvs(targetInfo: TargetInfo): Map<String, String> =
-    targetInfo.envInheritList.associateWith { environmentProvider.getValue(it) ?: "" }
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
       it.isMainWorkspace && !it.packagePath.toString().startsWith(".bazelbsp")
     }
+
+  fun resolveWorkspace(project: AspectBazelMappedProject): BazelResolvedWorkspace =
+    BazelResolvedWorkspace(
+      targets = mapWorkspaceTargets(project),
+      libraries = mapWorkspaceLibraries(project),
+      hasError = project.hasError,
+    )
+
+  private fun mapWorkspaceTargets(project: AspectBazelMappedProject): BuildTargetCollection {
+    val highPrioritySources =
+      if (featureFlags.isSharedSourceSupportEnabled) {
+        emptySet()
+      } else {
+        project.modules
+          .asSequence()
+          .filter { !it.hasLowSharedSourcesPriority() }
+          .flatMap { it.sources }
+          .map { it.path }
+          .toSet()
+      }
+    val buildTargets = project.modules.mapNotNull { toBuildTarget(project, highPrioritySources, it) }
+    val nonModuleTargets =
+      project.nonModuleTargets
+        .asSequence()
+        .map { it.toBuildTarget() }
+        .filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
+        .toList()
+    return BuildTargetCollection().apply {
+      addBuildTargets(buildTargets)
+      addNonModuleTargets(nonModuleTargets)
+    }
+  }
+
+  private fun mapWorkspaceLibraries(project: AspectBazelMappedProject): List<LibraryItem> {
+    val libraries =
+      project.libraries.values.map {
+        LibraryItem(
+          id = it.label,
+          dependencies = it.dependencies,
+          ijars = it.interfaceJars.toList(),
+          jars = it.outputs.toList(),
+          sourceJars = it.sources.toList(),
+          mavenCoordinates = it.mavenCoordinates,
+          isFromInternalTarget = it.isFromInternalTarget,
+        )
+      }
+    return libraries
+  }
+
+  private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {
+    val tags = tags.mapNotNull(BspMappings::toBspTag)
+    val buildTarget =
+      RawBuildTarget(
+        id = label,
+        tags = tags,
+        kind = inferKind(this.tags, kindString, emptySet()),
+        baseDirectory = baseDirectory,
+        dependencies = emptyList(),
+        sources = emptyList(),
+        resources = emptyList(),
+        data = null,
+      )
+    return buildTarget
+  }
+
+  private fun toBuildTarget(project: AspectBazelMappedProject, highPrioritySources: Set<Path>, module: Module): RawBuildTarget? {
+    val tags = module.tags.mapNotNull(BspMappings::toBspTag)
+
+    val (sources, lowPrioritySharedSources) =
+      if (module.hasLowSharedSourcesPriority()) {
+        module.sources.partition { it.path !in highPrioritySources }
+      } else {
+        module.sources to emptyList()
+      }
+
+    val languagePlugin = this.project.service<LanguagePluginsService>()
+      .getLangaugePlugin(module.language) ?: return null
+
+    val context = LanguagePluginContext(module.target, project.graph)
+    val languageData = module.languageData ?: error("Target ${module.label} has no language data")
+    val data = languagePlugin.createBuildDataUnsafe(context, languageData)
+
+    val buildTarget =
+      RawBuildTarget(
+        id = module.label,
+        tags = tags,
+        dependencies = module.directDependencies,
+        kind = inferKind(module.tags, module.kindString, setOf(module.language)),
+        baseDirectory = module.baseDirectory,
+        sources = sources,
+        lowPrioritySharedSources = lowPrioritySharedSources,
+        noBuild = module.tags.contains(Tag.NO_BUILD),
+        resources = module.resources.toList(),
+        data = data,
+      )
+    return buildTarget
+  }
+
+  private fun Module.hasLowSharedSourcesPriority(): Boolean = Tag.IDE_LOW_SHARED_SOURCES_PRIORITY in tags
+
+  private fun inferKind(
+    tags: Set<Tag>,
+    kindString: String,
+    languages: Set<LanguageClass>,
+  ): TargetKind {
+    val ruleType =
+      when {
+        tags.contains(Tag.TEST) -> RuleType.TEST
+        tags.contains(Tag.APPLICATION) -> RuleType.BINARY
+        tags.contains(Tag.LIBRARY) -> RuleType.LIBRARY
+        else -> RuleType.UNKNOWN
+      }
+    return TargetKind(
+      kindString = kindString,
+      languageClasses = languages,
+      ruleType = ruleType,
+    )
+  }
 }

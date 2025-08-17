@@ -55,6 +55,7 @@ import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
+import java.nio.file.Path
 
 private const val PYTHON_SDK_ID = "PythonSDK"
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
@@ -73,15 +74,14 @@ class PythonProjectSync : ProjectSyncHook {
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
-      val sourceDependencies = calculateDependenciesSources(pythonTargets.map { it.id }, environment)
       val defaultSdk = getSystemSdk()
 
       pythonTargets.forEach {
         val moduleName = it.id.formatAsModuleName(environment.project)
         val moduleSourceEntity = BazelModuleEntitySource(moduleName)
-        val targetSourceDependencies = sourceDependencies[it.id] ?: emptyList()
+        val target = it.data as? PythonBuildTarget ?: error("TODO")
         val sourceDependencyLibrary =
-          calculateSourceDependencyLibrary(it.id, targetSourceDependencies, moduleSourceEntity, virtualFileUrlManager)
+          calculateSourceDependencyLibrary(it.id, target.sourceDependencies, moduleSourceEntity, virtualFileUrlManager)
 
         addModuleEntityFromTarget(
           builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
@@ -157,31 +157,14 @@ class PythonProjectSync : ProjectSyncHook {
   private fun chooseSdkName(interpreter: PythonBuildTarget, projectName: String): String =
     "$projectName-python-${StringUtils.md5Hash(interpreter.interpreter.toString(), 5)}"
 
-  private suspend fun calculateDependenciesSources(
-    targets: List<Label>,
-    environment: ProjectSyncHookEnvironment,
-  ): Map<Label, List<DependencySourcesItem>> =
-    environment.progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.python.source.deps")) {
-      environment.project.syncConsole.withSubtask(
-        taskId = environment.taskId,
-        subtaskId = "calculate-python-dependency-sources",
-        message = BazelPluginBundle.message("console.task.model.calculate.python.source.deps"),
-      ) {
-        queryDependenciesSources(environment, targets).items.groupBy { it.target }
-      }
-    }
-
-  private suspend fun queryDependenciesSources(environment: ProjectSyncHookEnvironment, targets: List<Label>): DependencySourcesResult =
-    environment.resolver.withEndpointProxy { it.dependencySources(DependencySourcesParams(targets)) }
-
   private fun calculateSourceDependencyLibrary(
     target: Label,
-    sourceDependencies: List<DependencySourcesItem>,
+    sourceDependencies: List<Path>,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): LibraryEntity.Builder? {
     val roots =
-      sourceDependencies.flatMap { it.sources }.distinct().map {
+      sourceDependencies.distinct().map {
         LibraryRoot(
           url = it.toVirtualFileUrl(virtualFileUrlManager),
           type = LibraryRootTypeId.SOURCES,

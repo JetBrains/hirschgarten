@@ -1,42 +1,56 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.java.JdkResolver
+import org.jetbrains.bazel.sync.workspace.languages.java.JdkVersionResolver
 import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.model.Module
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
-class LanguagePluginsService(
-  val scalaLanguagePlugin: ScalaLanguagePlugin,
-  private val javaLanguagePlugin: JavaLanguagePlugin,
-  private val kotlinLanguagePlugin: KotlinLanguagePlugin,
-  private val thriftLanguagePlugin: ThriftLanguagePlugin,
-  val pythonLanguagePlugin: PythonLanguagePlugin,
-  val goLanguagePlugin: GoLanguagePlugin,
-) {
-  private val emptyLanguagePlugin: EmptyLanguagePlugin = EmptyLanguagePlugin()
+@Service(Service.Level.PROJECT)
+class LanguagePluginsService {
 
-  fun prepareSync(targetInfos: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
-    scalaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
-    javaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
-    thriftLanguagePlugin.prepareSync(targetInfos, workspaceContext)
-    pythonLanguagePlugin.prepareSync(targetInfos, workspaceContext)
-    goLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+  val logger = logger<LanguagePluginsService>()
+  val registry: MutableMap<LanguageClass, LanguagePlugin<*, *>> = mutableMapOf()
+
+  val all
+    get() = registry.values
+
+  fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver) {
+    val javaPlugin = JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()))
+      .also(this::registerLangaugePlugin)
+    KotlinLanguagePlugin(javaPlugin, bazelPathsResolver)
+      .also(this::registerLangaugePlugin)
+    ScalaLanguagePlugin(javaPlugin, bazelPathsResolver)
+      .also(this::registerLangaugePlugin)
+    GoLanguagePlugin(bazelPathsResolver)
+      .also(this::registerLangaugePlugin)
+    PythonLanguagePlugin(bazelPathsResolver)
+      .also(this::registerLangaugePlugin)
+    ThriftLanguagePlugin()
+      .also(this::registerLangaugePlugin)
   }
 
-  fun getPlugin(languages: Set<LanguageClass>): LanguagePlugin<*> =
-    when {
-      languages.contains(LanguageClass.KOTLIN) -> kotlinLanguagePlugin
-      languages.contains(LanguageClass.SCALA) -> scalaLanguagePlugin
-      languages.contains(LanguageClass.JAVA) -> javaLanguagePlugin
-      languages.contains(LanguageClass.THRIFT) -> thriftLanguagePlugin
-      languages.contains(LanguageClass.PYTHON) -> pythonLanguagePlugin
-      languages.contains(LanguageClass.GO) -> goLanguagePlugin
-      else -> emptyLanguagePlugin
+  fun registerLangaugePlugin(plugin: LanguagePlugin<*, *>) {
+    for (klass in plugin.getSupportedLanguages()) {
+      if (this.registry.contains(klass)) {
+        logger.warn("Language plugin already registered for class: $klass")
+        continue
+      }
+      registry[klass] = plugin
     }
+  }
+
+  fun getLangaugePlugin(lang: LanguageClass): LanguagePlugin<*, *>? = registry[lang]
+
+  fun getLangaugePlugin(langs: Set<LanguageClass>): LanguagePlugin<*, *> = langs.firstNotNullOfOrNull { getLangaugePlugin(it) } ?: EmptyLanguagePlugin
+
+  inline fun <reified PLUGIN> getLangaugePlugin(lang: LanguageClass): PLUGIN =
+    getLangaugePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")
 }

@@ -1,27 +1,23 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.model.LanguageData
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetData
 import java.nio.file.Path
 
-abstract class LanguagePlugin<T : LanguageData> {
-  open fun calculateJvmPackagePrefix(source: Path): String? = null
-
-  open fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
-
-  open fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> = emptySet()
-
-  open fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
-
-  open fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): T? = null
-
-  open fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> = emptySet()
-
-  @Suppress("UNCHECKED_CAST")
-  fun setModuleData(moduleData: LanguageData, buildTarget: RawBuildTarget) = applyModuleData(moduleData as T, buildTarget)
-
-  protected abstract fun applyModuleData(moduleData: T, buildTarget: RawBuildTarget)
+// TODO: merge createIntermediateModel -> createBuildTargetData
+interface LanguagePlugin<INTERMEDIATE : LanguageData, BUILD_TARGET : BuildTargetData> {
+  fun getSupportedLanguages(): Set<LanguageClass>
+  fun calculateJvmPackagePrefix(source: Path): String? = null
+  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
+  fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> = emptySet()
+  fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
+  fun createIntermediateModel(targetInfo: BspTargetInfo.TargetInfo): INTERMEDIATE?
+  fun createBuildTargetData(context: LanguagePluginContext, ir: INTERMEDIATE): BUILD_TARGET?
 }
+
+@Suppress("UNCHECKED_CAST")
+fun <IR : LanguageData, BT : BuildTargetData> LanguagePlugin<IR, BT>.createBuildDataUnsafe(context: LanguagePluginContext, ir: Any): BT? =
+  this.createBuildTargetData(context, ir as IR)

@@ -66,16 +66,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         baseDirectory = Path("base/dir"),
       )
 
-    val javacOptions =
-      JavacOptionsItem(
-        targetId,
-        emptyList(),
-      )
-
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
-        javacOptions = javacOptions,
+        javacOptions = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
@@ -149,7 +143,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       BspModuleDetails(
         target = target,
         type = ModuleTypeId("JAVA_MODULE"),
-        javacOptions = null,
+        javacOptions = listOf(),
         associates =
           listOf(
             Label.parse("@//target4"),
@@ -240,16 +234,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         baseDirectory = Path("base/dir"),
       )
 
-    val javacOptionsItem1 =
-      JavacOptionsItem(
-        target1Id,
-        emptyList(),
-      )
-
     val bspModuleDetails1 =
       BspModuleDetails(
         target = target1,
-        javacOptions = javacOptionsItem1,
+        javacOptions = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
@@ -280,15 +268,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         baseDirectory = Path("base/dir"),
       )
 
-    val javacOptionsItem2 =
-      JavacOptionsItem(
-        target2Id,
-        emptyList(),
-      )
     val bspModuleDetails2 =
       BspModuleDetails(
         target = target2,
-        javacOptions = javacOptionsItem2,
+        javacOptions = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(

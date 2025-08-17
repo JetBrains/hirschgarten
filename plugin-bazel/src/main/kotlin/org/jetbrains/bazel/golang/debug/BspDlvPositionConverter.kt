@@ -18,13 +18,16 @@
 package org.jetbrains.bazel.golang.debug
 
 import com.goide.dlv.location.DlvPositionConverter
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
+import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import java.io.File
@@ -118,10 +121,9 @@ class BspDlvPositionConverter(
       BazelResolveLocalToRemoteParams(
         localPaths = localPaths,
       )
-    return BazelWorkspaceResolveService
-      .getInstance(project)
-      .withEndpointProxy { it.resolveLocalToRemote(params) }
-      .resolvedPaths
+    return project.service<LanguagePluginsService>()
+      .getLangaugePlugin<GoLanguagePlugin>(LanguageClass.GO)
+      .resolveLocalToRemote(params).resolvedPaths
   }
 
   private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, String> {
@@ -130,9 +132,8 @@ class BspDlvPositionConverter(
         remotePaths = remotePaths,
         goRoot = goRoot,
       )
-    return BazelWorkspaceResolveService
-      .getInstance(project)
-      .withEndpointProxy { it.resolveRemoteToLocal(params) }
-      .resolvedPaths
+    return project.service<LanguagePluginsService>()
+      .getLangaugePlugin<GoLanguagePlugin>(LanguageClass.GO)
+      .resolveRemoteToLocal(params).resolvedPaths
   }
 }

@@ -115,7 +115,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = javacOptionsItem,
+        javacOptions = listOf(),
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -241,7 +241,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = null,
+        javacOptions = listOf(),
         libraryDependencies = emptyList(),
         moduleDependencies =
           listOf(
@@ -366,16 +366,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val target1JavacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId1,
-        listOf("opt1.1", "opt1.2", "opt1.3"),
-      )
-
     val moduleDetails1 =
       ModuleDetails(
         target = buildTarget1,
-        javacOptions = target1JavacOptionsItem,
+        javacOptions = listOf("opt1.1", "opt1.2", "opt1.3"),
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -427,16 +421,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val target2JavacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId2,
-        listOf("opt2.1", "opt2.2"),
-      )
-
     val moduleDetails2 =
       ModuleDetails(
         target = buildTarget2,
-        javacOptions = target2JavacOptionsItem,
+        javacOptions = listOf("opt2.1", "opt2.2"),
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -629,16 +617,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         resources = listOf(resourceFilePath),
       )
 
-    val javacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId,
-        listOf("opt1", "opt2", "opt3"),
-      )
-
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = javacOptionsItem,
+        javacOptions = listOf("opt1", "opt2", "opt3"),
         libraryDependencies = null,
         moduleDependencies =
           listOf(

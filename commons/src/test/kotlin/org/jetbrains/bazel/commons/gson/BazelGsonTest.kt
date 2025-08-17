@@ -38,6 +38,7 @@ class BazelGsonTest {
             listOf(),
             false,
             listOf(),
+            listOf()
           ),
       )
 

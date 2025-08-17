@@ -47,7 +47,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         resourceRoots = toResourceRoots(inputEntity),
         // Any java module must be assigned a jdk if there is any available.
         jvmJdkName = inputEntity.toJdkNameOrDefault(),
-        jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars },
+        jvmBinaryJars = inputEntity.jvmBinaryJars,
         kotlinAddendum = toKotlinAddendum(inputEntity),
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
@@ -145,12 +145,13 @@ internal class ModuleDetailsToJavaModuleTransformer(
     extractJvmBuildTarget(inputEntity.target)?.javaVersion?.let {
       JavaAddendum(
         languageVersion = it,
-        javacOptions = inputEntity.javacOptions?.options.orEmpty(),
+        javacOptions = inputEntity.javacOptions,
       )
     }
 
   private fun toAndroidAddendum(inputEntity: ModuleDetails): AndroidAddendum? {
     val androidBuildTarget = extractAndroidBuildTarget(inputEntity.target) ?: return null
+    // TODO: can this be removed now?
     return with(androidBuildTarget) {
       AndroidAddendum(
         androidSdkName = androidJar.androidJarToAndroidSdkName(),

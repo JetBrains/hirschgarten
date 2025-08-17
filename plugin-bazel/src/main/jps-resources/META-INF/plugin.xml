@@ -399,6 +399,11 @@
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
 
     <projectService
+      serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
+      serviceInterface="org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService"
+    />
+
+    <projectService
       overrides="true"
       serviceImplementation="org.jetbrains.bazel.services.BazelBaseProjectDirectories"
       serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"

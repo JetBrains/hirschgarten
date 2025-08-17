@@ -8,14 +8,15 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import java.nio.file.Path
 
 data class ModuleDetails(
   val target: RawBuildTarget,
-  val javacOptions: JavacOptionsItem?,
+  val javacOptions: List<String>,
   val libraryDependencies: List<Label>?,
   val moduleDependencies: List<Label>,
   val defaultJdkName: String?,
-  val jvmBinaryJars: List<JvmBinaryJarsItem>,
+  val jvmBinaryJars: List<Path>,
 )
 
 interface WorkspaceModelUpdater {

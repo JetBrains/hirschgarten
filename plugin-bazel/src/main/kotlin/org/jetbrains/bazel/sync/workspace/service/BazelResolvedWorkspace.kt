@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.workspace
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import java.util.EnumMap
 
 data class BazelResolvedWorkspace(
   val targets: BuildTargetCollection,

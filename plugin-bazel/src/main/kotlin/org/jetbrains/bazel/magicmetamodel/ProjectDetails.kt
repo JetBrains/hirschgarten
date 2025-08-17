@@ -10,9 +10,7 @@ import org.jetbrains.bsp.protocol.RawBuildTarget
 data class ProjectDetails(
   val targetIds: List<Label>,
   val targets: Set<RawBuildTarget>,
-  val javacOptions: List<JavacOptionsItem>,
   val libraries: List<LibraryItem>?,
   var defaultJdkName: String? = null,
-  var jvmBinaryJars: List<JvmBinaryJarsItem> = emptyList(),
   val workspaceContext: WorkspaceContext? = null,
 )
