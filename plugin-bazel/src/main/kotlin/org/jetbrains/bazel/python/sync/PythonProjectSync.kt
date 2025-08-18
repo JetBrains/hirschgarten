@@ -79,7 +79,7 @@ class PythonProjectSync : ProjectSyncHook {
       pythonTargets.forEach {
         val moduleName = it.id.formatAsModuleName(environment.project)
         val moduleSourceEntity = BazelModuleEntitySource(moduleName)
-        val target = it.data as? PythonBuildTarget ?: error("TODO")
+        val target = it.data as? PythonBuildTarget ?: return@forEach
         val sourceDependencyLibrary =
           calculateSourceDependencyLibrary(it.id, target.sourceDependencies, moduleSourceEntity, virtualFileUrlManager)
 
