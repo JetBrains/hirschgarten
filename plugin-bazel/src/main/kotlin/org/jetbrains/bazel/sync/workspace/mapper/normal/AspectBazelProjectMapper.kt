@@ -229,7 +229,12 @@ class AspectBazelProjectMapper(
       }
 
     val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, highPrioritySources, repoMapping, dependencyGraph) }
-    val nonModuleRawTargets = measure("create non module raw targets") { nonModuleTargets.map { it.toBuildTarget() } }
+    val nonModuleRawTargets =
+      measure("create non module raw targets") {
+        nonModuleTargets
+          .map { it.toBuildTarget() }
+          .filter { it.kind.isExecutable }
+      }
 
     return BazelResolvedWorkspace(
       targets = BuildTargetCollection().apply {
