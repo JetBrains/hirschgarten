@@ -18,30 +18,10 @@ import java.nio.file.Path
 class RunEnvironmentProvider(val project: Project) {
   suspend fun getJvmEnvironmentItem(
     target: Label,
-  ): JvmEnvironmentItem? {
-    return project.connection.runWithServer fn@{ server ->
-      val paths = server.workspaceBazelPaths()
-      val data = this.project.targetUtils.getBuildTargetForLabel(target)?.data ?: return@fn null
-      return@fn data.getJvmEnvironmentItem(paths.bazelPathsResolver, server, target)
-    }
-    //fun extractJvmEnvironmentItem(module: Module, runtimeClasspath: List<Path>): JvmEnvironmentItem? =
-    //  module.javaModule?.let { javaModule ->
-    //    JvmEnvironmentItem(
-    //      module.label,
-    //      runtimeClasspath,
-    //      javaModule.jvmOps.toList(),
-    //      bazelPathsResolver.workspaceRoot(),
-    //      module.environmentVariables,
-    //      mainClasses = javaModule.mainClass?.let { listOf(JvmMainClass(it, javaModule.args)) }.orEmpty(),
-    //    )
-    //  }
-    //
-    //return targets.mapNotNull {
-    //  val module = project.findModule(it)
-    //  val classpath = server.workspaceTargetClasspathQuery(WorkspaceTargetClasspathQueryParams(it))
-    //  val resolvedClasspath = resolveClasspath(classpath.runtimeClasspath)
-    //  module?.let { extractJvmEnvironmentItem(module, resolvedClasspath) }
-    //}
+  ): JvmEnvironmentItem? = project.connection.runWithServer { server ->
+    val paths = server.workspaceBazelPaths()
+    val data = this.project.targetUtils.getBuildTargetForLabel(target)?.data ?: return@runWithServer null
+    return@runWithServer data.getJvmEnvironmentItem(paths.bazelPathsResolver, server, target)
   }
 
   private suspend fun BuildTargetData.getJvmEnvironmentItem(
@@ -63,8 +43,8 @@ class RunEnvironmentProvider(val project: Project) {
     )
   }
 
-  private fun resolveClasspath(paths: BazelPathsResolver, cqueryResult: List<Path>): List<Path> =
-    cqueryResult
+  private fun resolveClasspath(paths: BazelPathsResolver, classpathQueryResult: List<Path>): List<Path> =
+    classpathQueryResult
       .map { paths.resolveOutput(it) }
       .filter { it.toFile().exists() } // I'm surprised this is needed, but we literally test it in e2e tests
 }
