@@ -51,7 +51,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         kotlinAddendum = toKotlinAddendum(inputEntity),
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
-        androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
+        androidAddendum = null,
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
@@ -148,23 +148,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
         javacOptions = inputEntity.javacOptions,
       )
     }
-
-  private fun toAndroidAddendum(inputEntity: ModuleDetails): AndroidAddendum? {
-    val androidBuildTarget = extractAndroidBuildTarget(inputEntity.target) ?: return null
-    // TODO: can this be removed now?
-    return with(androidBuildTarget) {
-      AndroidAddendum(
-        androidSdkName = androidJar.androidJarToAndroidSdkName(),
-        androidTargetType = androidTargetType,
-        manifest = manifest,
-        manifestOverrides = manifestOverrides,
-        resourceDirectories = resourceDirectories,
-        resourceJavaPackage = resourceJavaPackage,
-        assetsDirectories = assetsDirectories,
-        apk = apk,
-      )
-    }
-  }
 
   private fun toAssociates(inputEntity: ModuleDetails): List<Label> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
