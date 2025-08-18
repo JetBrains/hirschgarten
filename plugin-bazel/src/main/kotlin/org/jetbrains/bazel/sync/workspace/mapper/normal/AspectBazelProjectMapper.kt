@@ -80,8 +80,10 @@ class AspectBazelProjectMapper(
     extraLibraries: Map<Label, List<Library>>,
   ): IntermediateTargetData? {
     val languages = inferLanguages(this)
-    val languagePlugin = project.service<LanguagePluginsService>()
-      .getLanguagePlugin(languages) ?: return null
+    val languagePlugin =
+      project
+        .service<LanguagePluginsService>()
+        .getLanguagePlugin(languages) ?: return null
     val tags = targetTagsResolver.resolveTags(this, workspaceContext).toSet()
     val label = this.label().assumeResolved()
     return IntermediateTargetData(
@@ -213,16 +215,18 @@ class AspectBazelProjectMapper(
 
     val extraLibraries = concatenateMaps(librariesFromDeps, extraLibrariesFromJdeps)
 
-    //val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
-    val targets = measure("create intermediate targets") {
-      targets.values.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }
-    }
+    // val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
+    val targets =
+      measure("create intermediate targets") {
+        targets.values.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }
+      }
 
     val highPrioritySources =
       if (this.featureFlags.isSharedSourceSupportEnabled) {
         emptySet()
       } else {
-        targets.filter { !it.tags.hasLowSharedSourcesPriority() }
+        targets
+          .filter { !it.tags.hasLowSharedSourcesPriority() }
           .flatMap { it.sources }
           .map { it.path }
           .toSet()
@@ -237,21 +241,23 @@ class AspectBazelProjectMapper(
       }
 
     return BazelResolvedWorkspace(
-      targets = BuildTargetCollection().apply {
-        addBuildTargets(rawTargets)
-        addNonModuleTargets(nonModuleRawTargets)
-      },
-      libraries = librariesToImport.values.map {
-        LibraryItem(
-          id = it.label,
-          dependencies = it.dependencies,
-          ijars = it.interfaceJars.toList(),
-          jars = it.outputs.toList(),
-          sourceJars = it.sources.toList(),
-          mavenCoordinates = it.mavenCoordinates,
-          isFromInternalTarget = it.isFromInternalTarget,
-        )
-      },
+      targets =
+        BuildTargetCollection().apply {
+          addBuildTargets(rawTargets)
+          addNonModuleTargets(nonModuleRawTargets)
+        },
+      libraries =
+        librariesToImport.values.map {
+          LibraryItem(
+            id = it.label,
+            dependencies = it.dependencies,
+            ijars = it.interfaceJars.toList(),
+            jars = it.outputs.toList(),
+            sourceJars = it.sources.toList(),
+            mavenCoordinates = it.mavenCoordinates,
+            isFromInternalTarget = it.isFromInternalTarget,
+          )
+        },
       hasError = hasError,
     )
   }
@@ -279,7 +285,7 @@ class AspectBazelProjectMapper(
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.hasJvmTargetInfo() && !hasKnownJvmSources(targetInfo)) ||
           (targetInfo.hasJvmTargetInfo() && targetInfo.jvmTargetInfo.hasApiGeneratingPlugins)
-        )
+      )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -773,9 +779,9 @@ class AspectBazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-              )
-          )
-      ) ||
+            )
+        )
+    ) ||
       featureFlags.isGoSupportEnabled &&
       target.hasGoTargetInfo() &&
       hasKnownGoSources(target) ||
@@ -816,22 +822,25 @@ class AspectBazelProjectMapper(
     highPrioritySources: Set<Path>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
-  ): List<RawBuildTarget> = withContext(Dispatchers.Default) {
-    val tasks = targets.map { target ->
-      async {
-        createRawBuildTarget(
-          target,
-          highPrioritySources,
-          repoMapping,
-          dependencyGraph,
-        )
-      }
-    }
+  ): List<RawBuildTarget> =
+    withContext(Dispatchers.Default) {
+      val tasks =
+        targets.map { target ->
+          async {
+            createRawBuildTarget(
+              target,
+              highPrioritySources,
+              repoMapping,
+              dependencyGraph,
+            )
+          }
+        }
 
-    return@withContext tasks.awaitAll()
-      .filterNotNull()
-      .filterNot { BuildTargetTag.NO_IDE in it.tags }
-  }
+      return@withContext tasks
+        .awaitAll()
+        .filterNotNull()
+        .filterNot { BuildTargetTag.NO_IDE in it.tags }
+    }
 
   private fun createRawBuildTarget(
     targetData: IntermediateTargetData,
@@ -847,8 +856,9 @@ class AspectBazelProjectMapper(
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val resources = resolveResources(target, targetData.languagePlugin)
-    val languageData = targetData.languagePlugin.createIntermediateModel(target)
-      ?: error("TODO - idk")
+    val languageData =
+      targetData.languagePlugin.createIntermediateModel(target)
+        ?: error("TODO - idk")
 
     val tags = targetData.tags
     val (targetSources, lowPrioritySharedSources) =
