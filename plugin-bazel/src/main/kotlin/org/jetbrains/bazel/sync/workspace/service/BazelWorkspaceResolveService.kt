@@ -15,8 +15,6 @@ interface BazelWorkspaceResolveService {
 
   suspend fun getOrFetchSyncedProject(build: Boolean = false, taskId: String = PROJECT_SYNC_TASK_ID): EarlyBazelSyncProject
 
-  suspend fun <T> withEndpointProxy(func: suspend (BazelEndpointProxy) -> T): T
-
   companion object {
     @JvmStatic
     fun getInstance(project: Project): BazelWorkspaceResolveService =

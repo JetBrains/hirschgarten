@@ -94,8 +94,6 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
         debug = debugType,
       )
 
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetRunWithDebug(runWithDebugParams) }
+    server.buildTargetRunWithDebug(runWithDebugParams)
   }
 }

@@ -33,7 +33,6 @@ import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.workspace.model.test.framework.BazelEndpointProxyMock
 import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveServiceMock
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
@@ -75,15 +74,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     // given
     val pythonTestTargets = generateTestSet()
     val server = BuildServerMock()
-    val endpointProxy =
-      BazelEndpointProxyMock()
     val resolver =
       BazelWorkspaceResolveServiceMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
             targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
-          ),
-        endpointProxy = endpointProxy,
+          )
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
 
@@ -127,8 +123,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resolvedWorkspace =
           BazelResolvedWorkspace(
             targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
-          ),
-        endpointProxy = BazelEndpointProxyMock(),
+          )
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
 

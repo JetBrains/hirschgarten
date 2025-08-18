@@ -58,10 +58,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,
       )
-
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetTest(params) }
+    server.buildTargetTest(params)
   }
 
   private fun getCoverageInstrumentationFilter(project: Project): String {

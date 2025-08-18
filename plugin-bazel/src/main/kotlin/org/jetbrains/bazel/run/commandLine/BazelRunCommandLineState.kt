@@ -35,8 +35,6 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
         additionalBazelParams = runState.additionalBazelParams,
         pidDeferred = pidDeferred,
       )
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetRun(runParams) }
+    server.buildTargetRun(runParams)
   }
 }

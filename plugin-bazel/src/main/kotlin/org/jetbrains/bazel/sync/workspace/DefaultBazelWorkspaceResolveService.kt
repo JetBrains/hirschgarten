@@ -153,7 +153,4 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
 
   override suspend fun getOrFetchSyncedProject(build: Boolean, taskId: String): EarlyBazelSyncProject =
     syncWorkspace(build, taskId).earlyProject
-
-  override suspend fun <T> withEndpointProxy(func: suspend (BazelEndpointProxy) -> T): T =
-    connection.runWithServer { func(DefaultBazelEndpointProxy(it)) }
 }

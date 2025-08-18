@@ -88,8 +88,6 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
         additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
       )
 
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetTest(testParams) }
+    server.buildTargetTest(testParams)
   }
 }
