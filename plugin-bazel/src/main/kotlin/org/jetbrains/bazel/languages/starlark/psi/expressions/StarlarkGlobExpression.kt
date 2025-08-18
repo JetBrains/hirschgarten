@@ -4,7 +4,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.starlark.StarlarkConstants.ALLOW_EMPTY_KEYWORD
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
-import org.jetbrains.bazel.languages.starlark.globbing.StarlarkUnixGlob
+import org.jetbrains.bazel.languages.starlark.globbing.StarlarkGlob
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
@@ -92,7 +92,7 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
     val pattern = element.getStringContents()
     val containingDirectory = containingFile.parent?.virtualFile ?: return true
     return try {
-      StarlarkUnixGlob
+      StarlarkGlob
         .forPath(containingDirectory)
         .addPattern(pattern)
         .glob()

@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.starlark.quickFixes
 
 import com.intellij.modcommand.ActionContext
 import com.intellij.modcommand.ModPsiUpdater
-import com.intellij.modcommand.Presentation
 import com.intellij.modcommand.PsiUpdateModCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.equalsIgnoreWhitespaces
@@ -17,8 +16,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 
 class StarlarkGlobAllowEmptyQuickFix(callExpression: StarlarkGlobExpression) :
   PsiUpdateModCommandAction<StarlarkGlobExpression>(callExpression) {
-  override fun getPresentation(context: ActionContext, element: StarlarkGlobExpression): Presentation = Presentation.of(familyName)
-
   override fun getFamilyName(): String = StarlarkBundle.message("quickfix.glob.allow.empty")
 
   override fun invoke(

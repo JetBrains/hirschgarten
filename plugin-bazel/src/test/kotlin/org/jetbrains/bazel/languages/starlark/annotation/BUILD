@@ -48,16 +48,6 @@ kt_intellij_junit4_test(
 kt_intellij_junit4_test(
     name = "StarlarkGlobAnnotatorTest",
     src = "StarlarkGlobAnnotatorTest.kt",
-    data = [
-        "//plugin-bazel/src/test/testData/starlark/annotation:EmptyGlobAllowedAnnotatorTestData.bzl",
-        "//plugin-bazel/src/test/testData/starlark/annotation:EmptyGlobAnnotatorTestData.bzl",
-        "//plugin-bazel/src/test/testData/starlark/annotation:EmptyIncludesGlobAnnotatorTestData.bzl",
-        "//plugin-bazel/src/test/testData/starlark/annotation:EmptyUnnamedIncludesGlobAnnotatorTestData.bzl",
-        "//plugin-bazel/src/test/testData/starlark/annotation:NoArgsGlobAnnotatorTestData.bzl",
-        "//plugin-bazel/src/test/testData/starlark/annotation:SomeUnresolvedGlobPatternsAnnotatorTestData.bzl",
-        "//plugin-bazel/src/test/testData/starlark/annotation:UnresolvedGlobPatternsAllowedAnnotatorTestData.bzl",
-        "//plugin-bazel/src/test/testData/starlark/annotation:UnresolvedGlobPatternsAnnotatorTestData.bzl",
-    ],
     tags = ["exclusive"],
     deps = [
         "//plugin-bazel",
