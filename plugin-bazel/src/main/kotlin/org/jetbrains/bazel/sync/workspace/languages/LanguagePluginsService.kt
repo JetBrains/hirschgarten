@@ -42,11 +42,11 @@ class LanguagePluginsService {
     }
   }
 
-  fun getLangaugePlugin(lang: LanguageClass): LanguagePlugin<*, *>? = registry[lang]
+  fun getLanguagePlugin(lang: LanguageClass): LanguagePlugin<*, *>? = registry[lang]
 
-  fun getLangaugePlugin(langs: Set<LanguageClass>): LanguagePlugin<*, *>? =
-    langs.firstNotNullOfOrNull { getLangaugePlugin(it) }
+  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*, *>? =
+    langs.firstNotNullOfOrNull { getLanguagePlugin(it) }
 
-  inline fun <reified PLUGIN> getLangaugePlugin(lang: LanguageClass): PLUGIN =
-    getLangaugePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")
+  inline fun <reified PLUGIN> getLanguagePlugin(lang: LanguageClass): PLUGIN =
+    getLanguagePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")
 }

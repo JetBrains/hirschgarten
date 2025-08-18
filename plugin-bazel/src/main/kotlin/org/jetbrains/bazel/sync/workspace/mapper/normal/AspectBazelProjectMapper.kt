@@ -324,7 +324,7 @@ class AspectBazelProjectMapper(
     val projectLevelScalaTestLibraries = calculateProjectLevelScalaTestLibraries()
     val scalaTargets = targetsToImport.filter { it.hasScalaTargetInfo() }.map { it.label() }
     val scalaPlugin = project.service<LanguagePluginsService>()
-      .getLangaugePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
+      .getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
     return scalaTargets.associateWith {
       val sdkLibraries =
         scalaPlugin.scalaSdks[it]
@@ -355,7 +355,7 @@ class AspectBazelProjectMapper(
   // TODO: refactor to language-specific logic
   private fun calculateProjectLevelScalaTestLibraries(): Map<Path, Library> {
     val scalaPlugin = project.service<LanguagePluginsService>()
-      .getLangaugePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
+      .getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
     return scalaPlugin.scalaTestJars.values
       .flatten()
       .toSet()
@@ -372,7 +372,7 @@ class AspectBazelProjectMapper(
   // TODO: refactor to language-specific logic
   private fun getProjectLevelScalaSdkLibrariesJars(): Set<Path> {
     val scalaPlugin = project.service<LanguagePluginsService>()
-      .getLangaugePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
+      .getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
     return scalaPlugin.scalaSdks.values
       .toSet()
       .flatMap {
@@ -790,7 +790,7 @@ class AspectBazelProjectMapper(
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
 
     val languages = inferLanguages(target)
-    val languagePlugin = languagePluginService.getLangaugePlugin(languages) ?: return null
+    val languagePlugin = languagePluginService.getLanguagePlugin(languages) ?: return null
     val sources = resolveSourceSet(target, languagePlugin)
     val resources = resolveResources(target, languagePlugin)
     val languageData = languagePlugin.createIntermediateModel(target)
@@ -965,7 +965,7 @@ class AspectBazelProjectMapper(
       }
 
     val languagePlugin = this.project.service<LanguagePluginsService>()
-      .getLangaugePlugin(module.languages) ?: return null
+      .getLanguagePlugin(module.languages) ?: return null
 
     val context = LanguagePluginContext(module.target, project.graph)
     val languageData = module.languageData ?: error("Target ${module.label} has no language data")

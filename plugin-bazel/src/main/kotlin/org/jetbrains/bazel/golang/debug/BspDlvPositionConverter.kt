@@ -122,7 +122,7 @@ class BspDlvPositionConverter(
         localPaths = localPaths,
       )
     return project.service<LanguagePluginsService>()
-      .getLangaugePlugin<GoLanguagePlugin>(LanguageClass.GO)
+      .getLanguagePlugin<GoLanguagePlugin>(LanguageClass.GO)
       .resolveLocalToRemote(params).resolvedPaths
   }
 
@@ -133,7 +133,7 @@ class BspDlvPositionConverter(
         goRoot = goRoot,
       )
     return project.service<LanguagePluginsService>()
-      .getLangaugePlugin<GoLanguagePlugin>(LanguageClass.GO)
+      .getLanguagePlugin<GoLanguagePlugin>(LanguageClass.GO)
       .resolveRemoteToLocal(params).resolvedPaths
   }
 }
