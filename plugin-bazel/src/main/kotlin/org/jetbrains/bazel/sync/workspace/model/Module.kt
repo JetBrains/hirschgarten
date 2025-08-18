@@ -10,7 +10,7 @@ import java.nio.file.Path
 data class Module(
   val label: Label,
   val directDependencies: List<Label>,
-  val language: LanguageClass,
+  val languages: Set<LanguageClass>,
   val tags: Set<Tag>,
   val baseDirectory: Path,
   val sources: List<SourceItem>,

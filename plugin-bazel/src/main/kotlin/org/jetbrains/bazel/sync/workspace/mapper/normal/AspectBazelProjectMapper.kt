@@ -767,19 +767,19 @@ class AspectBazelProjectMapper(
         .toList()
         .map {
           async {
-            createModules(it, generatedLibraries[it.label()].orEmpty(), repoMapping, workspaceContext)
+            createModule(it, generatedLibraries[it.label()].orEmpty(), repoMapping, workspaceContext)
           }
         }.awaitAll()
-        .flatMap { it }
+        .filterNotNull()
         .filterNot { it.tags.contains(Tag.NO_IDE) }
     }
 
-  private fun createModules(
+  private fun createModule(
     target: TargetInfo,
     extraLibraries: Collection<Library>,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
-  ): Sequence<Module> {
+  ): Module? {
     val languagePluginService = project.service<LanguagePluginsService>()
     val label = target.label().assumeResolved()
     val resolvedDependencies = resolveDirectDependencies(target)
@@ -789,27 +789,23 @@ class AspectBazelProjectMapper(
     val tags = targetTagsResolver.resolveTags(target, workspaceContext)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
 
-    return inferLanguages(target)
-      .asSequence()
-      .map {
-        val languagePlugin = languagePluginService.getLangaugePlugin(it) ?: return@map null
-        val sources = resolveSourceSet(target, languagePlugin)
-        val resources = resolveResources(target, languagePlugin)
-        val languageData = languagePlugin.createIntermediateModel(target)
-        return@map Module(
-          label = label,
-          directDependencies = directDependencies,
-          language = it,
-          tags = tags,
-          baseDirectory = baseDirectory,
-          sources = sources,
-          resources = resources,
-          languageData = languageData,
-          kindString = target.kind,
-          target = target,
-        )
-      }
-      .filterNotNull()
+    val languages = inferLanguages(target)
+    val languagePlugin = languagePluginService.getLangaugePlugin(languages) ?: return null
+    val sources = resolveSourceSet(target, languagePlugin)
+    val resources = resolveResources(target, languagePlugin)
+    val languageData = languagePlugin.createIntermediateModel(target)
+    return Module(
+      label = label,
+      directDependencies = directDependencies,
+      languages = languages,
+      tags = tags,
+      baseDirectory = baseDirectory,
+      sources = sources,
+      resources = resources,
+      languageData = languageData,
+      kindString = target.kind,
+      target = target,
+    )
   }
 
   private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
@@ -969,7 +965,7 @@ class AspectBazelProjectMapper(
       }
 
     val languagePlugin = this.project.service<LanguagePluginsService>()
-      .getLangaugePlugin(module.language) ?: return null
+      .getLangaugePlugin(module.languages) ?: return null
 
     val context = LanguagePluginContext(module.target, project.graph)
     val languageData = module.languageData ?: error("Target ${module.label} has no language data")
@@ -980,7 +976,7 @@ class AspectBazelProjectMapper(
         id = module.label,
         tags = tags,
         dependencies = module.directDependencies,
-        kind = inferKind(module.tags, module.kindString, setOf(module.language)),
+        kind = inferKind(module.tags, module.kindString, module.languages),
         baseDirectory = module.baseDirectory,
         sources = sources,
         lowPrioritySharedSources = lowPrioritySharedSources,
