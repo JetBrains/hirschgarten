@@ -24,7 +24,6 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -106,16 +105,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val javacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId,
-        listOf("opt1", "opt2", "opt3"),
-      )
-
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = listOf(),
+        javacOptions = listOf("opt1", "opt2", "opt3"),
         libraryDependencies = null,
         moduleDependencies =
           listOf(
