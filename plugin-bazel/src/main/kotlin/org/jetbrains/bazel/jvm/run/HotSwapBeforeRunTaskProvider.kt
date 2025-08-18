@@ -15,6 +15,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.hotswap.HotSwapUtils
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.server.sync.DebugHelper
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
@@ -90,9 +91,9 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
                 environmentVariables = executionParams.environmentVariables,
                 additionalBazelParams = (scriptPathParam + coroutineDebugParams + additionalBazelParams).joinToString(" "),
               )
-            BazelWorkspaceResolveService
-              .getInstance(project)
-              .withEndpointProxy { it.buildTargetRun(params) }
+            BazelServerService.getInstance(project)
+              .connection
+              .runWithServer { it.buildTargetRun(params) }
           }
         if (result.statusCode != BazelStatus.SUCCESS) {
           BazelBalloonNotifier.error(

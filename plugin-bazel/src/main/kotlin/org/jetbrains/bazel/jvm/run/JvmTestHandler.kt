@@ -99,6 +99,8 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
           additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
         )
 
-    server.buildTargetTest(testParams)
+      server.buildTargetTest(testParams)
+    }
   }
+
 }

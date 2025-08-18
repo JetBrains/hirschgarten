@@ -105,6 +105,7 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
           debug = debugType,
         )
 
-    server.buildTargetRunWithDebug(runWithDebugParams)
+      server.buildTargetRunWithDebug(runWithDebugParams)
+    }
   }
 }
