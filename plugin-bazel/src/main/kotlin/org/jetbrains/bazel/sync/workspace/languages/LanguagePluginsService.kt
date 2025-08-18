@@ -15,7 +15,6 @@ import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
 
 @Service(Service.Level.PROJECT)
 class LanguagePluginsService {
-
   val logger = logger<LanguagePluginsService>()
   val registry: MutableMap<LanguageClass, LanguagePlugin<*, *>> = mutableMapOf()
 
@@ -23,8 +22,9 @@ class LanguagePluginsService {
     get() = registry.values.toList()
 
   fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver) {
-    val javaPlugin = JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()))
-      .also(this::registerLangaugePlugin)
+    val javaPlugin =
+      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()))
+        .also(this::registerLangaugePlugin)
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     ScalaLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     GoLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
@@ -44,8 +44,7 @@ class LanguagePluginsService {
 
   fun getLanguagePlugin(lang: LanguageClass): LanguagePlugin<*, *>? = registry[lang]
 
-  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*, *>? =
-    langs.firstNotNullOfOrNull { getLanguagePlugin(it) }
+  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*, *>? = langs.firstNotNullOfOrNull { getLanguagePlugin(it) }
 
   inline fun <reified PLUGIN> getLanguagePlugin(lang: LanguageClass): PLUGIN =
     getLanguagePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")

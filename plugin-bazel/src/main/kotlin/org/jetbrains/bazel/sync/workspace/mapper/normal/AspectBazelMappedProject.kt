@@ -16,6 +16,5 @@ data class AspectBazelMappedProject(
   val libraries: Map<Label, Library>,
   val nonModuleTargets: List<NonModuleTarget>, // targets that should be displayed in the project view but are neither modules nor libraries
   val graph: DependencyGraph,
-  val repoMapping: RepoMapping
-) : BazelMappedProject {
-}
+  val repoMapping: RepoMapping,
+) : BazelMappedProject

@@ -41,10 +41,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
       )
     }
 
-  override fun createBuildTargetData(
-    context: LanguagePluginContext,
-    ir: JavaModule,
-  ): JvmBuildTarget? {
+  override fun createBuildTargetData(context: LanguagePluginContext, ir: JavaModule): JvmBuildTarget? {
     val jdk = ir.jdk ?: return null
     val javaHome = jdk.javaHome ?: return null
     val environmentVariables =

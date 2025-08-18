@@ -102,5 +102,4 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
       server.buildTargetTest(testParams)
     }
   }
-
 }

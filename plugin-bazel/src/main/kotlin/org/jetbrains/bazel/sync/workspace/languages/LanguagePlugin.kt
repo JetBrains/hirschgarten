@@ -10,11 +10,17 @@ import java.nio.file.Path
 // TODO: merge createIntermediateModel -> createBuildTargetData
 interface LanguagePlugin<INTERMEDIATE : LanguageData, BUILD_TARGET : BuildTargetData> {
   fun getSupportedLanguages(): Set<LanguageClass>
+
   fun calculateJvmPackagePrefix(source: Path): String? = null
+
   fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
+
   fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> = emptySet()
+
   fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
+
   fun createIntermediateModel(targetInfo: BspTargetInfo.TargetInfo): INTERMEDIATE?
+
   fun createBuildTargetData(context: LanguagePluginContext, ir: INTERMEDIATE): BUILD_TARGET?
 }
 

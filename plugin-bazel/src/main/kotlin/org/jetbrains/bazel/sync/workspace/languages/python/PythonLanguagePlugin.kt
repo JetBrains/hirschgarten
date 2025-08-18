@@ -50,28 +50,26 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       )
     }
 
-  override fun createBuildTargetData(
-    context: LanguagePluginContext,
-    ir: PythonModule,
-  ): PythonBuildTarget {
-    val sourceDependencies = if (context.target.hasPythonTargetInfo()) {
-      context.graph
-        .transitiveDependenciesWithoutRootTargets(context.target.label())
-        .flatMap(::getExternalSources)
-        .map(::calculateExternalSourcePath)
-        .distinct()
-        .toList()
-    } else {
-      emptyList()
-    }
+  override fun createBuildTargetData(context: LanguagePluginContext, ir: PythonModule): PythonBuildTarget {
+    val sourceDependencies =
+      if (context.target.hasPythonTargetInfo()) {
+        context.graph
+          .transitiveDependenciesWithoutRootTargets(context.target.label())
+          .flatMap(::getExternalSources)
+          .map(::calculateExternalSourcePath)
+          .distinct()
+          .toList()
+      } else {
+        emptyList()
+      }
     return PythonBuildTarget(
-        version = ir.version,
-        interpreter = ir.interpreter,
-        imports = ir.imports,
-        isCodeGenerator = ir.isCodeGenerator,
-        generatedSources = ir.generatedSources,
-        sourceDependencies = sourceDependencies
-      )
+      version = ir.version,
+      interpreter = ir.interpreter,
+      imports = ir.imports,
+      isCodeGenerator = ir.isCodeGenerator,
+      generatedSources = ir.generatedSources,
+      sourceDependencies = sourceDependencies,
+    )
   }
 
   private fun calculateInterpreterPath(interpreter: FileLocation?): Path? =

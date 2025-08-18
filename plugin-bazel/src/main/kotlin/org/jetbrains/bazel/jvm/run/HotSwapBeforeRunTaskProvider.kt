@@ -91,7 +91,8 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
                 environmentVariables = executionParams.environmentVariables,
                 additionalBazelParams = (scriptPathParam + coroutineDebugParams + additionalBazelParams).joinToString(" "),
               )
-            BazelServerService.getInstance(project)
+            BazelServerService
+              .getInstance(project)
               .connection
               .runWithServer { it.buildTargetRun(params) }
           }

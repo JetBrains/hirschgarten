@@ -75,18 +75,18 @@ object ClassFileManifestBuilder {
     }
     val jvmEnvDeferred: Deferred<JvmEnvironmentItem?> =
       BazelCoroutineService.getInstance(project).startAsync fn@{
-          val targets = configuration.getAffectedTargets()
-          if (targets.isEmpty()) {
-            progress?.addMessage(
-              session.session,
-              MessageCategory.WARNING,
-              BazelHotSwapBundle.message("hotswap.message.manifest.empty.target.error"),
-            )
-            return@fn null
-          }
-          val target = targets.first()
-          val isTest = target.isTestTarget(project)
-          return@fn queryJvmEnvironment(project, target)
+        val targets = configuration.getAffectedTargets()
+        if (targets.isEmpty()) {
+          progress?.addMessage(
+            session.session,
+            MessageCategory.WARNING,
+            BazelHotSwapBundle.message("hotswap.message.manifest.empty.target.error"),
+          )
+          return@fn null
+        }
+        val target = targets.first()
+        val isTest = target.isTestTarget(project)
+        return@fn queryJvmEnvironment(project, target)
       }
     progress?.setCancelWorker { jvmEnvDeferred.cancel() }
     val result =
@@ -104,9 +104,10 @@ object ClassFileManifestBuilder {
     if (result == null) {
       return null
     }
-    val jars = result.classpath
-      .distinct()
-      .filter { Files.isRegularFile(it) && it.extension == "jar" }
+    val jars =
+      result.classpath
+        .distinct()
+        .filter { Files.isRegularFile(it) && it.extension == "jar" }
     val oldManifest = env.getManifest()
     val newManifest = ClassFileManifest.build(jars, oldManifest)
     env.getManifestRef()?.set(newManifest)
@@ -119,10 +120,8 @@ object ClassFileManifestBuilder {
       ?.kind
       ?.ruleType == RuleType.TEST
 
-  private suspend fun queryJvmEnvironment(
-    project: Project,
-    target: Label,
-  ): JvmEnvironmentItem? = project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(target)
+  private suspend fun queryJvmEnvironment(project: Project, target: Label): JvmEnvironmentItem? =
+    project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(target)
 
   private fun ExecutionEnvironment.getManifest(): ClassFileManifest? = getManifestRef()?.get()
 

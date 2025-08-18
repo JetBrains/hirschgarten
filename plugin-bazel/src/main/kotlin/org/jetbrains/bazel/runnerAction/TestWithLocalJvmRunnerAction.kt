@@ -22,24 +22,24 @@ class TestWithLocalJvmRunnerAction(
   includeTargetNameInText: Boolean = false,
   private val callerPsiElement: PsiElement? = null,
 ) : LocalJvmRunnerAction(
-  targetInfo = targetInfo,
-  text = {
-    if (text != null) {
-      text()
-    } else if (isDebugMode) {
-      BazelPluginBundle.message(
-        "target.debug.with.jvm.runner.action.text",
-        if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-      )
-    } else {
-      BazelPluginBundle.message(
-        "target.test.with.jvm.runner.action.text",
-        if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-      )
-    }
-  },
-  isDebugMode = isDebugMode,
-) {
+    targetInfo = targetInfo,
+    text = {
+      if (text != null) {
+        text()
+      } else if (isDebugMode) {
+        BazelPluginBundle.message(
+          "target.debug.with.jvm.runner.action.text",
+          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+        )
+      } else {
+        BazelPluginBundle.message(
+          "target.test.with.jvm.runner.action.text",
+          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+        )
+      }
+    },
+    isDebugMode = isDebugMode,
+  ) {
   override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
     project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(targetInfo.id)
 

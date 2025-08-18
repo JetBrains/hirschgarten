@@ -10,8 +10,5 @@ object EmptyLanguagePlugin : LanguagePlugin<VoidLangaugeData, VoidBuildTarget> {
 
   override fun createIntermediateModel(targetInfo: BspTargetInfo.TargetInfo): VoidLangaugeData? = VoidLangaugeData
 
-  override fun createBuildTargetData(
-    context: LanguagePluginContext,
-    ir: VoidLangaugeData,
-  ): VoidBuildTarget? = VoidBuildTarget
+  override fun createBuildTargetData(context: LanguagePluginContext, ir: VoidLangaugeData): VoidBuildTarget? = VoidBuildTarget
 }

@@ -50,11 +50,8 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
     return ScalaModule(sdk, scalacOpts, javaLanguagePlugin.createIntermediateModel(targetInfo))
   }
 
-  override fun createBuildTargetData(
-    context: LanguagePluginContext,
-    ir: ScalaModule,
-  ): ScalaBuildTarget? {
-    return with(ir.sdk) {
+  override fun createBuildTargetData(context: LanguagePluginContext, ir: ScalaModule): ScalaBuildTarget? =
+    with(ir.sdk) {
       ScalaBuildTarget(
         scalaVersion = version,
         sdkJars = compilerJars.toList(),
@@ -62,7 +59,6 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
         scalacOptions = ir.scalacOpts,
       )
     }
-  }
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
 

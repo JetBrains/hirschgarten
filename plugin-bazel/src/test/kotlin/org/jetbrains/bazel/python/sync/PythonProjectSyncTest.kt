@@ -79,7 +79,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resolvedWorkspace =
           BazelResolvedWorkspace(
             targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
-          )
+          ),
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
 
@@ -123,7 +123,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resolvedWorkspace =
           BazelResolvedWorkspace(
             targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
-          )
+          ),
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
 

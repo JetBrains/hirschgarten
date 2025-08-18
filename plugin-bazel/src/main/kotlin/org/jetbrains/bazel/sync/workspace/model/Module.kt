@@ -17,5 +17,5 @@ data class Module(
   val resources: Set<Path>,
   val languageData: LanguageData?,
   val kindString: String,
-  val target: BspTargetInfo.TargetInfo
+  val target: BspTargetInfo.TargetInfo,
 )

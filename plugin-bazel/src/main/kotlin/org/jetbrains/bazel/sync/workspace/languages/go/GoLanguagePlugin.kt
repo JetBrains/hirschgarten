@@ -18,6 +18,7 @@ import java.nio.file.Paths
 
 class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoModule, GoBuildTarget> {
   private val logger: Logger = logger<GoLanguagePlugin>()
+
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
 
   override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> {
@@ -37,8 +38,8 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
     )
   }
 
-  override fun createBuildTargetData(context: LanguagePluginContext, ir: GoModule): GoBuildTarget {
-    return with(ir) {
+  override fun createBuildTargetData(context: LanguagePluginContext, ir: GoModule): GoBuildTarget =
+    with(ir) {
       GoBuildTarget(
         sdkHomePath = sdkHomePath,
         importPath = importPath,
@@ -47,7 +48,6 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
         libraryLabels = libraryLabels,
       )
     }
-  }
 
   private fun calculateSdkPath(sdk: BspTargetInfo.FileLocation?): Path? =
     sdk

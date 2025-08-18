@@ -9,15 +9,14 @@ interface BazelWorkspaceResolveService {
   suspend fun invalidateCachedState()
 
   suspend fun getOrFetchResolvedWorkspace(
-      scope: ProjectSyncScope = SecondPhaseSync,
-      taskId: String = PROJECT_SYNC_TASK_ID,
+    scope: ProjectSyncScope = SecondPhaseSync,
+    taskId: String = PROJECT_SYNC_TASK_ID,
   ): BazelResolvedWorkspace
 
   suspend fun getOrFetchSyncedProject(build: Boolean = false, taskId: String = PROJECT_SYNC_TASK_ID): EarlyBazelSyncProject
 
   companion object {
     @JvmStatic
-    fun getInstance(project: Project): BazelWorkspaceResolveService =
-      project.getService(BazelWorkspaceResolveService::class.java)
+    fun getInstance(project: Project): BazelWorkspaceResolveService = project.getService(BazelWorkspaceResolveService::class.java)
   }
 }

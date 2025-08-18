@@ -121,9 +121,11 @@ class BspDlvPositionConverter(
       BazelResolveLocalToRemoteParams(
         localPaths = localPaths,
       )
-    return project.service<LanguagePluginsService>()
+    return project
+      .service<LanguagePluginsService>()
       .getLanguagePlugin<GoLanguagePlugin>(LanguageClass.GO)
-      .resolveLocalToRemote(params).resolvedPaths
+      .resolveLocalToRemote(params)
+      .resolvedPaths
   }
 
   private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, String> {
@@ -132,8 +134,10 @@ class BspDlvPositionConverter(
         remotePaths = remotePaths,
         goRoot = goRoot,
       )
-    return project.service<LanguagePluginsService>()
+    return project
+      .service<LanguagePluginsService>()
       .getLanguagePlugin<GoLanguagePlugin>(LanguageClass.GO)
-      .resolveRemoteToLocal(params).resolvedPaths
+      .resolveRemoteToLocal(params)
+      .resolvedPaths
   }
 }

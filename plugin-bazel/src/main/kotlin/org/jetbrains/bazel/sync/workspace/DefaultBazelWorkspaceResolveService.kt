@@ -40,7 +40,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
       BazelWorkspaceSyncState.Unsynced,
       is BazelWorkspaceSyncState.Resolved,
       is BazelWorkspaceSyncState.Synced,
-        -> return
+      -> return
 
       BazelWorkspaceSyncState.NotInitialized -> {
         // fall through
@@ -48,7 +48,8 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
     }
     val paths = connection.runWithServer { server -> server.workspaceBazelPaths() }
     val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
-    project.service<LanguagePluginsService>()
+    project
+      .service<LanguagePluginsService>()
       .registerDefaultPlugins(paths.bazelPathsResolver)
     bazelMapper =
       AspectBazelProjectMapper(
@@ -88,13 +89,13 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
       when (val state = state) {
         // workspace is already resolved - return the available state and avoid recomputation
         is BazelWorkspaceSyncState.Resolved,
-          -> return state.resolved
+        -> return state.resolved
 
         // workspace is not in the correct state - try to pull the required state
         is BazelWorkspaceSyncState.NotInitialized,
         BazelWorkspaceSyncState.Initialized,
         BazelWorkspaceSyncState.Unsynced,
-          -> syncWorkspace(false, taskId)
+        -> syncWorkspace(false, taskId)
 
         // workspace is in available state - pass previous state data
         is BazelWorkspaceSyncState.Synced -> state.synced

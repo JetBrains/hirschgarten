@@ -61,9 +61,8 @@ data class PythonBuildTarget(
   val imports: List<String>,
   val isCodeGenerator: Boolean,
   val generatedSources: List<Path>,
-
   // new
-  val sourceDependencies: List<Path> = listOf()
+  val sourceDependencies: List<Path> = listOf(),
 ) : BuildTargetData
 
 @ClassDiscriminator(3)
@@ -80,7 +79,6 @@ data class JvmBuildTarget(
   // not used if part of PartialBuildTarget
   @Transient @JvmField val javaHome: Path? = null,
   val javaVersion: String,
-
   // new
   val javacOpts: List<String> = listOf(),
   val binaryOutputs: List<Path> = listOf(),

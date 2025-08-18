@@ -12,7 +12,6 @@ import java.nio.file.Path
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<KotlinModule, KotlinBuildTarget> {
-
   override fun createIntermediateModel(targetInfo: BspTargetInfo.TargetInfo): KotlinModule? {
     if (!targetInfo.hasKotlinTargetInfo()) return null
 
@@ -27,20 +26,16 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
     )
   }
 
-  override fun createBuildTargetData(
-    context: LanguagePluginContext,
-    ir: KotlinModule,
-  ): KotlinBuildTarget {
-    return with(ir) {
-        KotlinBuildTarget(
-          languageVersion = languageVersion,
-          apiVersion = apiVersion,
-          kotlincOptions = kotlincOptions,
-          associates = associates.distinct(),
-          jvmBuildTarget = ir.javaModule?.let { javaLanguagePlugin.createBuildTargetData(context, it) }
-        )
-      }
-  }
+  override fun createBuildTargetData(context: LanguagePluginContext, ir: KotlinModule): KotlinBuildTarget =
+    with(ir) {
+      KotlinBuildTarget(
+        languageVersion = languageVersion,
+        apiVersion = apiVersion,
+        kotlincOptions = kotlincOptions,
+        associates = associates.distinct(),
+        jvmBuildTarget = ir.javaModule?.let { javaLanguagePlugin.createBuildTargetData(context, it) },
+      )
+    }
 
   private fun BspTargetInfo.KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
 
