@@ -31,17 +31,8 @@ import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.runnerAction.RunEnvironmentProvider
-import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
-import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
-import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
-import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
-import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
-import org.jetbrains.kotlin.fir.types.builder.buildErrorTypeRef
 import java.nio.file.Files
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.atomic.AtomicReference
