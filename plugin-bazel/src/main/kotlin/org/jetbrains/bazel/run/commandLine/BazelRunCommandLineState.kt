@@ -20,7 +20,11 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
     if (configuration.targets.singleOrNull() == null) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }

@@ -34,7 +34,11 @@ class PythonDebugCommandLineState(environment: ExecutionEnvironment, private val
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
     val configuration = environment.runProfile as BazelRunConfiguration
     val targetId = configuration.targets.single()
     val buildParams =

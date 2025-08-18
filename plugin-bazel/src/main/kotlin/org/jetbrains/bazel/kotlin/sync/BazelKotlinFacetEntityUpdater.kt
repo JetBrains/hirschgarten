@@ -41,8 +41,12 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     kotlinAddendum: KotlinAddendum,
     projectBasePath: Path,
   ) = parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
-    languageVersion = kotlinAddendum.languageVersion
-    apiVersion = kotlinAddendum.apiVersion
+    kotlinAddendum.languageVersion.takeIf { it.isNotEmpty() }.let {
+      languageVersion = it
+    }
+    kotlinAddendum.apiVersion.takeIf { it.isNotEmpty() }.let {
+      apiVersion = it
+    }
     autoAdvanceLanguageVersion = false
     autoAdvanceApiVersion = false
     friendPaths = entityToAdd.toJpsFriendPaths(projectBasePath).toTypedArray()

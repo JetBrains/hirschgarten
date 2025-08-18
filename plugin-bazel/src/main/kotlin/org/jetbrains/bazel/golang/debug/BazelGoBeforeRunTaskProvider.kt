@@ -123,8 +123,8 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
           }
         if (result.statusCode != BazelStatus.SUCCESS) {
           BazelBalloonNotifier.error(
-            "Cannot calculate executable info for Go targets",
-            "The request failed with status code ${result.statusCode}. \nPlease try again.",
+            BazelPluginBundle.message("go.debug.before.run.script.path.generation.failure.title", target),
+            BazelPluginBundle.message("go.debug.before.run.script.path.generation.failure.content", result.statusCode),
           )
           return@runBlocking false
         }

@@ -1,13 +1,20 @@
 package org.jetbrains.bazel.jvm.run
 
 import com.intellij.debugger.DefaultDebugEnvironment
+import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.RemoteConnection
+import com.intellij.execution.process.OSProcessHandler
+import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.process.ProcessListener
+import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.util.Key
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
+import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bsp.protocol.DebugType
-
-// Longer timeout to account for Bazel build
-private const val DEBUGGER_ATTACH_TIMEOUT: Long = 60 * 60 * 1000
+import java.nio.file.Path
 
 abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, private val port: Int) :
   BazelCommandLineStateBase(environment) {
@@ -25,10 +32,42 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
       environment,
       this,
       remoteConnection,
-      DEBUGGER_ATTACH_TIMEOUT,
+      true,
     )
   }
 
   val debugType: DebugType
     get() = DebugType.JDWP(port)
+
+  suspend fun debugWithScriptPath(
+    workingDirectory: String?,
+    scriptPath: String,
+    handler: BazelProcessHandler,
+  ) {
+    val commandLine = GeneralCommandLine().withWorkingDirectory(workingDirectory?.let { Path.of(it) }).withExePath(scriptPath)
+    val scriptHandler = OSProcessHandler(commandLine)
+    scriptHandler.addProcessListener(
+      object : ProcessListener {
+        override fun onTextAvailable(e: ProcessEvent, outputType: Key<*>) {
+          val type = outputType as? ProcessOutputType ?: ProcessOutputType.STDOUT
+          handler.notifyTextAvailable(e.text, type)
+        }
+      },
+    )
+
+    // necessary for terminating the debug process from scriptHandler when handler.destroyProcess() is called
+    handler.addProcessListener(
+      object : ProcessListener {
+        override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
+          if (willBeDestroyed) {
+            handler.notifyTextAvailable("Debug process will stop", ProcessOutputType.STDOUT)
+            scriptHandler.destroyProcess()
+          }
+        }
+      },
+    )
+
+    scriptHandler.startNotify()
+    runInterruptible(Dispatchers.IO) { scriptHandler.waitFor() }
+  }
 }

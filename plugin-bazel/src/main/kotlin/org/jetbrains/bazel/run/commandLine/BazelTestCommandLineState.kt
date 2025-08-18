@@ -33,7 +33,11 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     BazelTestTaskListener(handler, coverageReportListener)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
     if (configuration.targets.isEmpty()) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }

@@ -6,31 +6,27 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.observation.ActivityTracker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
 
 internal class BazelStartupActivityTracker : ActivityTracker {
-  override val presentableName: String = "bsp-sync"
+  override val presentableName: String
+    get() = "bsp-sync"
 
   override suspend fun awaitConfiguration(project: Project) {
-    project.bspTrackerServiceState().first { !it }
+    isStartupRunning(project).first { !it }
   }
 
-  override suspend fun isInProgress(project: Project): Boolean = project.bspTrackerServiceState().value
+  override suspend fun isInProgress(project: Project): Boolean = isStartupRunning(project).value
 
-  internal companion object {
-    suspend fun startConfigurationPhase(project: Project) {
-      project.bspTrackerServiceState().update { true }
-    }
-
-    suspend fun stopConfigurationPhase(project: Project) {
-      project.bspTrackerServiceState().update { false }
-    }
-
-    private suspend fun Project.bspTrackerServiceState() = this.serviceAsync<BspConfigurationTrackerService>().isRunning
-  }
+  private suspend fun isStartupRunning(project: Project): MutableStateFlow<Boolean> =
+    BspConfigurationTrackerService.getInstanceAsync(project).isRunning
 }
 
 @Service(Service.Level.PROJECT)
 internal class BspConfigurationTrackerService {
+  companion object {
+    @JvmStatic
+    suspend fun getInstanceAsync(project: Project): BspConfigurationTrackerService = project.serviceAsync()
+  }
+
   val isRunning: MutableStateFlow<Boolean> = MutableStateFlow(false)
 }
