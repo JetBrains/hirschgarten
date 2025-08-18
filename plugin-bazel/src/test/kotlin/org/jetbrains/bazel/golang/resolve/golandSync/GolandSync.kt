@@ -4,7 +4,6 @@ import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.wait
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
@@ -17,10 +16,10 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.navigateToFile
-import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration.Companion.minutes
+import kotlin.collections.forEach
+import kotlin.collections.listOf
 import kotlin.time.Duration.Companion.seconds
 
 private val FILES_TO_CHECK_FOR_RED_CODE =
@@ -54,7 +53,7 @@ class GolandSync : IdeStarterBaseProjectTest() {
     }
 
   @Test
-  fun checkNoRedCode() {
+  fun `check basic Go support functionality`() {
     createContext()
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -63,22 +62,34 @@ class GolandSync : IdeStarterBaseProjectTest() {
             execute { it.waitForBazelSync().waitForSmartMode() }
           }
 
+          step("Open a source file and navigate from a trivial code reference to another source file in the workspace") {
+            execute { it.openFile("testa/testa.go") }
+            execute { it.navigateToFile(4, 11, "src.go", 7, 6) }
+            takeScreenshot("navigateFromCodeReferenceToAnotherSourceFileInWorkspace")
+          }
+
+          step("Open a source file and navigate from a code reference to a generated source file outside the workspace") {
+            execute { it.openFile("testa/testa.go") }
+            execute { it.navigateToFile(5, 11, "gen.go", 7, 6) }
+            takeScreenshot("navigateFromCodeReferenceToGeneratedSourceFileOutsideWorkspace")
+          }
+
           step("Open a source file and navigate from the import reference to a BUILD file in the workspace") {
-            execute { it.openFile("testb/testb_test.go") }
-            execute { it.navigateToFile(6, 36, "BUILD.bazel", 3, 1) }
+            execute { it.openFile("testa/src.go") }
+            execute { it.navigateToFile(4, 64, "BUILD.bazel", 5, 1) }
             takeScreenshot("navigateFromImportReferenceToBuildFileInWorkspace")
           }
 
           step("Open a source file and navigate from the import reference to a BUILD file outside of the workspace") {
-            execute { it.openFile("testa/src.go") }
-            execute { it.navigateToFile(4, 64, "BUILD.bazel", 5, 1) }
+            execute { it.openFile("testb/testb_test.go") }
+            execute { it.navigateToFile(6, 36, "BUILD.bazel", 3, 1) }
             takeScreenshot("navigateFromImportReferenceToBuildFileOutsideWorkspace")
           }
 
           FILES_TO_CHECK_FOR_RED_CODE.forEach {
             step("Check for red code in file $it") {
               checkForRedCodeInFile(it)
-              wait(4.seconds)
+              wait(1.seconds)
             }
           }
         }
