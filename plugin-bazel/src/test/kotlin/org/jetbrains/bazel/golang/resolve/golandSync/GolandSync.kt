@@ -13,9 +13,12 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -56,8 +59,22 @@ class GolandSync : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
-          waitForIndicators(5.minutes)
+          step("Sync project") {
+            execute { it.waitForBazelSync().waitForSmartMode() }
+          }
+
+          step("Open a source file and navigate from the import reference to a BUILD file in the workspace") {
+            execute { it.openFile("testb/testb_test.go") }
+            execute { it.navigateToFile(6, 36, "BUILD.bazel", 3, 1) }
+            takeScreenshot("navigateFromImportReferenceToBuildFileInWorkspace")
+          }
+
+          step("Open a source file and navigate from the import reference to a BUILD file outside of the workspace") {
+            execute { it.openFile("testa/src.go") }
+            execute { it.navigateToFile(4, 64, "BUILD.bazel", 5, 1) }
+            takeScreenshot("navigateFromImportReferenceToBuildFileOutsideWorkspace")
+          }
+
           FILES_TO_CHECK_FOR_RED_CODE.forEach {
             step("Check for red code in file $it") {
               checkForRedCodeInFile(it)

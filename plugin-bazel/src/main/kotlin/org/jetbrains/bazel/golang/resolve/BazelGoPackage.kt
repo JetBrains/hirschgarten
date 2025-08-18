@@ -37,8 +37,11 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.golang.targetKinds.GoBazelRules
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
+import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.hasLanguage
@@ -366,7 +369,11 @@ class BazelGoPackage : GoPackage {
    */
   override fun getNavigableElement(): PsiElement? {
     navigableElement?.takeIf { it.isValid }?.let { return it }
-    resolveLabel(project, label, null)?.also { navigableElement = it }
+    if (label is ResolvedLabel) {
+      val buildFile = findBuildFile(project, label, null)
+      buildFile?.also { navigableElement = it }?.findRuleTarget(label.targetName)?.also { navigableElement = it }
+    }
+
     return navigableElement
   }
 
