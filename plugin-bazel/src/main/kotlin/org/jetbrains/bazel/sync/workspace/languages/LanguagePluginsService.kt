@@ -20,30 +20,25 @@ class LanguagePluginsService {
   val registry: MutableMap<LanguageClass, LanguagePlugin<*, *>> = mutableMapOf()
 
   val all
-    get() = registry.values
+    get() = registry.values.toList()
 
   fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver) {
     val javaPlugin = JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()))
       .also(this::registerLangaugePlugin)
-    KotlinLanguagePlugin(javaPlugin, bazelPathsResolver)
-      .also(this::registerLangaugePlugin)
-    ScalaLanguagePlugin(javaPlugin, bazelPathsResolver)
-      .also(this::registerLangaugePlugin)
-    GoLanguagePlugin(bazelPathsResolver)
-      .also(this::registerLangaugePlugin)
-    PythonLanguagePlugin(bazelPathsResolver)
-      .also(this::registerLangaugePlugin)
-    ThriftLanguagePlugin()
-      .also(this::registerLangaugePlugin)
+    KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
+    ScalaLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
+    GoLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
+    PythonLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
+    ThriftLanguagePlugin().also(this::registerLangaugePlugin)
   }
 
-  fun registerLangaugePlugin(plugin: LanguagePlugin<*, *>) {
-    for (klass in plugin.getSupportedLanguages()) {
-      if (this.registry.contains(klass)) {
-        logger.warn("Language plugin already registered for class: $klass")
+  private fun registerLangaugePlugin(plugin: LanguagePlugin<*, *>) {
+    for (language in plugin.getSupportedLanguages()) {
+      if (this.registry.contains(language)) {
+        logger.warn("Language plugin already registered for class: $language")
         continue
       }
-      registry[klass] = plugin
+      registry[language] = plugin
     }
   }
 
