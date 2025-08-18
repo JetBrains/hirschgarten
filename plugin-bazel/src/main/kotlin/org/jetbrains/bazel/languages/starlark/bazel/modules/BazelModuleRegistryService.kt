@@ -12,7 +12,7 @@ import com.intellij.openapi.project.Project
 @State(name = "BazelModuleRegistry", storages = [Storage("bazelModuleRegistry.xml")])
 class BazelModuleRegistryService(private val project: Project) : PersistentStateComponent<BazelModuleRegistryService.State> {
   class State : BaseState() {
-    var resolverId by string(null)
+    var resolverId: String? by string(null)
   }
 
   private var resolverId: String? = null
@@ -23,28 +23,24 @@ class BazelModuleRegistryService(private val project: Project) : PersistentState
       return activeResolver
     }
     if (resolverId.isNullOrBlank()) {
-      resolverId = BazelModuleResolver.EP_NAME.extensionList.firstOrNull()?.id
+      resolverId =
+        BazelModuleResolver.EP_NAME.extensionList
+          .firstOrNull()
+          ?.id
     }
     activeResolver = BazelModuleResolver.EP_NAME.extensionList.find { it.id == resolverId }
     return activeResolver
   }
 
-  suspend fun getModuleNames(): List<String> =
-    findResolver()?.getModuleNames(project) ?: emptyList()
+  suspend fun getModuleNames(): List<String> = findResolver()?.getModuleNames(project) ?: emptyList()
 
-  suspend fun getModuleVersions(moduleName: String): List<String> =
-    findResolver()?.getModuleVersions(project, moduleName) ?: emptyList()
+  suspend fun getModuleVersions(moduleName: String): List<String> = findResolver()?.getModuleVersions(project, moduleName) ?: emptyList()
 
   suspend fun refreshModuleNames() {
     findResolver()?.refreshModuleNames(project)
   }
 
-  fun clearCache() {
-    findResolver()?.clearCache(project)
-  }
-
-  fun getCachedModuleNames(): List<String> =
-    findResolver()?.getCachedModuleNames(project) ?: emptyList()
+  fun getCachedModuleNames(): List<String> = findResolver()?.getCachedModuleNames(project) ?: emptyList()
 
   fun getCachedModuleVersions(moduleName: String): List<String> =
     findResolver()?.getCachedModuleVersions(project, moduleName) ?: emptyList()

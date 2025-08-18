@@ -10,16 +10,18 @@ interface BazelModuleResolver {
   val name: String
 
   suspend fun getModuleNames(project: Project): List<String>?
+
   suspend fun getModuleVersions(project: Project, moduleName: String): List<String>?
 
   suspend fun refreshModuleNames(project: Project)
+
   fun clearCache(project: Project)
 
   fun getCachedModuleNames(project: Project): List<String>
+
   fun getCachedModuleVersions(project: Project, moduleName: String): List<String>
 
-
   companion object {
-    val EP_NAME = ExtensionPointName.create<BazelModuleResolver>("org.jetbrains.bazel.bazelModuleResolver")
+    val EP_NAME: ExtensionPointName<BazelModuleResolver> = ExtensionPointName.create("org.jetbrains.bazel.bazelModuleResolver")
   }
 }
