@@ -15,15 +15,14 @@ import org.jetbrains.bsp.protocol.getJvmOrNull
 import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
-class RunEnvironmentProvider(val project: Project) {
+class RunEnvironmentProvider(private val project: Project) {
   suspend fun getJvmEnvironmentItem(target: Label): JvmEnvironmentItem? =
     project.connection.runWithServer { server ->
       val paths = server.workspaceBazelPaths()
-      val data =
-        this.project.targetUtils
-          .getBuildTargetForLabel(target)
-          ?.data ?: return@runWithServer null
-      return@runWithServer data.getJvmEnvironmentItem(paths.bazelPathsResolver, server, target)
+      return@runWithServer this.project.targetUtils
+        .getBuildTargetForLabel(target)
+        ?.data
+        ?.getJvmEnvironmentItem(paths.bazelPathsResolver, server, target)
     }
 
   private suspend fun BuildTargetData.getJvmEnvironmentItem(
