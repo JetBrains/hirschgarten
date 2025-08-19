@@ -70,7 +70,7 @@ class AspectBazelProjectMapper(
     val extraLibraries: Collection<Library>,
     val tags: Set<Tag>,
     val sources: List<SourceItem>,
-    val languages: Set<LanguageClass>
+    val languages: Set<LanguageClass>,
   )
 
   fun TargetInfo.toIntermediateData(
@@ -90,7 +90,7 @@ class AspectBazelProjectMapper(
       extraLibraries = extraLibraries[label] ?: emptyList(),
       tags = tags,
       sources = resolveSourceSet(this, languagePlugin),
-      languages = languages
+      languages = languages,
     )
   }
 
@@ -852,8 +852,10 @@ class AspectBazelProjectMapper(
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
-    val languagePlugin = project.service<LanguagePluginsService>()
-      .getLanguagePlugin(targetData.languages) ?: return null
+    val languagePlugin =
+      project
+        .service<LanguagePluginsService>()
+        .getLanguagePlugin(targetData.languages) ?: return null
     val resources = resolveResources(target, languagePlugin)
 
     val tags = targetData.tags

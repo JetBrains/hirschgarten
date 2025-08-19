@@ -26,10 +26,10 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
       return null
     }
     val jvmTarget = target.jvmTargetInfo
-    //val mainOutput = bazelPathsResolver.resolve(jvmTarget.getJars(0).getBinaryJars(0))
+    // val mainOutput = bazelPathsResolver.resolve(jvmTarget.getJars(0).getBinaryJars(0))
     val binaryOutputs = jvmTarget.jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
     val mainClass = getMainClass(jvmTarget)
-    //val runtimeJdk = jdkResolver.resolveJdk(target)
+    // val runtimeJdk = jdkResolver.resolveJdk(target)
 
     val jdk = jdk ?: return null
     val javaHome = jdk.javaHome ?: return null
