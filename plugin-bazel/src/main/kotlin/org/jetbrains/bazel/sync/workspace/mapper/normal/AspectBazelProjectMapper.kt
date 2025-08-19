@@ -32,7 +32,6 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
-import org.jetbrains.bazel.sync.workspace.languages.createBuildDataUnsafe
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
@@ -72,7 +71,7 @@ class AspectBazelProjectMapper(
     val tags: Set<Tag>,
     val sources: List<SourceItem>,
     val languages: Set<LanguageClass>,
-    val languagePlugin: LanguagePlugin<*, *>,
+    val languagePlugin: LanguagePlugin<*>,
   )
 
   fun TargetInfo.toIntermediateData(
@@ -856,9 +855,6 @@ class AspectBazelProjectMapper(
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val resources = resolveResources(target, targetData.languagePlugin)
-    val languageData =
-      targetData.languagePlugin.createIntermediateModel(target)
-        ?: error("TODO - idk")
 
     val tags = targetData.tags
     val (targetSources, lowPrioritySharedSources) =
@@ -869,7 +865,7 @@ class AspectBazelProjectMapper(
       }
 
     val context = LanguagePluginContext(target, dependencyGraph)
-    val data = targetData.languagePlugin.createBuildDataUnsafe(context, languageData)
+    val data = targetData.languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(
       id = label,
@@ -931,7 +927,7 @@ class AspectBazelProjectMapper(
       }
     }
 
-  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*, *>): List<SourceItem> {
+  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
     val sources =
       (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
         .toSet()
@@ -957,7 +953,7 @@ class AspectBazelProjectMapper(
     logger.warn(message)
   }
 
-  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*, *>): Set<Path> =
+  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
     (bazelPathsResolver.resolvePaths(target.resourcesList) + languagePlugin.resolveAdditionalResources(target))
       .filter { it.exists() }
       .toSet()

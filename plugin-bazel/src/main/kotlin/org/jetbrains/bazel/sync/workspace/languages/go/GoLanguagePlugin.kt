@@ -16,7 +16,7 @@ import org.jetbrains.bsp.protocol.GoBuildTarget
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoModule, GoBuildTarget> {
+class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoBuildTarget> {
   private val logger: Logger = logger<GoLanguagePlugin>()
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
@@ -26,28 +26,20 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
     return targetInfo.goTargetInfo.generatedSourcesList
   }
 
-  override fun createIntermediateModel(targetInfo: BspTargetInfo.TargetInfo): GoModule? {
-    if (!targetInfo.hasGoTargetInfo()) return null
-    val goTargetInfo = targetInfo.goTargetInfo
-    return GoModule(
-      sdkHomePath = calculateSdkPath(goTargetInfo.sdkHomePath),
-      importPath = goTargetInfo.importPath,
-      generatedSources = goTargetInfo.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
-      generatedLibraries = goTargetInfo.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it) },
-      libraryLabels = goTargetInfo.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
+  override fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): GoBuildTarget? {
+    if (!target.hasGoTargetInfo()) {
+      return null
+    }
+    val goTarget = target.goTargetInfo
+    return GoBuildTarget(
+      sdkHomePath = calculateSdkPath(goTarget.sdkHomePath),
+      importPath = goTarget.importPath,
+      generatedSources = goTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      generatedLibraries = goTarget.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      libraryLabels = goTarget.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
     )
   }
 
-  override fun createBuildTargetData(context: LanguagePluginContext, ir: GoModule): GoBuildTarget =
-    with(ir) {
-      GoBuildTarget(
-        sdkHomePath = sdkHomePath,
-        importPath = importPath,
-        generatedLibraries = generatedLibraries.distinct(),
-        generatedSources = generatedSources.distinct(),
-        libraryLabels = libraryLabels,
-      )
-    }
 
   private fun calculateSdkPath(sdk: BspTargetInfo.FileLocation?): Path? =
     sdk

@@ -14,7 +14,7 @@ import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 
 class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
-  LanguagePlugin<ScalaModule, ScalaBuildTarget> {
+  LanguagePlugin<ScalaBuildTarget> {
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
@@ -40,25 +40,18 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
 
   private fun <K, V> Map<K, V?>.filterValuesNotNull(): Map<K, V> = filterValues { it != null }.mapValues { it.value!! }
 
-  override fun createIntermediateModel(targetInfo: BspTargetInfo.TargetInfo): ScalaModule? {
-    if (!targetInfo.hasScalaTargetInfo()) {
+  override fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): ScalaBuildTarget? {
+    if (!target.hasScalaTargetInfo()) {
       return null
     }
-    val scalaTargetInfo = targetInfo.scalaTargetInfo
-    val sdk = scalaSdks[targetInfo.label()] ?: return null
-    val scalacOpts = scalaTargetInfo.scalacOptsList
-    return ScalaModule(sdk, scalacOpts, javaLanguagePlugin.createIntermediateModel(targetInfo))
+    val sdk = scalaSdks[target.label()] ?: return null
+    return ScalaBuildTarget(
+      scalaVersion = sdk.version,
+      sdkJars = sdk.compilerJars,
+      jvmBuildTarget = javaLanguagePlugin.createBuildTargetData(context, target),
+      scalacOptions = target.scalaTargetInfo.scalacOptsList,
+    )
   }
-
-  override fun createBuildTargetData(context: LanguagePluginContext, ir: ScalaModule): ScalaBuildTarget? =
-    with(ir.sdk) {
-      ScalaBuildTarget(
-        scalaVersion = version,
-        sdkJars = compilerJars.toList(),
-        jvmBuildTarget = ir.javaModule?.let { javaLanguagePlugin.createBuildTargetData(context, it) },
-        scalacOptions = ir.scalacOpts,
-      )
-    }
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
 

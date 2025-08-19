@@ -6,7 +6,7 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bsp.protocol.VoidBuildTarget
 
-class ThriftLanguagePlugin : LanguagePlugin<ThriftModule, VoidBuildTarget> {
+class ThriftLanguagePlugin : LanguagePlugin<VoidBuildTarget> {
   // override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> {
   //  val transitiveSourceDeps =
   //    dependencyGraph
@@ -36,9 +36,7 @@ class ThriftLanguagePlugin : LanguagePlugin<ThriftModule, VoidBuildTarget> {
   // private fun isThriftLibrary(target: BspTargetInfo.TargetInfo): Boolean = target.kind == THRIFT_LIBRARY_RULE_NAME
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.THRIFT)
 
-  override fun createIntermediateModel(targetInfo: BspTargetInfo.TargetInfo): ThriftModule = ThriftModule()
-
-  override fun createBuildTargetData(context: LanguagePluginContext, ir: ThriftModule): VoidBuildTarget = VoidBuildTarget
+  override fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): VoidBuildTarget = VoidBuildTarget
 
   // override fun applyModuleData(module: Module, moduleData: ThriftModule, buildTarget: RawBuildTarget) {}
 

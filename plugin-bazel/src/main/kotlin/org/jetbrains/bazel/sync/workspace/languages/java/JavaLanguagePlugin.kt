@@ -13,7 +13,7 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import java.nio.file.Path
 
 class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val jdkResolver: JdkResolver) :
-  LanguagePlugin<JavaModule, JvmBuildTarget> {
+  LanguagePlugin<JvmBuildTarget> {
   private var jdk: Jdk? = null
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
@@ -21,40 +21,29 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
     jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
   }
 
-  override fun createIntermediateModel(targetInfo: TargetInfo): JavaModule? =
-    targetInfo.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo?.run {
-      if (jarsCount == 0) return@run null
-      val mainOutput = bazelPathsResolver.resolve(getJars(0).getBinaryJars(0))
-      val binaryOutputs = jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
-      val mainClass = getMainClass(this)
-      val runtimeJdk = jdkResolver.resolveJdk(targetInfo)
-
-      JavaModule(
-        jdk,
-        runtimeJdk,
-        javacOptsList,
-        jvmFlagsList,
-        mainOutput,
-        binaryOutputs,
-        mainClass,
-        argsList,
-      )
+  override fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
+    if (!target.hasJvmTargetInfo()) {
+      return null
     }
+    val jvmTarget = target.jvmTargetInfo
+    //val mainOutput = bazelPathsResolver.resolve(jvmTarget.getJars(0).getBinaryJars(0))
+    val binaryOutputs = jvmTarget.jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
+    val mainClass = getMainClass(jvmTarget)
+    //val runtimeJdk = jdkResolver.resolveJdk(target)
 
-  override fun createBuildTargetData(context: LanguagePluginContext, ir: JavaModule): JvmBuildTarget? {
-    val jdk = ir.jdk ?: return null
+    val jdk = jdk ?: return null
     val javaHome = jdk.javaHome ?: return null
     val environmentVariables =
       context.target.envMap + context.target.envInheritList.associateWith { EnvironmentProvider.getInstance().getValue(it) ?: "" }
     return JvmBuildTarget(
-      javaVersion = javaVersionFromJavacOpts(ir.javacOpts) ?: jdk.version,
+      javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: jdk.version,
       javaHome = javaHome,
-      javacOpts = ir.javacOpts,
-      binaryOutputs = ir.binaryOutputs,
+      javacOpts = jvmTarget.javacOptsList,
+      binaryOutputs = binaryOutputs,
       environmentVariables = environmentVariables,
-      mainClass = ir.mainClass,
-      jvmArgs = ir.jvmOps,
-      programArgs = ir.args,
+      mainClass = mainClass,
+      jvmArgs = jvmTarget.jvmFlagsList,
+      programArgs = jvmTarget.argsList,
     )
   }
 

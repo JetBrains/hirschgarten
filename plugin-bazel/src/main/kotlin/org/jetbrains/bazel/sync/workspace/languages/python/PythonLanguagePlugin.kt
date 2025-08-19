@@ -12,7 +12,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Path
 
-class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonModule, PythonBuildTarget> {
+class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonBuildTarget> {
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
 
@@ -37,20 +37,10 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   private fun hasPythonInterpreter(targetInfo: TargetInfo): Boolean =
     targetInfo.hasPythonTargetInfo() && targetInfo.pythonTargetInfo.hasInterpreter()
 
-  override fun createIntermediateModel(targetInfo: TargetInfo): PythonModule? =
-    targetInfo.pythonTargetInfo?.let { pythonTargetInfo ->
-      PythonModule(
-        calculateInterpreterPath(interpreter = pythonTargetInfo.interpreter) ?: defaultInterpreter,
-        pythonTargetInfo.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
-        pythonTargetInfo.importsList,
-        pythonTargetInfo.isCodeGenerator,
-        generatedSources =
-          pythonTargetInfo.generatedSourcesList
-            .mapNotNull { bazelPathsResolver.resolve(it) },
-      )
+  override fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): PythonBuildTarget? {
+    if (!target.hasPythonTargetInfo()) {
+      return null
     }
-
-  override fun createBuildTargetData(context: LanguagePluginContext, ir: PythonModule): PythonBuildTarget {
     val sourceDependencies =
       if (context.target.hasPythonTargetInfo()) {
         context.graph
@@ -62,12 +52,13 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       } else {
         emptyList()
       }
+    val pythonTarget = target.pythonTargetInfo
     return PythonBuildTarget(
-      version = ir.version,
-      interpreter = ir.interpreter,
-      imports = ir.imports,
-      isCodeGenerator = ir.isCodeGenerator,
-      generatedSources = ir.generatedSources,
+      version = pythonTarget.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
+      interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter) ?: defaultInterpreter,
+      imports = pythonTarget.importsList,
+      isCodeGenerator = pythonTarget.isCodeGenerator,
+      generatedSources = pythonTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
       sourceDependencies = sourceDependencies,
     )
   }

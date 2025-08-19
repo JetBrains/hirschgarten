@@ -11,31 +11,21 @@ import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.nio.file.Path
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
-  LanguagePlugin<KotlinModule, KotlinBuildTarget> {
-  override fun createIntermediateModel(targetInfo: BspTargetInfo.TargetInfo): KotlinModule? {
-    if (!targetInfo.hasKotlinTargetInfo()) return null
+  LanguagePlugin<KotlinBuildTarget> {
 
-    val kotlinTargetInfo = targetInfo.kotlinTargetInfo
-
-    return KotlinModule(
-      languageVersion = kotlinTargetInfo.languageVersion,
-      apiVersion = kotlinTargetInfo.apiVersion,
-      associates = kotlinTargetInfo.associatesList.map { Label.parse(it) },
-      kotlincOptions = kotlinTargetInfo.toKotlincOptArguments(),
-      javaModule = javaLanguagePlugin.createIntermediateModel(targetInfo),
+  override fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): KotlinBuildTarget? {
+    if (!target.hasKotlinTargetInfo()) {
+      return null
+    }
+    val kotlinTarget = target.kotlinTargetInfo
+    return KotlinBuildTarget(
+      languageVersion = kotlinTarget.languageVersion,
+      apiVersion = kotlinTarget.apiVersion,
+      associates = kotlinTarget.associatesList.map { Label.parse(it) },
+      kotlincOptions = kotlinTarget.toKotlincOptArguments(),
+      jvmBuildTarget = javaLanguagePlugin.createBuildTargetData(context, target),
     )
   }
-
-  override fun createBuildTargetData(context: LanguagePluginContext, ir: KotlinModule): KotlinBuildTarget =
-    with(ir) {
-      KotlinBuildTarget(
-        languageVersion = languageVersion,
-        apiVersion = apiVersion,
-        kotlincOptions = kotlincOptions,
-        associates = associates.distinct(),
-        jvmBuildTarget = ir.javaModule?.let { javaLanguagePlugin.createBuildTargetData(context, it) },
-      )
-    }
 
   private fun BspTargetInfo.KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
 

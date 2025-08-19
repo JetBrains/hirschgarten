@@ -16,7 +16,7 @@ import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
 @Service(Service.Level.PROJECT)
 class LanguagePluginsService {
   val logger = logger<LanguagePluginsService>()
-  val registry: MutableMap<LanguageClass, LanguagePlugin<*, *>> = mutableMapOf()
+  val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
 
   val all
     get() = registry.values.toList()
@@ -32,7 +32,7 @@ class LanguagePluginsService {
     ThriftLanguagePlugin().also(this::registerLangaugePlugin)
   }
 
-  private fun registerLangaugePlugin(plugin: LanguagePlugin<*, *>) {
+  private fun registerLangaugePlugin(plugin: LanguagePlugin<*>) {
     for (language in plugin.getSupportedLanguages()) {
       if (this.registry.contains(language)) {
         logger.warn("Language plugin already registered for class: $language")
@@ -42,9 +42,9 @@ class LanguagePluginsService {
     }
   }
 
-  fun getLanguagePlugin(lang: LanguageClass): LanguagePlugin<*, *>? = registry[lang]
+  fun getLanguagePlugin(lang: LanguageClass): LanguagePlugin<*>? = registry[lang]
 
-  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*, *>? = langs.firstNotNullOfOrNull { getLanguagePlugin(it) }
+  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*>? = langs.firstNotNullOfOrNull { getLanguagePlugin(it) }
 
   inline fun <reified PLUGIN> getLanguagePlugin(lang: LanguageClass): PLUGIN =
     getLanguagePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")
