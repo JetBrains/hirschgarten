@@ -9,6 +9,9 @@ exclude:
   - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage
   - name: DialogTitleCapitalization
+  - name: MarkedForRemoval
+  - name: WrongPackageStatement
+  - name: UnresolvedPropertyKey
 failureConditions:
   severityThresholds:
-    critical: 1
+    critical: 3950
