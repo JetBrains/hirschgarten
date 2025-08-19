@@ -23,17 +23,18 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEntityData) : ScalaAddendumEntity,
-                                                                                          WorkspaceEntityBase(dataSource) {
+internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEntityData) : ScalaAddendumEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId =
-      ConnectionId.create(ModuleEntity::class.java, ScalaAddendumEntity::class.java, ConnectionId.ConnectionType.ONE_TO_ONE, false)
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, ScalaAddendumEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -73,8 +74,8 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
   }
 
 
-  internal class Builder(result: ScalaAddendumEntityData?) :
-    ModifiableWorkspaceEntityBase<ScalaAddendumEntity, ScalaAddendumEntityData>(result), ScalaAddendumEntity.Builder {
+  internal class Builder(result: ScalaAddendumEntityData?) : ModifiableWorkspaceEntityBase<ScalaAddendumEntity, ScalaAddendumEntityData>(
+    result), ScalaAddendumEntity.Builder {
     internal constructor() : this(ScalaAddendumEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -285,8 +286,7 @@ internal class ScalaAddendumEntityData : WorkspaceEntityData<ScalaAddendumEntity
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity"
-    ) as EntityMetadata
+      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity") as EntityMetadata
   }
 
   override fun clone(): ScalaAddendumEntityData {
