@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.starlark.indentation
 
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkIndentationTestCase
-import org.jetbrains.kotlin.idea.core.moveCaret
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -14,7 +13,7 @@ class StarlarkLineIndentProviderTest : StarlarkIndentationTestCase() {
     // given
     myFixture.configureByFile("IndentationTestData.bzl")
     myFixture.type("()")
-    myFixture.editor.moveCaret(myFixture.caretOffset - 1)
+    myFixture.editor.caretModel.moveToOffset(myFixture.caretOffset - 1)
 
     // when
     myFixture.type("\n")
@@ -28,7 +27,7 @@ class StarlarkLineIndentProviderTest : StarlarkIndentationTestCase() {
     // given
     myFixture.configureByFile("IndentationTestData.bzl")
     myFixture.type("(x")
-    myFixture.editor.moveCaret(myFixture.caretOffset - 1)
+    myFixture.editor.caretModel.moveToOffset(myFixture.caretOffset - 1)
 
     // when
     myFixture.type("\n")
