@@ -40,7 +40,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
 
   private fun <K, V> Map<K, V?>.filterValuesNotNull(): Map<K, V> = filterValues { it != null }.mapValues { it.value!! }
 
-  override fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): ScalaBuildTarget? {
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): ScalaBuildTarget? {
     if (!target.hasScalaTargetInfo()) {
       return null
     }

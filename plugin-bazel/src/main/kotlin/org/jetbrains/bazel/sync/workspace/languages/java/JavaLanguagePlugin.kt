@@ -21,7 +21,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
     jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
   }
 
-  override fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
     if (!target.hasJvmTargetInfo()) {
       return null
     }

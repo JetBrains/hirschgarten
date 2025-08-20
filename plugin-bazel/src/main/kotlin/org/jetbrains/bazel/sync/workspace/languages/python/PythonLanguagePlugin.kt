@@ -37,7 +37,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   private fun hasPythonInterpreter(targetInfo: TargetInfo): Boolean =
     targetInfo.hasPythonTargetInfo() && targetInfo.pythonTargetInfo.hasInterpreter()
 
-  override fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): PythonBuildTarget? {
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): PythonBuildTarget? {
     if (!target.hasPythonTargetInfo()) {
       return null
     }

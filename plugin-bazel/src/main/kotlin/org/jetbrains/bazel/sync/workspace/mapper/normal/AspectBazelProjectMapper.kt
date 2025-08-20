@@ -839,7 +839,7 @@ class AspectBazelProjectMapper(
         .filterNot { BuildTargetTag.NO_IDE in it.tags }
     }
 
-  private fun createRawBuildTarget(
+  private suspend fun createRawBuildTarget(
     targetData: IntermediateTargetData,
     highPrioritySources: Set<Path>,
     repoMapping: RepoMapping,
