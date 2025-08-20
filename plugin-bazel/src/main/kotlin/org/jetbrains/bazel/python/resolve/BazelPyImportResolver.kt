@@ -32,8 +32,7 @@ class BazelPyImportResolver : PyImportResolver {
       }
     if (synonymImport != null) return synonymImport
 
-    val s = resolveShortImport(name, context)
-    return s
+    return resolveShortImport(name, context)
   }
 
   /**
