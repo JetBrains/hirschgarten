@@ -80,18 +80,6 @@ internal class JavaModuleWithSourcesUpdater(
       )
     }
 
-    if (isAndroidSupportEnabled && entityToAdd.androidAddendum != null) {
-      val androidAddendumEntityUpdater = AndroidAddendumEntityUpdater(workspaceModelEntityUpdaterConfig)
-      androidAddendumEntityUpdater.addEntity(entityToAdd.androidAddendum!!, moduleEntity)
-    }
-
-    if (isAndroidSupportEnabled && entityToAdd.genericModuleInfo.kind.includesAndroid()) {
-      androidFacetEntityUpdaterExtension()?.let { extension ->
-        val androidFacetEntityUpdater = extension.createAndroidFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
-        androidFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
-      }
-    }
-
     return moduleEntity
   }
 

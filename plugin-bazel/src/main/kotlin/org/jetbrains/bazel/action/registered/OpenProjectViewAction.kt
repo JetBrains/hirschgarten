@@ -22,13 +22,16 @@ class OpenProjectViewAction :
     AllIcons.FileTypes.Config,
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val configFile = project.bazelProjectSettings.projectViewPath
-    e.presentation.isEnabled = configFile != null
-    withContext(Dispatchers.EDT) {
-      project.serviceAsync<ProjectView>().refresh()
-      if (configFile != null) {
-        getPsiFile(configFile, project)?.navigate(true)
-      }
+    openProjectView(project)
+  }
+}
+
+internal suspend fun openProjectView(project: Project) {
+  val configFile = project.bazelProjectSettings.projectViewPath
+  withContext(Dispatchers.EDT) {
+    project.serviceAsync<ProjectView>().refresh()
+    if (configFile != null) {
+      getPsiFile(configFile, project)?.navigate(true)
     }
   }
 }

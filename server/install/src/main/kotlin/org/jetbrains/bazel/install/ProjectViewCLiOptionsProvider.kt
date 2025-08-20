@@ -5,6 +5,7 @@ import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
 import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
@@ -45,7 +46,11 @@ object ProjectViewCLiOptionsProvider {
       shardSync = toShardSyncSection(projectViewCliOptions),
       targetShardSize = toTargetShardSizeSection(projectViewCliOptions),
       shardingApproach = toShardingStrategy(projectViewCliOptions),
+      gazelleTarget = toGazelleTarget(projectViewCliOptions),
     )
+
+  private fun toGazelleTarget(projectViewCliOptions: ProjectViewCliOptions?): GazelleTargetSection? =
+    projectViewCliOptions?.gazelleTarget?.let(::GazelleTargetSection)
 
   private fun toBazelBinarySection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewBazelBinarySection? =
     projectViewCliOptions?.bazelBinary?.let(::ProjectViewBazelBinarySection)

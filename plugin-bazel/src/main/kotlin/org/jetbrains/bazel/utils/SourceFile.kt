@@ -13,6 +13,7 @@ enum class SourceType(private val extensions: Array<String>) {
   KOTLIN(arrayOf("kt", "kts")),
   SCALA(arrayOf("scala")),
   PYTHON(arrayOf("py")),
+  GO(arrayOf("go")),
   ;
 
   companion object {

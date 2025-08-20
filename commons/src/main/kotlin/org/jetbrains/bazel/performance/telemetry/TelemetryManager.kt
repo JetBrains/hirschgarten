@@ -11,7 +11,12 @@ interface TelemetryManager {
   companion object {
     private lateinit var instance: TelemetryManager
 
-    fun getInstance(): TelemetryManager = instance
+    fun getInstance(): TelemetryManager {
+      if (!::instance.isInitialized) {
+        throw IllegalStateException("TelemetryManager has not been initialized. Call provideTelemetryManager() first.")
+      }
+      return instance
+    }
 
     fun provideTelemetryManager(instance: TelemetryManager) {
       this.instance = instance

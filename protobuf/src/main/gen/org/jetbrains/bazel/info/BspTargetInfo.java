@@ -3213,28 +3213,10 @@ public final class BspTargetInfo {
         int index);
 
     /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
+     * <code>bool has_api_generating_plugins = 12;</code>
+     * @return The hasApiGeneratingPlugins.
      */
-    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
-        getTransitiveCompileTimeJarsList();
-    /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-     */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index);
-    /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-     */
-    int getTransitiveCompileTimeJarsCount();
-    /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-     */
-    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
-        getTransitiveCompileTimeJarsOrBuilderList();
-    /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-     */
-    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
-        int index);
+    boolean getHasApiGeneratingPlugins();
   }
   /**
    * Protobuf type {@code bazelbsp.JvmTargetInfo}
@@ -3268,7 +3250,6 @@ public final class BspTargetInfo {
       args_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
       jdeps_ = java.util.Collections.emptyList();
-      transitiveCompileTimeJars_ = java.util.Collections.emptyList();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -3557,45 +3538,15 @@ public final class BspTargetInfo {
       return jdeps_.get(index);
     }
 
-    public static final int TRANSITIVE_COMPILE_TIME_JARS_FIELD_NUMBER = 11;
-    @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> transitiveCompileTimeJars_;
+    public static final int HAS_API_GENERATING_PLUGINS_FIELD_NUMBER = 12;
+    private boolean hasApiGeneratingPlugins_ = false;
     /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
+     * <code>bool has_api_generating_plugins = 12;</code>
+     * @return The hasApiGeneratingPlugins.
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getTransitiveCompileTimeJarsList() {
-      return transitiveCompileTimeJars_;
-    }
-    /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-     */
-    @java.lang.Override
-    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
-        getTransitiveCompileTimeJarsOrBuilderList() {
-      return transitiveCompileTimeJars_;
-    }
-    /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-     */
-    @java.lang.Override
-    public int getTransitiveCompileTimeJarsCount() {
-      return transitiveCompileTimeJars_.size();
-    }
-    /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-     */
-    @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index) {
-      return transitiveCompileTimeJars_.get(index);
-    }
-    /**
-     * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-     */
-    @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
-        int index) {
-      return transitiveCompileTimeJars_.get(index);
+    public boolean getHasApiGeneratingPlugins() {
+      return hasApiGeneratingPlugins_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3633,8 +3584,8 @@ public final class BspTargetInfo {
       for (int i = 0; i < jdeps_.size(); i++) {
         output.writeMessage(10, jdeps_.get(i));
       }
-      for (int i = 0; i < transitiveCompileTimeJars_.size(); i++) {
-        output.writeMessage(11, transitiveCompileTimeJars_.get(i));
+      if (hasApiGeneratingPlugins_ != false) {
+        output.writeBool(12, hasApiGeneratingPlugins_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3684,9 +3635,9 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(10, jdeps_.get(i));
       }
-      for (int i = 0; i < transitiveCompileTimeJars_.size(); i++) {
+      if (hasApiGeneratingPlugins_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(11, transitiveCompileTimeJars_.get(i));
+          .computeBoolSize(12, hasApiGeneratingPlugins_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -3717,8 +3668,8 @@ public final class BspTargetInfo {
           .equals(other.getArgsList())) return false;
       if (!getJdepsList()
           .equals(other.getJdepsList())) return false;
-      if (!getTransitiveCompileTimeJarsList()
-          .equals(other.getTransitiveCompileTimeJarsList())) return false;
+      if (getHasApiGeneratingPlugins()
+          != other.getHasApiGeneratingPlugins()) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -3756,10 +3707,9 @@ public final class BspTargetInfo {
         hash = (37 * hash) + JDEPS_FIELD_NUMBER;
         hash = (53 * hash) + getJdepsList().hashCode();
       }
-      if (getTransitiveCompileTimeJarsCount() > 0) {
-        hash = (37 * hash) + TRANSITIVE_COMPILE_TIME_JARS_FIELD_NUMBER;
-        hash = (53 * hash) + getTransitiveCompileTimeJarsList().hashCode();
-      }
+      hash = (37 * hash) + HAS_API_GENERATING_PLUGINS_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getHasApiGeneratingPlugins());
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -3919,13 +3869,7 @@ public final class BspTargetInfo {
           jdepsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000040);
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          transitiveCompileTimeJars_ = java.util.Collections.emptyList();
-        } else {
-          transitiveCompileTimeJars_ = null;
-          transitiveCompileTimeJarsBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000080);
+        hasApiGeneratingPlugins_ = false;
         return this;
       }
 
@@ -3986,15 +3930,6 @@ public final class BspTargetInfo {
         } else {
           result.jdeps_ = jdepsBuilder_.build();
         }
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          if (((bitField0_ & 0x00000080) != 0)) {
-            transitiveCompileTimeJars_ = java.util.Collections.unmodifiableList(transitiveCompileTimeJars_);
-            bitField0_ = (bitField0_ & ~0x00000080);
-          }
-          result.transitiveCompileTimeJars_ = transitiveCompileTimeJars_;
-        } else {
-          result.transitiveCompileTimeJars_ = transitiveCompileTimeJarsBuilder_.build();
-        }
       }
 
       private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo result) {
@@ -4013,6 +3948,9 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000020) != 0)) {
           args_.makeImmutable();
           result.args_ = args_;
+        }
+        if (((from_bitField0_ & 0x00000080) != 0)) {
+          result.hasApiGeneratingPlugins_ = hasApiGeneratingPlugins_;
         }
       }
 
@@ -4141,31 +4079,8 @@ public final class BspTargetInfo {
             }
           }
         }
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          if (!other.transitiveCompileTimeJars_.isEmpty()) {
-            if (transitiveCompileTimeJars_.isEmpty()) {
-              transitiveCompileTimeJars_ = other.transitiveCompileTimeJars_;
-              bitField0_ = (bitField0_ & ~0x00000080);
-            } else {
-              ensureTransitiveCompileTimeJarsIsMutable();
-              transitiveCompileTimeJars_.addAll(other.transitiveCompileTimeJars_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.transitiveCompileTimeJars_.isEmpty()) {
-            if (transitiveCompileTimeJarsBuilder_.isEmpty()) {
-              transitiveCompileTimeJarsBuilder_.dispose();
-              transitiveCompileTimeJarsBuilder_ = null;
-              transitiveCompileTimeJars_ = other.transitiveCompileTimeJars_;
-              bitField0_ = (bitField0_ & ~0x00000080);
-              transitiveCompileTimeJarsBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getTransitiveCompileTimeJarsFieldBuilder() : null;
-            } else {
-              transitiveCompileTimeJarsBuilder_.addAllMessages(other.transitiveCompileTimeJars_);
-            }
-          }
+        if (other.getHasApiGeneratingPlugins() != false) {
+          setHasApiGeneratingPlugins(other.getHasApiGeneratingPlugins());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -4255,19 +4170,11 @@ public final class BspTargetInfo {
                 }
                 break;
               } // case 82
-              case 90: {
-                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
-                    input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
-                        extensionRegistry);
-                if (transitiveCompileTimeJarsBuilder_ == null) {
-                  ensureTransitiveCompileTimeJarsIsMutable();
-                  transitiveCompileTimeJars_.add(m);
-                } else {
-                  transitiveCompileTimeJarsBuilder_.addMessage(m);
-                }
+              case 96: {
+                hasApiGeneratingPlugins_ = input.readBool();
+                bitField0_ |= 0x00000080;
                 break;
-              } // case 90
+              } // case 96
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -5410,244 +5317,36 @@ public final class BspTargetInfo {
         return jdepsBuilder_;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> transitiveCompileTimeJars_ =
-        java.util.Collections.emptyList();
-      private void ensureTransitiveCompileTimeJarsIsMutable() {
-        if (!((bitField0_ & 0x00000080) != 0)) {
-          transitiveCompileTimeJars_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(transitiveCompileTimeJars_);
-          bitField0_ |= 0x00000080;
-         }
+      private boolean hasApiGeneratingPlugins_ ;
+      /**
+       * <code>bool has_api_generating_plugins = 12;</code>
+       * @return The hasApiGeneratingPlugins.
+       */
+      @java.lang.Override
+      public boolean getHasApiGeneratingPlugins() {
+        return hasApiGeneratingPlugins_;
       }
+      /**
+       * <code>bool has_api_generating_plugins = 12;</code>
+       * @param value The hasApiGeneratingPlugins to set.
+       * @return This builder for chaining.
+       */
+      public Builder setHasApiGeneratingPlugins(boolean value) {
 
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> transitiveCompileTimeJarsBuilder_;
-
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getTransitiveCompileTimeJarsList() {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(transitiveCompileTimeJars_);
-        } else {
-          return transitiveCompileTimeJarsBuilder_.getMessageList();
-        }
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public int getTransitiveCompileTimeJarsCount() {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          return transitiveCompileTimeJars_.size();
-        } else {
-          return transitiveCompileTimeJarsBuilder_.getCount();
-        }
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getTransitiveCompileTimeJars(int index) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          return transitiveCompileTimeJars_.get(index);
-        } else {
-          return transitiveCompileTimeJarsBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public Builder setTransitiveCompileTimeJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureTransitiveCompileTimeJarsIsMutable();
-          transitiveCompileTimeJars_.set(index, value);
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.setMessage(index, value);
-        }
+        hasApiGeneratingPlugins_ = value;
+        bitField0_ |= 0x00000080;
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
+       * <code>bool has_api_generating_plugins = 12;</code>
+       * @return This builder for chaining.
        */
-      public Builder setTransitiveCompileTimeJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          ensureTransitiveCompileTimeJarsIsMutable();
-          transitiveCompileTimeJars_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.setMessage(index, builderForValue.build());
-        }
+      public Builder clearHasApiGeneratingPlugins() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        hasApiGeneratingPlugins_ = false;
+        onChanged();
         return this;
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public Builder addTransitiveCompileTimeJars(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureTransitiveCompileTimeJarsIsMutable();
-          transitiveCompileTimeJars_.add(value);
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public Builder addTransitiveCompileTimeJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureTransitiveCompileTimeJarsIsMutable();
-          transitiveCompileTimeJars_.add(index, value);
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public Builder addTransitiveCompileTimeJars(
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          ensureTransitiveCompileTimeJarsIsMutable();
-          transitiveCompileTimeJars_.add(builderForValue.build());
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public Builder addTransitiveCompileTimeJars(
-          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          ensureTransitiveCompileTimeJarsIsMutable();
-          transitiveCompileTimeJars_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public Builder addAllTransitiveCompileTimeJars(
-          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          ensureTransitiveCompileTimeJarsIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, transitiveCompileTimeJars_);
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public Builder clearTransitiveCompileTimeJars() {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          transitiveCompileTimeJars_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000080);
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public Builder removeTransitiveCompileTimeJars(int index) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          ensureTransitiveCompileTimeJarsIsMutable();
-          transitiveCompileTimeJars_.remove(index);
-          onChanged();
-        } else {
-          transitiveCompileTimeJarsBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getTransitiveCompileTimeJarsBuilder(
-          int index) {
-        return getTransitiveCompileTimeJarsFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
-          int index) {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          return transitiveCompileTimeJars_.get(index);  } else {
-          return transitiveCompileTimeJarsBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
-           getTransitiveCompileTimeJarsOrBuilderList() {
-        if (transitiveCompileTimeJarsBuilder_ != null) {
-          return transitiveCompileTimeJarsBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(transitiveCompileTimeJars_);
-        }
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addTransitiveCompileTimeJarsBuilder() {
-        return getTransitiveCompileTimeJarsFieldBuilder().addBuilder(
-            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addTransitiveCompileTimeJarsBuilder(
-          int index) {
-        return getTransitiveCompileTimeJarsFieldBuilder().addBuilder(
-            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .bazelbsp.FileLocation transitive_compile_time_jars = 11;</code>
-       */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
-           getTransitiveCompileTimeJarsBuilderList() {
-        return getTransitiveCompileTimeJarsFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
-          getTransitiveCompileTimeJarsFieldBuilder() {
-        if (transitiveCompileTimeJarsBuilder_ == null) {
-          transitiveCompileTimeJarsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
-                  transitiveCompileTimeJars_,
-                  ((bitField0_ & 0x00000080) != 0),
-                  getParentForChildren(),
-                  isClean());
-          transitiveCompileTimeJars_ = null;
-        }
-        return transitiveCompileTimeJarsBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:bazelbsp.JvmTargetInfo)
@@ -28076,97 +27775,96 @@ java.lang.String defaultValue) {
       "utputs\022+\n\013binary_jars\030\001 \003(\0132\026.bazelbsp.F" +
       "ileLocation\022.\n\016interface_jars\030\002 \003(\0132\026.ba" +
       "zelbsp.FileLocation\022+\n\013source_jars\030\003 \003(\013" +
-      "2\026.bazelbsp.FileLocation\"\217\002\n\rJvmTargetIn" +
+      "2\026.bazelbsp.FileLocation\"\365\001\n\rJvmTargetIn" +
       "fo\022\"\n\004jars\030\001 \003(\0132\024.bazelbsp.JvmOutputs\022," +
       "\n\016generated_jars\030\002 \003(\0132\024.bazelbsp.JvmOut" +
       "puts\022\022\n\njavac_opts\030\006 \003(\t\022\021\n\tjvm_flags\030\007 " +
       "\003(\t\022\022\n\nmain_class\030\010 \001(\t\022\014\n\004args\030\t \003(\t\022%\n" +
-      "\005jdeps\030\n \003(\0132\026.bazelbsp.FileLocation\022<\n\034" +
-      "transitive_compile_time_jars\030\013 \003(\0132\026.baz" +
-      "elbsp.FileLocation\"n\n\021JavaToolchainInfo\022" +
-      "\026\n\016source_version\030\001 \001(\t\022\026\n\016target_versio" +
-      "n\030\002 \001(\t\022)\n\tjava_home\030\003 \001(\0132\026.bazelbsp.Fi" +
-      "leLocation\"<\n\017JavaRuntimeInfo\022)\n\tjava_ho" +
-      "me\030\001 \001(\0132\026.bazelbsp.FileLocation\"\217\001\n\017Sca" +
-      "laTargetInfo\022\023\n\013scalac_opts\030\001 \003(\t\0222\n\022com" +
-      "piler_classpath\030\002 \003(\0132\026.bazelbsp.FileLoc" +
-      "ation\0223\n\023scalatest_classpath\030\003 \003(\0132\026.baz" +
-      "elbsp.FileLocation\"\310\002\n\rCppTargetInfo\022\r\n\005" +
-      "copts\030\001 \003(\t\022\'\n\007headers\030\002 \003(\0132\026.bazelbsp." +
-      "FileLocation\022/\n\017textual_headers\030\003 \003(\0132\026." +
-      "bazelbsp.FileLocation\022$\n\034transitive_incl" +
-      "ude_directory\030\006 \003(\t\022*\n\"transitive_quote_" +
-      "include_directory\030\007 \003(\t\022\031\n\021transitive_de" +
-      "fine\030\010 \003(\t\022+\n#transitive_system_include_" +
-      "directory\030\t \003(\t\022\026\n\016include_prefix\030\n \001(\t\022" +
-      "\034\n\024strip_include_prefix\030\013 \001(\t\"\231\001\n\016CToolc" +
-      "hainInfo\022\023\n\013target_name\030\001 \001(\t\022\022\n\ncpp_opt" +
-      "ion\030\002 \003(\t\022\020\n\010c_option\030\003 \003(\t\022\022\n\nc_compile" +
-      "r\030\004 \001(\t\022\024\n\014cpp_compiler\030\005 \001(\t\022\"\n\032built_i" +
-      "n_include_directory\030\006 \003(\t\"?\n\023KotlincPlug" +
-      "inOption\022\021\n\tplugin_id\030d \001(\t\022\025\n\014option_va" +
-      "lue\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022+\n\013plug" +
-      "in_jars\030d \003(\0132\026.bazelbsp.FileLocation\022>\n" +
-      "\026kotlinc_plugin_options\030\310\001 \003(\0132\035.bazelbs" +
-      "p.KotlincPluginOption\"\324\001\n\020KotlinTargetIn" +
-      "fo\022\030\n\020language_version\030d \001(\t\022\024\n\013api_vers" +
-      "ion\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014kotli" +
-      "nc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026.bazel" +
-      "bsp.FileLocation\022:\n\024kotlinc_plugin_infos" +
-      "\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo\"\257\001\n" +
-      "\020PythonTargetInfo\022+\n\013interpreter\030\001 \001(\0132\026" +
-      ".bazelbsp.FileLocation\022\017\n\007version\030\002 \001(\t\022" +
-      "\017\n\007imports\030\003 \003(\t\022\031\n\021is_code_generator\030\004 " +
-      "\001(\010\0221\n\021generated_sources\030\005 \003(\0132\026.bazelbs" +
-      "p.FileLocation\"\214\004\n\021AndroidTargetInfo\022+\n\013" +
-      "android_jar\030d \001(\0132\026.bazelbsp.FileLocatio" +
-      "n\022)\n\010manifest\030\310\001 \001(\0132\026.bazelbsp.FileLoca" +
-      "tion\022O\n\022manifest_overrides\030\372\001 \003(\01322.baze" +
-      "lbsp.AndroidTargetInfo.ManifestOverrides" +
-      "Entry\0225\n\024resource_directories\030\254\002 \003(\0132\026.b" +
-      "azelbsp.FileLocation\022\036\n\025resource_java_pa" +
-      "ckage\030\220\003 \001(\t\0223\n\022assets_directories\030\302\003 \003(" +
-      "\0132\026.bazelbsp.FileLocation\0220\n\017aidl_binary" +
-      "_jar\030\364\003 \001(\0132\026.bazelbsp.FileLocation\0220\n\017a" +
-      "idl_source_jar\030\330\004 \001(\0132\026.bazelbsp.FileLoc" +
-      "ation\022$\n\003apk\030\274\005 \001(\0132\026.bazelbsp.FileLocat" +
-      "ion\0328\n\026ManifestOverridesEntry\022\013\n\003key\030\001 \001" +
-      "(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\230\001\n\024AndroidAarImpo" +
-      "rtInfo\022(\n\010manifest\030\001 \001(\0132\026.bazelbsp.File" +
-      "Location\022/\n\017resource_folder\030\002 \001(\0132\026.baze" +
-      "lbsp.FileLocation\022%\n\005r_txt\030\003 \001(\0132\026.bazel" +
-      "bsp.FileLocation\"\322\001\n\014GoTargetInfo\022\023\n\013imp" +
-      "ort_path\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026." +
-      "bazelbsp.FileLocation\0221\n\021generated_sourc" +
-      "es\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023gene" +
-      "rated_libraries\030\004 \003(\0132\026.bazelbsp.FileLoc" +
-      "ation\022\026\n\016library_labels\030\005 \003(\t\"\344\007\n\nTarget" +
-      "Info\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036" +
-      " \003(\t\022*\n\014dependencies\030( \003(\0132\024.bazelbsp.De" +
-      "pendency\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.Fil" +
-      "eLocation\0221\n\021generated_sources\0303 \003(\0132\026.b" +
-      "azelbsp.FileLocation\022)\n\tresources\030< \003(\0132" +
-      "\026.bazelbsp.FileLocation\022*\n\003env\030F \003(\0132\035.b" +
-      "azelbsp.TargetInfo.EnvEntry\022\023\n\013env_inher" +
-      "it\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspac" +
-      "e_name\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132\027" +
-      ".bazelbsp.JvmTargetInfo\0229\n\023java_toolchai" +
-      "n_info\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainIn" +
-      "fo\0225\n\021java_runtime_info\030\270\027 \001(\0132\031.bazelbs" +
-      "p.JavaRuntimeInfo\0225\n\021scala_target_info\030\240" +
-      "\037 \001(\0132\031.bazelbsp.ScalaTargetInfo\0221\n\017cpp_" +
-      "target_info\030\360. \001(\0132\027.bazelbsp.CppTargetI" +
-      "nfo\0227\n\022kotlin_target_info\030\3306 \001(\0132\032.bazel" +
-      "bsp.KotlinTargetInfo\0227\n\022python_target_in" +
-      "fo\030\300> \001(\0132\032.bazelbsp.PythonTargetInfo\0229\n" +
-      "\023android_target_info\030\220N \001(\0132\033.bazelbsp.A" +
-      "ndroidTargetInfo\022@\n\027android_aar_import_i" +
-      "nfo\030\370U \001(\0132\036.bazelbsp.AndroidAarImportIn" +
-      "fo\022/\n\016go_target_info\030\340] \001(\0132\026.bazelbsp.G" +
-      "oTargetInfo\0223\n\020c_toolchain_info\030\310e \001(\0132\030" +
-      ".bazelbsp.CToolchainInfo\032*\n\010EnvEntry\022\013\n\003" +
-      "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetb" +
-      "rains.bazel.infob\006proto3"
+      "\005jdeps\030\n \003(\0132\026.bazelbsp.FileLocation\022\"\n\032" +
+      "has_api_generating_plugins\030\014 \001(\010\"n\n\021Java" +
+      "ToolchainInfo\022\026\n\016source_version\030\001 \001(\t\022\026\n" +
+      "\016target_version\030\002 \001(\t\022)\n\tjava_home\030\003 \001(\013" +
+      "2\026.bazelbsp.FileLocation\"<\n\017JavaRuntimeI" +
+      "nfo\022)\n\tjava_home\030\001 \001(\0132\026.bazelbsp.FileLo" +
+      "cation\"\217\001\n\017ScalaTargetInfo\022\023\n\013scalac_opt" +
+      "s\030\001 \003(\t\0222\n\022compiler_classpath\030\002 \003(\0132\026.ba" +
+      "zelbsp.FileLocation\0223\n\023scalatest_classpa" +
+      "th\030\003 \003(\0132\026.bazelbsp.FileLocation\"\310\002\n\rCpp" +
+      "TargetInfo\022\r\n\005copts\030\001 \003(\t\022\'\n\007headers\030\002 \003" +
+      "(\0132\026.bazelbsp.FileLocation\022/\n\017textual_he" +
+      "aders\030\003 \003(\0132\026.bazelbsp.FileLocation\022$\n\034t" +
+      "ransitive_include_directory\030\006 \003(\t\022*\n\"tra" +
+      "nsitive_quote_include_directory\030\007 \003(\t\022\031\n" +
+      "\021transitive_define\030\010 \003(\t\022+\n#transitive_s" +
+      "ystem_include_directory\030\t \003(\t\022\026\n\016include" +
+      "_prefix\030\n \001(\t\022\034\n\024strip_include_prefix\030\013 " +
+      "\001(\t\"\231\001\n\016CToolchainInfo\022\023\n\013target_name\030\001 " +
+      "\001(\t\022\022\n\ncpp_option\030\002 \003(\t\022\020\n\010c_option\030\003 \003(" +
+      "\t\022\022\n\nc_compiler\030\004 \001(\t\022\024\n\014cpp_compiler\030\005 " +
+      "\001(\t\022\"\n\032built_in_include_directory\030\006 \003(\t\"" +
+      "?\n\023KotlincPluginOption\022\021\n\tplugin_id\030d \001(" +
+      "\t\022\025\n\014option_value\030\310\001 \001(\t\"\200\001\n\021KotlincPlug" +
+      "inInfo\022+\n\013plugin_jars\030d \003(\0132\026.bazelbsp.F" +
+      "ileLocation\022>\n\026kotlinc_plugin_options\030\310\001" +
+      " \003(\0132\035.bazelbsp.KotlincPluginOption\"\324\001\n\020" +
+      "KotlinTargetInfo\022\030\n\020language_version\030d \001" +
+      "(\t\022\024\n\013api_version\030\310\001 \001(\t\022\023\n\nassociates\030\254" +
+      "\002 \003(\t\022\025\n\014kotlinc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030" +
+      "\364\003 \003(\0132\026.bazelbsp.FileLocation\022:\n\024kotlin" +
+      "c_plugin_infos\030\330\004 \003(\0132\033.bazelbsp.Kotlinc" +
+      "PluginInfo\"\257\001\n\020PythonTargetInfo\022+\n\013inter" +
+      "preter\030\001 \001(\0132\026.bazelbsp.FileLocation\022\017\n\007" +
+      "version\030\002 \001(\t\022\017\n\007imports\030\003 \003(\t\022\031\n\021is_cod" +
+      "e_generator\030\004 \001(\010\0221\n\021generated_sources\030\005" +
+      " \003(\0132\026.bazelbsp.FileLocation\"\214\004\n\021Android" +
+      "TargetInfo\022+\n\013android_jar\030d \001(\0132\026.bazelb" +
+      "sp.FileLocation\022)\n\010manifest\030\310\001 \001(\0132\026.baz" +
+      "elbsp.FileLocation\022O\n\022manifest_overrides" +
+      "\030\372\001 \003(\01322.bazelbsp.AndroidTargetInfo.Man" +
+      "ifestOverridesEntry\0225\n\024resource_director" +
+      "ies\030\254\002 \003(\0132\026.bazelbsp.FileLocation\022\036\n\025re" +
+      "source_java_package\030\220\003 \001(\t\0223\n\022assets_dir" +
+      "ectories\030\302\003 \003(\0132\026.bazelbsp.FileLocation\022" +
+      "0\n\017aidl_binary_jar\030\364\003 \001(\0132\026.bazelbsp.Fil" +
+      "eLocation\0220\n\017aidl_source_jar\030\330\004 \001(\0132\026.ba" +
+      "zelbsp.FileLocation\022$\n\003apk\030\274\005 \001(\0132\026.baze" +
+      "lbsp.FileLocation\0328\n\026ManifestOverridesEn" +
+      "try\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\230\001\n\024" +
+      "AndroidAarImportInfo\022(\n\010manifest\030\001 \001(\0132\026" +
+      ".bazelbsp.FileLocation\022/\n\017resource_folde" +
+      "r\030\002 \001(\0132\026.bazelbsp.FileLocation\022%\n\005r_txt" +
+      "\030\003 \001(\0132\026.bazelbsp.FileLocation\"\322\001\n\014GoTar" +
+      "getInfo\022\023\n\013import_path\030\001 \001(\t\022-\n\rsdk_home" +
+      "_path\030\002 \001(\0132\026.bazelbsp.FileLocation\0221\n\021g" +
+      "enerated_sources\030\003 \003(\0132\026.bazelbsp.FileLo" +
+      "cation\0223\n\023generated_libraries\030\004 \003(\0132\026.ba" +
+      "zelbsp.FileLocation\022\026\n\016library_labels\030\005 " +
+      "\003(\t\"\344\007\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024" +
+      " \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\013" +
+      "2\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(\0132" +
+      "\026.bazelbsp.FileLocation\0221\n\021generated_sou" +
+      "rces\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\tre" +
+      "sources\030< \003(\0132\026.bazelbsp.FileLocation\022*\n" +
+      "\003env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntr" +
+      "y\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001" +
+      "(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_target" +
+      "_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229\n" +
+      "\023java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp.J" +
+      "avaToolchainInfo\0225\n\021java_runtime_info\030\270\027" +
+      " \001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021scala" +
+      "_target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTarg" +
+      "etInfo\0221\n\017cpp_target_info\030\360. \001(\0132\027.bazel" +
+      "bsp.CppTargetInfo\0227\n\022kotlin_target_info\030" +
+      "\3306 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022py" +
+      "thon_target_info\030\300> \001(\0132\032.bazelbsp.Pytho" +
+      "nTargetInfo\0229\n\023android_target_info\030\220N \001(" +
+      "\0132\033.bazelbsp.AndroidTargetInfo\022@\n\027androi" +
+      "d_aar_import_info\030\370U \001(\0132\036.bazelbsp.Andr" +
+      "oidAarImportInfo\022/\n\016go_target_info\030\340] \001(" +
+      "\0132\026.bazelbsp.GoTargetInfo\0223\n\020c_toolchain" +
+      "_info\030\310e \001(\0132\030.bazelbsp.CToolchainInfo\032*" +
+      "\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\002" +
+      "8\001B\032\n\030org.jetbrains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -28195,7 +27893,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_JvmTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_JvmTargetInfo_descriptor,
-        new java.lang.String[] { "Jars", "GeneratedJars", "JavacOpts", "JvmFlags", "MainClass", "Args", "Jdeps", "TransitiveCompileTimeJars", });
+        new java.lang.String[] { "Jars", "GeneratedJars", "JavacOpts", "JvmFlags", "MainClass", "Args", "Jdeps", "HasApiGeneratingPlugins", });
     internal_static_bazelbsp_JavaToolchainInfo_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable = new

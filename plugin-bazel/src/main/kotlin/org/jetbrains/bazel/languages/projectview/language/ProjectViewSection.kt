@@ -2,8 +2,11 @@ package org.jetbrains.bazel.languages.projectview.language
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
+import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 import org.jetbrains.bazel.projectview.model.supportedSections
 
 object ProjectViewSection {
@@ -42,12 +45,9 @@ object ProjectViewSection {
       SectionMetadata("build_flags", SectionType.List.String, FlagCompletionProvider("build")),
       SectionMetadata("test_flags", SectionType.List.String, FlagCompletionProvider("test")),
       SectionMetadata("derive_targets_from_directories", SectionType.Scalar.Boolean, booleanCompletionProvider()),
-      SectionMetadata("directories", SectionType.List.String),
+      SectionMetadata("directories", SectionType.List.String, DirectoriesCompletionProvider()),
       SectionMetadata("enable_native_android_rules", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("enabled_rules", SectionType.List.String),
-      SectionMetadata("experimental_add_transitive_compile_time_jars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
-      SectionMetadata("experimental_no_prune_transitive_compile_time_jars_patterns", SectionType.List.String),
-      SectionMetadata("experimental_transitive_compile_time_jars_target_kinds", SectionType.List.String),
       SectionMetadata("experimental_prioritize_libraries_over_modules_target_kinds", SectionType.List.String),
       SectionMetadata("ide_java_home_override", SectionType.Scalar.String),
       SectionMetadata("import_depth", SectionType.Scalar.Integer),
@@ -55,9 +55,9 @@ object ProjectViewSection {
       SectionMetadata("shard_sync", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("sync_flags", SectionType.List.String, FlagCompletionProvider("sync")),
       SectionMetadata("target_shard_size", SectionType.Scalar.Integer),
-      SectionMetadata("targets", SectionType.List.String),
-      SectionMetadata("import_run_configurations", SectionType.List.String),
-      SectionMetadata("test_sources", SectionType.List.String), // used by Google's plugin
+      SectionMetadata("targets", SectionType.List.String, TargetCompletionProvider()),
+      SectionMetadata("import_run_configurations", SectionType.List.String, FiletypeCompletionProvider(".xml")),
+      SectionMetadata("test_sources", SectionType.List.String, DirectoriesCompletionProvider()), // used by Google's plugin
       SectionMetadata("gazelle_target", SectionType.Scalar.String),
       SectionMetadata("index_all_files_in_directories", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("python_code_generator_rule_names", SectionType.List.String),
@@ -75,12 +75,13 @@ object ProjectViewSection {
         ),
       ),
       SectionMetadata("java_language_level", SectionType.Scalar.String),
-      SectionMetadata("exclude_library", SectionType.List.String),
+      SectionMetadata("exclude_library", SectionType.List.String, DirectoriesCompletionProvider()),
       SectionMetadata("android_sdk_platform", SectionType.Scalar.String),
-      SectionMetadata("generated_android_resource_directories", SectionType.List.String),
-      SectionMetadata("ts_config_rules", SectionType.List.String),
-      SectionMetadata("import_ijars", SectionType.Scalar.Boolean),
-      SectionMetadata("debug_flags", SectionType.List.String),
+      SectionMetadata("generated_android_resource_directories", SectionType.List.String, DirectoriesCompletionProvider()),
+      SectionMetadata("ts_config_rules", SectionType.List.String, TargetCompletionProvider()),
+      SectionMetadata("import_ijars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
+      SectionMetadata("debug_flags", SectionType.List.String, FlagCompletionProvider("debug")),
+      SectionMetadata("derive_instrumentation_filter_from_targets", SectionType.Scalar.Boolean, booleanCompletionProvider()),
     ).associateBy { it.sectionName }
 
   private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.bazelversion.service
 
 import com.intellij.util.EnvironmentUtil
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import java.nio.file.Path
@@ -16,7 +17,7 @@ object BazelVersionWorkspaceResolver {
       ?: resolveFallbackBazelVersion()
 
   private fun resolveWorkspaceBazelVersionFile(workspace: Path): BazelVersionLiteral? =
-    workspace.resolve(".bazelversion").readTextOrNull()?.toBazelVersionLiteral()
+    workspace.resolve(Constants.BAZELISK_VERSION_FILE_NAME).readTextOrNull()?.toBazelVersionLiteral()
 
   private fun resolveBazelVersionEnvVariable(): BazelVersionLiteral? =
     EnvironmentUtil.getValue("USE_BAZEL_VERSION")?.toBazelVersionLiteral()
@@ -33,7 +34,7 @@ object BazelVersionWorkspaceResolver {
   }
 
   private fun resolveBazeliskRcVersion(workspace: Path): BazelVersionLiteral? {
-    val text = workspace.resolve(".bazeliskrc").readTextOrNull() ?: return null
+    val text = workspace.resolve(Constants.BAZELISK_RC_FILE_NAME).readTextOrNull() ?: return null
     val properties = BazeliskrcParser.parse(text)
     val version = properties["USE_BAZEL_VERSION"] ?: return null
     return version.toBazelVersionLiteral()

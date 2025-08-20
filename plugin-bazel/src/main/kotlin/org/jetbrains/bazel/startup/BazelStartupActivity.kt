@@ -8,6 +8,7 @@ import com.intellij.openapi.util.UserDataHolderEx
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.EnvironmentProvider
@@ -15,8 +16,8 @@ import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
-import org.jetbrains.bazel.config.isBrokenBazelProject
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
+import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
@@ -28,6 +29,8 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import org.jetbrains.bazel.utils.configureRunConfigurationIgnoreProducers
+import java.nio.file.Path
+import kotlin.io.path.isDirectory
 
 private val log = logger<BazelStartupActivity>()
 
@@ -52,17 +55,20 @@ class BazelStartupActivity : BazelProjectActivity() {
     SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
     FileUtil.provideFileUtil(FileUtilIntellij)
     log.info("Executing Bazel startup activity for project: $project")
-    BazelStartupActivityTracker.startConfigurationPhase(project)
+    val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
+    try {
+      trackerService.isRunning.update { true }
 
-    executeOnEveryProjectStartup(project)
+      executeOnEveryProjectStartup(project)
 
-    resyncProjectIfNeeded(project)
+      resyncProjectIfNeeded(project)
 
-    executeOnSyncedProject(project)
+      executeOnSyncedProject(project)
 
-    project.serviceAsync<BazelProjectProperties>().isInitialized = true
-
-    BazelStartupActivityTracker.stopConfigurationPhase(project)
+      project.serviceAsync<BazelProjectProperties>().isInitialized = true
+    } finally {
+      trackerService.isRunning.update { false }
+    }
   }
 }
 
@@ -90,7 +96,9 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
 
 private fun executeOnSyncedProject(project: Project) {
   // Only enable searching after all the excludes from the project view are applied
-  setFindInFilesNonIndexable(project)
+  if (BazelFeatureFlags.findInFilesNonIndexable) {
+    setFindInFilesNonIndexable(project)
+  }
 }
 
 /**
@@ -108,4 +116,12 @@ private suspend fun isProjectInIncompleteState(project: Project): Boolean =
   project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
     project.serviceAsync<BazelProjectProperties>().isBrokenBazelProject ||
     !PlatformUtils.isGoIde() &&
-    !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache
+    !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache ||
+    !bazelExecPathExists(project)
+
+private suspend fun bazelExecPathExists(project: Project): Boolean =
+  project
+    .serviceAsync<BazelBinPathService>()
+    .bazelExecPath
+    ?.let { Path.of(it) }
+    ?.isDirectory() == true

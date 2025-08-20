@@ -37,13 +37,6 @@ data class ProjectViewImportDepthSection(override val value: Int) : ProjectViewS
   }
 }
 
-data class ExperimentalAddTransitiveCompileTimeJarsSection(override val value: Boolean) :
-  ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
-  companion object {
-    const val SECTION_NAME = "experimental_add_transitive_compile_time_jars"
-  }
-}
-
 data class EnableNativeAndroidRulesSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
   companion object {
     const val SECTION_NAME = "enable_native_android_rules"
@@ -92,5 +85,11 @@ data class IndexAllFilesInDirectoriesSection(override val value: Boolean) : Proj
 data class ImportIjarsSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
   companion object {
     const val SECTION_NAME = "import_ijars"
+  }
+}
+
+data class DeriveInstrumentationFilterFromTargetsSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "derive_instrumentation_filter_from_targets"
   }
 }

@@ -9,6 +9,7 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/widgets",

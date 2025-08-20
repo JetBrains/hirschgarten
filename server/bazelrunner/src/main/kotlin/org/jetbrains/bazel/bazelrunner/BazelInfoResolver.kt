@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.bazelrunner
 
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.commons.orLatestSupported
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Paths
 

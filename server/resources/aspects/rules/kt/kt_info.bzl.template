@@ -1,10 +1,11 @@
 load("@${rulesetName}//kotlin/internal:defs.bzl", "KtCompilerPluginInfo", "KtJvmInfo")
 #if( $usesRulesJvm == "true" )
 load("@rules_jvm//:rules/impl/kotlinc-options.bzl", "KotlincOptions", "kotlinc_options_to_flags")
+load("@rules_jvm//:rules/impl/javac-options.bzl", "JavacOptions", "javac_options_to_flags")
 #else
 load("@${rulesetName}//kotlin/internal:opts.bzl", "KotlincOptions", "kotlinc_options_to_flags")
-#end
 load("@${rulesetName}//kotlin/internal:opts.bzl", "JavacOptions", "javac_options_to_flags")
+#end
 load("//aspects:utils/utils.bzl", "COMPILE_DEPS", "collect_targets_from_attrs", "convert_struct_to_dict", "create_struct", "file_location", "filter_not_none", "log_warn", "map")
 
 KOTLIN_TOOLCHAIN_TYPE = "@${rulesetName}//kotlin/internal:kt_toolchain_type"
@@ -13,6 +14,20 @@ def get_kt_jvm_provider(target):
     if KtJvmInfo in target:
         return target[KtJvmInfo]
     return None
+
+def get_kotlin_plugins(target, ctx, dep_targets):
+    # accumulate Kotlin compiler plugin info
+    direct_plugins = getattr(ctx.rule.attr, "plugins", [])
+    dep_plugins = []
+
+    # exported_compiler_plugins is not transitive, so we only iterate over direct dependencies.
+    # See https://github.com/bazelbuild/rules_kotlin/blob/f14d01ef5af3ad7ff0660ff671ca9b20c8a020d2/kotlin/internal/jvm/jvm.bzl#L268
+    for dep in dep_targets:
+        if KtJvmInfo in dep:
+            exported_compiler_plugins = getattr(dep[KtJvmInfo], "exported_compiler_plugins", None)
+            if exported_compiler_plugins:
+                dep_plugins.append(exported_compiler_plugins)
+    return depset(direct = direct_plugins, transitive = dep_plugins).to_list()
 
 def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
     provider = get_kt_jvm_provider(target)
@@ -45,19 +60,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
         stdlibs_files = kotlin_toolchain.jvm_stdlibs.compile_jars.to_list()
 
     stdlibs = map(file_location, stdlibs_files)
-
-    # accumulate Kotlin compiler plugin info
-    direct_plugins = getattr(rule_attrs, "plugins", [])
-    dep_plugins = []
-
-    # exported_compiler_plugins is not transitive, so we only iterate over direct dependencies.
-    # See https://github.com/bazelbuild/rules_kotlin/blob/f14d01ef5af3ad7ff0660ff671ca9b20c8a020d2/kotlin/internal/jvm/jvm.bzl#L268
-    for dep in dep_targets:
-        if KtJvmInfo in dep:
-            exported_compiler_plugins = getattr(dep[KtJvmInfo], "exported_compiler_plugins", None)
-            if exported_compiler_plugins:
-                dep_plugins.append(exported_compiler_plugins)
-    plugins = depset(direct = direct_plugins, transitive = dep_plugins).to_list()
+    plugins = get_kotlin_plugins(target, ctx, dep_targets)
     kt_compiler_plugin_infos = filter_not_none([extract_kt_compiler_plugin_info(plugin) for plugin in plugins])
 
     kotlin_target_info = create_struct(

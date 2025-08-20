@@ -1,11 +1,13 @@
 load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion")
-load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info")
+load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info", "get_java_plugin_info")
 #if( $kotlinEnabled == "true" )
-load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_additional_javac_options")
+load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_additional_javac_options", "get_kotlin_plugins")
 #else
 def get_kt_jvm_provider(target):
     return None
 def get_additional_javac_options(ctx, target):
+    return []
+def get_kotlin_plugins(target, ctx, dep_targets):
     return []
 #end
 
@@ -113,12 +115,8 @@ def extract_runtime_jars(target, provider):
 
 def extract_compile_jars(provider):
     compilation_info = getattr(provider, "compilation_info", None)
-    transitive_compile_time_jars = extract_transitive_compile_time_jars(provider)
 
-    return compilation_info.compilation_classpath if compilation_info else transitive_compile_time_jars
-
-def extract_transitive_compile_time_jars(provider):
-    return getattr(provider, "transitive_compile_time_jars", depset())
+    return compilation_info.compilation_classpath if compilation_info else depset()
 
 def get_jvm_provider(target):
     if hasattr(target, "scala"):
@@ -139,7 +137,21 @@ def get_javac_opts(target, ctx):
         javac_opts.append("--add-opens=" + open + "=ALL-UNNAMED")
     return javac_opts + get_additional_javac_options(ctx, target)
 
-def extract_jvm_info(target, ctx, output_groups, **kwargs):
+def has_api_generating_plugins(target, ctx, dep_targets, provider):
+    if hasattr(provider, "api_generating_plugins"):
+        # rules_java calculates api_generating_plugins for us already
+        return len(provider.api_generating_plugins.processor_classes.to_list()) > 0
+
+    plugins = get_kotlin_plugins(target, ctx, dep_targets)
+    for plugin in plugins:
+        java_plugin_info = get_java_plugin_info(plugin)
+        if not java_plugin_info:
+            continue
+        if len(java_plugin_info.api_generating_plugins.processor_classes.to_list()) > 0:
+            return True
+    return False
+
+def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
     provider = get_jvm_provider(target)
     if not provider:
         return None, None
@@ -164,11 +176,6 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
     jvm_flags = do_starlark_string_expansion(ctx, "jvm_flags", raw_jvm_flags, data_deps)
     args = getattr(ctx.rule.attr, "args", [])
     main_class = getattr(ctx.rule.attr, "main_class", None)
-    if ${addTransitiveCompileTimeJars} and ctx.rule.kind in ${transitiveCompileTimeJarsTargetKinds}:
-        transitive_compile_time_jars = extract_transitive_compile_time_jars(provider).to_list()
-    else:
-        transitive_compile_time_jars = []
-
     resolve_files = []
     resolve_files_transitive = []
     if is_external(target):
@@ -193,7 +200,7 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
         main_class = main_class,
         args = args,
         jdeps = [file_location(j) for j in jdeps],
-        transitive_compile_time_jars = [file_location(j) for j in transitive_compile_time_jars],
+        has_api_generating_plugins = has_api_generating_plugins(target, ctx, dep_targets, provider),
     )
 
     return dict(jvm_target_info = info), None
