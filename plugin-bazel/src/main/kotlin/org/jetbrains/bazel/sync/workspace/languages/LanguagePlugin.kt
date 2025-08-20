@@ -6,7 +6,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetData
 import java.nio.file.Path
 
-// TODO: merge createIntermediateModel -> createBuildTargetData
 interface LanguagePlugin<BuildTarget : BuildTargetData> {
   fun getSupportedLanguages(): Set<LanguageClass>
 
