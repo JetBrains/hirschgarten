@@ -60,7 +60,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
               .addAttribute("parentNodeId", "0")
               .toString()
           }
-        handler.notifyTextAvailable(serviceMessage, ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(serviceMessage + "\n", ProcessOutputType.STDOUT)
       }
     }
   }
@@ -81,7 +81,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
             processTestSuiteFinish(taskId, data)
           }
 
-        handler.notifyTextAvailable(serviceMessage.toString(), ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(serviceMessage.toString() + "\n", ProcessOutputType.STDOUT)
       }
     }
   }
