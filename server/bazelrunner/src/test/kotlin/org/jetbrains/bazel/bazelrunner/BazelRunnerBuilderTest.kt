@@ -28,7 +28,6 @@ import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
 import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
@@ -58,7 +57,6 @@ val mockContext =
     importDepth = ImportDepthSpec(2),
     enabledRules = EnabledRulesSpec(listOf("rule1", "rule2")),
     ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
-    experimentalPrioritizeLibrariesOverModulesTargetKinds = PrioritizeLibrariesOverModulesTargetKindsSpec(emptyList()),
     enableNativeAndroidRules = EnableNativeAndroidRules(false),
     androidMinSdkSpec = AndroidMinSdkSpec(null),
     shardSync = ShardSyncSpec(false),
