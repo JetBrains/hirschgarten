@@ -21,8 +21,8 @@ java_binary(
 )
 
 kt_jvm_library(
-    name = "BazelGazelleTestRunnerKt",
-    srcs = ["BazelGazelleTestRunner.kt"],
+    name = "BazelTestRunnerWithNotificationsKt",
+    srcs = ["BazelTestRunnerWithNotifications.kt"],
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
@@ -32,10 +32,10 @@ kt_jvm_library(
 )
 
 java_binary(
-    name = "BazelGazelleTestRunner",
-    main_class = "org.jetbrains.bazel.BazelGazelleTestRunner",
+    name = "BazelTestRunnerWithNotifications",
+    main_class = "org.jetbrains.bazel.BazelTestRunnerWithNotifications",
     visibility = ["//server/e2e:__subpackages__"],
     runtime_deps = [
-        ":BazelGazelleTestRunnerKt",
+        ":BazelTestRunnerWithNotificationsKt",
     ],
 )

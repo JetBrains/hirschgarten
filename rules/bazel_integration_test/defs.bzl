@@ -52,24 +52,80 @@ read_env_vars = rule(
     },
 )
 
-def bazel_integration_test_all_versions(
+def bazel_aspects_output_test_all_versions(
         name,
-        test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelTestRunner",
         project_path = None,
         bzlmod_project_path = None,
         env = {},
         inherited_env_names = [],
         enabled_rules = [],
         targets = [],
+        gazelle_target = None,
         skipped_versions_for_bzlmod = []):
-    envs = " ".join(["{}={}".format(k, v) for k, v in env.items()])
-    targets_string = ""
+    bazel_acceptance_test_all_versions(
+        name = name,
+        test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelTestRunner",
+        project_path = project_path,
+        bzlmod_project_path = bzlmod_project_path,
+        env = env,
+        inherited_env_names = inherited_env_names,
+        enabled_rules = enabled_rules,
+        targets = targets,
+        gazelle_target = gazelle_target,
+        skipped_versions_for_bzlmod = skipped_versions_for_bzlmod,
+        remove_system_specific_aspect_output = True,
+    )
+
+def bazel_diagnostics_output_test_all_versions(
+        name,
+        project_path = None,
+        bzlmod_project_path = None,
+        env = {},
+        inherited_env_names = [],
+        enabled_rules = [],
+        targets = [],
+        compile_targets = [],
+        gazelle_target = None,
+        skipped_versions_for_bzlmod = []):
+    bazel_acceptance_test_all_versions(
+        name = name,
+        test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelTestRunnerWithNotifications",
+        project_path = project_path,
+        bzlmod_project_path = bzlmod_project_path,
+        env = env,
+        compile_targets = compile_targets,
+        inherited_env_names = inherited_env_names,
+        enabled_rules = enabled_rules,
+        targets = targets,
+        gazelle_target = gazelle_target,
+        skipped_versions_for_bzlmod = skipped_versions_for_bzlmod,
+        check_diagnostics = True,
+    )
+
+def bazel_acceptance_test_all_versions(
+        name,
+        test_runner,
+        project_path = None,
+        bzlmod_project_path = None,
+        env = {},
+        inherited_env_names = [],
+        enabled_rules = [],
+        targets = [],
+        compile_targets = [],
+        gazelle_target = None,
+        skipped_versions_for_bzlmod = [],
+        remove_system_specific_aspect_output = False,
+        check_diagnostics = False):
+    envs = ["{}=\"{}\"".format(k, v) for k, v in env.items()]
     if targets:
-        targets_string = "TARGETS=\"" + ",".join(targets) + "\""
-    enabled_rules_string = ""
+        envs += ["TARGETS=\"" + ",".join(targets) + "\""]
     if enabled_rules:
-        enabled_rules_string = "ENABLED_RULES=\"" + ",".join(enabled_rules) + "\""
-    envs = " ".join([envs, targets_string, enabled_rules_string])
+        envs += ["ENABLED_RULES=\"" + ",".join(enabled_rules) + "\""]
+    if gazelle_target:
+        envs += ["GAZELLE_TARGET=\"" + gazelle_target + "\""]
+    for i in range(len(compile_targets)):
+        envs += ["COMPILE_TARGETS_{}=\"{}\"".format(i, ",".join(compile_targets[i]))]
+    all_envs = " ".join(envs)
     test_names = []
     if project_path != None:
         workspace_bazel_versions = ["6.4.0"]
@@ -84,8 +140,10 @@ def bazel_integration_test_all_versions(
                 test_runner = test_runner,
                 workspace_file_path = workspace_path.workspace_file_path,
                 workspace_filegroup = workspace_path.workspace_filegroup,
-                envs = envs,
+                envs = all_envs,
                 inherited_env_names = inherited_env_names,
+                remove_system_specific_aspect_output = remove_system_specific_aspect_output,
+                check_diagnostics = check_diagnostics,
             )
             test_names = [test_name]
 
@@ -97,9 +155,8 @@ def bazel_integration_test_all_versions(
             bzlmod_bazel_versions += ["7.4.0"]
         if "6.4.0" not in skipped_versions_for_bzlmod:
             bzlmod_bazel_versions += ["6.4.0"]
-        bzlmod_name = name + "_bzlmod"
         workspace_bzlmod = _convey_test_sources(
-            name = bzlmod_name,
+            name = name + "_bzlmod",
             project_path = bzlmod_project_path,
         )
         for bazel_version in bzlmod_bazel_versions:
@@ -109,8 +166,10 @@ def bazel_integration_test_all_versions(
                 test_runner = test_runner,
                 workspace_file_path = workspace_bzlmod.workspace_file_path,
                 workspace_filegroup = workspace_bzlmod.workspace_filegroup,
-                envs = envs,
+                envs = all_envs,
                 inherited_env_names = inherited_env_names,
+                remove_system_specific_aspect_output = remove_system_specific_aspect_output,
+                check_diagnostics = check_diagnostics,
             )
             test_names += [test_name]
 
@@ -140,7 +199,16 @@ def _convey_test_sources(name, project_path):
         workspace_file_path = workspace_file_path,
     )
 
-def _testBazel(name, bazel_version, test_runner, workspace_file_path, workspace_filegroup, envs, inherited_env_names):
+def _testBazel(
+        name,
+        bazel_version,
+        test_runner,
+        workspace_file_path,
+        workspace_filegroup,
+        envs,
+        inherited_env_names,
+        check_diagnostics,
+        remove_system_specific_aspect_output):
     rule_name = integration_test_utils.bazel_integration_test_name(
         name,
         bazel_version,
@@ -181,7 +249,12 @@ def _testBazel(name, bazel_version, test_runner, workspace_file_path, workspace_
         testonly = True,
     )
     espaced_genrule = genrule_name + "_espaced"
-
+    flags = []
+    if not remove_system_specific_aspect_output:
+        flags += ["--no-aspects-output"]
+    if check_diagnostics:
+        flags += ["--check-diagnostics"]
+    flag_args = " ".join(flags)
     escape_script = "@//rules/bazel_integration_test:escape_system_specifics.sh"
     native.genrule(
         name = espaced_genrule,
@@ -189,7 +262,7 @@ def _testBazel(name, bazel_version, test_runner, workspace_file_path, workspace_
         outs = ["{}_actual_outputs_escaped.txt".format(rule_name)],
         tools = [escape_script],
         testonly = True,
-        cmd = "$(location {}) $(location {}) > $@".format(escape_script, genrule_name),
+        cmd = "$(location {}) $(location {}) {} > $@".format(escape_script, genrule_name, flag_args),
     )
 
     diff_test(

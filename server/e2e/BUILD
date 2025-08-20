@@ -1,4 +1,4 @@
-load("@//rules/bazel_integration_test:defs.bzl", "bazel_integration_test_all_versions")
+load("@//rules/bazel_integration_test:defs.bzl", "bazel_aspects_output_test_all_versions", "bazel_diagnostics_output_test_all_versions")
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "integration_test_utils")
 
 package(default_visibility = ["//visibility:public"])
@@ -8,7 +8,7 @@ package(default_visibility = ["//visibility:public"])
 ####################
 # Wheneven you add a new test, make sure to run `bazel run @rules_bazel_integration_test//tools:update_deleted_packages`
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "sample_repo_test",
     bzlmod_project_path = "test-projects/bzlmod/sample-repo",
     enabled_rules = [
@@ -29,7 +29,22 @@ bazel_integration_test_all_versions(
     ],
 )
 
-bazel_integration_test_all_versions(
+bazel_diagnostics_output_test_all_versions(
+    name = "java_diagnostics_test",
+    bzlmod_project_path = "test-projects/bzlmod/java-diagnostics-project",
+    compile_targets = [
+        ["@//:deprecated_warning"],
+        [
+            "@//:no_such_method_error",
+            "@//:warning_and_error",
+        ],
+    ],
+    skipped_versions_for_bzlmod = [
+        "6.4.0",
+    ],
+)
+
+bazel_aspects_output_test_all_versions(
     name = "sample_repo_partial_sync_test",
     bzlmod_project_path = "test-projects/bzlmod/sample-repo",
     enabled_rules = [
@@ -50,20 +65,20 @@ bazel_integration_test_all_versions(
     targets = ["@//java_targets:java_library"],
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "local_jdk_test",
     bzlmod_project_path = "test-projects/bzlmod/local-jdk-project",
     inherited_env_names = ["JAVA_HOME"],
     project_path = "test-projects/workspace/local-jdk-project",
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "remote_jdk_test",
     bzlmod_project_path = "test-projects/bzlmod/remote-jdk-project",
     project_path = "test-projects/workspace/remote-jdk-project",
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "python_project_test",
     bzlmod_project_path = "test-projects/bzlmod/python-project",
     project_path = "test-projects/workspace/python-project",
@@ -73,20 +88,20 @@ bazel_integration_test_all_versions(
     ],
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "kotlin_project_test",
     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
     project_path = "test-projects/workspace/kotlin-project",
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "kotlin_project_with_enabled_rules_test",
     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
     enabled_rules = ["rules_kotlin"],
     project_path = "test-projects/workspace/kotlin-project",
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "enabled_rules_test",
     enabled_rules = [
         "io_bazel_rules_scala",
@@ -96,17 +111,17 @@ bazel_integration_test_all_versions(
     project_path = "test-projects/workspace/enabled-rules-project",
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "go_project_test",
     bzlmod_project_path = "test-projects/bzlmod/go-project",
     enabled_rules = ["io_bazel_rules_go"],
+    gazelle_target = "//:gazelle",
     skipped_versions_for_bzlmod = [
         "6.4.0",
     ],
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelGazelleTestRunner",
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "build_and_sync_test",
     bzlmod_project_path = "test-projects/bzlmod/build-and-sync-test",
     skipped_versions_for_bzlmod = [
@@ -114,7 +129,7 @@ bazel_integration_test_all_versions(
     ],
 )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "first_phase_sync_test",
     bzlmod_project_path = "test-projects/bzlmod/first-phase-sync-project",
     skipped_versions_for_bzlmod = [
@@ -122,7 +137,7 @@ bazel_integration_test_all_versions(
     ],
 )
 
-# bazel_integration_test_all_versions(
+# bazel_aspects_output_test_all_versions(
 #     name = "nested_modules_test",
 #     bzlmod_project_path = "test-projects/bzlmod/nested-modules",
 #     targets = [
@@ -131,7 +146,7 @@ bazel_integration_test_all_versions(
 #     ],
 # )
 
-bazel_integration_test_all_versions(
+bazel_aspects_output_test_all_versions(
     name = "external_autoloads_test",
     bzlmod_project_path = "test-projects/bzlmod/external-autoloads-project",
     skipped_versions_for_bzlmod = [

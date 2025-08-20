@@ -25,6 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 abstract class BazelBaseTestRunner {
   val basePath = Paths.get("").toAbsolutePath()
   val targets = (System.getenv("TARGETS") ?: "//...").split(",")
+  val gazelleTarget : String? = System.getenv("GAZELLE_TARGET")
   val enabledRules = (System.getenv("ENABLED_RULES") ?: "").split(",")
   val bazelBinary = basePath.resolve(System.getenv("BIT_BAZEL_BINARY"))
   val workspaceDir = basePath.resolve(System.getenv("BIT_WORKSPACE_DIR")).parent
@@ -54,6 +55,7 @@ abstract class BazelBaseTestRunner {
   protected open fun projectViewCliOptions() = ProjectViewCliOptions(
     bazelBinary = bazelBinary,
     targets = targets,
+    gazelleTarget = gazelleTarget,
     enabledRules = enabledRules,
   )
 
@@ -68,7 +70,7 @@ abstract class BazelBaseTestRunner {
     }
   }
 
-  private fun createTestkitClient(): TestClient {
+  protected fun createTestkitClient(): TestClient {
     val featureFlags =
       FeatureFlags(
         isPythonSupportEnabled = true,
