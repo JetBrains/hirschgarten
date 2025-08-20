@@ -33,7 +33,7 @@ private fun getProjectRoot(parameters: CompletionParameters): VirtualFile? {
   return project.rootDir
 }
 
-internal class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
+class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
