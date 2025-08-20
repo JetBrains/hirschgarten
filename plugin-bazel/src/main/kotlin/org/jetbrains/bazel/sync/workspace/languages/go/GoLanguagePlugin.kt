@@ -26,7 +26,7 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
     return targetInfo.goTargetInfo.generatedSourcesList
   }
 
-  override fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): GoBuildTarget? {
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): GoBuildTarget? {
     if (!target.hasGoTargetInfo()) {
       return null
     }
