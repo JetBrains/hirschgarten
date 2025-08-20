@@ -25,7 +25,7 @@ import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
@@ -265,7 +265,7 @@ class CollectProjectDetailsTask(
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
-            WorkspaceModelUpdaterImpl(
+            WorkspaceModelUpdater(
               workspaceEntityStorageBuilder = diff,
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
@@ -274,8 +274,7 @@ class CollectProjectDetailsTask(
               importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
-          workspaceModelUpdater.loadLibraries(libraries)
+          workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
         }

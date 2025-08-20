@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -31,8 +32,7 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, true)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder emptyList()
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies shouldBe emptyList()
     }
 
     @Test
@@ -60,12 +60,11 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, true)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
+      dependencies shouldBe
         listOf(
           Label.parse("lib1"),
           Label.parse("lib2"),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
 
     @Test
@@ -121,7 +120,7 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, true)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
+      dependencies shouldContainExactlyInAnyOrder
         listOf(
           Label.parse("lib1"),
           Label.parse("lib2"),
@@ -131,7 +130,6 @@ class LibraryGraphTest {
           Label.parse("lib6"),
           Label.parse("lib7"),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
 
     @Test
@@ -187,7 +185,7 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, true)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
+      dependencies shouldContainExactlyInAnyOrder
         listOf(
           Label.parse("lib1"),
           Label.parse("lib2"),
@@ -196,9 +194,6 @@ class LibraryGraphTest {
           Label.parse("lib5"),
           Label.parse("lib6"),
           Label.parse("lib7"),
-        )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder
-        listOf(
           Label.parse("target2"),
           Label.parse("target3"),
         )
@@ -226,32 +221,12 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, true)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder (1..1000).map { Label.parse("lib$it") }
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies shouldContainExactlyInAnyOrder (1..1000).map { Label.parse("lib$it") }
     }
   }
 
   @Nested
   inner class LibraryGraphDirectDependenciesTest {
-    @Test
-    fun `should return empty set for no libraries`() {
-      // given
-      val target =
-        mockTarget(
-          id = "target",
-          dependencies = emptyList(),
-        )
-      val libraries = emptyList<LibraryItem>()
-      val libraryGraph = LibraryGraph(libraries)
-
-      // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, false)
-
-      // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder emptyList()
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
-    }
-
     @Test
     fun `should return direct libraries if libraries dont have dependencies`() {
       // given
@@ -277,12 +252,11 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, false)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
+      dependencies shouldBe
         listOf(
           Label.parse("lib1"),
           Label.parse("lib2"),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
 
     @Test
@@ -338,12 +312,11 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, false)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
+      dependencies shouldBe
         listOf(
           Label.parse("lib1"),
           Label.parse("lib2"),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
 
     @Test
@@ -352,7 +325,7 @@ class LibraryGraphTest {
       val target =
         mockTarget(
           id = "target1",
-          dependencies = listOf("lib1", "lib2", "target2", "target3"),
+          dependencies = listOf("lib1", "target2", "lib2", "target3"),
         )
       val libraries =
         listOf(
@@ -391,14 +364,11 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, false)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
+      dependencies shouldBe
         listOf(
           Label.parse("lib1"),
-          Label.parse("lib2"),
-        )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder
-        listOf(
           Label.parse("target2"),
+          Label.parse("lib2"),
           Label.parse("target3"),
         )
     }

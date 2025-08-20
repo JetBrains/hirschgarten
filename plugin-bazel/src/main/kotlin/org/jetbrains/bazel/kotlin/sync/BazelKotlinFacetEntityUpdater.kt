@@ -109,7 +109,6 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
 
   private fun JavaModule.toAssociateModules(): Set<String> =
     this.genericModuleInfo.associates
-      .map { it.moduleName }
       .toSet()
 
   private fun MutableEntityStorage.addKotlinSettingsEntity(

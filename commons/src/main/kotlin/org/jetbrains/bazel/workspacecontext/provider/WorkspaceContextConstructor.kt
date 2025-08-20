@@ -30,8 +30,6 @@ class WorkspaceContextConstructor(
       importDepth = ImportDepthSpecExtractor.fromProjectView(projectView),
       enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
-      experimentalPrioritizeLibrariesOverModulesTargetKinds =
-        ExperimentalPrioritizeLibrariesOverModulesTargetKindsExtractor.fromProjectView(projectView),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
       androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
       shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),
