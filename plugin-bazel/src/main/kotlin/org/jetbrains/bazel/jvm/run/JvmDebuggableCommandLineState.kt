@@ -83,7 +83,12 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
     val scriptContent = File(scriptPath).readText()
 
     val execRoot = BazelBinPathService.getInstance(environment.project).bazelExecPath ?: return
-    val xmlPath = TEST_XML_OUTPUT_FILE_REGEX.find(scriptContent)?.groups?.get("path")?.value ?: return
+    val xmlPath =
+      TEST_XML_OUTPUT_FILE_REGEX
+        .find(scriptContent)
+        ?.groups
+        ?.get("path")
+        ?.value ?: return
     val absoluteXmlPath = Path.of(execRoot, xmlPath).toUri().toString()
 
     val taskHandler = BazelTaskEventsService.getInstance(environment.project)

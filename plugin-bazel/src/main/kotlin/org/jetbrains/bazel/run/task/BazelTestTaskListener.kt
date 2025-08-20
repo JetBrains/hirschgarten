@@ -190,5 +190,4 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
   private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish): Data? = testFinishData.data as? Data
 }
 
-private fun Any?.toStringWithNewline(): String =
-  this.toString().let { if (it.endsWith("\n")) it else "$it\n" }
+private fun Any?.toStringWithNewline(): String = this.toString().let { if (it.endsWith("\n")) it else "$it\n" }

@@ -169,8 +169,7 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
     }
 
   companion object {
-    fun textContainsJunit5VisualOutput(text: String): Boolean =
-      text.contains(TEST_START_CHARACTER)
+    fun textContainsJunit5VisualOutput(text: String): Boolean = text.contains(TEST_START_CHARACTER)
   }
 }
 
