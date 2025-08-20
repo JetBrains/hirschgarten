@@ -11,6 +11,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
+import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -81,8 +82,9 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
   private fun findXmlOutputAndReport(scriptPath: String) {
     val scriptContent = File(scriptPath).readText()
 
-    val xmlPath = xmlPathPattern.find(scriptContent)?.groups?.get("path")?.value ?: return
-    val absoluteXmlPath = Path.of(environment.project.basePath, xmlPath).toUri().toString()
+    val execRoot = BazelBinPathService.getInstance(environment.project).bazelExecPath ?: return
+    val xmlPath = TEST_XML_OUTPUT_FILE_REGEX.find(scriptContent)?.groups?.get("path")?.value ?: return
+    val absoluteXmlPath = Path.of(execRoot, xmlPath).toUri().toString()
 
     val taskHandler = BazelTaskEventsService.getInstance(environment.project)
     val testNotifier = BspClientTestNotifier(taskHandler, originId.toString())
@@ -91,4 +93,4 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
   }
 }
 
-private val xmlPathPattern = Regex("XML_OUTPUT_FILE=(?<path>\\S+)")
+private val TEST_XML_OUTPUT_FILE_REGEX = Regex("XML_OUTPUT_FILE=(?<path>\\S+)")

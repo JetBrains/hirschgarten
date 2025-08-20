@@ -116,6 +116,6 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
     listener.onTaskFinish(taskId = taskId, parentId = null, message = "", data = testFinishData, status = BazelStatus.SUCCESS)
 
     // then
-    handler.latestText shouldBeEqual expectedText
+    handler.latestText shouldBeEqual expectedText + "\n"
   }
 }
