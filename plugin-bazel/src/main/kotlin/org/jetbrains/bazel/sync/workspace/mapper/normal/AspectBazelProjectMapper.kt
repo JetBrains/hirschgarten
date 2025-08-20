@@ -866,7 +866,7 @@ class AspectBazelProjectMapper(
         targetData.sources to emptyList()
       }
 
-    val context = LanguagePluginContext(target, dependencyGraph)
+    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, project)
     val data = languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(
