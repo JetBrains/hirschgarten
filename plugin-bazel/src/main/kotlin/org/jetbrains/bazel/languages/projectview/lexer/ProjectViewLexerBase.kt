@@ -97,9 +97,9 @@ class ProjectViewLexerBase(input: CharSequence) {
 
   private fun getIdentifierToken(start: Int, end: Int): ProjectViewTokenType {
     val identifier = buffer.substring(start, end)
-    val prefChar = buffer.getOrNull(start - 1)
+    val prevChar = buffer.getOrNull(start - 1)
     return when {
-      prefChar == '\n' && buffer.length > end && buffer[end] == ':'
+      prevChar == '\n' && buffer.length > end && buffer[end] == ':'
       -> ProjectViewTokenType.SECTION_KEYWORD
 
       ProjectViewImport.KEYWORD_MAP.containsKey(identifier)

@@ -52,7 +52,7 @@ class ShardSyncSection : Section<Boolean>() {
   }
 }
 
-val REGISTERED_SECTIONS = listOf(TargetsSection())
+val REGISTERED_SECTIONS = listOf(TargetsSection(), ShardSyncSection())
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
 

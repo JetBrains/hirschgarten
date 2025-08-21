@@ -14,11 +14,17 @@ class ProjectViewTest : TestCase() {
     val rawSections =
       listOf(
         "targets" to listOf("target1", "-target2"),
+        "shard_sync" to listOf("true"),
       )
     val projectView = ProjectView(rawSections)
+
     val targetsSection = projectView.getSection(TargetsSection.sectionKey)
     targetsSection.shouldNotBeNull()
     targetsSection.included shouldContain "target1"
     targetsSection.excluded shouldContain "target2"
+
+    val shardSyncSection = projectView.getSection(ShardSyncSection.sectionKey)
+    shardSyncSection.shouldNotBeNull()
+    assertEquals(shardSyncSection, true)
   }
 }
