@@ -4,7 +4,6 @@ import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjec
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.CompiledSourceCodeInsideJarExcludeEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
@@ -15,14 +14,14 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import java.nio.file.Path
 
-class WorkspaceModelUpdaterImpl(
+class WorkspaceModelUpdater(
   workspaceEntityStorageBuilder: MutableEntityStorage,
   private val virtualFileUrlManager: VirtualFileUrlManager,
   private val projectBasePath: Path,
   project: Project,
   private val isAndroidSupportEnabled: Boolean,
   private val importIjars: Boolean,
-) : WorkspaceModelUpdater {
+) {
   private val workspaceModelEntityUpdaterConfig =
     WorkspaceModelEntityUpdaterConfig(
       workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
@@ -36,18 +35,28 @@ class WorkspaceModelUpdaterImpl(
     ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
   }
 
-  override suspend fun loadModules(moduleEntities: List<Module>, libraryModules: List<JavaModule>) {
+  suspend fun load(
+    moduleEntities: List<Module>,
+    libraries: List<Library>,
+    libraryModules: List<JavaModule>,
+  ) {
+    val libraryNames = libraries.map { it.displayName }.toSet()
+    val libraryModuleNames = libraryModules.map { it.genericModuleInfo.name }.toSet()
     val javaModuleUpdater =
-      JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled, moduleEntities, libraryModules)
+      JavaModuleUpdater(
+        workspaceModelEntityUpdaterConfig,
+        projectBasePath,
+        isAndroidSupportEnabled,
+        moduleEntities,
+        libraryNames,
+        libraryModuleNames,
+      )
     javaModuleUpdater.addEntities(moduleEntities.filterIsInstance<JavaModule>() + libraryModules)
-  }
-
-  override suspend fun loadLibraries(libraries: List<Library>) {
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig, importIjars)
     libraryEntityUpdater.addEntities(libraries)
   }
 
-  override suspend fun loadCompiledSourceCodeInsideJarExclude(exclude: CompiledSourceCodeInsideJarExclude) {
+  suspend fun loadCompiledSourceCodeInsideJarExclude(exclude: CompiledSourceCodeInsideJarExclude) {
     val updater = CompiledSourceCodeInsideJarExcludeEntityUpdater(workspaceModelEntityUpdaterConfig)
     updater.addEntity(exclude)
   }

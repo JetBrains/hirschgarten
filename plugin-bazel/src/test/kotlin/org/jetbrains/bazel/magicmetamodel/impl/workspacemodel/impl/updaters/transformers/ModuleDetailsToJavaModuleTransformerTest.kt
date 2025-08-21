@@ -16,7 +16,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
@@ -116,8 +115,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = javacOptionsItem,
-        libraryDependencies = null,
-        moduleDependencies =
+        dependencies =
           listOf(
             Label.parse("module2"),
             Label.parse("module3"),
@@ -143,12 +141,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2.module2"),
-            IntermediateModuleDependency("module3.module3"),
+            "module2.module2",
+            "module3.module3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -242,8 +239,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = null,
-        libraryDependencies = emptyList(),
-        moduleDependencies =
+        dependencies =
           listOf(
             Label.parse("module2"),
             Label.parse("module3"),
@@ -268,16 +264,15 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2.module2"),
-            IntermediateModuleDependency("module3.module3"),
+            "module2.module2",
+            "module3.module3",
           ),
-        librariesDependencies = emptyList(),
         associates =
           listOf(
-            IntermediateModuleDependency("//target4"),
-            IntermediateModuleDependency("//target5"),
+            "//target4",
+            "//target5",
           ),
         kind =
           TargetKind(
@@ -376,8 +371,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget1,
         javacOptions = target1JavacOptionsItem,
-        libraryDependencies = null,
-        moduleDependencies =
+        dependencies =
           listOf(
             Label.parse("module2"),
             Label.parse("module3"),
@@ -437,8 +431,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget2,
         javacOptions = target2JavacOptionsItem,
-        libraryDependencies = null,
-        moduleDependencies =
+        dependencies =
           listOf(
             Label.parse("module3"),
           ),
@@ -465,12 +458,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2.module2"),
-            IntermediateModuleDependency("module3.module3"),
+            "module2.module2",
+            "module3.module3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -517,11 +509,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module2.module2",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module3.module3"),
+            "module3.module3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -639,8 +630,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = javacOptionsItem,
-        libraryDependencies = null,
-        moduleDependencies =
+        dependencies =
           listOf(
             Label.parse("module2"),
             Label.parse("module3"),
@@ -667,13 +657,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2.module2"),
-            IntermediateModuleDependency("module3.module3"),
-            IntermediateModuleDependency(dummyJavaModuleName),
+            "module2.module2",
+            "module3.module3",
+            dummyJavaModuleName,
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -746,8 +735,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
   private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {
     actual.name shouldBe expected.name
     actual.type shouldBe expected.type
-    actual.modulesDependencies shouldContainExactlyInAnyOrder expected.modulesDependencies
-    actual.librariesDependencies shouldContainExactlyInAnyOrder expected.librariesDependencies
+    actual.dependencies shouldBe expected.dependencies
   }
 }
 

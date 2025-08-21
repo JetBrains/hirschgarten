@@ -254,8 +254,13 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun getTotalFileCount(): Int = db.getTotalFileCount()
 }
 
+private val LIBRARY_MODULE_PREFIX = "_aux.libraries."
+
 @InternalApi
-fun String.addLibraryModulePrefix() = "_aux.libraries.$this"
+fun String.addLibraryModulePrefix() = LIBRARY_MODULE_PREFIX + this
+
+@InternalApi
+fun String.isLibraryModule() = startsWith(LIBRARY_MODULE_PREFIX)
 
 @PublicApi
 val Project.targetUtils: TargetUtils

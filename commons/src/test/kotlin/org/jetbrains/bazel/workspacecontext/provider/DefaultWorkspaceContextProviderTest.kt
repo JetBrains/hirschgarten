@@ -6,8 +6,8 @@ import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.startup.FileUtilIntellij
-import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
+import org.jetbrains.bazel.util.MockBazelBinaryGenerator
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.BeforeEach
@@ -30,11 +30,13 @@ class DefaultWorkspaceContextProviderTest {
     // Initialize providers for tests
     SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
     FileUtil.provideFileUtil(FileUtilIntellij)
-    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
 
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
+
+    val environmentProvider = MockBazelBinaryGenerator(workspaceRoot).generateAndGetProvider()
+    EnvironmentProvider.provideEnvironmentProvider(environmentProvider)
   }
 
   @Test
