@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.install
 
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.BeforeEach
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.exists
+import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
 
 class EnvironmentCreatorTest {
@@ -40,6 +42,29 @@ class EnvironmentCreatorTest {
       dotBazelBsp.resolve("aspects/rules/python/python_info.bzl.template").exists() shouldBeEqual true
       dotBazelBsp.resolve("aspects/rules/scala/scala_info.bzl.template").exists() shouldBeEqual true
       dotBazelBsp.resolve("aspects/rules/cpp/cpp_info.bzl").exists() shouldBeEqual true
+    }
+
+    @Test
+    fun `should not re-copy files if the content is the same when calling EnvironmentCreator#create`() {
+      // when
+      var dotBazelBsp = EnvironmentCreator(tempRoot).create()
+
+      val filesToTest =
+        listOf(
+          ".gitignore",
+          "aspects/core.bzl.template",
+          "aspects/utils/utils.bzl.template",
+          "aspects/rules/java/java_info.bzl.template",
+          "aspects/rules/jvm/jvm_info.bzl.template",
+          "aspects/rules/kt/kt_info.bzl.template",
+        )
+      val lastModifiedTimes = filesToTest.map { dotBazelBsp.resolve(it).getLastModifiedTime() }
+
+      // try calling `create` again
+      dotBazelBsp = EnvironmentCreator(tempRoot).create()
+
+      // then
+      lastModifiedTimes shouldContainExactly filesToTest.map { dotBazelBsp.resolve(it).getLastModifiedTime() }
     }
   }
 }
