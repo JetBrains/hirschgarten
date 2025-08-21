@@ -46,7 +46,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `test-task`() {
     // given
-    val expectedText = ServiceMessageBuilder("testingStarted").toString()
+    val expectedText = ServiceMessageBuilder("testingStarted").toString() + "\n"
     val data = TestTask(Label.parse("id"))
 
     // when
