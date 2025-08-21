@@ -4,11 +4,11 @@ import com.google.idea.testing.BazelTestApplication
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelProcessHandler
+import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.TestFinish

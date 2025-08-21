@@ -5,6 +5,7 @@ kt_junit5_test(
     src = "BazeliskrcParserTest.kt",
     deps = [
         "//plugin-bazel/src:plugin-bazel-lib",
+        "//plugin-bazel/src:test_fixtures",
     ],
 )
 
@@ -15,7 +16,10 @@ kt_junit5_test(
         "//plugin-bazel/src/test/testData/bazelversion/version_resolve_bazelisk",
         "//plugin-bazel/src/test/testData/bazelversion/version_resolve_bazelversion",
     ],
-    deps = ["//plugin-bazel"],
+    deps = [
+        "//plugin-bazel",
+        "//plugin-bazel/src:test_fixtures",
+    ],
 )
 
 kt_junit5_test(
@@ -23,5 +27,6 @@ kt_junit5_test(
     src = "BazelVersionLiteralParserTest.kt",
     deps = [
         "//plugin-bazel/src:plugin-bazel-lib",
+        "//plugin-bazel/src:test_fixtures",
     ],
 )
