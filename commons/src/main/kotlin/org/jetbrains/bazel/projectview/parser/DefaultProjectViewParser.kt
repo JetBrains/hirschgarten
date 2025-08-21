@@ -4,7 +4,6 @@ import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.sections.AndroidMinSdkSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.DeriveInstrumentationFilterFromTargetsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.EnableNativeAndroidRulesParser
-import org.jetbrains.bazel.projectview.parser.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.GazelleTargetParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportIjarsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
@@ -59,7 +58,6 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         importDepth = ProjectViewImportDepthSectionParser.parse(rawSections),
         enabledRules = ProjectViewEnabledRulesSectionParser.parse(rawSections),
         ideJavaHomeOverride = ProjectViewIdeJavaHomeOverrideSectionParser.parse(rawSections),
-        prioritizeLibrariesOverModulesTargetKinds = ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser.parse(rawSections),
         enableNativeAndroidRules = EnableNativeAndroidRulesParser.parse(rawSections),
         androidMinSdkSection = AndroidMinSdkSectionParser.parse(rawSections),
         shardSync = ShardSyncParser.parse(rawSections),

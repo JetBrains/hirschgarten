@@ -28,7 +28,6 @@ suspend fun startServer(
       featureFlags = featureFlags,
     )
   // Run it here to force the workspace context to be initialized
-  // It should download bazelisk if bazel is missing
   val workspaceContext = workspaceContextProvider.readWorkspaceContext()
   val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspaceRoot)
   val bspClientLogger = BspClientLogger(client)
