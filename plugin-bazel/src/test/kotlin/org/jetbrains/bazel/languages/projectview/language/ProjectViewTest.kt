@@ -22,8 +22,8 @@ class ProjectViewTest : BasePlatformTestCase() {
 
     val targetsSection = projectView.getSection(TargetsSection.sectionKey)
     targetsSection.shouldNotBeNull()
-    targetsSection.included shouldContain "target1"
-    targetsSection.excluded shouldContain "target2"
+    targetsSection shouldContain ExcludableValue.included("target1")
+    targetsSection shouldContain ExcludableValue.excluded("target2")
 
     val shardSyncSection = projectView.getSection(ShardSyncSection.sectionKey)
     shardSyncSection.shouldNotBeNull()
@@ -46,8 +46,8 @@ class ProjectViewTest : BasePlatformTestCase() {
 
     val targetsSection = projectView.getSection(TargetsSection.sectionKey)
     targetsSection.shouldNotBeNull()
-    targetsSection.included shouldContain "target1"
-    targetsSection.excluded shouldContain "target2"
+    targetsSection shouldContain ExcludableValue.included("target1")
+    targetsSection shouldContain ExcludableValue.excluded("target2")
 
     val shardSyncSection = projectView.getSection(ShardSyncSection.sectionKey)
     shardSyncSection.shouldNotBeNull()

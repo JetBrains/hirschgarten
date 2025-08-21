@@ -5,10 +5,6 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 
-interface SectionValueParser<T> {
-  fun parse(value: String): T?
-}
-
 abstract class Section<T> {
   abstract val name: String
 
