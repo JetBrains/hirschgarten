@@ -46,7 +46,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `test-task`() {
     // given
-    val expectedText = ServiceMessageBuilder("testingStarted").toString()
+    val expectedText = ServiceMessageBuilder("testingStarted").toString() + "\n"
     val data = TestTask(Label.parse("id"))
 
     // when
@@ -67,7 +67,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
           data.displayName,
         ).addAttribute("nodeId", taskId)
         .addAttribute("parentNodeId", "0")
-        .toString()
+        .toString() + "\n"
 
     // when
     listener.onTaskStart(taskId = taskId, parentId = null, message = "", data = data)
@@ -88,7 +88,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
           data.displayName,
         ).addAttribute("nodeId", taskId)
         .addAttribute("parentNodeId", parentId)
-        .toString()
+        .toString() + "\n"
 
     // when
     listener.onTaskStart(taskId = taskId, parentId = parentId, message = "", data = data)
@@ -110,7 +110,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
         .testSuiteFinished(testFinishData.displayName)
         .addAttribute("nodeId", taskId)
         .addAttribute("duration", expectedDurationMillis.toString())
-        .toString()
+        .toString() + "\n"
 
     // when
     listener.onTaskFinish(taskId = taskId, parentId = null, message = "", data = testFinishData, status = BazelStatus.SUCCESS)

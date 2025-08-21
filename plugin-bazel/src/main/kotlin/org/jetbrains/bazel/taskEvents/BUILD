@@ -9,6 +9,7 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )
