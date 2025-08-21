@@ -2,6 +2,7 @@ package org.jetbrains.bazel.install
 
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,13 +14,13 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
-import kotlin.io.path.writeText
 
 class EnvironmentCreator(private val projectRootDir: Path) {
   fun create() = createDotBazelBsp()
 
   private fun createDotBazelBsp(): Path {
     val bazelBspDir = createDir(projectRootDir, Constants.DOT_BAZELBSP_DIR_NAME)
+    // Always run idempotent creators: they only write when needed and won't duplicate work
     createDotBazelBspFiles(bazelBspDir)
     return bazelBspDir
   }
@@ -44,7 +45,7 @@ class EnvironmentCreator(private val projectRootDir: Path) {
 
   fun createGitIgnoreFile(dotBazelBspDir: Path) {
     val outputFile = dotBazelBspDir.resolve(".gitignore")
-    outputFile.writeText("*")
+    outputFile.writeIfDifferent("*")
   }
 
   private fun copyAspectsFromResources(aspectsJarPath: String, destinationPath: Path) =
@@ -86,6 +87,34 @@ class EnvironmentCreator(private val projectRootDir: Path) {
       destinationAbsolutePath.writeIfDifferent(source.readText())
     }
   }
+  //
+  // private fun copyUsingRelativePath(
+  //  sourcePrefix: Path,
+  //  source: Path,
+  //  destinationPrefix: Path,
+  // ) {
+  //  val rel = sourcePrefix.relativize(source).toString()
+  //  if (rel.isEmpty()) return
+  //  val dest = destinationPrefix.resolve(rel)
+  //  if (source.isDirectory()) {
+  //    try {
+  //      Files.createDirectories(dest)
+  //    } catch (_: FileAlreadyExistsException) {}
+  //    return
+  //  }
+  //  // Ensure parent directory exists
+  //  dest.parent?.let { Files.createDirectories(it) }
+  //  val shouldCopy = if (Files.exists(dest)) {
+  //    val srcBytes = Files.readAllBytes(source)
+  //    val dstBytes = Files.readAllBytes(dest)
+  //    !srcBytes.contentEquals(dstBytes)
+  //  } else {
+  //    true
+  //  }
+  //  if (shouldCopy) {
+  //    Files.copy(source, dest, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+  //  }
+  // }
 
   @OptIn(ExperimentalPathApi::class)
   private fun deleteExtraFileUsingRelativePath(
