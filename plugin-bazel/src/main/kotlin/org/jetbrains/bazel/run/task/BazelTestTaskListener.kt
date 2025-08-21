@@ -190,4 +190,8 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
   private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish): Data? = testFinishData.data as? Data
 }
 
+/**
+ * If a system message sent to the process handler does not end with a newline,
+ * it might connect to another message and not be parsed correctly
+ * */
 private fun Any?.toStringWithNewline(): String = this.toString().let { if (it.endsWith("\n")) it else "$it\n" }
