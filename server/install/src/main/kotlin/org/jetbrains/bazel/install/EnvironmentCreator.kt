@@ -20,7 +20,6 @@ class EnvironmentCreator(private val projectRootDir: Path) {
 
   private fun createDotBazelBsp(): Path {
     val bazelBspDir = createDir(projectRootDir, Constants.DOT_BAZELBSP_DIR_NAME)
-    // Always run idempotent creators: they only write when needed and won't duplicate work
     createDotBazelBspFiles(bazelBspDir)
     return bazelBspDir
   }
@@ -87,34 +86,6 @@ class EnvironmentCreator(private val projectRootDir: Path) {
       destinationAbsolutePath.writeIfDifferent(source.readText())
     }
   }
-  //
-  // private fun copyUsingRelativePath(
-  //  sourcePrefix: Path,
-  //  source: Path,
-  //  destinationPrefix: Path,
-  // ) {
-  //  val rel = sourcePrefix.relativize(source).toString()
-  //  if (rel.isEmpty()) return
-  //  val dest = destinationPrefix.resolve(rel)
-  //  if (source.isDirectory()) {
-  //    try {
-  //      Files.createDirectories(dest)
-  //    } catch (_: FileAlreadyExistsException) {}
-  //    return
-  //  }
-  //  // Ensure parent directory exists
-  //  dest.parent?.let { Files.createDirectories(it) }
-  //  val shouldCopy = if (Files.exists(dest)) {
-  //    val srcBytes = Files.readAllBytes(source)
-  //    val dstBytes = Files.readAllBytes(dest)
-  //    !srcBytes.contentEquals(dstBytes)
-  //  } else {
-  //    true
-  //  }
-  //  if (shouldCopy) {
-  //    Files.copy(source, dest, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
-  //  }
-  // }
 
   @OptIn(ExperimentalPathApi::class)
   private fun deleteExtraFileUsingRelativePath(
