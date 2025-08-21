@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
 import org.jetbrains.bazel.languages.fixtures.LexerTestCase
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSyntaxKey
 import org.junit.Test
 
 class ProjectViewLexerTest : LexerTestCase() {

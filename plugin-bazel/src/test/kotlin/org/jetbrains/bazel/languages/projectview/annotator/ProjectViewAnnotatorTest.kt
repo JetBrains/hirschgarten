@@ -1,9 +1,7 @@
 package org.jetbrains.bazel.languages.projectview.annotator
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.jetbrains.rd.util.firstOrNull
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

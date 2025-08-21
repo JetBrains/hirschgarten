@@ -6,7 +6,6 @@ import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 
 class ProjectViewParser(private val builder: PsiBuilder) {
