@@ -16,4 +16,6 @@ open class ProjectViewPsiFile(viewProvider: FileViewProvider) : PsiFileBase(view
       it.getKeyword().text ==
         keyword
     }
+
+  fun getSections(): List<ProjectViewPsiSection> = getChildrenOfType<ProjectViewPsiSection>().toList()
 }

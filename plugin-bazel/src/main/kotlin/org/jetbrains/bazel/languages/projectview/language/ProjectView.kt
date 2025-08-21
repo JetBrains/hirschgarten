@@ -4,6 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
+import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 
 class ExcludableList<T>(val included: List<T>, val excluded: List<T>)
 
@@ -70,6 +71,19 @@ class ProjectView(rawSections: List<Pair<String, List<String>>>) {
   }
 
   inline fun <reified T> getSection(key: SectionKey<T>): T? = sections[key] as T
+
+  companion object {
+    fun fromProjectViewPsiFile(file: ProjectViewPsiFile): ProjectView {
+      val rawSections = mutableListOf<Pair<String, List<String>>>()
+      val psiSections = file.getSections()
+      for (section in psiSections) {
+        val name = section.getKeyword().text.trim()
+        val values = section.getItems().map { it.text.trim() }
+        rawSections.add(Pair(name, values))
+      }
+      return ProjectView(rawSections)
+    }
+  }
 }
 
 private fun AnnotationHolder.annotateWarning(element: PsiElement, message: String) {

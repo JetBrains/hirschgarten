@@ -99,7 +99,7 @@ class ProjectViewLexerBase(input: CharSequence) {
     val identifier = buffer.substring(start, end)
     val prevChar = buffer.getOrNull(start - 1)
     return when {
-      prevChar == '\n' && buffer.length > end && buffer[end] == ':'
+      (prevChar == '\n' || prevChar == null) && buffer.length > end && buffer[end] == ':'
       -> ProjectViewTokenType.SECTION_KEYWORD
 
       ProjectViewImport.KEYWORD_MAP.containsKey(identifier)
