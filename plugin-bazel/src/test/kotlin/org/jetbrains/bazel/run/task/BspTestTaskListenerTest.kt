@@ -67,7 +67,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
           data.displayName,
         ).addAttribute("nodeId", taskId)
         .addAttribute("parentNodeId", "0")
-        .toString()
+        .toString() + "\n"
 
     // when
     listener.onTaskStart(taskId = taskId, parentId = null, message = "", data = data)
@@ -88,7 +88,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
           data.displayName,
         ).addAttribute("nodeId", taskId)
         .addAttribute("parentNodeId", parentId)
-        .toString()
+        .toString() + "\n"
 
     // when
     listener.onTaskStart(taskId = taskId, parentId = parentId, message = "", data = data)
@@ -110,12 +110,12 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
         .testSuiteFinished(testFinishData.displayName)
         .addAttribute("nodeId", taskId)
         .addAttribute("duration", expectedDurationMillis.toString())
-        .toString()
+        .toString() + "\n"
 
     // when
     listener.onTaskFinish(taskId = taskId, parentId = null, message = "", data = testFinishData, status = BazelStatus.SUCCESS)
 
     // then
-    handler.latestText shouldBeEqual expectedText + "\n"
+    handler.latestText shouldBeEqual expectedText
   }
 }
