@@ -9,12 +9,13 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 
 class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
-  LanguagePlugin<ScalaBuildTarget> {
+  LanguagePlugin<ScalaBuildTarget>, JVMPackagePrefixResolver {
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 

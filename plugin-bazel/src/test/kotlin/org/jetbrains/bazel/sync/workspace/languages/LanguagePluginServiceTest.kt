@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
@@ -159,7 +160,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe "org.jetbrains.bazel.server.sync.languages.java"
@@ -175,7 +176,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe null
@@ -200,7 +201,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe "org.jetbrains.bazel.server.sync.languages"
@@ -225,7 +226,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe "org.jetbrains.bazel.server.sync.languages"
@@ -251,7 +252,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe "org.jetbrains.bazel.server.sync.languages.scala"
@@ -280,7 +281,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe "org.jetbrains.bazel.server.sync.languages.scala"
@@ -296,7 +297,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe null
@@ -319,7 +320,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.KOTLIN)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe "org.jetbrains.bazel.server.sync.languages.kotlin"
@@ -335,7 +336,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.KOTLIN)) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe null
@@ -356,7 +357,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getLanguagePlugin(hashSetOf()) ?: EmptyLanguagePlugin
 
       // when
-      val result = plugin.resolveJvmPackagePrefix(filePath)
+      val result = (plugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(filePath)
 
       // then
       result shouldBe null

@@ -32,6 +32,7 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
@@ -945,7 +946,13 @@ class AspectBazelProjectMapper(
       .distinct()
       .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
       .filter { it.exists() }
-      .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.resolveJvmPackagePrefix(it)) }
+      .map {
+        SourceItem(
+          path = it,
+          generated = false,
+          jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
+        )
+      }
       .toList()
   }
 

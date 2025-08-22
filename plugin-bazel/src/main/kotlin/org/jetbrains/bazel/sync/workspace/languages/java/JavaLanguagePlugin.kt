@@ -8,12 +8,13 @@ import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import java.nio.file.Path
 
 class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val jdkResolver: JdkResolver) :
-  LanguagePlugin<JvmBuildTarget> {
+  LanguagePlugin<JvmBuildTarget>, JVMPackagePrefixResolver {
   private var jdk: Jdk? = null
 
   override fun onSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
