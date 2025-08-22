@@ -208,18 +208,18 @@ python.toolchain(
     python_version = "3.12",
 )
 
-bazel_dep(
-    name = "aspect_rules_lint",
-    dev_dependency = True,
-)
-single_version_override(
-    module_name = "aspect_rules_lint",
-    patch_strip = 1,
-    patches = [
-        "tools/format/use-ktlint.patch",
-    ],
-    version = "1.5.1",
-)
+# bazel_dep(
+#     name = "aspect_rules_lint",
+#     dev_dependency = True,
+# )
+# single_version_override(
+#     module_name = "aspect_rules_lint",
+#     patch_strip = 1,
+#     patches = [
+#         "tools/format/use-ktlint.patch",
+#     ],
+#     version = "1.5.1",
+# )
 
 http_jar(
     name = "ktlint",
