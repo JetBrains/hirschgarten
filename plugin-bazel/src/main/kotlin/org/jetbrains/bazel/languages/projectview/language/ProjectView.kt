@@ -3,7 +3,9 @@ package org.jetbrains.bazel.languages.projectview.language
 import org.jetbrains.bazel.languages.projectview.language.sections.BazelBinarySection
 import org.jetbrains.bazel.languages.projectview.language.sections.BuildFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
+import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
+import org.jetbrains.bazel.languages.projectview.language.sections.TestFlagsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 
 sealed class ExcludableValue<T> {
@@ -28,7 +30,15 @@ sealed class ExcludableValue<T> {
   }
 }
 
-val REGISTERED_SECTIONS = listOf(TargetsSection(), ShardSyncSection(), BazelBinarySection(), BuildFlagsSection())
+val REGISTERED_SECTIONS =
+  listOf(
+    TargetsSection(),
+    ShardSyncSection(),
+    BazelBinarySection(),
+    BuildFlagsSection(),
+    SyncFlagsSection(),
+    TestFlagsSection(),
+  )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
 
