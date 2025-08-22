@@ -12,12 +12,18 @@ abstract class Section<T> {
 
   abstract fun getSectionKey(): SectionKey<T>
 
+  abstract fun serialize(value: T): String
+
   open val doc: String? = null
   open val completionProvider: CompletionProvider<CompletionParameters>? = null
 
   open fun annotateValue(element: PsiElement, holder: AnnotationHolder) {}
 }
 
-abstract class ListSection<T> : Section<T>()
+abstract class ScalarSection<T> : Section<T>() {
+  override fun serialize(value: T): String = "$name: $value"
+}
 
-abstract class ScalarSection<T> : Section<T>()
+abstract class ListSection<T : Collection<*>> : Section<T>() {
+  override fun serialize(value: T): String = "$name:\n  ${value.joinToString(separator = "\n  ") { it.toString() }}"
+}

@@ -3,7 +3,9 @@ package org.jetbrains.bazel.languages.projectview.language
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
-import junit.framework.TestCase
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
+import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,8 +24,8 @@ class ProjectViewTest : BasePlatformTestCase() {
 
     val targetsSection = projectView.getSection(TargetsSection.sectionKey)
     targetsSection.shouldNotBeNull()
-    targetsSection shouldContain ExcludableValue.included("target1")
-    targetsSection shouldContain ExcludableValue.excluded("target2")
+    targetsSection shouldContain ExcludableValue.included(Label.parse("target1"))
+    targetsSection shouldContain ExcludableValue.excluded(Label.parse("target2"))
 
     val shardSyncSection = projectView.getSection(ShardSyncSection.sectionKey)
     shardSyncSection.shouldNotBeNull()
@@ -46,11 +48,36 @@ class ProjectViewTest : BasePlatformTestCase() {
 
     val targetsSection = projectView.getSection(TargetsSection.sectionKey)
     targetsSection.shouldNotBeNull()
-    targetsSection shouldContain ExcludableValue.included("target1")
-    targetsSection shouldContain ExcludableValue.excluded("target2")
+    targetsSection shouldContain ExcludableValue.included(Label.parse("target1"))
+    targetsSection shouldContain ExcludableValue.excluded(Label.parse("target2"))
 
     val shardSyncSection = projectView.getSection(ShardSyncSection.sectionKey)
     shardSyncSection.shouldNotBeNull()
     assertEquals(shardSyncSection, true)
+  }
+
+  @Test
+  fun `test list section serialization`() {
+    val targetsSection =
+      listOf(
+        ExcludableValue.included(Label.parse("target1")),
+        ExcludableValue.excluded(Label.parse("target2")),
+      )
+    val expected =
+      """
+      targets:
+        target1
+        -target2
+      """.trimIndent()
+    val targetsSectionModel = getSectionByType<TargetsSection>()
+    assertEquals(targetsSectionModel!!.serialize(targetsSection), expected)
+  }
+
+  @Test
+  fun `test scalar section serialization`() {
+    val shardSyncSection = true
+    val expected = "shard_sync: true"
+    val shardSyncSectionModel = getSectionByType<ShardSyncSection>()
+    assertEquals(shardSyncSectionModel!!.serialize(shardSyncSection), expected)
   }
 }
