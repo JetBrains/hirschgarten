@@ -33,12 +33,15 @@ abstract class Section<T> {
     val value = element.text
     if (value !in variants) {
       val message = ProjectViewBundle.getMessage("annotator.unknown.variant.error") + " " + variants.joinToString(", ")
-      holder
-        .newAnnotation(HighlightSeverity.ERROR, message)
-        .range(element)
-        .create()
+      holder.annotateError(element, message)
     }
   }
+
+  protected fun AnnotationHolder.annotateError(element: PsiElement, message: String) =
+    newAnnotation(HighlightSeverity.ERROR, message).range(element).create()
+
+  protected fun AnnotationHolder.annotateWarning(element: PsiElement, message: String) =
+    newAnnotation(HighlightSeverity.WARNING, message).range(element).create()
 }
 
 abstract class ScalarSection<T> : Section<T>() {

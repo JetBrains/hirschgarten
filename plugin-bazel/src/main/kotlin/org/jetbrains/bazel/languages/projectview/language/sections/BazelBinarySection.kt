@@ -28,10 +28,7 @@ class BazelBinarySection : ScalarSection<Path>() {
     var path = fromRawValue(element.text)
     if (path == null) {
       val message = ProjectViewBundle.getMessage("annotator.invalid.path.error")
-      holder
-        .newAnnotation(HighlightSeverity.ERROR, message)
-        .range(element)
-        .create()
+      holder.annotateError(element, message)
       return
     }
     if (!path.isAbsolute) {
@@ -40,10 +37,7 @@ class BazelBinarySection : ScalarSection<Path>() {
     }
     if (!path.exists()) {
       val message = ProjectViewBundle.getMessage("annotator.path.not.exists.error")
-      holder
-        .newAnnotation(HighlightSeverity.WARNING, message)
-        .range(element)
-        .create()
+      holder.annotateWarning(element, message)
     }
   }
 
