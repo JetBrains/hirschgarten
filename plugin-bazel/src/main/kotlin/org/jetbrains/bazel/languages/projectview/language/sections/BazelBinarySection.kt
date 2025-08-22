@@ -15,7 +15,7 @@ class BazelBinarySection : ScalarSection<Path>() {
 
   override val doc = "Specifies the path to a specific Bazel binary to be used in this project."
 
-  override fun getSectionKey(): SectionKey<Path> = sectionKey
+  override val sectionKey = KEY
 
   override fun fromRawValue(rawValue: String): Path? =
     try {
@@ -49,6 +49,6 @@ class BazelBinarySection : ScalarSection<Path>() {
 
   companion object {
     const val NAME = "bazel_binary"
-    val sectionKey = SectionKey<Path>(NAME)
+    val KEY = SectionKey<Path>(NAME)
   }
 }

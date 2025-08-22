@@ -14,9 +14,9 @@ abstract class Section<T> {
 
   open val default: T? = null
 
-  abstract fun fromRawValues(rawValues: List<String>): T?
+  abstract val sectionKey: SectionKey<T>
 
-  abstract fun getSectionKey(): SectionKey<T>
+  abstract fun fromRawValues(rawValues: List<String>): T?
 
   abstract fun serialize(value: T): String
 

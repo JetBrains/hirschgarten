@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSectio
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 
 sealed class ExcludableValue<T> {
-  abstract val value: T?
+  abstract val value: T
 
   data class Included<T>(override val value: T) : ExcludableValue<T>() {
     override fun toString(): String = value.toString()
@@ -40,7 +40,7 @@ class ProjectView(rawSections: List<Pair<String, List<String>>>) {
     for ((name, values) in rawSections) {
       val section = getSectionByName(name)
       val parsed = section?.fromRawValues(values) ?: continue
-      sections[section.getSectionKey()] = parsed
+      sections[section.sectionKey] = parsed
     }
   }
 

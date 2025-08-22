@@ -17,7 +17,7 @@ class TargetsSection : ListSection<List<ExcludableValue<Label>>>() {
 
   override val completionProvider = TargetCompletionProvider()
 
-  override fun getSectionKey(): SectionKey<List<ExcludableValue<Label>>> = sectionKey
+  override val sectionKey = KEY
 
   private fun parseItem(item: String): ExcludableValue<Label> {
     if (item.startsWith("-")) {
@@ -32,6 +32,6 @@ class TargetsSection : ListSection<List<ExcludableValue<Label>>>() {
 
   companion object {
     const val NAME = "targets"
-    val sectionKey = SectionKey<List<ExcludableValue<Label>>>(NAME)
+    val KEY = SectionKey<List<ExcludableValue<Label>>>(NAME)
   }
 }

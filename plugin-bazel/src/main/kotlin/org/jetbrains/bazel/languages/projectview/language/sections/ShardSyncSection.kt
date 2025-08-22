@@ -18,7 +18,7 @@ class ShardSyncSection : ScalarSection<Boolean>() {
 
   override val completionProvider = SimpleCompletionProvider(variants)
 
-  override fun getSectionKey(): SectionKey<Boolean> = sectionKey
+  override val sectionKey: SectionKey<Boolean> = KEY
 
   override fun fromRawValue(rawValue: String): Boolean? = rawValue.toBooleanStrictOrNull()
 
@@ -26,7 +26,7 @@ class ShardSyncSection : ScalarSection<Boolean>() {
 
   companion object {
     const val NAME = "shard_sync"
-    val sectionKey = SectionKey<Boolean>(NAME)
+    val KEY = SectionKey<Boolean>(NAME)
     private val variants = listOf("true", "false")
   }
 }
