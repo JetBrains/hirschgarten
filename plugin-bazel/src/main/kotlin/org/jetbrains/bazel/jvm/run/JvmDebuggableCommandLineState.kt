@@ -49,7 +49,13 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
     scriptPath: String,
     handler: BazelProcessHandler,
   ) {
-    val commandLine = GeneralCommandLine().withWorkingDirectory(workingDirectory?.let { Path.of(it) }).withExePath(scriptPath)
+    val commandLine =
+      GeneralCommandLine()
+        .withWorkingDirectory(workingDirectory?.let { Path.of(it) })
+        .withExePath(scriptPath)
+        // don't inherit IntelliJ's environment variables as the script should be self-contained
+        .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
+
     val scriptHandler = OSProcessHandler(commandLine)
     scriptHandler.addProcessListener(
       object : ProcessListener {
