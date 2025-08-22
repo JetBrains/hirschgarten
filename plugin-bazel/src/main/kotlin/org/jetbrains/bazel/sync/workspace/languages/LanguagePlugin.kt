@@ -9,13 +9,13 @@ import java.nio.file.Path
 interface LanguagePlugin<BuildTarget : BuildTargetData> {
   fun getSupportedLanguages(): Set<LanguageClass>
 
-  fun calculateJvmPackagePrefix(source: Path): String? = null
+  fun resolveJvmPackagePrefix(source: Path): String? = null
 
-  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
+  fun resolveExtraSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
 
-  fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
+  fun resolveExtraResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
 
-  fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
+  fun onSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
 
   suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): BuildTarget?
 }

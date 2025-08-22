@@ -16,7 +16,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
   LanguagePlugin<JvmBuildTarget> {
   private var jdk: Jdk? = null
 
-  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun onSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverrideSpec.value
     jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
   }
@@ -47,7 +47,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.JAVA)
 
-  override fun calculateJvmPackagePrefix(source: Path): String? = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
+  override fun resolveJvmPackagePrefix(source: Path): String? = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 

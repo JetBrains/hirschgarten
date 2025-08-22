@@ -18,7 +18,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
 
-  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun onSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val defaultTargetInfo = calculateDefaultTargetInfo(targets)
     defaultInterpreter =
       defaultTargetInfo

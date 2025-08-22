@@ -105,7 +105,7 @@ class AspectBazelProjectMapper(
     project
       .service<LanguagePluginsService>()
       .all
-      .forEach { it.prepareSync(targets.values.asSequence(), workspaceContext) }
+      .forEach { it.onSync(targets.values.asSequence(), workspaceContext) }
     val dependencyGraph =
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, targets)
@@ -939,13 +939,13 @@ class AspectBazelProjectMapper(
       .map(bazelPathsResolver::resolve)
       .filter { it.extension != "srcjar" }
 
-    val additionalSources = languagePlugin.calculateAdditionalSources(target)
+    val extraSources = languagePlugin.resolveExtraSources(target)
 
-    return (sources + generatedSources + additionalSources)
+    return (sources + generatedSources + extraSources)
       .distinct()
       .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
       .filter { it.exists() }
-      .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
+      .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.resolveJvmPackagePrefix(it)) }
       .toList()
   }
 
@@ -956,8 +956,8 @@ class AspectBazelProjectMapper(
 
   private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<Path> {
     val resources = bazelPathsResolver.resolvePaths(target.resourcesList)
-    val additionalResources = languagePlugin.resolveAdditionalResources(target)
-    return (resources.asSequence() + additionalResources)
+    val extraResources = languagePlugin.resolveExtraResources(target)
+    return (resources.asSequence() + extraResources)
       .distinct()
       .filter { it.exists() }
       .toList()

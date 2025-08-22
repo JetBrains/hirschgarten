@@ -21,7 +21,7 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
 
-  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
+  override fun resolveExtraSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
     if (!targetInfo.hasGoTargetInfo()) return emptySequence()
     return targetInfo.goTargetInfo.generatedSourcesList
       .asSequence()
