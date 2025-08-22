@@ -39,7 +39,6 @@ kt_intellij_junit4_test(
     data = ["//plugin-bazel/src/test/testData/starlark/references"],
     deps = [
         "//plugin-bazel",
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
 
