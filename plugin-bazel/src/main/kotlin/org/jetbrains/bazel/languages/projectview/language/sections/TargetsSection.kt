@@ -7,7 +7,9 @@ import org.jetbrains.bazel.languages.projectview.language.ListSection
 import org.jetbrains.bazel.languages.projectview.language.SectionKey
 
 class TargetsSection : ListSection<List<ExcludableValue<Label>>>() {
-  override val name: String = NAME
+  override val name = NAME
+
+  override val default = emptyList<ExcludableValue<Label>>()
 
   override val doc =
     "A list of bazel target expressions. To resolve source files under an imported directory, the source must be " +

@@ -7,9 +7,11 @@ import org.jetbrains.bazel.languages.projectview.language.ScalarSection
 import org.jetbrains.bazel.languages.projectview.language.SectionKey
 
 class ShardSyncSection : ScalarSection<Boolean>() {
-  override val name: String = NAME
+  override val name = NAME
 
-  override val doc: String =
+  override val default = false
+
+  override val doc =
     "Directs the plugin to shard bazel build invocations when syncing " +
       "and compiling your project. Bazel builds for sync may be sharded even if " +
       "this is set to false, to keep the build command under the maximum command length (ARG_MAX)."

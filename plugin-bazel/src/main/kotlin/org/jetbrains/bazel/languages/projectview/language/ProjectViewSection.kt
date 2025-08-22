@@ -12,6 +12,8 @@ class SectionKey<T>(val name: String)
 abstract class Section<T> {
   abstract val name: String
 
+  abstract val default: T
+
   abstract fun fromRawValues(rawValues: List<String>): T?
 
   abstract fun getSectionKey(): SectionKey<T>
