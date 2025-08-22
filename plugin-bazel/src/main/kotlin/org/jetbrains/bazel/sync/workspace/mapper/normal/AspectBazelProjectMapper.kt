@@ -875,7 +875,7 @@ class AspectBazelProjectMapper(
       dependencies = directDependencies,
       kind = inferKind(tags, target.kind, targetData.languages),
       sources = targetSources,
-      resources = resources.toList(),
+      resources = resources,
       baseDirectory = baseDirectory,
       noBuild = Tag.NO_BUILD in tags,
       data = data,
@@ -930,28 +930,22 @@ class AspectBazelProjectMapper(
     }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
-    val additionalSources = languagePlugin.calculateAdditionalSources(target)
-      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-      .filter { it.exists() }
-      .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
-
     val sources = target.sourcesList
       .asSequence()
       .map(bazelPathsResolver::resolve)
-      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-      .filter { it.exists() }
-      .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
     val generatedSources = target.generatedSourcesList
       .asSequence()
       .map(bazelPathsResolver::resolve)
       .filter { it.extension != "srcjar" }
-      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-      .filter { it.exists() }
-      .map { SourceItem(path = it, generated = true, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
+
+    val additionalSources = languagePlugin.calculateAdditionalSources(target)
 
     return (sources + generatedSources + additionalSources)
       .distinct()
+      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
+      .filter { it.exists() }
+      .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
       .toList()
   }
 
@@ -960,10 +954,14 @@ class AspectBazelProjectMapper(
     logger.warn(message)
   }
 
-  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
-    (bazelPathsResolver.resolvePaths(target.resourcesList) + languagePlugin.resolveAdditionalResources(target))
+  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<Path> {
+    val resources = bazelPathsResolver.resolvePaths(target.resourcesList)
+    val additionalResources = languagePlugin.resolveAdditionalResources(target)
+    return (resources.asSequence() + additionalResources)
+      .distinct()
       .filter { it.exists() }
-      .toSet()
+      .toList()
+  }
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
