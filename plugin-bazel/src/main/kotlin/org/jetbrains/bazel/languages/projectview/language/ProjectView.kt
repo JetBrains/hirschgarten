@@ -32,8 +32,6 @@ fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.
 
 inline fun <reified T> getSectionByType(): T? = REGISTERED_SECTIONS.find { it is T } as T
 
-class SectionKey<T>(val name: String)
-
 class ProjectView(rawSections: List<Pair<String, List<String>>>) {
   val sections = mutableMapOf<SectionKey<*>, Any>()
 

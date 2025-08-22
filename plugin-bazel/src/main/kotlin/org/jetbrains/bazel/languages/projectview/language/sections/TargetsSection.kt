@@ -9,6 +9,12 @@ import org.jetbrains.bazel.languages.projectview.language.SectionKey
 class TargetsSection : ListSection<List<ExcludableValue<Label>>>() {
   override val name: String = NAME
 
+  override val doc =
+    "A list of bazel target expressions. To resolve source files under an imported directory, the source must be " +
+      "reachable from one of your targets. Because these are full bazel target expressions, they support /... notation."
+
+  override val completionProvider = TargetCompletionProvider()
+
   override fun getSectionKey(): SectionKey<List<ExcludableValue<Label>>> = sectionKey
 
   private fun parseItem(item: String): ExcludableValue<Label> {
@@ -21,11 +27,6 @@ class TargetsSection : ListSection<List<ExcludableValue<Label>>>() {
   }
 
   override fun fromRawValues(rawValues: List<String>): List<ExcludableValue<Label>> = rawValues.map(::parseItem)
-
-  override val doc =
-    "A list of bazel target expressions. To resolve source files under an imported directory, the source must be " +
-      "reachable from one of your targets. Because these are full bazel target expressions, they support /... notation."
-  override val completionProvider = TargetCompletionProvider()
 
   companion object {
     const val NAME = "targets"

@@ -4,6 +4,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
@@ -79,5 +80,12 @@ class ProjectViewTest : BasePlatformTestCase() {
     val expected = "shard_sync: true"
     val shardSyncSectionModel = getSectionByType<ShardSyncSection>()
     assertEquals(shardSyncSectionModel!!.serialize(shardSyncSection), expected)
+  }
+
+  @Test
+  fun `test variants annotation`() {
+    val message = ProjectViewBundle.getMessage("annotator.unknown.variant.error") + " true, false"
+    myFixture.configureByText(".bazelproject", """shard_sync: <error descr="$message">not_a_boolean</error>""")
+    myFixture.checkHighlighting()
   }
 }
