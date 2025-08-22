@@ -232,7 +232,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target4,
         javacOptions = listOf(),
-        javacOptions = null,
         dependencies = listOf(target1Id),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
