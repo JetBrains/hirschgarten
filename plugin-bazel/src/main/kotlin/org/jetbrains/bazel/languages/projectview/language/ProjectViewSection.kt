@@ -5,7 +5,10 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.commands
+import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
+import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection.Companion.COMMAND
 
 class SectionKey<T>(val name: String)
 
@@ -25,23 +28,42 @@ abstract class Section<T> {
 
   open fun annotateValue(element: PsiElement, holder: AnnotationHolder) {}
 
-  protected fun variantsAnnotation(
-    element: PsiElement,
-    holder: AnnotationHolder,
-    variants: List<String>,
-  ) {
-    val value = element.text
-    if (value !in variants) {
-      val message = ProjectViewBundle.getMessage("annotator.unknown.variant.error") + " " + variants.joinToString(", ")
-      holder.annotateError(element, message)
+  companion object {
+    protected fun variantsAnnotation(
+      element: PsiElement,
+      holder: AnnotationHolder,
+      variants: List<String>,
+    ) {
+      val value = element.text
+      if (value !in variants) {
+        val message = ProjectViewBundle.getMessage("annotator.unknown.variant.error") + " " + variants.joinToString(", ")
+        holder.annotateError(element, message)
+      }
     }
+
+    fun annotateFlag(
+      element: PsiElement,
+      holder: AnnotationHolder,
+      command: String,
+    ) {
+      val flag = Flag.byName(element.text)
+      if (flag == null) {
+        val message = ProjectViewBundle.getMessage("annotator.unknown.flag.error", element.text)
+        holder.annotateError(element, message)
+        return
+      }
+      if (command !in flag.commands()) {
+        val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error", element.text, COMMAND)
+        holder.annotateError(element, message)
+      }
+    }
+
+    fun AnnotationHolder.annotateError(element: PsiElement, message: String) =
+      newAnnotation(HighlightSeverity.ERROR, message).range(element).create()
+
+    fun AnnotationHolder.annotateWarning(element: PsiElement, message: String) =
+      newAnnotation(HighlightSeverity.WARNING, message).range(element).create()
   }
-
-  protected fun AnnotationHolder.annotateError(element: PsiElement, message: String) =
-    newAnnotation(HighlightSeverity.ERROR, message).range(element).create()
-
-  protected fun AnnotationHolder.annotateWarning(element: PsiElement, message: String) =
-    newAnnotation(HighlightSeverity.WARNING, message).range(element).create()
 }
 
 abstract class ScalarSection<T> : Section<T>() {

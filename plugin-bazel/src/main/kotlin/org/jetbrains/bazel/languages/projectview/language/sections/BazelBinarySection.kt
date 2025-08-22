@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.language.sections
 
 import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
