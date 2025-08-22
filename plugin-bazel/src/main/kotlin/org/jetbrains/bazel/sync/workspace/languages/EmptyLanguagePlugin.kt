@@ -7,5 +7,5 @@ import org.jetbrains.bsp.protocol.VoidBuildTarget
 object EmptyLanguagePlugin : LanguagePlugin<VoidBuildTarget> {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf()
 
-  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): VoidBuildTarget? = VoidBuildTarget
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): VoidBuildTarget? = null
 }
