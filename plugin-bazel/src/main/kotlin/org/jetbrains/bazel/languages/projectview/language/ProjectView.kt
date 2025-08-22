@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.language
 
+import org.jetbrains.bazel.languages.projectview.language.sections.BazelBinarySection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
@@ -26,7 +27,7 @@ sealed class ExcludableValue<T> {
   }
 }
 
-val REGISTERED_SECTIONS = listOf(TargetsSection(), ShardSyncSection())
+val REGISTERED_SECTIONS = listOf(TargetsSection(), ShardSyncSection(), BazelBinarySection())
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
 

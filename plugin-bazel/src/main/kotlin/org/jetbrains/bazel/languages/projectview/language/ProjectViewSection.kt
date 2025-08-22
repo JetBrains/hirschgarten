@@ -12,7 +12,7 @@ class SectionKey<T>(val name: String)
 abstract class Section<T> {
   abstract val name: String
 
-  abstract val default: T
+  open val default: T? = null
 
   abstract fun fromRawValues(rawValues: List<String>): T?
 
@@ -42,6 +42,15 @@ abstract class Section<T> {
 }
 
 abstract class ScalarSection<T> : Section<T>() {
+  abstract fun fromRawValue(rawValue: String): T?
+
+  final override fun fromRawValues(rawValues: List<String>): T? {
+    if (rawValues.size != 1) {
+      return null
+    }
+    return fromRawValue(rawValues[0])
+  }
+
   override fun serialize(value: T): String = "$name: $value"
 }
 

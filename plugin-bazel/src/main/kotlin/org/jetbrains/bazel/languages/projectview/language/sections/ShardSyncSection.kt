@@ -20,12 +20,7 @@ class ShardSyncSection : ScalarSection<Boolean>() {
 
   override fun getSectionKey(): SectionKey<Boolean> = sectionKey
 
-  override fun fromRawValues(rawValues: List<String>): Boolean? {
-    if (rawValues.size != 1) {
-      return null
-    }
-    return rawValues[0].toBooleanStrictOrNull()
-  }
+  override fun fromRawValue(rawValue: String): Boolean? = rawValue.toBooleanStrictOrNull()
 
   override fun annotateValue(element: PsiElement, holder: AnnotationHolder) = variantsAnnotation(element, holder, variants)
 
