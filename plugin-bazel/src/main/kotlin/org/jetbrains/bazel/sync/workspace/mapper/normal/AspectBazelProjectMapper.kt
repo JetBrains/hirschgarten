@@ -282,7 +282,7 @@ class AspectBazelProjectMapper(
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.hasJvmTargetInfo() && !hasKnownJvmSources(targetInfo)) ||
           (targetInfo.hasJvmTargetInfo() && targetInfo.jvmTargetInfo.hasApiGeneratingPlugins)
-      )
+        )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -776,9 +776,9 @@ class AspectBazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-            )
-        )
-    ) ||
+              )
+          )
+      ) ||
       featureFlags.isGoSupportEnabled &&
       target.hasGoTargetInfo() &&
       hasKnownGoSources(target) ||
@@ -930,24 +930,29 @@ class AspectBazelProjectMapper(
     }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
-    val sources =
-      (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
-        .toSet()
-        .map(bazelPathsResolver::resolve)
-        .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-        .filter { it.exists() }
-        .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
+    val additionalSources = languagePlugin.calculateAdditionalSources(target)
+      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
+      .filter { it.exists() }
+      .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
-    val generatedSources =
-      target.generatedSourcesList
-        .toSet()
-        .map(bazelPathsResolver::resolve)
-        .filter { it.extension != "srcjar" }
-        .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-        .filter { it.exists() }
-        .map { SourceItem(path = it, generated = true, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
+    val sources = target.sourcesList
+      .asSequence()
+      .map(bazelPathsResolver::resolve)
+      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
+      .filter { it.exists() }
+      .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
-    return sources + generatedSources
+    val generatedSources = target.generatedSourcesList
+      .asSequence()
+      .map(bazelPathsResolver::resolve)
+      .filter { it.extension != "srcjar" }
+      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
+      .filter { it.exists() }
+      .map { SourceItem(path = it, generated = true, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
+
+    return (sources + generatedSources + additionalSources)
+      .distinct()
+      .toList()
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {

@@ -11,7 +11,7 @@ interface LanguagePlugin<BuildTarget : BuildTargetData> {
 
   fun calculateJvmPackagePrefix(source: Path): String? = null
 
-  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
+  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
 
   fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> = emptySet()
 
