@@ -88,4 +88,16 @@ class ProjectViewTest : BasePlatformTestCase() {
     myFixture.configureByText(".bazelproject", """shard_sync: <error descr="$message">not_a_boolean</error>""")
     myFixture.checkHighlighting()
   }
+
+  @Test
+  fun `test unknown flag annotation`() {
+    val message = ProjectViewBundle.getMessage("annotator.unknown.flag.error") + " not_a_flag"
+    myFixture.configureByText(".bazelproject", """shard_sync: <error descr="$message">not_a_flag</error>""")
+  }
+
+  @Test
+  fun `test not applicable flag annotation`() {
+    val message = ProjectViewBundle.getMessage("annotator.not.applicable.flag.error") + " build_flags"
+    myFixture.configureByText(".bazelproject", """build_flags: <error descr="$message">--dump_all</error>""")
+  }
 }

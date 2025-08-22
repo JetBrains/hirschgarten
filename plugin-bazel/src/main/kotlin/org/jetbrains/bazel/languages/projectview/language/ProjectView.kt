@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.projectview.language
 
 import org.jetbrains.bazel.languages.projectview.language.sections.BazelBinarySection
 import org.jetbrains.bazel.languages.projectview.language.sections.BuildFlagsSection
+import org.jetbrains.bazel.languages.projectview.language.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
@@ -38,6 +39,7 @@ val REGISTERED_SECTIONS =
     BuildFlagsSection(),
     SyncFlagsSection(),
     TestFlagsSection(),
+    DebugFlagsSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
