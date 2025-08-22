@@ -16,6 +16,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
         "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "//third_party/bazel/src/main/protobuf:deps_java_proto",

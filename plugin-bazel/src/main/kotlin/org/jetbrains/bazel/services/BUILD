@@ -6,9 +6,6 @@ kt_jvm_library(
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
         "//sdkcompat",
     ],
 )

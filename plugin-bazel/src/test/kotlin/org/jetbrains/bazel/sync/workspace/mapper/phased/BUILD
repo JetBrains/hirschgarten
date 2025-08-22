@@ -7,7 +7,7 @@ kt_library(
     srcs = ["TargetMocks.kt"],
     visibility = ["//visibility:private"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/phased",
+        "//third_party/bazel/src/main/protobuf:build_java_proto",
     ],
 )
 
@@ -18,10 +18,7 @@ kt_junit5_test(
     tags = ["exclusive"],
     deps = [
         ":mocks",
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//plugin-bazel/src:test_fixtures",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/firstPhase",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/phased",
     ],
 )
 

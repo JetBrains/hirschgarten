@@ -51,21 +51,21 @@ use_repo(pnpm, "pnpm")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
-        "com.fasterxml.jackson.core:jackson-databind:2.19.1",
-        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.1",
-        "com.fasterxml.jackson.module:jackson-module-kotlin:2.19.1",
-        "com.google.auto.value:auto-value-annotations:1.10.2",
-        "com.google.auto.value:auto-value:1.10.4",
+        "com.fasterxml.jackson.core:jackson-databind:2.19.2",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.2",
+        "com.fasterxml.jackson.module:jackson-module-kotlin:2.19.2",
+        "com.google.auto.value:auto-value-annotations:1.11.0",
+        "com.google.auto.value:auto-value:1.11.0",
         "com.google.flogger:flogger:0.9",
         "com.google.flogger:flogger-system-backend:0.9",
         "com.googlecode.java-diff-utils:diffutils:1.3.0",
         "com.google.code.findbugs:jsr305:3.0.2",
         "com.google.code.gson:gson:2.13.1",
-        "com.google.errorprone:error_prone_annotations:2.39.0",
+        "com.google.errorprone:error_prone_annotations:2.41.0",
         "com.google.guava:guava:33.3.1-jre",
         "com.google.truth:truth:1.4.4",
         "com.google.truth.extensions:truth-java8-extension:1.4.4",
-        "com.google.j2objc:j2objc-annotations:2.8",
+        "com.google.j2objc:j2objc-annotations:3.0.0",
         "com.google.guava:failureaccess:1.0.3",
         "org.hamcrest:hamcrest-core:3.0",
         "org.jetbrains:annotations:26.0.2",
@@ -74,9 +74,9 @@ maven.install(
         "com.jetbrains.intellij.tools:ide-starter-driver:252.23892.409",
         "com.jetbrains.intellij.tools:ide-starter-junit5:252.23892.409",
         "com.jetbrains.intellij.tools:ide-starter-squashed:252.23892.409",
-        "commons-io:commons-io:jar:2.19.0",
-        "io.grpc:grpc-protobuf:1.73.0",
-        "io.grpc:grpc-stub:1.73.0",
+        "commons-io:commons-io:jar:2.20.0",
+        "io.grpc:grpc-protobuf:1.74.0",
+        "io.grpc:grpc-stub:1.74.0",
         "io.kotest:kotest-assertions-api-jvm:5.9.1",
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
         "io.kotest:kotest-assertions-shared-jvm:5.9.1",
@@ -88,11 +88,11 @@ maven.install(
         "org.slf4j:slf4j-api:2.0.17",
         "org.apache.velocity:velocity-engine-core:2.4.1",
         "org.jetbrains.kotlin:kotlin-stdlib:2.2.0-RC2",
-        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0",
-        "org.junit.jupiter:junit-jupiter:5.13.3",
-        "org.junit.platform:junit-platform-console:1.13.3",
-        "org.junit.platform:junit-platform-suite-api:1.13.3",
-        "org.junit.platform:junit-platform-suite-engine:1.13.3",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0",
+        "org.junit.jupiter:junit-jupiter:5.13.4",
+        "org.junit.platform:junit-platform-console:1.13.4",
+        "org.junit.platform:junit-platform-suite-api:1.13.4",
+        "org.junit.platform:junit-platform-suite-engine:1.13.4",
         "org.kodein.di:kodein-di:7.26.1",
         "org.mockito:mockito-core:5.18.0",
         "com.github.javaparser:javaparser-core:3.27.0",
@@ -117,19 +117,19 @@ maven.artifact(
     testonly = True,
     artifact = "junit-vintage-engine",
     group = "org.junit.vintage",
-    version = "5.12.1",
+    version = "5.13.4",
 )
 maven.artifact(
     artifact = "kotlinx-coroutines-core",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.10.1",
+    version = "1.10.2",
 )
 maven.artifact(
     artifact = "kotlinx-coroutines-core-jvm",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.10.1",
+    version = "1.10.2",
 )
 maven.artifact(
     name = "server_maven",
@@ -208,18 +208,18 @@ python.toolchain(
     python_version = "3.12",
 )
 
-bazel_dep(
-    name = "aspect_rules_lint",
-    dev_dependency = True,
-)
-single_version_override(
-    module_name = "aspect_rules_lint",
-    patch_strip = 1,
-    patches = [
-        "tools/format/use-ktlint.patch",
-    ],
-    version = "1.5.1",
-)
+# bazel_dep(
+#     name = "aspect_rules_lint",
+#     dev_dependency = True,
+# )
+# single_version_override(
+#     module_name = "aspect_rules_lint",
+#     patch_strip = 1,
+#     patches = [
+#         "tools/format/use-ktlint.patch",
+#     ],
+#     version = "1.5.1",
+# )
 
 http_jar(
     name = "ktlint",
