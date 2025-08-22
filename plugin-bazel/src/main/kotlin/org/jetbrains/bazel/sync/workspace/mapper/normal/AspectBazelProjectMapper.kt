@@ -213,7 +213,6 @@ class AspectBazelProjectMapper(
 
     val extraLibraries = concatenateMaps(librariesFromDeps, extraLibrariesFromJdeps)
 
-    // val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
     val targets =
       measure("create intermediate targets") {
         targets.values.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }
