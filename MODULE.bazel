@@ -609,6 +609,16 @@ http_jar(
     url = CODE_WITH_ME_252_URL,
 )
 
+CODE_WITH_ME_SPLIT_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
+
+CODE_WITH_ME_SPLIT_252_SHA = "e9e5104ebb03fe61eea932a78c1639db50dc7c744b47eb705993599689da241e"
+
+http_jar(
+    name = "code_with_me_split_2025_2",
+    sha256 = CODE_WITH_ME_SPLIT_252_SHA,
+    url = CODE_WITH_ME_SPLIT_252_URL,
+)
+
 JSON_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/json/json/%s/json-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
 JSON_252_SHA = "ae08c35e9faa3fd020959ee243be632a2bf375526a0ac6fb63b17424124f860a"

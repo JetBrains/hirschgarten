@@ -9,6 +9,7 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
@@ -20,6 +21,9 @@ import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.DebugType
 import java.io.File
 import java.nio.file.Path
+
+// Longer timeout to account for Bazel build
+private const val DEBUGGER_ATTACH_TIMEOUT: Long = 3 * 60 * 1000
 
 abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, private val port: Int) :
   BazelCommandLineStateBase(environment) {
@@ -37,7 +41,7 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
       environment,
       this,
       remoteConnection,
-      true,
+      DEBUGGER_ATTACH_TIMEOUT,
     )
   }
 
@@ -47,6 +51,7 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
   suspend fun debugWithScriptPath(
     workingDirectory: String?,
     scriptPath: String,
+    pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
   ) {
     val commandLine =
@@ -80,6 +85,7 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
 
     scriptHandler.startNotify()
     runInterruptible(Dispatchers.IO) {
+      pidDeferred.complete(scriptHandler.process.pid())
       scriptHandler.waitFor()
       findXmlOutputAndReport(scriptPath)
     }
