@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
@@ -308,6 +308,24 @@ abstract class BazelCommand(val bazelBinary: String) {
 
       commandLine.addAll(startupOptions)
       commandLine.add("cquery")
+      commandLine.addAll(options)
+      commandLine.addAll(targetCommandLine())
+
+      return BazelCommandExecutionDescriptor(commandLine)
+    }
+  }
+
+  class AQuery(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasMultipleTargets {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("aquery")
       commandLine.addAll(options)
       commandLine.addAll(targetCommandLine())
 

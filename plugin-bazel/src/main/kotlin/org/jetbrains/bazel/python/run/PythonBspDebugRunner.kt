@@ -33,7 +33,7 @@ class PythonBspDebugRunner : PyDebugRunner() {
   override fun canRun(executorId: String, profile: RunProfile): Boolean =
     executorId == DefaultDebugExecutor.EXECUTOR_ID &&
       profile is BazelRunConfiguration &&
-      profile.handler is PythonBazelHandler &&
+      profile.handler is PythonBazelHandler<*> &&
       profile.targets.size == 1 &&
       profile.project.basePath != null
 

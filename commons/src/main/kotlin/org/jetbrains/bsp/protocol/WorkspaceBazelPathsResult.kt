@@ -1,3 +1,9 @@
 package org.jetbrains.bsp.protocol
 
-data class WorkspaceBazelPathsResult(val bazelBin: String, val executionRoot: String)
+import org.jetbrains.bazel.commons.BazelPathsResolver
+
+data class WorkspaceBazelPathsResult(
+  val bazelBin: String,
+  val executionRoot: String,
+  val bazelPathsResolver: BazelPathsResolver,
+)

@@ -1,7 +1,11 @@
 package org.jetbrains.bazel.ui.testResultsTree
 
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.editorTabs
+import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.elements.popup
+import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
@@ -9,12 +13,12 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.openFile
-import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * ```sh
@@ -34,15 +38,19 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
       )
 
   @Test
-  fun openProject() {
+  fun testTestResultsTree() {
     val fileName = "SimpleKotlinTest.kt"
 
     createContext()
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
-          waitForIndicators(5.minutes)
+          step("Sync & set up project") {
+            syncBazelProject()
+            waitForIndicators(5.minutes)
+            execute { enableHotswap() }
+            takeScreenshot("afterSync")
+          }
 
           step("open SimpleKotlinTest.kt and run test") {
             execute { openFile(fileName) }
@@ -56,6 +64,27 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
             )
             takeScreenshot("afterOpeningTestResultsTree")
           }
+
+          step("Launch debug run config for SimpleKotlinTest") {
+            // revert the click from the previous `verifyTestStatus` step
+            x("//div[@accessiblename='Show Passed']").click()
+
+            editorTabs()
+              .gutter()
+              .getGutterIcons()
+              .first()
+              .click()
+            popup().waitOneContainsText("Debug test").click()
+            wait(15.seconds)
+          }
+          step("Verify debug test status and results tree") {
+            // should be the same as for the above test results tree
+            verifyTestStatus(
+              listOf("2 tests passed", "2 tests total"),
+              listOf("SimpleKotlinTest", "trivial test()", "another trivial test()"),
+            )
+            takeScreenshot("afterOpeningDebugTestResultsTree")
+          }
         }
       }
   }
@@ -64,4 +93,9 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
     addCommand(CMD_PREFIX + "runSimpleKotlinTest")
     return this
   }
+}
+
+private fun <T : CommandChain> T.enableHotswap(): T {
+  addCommand(CMD_PREFIX + "enableHotswap")
+  return this
 }

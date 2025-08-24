@@ -40,24 +40,15 @@ data class Library(
   }
 }
 
-data class IntermediateModuleDependency(val moduleName: String) :
-  WorkspaceModelEntity(),
-  EntityDependency
-
-data class IntermediateLibraryDependency(val libraryName: String, val isProjectLevelLibrary: Boolean = false) :
-  WorkspaceModelEntity(),
-  EntityDependency
-
 /**
 This class holds basic module data that are not language-specific
  */
 data class GenericModuleInfo(
   val name: String,
   val type: ModuleTypeId,
-  val modulesDependencies: List<IntermediateModuleDependency>,
-  val librariesDependencies: List<IntermediateLibraryDependency>,
+  val dependencies: List<String>,
   val kind: TargetKind,
-  val associates: List<IntermediateModuleDependency> = listOf(),
+  val associates: List<String> = listOf(),
   val isDummy: Boolean = false,
   val isLibraryModule: Boolean = false,
 ) : WorkspaceModelEntity()

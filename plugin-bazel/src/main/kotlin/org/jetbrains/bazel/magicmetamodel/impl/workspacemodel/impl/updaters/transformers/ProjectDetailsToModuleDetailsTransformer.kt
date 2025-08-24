@@ -11,12 +11,10 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
 
   fun moduleDetailsForTargetId(targetId: Label): ModuleDetails {
     val target = targetsIndex[targetId] ?: error("Cannot find target for target id: $targetId.")
-    val allDependencies = libraryGraph.calculateAllDependencies(target)
     return ModuleDetails(
       target = target,
       javacOptions = javacOptionsIndex[targetId],
-      libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),
-      moduleDependencies = allDependencies.moduleDependencies.toList(),
+      dependencies = libraryGraph.calculateAllDependencies(target),
       defaultJdkName = projectDetails.defaultJdkName,
       jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
     )

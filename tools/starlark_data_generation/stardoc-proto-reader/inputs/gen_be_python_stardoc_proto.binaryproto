@@ -1,0 +1,637 @@
+
+õC
+binary_rules.py_binary*
+nameA unique name for this target. ⁄
+dataÀThe list of files need by this library at runtime. See comments about
+the [`data` attribute typically defined by rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+
+There is no `py_embed_data` like there is `cc_embed_data` and `go_embed_data`.
+This is because Python has a concept of runtime resources.2[]
+distribs2[]
+licenses2[]◊
+env…Dictionary of strings; optional; values are subject to `$(location)` and "Make
+variable" substitution.
+
+Specifies additional environment variables to set when the target is executed by
+`test` or `run`.
+2{}∂
+stamp¶Whether to encode build information into the binary. Possible values:
+
+* `stamp = 1`: Always stamp the build information into the binary, even in
+  `--nostamp` builds. **This setting should be avoided**, since it potentially kills
+  remote caching for the binary and any downstream actions that depend on it.
+* `stamp = 0`: Always replace build information by constant values. This gives
+  good build result caching.
+* `stamp = -1`: Embedding of build information is controlled by the
+  `--[no]stamp` flag.
+
+Stamped binaries are not rebuilt unless their dependencies change.
+
+WARNING: Stamping can harm build performance by reducing cache hits and should
+be avoided if possible.2-1≥
+deps«List of additional libraries to be linked in to the target.
+See comments about
+the [`deps` attribute typically defined by
+rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+These are typically `py_library` rules.
+
+Targets that only provide data files used at runtime belong in the `data`
+attribute.*=
+PyInfo3
+PyInfo)@rules_python//python/private:py_info.bzl*
+CcInfo
+CcInfo<native>2[]Û
+
+precompile◊Whether py source files **for this target** should be precompiled.
+
+Values:
+
+* `inherit`: Allow the downstream binary decide if precompiled files are used.
+* `enabled`: Compile Python source files at build time.
+* `disabled`: Don't compile Python source files at build time.
+
+:::{seealso}
+
+* The {flag}`--precompile` flag, which can override this attribute in some cases
+  and will affect all targets when building.
+* The {obj}`pyc_collection` attribute for transitively enabling precompiling on
+  a per-target basis.
+* The [Precompiling](precompiling) docs for a guide about using precompiling.
+:::2	"inherit"∆
+precompile_invalidation_modeõHow precompiled files should be verified to be up-to-date with their associated
+source files. Possible values are:
+* `auto`: The effective value will be automatically determined by other build
+  settings.
+* `checked_hash`: Use the pyc file if the hash of the source file matches the hash
+  recorded in the pyc file. This is most useful when working with code that
+  you may modify.
+* `unchecked_hash`: Always use the pyc file; don't check the pyc's hash against
+  the source file. This is most useful when the code won't be modified.
+
+For more information on pyc invalidation modes, see
+https://docs.python.org/3/library/py_compile.html#py_compile.PycInvalidationMode2"auto"∞
+precompile_optimize_levelçThe optimization level for precompiled files.
+
+For more information about optimization levels, see the `compile()` function's
+`optimize` arg docs at https://docs.python.org/3/library/functions.html#compile
+
+NOTE: The value `-1` means "current interpreter", which will be the interpreter
+used _at build time when pycs are generated_, not the interpreter used at
+runtime when the code actually runs.20Ê
+precompile_source_retentionπDetermines, when a source file is compiled, if the source file is kept
+in the resulting output or not. Valid values are:
+
+* `inherit`: Inherit the value from the {flag}`--precompile_source_retention` flag.
+* `keep_source`: Include the original Python source.
+* `omit_source`: Don't include the original py source.2	"inherit"ö
+pyi_deps™Dependencies providing type definitions the library needs.
+
+These are dependencies that satisfy imports guarded by `typing.TYPE_CHECKING`.
+These are build-time only dependencies and not included as part of a runnable
+program (packaging rules may include them, however).
+
+:::{versionadded} 1.1.0
+:::*=
+PyInfo3
+PyInfo)@rules_python//python/private:py_info.bzl*
+CcInfo
+CcInfo<native>2[]∆
+pyi_srcs≥Type definition files for the library.
+
+These are typically `.pyi` files, but other file types for type-checker specific
+formats are allowed. These files are build-time only dependencies and not included
+as part of a runnable program (packaging rules may include them, however).
+
+:::{versionadded} 1.1.0
+:::2[]∞
+srcs£The list of Python source files that are processed to create the target. This
+includes all your checked-in code and may include generated source files.  The
+`.py` files belong in `srcs` and library targets belong in `deps`. Other binary
+files that may be needed at run time belong in `data`. 4
+srcs_versionDefunct, unused, does nothing.2""ë
+importsˇList of import directories to be added to the PYTHONPATH.
+
+Subject to "Make variable" substitution. These import directories will be added
+for this rule and all rules that depend on it (note: not the rules this rule
+depends on. Each directory will be added to `PYTHONPATH` by `py_binary` rules
+that depend on this rule. The strings are repo-runfiles-root relative,
+
+Absolute paths (paths that start with `/`) and paths that references a path
+above the execution root are not allowed and will result in an error.2[]†
+interpreter_argsÖArguments that are only applicable to the interpreter.
+
+The args an interpreter supports are specific to the interpreter. For
+CPython, see https://docs.python.org/3/using/cmdline.html.
+
+:::{note}
+Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
+:::
+
+:::{seealso}
+The {obj}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable
+:::
+
+:::{versionadded} 1.3.0
+:::2[]à
+legacy_create_initÎWhether to implicitly create empty `__init__.py` files in the runfiles tree.
+These are created in every directory containing Python source code or shared
+libraries, and every parent directory of those directories, excluding the repo
+root directory. The default, `-1` (auto), means true unless
+`--incompatible_default_to_explicit_init_py` is used. If false, the user is
+responsible for creating (possibly empty) `__init__.py` files and adding them to
+the `srcs` of Python targets as required.2-1”
+main¬Optional; the name of the source file that is the main entry point of the
+application. This file must also be listed in `srcs`. If left unspecified,
+`name`, with `.py` appended, is used instead. If `name` does not match any
+filename in `srcs`, `main` must be specified.
+
+This is mutually exclusive with {obj}`main_module`.2NoneÁ
+main_module—Module name to execute as the main program.
+
+When set, `srcs` is not required, and it is assumed the module is
+provided by a dependency.
+
+See https://docs.python.org/3/using/cmdline.html#cmdoption-m for more
+information about running modules as the main program.
+
+This is mutually exclusive with {obj}`main`.
+
+:::{versionadded} 1.3.0
+:::2""Ê
+pyc_collection∆Determines whether pyc files from dependencies should be manually included.
+
+Valid values are:
+* `inherit`: Inherit the value from {flag}`--precompile`.
+* `include_pyc`: Add implicitly generated pyc files from dependencies. i.e.
+  pyc files for targets that specify {attr}`precompile="inherit"`.
+* `disabled`: Don't add implicitly generated pyc files. Note that
+  pyc files may still come from dependencies that enable precompiling at the
+  target level.2	"inherit"÷
+python_versionΩThe Python version this target should use.
+
+The value should be in `X.Y` or `X.Y.Z` (or compatible) format. If empty or
+unspecified, the incoming configuration's {obj}`--python_version` flag is
+inherited. For backwards compatibility, the values `PY2` and `PY3` are
+accepted, but treated as an empty/unspecified value.
+
+:::{note}
+In order for the requested version to be used, there must be a
+toolchain configured to match the Python version. If there isn't, then it
+may be silently ignored, or an error may occur, depending on the toolchain
+configuration.
+:::
+
+:::{versionchanged} 1.1.0
+
+This attribute was changed from only accepting `PY2` and `PY3` values to
+accepting arbitrary Python versions.
+:::2"""=
+	py_binary0@rules_python//python/private:py_binary_rule.bzl*\
+PyExecutableInfoH
+PyExecutableInfo4@rules_python//python/private:py_executable_info.bzl8
+ì(
+library_rules.py_libraryíA library of Python code that can be depended upon.
+
+Default outputs:
+* The input Python sources
+* The precompiled artifacts from the sources.
+
+NOTE: Precompilation affects which of the default outputs are included in the
+resulting runfiles. See the precompile-related attributes and flags for
+more information.
+
+:::{versionchanged} 0.37.0
+Source files are no longer added to the runfiles directly.
+:::*
+nameA unique name for this target. ⁄
+dataÀThe list of files need by this library at runtime. See comments about
+the [`data` attribute typically defined by rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+
+There is no `py_embed_data` like there is `cc_embed_data` and `go_embed_data`.
+This is because Python has a concept of runtime resources.2[]
+distribs2[]
+licenses2[]≥
+deps«List of additional libraries to be linked in to the target.
+See comments about
+the [`deps` attribute typically defined by
+rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+These are typically `py_library` rules.
+
+Targets that only provide data files used at runtime belong in the `data`
+attribute.*=
+PyInfo3
+PyInfo)@rules_python//python/private:py_info.bzl*
+CcInfo
+CcInfo<native>2[]Û
+
+precompile◊Whether py source files **for this target** should be precompiled.
+
+Values:
+
+* `inherit`: Allow the downstream binary decide if precompiled files are used.
+* `enabled`: Compile Python source files at build time.
+* `disabled`: Don't compile Python source files at build time.
+
+:::{seealso}
+
+* The {flag}`--precompile` flag, which can override this attribute in some cases
+  and will affect all targets when building.
+* The {obj}`pyc_collection` attribute for transitively enabling precompiling on
+  a per-target basis.
+* The [Precompiling](precompiling) docs for a guide about using precompiling.
+:::2	"inherit"∆
+precompile_invalidation_modeõHow precompiled files should be verified to be up-to-date with their associated
+source files. Possible values are:
+* `auto`: The effective value will be automatically determined by other build
+  settings.
+* `checked_hash`: Use the pyc file if the hash of the source file matches the hash
+  recorded in the pyc file. This is most useful when working with code that
+  you may modify.
+* `unchecked_hash`: Always use the pyc file; don't check the pyc's hash against
+  the source file. This is most useful when the code won't be modified.
+
+For more information on pyc invalidation modes, see
+https://docs.python.org/3/library/py_compile.html#py_compile.PycInvalidationMode2"auto"∞
+precompile_optimize_levelçThe optimization level for precompiled files.
+
+For more information about optimization levels, see the `compile()` function's
+`optimize` arg docs at https://docs.python.org/3/library/functions.html#compile
+
+NOTE: The value `-1` means "current interpreter", which will be the interpreter
+used _at build time when pycs are generated_, not the interpreter used at
+runtime when the code actually runs.20Ê
+precompile_source_retentionπDetermines, when a source file is compiled, if the source file is kept
+in the resulting output or not. Valid values are:
+
+* `inherit`: Inherit the value from the {flag}`--precompile_source_retention` flag.
+* `keep_source`: Include the original Python source.
+* `omit_source`: Don't include the original py source.2	"inherit"ö
+pyi_deps™Dependencies providing type definitions the library needs.
+
+These are dependencies that satisfy imports guarded by `typing.TYPE_CHECKING`.
+These are build-time only dependencies and not included as part of a runnable
+program (packaging rules may include them, however).
+
+:::{versionadded} 1.1.0
+:::*=
+PyInfo3
+PyInfo)@rules_python//python/private:py_info.bzl*
+CcInfo
+CcInfo<native>2[]∆
+pyi_srcs≥Type definition files for the library.
+
+These are typically `.pyi` files, but other file types for type-checker specific
+formats are allowed. These files are build-time only dependencies and not included
+as part of a runnable program (packaging rules may include them, however).
+
+:::{versionadded} 1.1.0
+:::2[]≤
+srcs£The list of Python source files that are processed to create the target. This
+includes all your checked-in code and may include generated source files.  The
+`.py` files belong in `srcs` and library targets belong in `deps`. Other binary
+files that may be needed at run time belong in `data`.2[]4
+srcs_versionDefunct, unused, does nothing.2""ë
+importsˇList of import directories to be added to the PYTHONPATH.
+
+Subject to "Make variable" substitution. These import directories will be added
+for this rule and all rules that depend on it (note: not the rules this rule
+depends on. Each directory will be added to `PYTHONPATH` by `py_binary` rules
+that depend on this rule. The strings are repo-runfiles-root relative,
+
+Absolute paths (paths that start with `/`) and paths that references a path
+above the execution root are not allowed and will result in an error.2[]"?
+
+py_library1@rules_python//python/private:py_library_rule.bzl
+ƒD
+test_rules.py_test*
+nameA unique name for this target. ⁄
+dataÀThe list of files need by this library at runtime. See comments about
+the [`data` attribute typically defined by rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+
+There is no `py_embed_data` like there is `cc_embed_data` and `go_embed_data`.
+This is because Python has a concept of runtime resources.2[]
+distribs2[]
+licenses2[]◊
+env…Dictionary of strings; optional; values are subject to `$(location)` and "Make
+variable" substitution.
+
+Specifies additional environment variables to set when the target is executed by
+`test` or `run`.
+2{}µ
+stamp¶Whether to encode build information into the binary. Possible values:
+
+* `stamp = 1`: Always stamp the build information into the binary, even in
+  `--nostamp` builds. **This setting should be avoided**, since it potentially kills
+  remote caching for the binary and any downstream actions that depend on it.
+* `stamp = 0`: Always replace build information by constant values. This gives
+  good build result caching.
+* `stamp = -1`: Embedding of build information is controlled by the
+  `--[no]stamp` flag.
+
+Stamped binaries are not rebuilt unless their dependencies change.
+
+WARNING: Stamping can harm build performance by reducing cache hits and should
+be avoided if possible.20≥
+deps«List of additional libraries to be linked in to the target.
+See comments about
+the [`deps` attribute typically defined by
+rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+These are typically `py_library` rules.
+
+Targets that only provide data files used at runtime belong in the `data`
+attribute.*=
+PyInfo3
+PyInfo)@rules_python//python/private:py_info.bzl*
+CcInfo
+CcInfo<native>2[]Û
+
+precompile◊Whether py source files **for this target** should be precompiled.
+
+Values:
+
+* `inherit`: Allow the downstream binary decide if precompiled files are used.
+* `enabled`: Compile Python source files at build time.
+* `disabled`: Don't compile Python source files at build time.
+
+:::{seealso}
+
+* The {flag}`--precompile` flag, which can override this attribute in some cases
+  and will affect all targets when building.
+* The {obj}`pyc_collection` attribute for transitively enabling precompiling on
+  a per-target basis.
+* The [Precompiling](precompiling) docs for a guide about using precompiling.
+:::2	"inherit"∆
+precompile_invalidation_modeõHow precompiled files should be verified to be up-to-date with their associated
+source files. Possible values are:
+* `auto`: The effective value will be automatically determined by other build
+  settings.
+* `checked_hash`: Use the pyc file if the hash of the source file matches the hash
+  recorded in the pyc file. This is most useful when working with code that
+  you may modify.
+* `unchecked_hash`: Always use the pyc file; don't check the pyc's hash against
+  the source file. This is most useful when the code won't be modified.
+
+For more information on pyc invalidation modes, see
+https://docs.python.org/3/library/py_compile.html#py_compile.PycInvalidationMode2"auto"∞
+precompile_optimize_levelçThe optimization level for precompiled files.
+
+For more information about optimization levels, see the `compile()` function's
+`optimize` arg docs at https://docs.python.org/3/library/functions.html#compile
+
+NOTE: The value `-1` means "current interpreter", which will be the interpreter
+used _at build time when pycs are generated_, not the interpreter used at
+runtime when the code actually runs.20Ê
+precompile_source_retentionπDetermines, when a source file is compiled, if the source file is kept
+in the resulting output or not. Valid values are:
+
+* `inherit`: Inherit the value from the {flag}`--precompile_source_retention` flag.
+* `keep_source`: Include the original Python source.
+* `omit_source`: Don't include the original py source.2	"inherit"ö
+pyi_deps™Dependencies providing type definitions the library needs.
+
+These are dependencies that satisfy imports guarded by `typing.TYPE_CHECKING`.
+These are build-time only dependencies and not included as part of a runnable
+program (packaging rules may include them, however).
+
+:::{versionadded} 1.1.0
+:::*=
+PyInfo3
+PyInfo)@rules_python//python/private:py_info.bzl*
+CcInfo
+CcInfo<native>2[]∆
+pyi_srcs≥Type definition files for the library.
+
+These are typically `.pyi` files, but other file types for type-checker specific
+formats are allowed. These files are build-time only dependencies and not included
+as part of a runnable program (packaging rules may include them, however).
+
+:::{versionadded} 1.1.0
+:::2[]∞
+srcs£The list of Python source files that are processed to create the target. This
+includes all your checked-in code and may include generated source files.  The
+`.py` files belong in `srcs` and library targets belong in `deps`. Other binary
+files that may be needed at run time belong in `data`. 4
+srcs_versionDefunct, unused, does nothing.2""ë
+importsˇList of import directories to be added to the PYTHONPATH.
+
+Subject to "Make variable" substitution. These import directories will be added
+for this rule and all rules that depend on it (note: not the rules this rule
+depends on. Each directory will be added to `PYTHONPATH` by `py_binary` rules
+that depend on this rule. The strings are repo-runfiles-root relative,
+
+Absolute paths (paths that start with `/`) and paths that references a path
+above the execution root are not allowed and will result in an error.2[]†
+interpreter_argsÖArguments that are only applicable to the interpreter.
+
+The args an interpreter supports are specific to the interpreter. For
+CPython, see https://docs.python.org/3/using/cmdline.html.
+
+:::{note}
+Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
+:::
+
+:::{seealso}
+The {obj}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable
+:::
+
+:::{versionadded} 1.3.0
+:::2[]à
+legacy_create_initÎWhether to implicitly create empty `__init__.py` files in the runfiles tree.
+These are created in every directory containing Python source code or shared
+libraries, and every parent directory of those directories, excluding the repo
+root directory. The default, `-1` (auto), means true unless
+`--incompatible_default_to_explicit_init_py` is used. If false, the user is
+responsible for creating (possibly empty) `__init__.py` files and adding them to
+the `srcs` of Python targets as required.2-1”
+main¬Optional; the name of the source file that is the main entry point of the
+application. This file must also be listed in `srcs`. If left unspecified,
+`name`, with `.py` appended, is used instead. If `name` does not match any
+filename in `srcs`, `main` must be specified.
+
+This is mutually exclusive with {obj}`main_module`.2NoneÁ
+main_module—Module name to execute as the main program.
+
+When set, `srcs` is not required, and it is assumed the module is
+provided by a dependency.
+
+See https://docs.python.org/3/using/cmdline.html#cmdoption-m for more
+information about running modules as the main program.
+
+This is mutually exclusive with {obj}`main`.
+
+:::{versionadded} 1.3.0
+:::2""Ê
+pyc_collection∆Determines whether pyc files from dependencies should be manually included.
+
+Valid values are:
+* `inherit`: Inherit the value from {flag}`--precompile`.
+* `include_pyc`: Add implicitly generated pyc files from dependencies. i.e.
+  pyc files for targets that specify {attr}`precompile="inherit"`.
+* `disabled`: Don't add implicitly generated pyc files. Note that
+  pyc files may still come from dependencies that enable precompiling at the
+  target level.2	"inherit"÷
+python_versionΩThe Python version this target should use.
+
+The value should be in `X.Y` or `X.Y.Z` (or compatible) format. If empty or
+unspecified, the incoming configuration's {obj}`--python_version` flag is
+inherited. For backwards compatibility, the values `PY2` and `PY3` are
+accepted, but treated as an empty/unspecified value.
+
+:::{note}
+In order for the requested version to be used, there must be a
+toolchain configured to match the Python version. If there isn't, then it
+may be silently ignored, or an error may occur, depending on the toolchain
+configuration.
+:::
+
+:::{versionchanged} 1.1.0
+
+This attribute was changed from only accepting `PY2` and `PY3` values to
+accepting arbitrary Python versions.
+:::2""≠
+env_inheritóList of strings; optional
+
+Specifies additional environment variables to inherit from the external
+environment when the test is executed by bazel test.2[]"9
+py_test.@rules_python//python/private:py_test_rule.bzl*\
+PyExecutableInfoH
+PyExecutableInfo4@rules_python//python/private:py_executable_info.bzl08
+Ÿ2
+other_rules.py_runtimeÉ	Represents a Python runtime used to execute Python code.
+
+A `py_runtime` target can represent either a *platform runtime* or an *in-build
+runtime*. A platform runtime accesses a system-installed interpreter at a known
+path, whereas an in-build runtime points to an executable target that acts as
+the interpreter. In both cases, an "interpreter" means any executable binary or
+wrapper script that is capable of running a Python script passed on the command
+line, following the same conventions as the standard CPython interpreter.
+
+A platform runtime is by its nature non-hermetic. It imposes a requirement on
+the target platform to have an interpreter located at a specific path. An
+in-build runtime may or may not be hermetic, depending on whether it points to
+a checked-in interpreter or a wrapper script that accesses the system
+interpreter.
+
+Example
+
+```
+load("@rules_python//python:py_runtime.bzl", "py_runtime")
+
+py_runtime(
+    name = "python-2.7.12",
+    files = glob(["python-2.7.12/**"]),
+    interpreter = "python-2.7.12/bin/python",
+)
+
+py_runtime(
+    name = "python-3.6.0",
+    interpreter_path = "/opt/pyenv/versions/3.6.0/bin/python",
+)
+```*
+nameA unique name for this target. w
+	abi_flags^The runtime's ABI flags, i.e. `sys.abiflags`.
+
+If not set, then it will be set based on flags.2"<AUTO>"∑
+bootstrap_templateÍThe bootstrap script template file to use. Should have %python_binary%,
+%workspace_name%, %main%, and %imports%.
+
+This template, after expansion, becomes the executable file used to start the
+process, so it is responsible for initial bootstrapping actions such as finding
+the Python interpreter, runfiles, and constructing an environment to run the
+intended Python application.
+
+While this attribute is currently optional, it will become required when the
+Python rules are moved out of Bazel itself.
+
+The exact variable names expanded is an unstable API and is subject to change.
+The API will become more stable when the Python rules are moved out of Bazel
+itself.
+
+See @bazel_tools//tools/python:python_bootstrap_template.txt for more variables.22"@rules_python//python/private:bootstrap_template"µ
+coverage_toolõThis is a target to use for collecting code coverage information from
+{rule}`py_binary` and {rule}`py_test` targets.
+
+If set, the target must either produce a single file or be an executable target.
+The path to the single file, or the executable if the target is executable,
+determines the entry point for the python coverage tool.  The target and its
+runfiles will be added to the runfiles when coverage is enabled.
+
+The entry point for the tool must be loadable by a Python interpreter (e.g. a
+`.py` or `.pyc` file).  It must accept the command line arguments
+of [`coverage.py`](https://coverage.readthedocs.io), at least including
+the `run` and `lcov` subcommands.2NoneÂ
+files’For an in-build runtime, this is the set of files comprising this runtime.
+These files will be added to the runfiles of Python binaries that use this
+runtime. For a platform runtime this attribute must not be set.2[]^
+implementation_name:The Python implementation name (`sys.implementation.name`)2	"cpython"≤
+interpreteröFor an in-build runtime, this is the target to invoke as the interpreter. It
+can be either of:
+
+* A single file, which will be the interpreter binary. It's assumed such
+  interpreters are either self-contained single-file executables or any
+  supporting files are specified in `files`.
+* An executable target. The target's executable will be the interpreter binary.
+  Any other default outputs (`target.files`) and plain files runfiles
+  (`runfiles.files`) will be automatically included as if specified in the
+  `files` attribute.
+
+  NOTE: the runfiles of the target may not yet be properly respected/propagated
+  to consumers of the toolchain/interpreter, see
+  bazel-contrib/rules_python/issues/1612
+
+For a platform runtime (i.e. `interpreter_path` being set) this attribute must
+not be set.2None¥
+interpreter_pathôFor a platform runtime, this is the absolute path of a Python interpreter on
+the target platform. For an in-build runtime this attribute must not be set.2""Ó
+interpreter_version_infoÀVersion information about the interpreter this runtime provides.
+
+If not specified, uses {obj}`--python_version`
+
+The supported keys match the names for `sys.version_info`. While the input
+values are strings, most are converted to ints. The supported keys are:
+  * major: int, the major version number
+  * minor: int, the minor version number
+  * micro: optional int, the micro version number
+  * releaselevel: optional str, the release level
+  * serial: optional int, the serial number of the release
+
+:::{versionchanged} 0.36.0
+{obj}`--python_version` determines the default value.
+:::
+2{}√
+pyc_tag±Optional string; the tag portion of a pyc filename, e.g. the `cpython-39` infix
+of `foo.cpython-39.pyc`. See PEP 3147. If not specified, it will be computed
+from `implementation_name` and `interpreter_version_info`. If no pyc_tag is
+available, then only source-less pyc generation will function correctly.2""õ
+python_versionˇWhether this runtime is for Python major version 2 or 3. Valid values are `"PY2"`
+and `"PY3"`.
+
+The default value is controlled by the `--incompatible_py3_is_default` flag.
+However, in the future this attribute will be mandatory and have no default
+value.2"PY3"«
+site_init_template{The template to use for the binary-specific site-init hook run by the
+interpreter at startup.
+
+:::{versionadded} 0.41.0
+:::22"@rules_python//python/private:site_init_template"Û
+stage2_bootstrap_templateòThe template to use when two stage bootstrapping is enabled
+
+:::{seealso}
+{obj}`PyRuntimeInfo.stage2_bootstrap_template` and {obj}`--bootstrap_impl`
+:::29"@rules_python//python/private:stage2_bootstrap_template"É
+stub_shebang÷"Shebang" expression prepended to the bootstrapping Python stub script
+used when executing {rule}`py_binary` targets.
+
+See https://github.com/bazelbuild/bazel/issues/8685 for
+motivation.
+
+Does not apply to Windows.2"#!/usr/bin/env python3"ë
+zip_main_template∆The template to use for a zip's top-level `__main__.py` file.
+
+This becomes the entry point executed when `python foo.zip` is run.
+
+:::{seealso}
+The {obj}`PyRuntimeInfo.zip_main_template` field.
+:::21"@rules_python//python/private:zip_main_template""?
+
+py_runtime1@rules_python//python/private:py_runtime_rule.bzl*Python2%//src/main/starlark/docgen:python.bzl

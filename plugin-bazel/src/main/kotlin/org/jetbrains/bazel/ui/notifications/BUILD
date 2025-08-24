@@ -7,10 +7,10 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

@@ -43,11 +43,7 @@ data class TargetKind(
 
   fun includesScala(): Boolean = languageClasses.contains(LanguageClass.SCALA)
 
-  fun includesAndroid(): Boolean = languageClasses.contains(LanguageClass.ANDROID)
-
   fun includesGo(): Boolean = languageClasses.contains(LanguageClass.GO)
 
-  fun isJvmTarget(): Boolean = (includesJava() || includesKotlin() || includesScala()) && !includesAndroid()
-
-  fun isJvmOrAndroidTarget(): Boolean = includesJava() || includesKotlin() || includesScala() || includesAndroid()
+  fun isJvmTarget(): Boolean = includesJava() || includesKotlin() || includesScala()
 }

@@ -41,11 +41,7 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
         waitForIndicators(5.minutes)
 
         step("Right-click the root project directory") {
-          // the root folder is presented "ProjectName ProjectPath" now in UI
-          // not sure if it's intended but the test will work with it now
-          val rootFolderName = "${requireProject().getName()} ${requireProject().getBasePath()}"
-
-          projectView().projectViewTree.rightClickPath(rootFolderName)
+          projectView().projectViewTree.rightClickRow(0)
           popupMenu().waitFound()
           takeScreenshot("afterRightClickingProjectRoot")
         }

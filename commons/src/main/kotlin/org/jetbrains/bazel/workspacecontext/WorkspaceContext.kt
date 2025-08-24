@@ -85,10 +85,6 @@ data class WorkspaceContext(
    * Obtained from `ProjectView` simply by mapping `ide_java_home_override` section.
    */
   val ideJavaHomeOverrideSpec: IdeJavaHomeOverrideSpec,
-  val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
-  val experimentalTransitiveCompileTimeJarsTargetKinds: TransitiveCompileTimeJarsTargetKindsSpec,
-  val experimentalNoPruneTransitiveCompileTimeJarsPatterns: NoPruneTransitiveCompileTimeJarsPatternsSpec,
-  val experimentalPrioritizeLibrariesOverModulesTargetKinds: PrioritizeLibrariesOverModulesTargetKindsSpec,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
   val androidMinSdkSpec: AndroidMinSdkSpec,
   val shardSync: ShardSyncSpec,
@@ -99,6 +95,7 @@ data class WorkspaceContext(
   val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSpec,
   val pythonCodeGeneratorRuleNames: PythonCodeGeneratorRuleNamesSpec,
   val importIjarsSpec: ImportIjarsSpec,
+  val deriveInstrumentationFilterFromTargets: DeriveInstrumentationFilterFromTargetsSpec,
 )
 
 /**

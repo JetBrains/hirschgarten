@@ -20,6 +20,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.backend.workspace.virtualFile
+import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.storage.CachedValue
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.platform.workspace.storage.entities
@@ -112,7 +113,13 @@ private class BazelTreeStructureProvider : TreeStructureProvider {
     val rootDirectory =
       PsiManager.getInstance(project).findDirectory(project.rootDir) ?: return children // should never happen
 
-    val showExcludedDirectoriesAsSeparateNode = project.treeStructureSettings?.showExcludedDirectoriesAsSeparateNode ?: true
+    val projectIsImported =
+      project.workspaceModel.currentSnapshot
+        .entities<BazelProjectDirectoriesEntity>()
+        .firstOrNull() != null
+
+    val showExcludedDirectoriesAsSeparateNode =
+      projectIsImported && project.treeStructureSettings?.showExcludedDirectoriesAsSeparateNode ?: true
 
     val rootDirectoryNodeFilter =
       if (showExcludedDirectoriesAsSeparateNode) {

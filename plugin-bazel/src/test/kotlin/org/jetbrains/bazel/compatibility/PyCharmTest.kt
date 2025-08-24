@@ -18,6 +18,7 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -31,7 +32,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "73ad49439188c91342d46f63a32230e5b535dc03",
+        commitHash = "226f7ff221c4f63c60ad5a6662e11deea2a7779c",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = true,
@@ -92,7 +93,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
+          syncBazelProjectCloseDialog()
           waitForIndicators(10.minutes)
 
           step("Open main.py and navigate to bbb") {

@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.completion
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -21,8 +21,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
 
     // then
     val expectedArgNames =
-      service<BazelGlobalFunctionsService>()
-        .getModuleFunctions()["module"]!!
+      BazelGlobalFunctions.moduleGlobalFunctions["module"]!!
         .params
         .filter { it.name.contains('a') }
         .map { it.name }
@@ -40,8 +39,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
 
     // then
     val expectedArgNames =
-      service<BazelGlobalFunctionsService>()
-        .getModuleFunctions()["module"]!!
+      BazelGlobalFunctions.moduleGlobalFunctions["module"]!!
         .params
         .filter { it.name.contains('a') && it.name != "name" }
         .map { it.name }
@@ -65,24 +63,5 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
 
     // then
     myFixture.checkResult("""module(name = '<caret>',)""")
-  }
-
-  @Test
-  fun `should complete with default value and selection`() {
-    // given
-    myFixture.configureByText("MODULE.bazel", "module(<caret>)")
-    myFixture.type("compatibility_level")
-
-    // when
-    val lookupElements = myFixture.completeBasic()
-
-    // Select first lookup element and simulate pressing Tab key to trigger insert handler.
-    if (lookupElements != null && lookupElements.isNotEmpty()) {
-      myFixture.lookup?.currentItem = lookupElements[0]
-      myFixture.type('\t')
-    }
-
-    // then
-    myFixture.checkResult("""module(compatibility_level = <selection>0<caret></selection>,)""")
   }
 }

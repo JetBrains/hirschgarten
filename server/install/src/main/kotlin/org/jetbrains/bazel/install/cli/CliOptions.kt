@@ -20,6 +20,7 @@ data class ProjectViewCliOptions(
   val shardSync: Boolean? = null,
   val targetShardSize: Int? = null,
   val shardApproach: String? = null,
+  val gazelleTarget: String? = null,
 )
 
 data class CliOptions(

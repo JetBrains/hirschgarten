@@ -27,7 +27,7 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
         commitHash = "1fe1e07dcf5d50868e10f3e6e87f2c4e95b4c290",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simplePythonTest") },
-        isReusable = true,
+        isReusable = false,
         configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
       )
 

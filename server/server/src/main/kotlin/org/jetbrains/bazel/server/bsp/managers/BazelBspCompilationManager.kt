@@ -4,9 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JoinedBuildClient

@@ -50,10 +50,7 @@ object BazelHotSwapManager {
   private val logger = Logger.getInstance(BazelHotSwapManager::class.java)
 
   fun reloadChangedClasses(project: Project) {
-    val session = createHotSwappableDebugSession(project)
-    if (session == null) {
-      return
-    }
+    val session = createHotSwappableDebugSession(project) ?: return
     ApplicationManager
       .getApplication()
       .executeOnPooledThread {
@@ -186,10 +183,8 @@ object BazelHotSwapManager {
     if (session == null || !session.isAttached) {
       return null
     }
-    val process = session.process.xdebugProcess
-    if (process == null) {
-      return null
-    }
+    val process = session.process.xdebugProcess ?: return null
+
     val env = (process.session as? XDebugSessionImpl)?.executionEnvironment ?: return null
     if (!HotSwapUtils.canHotSwap(env, project)) return null
 

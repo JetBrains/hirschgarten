@@ -1,8 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.commons.orLatestSupported
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
@@ -13,7 +12,9 @@ class BazelReleaseTest {
   @Test
   fun `should handle old bazel`() {
     // given & when
-    val release = BazelRelease.fromReleaseString("release 4.0.0")
+    val release =
+      org.jetbrains.bazel.commons.BazelRelease
+        .fromReleaseString("release 4.0.0")
 
     // then
     release?.major shouldBe 4
@@ -22,7 +23,9 @@ class BazelReleaseTest {
   @Test
   fun `should handle new bazel`() {
     // given & when
-    val release = BazelRelease.fromReleaseString("release 6.0.0")
+    val release =
+      org.jetbrains.bazel.commons.BazelRelease
+        .fromReleaseString("release 6.0.0")
 
     // then
     release?.major shouldBe 6
@@ -31,7 +34,9 @@ class BazelReleaseTest {
   @Test
   fun `should handle new bazel unofficial`() {
     // given & when
-    val release = BazelRelease.fromReleaseString("release 6.0.0-pre20230102")
+    val release =
+      org.jetbrains.bazel.commons.BazelRelease
+        .fromReleaseString("release 6.0.0-pre20230102")
 
     // then
     release?.major shouldBe 6
@@ -40,7 +45,9 @@ class BazelReleaseTest {
   @Test
   fun `should handle new bazel multi-digit version`() {
     // given & when
-    val release = BazelRelease.fromReleaseString("release 16.0.0")
+    val release =
+      org.jetbrains.bazel.commons.BazelRelease
+        .fromReleaseString("release 16.0.0")
 
     // then
     release?.major shouldBe 16
@@ -49,7 +56,10 @@ class BazelReleaseTest {
   @Test
   fun `should fall back to last supported version in case of error`() {
     // given & when
-    val release = BazelRelease.fromReleaseString("debug test").orLatestSupported()
+    val release =
+      org.jetbrains.bazel.commons.BazelRelease
+        .fromReleaseString("debug test")
+        .orLatestSupported()
 
     // then
     release.major shouldBe 6
@@ -59,7 +69,9 @@ class BazelReleaseTest {
   fun `should correctly parse bazelversion`() {
     // given & when
     val path = copyBazelVersionToTmp()
-    val release = BazelRelease.fromBazelVersionFile(path.parent)
+    val release =
+      org.jetbrains.bazel.commons.BazelRelease
+        .fromBazelVersionFile(path.parent)
 
     // then
     release?.major shouldBe 6

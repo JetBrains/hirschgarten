@@ -32,7 +32,7 @@
   library: jackson-dataformat-xml
   files:
     - name: $MAVEN_REPOSITORY$/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2/jackson-dataformat-xml-2.jar
-  reason: <- intellij.bazel.server
+  reason: <- intellij.bazel.plugin
 - name: lib/kotlin-tooling-core.jar
   library: kotlin-tooling-core
   files:

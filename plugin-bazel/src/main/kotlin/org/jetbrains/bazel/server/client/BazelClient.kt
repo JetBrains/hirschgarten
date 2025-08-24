@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.client
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.logger.bazelLogger
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -42,32 +43,13 @@ class BazelClient(
   }
 
   override fun onBuildTaskStart(params: TaskStartParams) {
-    val taskId = params.taskId.id
-
     log.debug("Got task start: $params")
-    val originId = params.originId
-    val maybeParent = params.taskId.parents.firstOrNull()
-
-    val message = params.message ?: return
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskStart(taskId, maybeParent, message, params.data)
-    }
+    BazelTaskEventsService.getInstance(project).onBuildTaskStart(params)
   }
 
   override fun onBuildTaskFinish(params: TaskFinishParams) {
-    val taskId = params.taskId.id
     log.debug("Got task finish: $params")
-    val originId = params.originId
-    val maybeParent = params.taskId.parents?.firstOrNull()
-
-    val status = params.status
-
-    val message = params.message ?: return
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskFinish(taskId, maybeParent, message, status, params.data)
-    }
+    BazelTaskEventsService.getInstance(project).onBuildTaskFinish(params)
   }
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {

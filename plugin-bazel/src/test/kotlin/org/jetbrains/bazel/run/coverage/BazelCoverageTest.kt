@@ -27,7 +27,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "2603adc47076c07404310ab113023e01495e04ee",
+        commitHash = "89fac5f21551110b00022e6373de527b20304ad0",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("coverageTest") },
         isReusable = false,
@@ -44,13 +44,13 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
           waitForIndicators(5.minutes)
 
           step("Run test with coverage") {
-            execute { openFile("src/com/example/CalculatorTest.java") }
+            execute { openFile("src/test/com/example/CalculatorTest.java") }
             execute { runTestWithCoverage() }
             takeScreenshot("afterRunTestWithCoverage")
           }
 
           step("Verify coverage results") {
-            execute { openFile("src/com/example/Calculator.java") }
+            execute { openFile("src/main/com/example/Calculator.java") }
             execute { assertCoverage("50% lines covered") }
             execute { delay(1000) }
             takeScreenshot("afterAssertCoverage")

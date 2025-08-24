@@ -1,32 +1,48 @@
-load("//rules_intellij/testing:test_defs_kt.bzl", "intellij_integration_test_suite")
+load("@//rules/testing:junit5.bzl", "kt_junit5_test")
 
-intellij_integration_test_suite(
-    name = "annotation",
-    srcs = glob(["*.kt"]),
+kt_junit5_test(
+    name = "PublicApiCheckTest",
+    src = "PublicApiCheckTest.kt",
     resources = [
-        ":public-api-classes.txt",
-        ":public-api-fields.txt",
-        ":public-api-methods.txt",
+        "public-api-classes.txt",
+        "public-api-fields.txt",
+        "public-api-methods.txt",
         "//plugin-bazel",
     ],
     tags = ["exclusive"],
-    test_package_root = "org.jetbrains",
     runtime_deps = [
         "//plugin-bazel",
     ],
     deps = [
-        "//plugin-bazel/src:test_fixtures",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil",
-        "//rules_intellij/intellij_platform_sdk:java_for_tests",
-        "//rules_intellij/intellij_platform_sdk:kotlin_for_tests",
-        "//rules_intellij/third_party/android:android_for_tests",
-        "//rules_intellij/third_party/code_with_me:code_with_me_for_tests",
-        "//rules_intellij/third_party/go:go_for_tests",
-        "//rules_intellij/third_party/python:python_for_tests",
-        "//rules_intellij/third_party/terminal:terminal_for_tests",
-        "@maven//:io_kotest_kotest_assertions_api_jvm",
-        "@maven//:io_kotest_kotest_assertions_core_jvm",
-        "@maven//:io_kotest_kotest_assertions_shared_jvm",
-        "@maven//:io_kotest_kotest_common_jvm",
     ],
+)
+
+kt_junit5_test(
+    name = "RemoveWithSdkCompatTest",
+    src = "RemoveWithSdkCompatTest.kt",
+    data = [
+        ":sdkCompatStructure",
+    ],
+    jvm_flags = [
+        "-Dbazel.plugin.jar=$(rlocationpath //plugin-bazel)",
+        "-Dsdk.compat.structure.output=$(rlocationpath :sdkCompatStructure)",
+    ],
+    resources = [
+        "//plugin-bazel",
+    ],
+    deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",
+        "//plugin-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil",
+        "@rules_java//java/runfiles",
+    ],
+)
+
+genquery(
+    name = "sdkCompatStructure",
+    expression = "deps(//sdkcompat)",
+    opts = ["--output=label"],
+    scope = ["//sdkcompat"],
 )

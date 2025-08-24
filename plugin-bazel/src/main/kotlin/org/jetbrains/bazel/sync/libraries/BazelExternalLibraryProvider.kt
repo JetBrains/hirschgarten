@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.libraries
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import com.intellij.openapi.roots.SyntheticLibrary
+import com.intellij.util.WaitFor
 import java.nio.file.Path
 
 /**
@@ -14,7 +15,8 @@ abstract class BazelExternalLibraryProvider : AdditionalLibraryRootsProvider() {
   abstract fun getLibraryFiles(project: Project): List<Path>
 
   override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
-    val library = ExternalLibraryManager.getInstance(project).getLibrary(javaClass)
+    val externalLibraryManager = ExternalLibraryManager.getInstance(project)
+    val library = externalLibraryManager.getLibraryBlocking(javaClass)
     return if (library != null) listOf(library) else listOf()
   }
 }

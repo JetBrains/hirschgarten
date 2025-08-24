@@ -42,20 +42,6 @@ kt_jvm_binary(
 )
 
 kt_jvm_binary(
-    name = "BazelBspCppProjectTest",
-    srcs = ["BazelBspCppProjectTest.kt"],
-    main_class = "org.jetbrains.bazel.BazelBspCppProjectTest",
-    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
-    visibility = ["//server/e2e:__subpackages__"],
-    deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//server/commons",
-        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
-    ],
-)
-
-kt_jvm_binary(
     name = "BazelBspPythonProjectTest",
     srcs = ["BazelBspPythonProjectTest.kt"],
     main_class = "org.jetbrains.bazel.BazelBspPythonProjectTest",
@@ -108,48 +94,6 @@ kt_jvm_binary(
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/model",
-    ],
-)
-
-kt_jvm_binary(
-    name = "ServerDownloadsBazeliskTest",
-    srcs = ["ServerDownloadsBazeliskTest.kt"],
-    main_class = "org.jetbrains.bazel.ServerDownloadsBazeliskTest",
-    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
-    visibility = ["//server/e2e:__subpackages__"],
-    deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//server/commons",
-        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-    ],
-)
-
-kt_jvm_binary(
-    name = "BazelBspAndroidProjectTest",
-    srcs = ["BazelBspAndroidProjectTest.kt"],
-    main_class = "org.jetbrains.bazel.BazelBspAndroidProjectTest",
-    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
-    visibility = ["//server/e2e:__subpackages__"],
-    deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//server/commons",
-        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/android",
-        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-    ],
-)
-
-kt_jvm_binary(
-    name = "BazelBspAndroidKotlinProjectTest",
-    srcs = ["BazelBspAndroidKotlinProjectTest.kt"],
-    main_class = "org.jetbrains.bazel.BazelBspAndroidKotlinProjectTest",
-    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
-    visibility = ["//server/e2e:__subpackages__"],
-    deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//server/commons",
-        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/android",
-        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
     ],
 )
 

@@ -23,6 +23,7 @@ class StarlarkFindUsagesProvider : FindUsagesProvider {
       else -> HelpID.FIND_OTHER_USAGES
     }
 
+  @Suppress("HardCodedStringLiteral")
   override fun getType(element: PsiElement): String =
     when (element) {
       is StarlarkFunctionDeclaration -> "function"
@@ -30,6 +31,7 @@ class StarlarkFindUsagesProvider : FindUsagesProvider {
       else -> ""
     }
 
+  @Suppress("HardCodedStringLiteral")
   override fun getDescriptiveName(element: PsiElement): String =
     when (element) {
       is StarlarkElement -> element.name ?: "<anonymous>"

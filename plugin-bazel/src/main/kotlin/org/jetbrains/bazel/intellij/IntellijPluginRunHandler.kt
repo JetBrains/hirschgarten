@@ -42,7 +42,8 @@ class IntellijPluginRunHandler(private val configuration: BazelRunConfiguration)
 
   override val state: IntellijPluginRunHandlerState = IntellijPluginRunHandlerState()
 
-  override val name: String = "IntelliJ Plugin Run Handler"
+  override val name: String
+    get() = "IntelliJ Plugin Run Handler"
 
   // Mostly copied from org.jetbrains.idea.devkit.run.PluginRunConfiguration
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {

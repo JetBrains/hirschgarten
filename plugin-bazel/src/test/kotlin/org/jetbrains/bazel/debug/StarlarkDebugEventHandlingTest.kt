@@ -3,11 +3,11 @@ package org.jetbrains.bazel.debug
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler.Companion.absolutePath
 import org.jetbrains.bazel.debug.utils.MockLineBreakpoint
+import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.jupiter.api.Test
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 

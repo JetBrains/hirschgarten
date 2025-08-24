@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.bsp.utils
 
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 
@@ -14,7 +14,7 @@ class InternalAspectsResolver(
   fun resolveLabel(aspect: String): String = prefix.value + aspect
 
   val bazelBspRoot: String
-    get() = bspInfo.bazelBspDir().toString()
+    get() = bspInfo.bazelBspDir.toString()
 
   /**
    * With [shouldUseInjectRepository] turned on, apparent name must be used, hence single `@`

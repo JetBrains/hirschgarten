@@ -209,10 +209,9 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
             ),
-          modulesDependencies = listOf(),
-          librariesDependencies =
+          dependencies =
             if (!BazelFeatureFlags.fbsrSupportedInPlatform) {
-              javaModule.genericModuleInfo.librariesDependencies
+              javaModule.genericModuleInfo.dependencies
             } else {
               emptyList()
             },

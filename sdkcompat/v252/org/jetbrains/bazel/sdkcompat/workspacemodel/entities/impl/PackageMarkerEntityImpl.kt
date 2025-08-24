@@ -26,12 +26,12 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEntityData) : PackageMarkerEntity,
-                                                                                          WorkspaceEntityBase(dataSource) {
+internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEntityData) : PackageMarkerEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId =
-      ConnectionId.create(ModuleEntity::class.java, PackageMarkerEntity::class.java, ConnectionId.ConnectionType.ONE_TO_MANY, false)
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, PackageMarkerEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_MANY, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -65,8 +65,8 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
   }
 
 
-  internal class Builder(result: PackageMarkerEntityData?) :
-    ModifiableWorkspaceEntityBase<PackageMarkerEntity, PackageMarkerEntityData>(result), PackageMarkerEntity.Builder {
+  internal class Builder(result: PackageMarkerEntityData?) : ModifiableWorkspaceEntityBase<PackageMarkerEntity, PackageMarkerEntityData>(
+    result), PackageMarkerEntity.Builder {
     internal constructor() : this(PackageMarkerEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -175,7 +175,7 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
         if (_diff != null && value is ModifiableWorkspaceEntityBase<*, *> && value.diff == null) {
           // Setting backref of the list
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: emptyList()) + this
+            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: arrayListOf()) + this
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = data
           }
           // else you're attaching a new entity to an existing entity that is not modifiable
@@ -187,7 +187,7 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
         else {
           // Setting backref of the list
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: emptyList()) + this
+            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: arrayListOf()) + this
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = data
           }
           // else you're attaching a new entity to an existing entity that is not modifiable
@@ -229,8 +229,7 @@ internal class PackageMarkerEntityData : WorkspaceEntityData<PackageMarkerEntity
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity"
-    ) as EntityMetadata
+      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity") as EntityMetadata
   }
 
   override fun getEntityInterface(): Class<out WorkspaceEntity> {

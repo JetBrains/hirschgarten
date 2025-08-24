@@ -78,4 +78,4 @@ object BazelBalloonNotifier {
   }
 }
 
-private const val BALLOON_ID = "Bazel Plugin"
+private const val BALLOON_ID = "BazelPlugin"

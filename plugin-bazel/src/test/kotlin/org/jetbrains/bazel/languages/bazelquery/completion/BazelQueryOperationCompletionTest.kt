@@ -23,7 +23,7 @@ class BazelQueryOperationCompletionTest : BazelQueryCompletionTestCase() {
   }
 
   @Test
-  fun `inside command should complete commands`() {
+  fun `inside command should complete operations`() {
     // given
     myFixture.configureByText(".bazelquery", """l<caret>""")
 
@@ -31,11 +31,11 @@ class BazelQueryOperationCompletionTest : BazelQueryCompletionTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainAll listOf("let")
+    lookups shouldContainAll listOf("let  in")
   }
 
   @Test
-  fun `inside double quoted command should complete commands`() {
+  fun `inside double quoted command should complete operations`() {
     // given
     myFixture.configureByText(".bazelquery", """"<caret>""")
 
@@ -47,7 +47,7 @@ class BazelQueryOperationCompletionTest : BazelQueryCompletionTestCase() {
   }
 
   @Test
-  fun `inside single quoted command should complete commands`() {
+  fun `inside single quoted command should complete operations`() {
     // given
     myFixture.configureByText(".bazelquery", "'<caret>'")
 
@@ -56,5 +56,17 @@ class BazelQueryOperationCompletionTest : BazelQueryCompletionTestCase() {
 
     // then
     lookups shouldContainAll knownOperations
+  }
+
+  @Test
+  fun `after command should complete infix operations`() {
+    // given
+    myFixture.configureByText(".bazelquery", "//my:target <caret>")
+
+    // when
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    // then
+    lookups shouldContainAll listOf("union", "except", "intersect")
   }
 }

@@ -51,8 +51,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target,
         javacOptions = null,
-        libraryDependencies = null,
-        moduleDependencies = emptyList(),
+        dependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -102,8 +101,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target,
         javacOptions = javacOptions,
-        libraryDependencies = emptyList(),
-        moduleDependencies = emptyList(),
+        dependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -211,8 +209,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target1,
         javacOptions = target1JavacOptionsItem,
-        libraryDependencies = emptyList(),
-        moduleDependencies = listOf(target2Id),
+        dependencies = listOf(target2Id),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -220,8 +217,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target2,
         javacOptions = null,
-        libraryDependencies = emptyList(),
-        moduleDependencies = emptyList(),
+        dependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -229,8 +225,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target3,
         javacOptions = target3JavacOptionsItem,
-        libraryDependencies = emptyList(),
-        moduleDependencies = listOf(target2Id),
+        dependencies = listOf(target2Id),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -238,8 +233,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target4,
         javacOptions = null,
-        libraryDependencies = emptyList(),
-        moduleDependencies = listOf(target1Id),
+        dependencies = listOf(target1Id),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )

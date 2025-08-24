@@ -64,7 +64,7 @@ object BazelFlag {
 
   @JvmStatic fun combinedReportLcov(): String = arg("combined_report", "lcov")
 
-  @JvmStatic fun instrumentationFilterAll(): String = arg("instrumentation_filter", "[:]")
+  @JvmStatic fun instrumentationFilter(filter: String): String = arg("instrumentation_filter", filter)
 
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
 

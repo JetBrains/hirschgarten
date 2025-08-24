@@ -30,7 +30,7 @@ import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
@@ -92,7 +92,7 @@ object ClassFileManifestBuilder {
           }
           val target = targets.first()
           val isTest = target.isTestTarget(project)
-          return@runWithServer queryJvmEnvironment(target, server, isTest)
+          return@runWithServer queryJvmEnvironment(project, target, server, isTest)
         }
       }
     progress?.setCancelWorker { jvmEnvDeferred.cancel() }
@@ -130,23 +130,20 @@ object ClassFileManifestBuilder {
       ?.ruleType == RuleType.TEST
 
   private suspend fun queryJvmEnvironment(
+    project: Project,
     target: Label,
     server: JoinedBuildServer,
     isTest: Boolean,
   ): JvmEnvironmentResult =
-    if (isTest) {
-      JvmEnvironmentResult.JvmTestEnv(
-        query("buildTarget/jvmTestEnvironment") {
-          server.buildTargetJvmTestEnvironment(JvmTestEnvironmentParams(listOf(target)))
-        },
-      )
-    } else {
-      JvmEnvironmentResult.JvmRunEnv(
-        query("buildTarget/jvmRunEnvironment") {
-          server.buildTargetJvmRunEnvironment(JvmRunEnvironmentParams(listOf(target)))
-        },
-      )
-    }
+    BazelWorkspaceResolveService
+      .getInstance(project)
+      .withEndpointProxy {
+        if (isTest) {
+          JvmEnvironmentResult.JvmTestEnv(it.jvmTestEnvironment(JvmTestEnvironmentParams(listOf(target))))
+        } else {
+          JvmEnvironmentResult.JvmRunEnv(it.jvmRunEnvironment(JvmRunEnvironmentParams(listOf(target))))
+        }
+      }
 
   private fun ExecutionEnvironment.getManifest(): ClassFileManifest? = getManifestRef()?.get()
 

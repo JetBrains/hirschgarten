@@ -1,0 +1,211 @@
+
+ÿ
+library_rules.objc_importŸ<p>This rule encapsulates an already-compiled static library in the form of an
+<code>.a</code> file. It also allows exporting headers and resources using the same
+attributes supported by <code>objc_library</code>.</p>*
+nameA unique name for this target. m
+archives]The list of <code>.a</code> files provided to Objective-C targets that
+depend on this target. ®
+
+alwayslinkêIf 1, any bundle or binary that depends (directly or indirectly) on this
+library will link in all the object files for the files listed in
+<code>srcs</code> and <code>non_arc_srcs</code>, even if some contain no
+symbols referenced by the binary.
+This is useful if your code isn't explicitly called by code in
+the binary, e.g., if your code registers to receive some callback
+provided by some service.2FalseÈ
+hdrs⁄The list of C, C++, Objective-C, and Objective-C++ header files published
+by this library to be included by sources in dependent rules.
+<p>
+These headers describe the public interface for the library and will be
+made available for inclusion by sources in this rule or in dependent
+rules. Headers not meant to be included by a client of this library
+should be listed in the srcs attribute instead.
+<p>
+These will be compiled separately from the source if modules are enabled.2[]Î
+textual_hdrs‘The list of C, C++, Objective-C, and Objective-C++ files that are
+included as headers by source files in this rule or by users of this
+library. Unlike hdrs, these will not be compiled separately from the
+sources.2[]≈
+includes≤List of <code>#include/#import</code> search paths to add to this target
+and all depending targets.
+
+This is to support third party and open-sourced libraries that do not
+specify the entire workspace path in their
+<code>#import/#include</code> statements.
+<p>
+The paths are interpreted relative to the package directory, and the
+genfiles and bin roots (e.g. <code>blaze-genfiles/pkg/includedir</code>
+and <code>blaze-out/pkg/includedir</code>) are included in addition to the
+actual client root.
+<p>
+Unlike <a href="${link objc_library.copts}">COPTS</a>, these flags are added for this rule
+and every rule that depends on it. (Note: not the rules it depends upon!) Be
+very careful, since this may have far-reaching effects.  When in doubt, add
+"-iquote" flags to <a href="${link objc_library.copts}">COPTS</a> instead.2[]æ
+sdk_includesßList of <code>#include/#import</code> search paths to add to this target
+and all depending targets, where each path is relative to
+<code>$(SDKROOT)/usr/include</code>.2[][
+deps/The list of targets that this target depend on.*
+CcInfo
+CcInfo<native>2[]‡
+sdk_frameworks«Names of SDK frameworks to link with (e.g. "AddressBook", "QuartzCore").
+
+<p> When linking a top level Apple binary, all SDK frameworks listed in that binary's
+transitive dependency graph are linked.2[]Å
+weak_sdk_frameworks„Names of SDK frameworks to weakly link with. For instance,
+"MediaAccessibility".
+
+In difference to regularly linked SDK frameworks, symbols
+from weakly linked frameworks do not cause an error if they
+are not present at runtime.2[]∑
+
+sdk_dylibs¢Names of SDK .dylib libraries to link with. For instance, "libz" or
+"libarchive".
+
+"libc++" is included automatically if the binary has any C++ or
+Objective-C++ sources in its dependency tree. When linking a binary,
+all libraries named in that binary's transitive dependency graph are
+used.2[]"8
+objc_import)@@_builtins//:common/objc/objc_import.bzl
+∆?
+library_rules.objc_libraryS<p>This rule produces a static library from the given Objective-C source files.</p>*
+nameA unique name for this target. 
+data2[]π
+implementation_deps˝The list of other libraries that the library target depends on. Unlike with
+<code>deps</code>, the headers and include paths of these libraries (and all their
+transitive deps) are only used for compilation of this library, and not libraries that
+depend on it. Libraries specified with <code>implementation_deps</code> are still linked
+in binary targets that depend on this library.*
+CcInfo
+CcInfo<native>2[]®
+
+alwayslinkêIf 1, any bundle or binary that depends (directly or indirectly) on this
+library will link in all the object files for the files listed in
+<code>srcs</code> and <code>non_arc_srcs</code>, even if some contain no
+symbols referenced by the binary.
+This is useful if your code isn't explicitly called by code in
+the binary, e.g., if your code registers to receive some callback
+provided by some service.2Falseô
+srcsäThe list of C, C++, Objective-C, and Objective-C++ source and header
+files, and/or (`.s`, `.S`, or `.asm`) assembly source files, that are processed to create
+the library target.
+These are your checked-in files, plus any generated files.
+Source files are compiled into .o files with Clang. Header files
+may be included/imported by any source or header in the srcs attribute
+of this target, but not by headers in hdrs or any targets that depend
+on this rule.
+Additionally, precompiled .o files may be given as srcs.  Be careful to
+ensure consistency in the architecture of provided .o files and that of the
+build to avoid missing symbol linker errors.2[]Ù
+non_arc_srcs›The list of Objective-C files that are processed to create the
+library target that DO NOT use ARC.
+The files in this attribute are treated very similar to those in the
+srcs attribute, but are compiled without ARC enabled.2[]ƒ
+pch¥Header file to prepend to every source file being compiled (both arc
+and non-arc).
+Use of pch files is actively discouraged in BUILD files, and this should be
+considered deprecated. Since pch files are not actually precompiled this is not
+a build-speed enhancement, and instead is just a global dependency. From a build
+efficiency point of view you are actually better including what you need directly
+in your sources where you need it.2None…
+defines∑Extra <code>-D</code> flags to pass to the compiler. They should be in
+the form <code>KEY=VALUE</code> or simply <code>KEY</code> and are
+passed not only to the compiler for this target (as <code>copts</code>
+are) but also to all <code>objc_</code> dependers of this target.
+Subject to <a href="${link make-variables}">"Make variable"</a> substitution and
+<a href="${link common-definitions#sh-tokenization}">Bourne shell tokenization</a>.2[]∆
+enable_modules™Enables clang module support (via -fmodules).
+Setting this to 1 will allow you to @import system headers and other targets:
+@import UIKit;
+@import path_to_package_target;2False4
+linkopts"Extra flags to pass to the linker.2[]õ
+
+module_mapÑcustom Clang module map for this target. Use of a custom module map is discouraged. Most
+users should use module maps generated by Bazel.
+If specified, Bazel will not generate a module map for this target, but will pass the
+provided module map to the compiler.2Noneƒ
+module_nameÆSets the module name for this target. By default the module name is the target path with
+all special symbols replaced by _, e.g. //foo/baz:bar can be imported as foo_baz_bar.2""
+stamp2FalseÈ
+hdrs⁄The list of C, C++, Objective-C, and Objective-C++ header files published
+by this library to be included by sources in dependent rules.
+<p>
+These headers describe the public interface for the library and will be
+made available for inclusion by sources in this rule or in dependent
+rules. Headers not meant to be included by a client of this library
+should be listed in the srcs attribute instead.
+<p>
+These will be compiled separately from the source if modules are enabled.2[]Î
+textual_hdrs‘The list of C, C++, Objective-C, and Objective-C++ files that are
+included as headers by source files in this rule or by users of this
+library. Unlike hdrs, these will not be compiled separately from the
+sources.2[]≈
+includes≤List of <code>#include/#import</code> search paths to add to this target
+and all depending targets.
+
+This is to support third party and open-sourced libraries that do not
+specify the entire workspace path in their
+<code>#import/#include</code> statements.
+<p>
+The paths are interpreted relative to the package directory, and the
+genfiles and bin roots (e.g. <code>blaze-genfiles/pkg/includedir</code>
+and <code>blaze-out/pkg/includedir</code>) are included in addition to the
+actual client root.
+<p>
+Unlike <a href="${link objc_library.copts}">COPTS</a>, these flags are added for this rule
+and every rule that depends on it. (Note: not the rules it depends upon!) Be
+very careful, since this may have far-reaching effects.  When in doubt, add
+"-iquote" flags to <a href="${link objc_library.copts}">COPTS</a> instead.2[]æ
+sdk_includesßList of <code>#include/#import</code> search paths to add to this target
+and all depending targets, where each path is relative to
+<code>$(SDKROOT)/usr/include</code>.2[][
+deps/The list of targets that this target depend on.*
+CcInfo
+CcInfo<native>2[]¿
+copts∞Extra flags to pass to the compiler.
+Subject to <a href="${link make-variables}">"Make variable"</a> substitution and
+<a href="${link common-definitions#sh-tokenization}">Bourne shell tokenization</a>.
+These flags will only apply to this target, and not those upon which
+it depends, or those which depend on it.
+<p>
+Note that for the generated Xcode project, directory paths specified using "-I" flags in
+copts are parsed out, prepended with "$(WORKSPACE_ROOT)/" if they are relative paths, and
+added to the header search paths for the associated Xcode target.2[]–
+	conlyoptsºExtra flags to pass to the compiler for C files.
+Subject to <a href="${link make-variables}">"Make variable"</a> substitution and
+<a href="${link common-definitions#sh-tokenization}">Bourne shell tokenization</a>.
+These flags will only apply to this target, and not those upon which
+it depends, or those which depend on it.
+<p>
+Note that for the generated Xcode project, directory paths specified using "-I" flags in
+copts are parsed out, prepended with "$(WORKSPACE_ROOT)/" if they are relative paths, and
+added to the header search paths for the associated Xcode target.2[]‚
+cxxopts–Extra flags to pass to the compiler for Objective-C++ and C++ files.
+Subject to <a href="${link make-variables}">"Make variable"</a> substitution and
+<a href="${link common-definitions#sh-tokenization}">Bourne shell tokenization</a>.
+These flags will only apply to this target, and not those upon which
+it depends, or those which depend on it.
+<p>
+Note that for the generated Xcode project, directory paths specified using "-I" flags in
+copts are parsed out, prepended with "$(WORKSPACE_ROOT)/" if they are relative paths, and
+added to the header search paths for the associated Xcode target.2[]‡
+sdk_frameworks«Names of SDK frameworks to link with (e.g. "AddressBook", "QuartzCore").
+
+<p> When linking a top level Apple binary, all SDK frameworks listed in that binary's
+transitive dependency graph are linked.2[]Å
+weak_sdk_frameworks„Names of SDK frameworks to weakly link with. For instance,
+"MediaAccessibility".
+
+In difference to regularly linked SDK frameworks, symbols
+from weakly linked frameworks do not cause an error if they
+are not present at runtime.2[]∑
+
+sdk_dylibs¢Names of SDK .dylib libraries to link with. For instance, "libz" or
+"libarchive".
+
+"libc++" is included automatically if the binary has any C++ or
+Objective-C++ sources in its dependency tree. When linking a binary,
+all libraries named in that binary's transitive dependency graph are
+used.2[]":
+objc_library*@@_builtins//:common/objc/objc_library.bzl*Objective-C2#//src/main/starlark/docgen:objc.bzl

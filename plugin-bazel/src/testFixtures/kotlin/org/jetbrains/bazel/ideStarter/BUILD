@@ -7,5 +7,8 @@ kt_jvm_library(
     testonly = 1,
     srcs = ["IdeStarterBaseProjectTest.kt"],
     visibility = ["//visibility:public"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil"] + IDE_STARTER_DEPS + JUNIT5_DEPS,
+    deps = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/testing",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil",
+    ] + IDE_STARTER_DEPS + JUNIT5_DEPS,
 )

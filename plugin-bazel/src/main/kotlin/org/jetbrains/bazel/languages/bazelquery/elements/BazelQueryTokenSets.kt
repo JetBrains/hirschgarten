@@ -51,7 +51,13 @@ object BazelQueryTokenSets {
       BazelQueryTokenTypes.LET,
       BazelQueryTokenTypes.SET,
       BazelQueryTokenTypes.IN,
-      BazelQueryTokenTypes.EQUALS,
+    )
+
+  val INFIX_OPERATORS =
+    TokenSet.create(
+      BazelQueryTokenTypes.UNION,
+      BazelQueryTokenTypes.EXCEPT,
+      BazelQueryTokenTypes.INTERSECT,
     )
 
   val COMMANDS =

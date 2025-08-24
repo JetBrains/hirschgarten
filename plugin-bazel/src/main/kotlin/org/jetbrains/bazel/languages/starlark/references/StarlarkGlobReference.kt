@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.model.Symbol
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
@@ -10,6 +11,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
+import org.jetbrains.bazel.languages.starlark.documentation.BazelGlobalFunctionDocumentationSymbol
 import org.jetbrains.bazel.languages.starlark.globbing.StarlarkUnixGlob
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression

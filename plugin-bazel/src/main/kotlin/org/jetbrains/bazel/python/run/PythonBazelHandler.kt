@@ -6,20 +6,21 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.python.debug.PythonDebugCommandLineState
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
+import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.BazelRunHandler
-import java.util.UUID
+import org.jetbrains.bazel.run.state.HasProgramArguments
 
-abstract class PythonBazelHandler : BazelRunHandler {
-  override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-    val originId = UUID.randomUUID().toString()
-    return if (executor.id == DefaultDebugExecutor.EXECUTOR_ID) {
-      PythonDebugCommandLineState(environment, originId, getProgramArguments())
+abstract class PythonBazelHandler<T> : BazelRunHandler
+  where T : BazelRunConfigurationState<T>,
+        T : HasProgramArguments {
+  abstract override val state: T
+
+  override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
+    if (executor.id == DefaultDebugExecutor.EXECUTOR_ID) {
+      PythonDebugCommandLineState(environment, state.programArguments)
     } else {
-      createCommandLineState(environment, originId)
+      createCommandLineState(environment)
     }
-  }
 
-  protected abstract fun createCommandLineState(environment: ExecutionEnvironment, originId: String): BazelCommandLineStateBase
-
-  protected abstract fun getProgramArguments(): String?
+  protected abstract fun createCommandLineState(environment: ExecutionEnvironment): BazelCommandLineStateBase
 }

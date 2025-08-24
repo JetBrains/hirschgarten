@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.server.model.Module
-import org.jetbrains.bazel.server.model.isJvmLanguages
 import org.jetbrains.bsp.protocol.DebugType
 
 object DebugHelper {
@@ -30,16 +28,4 @@ object DebugHelper {
     }
 
   fun buildBeforeRun(debugType: DebugType?): Boolean = debugType !is DebugType.GoDlv
-
-  fun verifyDebugRequest(debugType: DebugType?, moduleToRun: Module) =
-    when (debugType) {
-      null -> {
-      } // not a debug request, nothing to check
-      is DebugType.JDWP ->
-        if (!moduleToRun.isJvmLanguages()) {
-          throw RuntimeException("JDWP debugging is only available for Java and Kotlin targets")
-        } else {
-        }
-      is DebugType.GoDlv -> {}
-    }
 }

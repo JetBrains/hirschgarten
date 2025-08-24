@@ -185,7 +185,7 @@ abstract class BazelBspTestBaseScenario {
 
   private fun executeScenarioSteps(): Boolean = scenarioSteps().map { it.executeAndReturnResult() }.all { it }
 
-  protected fun expectedTargetIdentifiers(): List<Label> = expectedWorkspaceBuildTargetsResult().targets.map { it.id }
+  protected fun expectedTargetIdentifiers(): List<Label> = expectedWorkspaceBuildTargetsResult().targets.map { it.key }
 
   protected abstract fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult
 

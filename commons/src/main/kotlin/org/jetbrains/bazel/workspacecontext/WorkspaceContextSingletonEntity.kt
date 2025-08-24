@@ -21,8 +21,6 @@ data class DotBazelBspDirPathSpec(override val value: Path) : WorkspaceContextSi
 
 data class EnableNativeAndroidRules(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
 
-data class ExperimentalAddTransitiveCompileTimeJars(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
-
 data class GazelleTargetSpec(override val value: Label?) : WorkspaceContextSingletonEntity<Label?>()
 
 data class IdeJavaHomeOverrideSpec(override val value: Path?) : WorkspaceContextSingletonEntity<Path?>()
@@ -32,6 +30,8 @@ data class ImportDepthSpec(override val value: Int) : WorkspaceContextSingletonE
 data class ImportIjarsSpec(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
 
 data class IndexAllFilesInDirectoriesSpec(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
+
+data class DeriveInstrumentationFilterFromTargetsSpec(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
 
 enum class ShardingApproach {
   EXPAND_AND_SHARD, // expand wildcard targets to package targets, query single targets, and then shard to batches

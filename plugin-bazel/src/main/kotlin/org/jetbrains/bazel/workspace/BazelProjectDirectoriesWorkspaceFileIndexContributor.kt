@@ -4,6 +4,7 @@ import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
+import com.intellij.workspaceModel.ide.toPath
 import org.jetbrains.bazel.sdkcompat.CONTENT_NON_INDEXABLE_SUPPORTED
 import org.jetbrains.bazel.sdkcompat.registerOtherRootsCompat
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
@@ -27,7 +28,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
     if (entity.indexAllFilesInIncludedRoots || !CONTENT_NON_INDEXABLE_SUPPORTED) {
       registrar.registerIncludedDirectories(entity)
     } else {
-      registrar.registerBuildFiles(entity)
+      registrar.registerNecessaryFiles(entity)
     }
     registrar.registerExcludedDirectories(entity)
     registrar.registerOtherRootsCompat(entity.projectRoot, entity.includedRoots, entity)
@@ -43,15 +44,17 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
       )
     }
 
-  private fun WorkspaceFileSetRegistrar.registerExcludedDirectories(entity: BazelProjectDirectoriesEntity) =
+  private fun WorkspaceFileSetRegistrar.registerExcludedDirectories(entity: BazelProjectDirectoriesEntity) {
+    excludeSymlinksFromFileWatcher(entity.excludedRoots.map { it.toPath() })
     entity.excludedRoots.forEach {
       registerExcludedRoot(
         excludedRoot = it,
         entity = entity,
       )
     }
+  }
 
-  private fun WorkspaceFileSetRegistrar.registerBuildFiles(entity: BazelProjectDirectoriesEntity) =
+  private fun WorkspaceFileSetRegistrar.registerNecessaryFiles(entity: BazelProjectDirectoriesEntity) {
     entity.buildFiles.forEach {
       registerNonRecursiveFileSet(
         file = it,
@@ -60,4 +63,13 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
         customData = null,
       )
     }
+    entity.projectViewFile?.also {
+      registerNonRecursiveFileSet(
+        file = it,
+        kind = WorkspaceFileKind.CONTENT,
+        entity = entity,
+        customData = null,
+      )
+    }
+  }
 }

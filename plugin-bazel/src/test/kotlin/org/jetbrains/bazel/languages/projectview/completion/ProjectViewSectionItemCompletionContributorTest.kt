@@ -4,13 +4,22 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
+  @Before
+  fun setupRootDir() {
+    myFixture.project.isBazelProject = true
+    myFixture.project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+  }
+
   @Test
   fun `should complete workspace type variants`() {
     myFixture.configureByText(".bazelproject", "workspace_type: <caret>")
@@ -93,5 +102,55 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
     myFixture.completeBasic()
 
     myFixture.checkResult("use_query_sync: true")
+  }
+
+  @Test
+  fun `should complete directories sections`() {
+    myFixture.addFileToProject("main/BUILD", "some text")
+    myFixture.addFileToProject("module1/BUILD", "some text")
+    myFixture.addFileToProject("module2/src/BUILD", "some text")
+
+    myFixture.configureByText(".bazelproject", "directories:\n  <caret>")
+    myFixture.type("m")
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    lookups shouldContainAll listOf("main", "module1", "module2", "module2/src")
+  }
+
+  @Test
+  fun `should complete excluded directories`() {
+    myFixture.addFileToProject("main/BUILD", "some text")
+    myFixture.addFileToProject("module1/BUILD", "some text")
+    myFixture.addFileToProject("module2/src/BUILD", "some text")
+
+    myFixture.configureByText(".bazelproject", "directories:\n  <caret>")
+    myFixture.type("-m")
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    lookups shouldContainAll listOf("-main", "-module1", "-module2", "-module2/src")
+  }
+
+  @Test
+  fun `should complete import section`() {
+    myFixture.addFileToProject("subpackage/sub.bazelproject", "")
+    myFixture.addFileToProject("otherDir/module.bazelproject", "")
+
+    myFixture.configureByText(".bazelproject", "import: <caret>")
+    myFixture.type("baz")
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    lookups shouldContainExactlyInAnyOrder listOf("subpackage/sub.bazelproject", "otherDir/module.bazelproject")
+  }
+
+  @Test
+  fun `should complete import run configuration section`() {
+    myFixture.addFileToProject("subpackage/config.xml", "")
+    myFixture.addFileToProject("otherDir/other_config.xml", "")
+
+    myFixture.configureByText(".bazelproject", "import_run_configurations:\n  <caret>")
+    myFixture.type("x")
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    lookups shouldContainExactlyInAnyOrder listOf("subpackage/config.xml", "otherDir/other_config.xml")
   }
 }

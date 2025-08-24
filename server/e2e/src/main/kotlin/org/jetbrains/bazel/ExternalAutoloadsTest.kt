@@ -69,7 +69,8 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
       )
 
     return WorkspaceBuildTargetsResult(
-      listOf(exampleExampleBuildTarget),
+      targets = mapOf(),
+      rootTargets = setOf(),
     )
   }
 }

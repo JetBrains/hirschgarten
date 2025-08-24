@@ -1,4 +1,4 @@
-load("//:versions.bzl", "BENCHMARK_BUILD_NUMBER", "PY_BENCHMARK_BUILD_NUMBER")
+load("//:versions.bzl", "BENCHMARK_BUILD_NUMBER", "GO_BENCHMARK_BUILD_NUMBER", "PY_BENCHMARK_BUILD_NUMBER")
 load("//rules/testing:junit5.bzl", "kt_junit5_test")
 
 INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/plugin-bazel.zip"
@@ -15,6 +15,7 @@ IDE_STARTER_DEPS = [
 
 IDE_STARTER_BASE_TEST_DEPS = [
     "//plugin-bazel/src/testFixtures/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
+    "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/testing",
 ]
 
 IDE_STARTER_RESOURCES = [
@@ -26,13 +27,15 @@ _IDE_STARTER_TEST_TAGS = ["manual", "ide-starter-test"]
 IDE_ID = struct(
     IC = "IC",  # IntelliJ Community
     PY = "PY",  # PyCharm
+    GO = "GO",  # GoLand
 )
 
-_SUPPORTED_IDES = (IDE_ID.IC, IDE_ID.PY)
+_SUPPORTED_IDES = (IDE_ID.IC, IDE_ID.PY, IDE_ID.GO)
 
 _IDE_ID_TO_BUILD_NUMBER = {
     IDE_ID.IC: BENCHMARK_BUILD_NUMBER,
     IDE_ID.PY: PY_BENCHMARK_BUILD_NUMBER,
+    IDE_ID.GO: GO_BENCHMARK_BUILD_NUMBER,
 }
 
 def ide_starter_test(name, ide_ids, deps = [], jvm_flags = [], resources = [], **kwargs):

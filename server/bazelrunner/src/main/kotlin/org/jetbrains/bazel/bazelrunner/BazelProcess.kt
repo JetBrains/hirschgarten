@@ -8,7 +8,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.Stopwatch
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.slf4j.LoggerFactory
+import org.jetbrains.bazel.logger.bazelLogger
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 
@@ -24,9 +24,9 @@ class BazelProcess internal constructor(
       val outputProcessor: OutputProcessor =
         if (logger != null) {
           if (ensureAllOutputRead) {
-            SyncOutputProcessor(process, logger::message, LOGGER::info)
+            SyncOutputProcessor(process, logger::message)
           } else {
-            AsyncOutputProcessor(process, logger::message, LOGGER::info)
+            AsyncOutputProcessor(process, logger::message)
           }
         } else {
           if (ensureAllOutputRead) {
@@ -50,6 +50,6 @@ class BazelProcess internal constructor(
   }
 
   companion object {
-    private val LOGGER = LoggerFactory.getLogger(BazelProcess::class.java)
+    private val LOGGER = bazelLogger<BazelProcess>()
   }
 }

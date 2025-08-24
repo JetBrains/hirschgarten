@@ -21,15 +21,20 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import java.util.UUID
 
-abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, protected val originId: OriginId) :
-  CommandLineState(environment) {
+abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : CommandLineState(environment) {
+  protected val originId: UUID = UUID.randomUUID()
+
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
-  protected abstract suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>)
+  protected abstract suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  )
 
   final override fun startProcess(): BazelProcessHandler = doStartProcess(false)
 
@@ -51,7 +56,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
-          startBsp(server, pid)
+          startBsp(server, pid, handler)
         }
       }
 
@@ -63,6 +68,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
     val runListener = createAndAddTaskListener(handler)
 
     with(BazelTaskEventsService.getInstance(project)) {
+      val originId = originId.toString()
       saveListener(originId, runListener)
       runDeferred.invokeOnCompletion {
         pid.complete(null)

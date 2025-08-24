@@ -9,7 +9,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
@@ -60,7 +59,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         val dummyModules = dummyModulesResult.dummyModules
         val dummyModuleDependencies =
           if (BazelFeatureFlags.addDummyModuleDependencies) {
-            dummyModules.map { IntermediateModuleDependency(it.genericModuleInfo.name) }
+            dummyModules.map { it.genericModuleInfo.name }
           } else {
             emptyList()
           }
@@ -68,8 +67,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
           javaModule.copy(
             genericModuleInfo =
               javaModule.genericModuleInfo.copy(
-                modulesDependencies =
-                  javaModule.genericModuleInfo.modulesDependencies + dummyModuleDependencies,
+                dependencies =
+                  javaModule.genericModuleInfo.dependencies + dummyModuleDependencies,
               ),
           )
         listOf(javaModuleWithDummyDependencies) + dummyModules
@@ -98,8 +97,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         type = type,
         javacOptions = inputEntity.javacOptions,
         associates = toAssociates(inputEntity),
-        libraryDependencies = inputEntity.libraryDependencies,
-        moduleDependencies = inputEntity.moduleDependencies,
+        dependencies = inputEntity.dependencies,
       )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)

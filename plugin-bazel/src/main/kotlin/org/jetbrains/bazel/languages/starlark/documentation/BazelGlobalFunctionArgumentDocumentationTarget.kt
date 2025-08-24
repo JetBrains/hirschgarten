@@ -22,7 +22,7 @@ class BazelGlobalFunctionArgumentDocumentationTarget(symbol: BazelGlobalFunction
 
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
-      val html = argument.docString ?: return null
+      val html = argument.doc ?: return null
       DocumentationResult.documentation(html)
     }
 }
