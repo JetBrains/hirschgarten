@@ -829,6 +829,18 @@
     <portForwarding.processHandlerPidProvider
       implementation="org.jetbrains.bazel.sdkcompat.BazelProcessHandlerPidProvider"
     />
+
+    <!-- Bazel Target Symbol API Support -->
+    <symbolProvider implementation="org.jetbrains.bazel.symbols.BazelTargetSymbolProvider"/>
+    
+    <psi.declarationProvider implementation="org.jetbrains.bazel.symbols.BazelTargetSymbolDeclarationProvider"/>
+    
+    <fileBasedIndex implementation="org.jetbrains.bazel.symbols.BazelTargetIndex"/>
+    
+    <lang.refactoringSupport language="Starlark" 
+                            implementationClass="org.jetbrains.bazel.symbols.BazelTargetRefactoringSupport"/>
+    
+    <psi.referenceContributor implementation="org.jetbrains.bazel.symbols.BazelTargetReferenceContributor"/>
   </extensions>
 
   <actions>
