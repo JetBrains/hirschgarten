@@ -1,13 +1,12 @@
-"""Developer versions of plugins."""
+"""Release versions of plugins. The file is swaped with versions.bzl on CI during release"""
 
-INTELLIJ_BAZEL_VERSION = "9999.9.9"
+INTELLIJ_BAZEL_VERSION = "2025.1.14"
 
-PLATFORM_VERSION = "252"
+PLATFORM_VERSION = "251"
 
-# make sure to always choose the lowest among different benchmark build numbers
-SINCE_VERSION = "252.23892"
-UNTIL_VERSION = "252.*"
+SINCE_VERSION = "251.23774.435"
+UNTIL_VERSION = "251.*"
 
-BENCHMARK_BUILD_NUMBER = "252.23892.409"
-PY_BENCHMARK_BUILD_NUMBER = "252.23892.515"
-GO_BENCHMARK_BUILD_NUMBER = "252.23892.449"
+BENCHMARK_BUILD_NUMBER = "251.23774.435"
+PY_BENCHMARK_BUILD_NUMBER = "251.23774.444"
+GO_BENCHMARK_BUILD_NUMBER = "251.26927.50"
