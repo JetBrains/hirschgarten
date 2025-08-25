@@ -197,6 +197,9 @@
                     interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bytecodeViewerClassFileFinderCompat"
+                    interface="org.jetbrains.bazel.sdkcompat.bytecodeViewer.BytecodeViewerClassFileFinderCompat"
+                    dynamic="true"/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
