@@ -55,7 +55,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
         androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
-        compiledClassesPath = resolveCompiledClassesPathForJVMLanguage(inputEntity),
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
@@ -86,24 +85,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
           )
         listOf(javaModuleWithMergedSourceRoots)
       }
-    }
-  }
-
-  private fun resolveCompiledClassesPathForJVMLanguage(input: ModuleDetails): Path? {
-    val target = input.target.id
-    val targetDir = BazelBinPathService.getInstance(project).bazelBinPath
-      ?.let { Path.of(it) }
-      ?.resolve(target.packagePath.toString()) ?: return null
-    val targetData = input.target.data
-    return when (targetData) {
-      is JvmBuildTarget, is KotlinBuildTarget, is ScalaBuildTarget -> {
-        if (input.target.kind.ruleType == RuleType.LIBRARY) {
-          targetDir.resolve("lib${target.targetName}.jar")
-        } else {
-          targetDir.resolve("${target.targetName}.jar")
-        }
-      }
-      else -> null
     }
   }
 

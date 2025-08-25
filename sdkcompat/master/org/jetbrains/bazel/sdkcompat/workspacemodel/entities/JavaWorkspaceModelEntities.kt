@@ -24,7 +24,6 @@ data class JavaModule(
   val javaAddendum: JavaAddendum? = null,
   val androidAddendum: AndroidAddendum? = null,
   val workspaceModelEntitiesFolderMarker: Boolean = false,
-  val compiledClassesPath: Path? = null,
 ) : WorkspaceModelEntity(),
   Module {
   override fun getModuleName(): String = genericModuleInfo.name
