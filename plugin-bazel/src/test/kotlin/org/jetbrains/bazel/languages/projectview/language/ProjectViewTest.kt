@@ -70,7 +70,7 @@ class ProjectViewTest : BasePlatformTestCase() {
         target1
         -target2
       """.trimIndent()
-    val targetsSectionModel = getSectionByType<TargetsSection>()
+    val targetsSectionModel = ProjectViewSections.getSectionByType<TargetsSection>()
     assertEquals(targetsSectionModel!!.serialize(targetsSection), expected)
   }
 
@@ -78,7 +78,7 @@ class ProjectViewTest : BasePlatformTestCase() {
   fun `test scalar section serialization`() {
     val shardSyncSection = true
     val expected = "shard_sync: true"
-    val shardSyncSectionModel = getSectionByType<ShardSyncSection>()
+    val shardSyncSectionModel = ProjectViewSections.getSectionByType<ShardSyncSection>()
     assertEquals(shardSyncSectionModel!!.serialize(shardSyncSection), expected)
   }
 

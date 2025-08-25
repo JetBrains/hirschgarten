@@ -5,7 +5,7 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
-import org.jetbrains.bazel.languages.projectview.language.getSectionByName
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSections
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
 class ProjectViewAnnotator : Annotator {
@@ -15,7 +15,7 @@ class ProjectViewAnnotator : Annotator {
     }
 
     val sectionName = element.getKeyword().text
-    val section = getSectionByName(sectionName)
+    val section = ProjectViewSections.getSectionByName(sectionName)
     if (section == null) {
       holder.annotateWarning(element.firstChild, ProjectViewBundle.getMessage("annotator.unsupported.section.warning"))
       return

@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
-import org.jetbrains.bazel.languages.projectview.language.REGISTERED_SECTIONS
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSections
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
@@ -40,7 +40,7 @@ internal class ProjectViewSectionItemCompletionContributor : CompletionContribut
   }
 
   init {
-    for (section in REGISTERED_SECTIONS) {
+    for (section in ProjectViewSections.REGISTERED_SECTIONS) {
       if (section.completionProvider != null) {
         extend(
           CompletionType.BASIC,
