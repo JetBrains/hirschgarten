@@ -28,9 +28,14 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.sync.workspace.BazelEndpointProxy
+import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.workspace.model.test.framework.BazelEndpointProxyMock
+import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.DependencySourcesResult
@@ -44,7 +49,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 private data class PythonTestSet(
-  val buildTargets: WorkspaceBuildTargetsResult,
+  val buildTargets: List<RawBuildTarget>,
   val expectedModuleEntities: List<ExpectedModuleEntity>,
   val expectedSourceRootEntities: List<ExpectedSourceRootEntity>,
 )
@@ -72,10 +77,18 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   fun `should add module with dependencies to workspace model diff`() {
     // given
     val pythonTestTargets = generateTestSet()
-    val server =
-      BuildServerMock(
-        workspaceBuildTargetsResult = pythonTestTargets.buildTargets,
-        dependencySourcesResult = DependencySourcesResult(emptyList()),
+    val server = BuildServerMock()
+    val endpointProxy =
+      BazelEndpointProxyMock(
+        dependencySourcesResult = DependencySourcesResult(listOf()),
+      )
+    val resolver =
+      BazelWorkspaceResolverMock(
+        resolvedWorkspace =
+          BazelResolvedWorkspace(
+            targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
+          ),
+        endpointProxy = endpointProxy,
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
 
@@ -87,6 +100,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
+            resolver = resolver,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -112,10 +126,18 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   fun `should add module with sources to workspace model diff`() {
     // given
     val pythonTestTargets = generateTestSetWithSources()
-    val server =
-      BuildServerMock(
-        workspaceBuildTargetsResult = pythonTestTargets.buildTargets,
-        dependencySourcesResult = DependencySourcesResult(emptyList()),
+    val server = BuildServerMock()
+    val endpointProxy =
+      BazelEndpointProxyMock(
+        dependencySourcesResult = DependencySourcesResult(listOf()),
+      )
+    val resolver =
+      BazelWorkspaceResolverMock(
+        resolvedWorkspace =
+          BazelResolvedWorkspace(
+            targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
+          ),
+        endpointProxy = endpointProxy,
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
 
@@ -127,6 +149,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
+            resolver = resolver,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -171,10 +194,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList())
     val expectedModuleEntity3 = generateExpectedModuleEntity(pythonLibrary2, emptyList())
     return PythonTestSet(
-      WorkspaceBuildTargetsResult(
-        targets,
-        hasError = false,
-      ),
+      targets,
       listOf(expectedModuleEntity1, expectedModuleEntity2, expectedModuleEntity3),
       emptyList(),
     )
@@ -200,10 +220,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val expectedContentRootEntities =
       generateExpectedSourceRootEntities(target, expectedModuleEntity.moduleEntity)
     return PythonTestSet(
-      WorkspaceBuildTargetsResult(
-        listOf(target),
-        hasError = false,
-      ),
+      listOf(target),
       listOf(expectedModuleEntity),
       expectedContentRootEntities,
     )

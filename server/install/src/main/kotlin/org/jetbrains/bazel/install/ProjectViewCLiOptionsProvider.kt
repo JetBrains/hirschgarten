@@ -5,9 +5,11 @@ import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
 import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDebugFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
@@ -34,6 +36,7 @@ object ProjectViewCLiOptionsProvider {
       targets = toTargetsSection(projectViewCliOptions),
       buildFlags = toBuildFlagsSection(projectViewCliOptions),
       syncFlags = toSyncFlagsSection(projectViewCliOptions),
+      debugFlags = toDebugFlagsSection(projectViewCliOptions),
       directories = toDirectoriesSection(projectViewCliOptions),
       deriveTargetsFromDirectories = toDeriveTargetFlagSection(projectViewCliOptions),
       importDepth = toImportDepthSection(projectViewCliOptions),
@@ -43,7 +46,11 @@ object ProjectViewCLiOptionsProvider {
       shardSync = toShardSyncSection(projectViewCliOptions),
       targetShardSize = toTargetShardSizeSection(projectViewCliOptions),
       shardingApproach = toShardingStrategy(projectViewCliOptions),
+      gazelleTarget = toGazelleTarget(projectViewCliOptions),
     )
+
+  private fun toGazelleTarget(projectViewCliOptions: ProjectViewCliOptions?): GazelleTargetSection? =
+    projectViewCliOptions?.gazelleTarget?.let(::GazelleTargetSection)
 
   private fun toBazelBinarySection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewBazelBinarySection? =
     projectViewCliOptions?.bazelBinary?.let(::ProjectViewBazelBinarySection)
@@ -91,6 +98,9 @@ object ProjectViewCLiOptionsProvider {
 
   private fun toSyncFlagsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewSyncFlagsSection? =
     projectViewCliOptions?.syncFlags?.let { ProjectViewSyncFlagsSection(it) }
+
+  private fun toDebugFlagsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewDebugFlagsSection? =
+    projectViewCliOptions?.debugFlags?.let { ProjectViewDebugFlagsSection(it) }
 
   private fun toEnabledRulesSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewEnabledRulesSection? =
     projectViewCliOptions?.enabledRules?.let { ProjectViewEnabledRulesSection(it) }

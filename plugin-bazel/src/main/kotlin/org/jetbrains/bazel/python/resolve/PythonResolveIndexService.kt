@@ -14,7 +14,7 @@ import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.flow.sync.BazelBinPathService
+import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -37,7 +37,13 @@ class PythonResolveIndexService(private val project: Project) : PersistentStateC
   fun updatePythonResolveIndex(rawTargets: List<RawBuildTarget>) {
     internalResolveIndex = buildIndex(rawTargets)
     resolveIndex =
-      internalResolveIndex.mapValues { (_, path) -> { psiManager -> psiManager.findFile(path.toVirtualFile() ?: return@mapValues null) } }
+      internalResolveIndex.mapValues { (_, path) ->
+        { psiManager ->
+          psiManager.findFileOrDirectory(
+            path.toVirtualFile() ?: return@mapValues null,
+          )
+        }
+      }
   }
 
   private fun buildIndex(rawTargets: List<RawBuildTarget>): Map<QualifiedName, Path> {
@@ -107,11 +113,12 @@ class PythonResolveIndexService(private val project: Project) : PersistentStateC
             executionRootRelativePath.toQualifiedName() to sourceItem.path
           }
         }
+      val expandedFullQualifiedNameToAbsolutePath = expandFullQualifiedNameMaps(fullQualifiedNameToAbsolutePath)
 
       // importRoots are the roots of qualified names which will be trimmed from fully qualified names
       val importRoots = importsPaths.map { path -> QualifiedName.fromComponents(path.map { it2 -> it2.toString() }) }
 
-      for (pair in fullQualifiedNameToAbsolutePath) {
+      for (pair in expandedFullQualifiedNameToAbsolutePath) {
         val sourceImports =
           assembleSourceImportsFromImportRoots(importRoots, pair.key)
             .filter { it.componentCount > 0 }
@@ -125,6 +132,28 @@ class PythonResolveIndexService(private val project: Project) : PersistentStateC
       }
     }
     return qualifiedNamesResolverMap
+  }
+
+  /*
+   * expandFullQualifiedNameMaps will expand the map to include the parent qualified names
+   * e.g. for an entry aaa.bbb.ccc -> /aaa/bbb/ccc.py,
+   * this function will also add (aaa.bbb->/aaa/bbb) and (aaa -> /aaa) into the new map,
+   * so that pycharm won't show a red line under aaa
+   * */
+  private fun expandFullQualifiedNameMaps(originalMap: Map<QualifiedName?, Path>): Map<QualifiedName?, Path> {
+    val newMap = originalMap.toMutableMap()
+    for (entry in originalMap) {
+      var qualifiedName = entry.key ?: continue
+      var resolvedPath: Path = if (!entry.value.isDirectory()) entry.value.parent else entry.value
+      while (qualifiedName.componentCount > 1) {
+        qualifiedName = qualifiedName.removeLastComponent()
+        resolvedPath = resolvedPath.parent
+        if (!newMap.containsKey(qualifiedName)) {
+          newMap[qualifiedName] = resolvedPath
+        }
+      }
+    }
+    return newMap
   }
 
   // assembleSourceImportsFromImportRoots returns all possible legal qualified names of a full qualified name
@@ -190,5 +219,12 @@ private fun Path.toQualifiedName(): QualifiedName? {
     relativePath.split(separator).flatMap { it.split(".") }.filter { it.isNotEmpty() },
   )
 }
+
+private fun PsiManager.findFileOrDirectory(vf: VirtualFile): PsiElement? =
+  if (vf.isDirectory) {
+    findDirectory(vf)
+  } else {
+    findFile(vf)
+  }
 
 private fun Path.toVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(this)

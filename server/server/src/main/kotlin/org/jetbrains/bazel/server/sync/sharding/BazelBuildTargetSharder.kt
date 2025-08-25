@@ -16,12 +16,12 @@
 package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.model.FirstPhaseProject
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bazel.workspacecontext.ShardingApproach
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
@@ -50,7 +50,7 @@ object BazelBuildTargetSharder {
     featureFlags: FeatureFlags,
     bazelRunner: BazelRunner,
     bspClientLogger: BspClientLogger,
-    firstPhaseProject: FirstPhaseProject?,
+    firstPhaseProject: PhasedSyncProject?,
   ): ShardedTargetsResult {
     if (firstPhaseProject != null) {
       return ShardedTargetsResult(

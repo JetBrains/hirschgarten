@@ -42,7 +42,8 @@ class IntellijPluginRunHandler(private val configuration: BazelRunConfiguration)
 
   override val state: IntellijPluginRunHandlerState = IntellijPluginRunHandlerState()
 
-  override val name: String = "IntelliJ Plugin Run Handler"
+  override val name: String
+    get() = "IntelliJ Plugin Run Handler"
 
   // Mostly copied from org.jetbrains.idea.devkit.run.PluginRunConfiguration
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
@@ -89,7 +90,8 @@ class IntellijPluginRunHandler(private val configuration: BazelRunConfiguration)
         }
 
         // use product-info.json values if found, otherwise fallback to defaults
-        val productInfo = loadProductInfo(ideaJdkHome) ?: throw ExecutionException(BazelPluginBundle.message("plugin.runner.idea.product.null"))
+        val productInfo =
+          loadProductInfo(ideaJdkHome) ?: throw ExecutionException(BazelPluginBundle.message("plugin.runner.idea.product.null"))
         productInfo.getCurrentLaunch().additionalJvmArguments.forEach { item ->
           vm.add(resolveIdeHomeVariable(item, ideaJdkHome))
         }

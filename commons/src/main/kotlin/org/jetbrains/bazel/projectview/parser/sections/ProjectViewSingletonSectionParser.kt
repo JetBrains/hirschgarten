@@ -1,9 +1,10 @@
 package org.jetbrains.bazel.projectview.parser.sections
 
 import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
+import org.jetbrains.bazel.projectview.model.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
-import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
 import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
+import org.jetbrains.bazel.projectview.model.sections.ImportIjarsSection
 import org.jetbrains.bazel.projectview.model.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -92,16 +93,6 @@ object ProjectViewIdeJavaHomeOverrideSectionParser :
   override fun createInstance(value: Path): ProjectViewIdeJavaHomeOverrideSection = ProjectViewIdeJavaHomeOverrideSection(value)
 }
 
-object ExperimentalAddTransitiveCompileTimeJarsParser :
-  ProjectViewSingletonSectionParser<Boolean, ExperimentalAddTransitiveCompileTimeJarsSection>(
-    ExperimentalAddTransitiveCompileTimeJarsSection.SECTION_NAME,
-  ) {
-  override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
-
-  override fun createInstance(value: Boolean): ExperimentalAddTransitiveCompileTimeJarsSection =
-    ExperimentalAddTransitiveCompileTimeJarsSection(value)
-}
-
 object EnableNativeAndroidRulesParser :
   ProjectViewSingletonSectionParser<Boolean, EnableNativeAndroidRulesSection>(
     EnableNativeAndroidRulesSection.SECTION_NAME,
@@ -158,4 +149,22 @@ object IndexAllFilesInDirectoriesSectionParser : ProjectViewSingletonSectionPars
   override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
 
   override fun createInstance(value: Boolean): IndexAllFilesInDirectoriesSection = IndexAllFilesInDirectoriesSection(value)
+}
+
+object ImportIjarsSectionParser : ProjectViewSingletonSectionParser<Boolean, ImportIjarsSection>(
+  ImportIjarsSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
+
+  override fun createInstance(value: Boolean): ImportIjarsSection = ImportIjarsSection(value)
+}
+
+object DeriveInstrumentationFilterFromTargetsSectionParser :
+  ProjectViewSingletonSectionParser<Boolean, DeriveInstrumentationFilterFromTargetsSection>(
+    DeriveInstrumentationFilterFromTargetsSection.SECTION_NAME,
+  ) {
+  override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
+
+  override fun createInstance(value: Boolean): DeriveInstrumentationFilterFromTargetsSection =
+    DeriveInstrumentationFilterFromTargetsSection(value)
 }

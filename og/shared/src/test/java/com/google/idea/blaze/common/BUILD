@@ -30,7 +30,6 @@ java_test(
     srcs = ["TargetTreeTest.java"],
     deps = [
         "//og/shared/src/main/java/com/google/idea/blaze/common",
-        "//og/shared/src/main/java/com/google/idea/blaze/exception",
         "//third_party/java/junit",
         "//third_party/java/truth",
         "@maven//:com_google_guava_guava",
@@ -43,7 +42,6 @@ java_test(
     srcs = ["AtomicFileWriterTest.java"],
     deps = [
         "//og/shared/src/main/java/com/google/idea/blaze/common",
-        "//og/shared/src/main/java/com/google/idea/blaze/exception",
         "//third_party/java/junit",
         "//third_party/java/truth",
         "@maven//:com_google_guava_guava",

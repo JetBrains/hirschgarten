@@ -27,6 +27,7 @@ class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedCo
   private val enableBuildWithJpsCheckBox: JBCheckBox
   private val useIntellijTestRunnerCheckBox: JBCheckBox
   private val hotswapEnabledCheckBox: JBCheckBox
+  private val enableKotlinCoroutineDebugCheckBox: JBCheckBox
 
   private var currentJVMProjectSettings = project.bazelJVMProjectSettings
 
@@ -37,16 +38,18 @@ class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedCo
     // TODO: BAZEL-1837
     useIntellijTestRunnerCheckBox = initUseIntellijTestRunnerCheckBoxBox()
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
+    enableKotlinCoroutineDebugCheckBox = initEnableKotlinCoroutineDebugCheckBox()
   }
 
   override fun createComponent(): JComponent =
     panel {
+      row {
+        cell(hotswapEnabledCheckBox).align(Align.FILL)
+        contextHelp(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.help.text"))
+      }
+      row { cell(enableKotlinCoroutineDebugCheckBox).align(Align.FILL) }
       group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
         row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
-        row {
-          cell(hotswapEnabledCheckBox).align(Align.FILL)
-          contextHelp(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.help.text"))
-        }
         row {
           cell(useIntellijTestRunnerCheckBox).align(Align.FILL)
           contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
@@ -72,7 +75,7 @@ class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedCo
       addItemListener {
         currentJVMProjectSettings = currentJVMProjectSettings.copy(enableLocalJvmActions = isSelected)
         useIntellijTestRunnerCheckBox.isEnabled = isSelected
-        hotswapEnabledCheckBox.isEnabled = isSelected && !BazelFeatureFlags.fastBuildEnabled
+        enableKotlinCoroutineDebugCheckBox.isEnabled = !isSelected
       }
     }
 
@@ -87,13 +90,10 @@ class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedCo
 
   private fun initHotSwapEnabledCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.text")).apply {
-      // hotswap now only works with local JVM actions
-      isEnabled = currentJVMProjectSettings.enableLocalJvmActions && !BazelFeatureFlags.fastBuildEnabled
+      isEnabled = !BazelFeatureFlags.fastBuildEnabled
       isSelected = currentJVMProjectSettings.hotSwapEnabled
       addItemListener {
-        if (currentJVMProjectSettings.enableLocalJvmActions) {
-          currentJVMProjectSettings = currentJVMProjectSettings.withNewHotSwapEnabled(isSelected)
-        }
+        currentJVMProjectSettings = currentJVMProjectSettings.withNewHotSwapEnabled(isSelected)
       }
     }
 
@@ -102,6 +102,17 @@ class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedCo
       isSelected = currentJVMProjectSettings.enableBuildWithJps
       addItemListener {
         currentJVMProjectSettings = currentJVMProjectSettings.copy(enableBuildWithJps = isSelected)
+        enableKotlinCoroutineDebugCheckBox.isEnabled = !isSelected
+      }
+    }
+
+  private fun initEnableKotlinCoroutineDebugCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.kotlin.coroutine.debug.checkbox.text")).apply {
+      isSelected = currentJVMProjectSettings.enableKotlinCoroutineDebug
+      // this setting does not work with the JPS build or local JVM actions
+      isEnabled = !currentJVMProjectSettings.enableBuildWithJps && !currentJVMProjectSettings.enableLocalJvmActions
+      addItemListener {
+        currentJVMProjectSettings = currentJVMProjectSettings.copy(enableKotlinCoroutineDebug = isSelected)
       }
     }
 }

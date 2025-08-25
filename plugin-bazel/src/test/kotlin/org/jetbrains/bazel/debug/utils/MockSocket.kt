@@ -2,7 +2,7 @@ package org.jetbrains.bazel.debug.utils
 
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugEvent
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugRequest
-import org.jetbrains.kotlin.backend.common.pop
+import org.jetbrains.kotlin.utils.addToStdlib.popLast
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
@@ -52,7 +52,7 @@ private class StreamBuffer {
       override fun read(): Int {
         exceptionToThrow?.let { throw it }
         return when (buffer.isEmpty()) {
-          false -> buffer.pop().toInt()
+          false -> buffer.popLast().toInt()
           true -> -1
         }
       }

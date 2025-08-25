@@ -11,11 +11,13 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
+import com.intellij.util.containers.forEachLoggingErrors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +44,7 @@ import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncFatalFailureException
 import org.jetbrains.bazel.sync.status.SyncPartialFailureException
 import org.jetbrains.bazel.sync.status.SyncStatusService
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
@@ -161,7 +164,7 @@ class ProjectSyncTask(private val project: Project) {
           progressReporter = progressReporter,
         )
 
-      project.projectPreSyncHooks.forEach {
+      project.projectPreSyncHooks.forEachLoggingErrors(log) {
         it.onPreSync(environment)
       }
     }
@@ -173,6 +176,7 @@ class ProjectSyncTask(private val project: Project) {
     buildProject: Boolean,
   ): SyncResultStatus {
     val diff = AllProjectStructuresProvider(project).newDiff()
+    val resolver = BazelWorkspaceResolveService.getInstance(project)
     val syncStatus =
       project.connection.runWithServer { server ->
         bspTracer.spanBuilder("collect.project.details.ms").use {
@@ -182,7 +186,11 @@ class ProjectSyncTask(private val project: Project) {
               taskId = PROJECT_SYNC_TASK_ID,
               subtaskId = BASE_PROJECT_SYNC_SUBTASK_ID,
               message = BazelPluginBundle.message("console.task.base.sync"),
-            ) { server.runSync(buildProject, PROJECT_SYNC_TASK_ID) }
+            ) {
+              // force full re-sync
+              resolver.invalidateCachedState()
+              resolver.getOrFetchSyncedProject(build = buildProject, taskId = PROJECT_SYNC_TASK_ID)
+            }
           if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
           project.withSubtask(
             reporter = progressReporter,
@@ -193,6 +201,7 @@ class ProjectSyncTask(private val project: Project) {
               ProjectSyncHookEnvironment(
                 project = project,
                 server = server,
+                resolver = resolver,
                 diff = diff,
                 taskId = it,
                 progressReporter = progressReporter,
@@ -200,7 +209,7 @@ class ProjectSyncTask(private val project: Project) {
                 syncScope = syncScope,
               )
 
-            project.projectSyncHooks.forEach {
+            project.projectSyncHooks.forEachLoggingErrors(log) {
               it.onSync(environment)
             }
           }
@@ -236,7 +245,7 @@ class ProjectSyncTask(private val project: Project) {
           progressReporter = progressReporter,
         )
 
-      project.projectPostSyncHooks.forEach {
+      project.projectPostSyncHooks.forEachLoggingErrors(log) {
         it.onPostSync(environment)
       }
     }

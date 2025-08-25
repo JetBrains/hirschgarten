@@ -8,6 +8,7 @@ kt_library(
     ],
     visibility = ["//server/server:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/bazelrunner",
         "//server/commons",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/info",

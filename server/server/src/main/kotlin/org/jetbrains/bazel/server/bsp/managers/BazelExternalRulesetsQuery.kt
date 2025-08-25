@@ -1,16 +1,16 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
-import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BidirectionalMap
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.utils.readXML
 import org.jetbrains.bazel.server.bsp.utils.toJson
-import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
-import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -137,7 +137,8 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
-    val apparelRepoNameToCanonicalName = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap()
+    val apparelRepoNameToCanonicalName =
+      (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap.getTypedInstance()
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
@@ -147,10 +148,9 @@ class BazelBzlModExternalRulesetsQueryImpl(
             val queryFailedMessage = getQueryFailedMessage(result)
             bspClientLogger.warn(queryFailedMessage)
             log.warn(queryFailedMessage)
-            null
-          } else {
-            result.stdout.toJson(log)
           }
+          // best effort to parse the output even when there are errors
+          result.stdout.toJson(log)
         } as? JsonObject
     return try {
       val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)

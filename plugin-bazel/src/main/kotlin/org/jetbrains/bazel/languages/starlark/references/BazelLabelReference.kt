@@ -16,7 +16,9 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLitera
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
@@ -36,6 +38,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
     if (isFileCompletionLocation()) return fileCompletion()
     if (isTargetCompletionLocation()) return targetCompletion()
+    if (isLoadFilenameCompletionLocation()) return loadFilenameCompletion()
     return emptyArray()
   }
 
@@ -109,6 +112,24 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   private fun isInNameArgument(): Boolean {
     val parent = element.parent ?: return false
     return parent is StarlarkNamedArgumentExpression && parent.isNameArgument()
+  }
+
+  private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
+
+  private fun loadFilenameCompletion(): Array<LookupElement> {
+    val repoNameToBzlFiles = element.project.getService(BazelBzlFileService::class.java).getApparentRepoNameToFiles()
+    val lookupElements = mutableListOf<LookupElement>()
+    for ((_, bzlFiles) in repoNameToBzlFiles) {
+      for (label in bzlFiles) {
+        lookupElements.add(
+          getCompletionLookupElemenent(
+            label.toShortString(element.project),
+            PlatformIcons.FILE_ICON,
+          ),
+        )
+      }
+    }
+    return lookupElements.toTypedArray()
   }
 
   companion object {

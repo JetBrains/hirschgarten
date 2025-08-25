@@ -1,5 +1,6 @@
 #if( $javaEnabled == "true" && $bazel8OrAbove == "true" && $rulesetName != "" )
 load("@${rulesetName}//java/common:java_info.bzl", "JavaInfo")
+load("@${rulesetName}//java/common:java_plugin_info.bzl", "JavaPluginInfo")
 #end
 
 load("//aspects:utils/utils.bzl", "create_struct", "to_file_location")
@@ -16,6 +17,17 @@ def get_java_info(target):
     #if( $javaEnabled == "true" )
     if JavaInfo in target:
         return target[JavaInfo]
+    else:
+        return None
+
+    #else
+    return None
+    #end
+
+def get_java_plugin_info(target):
+    #if( $javaEnabled == "true" )
+    if JavaPluginInfo in target:
+        return target[JavaPluginInfo]
     else:
         return None
 
@@ -66,7 +78,9 @@ def extract_java_runtime(target, ctx, dep_targets, **kwargs):
     runtime = None
 
     if JAVA_RUNTIME_TOOLCHAIN_TYPE in ctx.toolchains:  # Bazel 6.0.0 way
-        runtime = ctx.toolchains[JAVA_RUNTIME_TOOLCHAIN_TYPE].java_runtime
+        toolchain = ctx.toolchains[JAVA_RUNTIME_TOOLCHAIN_TYPE]
+        if toolchain:
+            runtime = toolchain.java_runtime
     else:
         runtime_jdk = getattr(ctx.rule.attr, "runtime_jdk", None)
         if runtime_jdk and java_common.JavaRuntimeInfo in runtime_jdk:
