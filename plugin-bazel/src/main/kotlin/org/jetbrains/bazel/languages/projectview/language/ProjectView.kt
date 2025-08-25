@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.projectview.language
 
 import org.jetbrains.bazel.languages.projectview.language.sections.AllowManualTargetsSyncSection
+import org.jetbrains.bazel.languages.projectview.language.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.languages.projectview.language.sections.BazelBinarySection
 import org.jetbrains.bazel.languages.projectview.language.sections.BuildFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DebugFlagsSection
@@ -54,6 +55,7 @@ val REGISTERED_SECTIONS =
     EnabledRulesSection(),
     IdeJavaHomeOverrideSection(),
     EnableNativeAndroidRulesSection(),
+    AndroidMinSdkSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
