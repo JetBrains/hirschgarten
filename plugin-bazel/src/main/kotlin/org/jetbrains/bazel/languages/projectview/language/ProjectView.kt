@@ -12,6 +12,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.EnabledRulesS
 import org.jetbrains.bazel.languages.projectview.language.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
+import org.jetbrains.bazel.languages.projectview.language.sections.ShardingApproachSection
 import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetShardSizeSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
@@ -58,6 +59,7 @@ val REGISTERED_SECTIONS =
     EnableNativeAndroidRulesSection(),
     AndroidMinSdkSection(),
     TargetShardSizeSection(),
+    ShardingApproachSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
