@@ -57,7 +57,7 @@ class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>()
   }
 }
 
-internal class FiletypeCompletionProvider(val fileExtension: String) : CompletionProvider<CompletionParameters>() {
+class FiletypeCompletionProvider(val fileExtension: String) : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
