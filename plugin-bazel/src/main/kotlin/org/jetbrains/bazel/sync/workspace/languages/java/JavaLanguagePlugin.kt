@@ -17,7 +17,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
   LanguagePlugin<JvmBuildTarget>, JVMPackagePrefixResolver {
   private var jdk: Jdk? = null
 
-  override fun onSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverrideSpec.value
     jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
   }
