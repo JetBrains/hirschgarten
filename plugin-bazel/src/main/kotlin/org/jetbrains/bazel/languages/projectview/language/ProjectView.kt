@@ -7,6 +7,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.DebugFlagsSec
 import org.jetbrains.bazel.languages.projectview.language.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.EnabledRulesSection
+import org.jetbrains.bazel.languages.projectview.language.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection
@@ -50,6 +51,7 @@ val REGISTERED_SECTIONS =
     DeriveTargetsFromDirectoriesSection(),
     ImportDepthSection(),
     EnabledRulesSection(),
+    IdeJavaHomeOverrideSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }

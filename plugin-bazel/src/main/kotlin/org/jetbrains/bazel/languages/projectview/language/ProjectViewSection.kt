@@ -5,10 +5,13 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.commands
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection.Companion.COMMAND
+import java.nio.file.Path
+import kotlin.io.path.exists
 
 class SectionKey<T>(val name: String)
 
@@ -54,6 +57,24 @@ abstract class Section<T> {
       }
       if (command !in flag.commands()) {
         val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error", element.text, COMMAND)
+        holder.annotateError(element, message)
+      }
+    }
+
+    fun annotatePath(element: PsiElement, holder: AnnotationHolder) {
+      val pathString = element.text
+      try {
+        var path = Path.of(pathString)
+        if (!path.isAbsolute) {
+          val projectRoot = element.project.rootDir.toNioPath()
+          path = projectRoot.resolve(path)
+        }
+        if (!path.exists()) {
+          val message = ProjectViewBundle.getMessage("annotator.path.not.exists.error")
+          holder.annotateWarning(element, message)
+        }
+      } catch (e: Exception) {
+        val message = ProjectViewBundle.getMessage("annotator.invalid.path.error")
         holder.annotateError(element, message)
       }
     }
