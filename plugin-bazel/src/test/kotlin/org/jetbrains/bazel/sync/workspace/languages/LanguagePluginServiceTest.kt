@@ -157,7 +157,7 @@ class LanguagePluginServiceTest {
                 |            }
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -173,7 +173,7 @@ class LanguagePluginServiceTest {
       val filename = "JavaPackageTest.java"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -198,7 +198,7 @@ class LanguagePluginServiceTest {
                 |}
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.JAVA))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -223,7 +223,7 @@ class LanguagePluginServiceTest {
                 |            }
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -249,7 +249,7 @@ class LanguagePluginServiceTest {
                 |}
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -278,7 +278,7 @@ class LanguagePluginServiceTest {
                 |}
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -294,7 +294,7 @@ class LanguagePluginServiceTest {
       val filename = "ScalaPackageTest.java"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.SCALA))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -317,7 +317,7 @@ class LanguagePluginServiceTest {
                 |}
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.KOTLIN)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.KOTLIN))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -333,7 +333,7 @@ class LanguagePluginServiceTest {
       val filename = "KotlinPackageTest.kt"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.KOTLIN)) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf(LanguageClass.KOTLIN))
 
       // when
       val result = (plugin as JVMPackagePrefixResolver).resolveJvmPackagePrefix(filePath)
@@ -354,7 +354,7 @@ class LanguagePluginServiceTest {
         """.trimMargin()
 
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf()) ?: EmptyLanguagePlugin
+      val plugin = languagePluginsService.getLanguagePlugin(hashSetOf())
 
       // when
       val result = (plugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(filePath)
