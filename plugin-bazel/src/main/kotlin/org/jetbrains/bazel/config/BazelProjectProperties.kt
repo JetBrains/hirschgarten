@@ -34,7 +34,7 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
   var isBazelProject: Boolean = false
   var rootDir: VirtualFile? = null
   var defaultJdkName: String? = null
-  var isBrokenBspProject: Boolean = false
+  var isBrokenBazelProject: Boolean = false
   var workspaceName: String? = null
 
   override fun getState(): BazelProjectPropertiesState? =
@@ -58,7 +58,7 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
     // In that case, we can know if we previously imported the project when [BazelProjectDirectoriesEntity] exists.
     val bazelProjectDirectories = getBazelProjectDirectoriesEntity() ?: return
     rootDir = bazelProjectDirectories.projectRoot.virtualFile ?: return
-    isBrokenBspProject = true
+    isBrokenBazelProject = true
   }
 
   private fun getBazelProjectDirectoriesEntity(): BazelProjectDirectoriesEntity? =
@@ -91,8 +91,8 @@ val Project.isBazelProjectLoaded: Boolean
 val Project.workspaceModelLoadedFromCache: Boolean
   get() = (workspaceModel as WorkspaceModelImpl).loadedFromCache
 
-val Project.isBrokenBspProject: Boolean
-  get() = bazelProjectProperties.isBrokenBspProject
+val Project.isBrokenBazelProject: Boolean
+  get() = bazelProjectProperties.isBrokenBazelProject
 
 @PublicApi
 var Project.rootDir: VirtualFile

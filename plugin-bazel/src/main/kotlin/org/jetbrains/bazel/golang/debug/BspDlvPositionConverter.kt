@@ -24,7 +24,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import java.io.File
@@ -113,24 +113,26 @@ class BspDlvPositionConverter(
     return null
   }
 
-  private suspend fun resolveLocalToRemoteOnServer(localPaths: List<String>): Map<String, String> =
-    project.connection.runWithServer { server ->
-      val params =
-        BazelResolveLocalToRemoteParams(
-          localPaths = localPaths,
-        )
-      val result = server.bazelResolveLocalToRemote(params)
-      result.resolvedPaths
-    }
+  private suspend fun resolveLocalToRemoteOnServer(localPaths: List<String>): Map<String, String> {
+    val params =
+      BazelResolveLocalToRemoteParams(
+        localPaths = localPaths,
+      )
+    return BazelWorkspaceResolveService
+      .getInstance(project)
+      .withEndpointProxy { it.resolveLocalToRemote(params) }
+      .resolvedPaths
+  }
 
-  private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, String> =
-    project.connection.runWithServer { server ->
-      val params =
-        BazelResolveRemoteToLocalParams(
-          remotePaths = remotePaths,
-          goRoot = goRoot,
-        )
-      val result = server.bazelResolveRemoteToLocal(params)
-      result.resolvedPaths
-    }
+  private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, String> {
+    val params =
+      BazelResolveRemoteToLocalParams(
+        remotePaths = remotePaths,
+        goRoot = goRoot,
+      )
+    return BazelWorkspaceResolveService
+      .getInstance(project)
+      .withEndpointProxy { it.resolveRemoteToLocal(params) }
+      .resolvedPaths
+  }
 }

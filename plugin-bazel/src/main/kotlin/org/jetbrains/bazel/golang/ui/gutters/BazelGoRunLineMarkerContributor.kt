@@ -9,24 +9,20 @@ import com.goide.psi.GoFunctionOrMethodDeclaration
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 
+/**
+ * this impl is inspired by the OG impl [here](https://github.com/bazelbuild/intellij/blob/master/golang/src/com/google/idea/blaze/golang/run/producers/GoTestContextProvider.java)
+ */
 class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun PsiElement.shouldAddMarker(): Boolean = isMainFunction() || GoTestFinder.isTestFile(this.containingFile)
 
   private fun PsiElement.isMainFunction(): Boolean =
     GoRunUtil.isMainGoFile(this.containingFile) &&
-      GoConstants.MAIN == (this.parent as GoFunctionDeclaration).name
+      GoConstants.MAIN == (this.parent as? GoFunctionDeclaration)?.name
 
-  override fun getSingleTestFilter(element: PsiElement): String {
-    val function = GoTestFinder.findTestFunctionInContext(element)
-    return if (function != null) {
-      val rawTestFilter = calculateRawTestFilterForElement(element, function)
-      return wrapText(rawTestFilter ?: element.text)
-    } else {
-      wrapText(element.text)
-    }
+  override fun getSingleTestFilter(element: PsiElement): String? {
+    val function = GoTestFinder.findTestFunctionInContext(element) ?: return null
+    return calculateRawTestFilterForElement(element, function)?.let { regexifyTestFilter(it) }
   }
-
-  private fun wrapText(text: String): String = "^${escapeRegexChars(text)}$"
 
   /**
    * Given a code element, calculate the test filter we'd need to run exactly that element.
@@ -56,33 +52,35 @@ class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     } else {
       GoTestRunConfigurationProducerBase.findSubTestInContext(element, enclosingFunction)
     }
+}
 
-  private fun escapeRegexChars(name: String): String {
-    val output = StringBuilder()
-    for (c in name.toCharArray()) {
-      if (isRegexCharNeedingEscaping(c)) {
-        output.append("\\")
-      }
-      output.append(c)
+internal fun regexifyTestFilter(text: String): String = "^${escapeRegexChars(text)}$"
+
+private fun escapeRegexChars(name: String): String {
+  val output = StringBuilder()
+  for (c in name.toCharArray()) {
+    if (isRegexCharNeedingEscaping(c)) {
+      output.append("\\")
     }
-    return output.toString()
+    output.append(c)
   }
+  return output.toString()
+}
 
-  private fun isRegexCharNeedingEscaping(c: Char): Boolean {
-    // Taken from https://cs.opensource.google/go/go/+/refs/tags/go1.21.4:src/regexp/regexp.go;l=720
-    return c == '\\' ||
-      c == '.' ||
-      c == '+' ||
-      c == '*' ||
-      c == '?' ||
-      c == '(' ||
-      c == ')' ||
-      c == '|' ||
-      c == '[' ||
-      c == ']' ||
-      c == '{' ||
-      c == '}' ||
-      c == '^' ||
-      c == '$'
-  }
+private fun isRegexCharNeedingEscaping(c: Char): Boolean {
+  // Taken from https://cs.opensource.google/go/go/+/refs/tags/go1.21.4:src/regexp/regexp.go;l=720
+  return c == '\\' ||
+    c == '.' ||
+    c == '+' ||
+    c == '*' ||
+    c == '?' ||
+    c == '(' ||
+    c == ')' ||
+    c == '|' ||
+    c == '[' ||
+    c == ']' ||
+    c == '{' ||
+    c == '}' ||
+    c == '^' ||
+    c == '$'
 }

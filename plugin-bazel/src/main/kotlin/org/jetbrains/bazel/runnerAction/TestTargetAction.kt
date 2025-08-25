@@ -2,6 +2,7 @@ package org.jetbrains.bazel.runnerAction
 
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -15,6 +16,7 @@ class TestTargetAction(
   isDebugAction: Boolean = false,
   includeTargetNameInText: Boolean = false,
   private val singleTestFilter: String? = null,
+  private val testExecutableArguments: List<String> = emptyList(),
 ) : BazelRunnerAction(
     targetInfos = targetInfos,
     text = { isRunConfigName ->
@@ -42,5 +44,8 @@ class TestTargetAction(
   ) {
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {
     (configuration as BazelRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
+    (configuration as BazelRunConfiguration).handler?.apply {
+      (state as? HasProgramArguments)?.programArguments?.addAll(testExecutableArguments)
+    }
   }
 }

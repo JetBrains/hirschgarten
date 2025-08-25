@@ -1,7 +1,7 @@
-load("@rules_java//java:defs.bzl", "java_library")
+load("//rules/kotlin:macros.bzl", "kt_library")
 
-java_library(
+kt_library(
     name = "info",
-    srcs = glob(["*.java"]),
+    srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
 )

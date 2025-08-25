@@ -18,6 +18,7 @@ class StarlarkReferenceExpression(node: ASTNode) :
   override fun getReference(): PsiReference? =
     when {
       isThrowaway() -> null
+      containsDot() -> null
       hasParentOfType(StarlarkElementTypes.CALL_EXPRESSION) && !isBeforeDot() -> null
       else -> StarlarkLocalVariableReference(this, false)
     }
@@ -31,4 +32,6 @@ class StarlarkReferenceExpression(node: ASTNode) :
   private fun isBeforeDot(): Boolean = node.treeNext?.text == "."
 
   private fun isThrowaway(): Boolean = name == "_"
+
+  private fun containsDot(): Boolean = node.text.contains('.')
 }

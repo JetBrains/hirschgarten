@@ -4,6 +4,12 @@ INTELLIJ_DEPS = [
     "//rules_intellij/testing:lib",
     "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
     "//rules_intellij/intellij_platform_sdk:java_for_tests",
+    "//rules_intellij/intellij_platform_sdk:kotlin_for_tests",
+    "//rules_intellij/third_party/android:android_for_tests",
+    "//rules_intellij/third_party/code_with_me:code_with_me_for_tests",
+    "//rules_intellij/third_party/go:go_for_tests",
+    "//rules_intellij/third_party/python:python_for_tests",
+    "//rules_intellij/third_party/terminal:terminal_for_tests",
     # Usually, we'd get this from the JetBrains SDK, but the bundled one not aware of Bazel platforms,
     # so it fails on certain setups.
     "@jna//jar",

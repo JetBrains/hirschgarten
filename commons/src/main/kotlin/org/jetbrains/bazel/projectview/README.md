@@ -1,16 +1,14 @@
-# Project View
+# `.bazelproject` view
 
-The project view file (*.bazelproject) is used to import a subset of bazel targets into the IDE, configure a project,
-and specify how the bsp server will be started.
+The `.bazelproject` view file is used to import a subset of Bazel targets into the IDE, and configure how the project will be imported.
 
 This is our adaptation of the project view mechanism known
 from [Bazel Plugin for Intellij](https://ij.bazel.build/docs/project-views.html)
 
-> The project view file uses a python-like format with 2 spaces indentation and # comments. You can share the
-> *.bazelproject file between projects, use your own copy, or both.
+> The project view file uses a Python-like format with 2 spaces indentation and # comments. You can share the
+> `*.bazelproject` file between projects, use your own copy, or both.
 >
-> In general, you can start with just ~~directories and~~ targets and add more sections as you want to further tweak
-> your IDE workspace.
+> In general, you can start with just `directories` and add more sections as you want to further tweak your IDE workspace.
 
 ## Usage
 
@@ -290,4 +288,41 @@ index_all_files_in_directories: true
 
 ```
 index_all_files_in_directories: false
+```
+
+#### import_ijars
+
+- When `true`, prefers interface/header jars (ijars) for JVM libraries over full jars.
+  This makes indexing quicker, but you can't see the decompiled code, and some IDE warnings may have false-positives.
+
+##### example:
+
+```
+import_ijars: true
+```
+
+##### default:
+
+```
+import_ijars: false
+```
+
+#### derive_instrumentation_filter_from_targets
+
+- When `true`, adds Bazel packages of all imported targets (either from `targets` or `directories`) as `--instrumentation_filter`
+  when running tests with coverage 
+  (see [Bazel documentation](https://bazel.build/reference/command-line-reference#flag--instrumentation_filter)).
+- When `false`, doesn't add `--instrumentation_filter` to flags when running test with coverage.
+  Instead, you can specify one in `.bazelrc` (e.g., `coverage --instrumentation_filter="^//"`).
+
+##### example:
+
+```
+derive_instrumentation_filter_from_targets: false
+```
+
+##### default:
+
+```
+derive_instrumentation_filter_from_targets: true
 ```

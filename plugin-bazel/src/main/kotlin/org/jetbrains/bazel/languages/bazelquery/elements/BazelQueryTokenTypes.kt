@@ -77,6 +77,15 @@ object BazelQueryTokenTypes {
   val DQ_WORD = BazelQueryTokenType("DQ_WORD")
 
   @JvmField
+  val ERR_WORD = BazelQueryTokenType("ERR_WORD")
+
+  @JvmField
+  val SQ_PATTERN = BazelQueryTokenType("SQ_PATTERN")
+
+  @JvmField
+  val DQ_PATTERN = BazelQueryTokenType("DQ_PATTERN")
+
+  @JvmField
   val COLON = BazelQueryTokenType(":")
 
   @JvmField

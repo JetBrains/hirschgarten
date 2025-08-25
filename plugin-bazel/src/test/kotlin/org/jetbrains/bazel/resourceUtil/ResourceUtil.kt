@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.resourceUtil
 
 import java.io.FileOutputStream
+import java.net.URL
 import java.nio.file.Path
 import java.util.jar.JarFile
 import kotlin.io.path.ExperimentalPathApi
@@ -13,9 +14,13 @@ import kotlin.jvm.javaClass
 
 object ResourceUtil {
   @OptIn(ExperimentalPathApi::class)
-  fun useResource(resourceLocation: String, block: ((Path) -> Unit)) {
+  fun useResource(
+    resourceLocation: String,
+    resourceUrl: URL? = null,
+    block: ((Path) -> Unit),
+  ) {
     val resourceUrl =
-      requireNotNull(javaClass.classLoader.getResource(resourceLocation)) {
+      resourceUrl ?: requireNotNull(javaClass.classLoader.getResource(resourceLocation)) {
         "Can't find resource at location $resourceLocation"
       }
     // check if the resource is inside a jar

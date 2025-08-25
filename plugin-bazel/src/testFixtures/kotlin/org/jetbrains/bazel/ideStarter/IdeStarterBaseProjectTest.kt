@@ -8,6 +8,9 @@ import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.openEditor
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
+import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.elements.dialog
 import com.intellij.driver.sdk.waitForCodeAnalysis
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
@@ -30,12 +33,13 @@ import com.intellij.tools.ide.performanceTesting.commands.delay
 import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.resourceUtil.ResourceUtil
+import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
@@ -55,6 +59,7 @@ abstract class IdeStarterBaseProjectTest {
     when (System.getProperty("bazel.ide.starter.test.ide.id")) {
       "IC" -> IdeProductProvider.IC
       "PY" -> IdeProductProvider.PY
+      "GO" -> IdeProductProvider.GO
       else -> error("IDE id is not set properly. Please use ide_starter_test rule to setup the test.")
     }
 
@@ -79,8 +84,10 @@ abstract class IdeStarterBaseProjectTest {
       .patchPathVariable()
       .withKotlinPluginK2()
       .withBazelPluginInstalled()
+      .addIdeStarterTestMarker()
+      .applyVMOptionsPatch { addSystemProperty("JETBRAINS_LICENSE_SERVER", "https://flsv1.labs.jb.gg") }
   // uncomment for debugging
-  //  .applyVMOptionsPatch { debug(8000, suspend = true) }
+  // .applyVMOptionsPatch { debug(8000, suspend = true) }
 
   @BeforeEach
   fun initialize() {
@@ -186,6 +193,13 @@ abstract class IdeStarterBaseProjectTest {
     return this
   }
 
+  private fun IDETestContext.addIdeStarterTestMarker(): IDETestContext {
+    applyVMOptionsPatch {
+      addSystemProperty(IS_IN_IDE_STARTER_TEST, "true")
+    }
+    return this
+  }
+
   protected fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
     if (localProjectPath != null) {
@@ -218,6 +232,43 @@ abstract class IdeStarterBaseProjectTest {
  */
 inline fun Driver.execute(builder: CommandChain.() -> Unit) {
   this.execute(CommandChain().apply(builder))
+}
+
+fun Driver.syncBazelProject() {
+  execute(CommandChain().takeScreenshot("startSync"))
+  execute(CommandChain().openBspToolWindow())
+  execute(CommandChain().takeScreenshot("openBspToolWindow"))
+  execute(CommandChain().waitForBazelSync())
+  execute(CommandChain().waitForSmartMode())
+}
+
+fun Driver.syncBazelProjectCloseDialog() {
+  execute(CommandChain().takeScreenshot("startSync"))
+  execute(CommandChain().openBspToolWindow())
+  // this is required for a weird bug when you run multiple tests, and a dialog for "add file to git" appears
+  ideFrame {
+    val dialogFound =
+      try {
+        dialog().waitFound(timeout = 30.seconds)
+        true
+      } catch (e: Exception) {
+        false
+      }
+
+    if (dialogFound) {
+      dialog {
+        closeDialog()
+      }
+    }
+  }
+  execute(CommandChain().takeScreenshot("openBspToolWindow"))
+  execute(CommandChain().waitForBazelSync())
+  execute(CommandChain().waitForSmartMode())
+}
+
+fun <T : CommandChain> T.openBspToolWindow(): T {
+  addCommand(CMD_PREFIX + "openBspToolWindow")
+  return this
 }
 
 fun <T : CommandChain> T.waitForBazelSync(): T {

@@ -18,6 +18,7 @@ import com.intellij.xdebugger.XDebugProcessStarter
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
@@ -45,7 +46,7 @@ class BazelGoDebugRunner : GoBuildingRunner() {
     state.patchNativeState()
     ProgressManager.getInstance().runProcessWithProgressSynchronously(
       { ReadAction.run<RuntimeException>(state::prepareStateInBGT) },
-      "Preparing Go Application Running State",
+      BazelPluginBundle.message("go.debug.progress.manager.preparing.process.title"),
       false,
       project,
     )

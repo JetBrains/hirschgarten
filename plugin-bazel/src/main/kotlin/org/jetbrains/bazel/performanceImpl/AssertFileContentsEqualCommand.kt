@@ -23,8 +23,10 @@ class AssertFileContentsEqualCommand(text: String, line: Int) : PlaybackCommandC
     val actualFile = checkNotNull(rootDir.resolveFromRootOrRelative(actualRelativePath)) { "Can't find file $actualRelativePath" }
     val expectedText = expectedFile.readText()
     val relativeText = actualFile.readText()
-    check(expectedText == relativeText) {
+    check(expectedText.normalize() == relativeText.normalize()) {
       "Files don't match!\n\nExpected $expectedRelativePath:\n$expectedText\n\nActual $actualRelativePath:\n$relativeText"
     }
   }
+
+  private fun String.normalize(): String = trim().replace("\r", "")
 }

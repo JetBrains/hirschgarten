@@ -49,12 +49,6 @@ object BazelQueryCommonOptions {
         name = "noimplicit_deps",
       ),
       BazelQueryOption(
-        name = "graph:conditional_edges_limit",
-      ),
-      BazelQueryOption(
-        name = "universe_scope",
-      ),
-      BazelQueryOption(
         name = "nofetch",
       ),
     )

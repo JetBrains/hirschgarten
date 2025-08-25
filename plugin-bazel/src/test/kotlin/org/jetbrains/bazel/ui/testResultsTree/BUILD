@@ -24,7 +24,6 @@ kt_jvm_library(
     testonly = 1,
     srcs = ["TestTargetTreeUtil.kt"],
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
-        "//plugin-bazel/src/testFixtures/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
+        "@maven//:com_jetbrains_intellij_tools_ide_starter_driver",
     ],
 )

@@ -6,6 +6,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 
@@ -17,6 +18,7 @@ class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node) {
   fun check(processor: Processor<StarlarkElement>): Boolean =
     getTargetExpression()?.let { processor.process(it) }
       ?: getTupleExpression()?.getTargetExpressions()?.all { processor.process(it) }
+      ?: getParenthesizedExpression()?.getTuple()?.getTargetExpressions()?.all { processor.process(it) }
       ?: true
 
   fun isTopLevel(): Boolean = parent is StarlarkFile
@@ -24,4 +26,6 @@ class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node) {
   private fun getTargetExpression(): StarlarkTargetExpression? = findChildByClass(StarlarkTargetExpression::class.java)
 
   private fun getTupleExpression(): StarlarkTupleExpression? = findChildByClass(StarlarkTupleExpression::class.java)
+
+  private fun getParenthesizedExpression(): StarlarkParenthesizedExpression? = findChildByClass(StarlarkParenthesizedExpression::class.java)
 }

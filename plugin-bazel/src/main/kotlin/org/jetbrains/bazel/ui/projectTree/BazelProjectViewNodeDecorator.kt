@@ -6,6 +6,8 @@ import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.commons.constants.Constants.SUPPORTED_CONFIG_FILE_NAMES
 import org.jetbrains.bazel.config.isBazelProject
 
 private class BazelProjectViewNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
@@ -18,6 +20,7 @@ private class BazelProjectViewNodeDecorator(private val project: Project) : Proj
   private fun decorateForBsp(node: ProjectViewNode<*>, data: PresentationData) {
     if (node is PsiDirectoryNode) {
       data.removeJavaHackSourceRoot()
+      data.setIconIfBazelDirectory(node)
     }
   }
 
@@ -33,5 +36,13 @@ private class BazelProjectViewNodeDecorator(private val project: Project) : Proj
     clearText()
     locationString = ""
     setIcon(AllIcons.Nodes.Folder)
+  }
+
+  private fun PresentationData.setIconIfBazelDirectory(node: PsiDirectoryNode) {
+    node.virtualFile?.let { virtualFile ->
+      if (virtualFile.children.any { it.name in SUPPORTED_CONFIG_FILE_NAMES }) {
+        setIcon(BazelPluginIcons.bazelDirectory)
+      }
+    }
   }
 }

@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
@@ -41,8 +41,9 @@ class TestWithLocalJvmRunnerAction(
   ) {
   override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? {
     val params = createJvmTestEnvironmentParams(targetInfo.id)
-    return project.connection
-      .runWithServer { it.buildTargetJvmTestEnvironment(params) }
+    return BazelWorkspaceResolveService
+      .getInstance(project)
+      .withEndpointProxy { it.jvmTestEnvironment(params) }
       .items
       .firstOrNull()
   }

@@ -1,8 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <list>
-    <option name="STARLARK_NAMED_ARGUMENT">
-        <value>
-            <option name="FOREGROUND" value="467CDA"/>
-        </value>
-    </option>
+  <option name="STARLARK_NAMED_ARGUMENT">
+    <value>
+      <option
+        name="FOREGROUND"
+        value="467CDA"
+      />
+    </value>
+  </option>
 </list>

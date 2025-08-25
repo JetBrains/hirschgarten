@@ -9,6 +9,18 @@ import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 
+private const val PATH_GROUP_ID = "path"
+private const val LINE_GROUP_ID = "line"
+private const val COLUMN_GROUP_ID = "column"
+
+private val BspPathRegex =
+  """
+        (^|\W)                             # start of line or non-word character
+        (?<$PATH_GROUP_ID>[0-9 a-z_A-Z-/.]+)   # match the path, even relative
+        (?::(?<$LINE_GROUP_ID>[0-9]+))?        # optional line number
+        (?::(?<$COLUMN_GROUP_ID>[0-9]+))?      # optional column number
+    """.toRegex(setOf(RegexOption.COMMENTS, RegexOption.MULTILINE))
+
 /**
  * A better version of [com.intellij.execution.filters.RegexpFilter] which supports relative paths as well
  *
@@ -22,25 +34,17 @@ import org.jetbrains.bazel.config.rootDir
  *    and maps to an existing file
  */
 class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filter {
-  private val pathGroupId = "path"
-  private val lineGroupId = "line"
-  private val columnGroupId = "column"
-
-  private val bspPathRegex =
-    """
-        (^|\W)                             # start of line or non-word character
-        (?<$pathGroupId>[0-9 a-z_A-Z-/.]+)   # match the path, even relative
-        (?::(?<$lineGroupId>[0-9]+))?        # optional line number
-        (?::(?<$columnGroupId>[0-9]+))?      # optional column number
-    """.toRegex(setOf(RegexOption.COMMENTS, RegexOption.MULTILINE))
-
-  override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
-    val results = bspPathRegex.findAll(line).mapNotNull { it.toFilterResultOrNull(line, entireLength) }
-    return Filter.Result(results.toList())
+  override fun applyFilter(line: String, entireLength: Int): Filter.Result {
+    val resultItems =
+      BspPathRegex
+        .findAll(line)
+        .mapNotNull { it.toFilterResultOrNull(line, entireLength) }
+        .toList()
+    return Filter.Result(resultItems)
   }
 
   private fun MatchResult.toFilterResultOrNull(line: String, entireLength: Int): Filter.Result? {
-    val pathGroup = groups[pathGroupId] ?: return null
+    val pathGroup = groups[PATH_GROUP_ID] ?: return null
     val virtualFile = pathGroup.value.toVirtualFileInTheProject() ?: return null
 
     val info = calculateInfo(virtualFile)
@@ -53,14 +57,19 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
   private fun String.toVirtualFileInTheProject(): VirtualFile? {
     if ('/' !in this) return null
     if (trim() == "/") return null
-    return LocalFileSystem.getInstance().findFileByPathIfCached(toAbsolutePath())?.takeIf { it.exists() }
+
+    return LocalFileSystem
+      .getInstance()
+      .findFileByPath(toAbsolutePath())
+      ?.canonicalFile
+      ?.takeIf { it.exists() }
   }
 
   private fun String.toAbsolutePath(): String = if (startsWith("/")) this else "${project.rootDir.path}/$this"
 
   private fun MatchResult.calculateInfo(virtualFile: VirtualFile): OpenFileHyperlinkInfo {
-    val lineNumber = groups[lineGroupId]?.value?.toIntOrNull()?.dec() ?: 0
-    val columnNumber = groups[columnGroupId]?.value?.toIntOrNull()?.dec() ?: 0
+    val lineNumber = groups[LINE_GROUP_ID]?.value?.toIntOrNull()?.dec() ?: 0
+    val columnNumber = groups[COLUMN_GROUP_ID]?.value?.toIntOrNull()?.dec() ?: 0
 
     return OpenFileHyperlinkInfo(project, virtualFile, lineNumber, columnNumber)
   }
@@ -72,8 +81,8 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
   ): Int = entireLength - lineLength + pathGroup.range.first
 
   private fun MatchResult.calculateEndOffset(highlightStartOffset: Int, rawPathLength: Int): Int {
-    val lineGroupLengthWithColon = groups[lineGroupId]?.value?.length?.inc() ?: 0
-    val columnGroupLengthWithColon = groups[columnGroupId]?.value?.length?.inc() ?: 0
+    val lineGroupLengthWithColon = groups[LINE_GROUP_ID]?.value?.length?.inc() ?: 0
+    val columnGroupLengthWithColon = groups[COLUMN_GROUP_ID]?.value?.length?.inc() ?: 0
 
     return highlightStartOffset + rawPathLength + lineGroupLengthWithColon + columnGroupLengthWithColon
   }

@@ -1,19 +1,14 @@
-Do not link kotlin stdlib automatically into all jars.
-
-Index: kotlin/internal/jvm/compile.bzl
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+Purge kotlin stdlib out of the classpath to not pollute with IJ IDEA's provided one.
 <+>UTF-8
 ===================================================================
-diff --git a/kotlin/internal/jvm/compile.bzl b/kotlin/internal/jvm/compile.bzl
---- a/kotlin/internal/jvm/compile.bzl	(revision f446484ee6ae3af627e9598a11c52cb84e32150c)
-+++ b/kotlin/internal/jvm/compile.bzl	(date 1749361247152)
-@@ -113,7 +113,7 @@
-             "\n------\nTargets should only be put in associates= or deps=, not both:\n%s" %
-             ",\n ".join(["    %s" % x for x in list(diff)]),
-         )
--    dep_infos = [_java_info(d) for d in associate_deps + deps] + [toolchains.kt.jvm_stdlibs]
-+    dep_infos = [_java_info(d) for d in associate_deps + deps]
-
-     associates = _associate_utils.get_associates(ctx, toolchains = toolchains, associates = associate_deps)
-
+diff --git a/kotlin/internal/jvm/jvm_deps.bzl b/kotlin/internal/jvm/jvm_deps.bzl
+--- a/kotlin/internal/jvm/jvm_deps.bzl	(revision 55f8585c27233d06160bf4f8bcbb6af029c2f239)
++++ b/kotlin/internal/jvm/jvm_deps.bzl	(date 1752054924661)
+@@ -29,7 +29,6 @@
+         associates = associate_deps,
+     )
+     dep_infos = (
+-        [toolchains.kt.jvm_stdlibs] +
+         associates.dep_infos +
+         deps_java_infos +
+         [_java_info(d) for d in deps]

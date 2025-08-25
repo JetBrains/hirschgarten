@@ -3,7 +3,6 @@ load("//rules/kotlin:macros.bzl", "kt_library")
 kt_library(
     name = "bsp",
     srcs = glob([
-        "*.java",
         "*.kt",
     ]),
     visibility = ["//server/server:__subpackages__"],

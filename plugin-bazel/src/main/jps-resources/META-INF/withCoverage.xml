@@ -1,15 +1,22 @@
 <idea-plugin>
-    <extensions defaultExtensionNs="com.intellij">
-        <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
-        <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
-        <coverageEngine implementation="org.jetbrains.bazel.run.coverage.BazelCoverageEngine"/>
-        <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>
-    </extensions>
-
-    <actions>
-        <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsWithCoverageAction">
-            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
-        </action>
-    </actions>
+  <extensions defaultExtensionNs="com.intellij">
+    <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner" />
+    <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner" />
+    <coverageEngine implementation="org.jetbrains.bazel.run.coverage.BazelCoverageEngine" />
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator" />
+  </extensions>
+  <actions>
+    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsWithCoverageAction">
+      <add-to-group
+        anchor="after"
+        group-id="EditorPopupMenu"
+        relative-to-action="BazelRunAllTestsAction"
+      />
+      <add-to-group
+        anchor="after"
+        group-id="ProjectViewPopupMenu"
+        relative-to-action="BazelRunAllTestsAction"
+      />
+    </action>
+  </actions>
 </idea-plugin>

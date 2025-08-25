@@ -8,6 +8,7 @@ data class ProjectViewCliOptions(
   val excludedTargets: List<String>? = null,
   val buildFlags: List<String>? = null,
   val syncFlags: List<String>? = null,
+  val debugFlags: List<String>? = null,
   val allowManualTargetsSync: Boolean? = null,
   val directories: List<String>? = null,
   val excludedDirectories: List<String>? = null,
@@ -19,6 +20,7 @@ data class ProjectViewCliOptions(
   val shardSync: Boolean? = null,
   val targetShardSize: Int? = null,
   val shardApproach: String? = null,
+  val gazelleTarget: String? = null,
 )
 
 data class CliOptions(

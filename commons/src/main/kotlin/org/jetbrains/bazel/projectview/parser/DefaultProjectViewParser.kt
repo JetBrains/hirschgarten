@@ -2,17 +2,16 @@ package org.jetbrains.bazel.projectview.parser
 
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.sections.AndroidMinSdkSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.DeriveInstrumentationFilterFromTargetsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.EnableNativeAndroidRulesParser
-import org.jetbrains.bazel.projectview.parser.sections.ExperimentalAddTransitiveCompileTimeJarsParser
-import org.jetbrains.bazel.projectview.parser.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser
-import org.jetbrains.bazel.projectview.parser.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser
-import org.jetbrains.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.GazelleTargetParser
+import org.jetbrains.bazel.projectview.parser.sections.ImportIjarsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.IndexAllFilesInDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBuildFlagsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.ProjectViewDebugFlagsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewDeriveTargetsFromDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewEnabledRulesSectionParser
@@ -52,16 +51,13 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         bazelBinary = ProjectViewBazelBinarySectionParser.parse(rawSections),
         buildFlags = ProjectViewBuildFlagsSectionParser.parse(rawSections),
         syncFlags = ProjectViewSyncFlagsSectionParser.parse(rawSections),
+        debugFlags = ProjectViewDebugFlagsSectionParser.parse(rawSections),
         allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSectionParser.parse(rawSections),
         directories = ProjectViewDirectoriesSectionParser.parse(rawSections),
         deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSectionParser.parse(rawSections),
         importDepth = ProjectViewImportDepthSectionParser.parse(rawSections),
         enabledRules = ProjectViewEnabledRulesSectionParser.parse(rawSections),
         ideJavaHomeOverride = ProjectViewIdeJavaHomeOverrideSectionParser.parse(rawSections),
-        addTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsParser.parse(rawSections),
-        transitiveCompileTimeJarsTargetKinds = ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser.parse(rawSections),
-        noPruneTransitiveCompileTimeJarsPatterns = ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser.parse(rawSections),
-        prioritizeLibrariesOverModulesTargetKinds = ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser.parse(rawSections),
         enableNativeAndroidRules = EnableNativeAndroidRulesParser.parse(rawSections),
         androidMinSdkSection = AndroidMinSdkSectionParser.parse(rawSections),
         shardSync = ShardSyncParser.parse(rawSections),
@@ -71,6 +67,8 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         gazelleTarget = GazelleTargetParser.parse(rawSections),
         indexAllFilesInDirectories = IndexAllFilesInDirectoriesSectionParser.parse(rawSections),
         pythonCodeGeneratorRuleNamesSection = PythonCodeGeneratorRuleNamesSectionParser.parse(rawSections),
+        importIjars = ImportIjarsSectionParser.parse(rawSections),
+        deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSectionParser.parse(rawSections),
       ).build()
   }
 

@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.indentation
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import io.kotest.matchers.equals.shouldBeEqual
+import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

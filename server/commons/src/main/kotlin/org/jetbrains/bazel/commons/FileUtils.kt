@@ -1,22 +1,23 @@
 package org.jetbrains.bazel.commons
 
-import com.intellij.openapi.util.SystemInfo
-import com.intellij.util.EnvironmentUtil
 import java.io.File
 
 object FileUtils {
   fun getCacheDirectory(subfolder: String): File? {
+    val environmentProvider = EnvironmentProvider.getInstance()
+    val systemInfoProvider = SystemInfoProvider.getInstance()
     val path =
-      EnvironmentUtil.getValue("XDG_CACHE_HOME") ?: run {
-        when {
-          SystemInfo.isWindows ->
-            EnvironmentUtil.getValue("LOCALAPPDATA") ?: EnvironmentUtil.getValue("APPDATA")
 
-          SystemInfo.isMac ->
-            EnvironmentUtil.getValue("HOME")?.let { "$it/Library/Caches" }
+      environmentProvider.getValue("XDG_CACHE_HOME") ?: run {
+        when {
+          systemInfoProvider.isWindows ->
+            environmentProvider.getValue("LOCALAPPDATA") ?: environmentProvider.getValue("APPDATA")
+
+          systemInfoProvider.isMac ->
+            environmentProvider.getValue("HOME")?.let { "$it/Library/Caches" }
 
           else ->
-            EnvironmentUtil.getValue("HOME")?.let { "$it/.cache" }
+            environmentProvider.getValue("HOME")?.let { "$it/.cache" }
         }
       }
     val file = File(path, subfolder)

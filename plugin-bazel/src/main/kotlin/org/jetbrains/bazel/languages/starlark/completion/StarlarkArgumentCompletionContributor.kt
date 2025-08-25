@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -14,6 +15,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.findParentOfType
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
+import org.jetbrains.bazel.languages.bazelrc.completion.letIf
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
@@ -23,6 +25,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 
 class StarlarkArgumentCompletionContributor : CompletionContributor() {
   init {
@@ -37,49 +40,58 @@ class StarlarkArgumentCompletionContributor : CompletionContributor() {
 private object StarlarkArgumentCompletionProvider : CompletionProvider<CompletionParameters>() {
   private fun fileTypeToGlobalFunctions(file: StarlarkFile): Map<String, BazelGlobalFunction> =
     when (file.getBazelFileType()) {
-      BazelFileType.EXTENSION -> BazelGlobalFunctions.EXTENSION_FUNCTIONS
-      BazelFileType.BUILD -> BazelGlobalFunctions.BUILD_FUNCTIONS
-      BazelFileType.MODULE -> BazelGlobalFunctions.MODULE_FUNCTIONS
-      BazelFileType.WORKSPACE -> BazelGlobalFunctions.WORKSPACE_FUNCTIONS
-    } + BazelGlobalFunctions.STARLARK_FUNCTIONS
+      BazelFileType.EXTENSION -> BazelGlobalFunctions.extensionGlobalFunctions
+      BazelFileType.BUILD -> BazelGlobalFunctions.buildGlobalFunctions
+      BazelFileType.MODULE -> BazelGlobalFunctions.moduleGlobalFunctions
+      BazelFileType.WORKSPACE -> BazelGlobalFunctions.moduleGlobalFunctions
+    } + BazelGlobalFunctions.starlarkGlobalFunctions
 
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    val starlarkCallExpression = parameters.position.findParentOfType<StarlarkCallExpression>()
-    val functionName = starlarkCallExpression?.firstChild?.text
     val file = parameters.originalFile as? StarlarkFile ?: return
-    val functions = fileTypeToGlobalFunctions(file)
+    val starlarkCallExpression = parameters.position.findParentOfType<StarlarkCallExpression>()
+    val functionName = starlarkCallExpression?.firstChild?.text ?: return
+    val globalFunction = fileTypeToGlobalFunctions(file)[functionName]
 
-    if (functionName != null) {
-      val function = functions[functionName]
-      if (function != null) {
-        return function.params.forEach {
-          result.addElement(argumentLookupElement(it))
-        }
-      }
+    if (globalFunction != null) {
+      val argumentList = (starlarkCallExpression.lastChild as StarlarkArgumentList).getArgumentNames()
+      addCompletionForGlobalFunction(result, globalFunction, argumentList)
+    } else {
+      val argument = PsiTreeUtil.getParentOfType(parameters.position, StarlarkArgumentExpression::class.java) ?: return
+      argument.reference.variants
+        .filterIsInstance<StarlarkNamedLookupElement>()
+        .forEach { result.addElement(it) }
     }
+  }
 
-    val argument = PsiTreeUtil.getParentOfType(parameters.position, StarlarkArgumentExpression::class.java) ?: return
-    argument.reference.variants
-      .filterIsInstance<StarlarkNamedLookupElement>()
-      .forEach { result.addElement(it) }
+  private fun addCompletionForGlobalFunction(
+    result: CompletionResultSet,
+    function: BazelGlobalFunction,
+    argumentList: Set<String>,
+  ) {
+    val filtered =
+      function.params.filter {
+        !argumentList.contains(it.name)
+      }
+
+    filtered.forEach {
+      result.addElement(PrioritizedLookupElement.withPriority(argumentLookupElement(it), 1.0))
+    }
   }
 
   private class ArgumentInsertHandler<T : LookupElement>(val default: String) : InsertHandler<T> {
     override fun handleInsert(context: InsertionContext, item: T) {
       val editor = context.editor
       val document = editor.document
-      document.insertString(context.tailOffset, " = $default,")
-      if (default == "\'\'" || default == "\"\"") {
+      if (default == "\'\'" || default == "\"\"" || default == "[]" || default == "{}") {
+        document.insertString(context.tailOffset, " = $default,")
         editor.caretModel.moveToOffset(context.tailOffset - 2)
       } else {
-        val selectionStart = context.tailOffset - default.length - 1
-        val selectionEnd = selectionStart + default.length
-        editor.selectionModel.setSelection(selectionStart, selectionEnd)
-        editor.caretModel.moveToOffset(selectionEnd)
+        document.insertString(context.tailOffset, " = ,")
+        editor.caretModel.moveToOffset(context.tailOffset - 1)
       }
     }
   }
@@ -88,5 +100,7 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     LookupElementBuilder
       .create(arg.name)
       .withIcon(PlatformIcons.PARAMETER_ICON)
-      .withInsertHandler(ArgumentInsertHandler(arg.default))
+      .letIf(arg.named) {
+        it.withInsertHandler(ArgumentInsertHandler(arg.defaultValue ?: ""))
+      }
 }

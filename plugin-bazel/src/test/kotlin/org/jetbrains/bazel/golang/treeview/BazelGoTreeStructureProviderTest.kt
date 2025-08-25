@@ -44,7 +44,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
-import javax.annotation.Nullable
 import kotlin.io.path.Path
 
 /** Unit tests for [BazelGoTreeStructureProvider] */
@@ -152,7 +151,6 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
   private class FakePsiFile(private val project: Project, private val virtualFile: VirtualFile) :
     FakePsiFileSystemItem(project, virtualFile),
     PsiFile {
-    @Nullable
     override fun getNode(): FileASTNode? = null
 
     override fun getParent(): PsiDirectory? = null

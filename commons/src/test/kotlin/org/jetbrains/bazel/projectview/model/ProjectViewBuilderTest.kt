@@ -41,6 +41,7 @@ class ProjectViewBuilderTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -115,6 +116,7 @@ class ProjectViewBuilderTest {
           importDepth = ProjectViewImportDepthSection(0),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -194,6 +196,7 @@ class ProjectViewBuilderTest {
           importDepth = ProjectViewImportDepthSection(0),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -260,6 +263,7 @@ class ProjectViewBuilderTest {
           importDepth = ProjectViewImportDepthSection(0),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -402,6 +406,7 @@ class ProjectViewBuilderTest {
           importDepth = ProjectViewImportDepthSection(2),
           enabledRules = ProjectViewEnabledRulesSection(listOf("rules_scala")),
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -616,6 +621,7 @@ class ProjectViewBuilderTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -827,6 +833,7 @@ class ProjectViewBuilderTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }

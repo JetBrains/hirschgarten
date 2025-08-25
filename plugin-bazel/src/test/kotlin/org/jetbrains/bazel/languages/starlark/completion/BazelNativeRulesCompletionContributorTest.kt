@@ -28,7 +28,6 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
         "cc_shared_library",
         "cc_static_library",
         "cc_proto_library",
-        "cc_toolchain_suite",
       )
 
     // when
@@ -149,7 +148,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `should autocomplete brackets and required args`() {
+  fun `should autocomplete brackets `() {
     // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("java_bin")
@@ -159,10 +158,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
     // then
     assertNull(lookups)
-    val expected =
-      "java_binary(\n" +
-        "\tname = \"\",\n" +
-        "\t<caret>\n)"
+    val expected = "java_binary(<caret>)"
 
     myFixture.checkResult(expected)
   }

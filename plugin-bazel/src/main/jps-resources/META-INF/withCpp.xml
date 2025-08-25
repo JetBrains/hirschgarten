@@ -1,5 +1,5 @@
 <idea-plugin>
-    <extensions defaultExtensionNs="org.jetbrains.bazel">
-<!--        <projectSyncHook implementation="org.jetbrains.bazel.impl.flow.sync.languages.cpp.CppProjectSync"/>-->
-    </extensions>
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <!--        <projectSyncHook implementation="org.jetbrains.bazel.impl.flow.sync.languages.cpp.CppProjectSync"/>-->
+  </extensions>
 </idea-plugin>

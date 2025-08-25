@@ -20,7 +20,7 @@ CUSTOM_TAG=""
 # check if 'private' flag is passed
 if [[ "$2" == "private" ]]; then
   PRIVATE=true
-  REGISTRY="registry.jetbrains.team/p/bazel/docker-private"
+  REGISTRY="registry.jetbrains.team/p/ij/bazel-private"
   # if space_git_credentials is provided
   if [ $# -ge 3 ]; then
     SPACE_GIT_CREDENTIALS=$3
@@ -30,14 +30,14 @@ if [[ "$2" == "private" ]]; then
     CUSTOM_TAG=$4
   fi
 else
-  REGISTRY="registry.jetbrains.team/p/bazel/docker"
+  REGISTRY="registry.jetbrains.team/p/ij/containers-public"
   # if a custom tag is provided as the 3rd arg (no 'private' arg used)
   if [ $# -eq 3 ]; then
     CUSTOM_TAG=$3
   fi
 fi
 
-IMAGE_NAME="hirschgarten-$FOLDER_NAME"
+IMAGE_NAME="bazel-plugin-$FOLDER_NAME"
 FULL_IMAGE_NAME="$REGISTRY/$IMAGE_NAME"
 
 # function to check login

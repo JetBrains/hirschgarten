@@ -7,6 +7,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.platform.util.coroutines.flow.throttle
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.config.isBazelProject
@@ -71,7 +73,7 @@ private class BazelAllTargetsWidgetFactory :
       val targetPanel =
         async(Dispatchers.EDT) {
           val windowPanel = SimpleToolWindowPanel(true, true)
-          configureBazelToolWindowToolBar(model, actionManager, windowPanel)
+          configureBazelToolWindowToolBar(model, actionManager, windowPanel, project)
           val panel = BazelTargetsPanel(project, model)
           windowPanel.setContent(panel)
 
@@ -102,6 +104,28 @@ suspend fun showBspToolWindow(project: Project) {
   }
 }
 
+/**
+ * Normally not needed, unless we link a Bazel project after [ToolWindowFactory.shouldBeAvailable] was called.
+ */
+suspend fun registerBazelToolWindow(project: Project) {
+  val toolWindowManager = project.serviceAsync<ToolWindowManager>()
+  val currentToolWindow = toolWindowManager.getToolWindow(bazelToolWindowId)
+  if (currentToolWindow == null) {
+    withContext(Dispatchers.EDT) {
+      toolWindowManager
+        .registerToolWindow(bazelToolWindowId) {
+          this.icon = BazelPluginIcons.bazelToolWindow
+          this.anchor = ToolWindowAnchor.RIGHT
+          this.canCloseContent = false
+          this.contentFactory = BazelAllTargetsWidgetFactory()
+        }.show()
+    }
+  }
+}
+
+private val bazelToolWindowId: String
+  get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
+
 private suspend fun updateVisibleTargets(
   targetUtils: TargetUtils,
   project: Project,
@@ -109,7 +133,7 @@ private suspend fun updateVisibleTargets(
   targetPanel: Deferred<BazelTargetsPanel>,
 ) {
   // First, apply the filter
-  val filteredTargets = targetUtils.allBuildTargetAsLabelToTargetMap(model.targetFilter.predicate).filter { it.isMainWorkspace }
+  val filteredTargets = targetUtils.allBuildTargetAsLabelToTargetMap(model.targetFilter.predicate)
   val hasAnyTargets = targetUtils.getTotalTargetCount() > 0
   // Then, apply the search query
   var searchRegex: Regex?

@@ -14,12 +14,11 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.openFile
-import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -33,7 +32,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "73ad49439188c91342d46f63a32230e5b535dc03",
+        commitHash = "226f7ff221c4f63c60ad5a6662e11deea2a7779c",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = true,
@@ -46,19 +45,15 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
   //    configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
   //  )
 
-  private val commands =
-    CommandChain()
-      .takeScreenshot("startSync")
-      .waitForBazelSync()
-      .waitForSmartMode()
-      .checkImportedModules()
+  private val context by lazy { createContext() }
 
   @Test
   fun openBazelProject() {
-    createContext()
-      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+    context
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
+          syncBazelProject()
           waitForIndicators(10.minutes)
 
           step("Open file") {
@@ -74,10 +69,11 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProjectWithTestFile() {
-    createContext()
-      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+    context
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
+          syncBazelProject()
           waitForIndicators(10.minutes)
 
           step("Open test file") {
@@ -93,10 +89,11 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun checkImportStatements() {
-    createContext()
-      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+    context
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
+          syncBazelProjectCloseDialog()
           waitForIndicators(10.minutes)
 
           step("Open main.py and navigate to bbb") {

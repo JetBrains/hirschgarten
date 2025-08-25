@@ -10,7 +10,7 @@ check_in_protobuf(
     name = "check_in_protobuf",
     jars = [
         {
-            "label": "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
+            "label": "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto_private",
             "path": "server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto/bsp_target_info_proto-speed-src.jar",
         },
         {

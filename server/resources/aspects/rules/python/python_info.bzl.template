@@ -83,15 +83,21 @@ def files_to_list(source):
     return source.files.to_list()
 
 def extract_python_info(target, ctx, output_groups, **kwargs):
+    if not py_info_in_target(target):
+      return None, None
+
+    src_attr = getattr(ctx.rule.attr, "srcs", [])
+    if type(src_attr) != "list":
+      return None,None
+
     sources = [
         file_location(f)
-        for t in getattr(ctx.rule.attr, "srcs", [])
+        for t in src_attr
         for f in files_to_list(t)
         if not f.is_directory
     ]
     generated_sources=[]
-    if not py_info_in_target(target):
-        return None, None
+
 
     if py_runtime_info_in_target(target):
         provider = get_py_runtime_info(target)

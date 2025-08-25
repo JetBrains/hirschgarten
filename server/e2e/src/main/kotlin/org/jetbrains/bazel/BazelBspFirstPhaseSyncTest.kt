@@ -8,7 +8,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
 import kotlin.io.path.Path
@@ -40,10 +40,9 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
     ) {
       testClient.test(timeout = 5.minutes) { session ->
         val firstPhaseResult =
-          session.server
-            .workspaceBuildTargetsFirstPhase(
-              WorkspaceBuildTargetsFirstPhaseParams("test origin id"),
-            )
+          session.server.workspaceBuildPhasedTargets(
+            WorkspaceBuildTargetPhasedParams("test origin id"),
+          )
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), firstPhaseResult)
 
         assertFalse(javaLibraryJar.exists())
@@ -118,6 +117,9 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
         baseDirectory = Path("\$WORKSPACE/src"),
       )
 
-    return WorkspaceBuildTargetsResult(listOf(srcJavaLibTarget, srcJavaBinaryTarget, srcKotlinLibTarget, srcKotlinBinaryTarget))
+    return WorkspaceBuildTargetsResult(
+      targets = mapOf(),
+      rootTargets = setOf(),
+    )
   }
 }

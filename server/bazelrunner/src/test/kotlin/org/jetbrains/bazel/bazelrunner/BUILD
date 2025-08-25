@@ -16,6 +16,7 @@ kt_junit5_test(
     size = "small",
     src = "BazelRunnerBuilderTest.kt",
     deps = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//server/bazelrunner",
     ],
 )
@@ -35,7 +36,7 @@ kt_intellij_junit4_test(
     src = "outputs/OutputProcessorTest.kt",
     test_class = "org.jetbrains.bazel.bazelrunner.outputs.OutputProcessorTest",
     deps = [
-        "//bsp-testkit2/bsp-testkit/client",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/outputs",
     ],
 )

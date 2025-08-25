@@ -3,8 +3,8 @@ package org.jetbrains.bazel.server.bep
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.OutputGroup
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path

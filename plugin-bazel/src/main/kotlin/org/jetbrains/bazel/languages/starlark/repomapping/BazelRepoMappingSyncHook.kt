@@ -7,6 +7,8 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -14,6 +16,18 @@ import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 import kotlin.io.path.Path
+
+@TestOnly
+fun Project.injectCanonicalRepoNameToPath(canonicalRepoNameToPath: Map<String, Path>) {
+  val service = BazelRepoMappingService.getInstance(this)
+  service.canonicalRepoNameToPath = canonicalRepoNameToPath
+}
+
+@TestOnly
+fun Project.injectCanonicalRepoNameToApparentName(canonicalRepoNameToApparentName: Map<String, String>) {
+  val service = BazelRepoMappingService.getInstance(this)
+  service.canonicalRepoNameToApparentName = canonicalRepoNameToApparentName
+}
 
 val Project.apparentRepoNameToCanonicalName: Map<String, String>
   get() =
@@ -38,8 +52,13 @@ class BazelRepoMappingSyncHook : ProjectSyncHook {
         query("workspace/bazelRepoMapping") {
           environment.server.workspaceBazelRepoMapping()
         }
-      bazelRepoMappingService.apparentRepoNameToCanonicalName = bazelRepoMappingResult.apparentRepoNameToCanonicalName
-      bazelRepoMappingService.canonicalRepoNameToPath = bazelRepoMappingResult.canonicalRepoNameToPath
+      when (val mapping = bazelRepoMappingResult.repoMapping) {
+        is BzlmodRepoMapping -> {
+          bazelRepoMappingService.apparentRepoNameToCanonicalName = mapping.apparentRepoNameToCanonicalName
+          bazelRepoMappingService.canonicalRepoNameToPath = mapping.canonicalRepoNameToPath
+        }
+        else -> {}
+      }
     }
   }
 }

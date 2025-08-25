@@ -1,0 +1,13 @@
+FILE
+  BazelQueryCommand(COMMAND)
+    PsiElement(BazelQuery:DEPS)('deps')
+    PsiElement(BazelQuery:()('(')
+    PsiElement(BazelQuery:()('(')
+    BazelQueryWord(WORD)
+      PsiElement(BazelQuery:UNQUOTED_WORD)('//path/to:target')
+    PsiElement(BazelQuery:))(')')
+    PsiElement(BazelQuery:,)(',')
+    PsiWhiteSpace(' ')
+    BazelQueryInteger(INTEGER)
+      PsiElement(BazelQuery:INTEGER)('1')
+    PsiElement(BazelQuery:))(')')

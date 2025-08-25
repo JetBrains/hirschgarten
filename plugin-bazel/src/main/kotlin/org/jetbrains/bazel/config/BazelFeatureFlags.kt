@@ -1,16 +1,19 @@
 package org.jetbrains.bazel.config
 
-import com.intellij.codeInsight.multiverse.CodeInsightContextManager
+import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.util.PlatformUtils
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 object BazelFeatureFlags {
   private const val PYTHON_SUPPORT = "bsp.python.support"
   private const val ANDROID_SUPPORT = "bsp.android.support"
-  private const val GO_SUPPORT = "bsp.go.support"
+
+  @VisibleForTesting
+  const val GO_SUPPORT = "bsp.go.support"
   private const val QUERY_TERMINAL_COMPLETION = "bazel.query.terminal.completion"
 
   @VisibleForTesting
@@ -31,6 +34,8 @@ object BazelFeatureFlags {
   private const val CHECK_SHARED_SOURCES = "bazel.check.shared.sources"
   private const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
   private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
+  private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
+  private const val FIND_IN_FILES_NON_INDEXABLE = "bazel.find.in.files.non.indexable"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -89,13 +94,22 @@ object BazelFeatureFlags {
     get() = isEnabled(CHECK_SHARED_SOURCES)
 
   val autoOpenProjectIfPresent: Boolean
-    get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) || ApplicationManager.getApplication().isHeadlessEnvironment
+    get() =
+      isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) ||
+        ApplicationManager.getApplication().isHeadlessEnvironment &&
+        !PlatformUtils.isFleetBackend()
 
   val isQueryTerminalCompletionEnabled: Boolean
     get() = isEnabled(QUERY_TERMINAL_COMPLETION)
 
   val isBazelQueryTabEnabled: Boolean
     get() = isEnabled(ENABLE_BAZEL_QUERY_TAB)
+
+  val excludeSymlinksFromFileWatcherViaReflection: Boolean
+    get() = isEnabled(EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION)
+
+  val findInFilesNonIndexable: Boolean
+    get() = isEnabled(FIND_IN_FILES_NON_INDEXABLE)
 
   private fun isEnabled(key: String): Boolean = Registry.`is`(key) || System.getProperty(key, "false").toBoolean()
 }
@@ -110,7 +124,7 @@ object FeatureFlagsProvider {
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
-        isSharedSourceSupportEnabled = CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled,
+        isSharedSourceSupportEnabled = isSharedSourceSupportEnabled(project),
         isBazelQueryTabEnabled = isBazelQueryTabEnabled,
       )
     }

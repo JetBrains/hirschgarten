@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
@@ -11,7 +10,7 @@ private val defaultBuildFlagsSpec =
   )
 
 internal object SyncFlagsSpecExtractor :
-  ExecutionContextEntityExtractor<SyncFlagsSpec> {
+  WorkspaceContextEntityExtractor<SyncFlagsSpec> {
   override fun fromProjectView(projectView: ProjectView): SyncFlagsSpec =
     projectView.syncFlags?.let {
       mapNotEmptySection(it)

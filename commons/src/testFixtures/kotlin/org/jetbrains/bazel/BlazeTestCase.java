@@ -30,6 +30,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
+import org.jetbrains.bazel.commons.EnvironmentProvider;
+import org.jetbrains.bazel.commons.FileUtil;
+import org.jetbrains.bazel.commons.SystemInfoProvider;
+import org.jetbrains.bazel.startup.FileUtilIntellij;
+import org.jetbrains.bazel.startup.IntellijEnvironmentProvider;
+import org.jetbrains.bazel.startup.IntellijSystemInfoProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -97,6 +103,15 @@ public class BlazeTestCase {
     MockProject mockProject = TestUtils.mockProject(application.getPicoContainer(), testDisposable);
 
     extensionsArea = (ExtensionsAreaImpl) Extensions.getRootArea();
+
+    // Initialize SystemInfoProvider for tests
+    SystemInfoProvider.Companion.provideSystemInfoProvider(IntellijSystemInfoProvider.INSTANCE);
+
+    // Initialize FileUtil for tests
+    FileUtil.Companion.provideFileUtil(FileUtilIntellij.INSTANCE);
+
+    // Initialize EnvironmentProvider for tests
+    EnvironmentProvider.Companion.provideEnvironmentProvider(IntellijEnvironmentProvider.INSTANCE);
 
     this.project = mockProject;
 

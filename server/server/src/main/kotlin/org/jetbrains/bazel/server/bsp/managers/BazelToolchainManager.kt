@@ -10,13 +10,13 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner) {
     rulesetLanguage: RulesetLanguage,
     workspaceContext: WorkspaceContext,
     featureFlags: FeatureFlags,
-  ): Label? =
+  ): String? =
     when (rulesetLanguage.language) {
-      Language.Scala -> Label.parse("@${rulesetLanguage.rulesetName}//scala:toolchain_type")
-      Language.Java -> Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type")
-      Language.Kotlin -> Label.parse("@${rulesetLanguage.rulesetName}//kotlin/internal:kt_toolchain_type")
+      Language.Scala -> """"@${rulesetLanguage.rulesetName}//scala:toolchain_type""""
+      Language.Java -> """config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False)"""
+      Language.Kotlin -> """"@${rulesetLanguage.rulesetName}//kotlin/internal:kt_toolchain_type""""
       Language.Android -> getAndroidToolchain(rulesetLanguage, workspaceContext, featureFlags)
-      Language.Go -> Label.parse("@${rulesetLanguage.rulesetName}//go:toolchain")
+      Language.Go -> """"@${rulesetLanguage.rulesetName}//go:toolchain""""
       else -> null
     }
 
@@ -29,7 +29,7 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner) {
     rulesetLanguage: RulesetLanguage,
     workspaceContext: WorkspaceContext,
     featureFlags: FeatureFlags,
-  ): Label? {
+  ): String? {
     if (!featureFlags.isAndroidSupportEnabled) return null
     if (rulesetLanguage.rulesetName == null) return NATIVE_ANDROID_TOOLCHAIN
     val androidToolchain = Label.parse("@${rulesetLanguage.rulesetName}//toolchains/android_sdk:toolchain_type")
@@ -45,10 +45,10 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner) {
           .waitAndGetResult()
           .isSuccess
       }
-    return if (androidToolchainExists) androidToolchain else NATIVE_ANDROID_TOOLCHAIN
+    return if (androidToolchainExists) """"$androidToolchain"""" else NATIVE_ANDROID_TOOLCHAIN
   }
 
   companion object {
-    private val NATIVE_ANDROID_TOOLCHAIN = Label.parse("@bazel_tools//tools/android:sdk_toolchain_type")
+    private const val NATIVE_ANDROID_TOOLCHAIN = """"@bazel_tools//tools/android:sdk_toolchain_type""""
   }
 }

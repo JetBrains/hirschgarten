@@ -43,8 +43,8 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySo
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.utils.StringUtils
@@ -54,7 +54,6 @@ import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 
 private const val PYTHON_SDK_ID = "PythonSDK"
@@ -68,8 +67,9 @@ class PythonProjectSync : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Process Python targets") {
       // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
-      val bspBuildTargets = environment.server.workspaceBuildTargets()
-      val pythonTargets = bspBuildTargets.calculatePythonTargets()
+      val workspace = environment.resolver.getOrFetchResolvedWorkspace()
+      val targets = workspace.targets.getTargets()
+      val pythonTargets = targets.calculatePythonTargets().toList()
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
@@ -94,12 +94,12 @@ class PythonProjectSync : ProjectSyncHook {
           sourceDependencyLibrary = sourceDependencyLibrary,
         )
       }
-      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(bspBuildTargets.targets)
+      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(targets.toList())
     }
   }
 
-  private fun WorkspaceBuildTargetsResult.calculatePythonTargets(): List<BuildTarget> =
-    targets.filter {
+  private fun Sequence<RawBuildTarget>.calculatePythonTargets(): Sequence<BuildTarget> =
+    this.filter {
       it.kind.languageClasses.contains(LanguageClass.PYTHON)
     }
 
@@ -172,9 +172,7 @@ class PythonProjectSync : ProjectSyncHook {
     }
 
   private suspend fun queryDependenciesSources(environment: ProjectSyncHookEnvironment, targets: List<Label>): DependencySourcesResult =
-    query("buildTarget/dependencySources") {
-      environment.server.buildTargetDependencySources(DependencySourcesParams(targets))
-    }
+    environment.resolver.withEndpointProxy { it.dependencySources(DependencySourcesParams(targets)) }
 
   private fun calculateSourceDependencyLibrary(
     target: Label,

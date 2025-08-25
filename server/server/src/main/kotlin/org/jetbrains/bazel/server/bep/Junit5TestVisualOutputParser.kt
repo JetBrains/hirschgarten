@@ -20,36 +20,42 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
   /**
    * generateTestResultTree parse the junit5 test report and return the test result tree for each test target
    *
-   * The tree for each target is organized as follow:
-   * The root is a TestResultTreeNode where the name is the bazel test target, and its status is null.
-   * The sibling nodes of the root are the test result tree for each junit5 test classes in this test target. It can recursively
+   * The tree for each target is organized as follows:
+   * - The root is a TestResultTreeNode where the name is the bazel test target, and its status is null.
+   *  - The sibling nodes of the root are the test result tree for each junit5 test classes in this test target. It can recursively
    * contain test result or a test suit result.
    *
    * The sibling's taskId include its parent's taskId as parent. However, one exception is that direct sibling of root node does not have parents in taskId.
    * It is because that when we notify the client, the root node will be converted to beginTestTarget call, while other nodes are converted into startTest
    * call.
    *
-   * @return Map<String, TestResultTreeNode>, where the key is the test target and value is the root of the test result tree for that target.
+   * @return List of generated TestResultTreeNode instances
    * */
-  private fun generateTestResultTree(output: String): Map<String, TestResultTreeNode> {
+  private fun generateTestResultTree(output: String): List<TestResultTreeNode> {
     val lines = output.lines()
-    val targetToTestResultTree = mutableMapOf<String, TestResultTreeNode>()
+    val testResultTrees = mutableListOf<TestResultTreeNode>()
+
     var treeRootForCurrentTarget: TestResultTreeNode? = null
     var currentNode: TestResultTreeNode? = null
     var currentStackTraceNode: TestResultTreeNode? = null
-    var i = 0
-    while (i < lines.size) {
-      val line = lines[i]
+
+    for (line in lines) {
       val cleanLine = line.removeFormat()
       val testEndedMatcher = testingEndedPattern.matcher(line)
       val testLineMatcher = testLinePattern.matcher(cleanLine)
       val failuresCountMatcher = failuresCountPattern.matcher(cleanLine)
       if (treeRootForCurrentTarget == null) {
-        parseBuildTargetName(line)?.let {
-          treeRootForCurrentTarget = TestResultTreeNode(it, TaskId(testUUID()), null, mutableListOf(), -1)
-          targetToTestResultTree[it] = treeRootForCurrentTarget
-          currentNode = treeRootForCurrentTarget
-        }
+        val extractedTargetName = parseBuildTargetName(line)
+        val testResultsAreStarting = line.contains(TEST_START_CHARACTER)
+        val rootNodeName =
+          when {
+            extractedTargetName != null -> extractedTargetName
+            testResultsAreStarting -> ""
+            else -> continue
+          }
+        treeRootForCurrentTarget = TestResultTreeNode(rootNodeName, TaskId(testUUID()), null, mutableListOf(), -1)
+        testResultTrees.add(treeRootForCurrentTarget)
+        currentNode = treeRootForCurrentTarget
       } else if (testEndedMatcher.find()) {
         val time = testEndedMatcher.group("time").toLongOrNull()
         treeRootForCurrentTarget.time = time
@@ -62,14 +68,17 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
         val indent = testLineMatcher.start("name")
         val parent = currentNode?.let { findParentByIndent(it, indent) }
         val parentId = if (parent?.isRootNode() == true) null else parent?.taskId?.id
+        val (testName, testTime) = separateTimeFromTestName(testLineMatcher.group("name"))
+
         val newNode =
           TestResultTreeNode(
-            name = testLineMatcher.group("name"),
+            name = testName,
             taskId = TaskId(testUUID(), parents = listOfNotNull(parentId)),
             status = testLineMatcher.group("result").toTestStatus(),
             messageLines = mutableListOf(testLineMatcher.group("message")),
             indent = indent,
             parent = parent,
+            time = testTime,
           )
         parent?.children?.put(newNode.name, newNode)
         currentNode = newNode
@@ -81,13 +90,12 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
       } else if (currentStackTraceNode != null) {
         currentStackTraceNode.stacktrace.add(cleanLine.substringAfter("    => "))
       }
-      i++
     }
-    return targetToTestResultTree
+    return testResultTrees
   }
 
-  private fun notifyClient(trees: Map<String, TestResultTreeNode>) {
-    for ((_, tree) in trees.entries) {
+  private fun notifyClient(trees: List<TestResultTreeNode>) {
+    for (tree in trees) {
       tree.notifyClient(bspClientTestNotifier)
     }
   }
@@ -113,6 +121,15 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
         realParent
       }
     }
+
+  private fun separateTimeFromTestName(testName: String): Pair<String, Long?> {
+    val testNameWithTimeMatcher = testNameWithTimePattern.matcher(testName)
+    return if (testNameWithTimeMatcher.find()) {
+      testNameWithTimeMatcher.group("name") to testNameWithTimeMatcher.group("time").toLongOrNull()
+    } else {
+      testName to null
+    }
+  }
 
   private fun isStackTraceStartingLine(line: String) =
     line.trim().let {
@@ -152,14 +169,16 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
     }
 
   companion object {
-    fun textContainsJunit5VisualOutput(text: String): Boolean =
-      text.contains(Char(0x2577)) // every junit5 visual output starts with that character ("╷")
+    fun textContainsJunit5VisualOutput(text: String): Boolean = text.contains(TEST_START_CHARACTER)
   }
 }
+
+private const val TEST_START_CHARACTER = '\u2577' // every junit5 visual output starts with that character ("╷")
 
 private val testingStartPattern = Pattern.compile("^Executing\\htests\\hfrom\\h(?<target>[^:]*:[^:]+)")
 private val testLinePattern =
   Pattern.compile("^(?:[\\h└├│]{3})+[└├│]─\\h(?<name>.+)\\h(?<result>[✔✘↷])\\h?(?<message>.*)$")
+private val testNameWithTimePattern = Pattern.compile("^(?<name>.+)\\h(?<time>\\d+)\\hms$")
 private val testingEndedPattern = Pattern.compile("^Test\\hrun\\hfinished\\hafter\\h(?<time>\\d+)\\hms")
 private val failuresCountPattern = Pattern.compile("^Failures \\(\\d+\\):$")
 
@@ -168,7 +187,7 @@ private fun String.removeFormat(): String =
 
 private fun createTestCaseData(message: String, time: Long?): JUnitStyleTestCaseData =
   JUnitStyleTestCaseData(
-    time = time as Double?,
+    time = time?.let { it / 1000.0 },
     className = null,
     errorMessage = message,
     errorContent = null,
@@ -198,6 +217,24 @@ private class TestResultTreeNode(
     } else if (isLeafNode()) {
       val fullMessage = generateMessage()
       bspClientTestNotifier.startTest(name, taskId)
+
+      if (status == TestStatus.FAILED && parent?.isRootNode() == true && children.isEmpty()) {
+        // BAZEL-2080: if an exception happens at the start of a test suit, there will be no test case run
+        // and no test case reported. Teamcity will mark a testsuit with no test case as success.
+        // So in this case, we need to report a dummy test case with TestStatus.FAILED status.
+        val displayName = "no tests found"
+        val placeholderID = TaskId("empty-test-" + UUID.randomUUID().toString(), parents = listOfNotNull(taskId.id))
+        bspClientTestNotifier.startTest(displayName, placeholderID)
+        bspClientTestNotifier.finishTest(
+          displayName = displayName,
+          taskId = placeholderID,
+          status =
+            TestStatus.FAILED,
+          message = displayName,
+          data = createTestCaseData(displayName, time),
+        )
+      }
+
       bspClientTestNotifier.finishTest(
         displayName = name,
         taskId = taskId,

@@ -18,8 +18,6 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -45,7 +43,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
 
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
-    moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
+    moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies, setOf("lib1", "lib2"))
   }
 
   @Test
@@ -55,23 +53,12 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency(
-              moduleName = "module2",
-            ),
-            IntermediateModuleDependency(
-              moduleName = "module3",
-            ),
-          ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency(
-              libraryName = "lib1",
-            ),
-            IntermediateLibraryDependency(
-              libraryName = "lib2",
-            ),
+            "module2",
+            "lib1",
+            "module3",
+            "lib2",
           ),
         kind =
           TargetKind(
@@ -101,12 +88,6 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                ModuleDependency(
-                  module = ModuleId("module3"),
-                  exported = true,
-                  scope = DependencyScope.COMPILE,
-                  productionOnTest = true,
-                ),
                 LibraryDependency(
                   library =
                     LibraryId(
@@ -115,6 +96,12 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                     ),
                   exported = true,
                   scope = DependencyScope.COMPILE,
+                ),
+                ModuleDependency(
+                  module = ModuleId("module3"),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
                 ),
                 LibraryDependency(
                   library =
@@ -145,23 +132,12 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency(
-              moduleName = "module2",
-            ),
-            IntermediateModuleDependency(
-              moduleName = "module3",
-            ),
-          ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency(
-              libraryName = "lib1",
-            ),
-            IntermediateLibraryDependency(
-              libraryName = "lib2",
-            ),
+            "module2",
+            "module3",
+            "lib1",
+            "lib2",
           ),
         kind =
           TargetKind(
@@ -175,17 +151,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module2",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency(
-              moduleName = "module3",
-            ),
-          ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency(
-              libraryName = "lib1",
-            ),
+            "module3",
+            "lib1",
           ),
         kind =
           TargetKind(

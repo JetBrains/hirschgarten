@@ -7,7 +7,8 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 
 class GenericRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
-  override val id: String = "GenericRunHandlerProvider"
+  override val id: String
+    get() = "GenericRunHandlerProvider"
 
   override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = GenericBazelRunHandler()
 

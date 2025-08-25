@@ -92,7 +92,11 @@ class BazelrcFlagAnnotator : Annotator {
         holder
           .newAnnotation(
             HighlightSeverity.INFORMATION,
-            BazelPluginBundle.message("annotation.bazelrc.flag.not.applicable", element.text, element.parentOfType<BazelrcLine>(false)!!.command),
+            BazelPluginBundle.message(
+              "annotation.bazelrc.flag.not.applicable",
+              element.text,
+              element.parentOfType<BazelrcLine>(false)!!.command,
+            ),
           ).range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
           .create()

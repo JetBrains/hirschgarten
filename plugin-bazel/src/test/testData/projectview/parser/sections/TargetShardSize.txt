@@ -1,6 +1,7 @@
 FILE
   ProjectViewPsiSection(section)
-    PsiElement(ProjectView:section_keyword)('target_shard_size')
+    ProjectViewPsiSectionName(section_name)
+      PsiElement(ProjectView:section_keyword)('target_shard_size')
     PsiElement(ProjectView:colon)(':')
     PsiWhiteSpace(' ')
     ProjectViewPsiSectionItem(section_item)

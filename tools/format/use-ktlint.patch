@@ -10,7 +10,7 @@ index aad6e01..4d0e878 100644
 +    "ktfmt": "--baseline=ktlint-baseline.xml",
      "gofmt": "-l",
      "buf": "format -d --exit-code --disable-symlinks",
-     "terraform-fmt": "fmt -check -diff",
+     "taplo": "format --check --diff",
 @@ -68,7 +68,7 @@ FIX_FLAGS = {
      # NB: apply-ignore added in https://github.com/mvdan/sh/issues/1037
      "shfmt": "-w --apply-ignore",
@@ -19,5 +19,5 @@ index aad6e01..4d0e878 100644
 +    "ktfmt": "-F --baseline=ktlint-baseline.xml",
      "gofmt": "-w",
      "buf": "format --write --disable-symlinks",
-     "terraform-fmt": "fmt",
+     "taplo": "format",
 --

@@ -16,7 +16,7 @@
 package org.jetbrains.bazel.workspacePath
 
 import org.jetbrains.bazel.commons.WorkspacePath
-import org.jetbrains.bazel.commons.WorkspaceRoot
+import org.jetbrains.bazel.workspace.WorkspaceRoot
 import java.nio.file.Path
 
 /**

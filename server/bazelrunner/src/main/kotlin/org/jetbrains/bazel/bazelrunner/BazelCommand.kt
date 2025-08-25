@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.slf4j.Logger
@@ -257,8 +257,11 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Query(bazelBinary: String, private val allowManualTargetsSync: Boolean) :
-    BazelCommand(bazelBinary),
+  class Query(
+    bazelBinary: String,
+    private val allowManualTargetsSync: Boolean,
+    private val systemInfoProvider: SystemInfoProvider,
+  ) : BazelCommand(bazelBinary),
     HasMultipleTargets {
     override val targets: MutableList<Label> = mutableListOf()
     override val excludedTargets: MutableList<Label> = mutableListOf()
@@ -287,7 +290,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
 
     private fun excludeManualTargetsQueryString(targetString: String): String =
-      if (SystemInfo.isWindows) {
+      if (systemInfoProvider.isWindows) {
         "attr('tags', '^((?!manual).)*$', $targetString)"
       } else {
         "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"
@@ -305,6 +308,24 @@ abstract class BazelCommand(val bazelBinary: String) {
 
       commandLine.addAll(startupOptions)
       commandLine.add("cquery")
+      commandLine.addAll(options)
+      commandLine.addAll(targetCommandLine())
+
+      return BazelCommandExecutionDescriptor(commandLine)
+    }
+  }
+
+  class AQuery(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasMultipleTargets {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("aquery")
       commandLine.addAll(options)
       commandLine.addAll(targetCommandLine())
 

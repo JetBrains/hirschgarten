@@ -16,6 +16,7 @@ import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -27,7 +28,7 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     extend(
       CompletionType.BASIC,
       fileSpecificFunctionCompletionElement(BazelFileType.EXTENSION),
-      BazelExtensionFunctionCompletionProvider,
+      BazelBzlFunctionCompletionProvider,
     )
     extend(
       CompletionType.BASIC,
@@ -49,6 +50,7 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
   private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) =
     globalFunctionCompletionElement()
       .inFile(psiFile(StarlarkFile::class.java).with(bazelFileTypeCondition(bazelFileType)))
+      .withSuperParent(3, StarlarkFile::class.java)
 
   private fun globalFunctionCompletionElement() =
     psiElement()
@@ -63,33 +65,35 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     }
 }
 
-private abstract class BazelFunctionCompletionProvider(val functionNames: Set<String>) : CompletionProvider<CompletionParameters>() {
+private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> Collection<BazelGlobalFunction>) :
+  CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    functionNames.forEach { result.addElement(functionLookupElement(it)) }
+    val functions = getFunctions()
+    functions.forEach { result.addElement(functionLookupElement(it)) }
   }
 
-  private fun functionLookupElement(name: String): LookupElement =
+  private fun functionLookupElement(function: BazelGlobalFunction): LookupElement =
     LookupElementBuilder
-      .create(name)
-      .withInsertHandler(ParenthesesInsertHandler.NO_PARAMETERS)
+      .create(function.name)
+      .withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
       .withIcon(PlatformIcons.FUNCTION_ICON)
 }
 
 private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.STARLARK_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.starlarkGlobalFunctions.values })
 
-private object BazelExtensionFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.EXTENSION_FUNCTIONS.keys)
+private object BazelBzlFunctionCompletionProvider :
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.extensionGlobalFunctions.values })
 
 private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.BUILD_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.buildGlobalFunctions.values })
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.MODULE_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions.values })
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.WORKSPACE_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions.values })

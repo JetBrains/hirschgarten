@@ -1,8 +1,8 @@
 load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 
 kt_intellij_junit4_test(
-    name = "BazelNativeRulesDocumentationTargetTest",
-    src = "BazelNativeRulesDocumentationTargetTest.kt",
+    name = "BazelGlobalFunctionDocumentationTargetTest",
+    src = "BazelGlobalFunctionDocumentationTargetTest.kt",
     tags = ["exclusive"],
     deps = [
         "//plugin-bazel",

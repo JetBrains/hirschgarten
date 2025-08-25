@@ -1,0 +1,17 @@
+version: "1.0"
+profile:
+  name: qodana.recommended
+include:
+  - name: QodanaSanity
+  - name: HighlightVisitorInternal
+exclude:
+  - name: CheckDependencyLicenses
+  - name: UnnecessaryUnicodeEscape
+  - name: UnstableApiUsage
+  - name: DialogTitleCapitalization
+  - name: MarkedForRemoval
+  - name: WrongPackageStatement
+  - name: UnresolvedPropertyKey
+failureConditions:
+  severityThresholds:
+    critical: 3950

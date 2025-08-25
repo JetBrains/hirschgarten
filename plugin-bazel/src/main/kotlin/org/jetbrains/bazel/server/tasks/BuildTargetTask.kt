@@ -19,6 +19,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
@@ -33,7 +34,11 @@ import java.util.UUID
 
 @InternalApi
 class BuildTargetTask(private val project: Project) {
-  suspend fun execute(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
+  suspend fun execute(
+    server: JoinedBuildServer,
+    targetsIds: List<Label>,
+    arguments: List<String>,
+  ): CompileResult =
     coroutineScope {
       val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
       val originId = "build-" + UUID.randomUUID().toString()
@@ -109,9 +114,14 @@ class BuildTargetTask(private val project: Project) {
       BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
 
       startBuildConsoleTask(targetsIds, bspBuildConsole, originId, this)
-      val compileParams = createCompileParams(targetsIds, originId)
+      val compileParams = CompileParams(targetsIds, originId = originId, arguments = arguments + listOf("--keep_going"))
       try {
-        val buildDeferred = async { server.buildTargetCompile(compileParams) }
+        val buildDeferred =
+          async {
+            BazelWorkspaceResolveService
+              .getInstance(project)
+              .withEndpointProxy { it.buildTargetCompile(compileParams) }
+          }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
         BazelTaskEventsService.getInstance(project).removeListener(originId)
@@ -141,15 +151,19 @@ class BuildTargetTask(private val project: Project) {
       1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString(project))
       else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
     }
-
-  private fun createCompileParams(targetIds: List<Label>, originId: String) =
-    CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
-suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
+suspend fun runBuildTargetTask(
+  targetIds: List<Label>,
+  project: Project,
+  isDebug: Boolean = false,
+): CompileResult? {
   saveAllFiles()
   return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
-    project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds) }
+    // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
+    // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
+    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags.values } else listOf()
+    project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds, debugFlag) }
   }.also {
     VirtualFileManager.getInstance().asyncRefresh()
   }

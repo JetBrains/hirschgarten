@@ -1,12 +1,11 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContextEntityExtractorException
 import java.nio.file.Path
 import kotlin.io.path.pathString
 
@@ -16,7 +15,7 @@ private val defaultTargetsSpec =
     excludedValues = emptyList(),
   )
 
-internal object TargetsSpecExtractor : ExecutionContextEntityExtractor<TargetsSpec> {
+internal object TargetsSpecExtractor : WorkspaceContextEntityExtractor<TargetsSpec> {
   private const val NAME = "targets"
 
   override fun fromProjectView(projectView: ProjectView): TargetsSpec =
@@ -35,7 +34,7 @@ internal object TargetsSpecExtractor : ExecutionContextEntityExtractor<TargetsSp
         )
 
       hasEmptyIncludedValuesAndNonEmptyExcludedValuesDirectories(directories)
-      -> throw ExecutionContextEntityExtractorException(
+      -> throw WorkspaceContextEntityExtractorException(
         NAME,
         "'directories' section has no included targets.",
       )
@@ -48,7 +47,7 @@ internal object TargetsSpecExtractor : ExecutionContextEntityExtractor<TargetsSp
     val targets = projectView.targets ?: return defaultTargetsSpec
     return when {
       hasEmptyIncludedValuesAndEmptyExcludedValues(targets) -> defaultTargetsSpec
-      hasEmptyIncludedValuesAndNonEmptyExcludedValues(targets) -> throw ExecutionContextEntityExtractorException(
+      hasEmptyIncludedValuesAndNonEmptyExcludedValues(targets) -> throw WorkspaceContextEntityExtractorException(
         NAME,
         "'targets' section has no included targets.",
       )

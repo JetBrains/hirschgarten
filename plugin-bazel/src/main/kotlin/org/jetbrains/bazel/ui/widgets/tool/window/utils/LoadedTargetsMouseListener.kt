@@ -24,7 +24,6 @@ import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.isJvmTarget
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
@@ -133,6 +132,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
   target: BuildTarget,
   includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
+  testExecutableArguments: List<String> = emptyList(),
   callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
@@ -150,6 +150,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
         listOf(target),
         includeTargetNameInText = includeTargetNameInText,
         singleTestFilter = singleTestFilter,
+        testExecutableArguments = testExecutableArguments,
       ),
     )
     if (canBeDebugged) {
@@ -160,6 +161,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
           isDebugAction = true,
           includeTargetNameInText = includeTargetNameInText,
           singleTestFilter = singleTestFilter,
+          testExecutableArguments = testExecutableArguments,
         ),
       )
     }

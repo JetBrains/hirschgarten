@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sdkcompat.workspacemodel.entities.impl
+package impl
 
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
@@ -20,12 +20,10 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 @GeneratedCodeApiVersion(3)
-@GeneratedCodeImplVersion(6)
+@GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelProjectDirectoriesEntityData) : BazelProjectDirectoriesEntity,
-                                                                                                              WorkspaceEntityBase(
-                                                                                                                dataSource
-                                                                                                              ) {
+internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelProjectDirectoriesEntityData) : BazelProjectDirectoriesEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
 
@@ -53,10 +51,21 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       return dataSource.excludedRoots
     }
 
+  override val buildFiles: List<VirtualFileUrl>
+    get() {
+      readField("buildFiles")
+      return dataSource.buildFiles
+    }
+
   override val indexAllFilesInIncludedRoots: Boolean
     get() {
       readField("indexAllFilesInIncludedRoots")
       return dataSource.indexAllFilesInIncludedRoots
+    }
+  override val projectViewFile: VirtualFileUrl?
+    get() {
+      readField("projectViewFile")
+      return dataSource.projectViewFile
     }
 
   override val entitySource: EntitySource
@@ -70,9 +79,8 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
   }
 
 
-  internal class Builder(result: BazelProjectDirectoriesEntityData?) :
-    ModifiableWorkspaceEntityBase<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityData>(result),
-    BazelProjectDirectoriesEntity.Builder {
+  internal class Builder(result: BazelProjectDirectoriesEntityData?) : ModifiableWorkspaceEntityBase<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityData>(
+    result), BazelProjectDirectoriesEntity.Builder {
     internal constructor() : this(BazelProjectDirectoriesEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -96,6 +104,8 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       index(this, "projectRoot", this.projectRoot)
       index(this, "includedRoots", this.includedRoots)
       index(this, "excludedRoots", this.excludedRoots)
+      index(this, "buildFiles", this.buildFiles)
+      index(this, "projectViewFile", this.projectViewFile)
       // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
       checkInitialization() // TODO uncomment and check failed tests
@@ -115,6 +125,9 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       if (!getEntityData().isExcludedRootsInitialized()) {
         error("Field BazelProjectDirectoriesEntity#excludedRoots should be initialized")
       }
+      if (!getEntityData().isBuildFilesInitialized()) {
+        error("Field BazelProjectDirectoriesEntity#buildFiles should be initialized")
+      }
     }
 
     override fun connectionIdList(): List<ConnectionId> {
@@ -130,6 +143,10 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       if (collection_excludedRoots is MutableWorkspaceList<*>) {
         collection_excludedRoots.cleanModificationUpdateAction()
       }
+      val collection_buildFiles = getEntityData().buildFiles
+      if (collection_buildFiles is MutableWorkspaceList<*>) {
+        collection_buildFiles.cleanModificationUpdateAction()
+      }
     }
 
     // Relabeling code, move information from dataSource to this builder
@@ -139,7 +156,9 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       if (this.projectRoot != dataSource.projectRoot) this.projectRoot = dataSource.projectRoot
       if (this.includedRoots != dataSource.includedRoots) this.includedRoots = dataSource.includedRoots.toMutableList()
       if (this.excludedRoots != dataSource.excludedRoots) this.excludedRoots = dataSource.excludedRoots.toMutableList()
+      if (this.buildFiles != dataSource.buildFiles) this.buildFiles = dataSource.buildFiles.toMutableList()
       if (this.indexAllFilesInIncludedRoots != dataSource.indexAllFilesInIncludedRoots) this.indexAllFilesInIncludedRoots = dataSource.indexAllFilesInIncludedRoots
+      if (this.projectViewFile != dataSource?.projectViewFile) this.projectViewFile = dataSource.projectViewFile
       updateChildToParentReferences(parents)
     }
 
@@ -209,12 +228,45 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         excludedRootsUpdater.invoke(value)
       }
 
+    private val buildFilesUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
+      val _diff = diff
+      if (_diff != null) index(this, "buildFiles", value)
+      changedProperty.add("buildFiles")
+    }
+    override var buildFiles: MutableList<VirtualFileUrl>
+      get() {
+        val collection_buildFiles = getEntityData().buildFiles
+        if (collection_buildFiles !is MutableWorkspaceList) return collection_buildFiles
+        if (diff == null || modifiable.get()) {
+          collection_buildFiles.setModificationUpdateAction(buildFilesUpdater)
+        }
+        else {
+          collection_buildFiles.cleanModificationUpdateAction()
+        }
+        return collection_buildFiles
+      }
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).buildFiles = value
+        buildFilesUpdater.invoke(value)
+      }
+
     override var indexAllFilesInIncludedRoots: Boolean
       get() = getEntityData().indexAllFilesInIncludedRoots
       set(value) {
         checkModificationAllowed()
         getEntityData(true).indexAllFilesInIncludedRoots = value
         changedProperty.add("indexAllFilesInIncludedRoots")
+      }
+
+    override var projectViewFile: VirtualFileUrl?
+      get() = getEntityData().projectViewFile
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).projectViewFile = value
+        changedProperty.add("projectViewFile")
+        val _diff = diff
+        if (_diff != null) index(this, "projectViewFile", value)
       }
 
     override fun getEntityClass(): Class<BazelProjectDirectoriesEntity> = BazelProjectDirectoriesEntity::class.java
@@ -226,11 +278,14 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
   lateinit var projectRoot: VirtualFileUrl
   lateinit var includedRoots: MutableList<VirtualFileUrl>
   lateinit var excludedRoots: MutableList<VirtualFileUrl>
+  lateinit var buildFiles: MutableList<VirtualFileUrl>
   var indexAllFilesInIncludedRoots: Boolean = false
+  var projectViewFile: VirtualFileUrl? = null
 
   internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
   internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized
   internal fun isExcludedRootsInitialized(): Boolean = ::excludedRoots.isInitialized
+  internal fun isBuildFilesInitialized(): Boolean = ::buildFiles.isInitialized
 
 
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<BazelProjectDirectoriesEntity> {
@@ -253,8 +308,7 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity"
-    ) as EntityMetadata
+      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity") as EntityMetadata
   }
 
   override fun clone(): BazelProjectDirectoriesEntityData {
@@ -262,6 +316,7 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     clonedEntity as BazelProjectDirectoriesEntityData
     clonedEntity.includedRoots = clonedEntity.includedRoots.toMutableWorkspaceList()
     clonedEntity.excludedRoots = clonedEntity.excludedRoots.toMutableWorkspaceList()
+    clonedEntity.buildFiles = clonedEntity.buildFiles.toMutableWorkspaceList()
     return clonedEntity
   }
 
@@ -270,7 +325,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return BazelProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, indexAllFilesInIncludedRoots, entitySource) {
+    return BazelProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, buildFiles, indexAllFilesInIncludedRoots,
+                                         entitySource) {
+      this.projectViewFile = this@BazelProjectDirectoriesEntityData.projectViewFile
     }
   }
 
@@ -289,7 +346,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     if (this.projectRoot != other.projectRoot) return false
     if (this.includedRoots != other.includedRoots) return false
     if (this.excludedRoots != other.excludedRoots) return false
+    if (this.buildFiles != other.buildFiles) return false
     if (this.indexAllFilesInIncludedRoots != other.indexAllFilesInIncludedRoots) return false
+    if (this.projectViewFile != other.projectViewFile) return false
     return true
   }
 
@@ -302,7 +361,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     if (this.projectRoot != other.projectRoot) return false
     if (this.includedRoots != other.includedRoots) return false
     if (this.excludedRoots != other.excludedRoots) return false
+    if (this.buildFiles != other.buildFiles) return false
     if (this.indexAllFilesInIncludedRoots != other.indexAllFilesInIncludedRoots) return false
+    if (this.projectViewFile != other.projectViewFile) return false
     return true
   }
 
@@ -311,7 +372,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     result = 31 * result + projectRoot.hashCode()
     result = 31 * result + includedRoots.hashCode()
     result = 31 * result + excludedRoots.hashCode()
+    result = 31 * result + buildFiles.hashCode()
     result = 31 * result + indexAllFilesInIncludedRoots.hashCode()
+    result = 31 * result + projectViewFile.hashCode()
     return result
   }
 
@@ -320,7 +383,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     result = 31 * result + projectRoot.hashCode()
     result = 31 * result + includedRoots.hashCode()
     result = 31 * result + excludedRoots.hashCode()
+    result = 31 * result + buildFiles.hashCode()
     result = 31 * result + indexAllFilesInIncludedRoots.hashCode()
+    result = 31 * result + projectViewFile.hashCode()
     return result
   }
 }

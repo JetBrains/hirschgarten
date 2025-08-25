@@ -179,6 +179,7 @@ class DefaultProjectViewParserTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       projectView shouldBe expectedProjectView
@@ -236,6 +237,7 @@ class DefaultProjectViewParserTest {
           importDepth = ProjectViewImportDepthSection(1),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -304,6 +306,7 @@ class DefaultProjectViewParserTest {
           importDepth = ProjectViewImportDepthSection(1),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -368,6 +371,7 @@ class DefaultProjectViewParserTest {
           importDepth = ProjectViewImportDepthSection(7),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -424,6 +428,7 @@ class DefaultProjectViewParserTest {
           importDepth = ProjectViewImportDepthSection(8),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -499,6 +504,7 @@ class DefaultProjectViewParserTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -580,6 +586,7 @@ class DefaultProjectViewParserTest {
           importDepth = ProjectViewImportDepthSection(1),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -661,6 +668,7 @@ class DefaultProjectViewParserTest {
           importDepth = ProjectViewImportDepthSection(1),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       projectView shouldBe expectedProjectView
     }
@@ -687,6 +695,7 @@ class DefaultProjectViewParserTest {
           importDepth = null,
           enabledRules = ProjectViewEnabledRulesSection(listOf("io_bazel_rules_scala", "rules_jvm", "rules_java")),
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       projectView shouldBe expectedProjectView
@@ -719,6 +728,7 @@ class DefaultProjectViewParserTest {
         importDepth = null,
         enabledRules = null,
         ideJavaHomeOverride = null,
+        debugFlags = null,
       )
 
     projectView shouldBe expected
@@ -761,6 +771,7 @@ class DefaultProjectViewParserTest {
         importDepth = null,
         enabledRules = null,
         ideJavaHomeOverride = null,
+        debugFlags = null,
       )
 
     projectView shouldBe expectedProjectView

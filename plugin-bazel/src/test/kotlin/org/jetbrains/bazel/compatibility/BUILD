@@ -14,3 +14,9 @@ ide_starter_test(
     src = "PyCharmTest.kt",
     ide_ids = [IDE_ID.PY],
 )
+
+ide_starter_test(
+    name = "SimplePythonTest",
+    src = "SimplePythonIdeStarterTest.kt",
+    ide_ids = [IDE_ID.PY],
+)

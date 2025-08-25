@@ -18,11 +18,11 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.util.Consumer
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.config.BazelPluginBundle.message as bundledMessage
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
+import org.jetbrains.bazel.config.BazelPluginBundle.message as bundledMessage
 
 class NewBazelPackageAction : DumbAwareAction() {
   override fun update(e: AnActionEvent) {

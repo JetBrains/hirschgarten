@@ -25,7 +25,8 @@ internal class BazelProjectExcludesIgnoredFileProvider : IgnoredFileProvider {
     return delegate?.getIgnoredFiles(project) ?: emptySet()
   }
 
-  override fun getIgnoredGroupDescription(): @NlsContexts.DetailedDescription String = BazelPluginBundle.message("text.bazel.ignored.group.description")
+  override fun getIgnoredGroupDescription(): @NlsContexts.DetailedDescription String =
+    BazelPluginBundle.message("text.bazel.ignored.group.description")
 }
 
 internal fun getProjectExcludesIgnoredFileProviderClass(): Class<IgnoredFileProvider>? =

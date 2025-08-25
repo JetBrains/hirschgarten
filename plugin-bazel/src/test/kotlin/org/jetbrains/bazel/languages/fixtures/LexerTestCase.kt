@@ -4,8 +4,8 @@ import com.intellij.lexer.Lexer
 import com.intellij.psi.tree.IElementType
 import com.intellij.testFramework.PlatformLiteFixture
 import io.kotest.assertions.withClue
-import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.string.shouldHaveLength
+import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 

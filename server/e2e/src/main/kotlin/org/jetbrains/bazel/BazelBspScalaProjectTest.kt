@@ -26,7 +26,6 @@ import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.util.UUID
 import kotlin.io.path.Path
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
@@ -60,15 +59,9 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(
-      resolveProject(),
       compareWorkspaceTargetsResults(),
       compileWithWarnings(),
     )
-
-  private fun resolveProject(): BazelBspTestScenarioStep =
-    BazelBspTestScenarioStep(
-      "resolve project",
-    ) { testClient.testResolveProject(2.minutes) }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val javaHome = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/")
@@ -116,7 +109,8 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         resources = listOf(),
       )
     return WorkspaceBuildTargetsResult(
-      listOf(target),
+      targets = mapOf(),
+      rootTargets = setOf(),
     )
   }
 

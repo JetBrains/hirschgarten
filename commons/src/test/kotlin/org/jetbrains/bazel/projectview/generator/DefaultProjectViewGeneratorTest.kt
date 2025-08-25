@@ -45,6 +45,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -80,6 +81,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -114,6 +116,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -150,6 +153,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -189,6 +193,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -232,6 +237,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -266,6 +272,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -295,6 +302,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -324,6 +332,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -353,6 +362,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -411,6 +421,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -484,6 +495,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -590,6 +602,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -676,6 +689,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when
@@ -732,6 +746,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       val parser = DefaultProjectViewParser()
@@ -753,6 +768,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
       parsedProjectView shouldBe expectedProjectView
     }
@@ -789,6 +805,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       val parser = DefaultProjectViewParser()
@@ -847,6 +864,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = ProjectViewImportDepthSection(3),
           enabledRules = null,
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       val parser = DefaultProjectViewParser()
@@ -874,6 +892,7 @@ class DefaultProjectViewGeneratorTest {
           importDepth = null,
           enabledRules = ProjectViewEnabledRulesSection(listOf("rules_scala", "rules_jvm")),
           ideJavaHomeOverride = null,
+          debugFlags = null,
         )
 
       // when

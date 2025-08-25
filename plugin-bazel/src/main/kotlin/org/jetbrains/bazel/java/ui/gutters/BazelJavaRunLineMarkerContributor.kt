@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.parentOfType
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 
@@ -14,10 +15,11 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true
 
   override fun PsiElement.shouldAddMarker(): Boolean =
-    !isInsideJar() &&
-      PsiTreeUtil.getParentOfType(this, PsiNameIdentifierOwner::class.java, true)?.isClassOrMethod() ?: false
-
-  private fun PsiElement.isInsideJar() = containingFile.virtualFile?.fileSystem is JarFileSystem
+    parentOfType<PsiNameIdentifierOwner>()
+      ?.takeIf { it.nameIdentifier == this }
+      ?.takeIf { it.isClassOrMethod() } != null &&
+      // todo replace with is in source root check
+      containingFile.virtualFile?.fileSystem !is JarFileSystem
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
   override fun getSingleTestFilter(element: PsiElement): String? {
@@ -25,7 +27,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     val functionName = psiIdentifier?.getFunctionName()
     if (psiIdentifier?.isMethod() == true) {
       val className = psiIdentifier.getClassName() ?: return functionName
-      return "$className.$functionName"
+      return "$className.$functionName$"
     }
     return "$functionName"
   }

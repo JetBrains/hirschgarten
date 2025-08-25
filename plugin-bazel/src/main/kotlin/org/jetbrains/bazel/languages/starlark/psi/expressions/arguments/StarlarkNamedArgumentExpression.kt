@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.references.BazelNativeRuleArgumentReference
+import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionArgumentReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
 
 @Suppress("UnstableApiUsage")
@@ -36,6 +36,6 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
 
   fun getArgumentStringValue(): String? = findChildByClass(StarlarkStringLiteralExpression::class.java)?.getStringContents()
 
-  override fun getOwnReferences(): Collection<BazelNativeRuleArgumentReference> =
-    name?.let { listOf(BazelNativeRuleArgumentReference(this)) } ?: emptyList()
+  override fun getOwnReferences(): Collection<BazelGlobalFunctionArgumentReference> =
+    name?.let { listOf(BazelGlobalFunctionArgumentReference(this)) } ?: emptyList()
 }
