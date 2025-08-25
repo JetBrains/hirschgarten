@@ -43,8 +43,6 @@ annotation class ClassDiscriminator(val id: Short)
 
 sealed interface BuildTargetData
 
-interface JvmBuildTargetData
-
 @ClassDiscriminator(1)
 public data class KotlinBuildTarget(
   val languageVersion: String,
