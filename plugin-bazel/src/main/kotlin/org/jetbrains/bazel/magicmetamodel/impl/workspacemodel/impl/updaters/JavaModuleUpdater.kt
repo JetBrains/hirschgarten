@@ -5,6 +5,7 @@ import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
@@ -22,11 +23,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesAndroid
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesKotlin
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
-import org.jetbrains.bazel.utils.toVirtualFile
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -161,11 +158,12 @@ internal class JavaModuleWithSourcesUpdater(
 
   private fun Path.toCompiledClassesVFSUrl(): VirtualFileUrl? {
     val isArchive = this.extension == "jar" || this.extension == "zip"
+    val vfsManager = workspaceModelEntityUpdaterConfig.virtualFileUrlManager
     return if (isArchive) {
-      this.toVirtualFile()?.let { JarFileSystem.getInstance().getJarRootForLocalFile(it) }
-        ?.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+      this.toVirtualFileUrl(vfsManager).let { JarFileSystem.getInstance().getJarRootForLocalFile(it.virtualFile ?: return null) }
+        ?.toVirtualFileUrl(vfsManager)
     } else {
-      this.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+      this.toVirtualFileUrl(vfsManager)
     }
   }
 }

@@ -8,6 +8,7 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/sync/bazelPaths",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/scala",
