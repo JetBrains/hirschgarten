@@ -13,6 +13,28 @@ import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSect
 import java.nio.file.Path
 import kotlin.io.path.exists
 
+sealed class ExcludableValue<T> {
+  abstract val value: T
+
+  data class Included<T>(override val value: T) : ExcludableValue<T>() {
+    override fun toString(): String = value.toString()
+  }
+
+  data class Excluded<T>(override val value: T) : ExcludableValue<T>() {
+    override fun toString(): String = "-$value"
+  }
+
+  fun isIncluded(): Boolean = this is Included
+
+  fun isExcluded(): Boolean = this is Excluded
+
+  companion object {
+    fun <T> included(value: T): ExcludableValue<T> = Included(value)
+
+    fun <T> excluded(value: T): ExcludableValue<T> = Excluded(value)
+  }
+}
+
 class SectionKey<T>(val name: String)
 
 abstract class Section<T> {
