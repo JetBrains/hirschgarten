@@ -71,6 +71,10 @@
     config-file="withTerminal.xml"
     optional="true"
   >org.jetbrains.plugins.terminal</depends>
+  <depends
+    config-file="withBytecodeViewer.xml"
+    optional="true"
+  >ByteCodeViewer</depends>
 
   <extensionPoints>
     <extensionPoint
