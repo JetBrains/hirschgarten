@@ -13,6 +13,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.IdeJavaHomeOv
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection
+import org.jetbrains.bazel.languages.projectview.language.sections.TargetShardSizeSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TestFlagsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
@@ -56,6 +57,7 @@ val REGISTERED_SECTIONS =
     IdeJavaHomeOverrideSection(),
     EnableNativeAndroidRulesSection(),
     AndroidMinSdkSection(),
+    TargetShardSizeSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
