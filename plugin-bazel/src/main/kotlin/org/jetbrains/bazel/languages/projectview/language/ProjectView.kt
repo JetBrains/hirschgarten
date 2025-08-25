@@ -9,6 +9,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.DeriveTargets
 import org.jetbrains.bazel.languages.projectview.language.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.EnabledRulesSection
+import org.jetbrains.bazel.languages.projectview.language.sections.GazelleTargetSection
 import org.jetbrains.bazel.languages.projectview.language.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportRunConfigurationsSection
@@ -62,6 +63,7 @@ val REGISTERED_SECTIONS =
     TargetShardSizeSection(),
     ShardingApproachSection(),
     ImportRunConfigurationsSection(),
+    GazelleTargetSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
