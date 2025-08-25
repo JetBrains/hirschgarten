@@ -5,6 +5,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.AndroidMinSdk
 import org.jetbrains.bazel.languages.projectview.language.sections.BazelBinarySection
 import org.jetbrains.bazel.languages.projectview.language.sections.BuildFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DebugFlagsSection
+import org.jetbrains.bazel.languages.projectview.language.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.EnableNativeAndroidRulesSection
@@ -48,28 +49,29 @@ sealed class ExcludableValue<T> {
 
 val REGISTERED_SECTIONS =
   listOf(
-    TargetsSection(),
-    ShardSyncSection(),
+    AllowManualTargetsSyncSection(),
+    AndroidMinSdkSection(),
     BazelBinarySection(),
     BuildFlagsSection(),
-    SyncFlagsSection(),
-    TestFlagsSection(),
     DebugFlagsSection(),
-    AllowManualTargetsSyncSection(),
-    DirectoriesSection(),
+    DeriveInstrumentationFilterFromTargetsSection(),
     DeriveTargetsFromDirectoriesSection(),
-    ImportDepthSection(),
+    DirectoriesSection(),
     EnabledRulesSection(),
-    IdeJavaHomeOverrideSection(),
     EnableNativeAndroidRulesSection(),
-    AndroidMinSdkSection(),
-    TargetShardSizeSection(),
-    ShardingApproachSection(),
-    ImportRunConfigurationsSection(),
     GazelleTargetSection(),
+    IdeJavaHomeOverrideSection(),
+    ImportDepthSection(),
+    ImportIjarsSection(),
+    ImportRunConfigurationsSection(),
     IndexAllFilesInDirectoriesSection(),
     PythonCodeGeneratorRuleNamesSection(),
-    ImportIjarsSection(),
+    ShardingApproachSection(),
+    ShardSyncSection(),
+    SyncFlagsSection(),
+    TargetShardSizeSection(),
+    TargetsSection(),
+    TestFlagsSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
