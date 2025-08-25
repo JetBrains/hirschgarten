@@ -1,0 +1,10 @@
+FILE
+  ProjectViewPsiSection(section)
+    ProjectViewPsiSectionName(section_name)
+      PsiElement(ProjectView:section_keyword)('targets')
+    PsiElement(ProjectView:colon)(':')
+    PsiWhiteSpace(' ')
+    ProjectViewPsiSectionItem(section_item)
+      PsiElement(ProjectView:identifier)('//my/target')
+      PsiElement(ProjectView:colon)(':')
+      PsiElement(ProjectView:identifier)('here')
