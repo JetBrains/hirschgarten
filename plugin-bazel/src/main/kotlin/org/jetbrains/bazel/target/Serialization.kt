@@ -18,6 +18,8 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
+import org.jetbrains.bsp.protocol.BUILD_DATA_LIST_MAGIC
+import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.nio.ByteBuffer
 import java.nio.file.Path
@@ -129,16 +131,18 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         writePath(path = item.baseDirectory.invariantSeparatorsPathString, filePathSuffix = filePathSuffix, buffer = buffer)
         buffer.put(if (item.noBuild) 1 else 0)
 
-        val targetData = item.data
-        if (targetData == null) {
-          buffer.putVarInt(0)
-        } else {
+        // magic is required to keep backwards compatibility
+        // in normal circumstances we would prepend the current data frame with a version byte/varint, but this haven't been done
+        buffer.put(BUILD_DATA_LIST_MAGIC.toByte())
+        buffer.putVarInt(item.data.size)
+        for (targetData in item.data) {
           val aClass = targetData.javaClass
           BuildDataTargetTypeRegistry.writeClassId(aClass, buffer)
           val data = bazelGson.toJson(targetData, aClass).encodeToByteArray()
           buffer.putVarInt(data.size)
           buffer.put(data)
         }
+        //item.data
       },
       reader = { buffer ->
         val id = readResolvedLabel(buffer)
@@ -149,16 +153,28 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         val noBuild = buffer.get() == 1.toByte()
 
         val typeId = buffer.get().toInt()
-        val data =
+        val data = if (typeId.toShort() != BUILD_DATA_LIST_MAGIC) {
           if (typeId == 0) {
-            null
+            listOf()
           } else {
             val aClass = BuildDataTargetTypeRegistry.getClass(typeId)
             val dataSize = readVarInt(buffer)
             val encodedData = ByteArray(dataSize)
             buffer.get(encodedData)
-            bazelGson.fromJson(encodedData.decodeToString(), aClass)
+            listOf(bazelGson.fromJson(encodedData.decodeToString(), aClass))
           }
+        } else {
+          val dataSize = readVarInt(buffer)
+          val data = mutableListOf<BuildTargetData>()
+          (0 until dataSize).forEach { _ ->
+              val aClass = BuildDataTargetTypeRegistry.getClass(typeId)
+            val dataSize = readVarInt(buffer)
+            val encodedData = ByteArray(dataSize)
+            buffer.get(encodedData)
+            data.add(bazelGson.fromJson(encodedData.decodeToString(), aClass))
+          }
+          data
+        }
         PartialBuildTarget(id = id, tags = tags, kind = kind, baseDirectory = baseDirectory, data = data, noBuild = noBuild)
       },
     ),

@@ -181,7 +181,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -203,7 +203,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
-        data = jvmBuildTargetWithFlag,
+        data = listOf(jvmBuildTargetWithFlag),
         sources =
           listOf(
             SourceItem(
@@ -247,7 +247,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
-        data = scalaBuildTarget.copy(scalacOptions = listOf("-target:jvm-1.8")),
+        data = listOf(scalaBuildTarget.copy(scalacOptions = listOf("-target:jvm-1.8"))),
         sources =
           listOf(
             SourceItem(
@@ -269,7 +269,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/subpackage/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -291,7 +291,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -317,7 +317,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_jvm_flags/"),
-        data = scalaBuildTarget,
+        data = listOf(scalaBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -343,7 +343,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_main_class/"),
-        data = scalaBuildTarget,
+        data = listOf(scalaBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -369,7 +369,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_args/"),
-        data = scalaBuildTarget,
+        data = listOf(scalaBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -399,7 +399,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_dependency/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -439,7 +439,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
-        data = scalaBuildTarget,
+        data = listOf(scalaBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -461,7 +461,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_resources/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -490,7 +490,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(), // TODO: why empty?
         resources = emptyList(),
@@ -506,7 +506,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/environment_variables/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -528,7 +528,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/environment_variables/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -550,7 +550,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_javac_exports/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(

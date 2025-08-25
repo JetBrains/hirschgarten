@@ -59,7 +59,7 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
       resources = calculateResources(project),
       noBuild = isManual, // TODO lol, it's different from the aspect sync??
       baseDirectory = bazelPathsResolver.toDirectoryPath(label, context.repoMapping),
-      data = null,
+      data = listOf(),
     )
   }
 

@@ -104,7 +104,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/kotlinc_test/"),
-        data = kotlincTestBuildTargetData,
+        data = listOf(kotlincTestBuildTargetData),
         sources =
           listOf(
             SourceItem(
@@ -127,7 +127,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
-        data = kotlinBuildTargetData,
+        data = listOf(kotlinBuildTargetData),
         sources =
           listOf(
             SourceItem(
@@ -198,7 +198,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
-        data = userBuildTargetData,
+        data = listOf(userBuildTargetData),
         sources =
           listOf(
             SourceItem(
@@ -227,7 +227,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
-        data = userOfExportBuildTargetData,
+        data = listOf(userOfExportBuildTargetData),
         sources =
           listOf(
             SourceItem(
@@ -255,7 +255,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
-        data = kotlinBuildTargetData,
+        data = listOf(kotlinBuildTargetData),
         sources =
           listOf(),
         resources = emptyList(),

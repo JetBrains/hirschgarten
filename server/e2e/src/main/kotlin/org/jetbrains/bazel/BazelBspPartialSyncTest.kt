@@ -77,7 +77,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
               ruleType = RuleType.BINARY,
             ),
             baseDirectory = Path("\$WORKSPACE/java_targets/"),
-            data = jvmBuildTarget,
+            data = listOf(jvmBuildTarget),
             sources = listOf(SourceItem(Path("\$WORKSPACE/java_targets/JavaBinary.java"), false, "java_targets")),
             resources = emptyList(),
           )
@@ -118,7 +118,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources = listOf(SourceItem(Path("\$WORKSPACE/java_targets/JavaLibrary.java"), false, "java_targets")),
         resources = emptyList(),
       )

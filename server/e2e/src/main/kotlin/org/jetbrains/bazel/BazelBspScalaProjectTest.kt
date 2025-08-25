@@ -97,7 +97,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.SCALA, LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
-        data = scalaBuildTarget,
+        data = listOf(scalaBuildTarget),
         sources =
           listOf(
             SourceItem(

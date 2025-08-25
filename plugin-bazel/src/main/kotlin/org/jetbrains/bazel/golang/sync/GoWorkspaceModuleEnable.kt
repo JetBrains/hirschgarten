@@ -7,6 +7,7 @@ import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSy
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.utils.mapWithBuildTargets
 
 class GoWorkspaceModuleEnable : WorkspaceModuleProjectSyncHook.EnableWorkspaceModuleSyncHookExtension {
   override suspend fun isEnabled(environment: ProjectSyncHook.ProjectSyncHookEnvironment): Boolean {
@@ -15,7 +16,7 @@ class GoWorkspaceModuleEnable : WorkspaceModuleProjectSyncHook.EnableWorkspaceMo
     return BazelFeatureFlags.isGoSupportEnabled &&
       environment.diff.targetUtilsDiff.bspTargets
         .filter { it.id.isMainWorkspace }
-        .mapNotNull { it.data as? GoBuildTarget }
+        .mapWithBuildTargets<GoBuildTarget>()
         .any { it.generatedSources.isNotEmpty() }
   }
 }

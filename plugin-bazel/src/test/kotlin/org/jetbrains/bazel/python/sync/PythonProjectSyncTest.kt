@@ -228,14 +228,14 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
           languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("/targets_base_dir"),
-        data =
+        data = listOf(
           PythonBuildTarget(
             version = "3",
             interpreter = Path(PYTHON_INTERPRETER),
             listOf(),
             false,
             listOf(),
-          ),
+          )),
         sources = sources,
         resources = resources,
       )

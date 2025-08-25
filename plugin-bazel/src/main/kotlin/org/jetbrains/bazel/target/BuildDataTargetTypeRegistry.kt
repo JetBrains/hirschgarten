@@ -4,6 +4,7 @@ package org.jetbrains.bazel.target
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import org.h2.mvstore.WriteBuffer
+import org.jetbrains.bsp.protocol.BUILD_DATA_LIST_MAGIC
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.ClassDiscriminator
 import java.util.IdentityHashMap
@@ -34,6 +35,10 @@ internal object BuildDataTargetTypeRegistry {
         requireNotNull(klass.annotations.filterIsInstance<ClassDiscriminator>().firstOrNull()) {
           "Class discriminator annotation is missing for ${klass.qualifiedName}"
         }
+
+      if (classDiscriminator.id == BUILD_DATA_LIST_MAGIC.toShort()) {
+        error("Class discriminator cannot be equal to magic - ${BUILD_DATA_LIST_MAGIC}, please choose another id")
+      }
 
       val idAsShort = classDiscriminator.id
       require(idAsShort in 1..255) { "Class id must be in range 1..255" }

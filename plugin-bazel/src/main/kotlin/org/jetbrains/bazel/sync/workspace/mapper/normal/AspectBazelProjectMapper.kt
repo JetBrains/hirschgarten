@@ -38,6 +38,7 @@ import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -79,18 +80,17 @@ class AspectBazelProjectMapper(
     extraLibraries: Map<Label, List<Library>>,
   ): IntermediateTargetData? {
     val languages = inferLanguages(this)
-    val languagePlugin =
-      project
-        .service<LanguagePluginsService>()
-        .getLanguagePlugin(languages) ?: return null
+    val languagePlugins = project.service<LanguagePluginsService>().getLanguagePlugin(languages)
     val tags = targetTagsResolver.resolveTags(this, workspaceContext).toSet()
     val label = this.label().assumeResolved()
+    val sources = languagePlugins.flatMap { resolveSourceSet(this, it) }
+      .toList()
     return IntermediateTargetData(
       label = label,
       target = this,
       extraLibraries = extraLibraries[label] ?: emptyList(),
       tags = tags,
-      sources = resolveSourceSet(this, languagePlugin),
+      sources = sources,
       languages = languages,
     )
   }
@@ -852,11 +852,9 @@ class AspectBazelProjectMapper(
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
-    val languagePlugin =
-      project
-        .service<LanguagePluginsService>()
-        .getLanguagePlugin(targetData.languages) ?: return null
-    val resources = resolveResources(target, languagePlugin)
+    val languagePlugins = project.service<LanguagePluginsService>().getLanguagePlugin(targetData.languages)
+    val resources = languagePlugins.flatMap { resolveResources(target, it) }
+      .toList()
 
     val tags = targetData.tags
     val (targetSources, lowPrioritySharedSources) =
@@ -867,7 +865,10 @@ class AspectBazelProjectMapper(
       }
 
     val context = LanguagePluginContext(target, dependencyGraph, repoMapping, project)
-    val data = languagePlugin.createBuildTargetData(context, target)
+
+    // we have to materialize the sequence to allow the suspend call
+    val data = languagePlugins.toList()
+      .mapNotNull { it.createBuildTargetData(context, target) }
 
     return RawBuildTarget(
       id = label,
@@ -985,7 +986,7 @@ class AspectBazelProjectMapper(
         dependencies = emptyList(),
         sources = emptyList(),
         resources = emptyList(),
-        data = null,
+        data = listOf(),
       )
     return buildTarget
   }

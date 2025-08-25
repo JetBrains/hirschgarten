@@ -62,7 +62,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/example/"),
-        data = examplePythonBuildTarget,
+        data = listOf(examplePythonBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -84,7 +84,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/lib/"),
-        data = examplePythonBuildTarget,
+        data = listOf(examplePythonBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -106,7 +106,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/test/"),
-        data = examplePythonBuildTarget,
+        data = listOf(examplePythonBuildTarget),
         sources =
           listOf(
             SourceItem(

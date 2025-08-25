@@ -179,7 +179,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         dependencies = dependencies,
         kind = kind,
         baseDirectory = Path("\$WORKSPACE/$targetDirectory/"),
-        data = goBuildTarget,
+        data = listOf(goBuildTarget),
         sources = sources,
         resources = emptyList(),
       )

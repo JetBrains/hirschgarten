@@ -84,7 +84,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = projectRoot,
-        data = data,
+        data = listOf(data),
         sources =
           listOf(
             SourceItem(
@@ -221,7 +221,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = projectRoot,
-        data = kotlinBuildTarget,
+        data = listOf(kotlinBuildTarget),
         sources = emptyList(),
         resources = emptyList(),
       )
@@ -584,7 +584,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = projectRoot,
-        data = data,
+        data = listOf(data),
         sources =
           listOf(
             SourceItem(
@@ -759,7 +759,7 @@ class ExtractJvmBuildTargetTest {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("/base/dir"),
-        data = data,
+        data = listOfNotNull(data),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.java"), false)),
         resources = emptyList(),
       )

@@ -14,6 +14,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
+import org.jetbrains.bsp.protocol.utils.mapWithBuildTargets
 
 /** From [com.goide.inspections.GoWrongSdkConfigurationNotificationProvider].  */
 private const val DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH = "DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH"
@@ -24,9 +25,8 @@ class GoSdkSyncHook : ProjectPostSyncHook {
       project.targetUtils
         .allBuildTargets()
         .filter { it.id.isMainWorkspace }
-        .mapNotNull {
-          it.data as? GoBuildTarget
-        }.any { it.generatedSources.isNotEmpty() }
+        .mapWithBuildTargets<GoBuildTarget>()
+        .any { it.generatedSources.isNotEmpty() }
 
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val project = environment.project

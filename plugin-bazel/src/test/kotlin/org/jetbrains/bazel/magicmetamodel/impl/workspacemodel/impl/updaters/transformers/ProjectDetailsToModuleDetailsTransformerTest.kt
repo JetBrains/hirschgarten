@@ -76,11 +76,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
         listOf(Path("/root/dir/resource/File.txt")),
         baseDirectory = Path("base/dir"),
-        data =
+        data = listOf(
           JvmBuildTarget(
             javaVersion = "",
             javacOpts = listOf("opt1", "opt2", "opt3"),
-          ),
+          )
+        )
       )
 
     val projectDetails =
@@ -126,11 +127,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
         listOf(Path("/root/dir1/resource/File.txt")),
         baseDirectory = Path("base/dir"),
-        data =
+        data = listOf(
           JvmBuildTarget(
             javaVersion = "",
             javacOpts = target1JavacOptionsItem,
           ),
+        ),
       )
 
     val target2 =
@@ -165,11 +167,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         emptyList(),
         baseDirectory = Path("base/dir"),
-        data =
+        data = listOf(
           JvmBuildTarget(
             javaVersion = "",
             javacOpts = target3JavacOptionsItem,
-          ),
+          ))
       )
 
     val target4Id = Label.parse("target4")

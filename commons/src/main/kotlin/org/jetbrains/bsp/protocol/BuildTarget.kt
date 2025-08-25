@@ -3,11 +3,13 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
+const val BUILD_DATA_LIST_MAGIC: Short = 0xFF;
+
 interface BuildTarget {
   val id: Label
   val kind: TargetKind
   val baseDirectory: Path
-  val data: BuildTargetData?
+  val data: List<BuildTargetData>
   val tags: List<String>
 
   val noBuild: Boolean
@@ -22,7 +24,7 @@ data class RawBuildTarget(
   val resources: List<Path>,
   override val baseDirectory: Path,
   override val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
-  override var data: BuildTargetData? = null,
+  override var data: List<BuildTargetData> = emptyList(),
   val lowPrioritySharedSources: List<SourceItem> = emptyList(),
 ) : BuildTarget
 
@@ -31,7 +33,7 @@ data class PartialBuildTarget(
   override val tags: List<String>,
   override val kind: TargetKind,
   override val baseDirectory: Path,
-  override val data: BuildTargetData? = null,
+  override val data: List<BuildTargetData> = emptyList(),
   override val noBuild: Boolean = false,
 ) : BuildTarget
 
@@ -122,8 +124,6 @@ public data class AndroidBuildTarget(
   var jvmBuildTarget: JvmBuildTarget? = null,
   var kotlinBuildTarget: KotlinBuildTarget? = null,
 ) : BuildTargetData
-
-fun BuildTargetData.getJvmOrNull(): JvmBuildTarget? = this as? JvmBuildTarget?
 
 @ClassDiscriminator(8)
 object VoidBuildTarget : BuildTargetData

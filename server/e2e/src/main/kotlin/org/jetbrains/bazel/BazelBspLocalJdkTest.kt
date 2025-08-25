@@ -58,7 +58,7 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/example/"),
-        data = exampleExampleJvmBuildTarget,
+        data = listOf(exampleExampleJvmBuildTarget),
         sources =
           listOf(
             SourceItem(

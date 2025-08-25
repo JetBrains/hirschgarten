@@ -141,6 +141,7 @@ class CollectProjectDetailsTask(
           FailureResultImpl(e),
         )
       }
+      e.printStackTrace()
       throw e
     }
 

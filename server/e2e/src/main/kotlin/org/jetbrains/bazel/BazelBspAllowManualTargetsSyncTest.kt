@@ -73,7 +73,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -97,7 +97,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(
@@ -121,7 +121,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
-        data = jvmBuildTarget,
+        data = listOf(jvmBuildTarget),
         sources =
           listOf(
             SourceItem(

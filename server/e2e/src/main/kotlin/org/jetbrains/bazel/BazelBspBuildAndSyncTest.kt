@@ -85,7 +85,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
             languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/src/"),
-        data = exampleExampleJvmBuildTarget,
+        data = listOf(exampleExampleJvmBuildTarget),
         sources =
           listOf(
             SourceItem(

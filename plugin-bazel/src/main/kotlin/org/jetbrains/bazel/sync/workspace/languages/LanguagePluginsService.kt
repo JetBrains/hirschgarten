@@ -44,7 +44,7 @@ class LanguagePluginsService {
 
   fun getLanguagePlugin(lang: LanguageClass): LanguagePlugin<*>? = registry[lang]
 
-  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*>? = langs.firstNotNullOfOrNull { getLanguagePlugin(it) }
+  fun getLanguagePlugin(langs: Set<LanguageClass>): Sequence<LanguagePlugin<*>> = langs.asSequence().mapNotNull(registry::get)
 
   inline fun <reified PLUGIN> getLanguagePlugin(lang: LanguageClass): PLUGIN =
     getLanguagePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")
