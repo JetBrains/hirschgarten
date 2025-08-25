@@ -6,6 +6,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.BuildFlagsSec
 import org.jetbrains.bazel.languages.projectview.language.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DirectoriesSection
+import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
@@ -46,6 +47,7 @@ val REGISTERED_SECTIONS =
     AllowManualTargetsSyncSection(),
     DirectoriesSection(),
     DeriveTargetsFromDirectoriesSection(),
+    ImportDepthSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
