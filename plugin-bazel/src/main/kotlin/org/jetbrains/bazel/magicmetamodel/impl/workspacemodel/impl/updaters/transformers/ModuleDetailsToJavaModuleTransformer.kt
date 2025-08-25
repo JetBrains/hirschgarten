@@ -5,8 +5,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
-import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.flow.sync.BazelBinPathService
+import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
