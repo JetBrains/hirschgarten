@@ -6,6 +6,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.BuildFlagsSec
 import org.jetbrains.bazel.languages.projectview.language.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.DirectoriesSection
+import org.jetbrains.bazel.languages.projectview.language.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.EnabledRulesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
@@ -52,6 +53,7 @@ val REGISTERED_SECTIONS =
     ImportDepthSection(),
     EnabledRulesSection(),
     IdeJavaHomeOverrideSection(),
+    EnableNativeAndroidRulesSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
