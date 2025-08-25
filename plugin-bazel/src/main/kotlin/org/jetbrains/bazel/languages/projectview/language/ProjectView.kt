@@ -13,6 +13,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.GazelleTarget
 import org.jetbrains.bazel.languages.projectview.language.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportRunConfigurationsSection
+import org.jetbrains.bazel.languages.projectview.language.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardingApproachSection
 import org.jetbrains.bazel.languages.projectview.language.sections.SyncFlagsSection
@@ -64,6 +65,7 @@ val REGISTERED_SECTIONS =
     ShardingApproachSection(),
     ImportRunConfigurationsSection(),
     GazelleTargetSection(),
+    IndexAllFilesInDirectoriesSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
