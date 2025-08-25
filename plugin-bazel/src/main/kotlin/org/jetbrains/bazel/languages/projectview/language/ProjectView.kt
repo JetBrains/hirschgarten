@@ -12,6 +12,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.EnabledRulesS
 import org.jetbrains.bazel.languages.projectview.language.sections.GazelleTargetSection
 import org.jetbrains.bazel.languages.projectview.language.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
+import org.jetbrains.bazel.languages.projectview.language.sections.ImportIjarsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.PythonCodeGeneratorRuleNamesSection
@@ -68,6 +69,7 @@ val REGISTERED_SECTIONS =
     GazelleTargetSection(),
     IndexAllFilesInDirectoriesSection(),
     PythonCodeGeneratorRuleNamesSection(),
+    ImportIjarsSection(),
   )
 
 fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
