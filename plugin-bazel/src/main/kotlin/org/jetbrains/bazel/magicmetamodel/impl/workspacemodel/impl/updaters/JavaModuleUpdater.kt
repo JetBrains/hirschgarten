@@ -118,21 +118,12 @@ internal class JavaModuleWithSourcesUpdater(
     entityToAdd: JavaModule,
     moduleEntity: ModuleEntity,
   ) {
-    val useJpsBuild = workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps
-    val compilerOutput = if (useJpsBuild) {
-      JpsPaths
+    val compilerOutput = JpsPaths
         .getJpsCompiledProductionPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
-    } else {
-      entityToAdd.compiledClassesPath?.toCompiledClassesVFSUrl()
-    }
-    val testCompilerOutput = if (useJpsBuild) {
-      JpsPaths
+    val testCompilerOutput = JpsPaths
         .getJpsCompiledTestPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
-    } else {
-      entityToAdd.compiledClassesPath?.toCompiledClassesVFSUrl()
-    }
     val entity =
       JavaModuleSettingsEntity(
         inheritedCompilerOutput = false,
@@ -154,17 +145,6 @@ internal class JavaModuleWithSourcesUpdater(
       listOf(
         ModuleSourceDependency,
       )
-  }
-
-  private fun Path.toCompiledClassesVFSUrl(): VirtualFileUrl? {
-    val isArchive = this.extension == "jar" || this.extension == "zip"
-    val vfsManager = workspaceModelEntityUpdaterConfig.virtualFileUrlManager
-    return if (isArchive) {
-      this.toVirtualFileUrl(vfsManager).let { JarFileSystem.getInstance().getJarRootForLocalFile(it.virtualFile ?: return null) }
-        ?.toVirtualFileUrl(vfsManager)
-    } else {
-      this.toVirtualFileUrl(vfsManager)
-    }
   }
 }
 
