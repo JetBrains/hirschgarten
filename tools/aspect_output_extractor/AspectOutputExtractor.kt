@@ -43,124 +43,138 @@ import kotlin.system.exitProcess
  * up to the point where aspect outputs are generated, then prints their paths to stdout.
  */
 object AspectOutputExtractor {
-
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking {
+  @JvmStatic
+  fun main(args: Array<String>) =
+    runBlocking {
       SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
       FileUtil.provideFileUtil(FileUtilIntellij)
       EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
       ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
       TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
       BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
-        
-        if (args.isEmpty()) {
-            println("Usage: AspectOutputExtractor <project-path>")
-            println("  project-path: Path to the Bazel project where the server should be installed")
-            exitProcess(1)
-        }
 
-        val projectPath = Path.of(args[0])
-        if (!projectPath.exists()) {
-            println("Error: Project path does not exist: $projectPath")
-            exitProcess(1)
-        }
+      if (args.isEmpty()) {
+        println("Usage: AspectOutputExtractor <project-path>")
+        println("  project-path: Path to the Bazel project where the server should be installed")
+        exitProcess(1)
+      }
 
-        try {
-            val aspectPaths = extractAspectOutputPaths(projectPath)
-            println("Aspect output paths:")
-            aspectPaths.forEach { path ->
-                println(path.toString())
-            }
-        } catch (e: Exception) {
-            println("Error extracting aspect output paths: ${e.message}")
-            e.printStackTrace()
-            exitProcess(1)
+      val projectPath = Path.of(args[0])
+      if (!projectPath.exists()) {
+        println("Error: Project path does not exist: $projectPath")
+        exitProcess(1)
+      }
+
+      try {
+        val aspectPaths = extractAspectOutputPaths(projectPath)
+        println("Aspect output paths:")
+        aspectPaths.forEach { path ->
+          println(path.toString())
         }
+      } catch (e: Exception) {
+        println("Error extracting aspect output paths: ${e.message}")
+        e.printStackTrace()
+        exitProcess(1)
+      }
     }
 
-    private suspend fun extractAspectOutputPaths(projectPath: Path): Set<Path> {
-        // Install server in .bazelbsp directory (standard way)
-        val cliOptions = CliOptions(
-            workspaceDir = projectPath, 
-            projectViewCliOptions = ProjectViewCliOptions(
-                directories = listOf("."),
-                deriveTargetsFromDirectories = true,
-            )
-        )
-        
-        // Always regenerate project view with our targets
-        val projectViewPath = projectPath.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
-        ProjectViewCLiOptionsProvider.generateProjectViewAndSave(cliOptions, projectViewPath)
-        
-        // Create environment (.bazelbsp directory and files)
-        EnvironmentCreator(projectPath).create()
-        
-        // Get paths after installation
-        val dotBazelBspDir = projectPath.resolve(".bazelbsp")
+  private suspend fun extractAspectOutputPaths(projectPath: Path): Set<Path> {
+    // Install server in .bazelbsp directory (standard way)
+    val cliOptions =
+      CliOptions(
+        workspaceDir = projectPath,
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            directories = listOf("."),
+            deriveTargetsFromDirectories = true,
+          ),
+      )
 
-        // Create a dummy BSP client
-        val dummyClient = object : JoinedBuildClient {
-            override fun onBuildLogMessage(params: org.jetbrains.bsp.protocol.LogMessageParams) {}
-            override fun onBuildTaskStart(params: org.jetbrains.bsp.protocol.TaskStartParams) {}
-            override fun onBuildTaskFinish(params: org.jetbrains.bsp.protocol.TaskFinishParams) {}
-            override fun onBuildPublishDiagnostics(params: org.jetbrains.bsp.protocol.PublishDiagnosticsParams) {}
-            override fun onPublishCoverageReport(report: org.jetbrains.bsp.protocol.CoverageReport) {}
-        }
-        
-        // Create logger
-        val bspClientLogger = BspClientLogger(dummyClient)
+    // Always regenerate project view with our targets
+    val projectViewPath = projectPath.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+    ProjectViewCLiOptionsProvider.generateProjectViewAndSave(cliOptions, projectViewPath)
 
-        // Create initial Bazel runner to resolve bazel info
-        val initialBazelRunner = BazelRunner(bspClientLogger, projectPath)
-        
-        // Create workspace context provider
-        val featureFlags = FeatureFlags()
-        val workspaceContextProvider = DefaultWorkspaceContextProvider(
-            workspaceRoot = projectPath,
-            projectViewPath = projectViewPath,
-            dotBazelBspDirPath = dotBazelBspDir,
-            featureFlags = featureFlags
-        )
-        
-        // Create BSP info
-        val bspInfo = BspInfo(projectPath)
-        
-        // Resolve bazel info with initial runner
-        val workspaceContext = workspaceContextProvider.readWorkspaceContext()
-        val bazelInfoResolver = BazelInfoResolver(initialBazelRunner)
-        val bazelInfo = bazelInfoResolver.resolveBazelInfo(workspaceContext)
-        
-        // Now create properly configured Bazel runner with bazelInfo
-        val bazelRunner = BazelRunner(bspClientLogger, projectPath, bazelInfo)
-        
-        // Create other dependencies
-        val bazelPathsResolver = BazelPathsResolver(bazelInfo)
-        val compilationManager = BazelBspCompilationManager(
-            client = dummyClient,
-            bazelRunner = bazelRunner,
-            workspaceRoot = projectPath,
-            bazelPathsResolver = bazelPathsResolver
-        )
-        
-        // Create server and project provider
-        val bazelBspServer = BazelBspServer(
-            bspInfo = bspInfo,
-            workspaceContextProvider = workspaceContextProvider,
-            workspaceRoot = projectPath
-        )
+    // Create environment (.bazelbsp directory and files)
+    EnvironmentCreator(projectPath).create()
 
-        // Extract aspect output paths using the project resolver  
-        // We'll need to access this via reflection or find another way since projectProvider is private
-        val projectProvider = bazelBspServer.createProjectProvider(
-            bspInfo = bspInfo,
-            bazelInfo = bazelInfo,
-            workspaceContextProvider = workspaceContextProvider,
-            bazelRunner = bazelRunner,
-            bazelPathsResolver = bazelPathsResolver,
-            compilationManager = compilationManager,
-            bspClientLogger = bspClientLogger
-        )
-        
-        return projectProvider.projectResolver.getAspectOutputPaths()
-    }
+    // Get paths after installation
+    val dotBazelBspDir = projectPath.resolve(".bazelbsp")
+
+    // Create a dummy BSP client
+    val dummyClient =
+      object : JoinedBuildClient {
+        override fun onBuildLogMessage(params: org.jetbrains.bsp.protocol.LogMessageParams) {}
+
+        override fun onBuildTaskStart(params: org.jetbrains.bsp.protocol.TaskStartParams) {}
+
+        override fun onBuildTaskFinish(params: org.jetbrains.bsp.protocol.TaskFinishParams) {}
+
+        override fun onBuildPublishDiagnostics(params: org.jetbrains.bsp.protocol.PublishDiagnosticsParams) {}
+
+        override fun onPublishCoverageReport(report: org.jetbrains.bsp.protocol.CoverageReport) {}
+      }
+
+    // Create logger
+    val bspClientLogger = BspClientLogger(dummyClient)
+
+    // Create initial Bazel runner to resolve bazel info
+    val initialBazelRunner = BazelRunner(bspClientLogger, projectPath)
+
+    // Create workspace context provider with Python support enabled
+    val featureFlags =
+      FeatureFlags(
+        isPythonSupportEnabled = true,
+        isGoSupportEnabled = true,
+      )
+    val workspaceContextProvider =
+      DefaultWorkspaceContextProvider(
+        workspaceRoot = projectPath,
+        projectViewPath = projectViewPath,
+        dotBazelBspDirPath = dotBazelBspDir,
+        featureFlags = featureFlags,
+      )
+
+    // Create BSP info
+    val bspInfo = BspInfo(projectPath)
+
+    // Resolve bazel info with initial runner
+    val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+    val bazelInfoResolver = BazelInfoResolver(initialBazelRunner)
+    val bazelInfo = bazelInfoResolver.resolveBazelInfo(workspaceContext)
+
+    // Now create properly configured Bazel runner with bazelInfo
+    val bazelRunner = BazelRunner(bspClientLogger, projectPath, bazelInfo)
+
+    // Create other dependencies
+    val bazelPathsResolver = BazelPathsResolver(bazelInfo)
+    val compilationManager =
+      BazelBspCompilationManager(
+        client = dummyClient,
+        bazelRunner = bazelRunner,
+        workspaceRoot = projectPath,
+        bazelPathsResolver = bazelPathsResolver,
+      )
+
+    // Create server and project provider
+    val bazelBspServer =
+      BazelBspServer(
+        bspInfo = bspInfo,
+        workspaceContextProvider = workspaceContextProvider,
+        workspaceRoot = projectPath,
+      )
+
+    // Extract aspect output paths using the project resolver
+    val projectProvider =
+      bazelBspServer.createProjectProvider(
+        bspInfo = bspInfo,
+        bazelInfo = bazelInfo,
+        workspaceContextProvider = workspaceContextProvider,
+        bazelRunner = bazelRunner,
+        bazelPathsResolver = bazelPathsResolver,
+        compilationManager = compilationManager,
+        bspClientLogger = bspClientLogger,
+      )
+
+    return projectProvider.projectResolver.getAspectOutputPaths()
+  }
 }

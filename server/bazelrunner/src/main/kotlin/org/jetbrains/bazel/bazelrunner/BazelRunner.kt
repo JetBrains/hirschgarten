@@ -19,7 +19,7 @@ import kotlin.io.path.pathString
 
 /**
  * Runs Bazel commands with proper repository configuration.
- * 
+ *
  * @param bazelInfo Required for determining correct repository injection method.
  *                  When bazelInfo is available, BazelRunner can choose between
  *                  --inject_repository (newer, preferred) vs --override_repository (fallback)

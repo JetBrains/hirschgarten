@@ -1,13 +1,24 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.commons.*
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.EnvironmentProvider
+import org.jetbrains.bazel.commons.FileUtil
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.TargetInfoReader
-import org.jetbrains.bazel.startup.*
+import org.jetbrains.bazel.startup.FileUtilIntellij
+import org.jetbrains.bazel.startup.IntellijBidirectionalMap
+import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
+import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
+import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
@@ -18,119 +29,33 @@ import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.mapper.normal.AspectBazelProjectMapper
-import org.jetbrains.bazel.sync.workspace.mapper.normal.AspectClientProjectMapper  
-import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
-import org.jetbrains.bazel.sync.workspace.mapper.normal.TargetTagsResolver
-import org.jetbrains.bazel.workspacecontext.*
+import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
+import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
+import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
+import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
+import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
+import org.jetbrains.bazel.workspacecontext.DeriveInstrumentationFilterFromTargetsSpec
+import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
+import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
+import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
+import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
+import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
+import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
+import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
+import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
+import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
+import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
+import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
+import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
+import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
+import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
+import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.pathString
 import kotlin.system.exitProcess
-
-/**
- * Test implementation of JvmPackageResolver that returns hardcoded packages
- * based on the file path, avoiding file system access.
- */
-class TestJvmPackageResolver : JvmPackageResolver {
-  private val packageMapping =
-    mapOf(
-      // Scala targets
-      "scala_targets/ScalaBinary.scala" to "scala_targets",
-      "scala_targets/ScalaTest.scala" to "scala_targets",
-      // Java targets
-      "java_targets/JavaBinary.java" to "java_targets",
-      "java_targets/JavaBinaryWithFlag.java" to "java_targets",
-      "java_targets/JavaLibrary.java" to "java_targets",
-      "java_targets/subpackage/JavaLibrary2.java" to "java_targets.subpackage",
-      // Target with resources
-      "target_with_resources/JavaBinary.java" to "target_with_resources",
-      // Environment variables
-      "environment_variables/JavaEnv.java" to "environment_variables",
-      "environment_variables/JavaTest.java" to "environment_variables",
-      // Target with javac exports
-      "target_with_javac_exports/JavaLibrary.java" to "target_with_javac_exports",
-      // Target with dependency
-      "target_with_dependency/JavaBinary.java" to "target_with_dependency",
-      // Target without JVM flags
-      "target_without_jvm_flags/Example.scala" to "target_without_jvm_flags",
-      // Target without args
-      "target_without_args/Example.scala" to "target_without_args",
-      // Target without main class
-      "target_without_main_class/Example.scala" to "target_without_main_class",
-    )
-
-  override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? {
-    val pathString = source.toString()
-
-    // Find the matching package by checking if the path ends with any of our known files
-    return packageMapping.entries
-      .firstOrNull { (file, _) ->
-        pathString.endsWith(file)
-      }?.value
-  }
-}
-
-/**
- * Pretty prints a string representation by adding proper indentation and line breaks.
- * Handles parentheses, brackets, and splits lines after commas for better readability.
- */
-fun prettyPrint(input: String): String {
-  val result = StringBuilder()
-  var indentLevel = 0
-  val indentSize = 2
-  var i = 0
-  
-  fun addIndent() {
-    repeat(indentLevel * indentSize) { result.append(' ') }
-  }
-  
-  fun addNewlineAndIndent() {
-    result.append('\n')
-    addIndent()
-  }
-  
-  while (i < input.length) {
-    val char = input[i]
-    
-    when (char) {
-      '(', '[', '{' -> {
-        result.append(char)
-        indentLevel++
-        addNewlineAndIndent()
-      }
-      ')', ']', '}' -> {
-        indentLevel--
-        addNewlineAndIndent()
-        result.append(char)
-      }
-      ',' -> {
-        result.append(char)
-        // Check if next non-space character starts a new field or is a closing bracket
-        var j = i + 1
-        while (j < input.length && input[j] == ' ') j++
-        if (j < input.length && input[j] !in setOf(')', ']', '}')) {
-          addNewlineAndIndent()
-        } else {
-          result.append(' ')
-        }
-      }
-      ' ' -> {
-        // Skip multiple spaces, we control spacing
-        if (result.isNotEmpty() && result.last() != ' ' && result.last() != '\n') {
-          result.append(' ')
-        }
-      }
-      else -> {
-        result.append(char)
-      }
-    }
-    i++
-  }
-  
-  return result.toString()
-}
 
 fun main(args: Array<String>) {
   if (args.isEmpty()) {
@@ -150,13 +75,12 @@ fun main(args: Array<String>) {
 
       // Convert string arguments to Path objects
       val textprotoFiles = args.map { Paths.get(it) }.toSet()
-      
+
       // Read target map from aspect outputs
       val rawTargetsMap: Map<Label, TargetInfo> = targetInfoReader.readTargetMapFromAspectOutputs(textprotoFiles)
 
       // Process with unified configuration
       processWithUnifiedSetup(rawTargetsMap)
-
     } catch (e: Exception) {
       println("Error processing files: ${e.message}")
       e.printStackTrace()
@@ -168,7 +92,7 @@ fun main(args: Array<String>) {
 private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo>) {
   // Use generic workspace root that works for test data
   val workspaceRoot = Paths.get("/tmp/test-workspace")
-  
+
   // Create BazelInfo with sensible defaults
   val bazelInfo =
     BazelInfo(
@@ -234,7 +158,7 @@ private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo
       deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSpec(value = true),
     )
 
-  // Setup unified feature flags  
+  // Setup unified feature flags
   val featureFlags =
     FeatureFlags(
       isPythonSupportEnabled = true,
@@ -251,13 +175,12 @@ private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo
   processAndPrint(rawTargetsMap, repoMapping, workspaceContext, featureFlags, bazelInfo)
 }
 
-
 private suspend fun processAndPrint(
   rawTargetsMap: Map<Label, TargetInfo>,
   repoMapping: RepoMapping,
   workspaceContext: WorkspaceContext,
   featureFlags: FeatureFlags,
-  bazelInfo: BazelInfo
+  bazelInfo: BazelInfo,
 ) {
   // Process target map using ProjectResolver.processTargetMap
   val targets = ProjectResolver.processTargetMap(rawTargetsMap, repoMapping)
@@ -323,4 +246,107 @@ private suspend fun processAndPrint(
 
   // Print the result with pretty formatting
   println(prettyPrint(resolvedWorkspace.toString()))
+}
+
+/**
+ * Test implementation of JvmPackageResolver that returns hardcoded packages
+ * based on the file path, avoiding file system access.
+ */
+class TestJvmPackageResolver : JvmPackageResolver {
+  private val packageMapping =
+    mapOf(
+      // Scala targets
+      "scala_targets/ScalaBinary.scala" to "scala_targets",
+      "scala_targets/ScalaTest.scala" to "scala_targets",
+      // Java targets
+      "java_targets/JavaBinary.java" to "java_targets",
+      "java_targets/JavaBinaryWithFlag.java" to "java_targets",
+      "java_targets/JavaLibrary.java" to "java_targets",
+      "java_targets/subpackage/JavaLibrary2.java" to "java_targets.subpackage",
+      // Target with resources
+      "target_with_resources/JavaBinary.java" to "target_with_resources",
+      // Environment variables
+      "environment_variables/JavaEnv.java" to "environment_variables",
+      "environment_variables/JavaTest.java" to "environment_variables",
+      // Target with javac exports
+      "target_with_javac_exports/JavaLibrary.java" to "target_with_javac_exports",
+      // Target with dependency
+      "target_with_dependency/JavaBinary.java" to "target_with_dependency",
+      // Target without JVM flags
+      "target_without_jvm_flags/Example.scala" to "target_without_jvm_flags",
+      // Target without args
+      "target_without_args/Example.scala" to "target_without_args",
+      // Target without main class
+      "target_without_main_class/Example.scala" to "target_without_main_class",
+    )
+
+  override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? {
+    val pathString = source.toString()
+
+    // Find the matching package by checking if the path ends with any of our known files
+    return packageMapping.entries
+      .firstOrNull { (file, _) ->
+        pathString.endsWith(file)
+      }?.value
+  }
+}
+
+/**
+ * Pretty prints a string representation by adding proper indentation and line breaks.
+ * Handles parentheses, brackets, and splits lines after commas for better readability.
+ */
+fun prettyPrint(input: String): String {
+  val result = StringBuilder()
+  var indentLevel = 0
+  val indentSize = 2
+  var i = 0
+
+  fun addIndent() {
+    repeat(indentLevel * indentSize) { result.append(' ') }
+  }
+
+  fun addNewlineAndIndent() {
+    result.append('\n')
+    addIndent()
+  }
+
+  while (i < input.length) {
+    val char = input[i]
+
+    when (char) {
+      '(', '[', '{' -> {
+        result.append(char)
+        indentLevel++
+        addNewlineAndIndent()
+      }
+      ')', ']', '}' -> {
+        indentLevel--
+        addNewlineAndIndent()
+        result.append(char)
+      }
+      ',' -> {
+        result.append(char)
+        // Check if next non-space character starts a new field or is a closing bracket
+        var j = i + 1
+        while (j < input.length && input[j] == ' ') j++
+        if (j < input.length && input[j] !in setOf(')', ']', '}')) {
+          addNewlineAndIndent()
+        } else {
+          result.append(' ')
+        }
+      }
+      ' ' -> {
+        // Skip multiple spaces, we control spacing
+        if (result.isNotEmpty() && result.last() != ' ' && result.last() != '\n') {
+          result.append(' ')
+        }
+      }
+      else -> {
+        result.append(char)
+      }
+    }
+    i++
+  }
+
+  return result.toString()
 }

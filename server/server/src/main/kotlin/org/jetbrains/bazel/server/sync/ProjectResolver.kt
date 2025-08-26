@@ -342,27 +342,24 @@ class ProjectResolver(
     private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
 
     @JvmStatic
-    fun processTargetMap(
-      targetMap: Map<Label, TargetInfo>,
-      repoMapping: RepoMapping,
-    ): Map<Label, TargetInfo> =
-      targetMap.map { (k, v) ->
-        // TODO: make sure we canonicalize everything
-        //  (https://youtrack.jetbrains.com/issue/BAZEL-1597/Make-sure-all-labels-in-the-server-are-canonicalized)
-        //  also, this can be done in a more efficient way
-        //  maybe we can do it in the aspect with some flag or something
-        val label = k.canonicalize(repoMapping)
-        label to
-          v
-            .toBuilder()
-            .apply {
-              id = label.toString()
-              val processedDependencies = processDependenciesList(dependenciesBuilderList, targetMap, repoMapping)
-              clearDependencies()
-              addAllDependencies(processedDependencies)
-            }.build()
-      }.toMap()
-
+    fun processTargetMap(targetMap: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, TargetInfo> =
+      targetMap
+        .map { (k, v) ->
+          // TODO: make sure we canonicalize everything
+          //  (https://youtrack.jetbrains.com/issue/BAZEL-1597/Make-sure-all-labels-in-the-server-are-canonicalized)
+          //  also, this can be done in a more efficient way
+          //  maybe we can do it in the aspect with some flag or something
+          val label = k.canonicalize(repoMapping)
+          label to
+            v
+              .toBuilder()
+              .apply {
+                id = label.toString()
+                val processedDependencies = processDependenciesList(dependenciesBuilderList, targetMap, repoMapping)
+                clearDependencies()
+                addAllDependencies(processedDependencies)
+              }.build()
+        }.toMap()
 
     @JvmStatic
     fun processDependenciesList(

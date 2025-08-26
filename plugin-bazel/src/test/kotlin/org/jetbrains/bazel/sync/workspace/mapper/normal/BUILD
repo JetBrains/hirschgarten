@@ -1,6 +1,7 @@
-load("//rules_intellij/testing:test_defs_kt.bzl", "intellij_integration_test_suite")
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
+load("//rules_intellij/testing:test_defs_kt.bzl", "intellij_integration_test_suite")
+load(":defs.bzl", "resolver_test")
 
 intellij_integration_test_suite(
     name = "TargetTagsResolverTest",
@@ -24,9 +25,9 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace",
+        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
-        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests"
     ],
 )
 
@@ -37,43 +38,8 @@ java_binary(
     runtime_deps = [":resolver_sanity_runner_lib"],
 )
 
-# Test data filegroups
-filegroup(
-    name = "python_testdata",
-    srcs = glob(["testData/python/*.textproto"]),
-)
+resolver_test(name = "python")
 
-filegroup(
-    name = "samplerepo_testdata", 
-    srcs = glob(["testData/samplerepo/*.textproto"]),
-)
+resolver_test(name = "samplerepo")
 
-# Generate outputs by running the resolver_sanity_runner
-genrule(
-    name = "python_output",
-    srcs = [":python_testdata"],
-    outs = ["python_output.txt"],
-    cmd = "$(location :resolver_sanity_runner) $(locations :python_testdata) > $@",
-    tools = [":resolver_sanity_runner"],
-)
-
-genrule(
-    name = "samplerepo_output",
-    srcs = [":samplerepo_testdata"],
-    outs = ["samplerepo_output.txt"], 
-    cmd = "$(location :resolver_sanity_runner) $(locations :samplerepo_testdata) > $@",
-    tools = [":resolver_sanity_runner"],
-)
-
-# Diff tests comparing actual vs expected outputs
-diff_test(
-    name = "python_diff_test",
-    file1 = ":python_output",
-    file2 = "testData/python/expected_output.txt",
-)
-
-diff_test(
-    name = "samplerepo_diff_test",
-    file1 = ":samplerepo_output",
-    file2 = "testData/samplerepo/expected_output.txt"
-)
+resolver_test(name = "go")

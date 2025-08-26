@@ -2,7 +2,7 @@ BazelResolvedWorkspace(
   targets=BuildTargetCollection(
     buildTargets=[
       RawBuildTarget(
-        id=@//kotlin:asd,
+        id=@//environment_variables:java_binary,
         tags=[
           
         ],
@@ -10,20 +10,23 @@ BazelResolvedWorkspace(
           
         ],
         kind=TargetKind(
-          kindString=kt_jvm_library,
+          kindString=java_binary,
           languageClasses=[
-            JAVA,
-            KOTLIN
+            JAVA
           ],
-          ruleType=LIBRARY
+          ruleType=BINARY
         ),
         sources=[
-          
+          SourceItem(
+            path=/tmp/test-workspace/environment_variables/JavaEnv.java,
+            generated=false,
+            jvmPackagePrefix=environment_variables
+          )
         ],
         resources=[
           
         ],
-        baseDirectory=/tmp/test-workspace/kotlin,
+        baseDirectory=/tmp/test-workspace/environment_variables,
         noBuild=false,
         data=null,
         lowPrioritySharedSources=[
@@ -31,53 +34,33 @@ BazelResolvedWorkspace(
         ]
       ),
       RawBuildTarget(
-        id=@//target_without_args:binary,
+        id=@//environment_variables:java_test,
         tags=[
           
         ],
         dependencies=[
-          scala-compiler-2.13.14.jar[
-            synthetic
-          ],
-          scala-library-2.13.14.jar[
-            synthetic
-          ],
-          scala-reflect-2.13.14.jar[
-            synthetic
-          ]
+          
         ],
         kind=TargetKind(
-          kindString=scala_binary,
+          kindString=java_test,
           languageClasses=[
-            JAVA,
-            SCALA
+            JAVA
           ],
-          ruleType=BINARY
+          ruleType=TEST
         ),
         sources=[
           SourceItem(
-            path=/tmp/test-workspace/target_without_args/Example.scala,
+            path=/tmp/test-workspace/environment_variables/JavaTest.java,
             generated=false,
-            jvmPackagePrefix=target_without_args
+            jvmPackagePrefix=environment_variables
           )
         ],
         resources=[
           
         ],
-        baseDirectory=/tmp/test-workspace/target_without_args,
+        baseDirectory=/tmp/test-workspace/environment_variables,
         noBuild=false,
-        data=ScalaBuildTarget(
-          scalaVersion=2.13.14,
-          sdkJars=[
-            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar,
-            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar,
-            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar
-          ],
-          jvmBuildTarget=null,
-          scalacOptions=[
-            
-          ]
-        ),
+        data=null,
         lowPrioritySharedSources=[
           
         ]
@@ -88,7 +71,7 @@ BazelResolvedWorkspace(
           
         ],
         dependencies=[
-          @//java_targets/subpackage:java_library
+          
         ],
         kind=TargetKind(
           kindString=java_binary,
@@ -115,7 +98,7 @@ BazelResolvedWorkspace(
         ]
       ),
       RawBuildTarget(
-        id=@//kotlin:java_binary_with_flag,
+        id=@//java_targets:java_binary_with_flag,
         tags=[
           
         ],
@@ -131,15 +114,15 @@ BazelResolvedWorkspace(
         ),
         sources=[
           SourceItem(
-            path=/tmp/test-workspace/kotlin/JavaBinaryWithFlag.java,
+            path=/tmp/test-workspace/java_targets/JavaBinaryWithFlag.java,
             generated=false,
-            jvmPackagePrefix=null
+            jvmPackagePrefix=java_targets
           )
         ],
         resources=[
           
         ],
-        baseDirectory=/tmp/test-workspace/kotlin,
+        baseDirectory=/tmp/test-workspace/java_targets,
         noBuild=false,
         data=null,
         lowPrioritySharedSources=[
@@ -184,7 +167,6 @@ BazelResolvedWorkspace(
           
         ],
         dependencies=[
-          @//java_targets:java_library_exported_output_jars,
           @//java_targets/subpackage:java_library
         ],
         kind=TargetKind(
@@ -208,7 +190,7 @@ BazelResolvedWorkspace(
         ]
       ),
       RawBuildTarget(
-        id=@//environment_variables:java_test,
+        id=@//java_targets/subpackage:java_library,
         tags=[
           
         ],
@@ -216,77 +198,25 @@ BazelResolvedWorkspace(
           
         ],
         kind=TargetKind(
-          kindString=java_test,
+          kindString=java_library,
           languageClasses=[
             JAVA
-          ],
-          ruleType=TEST
-        ),
-        sources=[
-          SourceItem(
-            path=/tmp/test-workspace/environment_variables/JavaTest.java,
-            generated=false,
-            jvmPackagePrefix=environment_variables
-          )
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/environment_variables,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@//target_without_main_class:library,
-        tags=[
-          
-        ],
-        dependencies=[
-          scala-compiler-2.13.14.jar[
-            synthetic
-          ],
-          scala-library-2.13.14.jar[
-            synthetic
-          ],
-          scala-reflect-2.13.14.jar[
-            synthetic
-          ]
-        ],
-        kind=TargetKind(
-          kindString=scala_library,
-          languageClasses=[
-            JAVA,
-            SCALA
           ],
           ruleType=LIBRARY
         ),
         sources=[
           SourceItem(
-            path=/tmp/test-workspace/target_without_main_class/Example.scala,
+            path=/tmp/test-workspace/java_targets/subpackage/JavaLibrary2.java,
             generated=false,
-            jvmPackagePrefix=target_without_main_class
+            jvmPackagePrefix=java_targets.subpackage
           )
         ],
         resources=[
           
         ],
-        baseDirectory=/tmp/test-workspace/target_without_main_class,
+        baseDirectory=/tmp/test-workspace/java_targets/subpackage,
         noBuild=false,
-        data=ScalaBuildTarget(
-          scalaVersion=2.13.14,
-          sdkJars=[
-            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar,
-            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar,
-            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar
-          ],
-          jvmBuildTarget=null,
-          scalacOptions=[
-            
-          ]
-        ),
+        data=null,
         lowPrioritySharedSources=[
           
         ]
@@ -436,9 +366,516 @@ BazelResolvedWorkspace(
         lowPrioritySharedSources=[
           
         ]
+      ),
+      RawBuildTarget(
+        id=@//target_with_dependency:java_binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          @//java_targets:java_library_exported,
+          @@rules_jvm_external++maven+maven//:com_google_guava_guava,
+          @//java_targets/subpackage:java_library
+        ],
+        kind=TargetKind(
+          kindString=java_binary,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/target_with_dependency/JavaBinary.java,
+            generated=false,
+            jvmPackagePrefix=target_with_dependency
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/target_with_dependency,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//target_with_javac_exports:java_library,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_library,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/target_with_javac_exports/JavaLibrary.java,
+            generated=false,
+            jvmPackagePrefix=target_with_javac_exports
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/target_with_javac_exports,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//target_with_resources:java_binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_binary,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/target_with_resources/JavaBinary.java,
+            generated=false,
+            jvmPackagePrefix=target_with_resources
+          )
+        ],
+        resources=[
+          /tmp/test-workspace/target_with_resources/file1.txt,
+          /tmp/test-workspace/target_with_resources/file2.txt
+        ],
+        baseDirectory=/tmp/test-workspace/target_with_resources,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//target_without_args:binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          scala-compiler-2.13.14.jar[
+            synthetic
+          ],
+          scala-library-2.13.14.jar[
+            synthetic
+          ],
+          scala-reflect-2.13.14.jar[
+            synthetic
+          ]
+        ],
+        kind=TargetKind(
+          kindString=scala_binary,
+          languageClasses=[
+            JAVA,
+            SCALA
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/target_without_args/Example.scala,
+            generated=false,
+            jvmPackagePrefix=target_without_args
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/target_without_args,
+        noBuild=false,
+        data=ScalaBuildTarget(
+          scalaVersion=2.13.14,
+          sdkJars=[
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar,
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar,
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar
+          ],
+          jvmBuildTarget=null,
+          scalacOptions=[
+            
+          ]
+        ),
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//target_without_jvm_flags:binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          scala-compiler-2.13.14.jar[
+            synthetic
+          ],
+          scala-library-2.13.14.jar[
+            synthetic
+          ],
+          scala-reflect-2.13.14.jar[
+            synthetic
+          ]
+        ],
+        kind=TargetKind(
+          kindString=scala_binary,
+          languageClasses=[
+            JAVA,
+            SCALA
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/target_without_jvm_flags/Example.scala,
+            generated=false,
+            jvmPackagePrefix=target_without_jvm_flags
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/target_without_jvm_flags,
+        noBuild=false,
+        data=ScalaBuildTarget(
+          scalaVersion=2.13.14,
+          sdkJars=[
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar,
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar,
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar
+          ],
+          jvmBuildTarget=null,
+          scalacOptions=[
+            
+          ]
+        ),
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//target_without_main_class:library,
+        tags=[
+          
+        ],
+        dependencies=[
+          scala-compiler-2.13.14.jar[
+            synthetic
+          ],
+          scala-library-2.13.14.jar[
+            synthetic
+          ],
+          scala-reflect-2.13.14.jar[
+            synthetic
+          ]
+        ],
+        kind=TargetKind(
+          kindString=scala_library,
+          languageClasses=[
+            JAVA,
+            SCALA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/target_without_main_class/Example.scala,
+            generated=false,
+            jvmPackagePrefix=target_without_main_class
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/target_without_main_class,
+        noBuild=false,
+        data=ScalaBuildTarget(
+          scalaVersion=2.13.14,
+          sdkJars=[
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14/scala-compiler-2.13.14.jar,
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14/scala-library-2.13.14.jar,
+            /tmp/.cache/bazel/output_base/external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14/scala-reflect-2.13.14.jar
+          ],
+          jvmBuildTarget=null,
+          scalacOptions=[
+            
+          ]
+        ),
+        lowPrioritySharedSources=[
+          
+        ]
       )
     ],
     nonModuleTargets=[
+      RawBuildTarget(
+        id=@//environment_variables:java_binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_binary,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/environment_variables,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//environment_variables:java_test,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_test,
+          languageClasses=[
+            
+          ],
+          ruleType=TEST
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/environment_variables,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//genrule:foo,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=genrule,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/genrule,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//java_targets:java_binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_binary,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/java_targets,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//java_targets:java_binary_with_flag,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_binary,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/java_targets,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//scala_targets:scala_binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=scala_binary,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/scala_targets,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//scala_targets:scala_test,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=scala_test,
+          languageClasses=[
+            
+          ],
+          ruleType=TEST
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/scala_targets,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//target_with_dependency:java_binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_binary,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/target_with_dependency,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//target_with_resources:java_binary,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_binary,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/target_with_resources,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
       RawBuildTarget(
         id=@//target_without_args:binary,
         tags=[
@@ -496,34 +933,6 @@ BazelResolvedWorkspace(
         ]
       ),
       RawBuildTarget(
-        id=@//genrule:foo,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=genrule,
-          languageClasses=[
-            
-          ],
-          ruleType=BINARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/genrule,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
         id=@//target_without_java_info:genrule,
         tags=[
           
@@ -552,91 +961,7 @@ BazelResolvedWorkspace(
         ]
       ),
       RawBuildTarget(
-        id=@//java_targets:java_binary,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=java_binary,
-          languageClasses=[
-            
-          ],
-          ruleType=BINARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/java_targets,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@//kotlin:java_binary_with_flag,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=java_binary,
-          languageClasses=[
-            
-          ],
-          ruleType=BINARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/kotlin,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@//environment_variables:java_test,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=java_test,
-          languageClasses=[
-            
-          ],
-          ruleType=TEST
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/environment_variables,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@//scala_targets:scala_binary,
+        id=@//target_without_jvm_flags:binary,
         tags=[
           
         ],
@@ -656,35 +981,7 @@ BazelResolvedWorkspace(
         resources=[
           
         ],
-        baseDirectory=/tmp/test-workspace/scala_targets,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@//scala_targets:scala_test,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=scala_test,
-          languageClasses=[
-            
-          ],
-          ruleType=TEST
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/scala_targets,
+        baseDirectory=/tmp/test-workspace/target_without_jvm_flags,
         noBuild=false,
         data=null,
         lowPrioritySharedSources=[
@@ -845,23 +1142,6 @@ BazelResolvedWorkspace(
         version=3.12.0
       ),
       isFromInternalTarget=false
-    ),
-    LibraryItem(
-      id=@//java_targets:java_library_exported_output_jars,
-      dependencies=[
-        @//java_targets/subpackage:java_library
-      ],
-      ijars=[
-        
-      ],
-      jars=[
-        /tmp/test-workspace/bazel-out/bazel-out/k8-fastbuild/bin/java_targets/libjava_library_exported.jar
-      ],
-      sourceJars=[
-        /tmp/test-workspace/bazel-out/bazel-out/k8-fastbuild/bin/java_targets/libjava_library_exported-src.jar
-      ],
-      mavenCoordinates=null,
-      isFromInternalTarget=true
     ),
     LibraryItem(
       id=scala-compiler-2.13.14.jar[
