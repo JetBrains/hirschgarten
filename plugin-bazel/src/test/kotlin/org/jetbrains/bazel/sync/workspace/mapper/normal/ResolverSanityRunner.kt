@@ -72,6 +72,66 @@ class TestJvmPackageResolver : JvmPackageResolver {
   }
 }
 
+/**
+ * Pretty prints a string representation by adding proper indentation and line breaks.
+ * Handles parentheses, brackets, and splits lines after commas for better readability.
+ */
+fun prettyPrint(input: String): String {
+  val result = StringBuilder()
+  var indentLevel = 0
+  val indentSize = 2
+  var i = 0
+  
+  fun addIndent() {
+    repeat(indentLevel * indentSize) { result.append(' ') }
+  }
+  
+  fun addNewlineAndIndent() {
+    result.append('\n')
+    addIndent()
+  }
+  
+  while (i < input.length) {
+    val char = input[i]
+    
+    when (char) {
+      '(', '[', '{' -> {
+        result.append(char)
+        indentLevel++
+        addNewlineAndIndent()
+      }
+      ')', ']', '}' -> {
+        indentLevel--
+        addNewlineAndIndent()
+        result.append(char)
+      }
+      ',' -> {
+        result.append(char)
+        // Check if next non-space character starts a new field or is a closing bracket
+        var j = i + 1
+        while (j < input.length && input[j] == ' ') j++
+        if (j < input.length && input[j] !in setOf(')', ']', '}')) {
+          addNewlineAndIndent()
+        } else {
+          result.append(' ')
+        }
+      }
+      ' ' -> {
+        // Skip multiple spaces, we control spacing
+        if (result.isNotEmpty() && result.last() != ' ' && result.last() != '\n') {
+          result.append(' ')
+        }
+      }
+      else -> {
+        result.append(char)
+      }
+    }
+    i++
+  }
+  
+  return result.toString()
+}
+
 fun main(args: Array<String>) {
   if (args.isEmpty()) {
     println("Usage: ResolverSanityRunner <path-to-textproto-file> [<path-to-textproto-file> ...]")
@@ -261,6 +321,6 @@ private suspend fun processAndPrint(
 
   val resolvedWorkspace = clientMapper.resolveWorkspace(bazelMappedProject)
 
-  // Print the result
-  println(resolvedWorkspace)
+  // Print the result with pretty formatting
+  println(prettyPrint(resolvedWorkspace.toString()))
 }
