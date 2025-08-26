@@ -36,7 +36,6 @@ kt_junit5_test(
     size = "small",
     src = "PackagePathValidatorTest.java",
     deps = [
-        "//commons/src:testFixtures",
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
         "@maven//:com_google_truth_truth",
     ],

@@ -9,12 +9,21 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
+import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
+import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
+import org.jetbrains.bazel.server.bep.TestXmlParser
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.DebugType
+import java.io.File
 import java.nio.file.Path
+
+// Longer timeout to account for Bazel build
+private const val DEBUGGER_ATTACH_TIMEOUT: Long = 3 * 60 * 1000
 
 abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, private val port: Int) :
   BazelCommandLineStateBase(environment) {
@@ -32,7 +41,7 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
       environment,
       this,
       remoteConnection,
-      true,
+      DEBUGGER_ATTACH_TIMEOUT,
     )
   }
 
@@ -42,9 +51,16 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
   suspend fun debugWithScriptPath(
     workingDirectory: String?,
     scriptPath: String,
+    pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
   ) {
-    val commandLine = GeneralCommandLine().withWorkingDirectory(workingDirectory?.let { Path.of(it) }).withExePath(scriptPath)
+    val commandLine =
+      GeneralCommandLine()
+        .withWorkingDirectory(workingDirectory?.let { Path.of(it) })
+        .withExePath(scriptPath)
+        // don't inherit IntelliJ's environment variables as the script should be self-contained
+        .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
+
     val scriptHandler = OSProcessHandler(commandLine)
     scriptHandler.addProcessListener(
       object : ProcessListener {
@@ -68,6 +84,30 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
     )
 
     scriptHandler.startNotify()
-    runInterruptible(Dispatchers.IO) { scriptHandler.waitFor() }
+    runInterruptible(Dispatchers.IO) {
+      pidDeferred.complete(scriptHandler.process.pid())
+      scriptHandler.waitFor()
+      findXmlOutputAndReport(scriptPath)
+    }
+  }
+
+  private fun findXmlOutputAndReport(scriptPath: String) {
+    val scriptContent = File(scriptPath).readText()
+
+    val execRoot = BazelBinPathService.getInstance(environment.project).bazelExecPath ?: return
+    val xmlPath =
+      TEST_XML_OUTPUT_FILE_REGEX
+        .find(scriptContent)
+        ?.groups
+        ?.get("path")
+        ?.value ?: return
+    val absoluteXmlPath = Path.of(execRoot, xmlPath).toUri().toString()
+
+    val taskHandler = BazelTaskEventsService.getInstance(environment.project)
+    val testNotifier = BspClientTestNotifier(taskHandler, originId.toString())
+
+    TestXmlParser(testNotifier).parseAndReport(absoluteXmlPath)
   }
 }
+
+private val TEST_XML_OUTPUT_FILE_REGEX = Regex("XML_OUTPUT_FILE=(?<path>\\S+)")

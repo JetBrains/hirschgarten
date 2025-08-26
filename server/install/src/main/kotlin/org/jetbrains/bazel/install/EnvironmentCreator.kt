@@ -2,6 +2,7 @@ package org.jetbrains.bazel.install
 
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,7 +14,6 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
-import kotlin.io.path.writeText
 
 class EnvironmentCreator(private val projectRootDir: Path) {
   fun create() = createDotBazelBsp()
@@ -44,7 +44,7 @@ class EnvironmentCreator(private val projectRootDir: Path) {
 
   fun createGitIgnoreFile(dotBazelBspDir: Path) {
     val outputFile = dotBazelBspDir.resolve(".gitignore")
-    outputFile.writeText("*")
+    outputFile.writeIfDifferent("*")
   }
 
   private fun copyAspectsFromResources(aspectsJarPath: String, destinationPath: Path) =

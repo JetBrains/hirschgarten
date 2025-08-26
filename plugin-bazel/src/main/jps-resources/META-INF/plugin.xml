@@ -679,6 +679,11 @@
       implementation="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor$AutoPopup"
     />
 
+    <platform.backend.documentation.targetProvider
+      id="ProjectViewFlagDocumentationTargetProvider"
+      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewFlagDocumentationTargetProvider"
+    />
+
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
       language="Starlark"
