@@ -329,7 +329,7 @@ class ProjectResolver(
             .toBuilder()
             .apply {
               id = label.toString()
-              val processedDependencies = processDependenciesList(dependenciesBuilderList, rawTargetsMap, repoMapping)
+              val processedDependencies = processDependenciesList(dependenciesBuilderList, targetMap, repoMapping)
               clearDependencies()
               addAllDependencies(processedDependencies)
             }.build()
