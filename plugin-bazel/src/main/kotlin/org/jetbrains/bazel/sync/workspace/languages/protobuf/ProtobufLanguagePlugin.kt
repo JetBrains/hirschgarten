@@ -33,34 +33,44 @@ class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : Langu
     protoTarget: BspTargetInfo.ProtobufTargetInfo,
   ): Map<String, String> {
     return target.sourcesList.filter { it.relativePath.endsWith(".proto") }
-      .associate { it.relativizeSourcePath(context, target, protoTarget) to it.resolveRelativePath(context) }
+      .associate { it.resolveSourcePath(target, protoTarget) to it.resolveRelativePath(context) }
   }
 
   private fun BspTargetInfo.FileLocation.resolveRelativePath(context: LanguagePluginContext): String {
     return context.pathsResolver.workspaceRoot().resolve(this.relativePath).toString()
   }
 
-  private fun BspTargetInfo.FileLocation.relativizeSourcePath(
-    context: LanguagePluginContext,
+  // reference documentation: https://bazel.build/reference/be/protocol-buffer#proto_library
+  private fun BspTargetInfo.FileLocation.resolveSourcePath(
     target: BspTargetInfo.TargetInfo,
     protoTarget: BspTargetInfo.ProtobufTargetInfo,
   ): String {
     val label = target.label().assumeResolved()
     val packagePrefix = label.packagePath.pathSegments.joinToString("/")
-    val stripped = if (protoTarget.stripImportPrefix.isNullOrBlank()) {
-      this.relativePath.removePrefix(packagePrefix)
-        .removePrefix("/")
-    } else {
+    val stripped = if (protoTarget.isStripImportPrefixValid()) {
       this.relativePath.removePrefix(packagePrefix)
         .removePrefix("/")
         .removePrefix(protoTarget.stripImportPrefix)
         .removePrefix("/")
+    } else {
+      this.relativePath.removePrefix(packagePrefix)
+        .removePrefix("/")
     }
     return if (protoTarget.importPrefix.isNullOrBlank()) {
-      "${packagePrefix}/${stripped}"
+      if (protoTarget.isStripImportPrefixValid()) {
+        stripped
+      } else {
+        "${packagePrefix}/${stripped}"
+      }
     } else {
-      "${protoTarget.importPrefix}/${stripped}"
+      if (protoTarget.isStripImportPrefixValid()) {
+        "${protoTarget.importPrefix}/${stripped}"
+      } else {
+        "${protoTarget.importPrefix}/${packagePrefix}/${stripped}"
+      }
     }
   }
+
+  private fun BspTargetInfo.ProtobufTargetInfo.isStripImportPrefixValid() = !stripImportPrefix.isNullOrBlank() && stripImportPrefix != "/"
 
 }
