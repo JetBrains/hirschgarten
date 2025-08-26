@@ -2,11 +2,11 @@ package org.jetbrains.bazel.languages.projectview.language.sections
 
 import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
 import org.jetbrains.bazel.languages.projectview.language.ExcludableValue
-import org.jetbrains.bazel.languages.projectview.language.ListSection
 import org.jetbrains.bazel.languages.projectview.language.SectionKey
+import org.jetbrains.bazel.languages.projectview.language.sections.presets.ExcludableListSection
 import java.nio.file.Path
 
-class DirectoriesSection : ListSection<List<ExcludableValue<Path>>>() {
+class DirectoriesSection : ExcludableListSection<Path>() {
   override val name = NAME
   override val default = emptyList<ExcludableValue<Path>>()
   override val sectionKey = KEY
@@ -17,27 +17,16 @@ class DirectoriesSection : ListSection<List<ExcludableValue<Path>>>() {
       "Project tool window. If a file is not included in your project, it will have a " +
       "yellow tab, and you will see a warning when attempting to edit it."
 
-  override fun fromRawValues(rawValues: List<String>): List<ExcludableValue<Path>> = rawValues.mapNotNull(::parseItem)
+  override fun parseItem(value: String): Path? {
+    return try {
+      Path.of(value)
+    } catch (_: Exception) {
+      return null
+    }
+  }
 
   companion object {
     const val NAME = "directories"
     val KEY = SectionKey<List<ExcludableValue<Path>>>(NAME)
-
-    private fun pathOfOrNull(path: String): Path? =
-      try {
-        Path.of(path)
-      } catch (ex: Exception) {
-        null
-      }
-
-    private fun parseItem(item: String): ExcludableValue<Path>? {
-      return if (item.startsWith("-")) {
-        val path = pathOfOrNull(item.substring(1)) ?: return null
-        ExcludableValue.excluded(path)
-      } else {
-        val path = pathOfOrNull(item) ?: return null
-        ExcludableValue.included(path)
-      }
-    }
   }
 }
