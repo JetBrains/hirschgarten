@@ -3,8 +3,10 @@ package org.jetbrains.bazel.languages.projectview.psi
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
+import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
 
@@ -17,5 +19,9 @@ open class ProjectViewPsiFile(viewProvider: FileViewProvider) : PsiFileBase(view
         keyword
     }
 
-  fun getSections(): List<ProjectViewPsiSection> = getChildrenOfType<ProjectViewPsiSection>().toList()
+  fun getSectionsOrImports(): List<PsiElement> =
+    children
+      .filter {
+        it is ProjectViewPsiSection || it is ProjectViewPsiImport
+      }.toList()
 }
