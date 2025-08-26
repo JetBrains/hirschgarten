@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImpo
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import kotlin.io.path.Path
 
-class ProjectView(rawSections: List<Pair<String, List<String>>>, private val project: Project) {
+class ProjectView(rawSections: List<RawItem>, private val project: Project) {
   val sections = mutableMapOf<SectionKey<*>, Any>()
 
   private fun mergeSection(sectionKey: SectionKey<*>, value: Any) {
@@ -21,14 +21,14 @@ class ProjectView(rawSections: List<Pair<String, List<String>>>, private val pro
   }
 
   init {
-    for ((name, values) in rawSections) {
-      if (name == "import") {
-        val path = values.firstOrNull() ?: continue
-        handleImport(path)
-      } else {
-        val section = ProjectViewSections.getSectionByName(name)
-        val parsed = section?.fromRawValues(values) ?: continue
-        mergeSection(section.sectionKey, parsed)
+    for (item in rawSections) {
+      when (item) {
+        is RawSection -> {
+          val section = ProjectViewSections.getSectionByName(item.name)
+          val parsed = section?.fromRawValues(item.contents) ?: continue
+          mergeSection(section.sectionKey, parsed)
+        }
+        is RawImport -> handleImport(item.path)
       }
     }
   }
@@ -49,18 +49,22 @@ class ProjectView(rawSections: List<Pair<String, List<String>>>, private val pro
 
   inline fun <reified T> getSection(key: SectionKey<T>): T? = sections[key] as T
 
+  sealed interface RawItem
+  data class RawSection(val name: String, val contents: List<String>): RawItem
+  data class RawImport(val path: String): RawItem
+
   companion object {
     fun fromProjectViewPsiFile(file: ProjectViewPsiFile): ProjectView {
-      val rawSections = mutableListOf<Pair<String, List<String>>>()
+      val rawSections = mutableListOf<RawItem>()
       val psiSections = file.getSectionsOrImports()
       for (section in psiSections) {
         if (section is ProjectViewPsiSection) {
           val name = section.getKeyword().text.trim()
           val values = section.getItems().map { it.text.trim() }
-          rawSections.add(Pair(name, values))
+          rawSections.add(RawSection(name, values))
         } else if (section is ProjectViewPsiImport) {
           val path = section.getImportPath()?.text?.trim() ?: ""
-          rawSections.add(Pair("import", listOf(path)))
+          rawSections.add(RawImport(path))
         }
       }
       return ProjectView(rawSections, file.project)

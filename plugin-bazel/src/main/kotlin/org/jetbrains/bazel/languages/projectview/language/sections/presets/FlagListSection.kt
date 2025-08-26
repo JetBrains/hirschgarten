@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.projectview.language.sections.presets
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.commands
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
@@ -21,7 +20,7 @@ abstract class FlagListSection(private val command: String) : ListSection<List<F
       holder.annotateError(element, message)
       return
     }
-    if (command !in flag.commands()) {
+    if (command !in flag.option.commands) {
       val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error", element.text, COMMAND)
       holder.annotateError(element, message)
     }

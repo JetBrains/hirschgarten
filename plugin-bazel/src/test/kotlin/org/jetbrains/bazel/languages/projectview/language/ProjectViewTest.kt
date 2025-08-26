@@ -3,11 +3,8 @@ package org.jetbrains.bazel.languages.projectview.language
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
-import org.jetbrains.bazel.languages.projectview.language.sections.DirectoriesSection
-import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
@@ -21,8 +18,8 @@ class ProjectViewTest : BasePlatformTestCase() {
   fun `test project view from raw values`() {
     val rawSections =
       listOf(
-        "targets" to listOf("target1", "-target2"),
-        "shard_sync" to listOf("true"),
+        ProjectView.RawSection("targets", listOf("target1", "-target2")),
+        ProjectView.RawSection("shard_sync", listOf("true")),
       )
     val projectView = ProjectView(rawSections, myFixture.project)
 
