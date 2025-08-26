@@ -184,6 +184,7 @@ class BazelRunner(
           redirectErrorStream = false,
           workDirectory = workDir?.toString(),
         )
+    createdProcessIdDeferred?.complete(process.pid)
 
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
 

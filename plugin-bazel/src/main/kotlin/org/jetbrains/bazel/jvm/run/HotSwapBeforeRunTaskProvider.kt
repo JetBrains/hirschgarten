@@ -75,7 +75,7 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
         val executionParams = executionParams(runConfiguration)
         val additionalProgramArguments = DebugHelper.generateRunArguments(DebugType.JDWP(executionParams.debugPort))
         val additionalBazelParams = transformProgramArguments(executionParams.additionalBazelParams)
-        val coroutineDebugParams = calculateKotlinCoroutineParams(environment, configuration.project)
+        val coroutineDebugParams = retrieveKotlinCoroutineParams(environment, configuration.project)
         val result =
           withBackgroundProgress(
             project,

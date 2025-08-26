@@ -20,36 +20,42 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
   /**
    * generateTestResultTree parse the junit5 test report and return the test result tree for each test target
    *
-   * The tree for each target is organized as follow:
-   * The root is a TestResultTreeNode where the name is the bazel test target, and its status is null.
-   * The sibling nodes of the root are the test result tree for each junit5 test classes in this test target. It can recursively
+   * The tree for each target is organized as follows:
+   * - The root is a TestResultTreeNode where the name is the bazel test target, and its status is null.
+   *  - The sibling nodes of the root are the test result tree for each junit5 test classes in this test target. It can recursively
    * contain test result or a test suit result.
    *
    * The sibling's taskId include its parent's taskId as parent. However, one exception is that direct sibling of root node does not have parents in taskId.
    * It is because that when we notify the client, the root node will be converted to beginTestTarget call, while other nodes are converted into startTest
    * call.
    *
-   * @return Map<String, TestResultTreeNode>, where the key is the test target and value is the root of the test result tree for that target.
+   * @return List of generated TestResultTreeNode instances
    * */
-  private fun generateTestResultTree(output: String): Map<String, TestResultTreeNode> {
+  private fun generateTestResultTree(output: String): List<TestResultTreeNode> {
     val lines = output.lines()
-    val targetToTestResultTree = mutableMapOf<String, TestResultTreeNode>()
+    val testResultTrees = mutableListOf<TestResultTreeNode>()
+
     var treeRootForCurrentTarget: TestResultTreeNode? = null
     var currentNode: TestResultTreeNode? = null
     var currentStackTraceNode: TestResultTreeNode? = null
-    var i = 0
-    while (i < lines.size) {
-      val line = lines[i]
+
+    for (line in lines) {
       val cleanLine = line.removeFormat()
       val testEndedMatcher = testingEndedPattern.matcher(line)
       val testLineMatcher = testLinePattern.matcher(cleanLine)
       val failuresCountMatcher = failuresCountPattern.matcher(cleanLine)
       if (treeRootForCurrentTarget == null) {
-        parseBuildTargetName(line)?.let {
-          treeRootForCurrentTarget = TestResultTreeNode(it, TaskId(testUUID()), null, mutableListOf(), -1)
-          targetToTestResultTree[it] = treeRootForCurrentTarget
-          currentNode = treeRootForCurrentTarget
-        }
+        val extractedTargetName = parseBuildTargetName(line)
+        val testResultsAreStarting = line.contains(TEST_START_CHARACTER)
+        val rootNodeName =
+          when {
+            extractedTargetName != null -> extractedTargetName
+            testResultsAreStarting -> ""
+            else -> continue
+          }
+        treeRootForCurrentTarget = TestResultTreeNode(rootNodeName, TaskId(testUUID()), null, mutableListOf(), -1)
+        testResultTrees.add(treeRootForCurrentTarget)
+        currentNode = treeRootForCurrentTarget
       } else if (testEndedMatcher.find()) {
         val time = testEndedMatcher.group("time").toLongOrNull()
         treeRootForCurrentTarget.time = time
@@ -84,13 +90,12 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
       } else if (currentStackTraceNode != null) {
         currentStackTraceNode.stacktrace.add(cleanLine.substringAfter("    => "))
       }
-      i++
     }
-    return targetToTestResultTree
+    return testResultTrees
   }
 
-  private fun notifyClient(trees: Map<String, TestResultTreeNode>) {
-    for ((_, tree) in trees.entries) {
+  private fun notifyClient(trees: List<TestResultTreeNode>) {
+    for (tree in trees) {
       tree.notifyClient(bspClientTestNotifier)
     }
   }
@@ -164,10 +169,11 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
     }
 
   companion object {
-    fun textContainsJunit5VisualOutput(text: String): Boolean =
-      text.contains(Char(0x2577)) // every junit5 visual output starts with that character ("╷")
+    fun textContainsJunit5VisualOutput(text: String): Boolean = text.contains(TEST_START_CHARACTER)
   }
 }
+
+private const val TEST_START_CHARACTER = '\u2577' // every junit5 visual output starts with that character ("╷")
 
 private val testingStartPattern = Pattern.compile("^Executing\\htests\\hfrom\\h(?<target>[^:]*:[^:]+)")
 private val testLinePattern =

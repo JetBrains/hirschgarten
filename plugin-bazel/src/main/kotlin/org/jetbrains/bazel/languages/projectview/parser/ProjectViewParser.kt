@@ -35,7 +35,9 @@ class ProjectViewParser(private val builder: PsiBuilder) {
               parseItem(ProjectViewElementTypes.SECTION_ITEM)
             }
             is ProjectViewSection.SectionType.List<*> -> {
-              skipToNextLine()
+              if (!matches(ProjectViewTokenType.NEWLINE)) {
+                parseItem(ProjectViewElementTypes.SECTION_ITEM)
+              }
               parseListItems()
             }
           }

@@ -48,7 +48,6 @@ object ProjectViewSection {
       SectionMetadata("directories", SectionType.List.String, DirectoriesCompletionProvider()),
       SectionMetadata("enable_native_android_rules", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("enabled_rules", SectionType.List.String),
-      SectionMetadata("experimental_prioritize_libraries_over_modules_target_kinds", SectionType.List.String),
       SectionMetadata("ide_java_home_override", SectionType.Scalar.String),
       SectionMetadata("import_depth", SectionType.Scalar.Integer),
       SectionMetadata("shard_approach", SectionType.Scalar.String),
