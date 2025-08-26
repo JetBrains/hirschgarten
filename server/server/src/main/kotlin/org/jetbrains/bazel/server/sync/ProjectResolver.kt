@@ -28,6 +28,7 @@ import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
+import java.nio.file.Path
 
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
@@ -50,85 +51,11 @@ class ProjectResolver(
     originId: String?,
   ): AspectSyncProject =
     bspTracer.spanBuilder("Resolve project").useWithScope {
-      val workspaceContext =
-        measured(
-          "Reading project view and creating workspace context",
-          workspaceContextProvider::readWorkspaceContext,
-        )
-      val featureFlags = workspaceContextProvider.currentFeatureFlags()
+      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, originId)
+      val repoMapping = buildAspectResult.first
+      val aspectResult = buildAspectResult.second
 
-      val repoMapping =
-        measured("Calculating external repository mapping") {
-          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
-        }
-
-      val bazelExternalRulesetsQuery =
-        BazelExternalRulesetsQueryImpl(
-          bazelRunner,
-          bazelInfo.isBzlModEnabled,
-          bazelInfo.isWorkspaceEnabled,
-          bspClientLogger,
-          workspaceContext,
-          repoMapping,
-        )
-
-      val externalRulesetNames =
-        measured(
-          "Discovering supported external rules",
-        ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames() }
-
-      val ruleLanguages =
-        measured(
-          "Mapping rule names to languages",
-        ) {
-          bazelBspAspectsManager.calculateRulesetLanguages(
-            externalRulesetNames,
-            bazelInfo.externalAutoloads,
-            workspaceContext,
-            featureFlags,
-          )
-        }
-
-      val toolchains =
-        measured(
-          "Mapping languages to toolchains",
-        ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, workspaceContext, featureFlags) } }
-
-      measured("Realizing language aspect files from templates") {
-        bazelBspAspectsManager.generateAspectsFromTemplates(
-          ruleLanguages,
-          externalRulesetNames,
-          workspaceContext,
-          toolchains,
-          bazelInfo.release,
-          repoMapping,
-          featureFlags,
-        )
-      }
-
-      measured("Generating language extensions file") {
-        bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
-      }
-
-      measured("Run Gazelle target") {
-        workspaceContext.gazelleTarget.value?.also { gazelleTarget ->
-          runGazelleTarget(workspaceContext, gazelleTarget)
-        }
-      }
-
-      val targetsToSync =
-        requestedTargetsToSync
-          ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
-
-      val buildAspectResult =
-        measured(
-          "Building project with aspect",
-        ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, phasedSyncProject, originId) }
-
-      val aspectOutputs =
-        measured(
-          "Reading aspect output paths",
-        ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
+      val aspectOutputs = extractAspectOutputPaths(aspectResult)
       val targets =
         measured(
           "Parsing aspect outputs",
@@ -140,18 +67,102 @@ class ProjectResolver(
         }
 
       val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
-      val rootTargets = buildAspectResult.bepOutput.rootTargets()
+      val rootTargets = aspectResult.bepOutput.rootTargets()
       return@useWithScope AspectSyncProject(
         workspaceRoot = bazelInfo.workspaceRoot,
         bazelRelease = bazelInfo.release,
         repoMapping = repoMapping,
-        workspaceContext = workspaceContext,
+        workspaceContext = workspaceContextProvider.readWorkspaceContext(),
         workspaceName = workspaceName,
-        hasError = buildAspectResult.isFailure,
+        hasError = aspectResult.isFailure,
         targets = targets,
         rootTargets = rootTargets,
       )
     }
+
+  private suspend fun buildProjectWithAspectAndSetup(
+    build: Boolean,
+    requestedTargetsToSync: List<Label>?,
+    phasedSyncProject: PhasedSyncProject?,
+    originId: String?,
+  ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
+    val workspaceContext =
+      measured(
+        "Reading project view and creating workspace context",
+        workspaceContextProvider::readWorkspaceContext,
+      )
+    val featureFlags = workspaceContextProvider.currentFeatureFlags()
+
+    val repoMapping =
+      measured("Calculating external repository mapping") {
+        calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+      }
+
+    val bazelExternalRulesetsQuery =
+      BazelExternalRulesetsQueryImpl(
+        bazelRunner,
+        bazelInfo.isBzlModEnabled,
+        bazelInfo.isWorkspaceEnabled,
+        bspClientLogger,
+        workspaceContext,
+        repoMapping,
+      )
+
+    val externalRulesetNames =
+      measured(
+        "Discovering supported external rules",
+      ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames() }
+
+    val ruleLanguages =
+      measured(
+        "Mapping rule names to languages",
+      ) {
+        bazelBspAspectsManager.calculateRulesetLanguages(
+          externalRulesetNames,
+          bazelInfo.externalAutoloads,
+          workspaceContext,
+          featureFlags,
+        )
+      }
+
+    val toolchains =
+      measured(
+        "Mapping languages to toolchains",
+      ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, workspaceContext, featureFlags) } }
+
+    measured("Realizing language aspect files from templates") {
+      bazelBspAspectsManager.generateAspectsFromTemplates(
+        ruleLanguages,
+        externalRulesetNames,
+        workspaceContext,
+        toolchains,
+        bazelInfo.release,
+        repoMapping,
+        featureFlags,
+      )
+    }
+
+    measured("Generating language extensions file") {
+      bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
+    }
+
+    measured("Run Gazelle target") {
+      workspaceContext.gazelleTarget.value?.also { gazelleTarget ->
+        runGazelleTarget(workspaceContext, gazelleTarget)
+      }
+    }
+
+    val targetsToSync =
+      requestedTargetsToSync
+        ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+
+    val buildAspectResult =
+      measured(
+        "Building project with aspect",
+      ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, phasedSyncProject, originId) }
+
+    return Pair(repoMapping, buildAspectResult)
+  }
 
   private suspend fun buildProjectWithAspect(
     workspaceContext: WorkspaceContext,
@@ -299,6 +310,23 @@ class ProjectResolver(
     bazelPathsResolver.clear()
     System.gc()
   }
+
+  suspend fun extractAspectOutputPaths(buildAspectResult: BazelBspAspectsManagerResult): Set<Path> =
+    measured(
+      "Reading aspect output paths",
+    ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
+
+  suspend fun getAspectOutputPaths(
+    build: Boolean = false,
+    requestedTargetsToSync: List<Label>? = null,
+    phasedSyncProject: PhasedSyncProject? = null,
+    originId: String? = null,
+  ): Set<Path> =
+    bspTracer.spanBuilder("Get aspect output paths").useWithScope {
+      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, originId)
+      val aspectResult = buildAspectResult.second
+      return@useWithScope extractAspectOutputPaths(aspectResult)
+    }
 
   companion object {
     private const val ASPECT_NAME = "bsp_target_info_aspect"
