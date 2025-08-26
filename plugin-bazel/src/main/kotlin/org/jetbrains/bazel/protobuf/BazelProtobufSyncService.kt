@@ -18,7 +18,7 @@ import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 @Service(Service.Level.PROJECT)
-@State(name = "PythonResolveIndexService", storages = [Storage("bazelProtobuf.xml")], reportStatistic = true)
+@State(name = "ProtobufResolveIndexService", storages = [Storage("bazelProtobuf.xml")], reportStatistic = true)
 class BazelProtobufSyncService(val project: Project) : LazyPersistentCachedStateComponent<BazelProtobufSyncService.State>() {
 
   data class State(val importToSourceIndex: Map<String, BazelProtobufSyncIndexData> = emptyMap())
