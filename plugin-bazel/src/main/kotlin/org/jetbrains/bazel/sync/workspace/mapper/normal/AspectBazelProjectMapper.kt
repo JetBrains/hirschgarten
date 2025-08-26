@@ -222,11 +222,11 @@ class AspectBazelProjectMapper(
       }.toMap()
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
-    !targetInfo.kind.endsWith("_resources") &&
+    !targetInfo.kind.endsWith("_resources") && targetInfo.hasJvmTargetInfo() &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-          (targetInfo.hasJvmTargetInfo() && !hasKnownJvmSources(targetInfo)) ||
-          (targetInfo.hasJvmTargetInfo() && targetInfo.jvmTargetInfo.hasApiGeneratingPlugins)
+          (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
+          targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
       )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
