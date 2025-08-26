@@ -3,8 +3,6 @@ package org.jetbrains.bazel.languages.projectview.language
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
-import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
@@ -13,7 +11,6 @@ import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSe
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
-import org.jetbrains.kotlin.idea.gradleTooling.get
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
