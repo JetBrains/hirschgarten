@@ -18,6 +18,7 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.reloadFiles
 import com.intellij.tools.ide.performanceTesting.commands.sleep
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.sdkcompat.bytecodeViewer.BytecodeViewerClassFileFinderCompat
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
 
@@ -40,6 +41,9 @@ class BytecodeViewerTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun testBytecodeViewer() {
+    if (!BytecodeViewerClassFileFinderCompat.isSupported) {
+      return
+    }
     createContext().runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       step("Import Bazel project") {
         execute {

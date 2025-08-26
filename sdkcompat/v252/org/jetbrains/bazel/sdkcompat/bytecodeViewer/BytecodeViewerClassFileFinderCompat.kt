@@ -12,5 +12,6 @@ interface BytecodeViewerClassFileFinderCompat {
 
   companion object {
     val ep = ExtensionPointName<BytecodeViewerClassFileFinderCompat>("org.jetbrains.bazel.bytecodeViewerClassFileFinderCompat")
+    const val isSupported = false
   }
 }
