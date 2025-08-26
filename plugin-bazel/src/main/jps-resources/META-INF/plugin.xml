@@ -193,6 +193,10 @@
                     interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
+                    interface="org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -269,6 +273,8 @@
     <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
 
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
+
+    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.language.DefaultProjectViewSectionProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
