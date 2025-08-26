@@ -111,6 +111,20 @@ bazel_aspects_output_test_all_versions(
     project_path = "test-projects/workspace/enabled-rules-project",
 )
 
+bazel_diagnostics_output_test_all_versions(
+    name = "scala_diagnostics_test",
+    compile_targets = [
+        ["//scala_targets:library"],
+        ["//scala_targets:library"],
+    ],
+    enabled_rules = [
+        "io_bazel_rules_scala",
+        "rules_java",
+        "rules_jvm",
+    ],
+    project_path = "test-projects/workspace/enabled-rules-project",
+)
+
 bazel_aspects_output_test_all_versions(
     name = "go_project_test",
     bzlmod_project_path = "test-projects/bzlmod/go-project",

@@ -11,24 +11,26 @@ object BazelTestRunnerWithNotifications : BazelBaseTestRunner() {
 
   private fun getSteps(): List<List<Label>> =
     System.getenv().filter { it.key.startsWith(COMPILE_TARGETS) }.toSortedMap().map {
-      it.value.split(",").map { target-> Label.parse(target) }
+      it.value.split(",").map { target -> Label.parse(target) }
     }
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-95
   @JvmStatic
   fun main(args: Array<String>) {
     val testClient = createTestkitClient()
-      getSteps().forEach { compileTargets ->
+    getSteps().forEach { compileTargets ->
       testClient.test(360.seconds) { session ->
         val params =
           CompileParams(
             compileTargets,
             originId = "some-id",
-            arguments = listOf("--action_env=FORCE_REBUILD=${System.currentTimeMillis()}"),
+            arguments = listOf(
+              "--action_env=FORCE_REBUILD=${System.currentTimeMillis()}",
+            ),
           )
         session.client.clearDiagnostics()
         session.server.buildTargetCompile(params)
-        session.client.publishDiagnosticsNotifications.sortedBy { it.buildTarget }.forEach {
+        session.client.publishDiagnosticsNotifications.sortedBy { it.buildTarget }.filter { it.textDocument != null }.forEach {
           println(it)
         }
       }

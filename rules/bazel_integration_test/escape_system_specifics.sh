@@ -33,6 +33,7 @@ SED
   if has_flag "--check-diagnostics" "$@"; then
     cat <<'SED'
 s|textDocument=TextDocumentIdentifier(path=[^\)]*/\([^)]*\))|textDocument=TextDocumentIdentifier(path=\1)|g
+s/\x1b\[[0-9;?]*[ -/]*[@-~]//g
 SED
   fi
 }
