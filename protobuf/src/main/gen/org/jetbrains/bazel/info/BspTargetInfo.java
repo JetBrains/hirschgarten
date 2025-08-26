@@ -22327,6 +22327,951 @@ java.lang.String defaultValue) {
 
   }
 
+  public interface ProtobufTargetInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:bazelbsp.ProtobufTargetInfo)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>bool allow_exports = 1;</code>
+     * @return The allowExports.
+     */
+    boolean getAllowExports();
+
+    /**
+     * <code>repeated string exports = 2;</code>
+     * @return A list containing the exports.
+     */
+    java.util.List<java.lang.String>
+        getExportsList();
+    /**
+     * <code>repeated string exports = 2;</code>
+     * @return The count of exports.
+     */
+    int getExportsCount();
+    /**
+     * <code>repeated string exports = 2;</code>
+     * @param index The index of the element to return.
+     * @return The exports at the given index.
+     */
+    java.lang.String getExports(int index);
+    /**
+     * <code>repeated string exports = 2;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the exports at the given index.
+     */
+    com.google.protobuf.ByteString
+        getExportsBytes(int index);
+
+    /**
+     * <code>string import_prefix = 3;</code>
+     * @return The importPrefix.
+     */
+    java.lang.String getImportPrefix();
+    /**
+     * <code>string import_prefix = 3;</code>
+     * @return The bytes for importPrefix.
+     */
+    com.google.protobuf.ByteString
+        getImportPrefixBytes();
+
+    /**
+     * <code>string strip_import_prefix = 4;</code>
+     * @return The stripImportPrefix.
+     */
+    java.lang.String getStripImportPrefix();
+    /**
+     * <code>string strip_import_prefix = 4;</code>
+     * @return The bytes for stripImportPrefix.
+     */
+    com.google.protobuf.ByteString
+        getStripImportPrefixBytes();
+  }
+  /**
+   * Protobuf type {@code bazelbsp.ProtobufTargetInfo}
+   */
+  public static final class ProtobufTargetInfo extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:bazelbsp.ProtobufTargetInfo)
+      ProtobufTargetInfoOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 5,
+        /* suffix= */ "",
+        ProtobufTargetInfo.class.getName());
+    }
+    // Use ProtobufTargetInfo.newBuilder() to construct.
+    private ProtobufTargetInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private ProtobufTargetInfo() {
+      exports_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      importPrefix_ = "";
+      stripImportPrefix_ = "";
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ProtobufTargetInfo_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ProtobufTargetInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.Builder.class);
+    }
+
+    public static final int ALLOW_EXPORTS_FIELD_NUMBER = 1;
+    private boolean allowExports_ = false;
+    /**
+     * <code>bool allow_exports = 1;</code>
+     * @return The allowExports.
+     */
+    @java.lang.Override
+    public boolean getAllowExports() {
+      return allowExports_;
+    }
+
+    public static final int EXPORTS_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList exports_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    /**
+     * <code>repeated string exports = 2;</code>
+     * @return A list containing the exports.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getExportsList() {
+      return exports_;
+    }
+    /**
+     * <code>repeated string exports = 2;</code>
+     * @return The count of exports.
+     */
+    public int getExportsCount() {
+      return exports_.size();
+    }
+    /**
+     * <code>repeated string exports = 2;</code>
+     * @param index The index of the element to return.
+     * @return The exports at the given index.
+     */
+    public java.lang.String getExports(int index) {
+      return exports_.get(index);
+    }
+    /**
+     * <code>repeated string exports = 2;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the exports at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getExportsBytes(int index) {
+      return exports_.getByteString(index);
+    }
+
+    public static final int IMPORT_PREFIX_FIELD_NUMBER = 3;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object importPrefix_ = "";
+    /**
+     * <code>string import_prefix = 3;</code>
+     * @return The importPrefix.
+     */
+    @java.lang.Override
+    public java.lang.String getImportPrefix() {
+      java.lang.Object ref = importPrefix_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        importPrefix_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string import_prefix = 3;</code>
+     * @return The bytes for importPrefix.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getImportPrefixBytes() {
+      java.lang.Object ref = importPrefix_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        importPrefix_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int STRIP_IMPORT_PREFIX_FIELD_NUMBER = 4;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object stripImportPrefix_ = "";
+    /**
+     * <code>string strip_import_prefix = 4;</code>
+     * @return The stripImportPrefix.
+     */
+    @java.lang.Override
+    public java.lang.String getStripImportPrefix() {
+      java.lang.Object ref = stripImportPrefix_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        stripImportPrefix_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string strip_import_prefix = 4;</code>
+     * @return The bytes for stripImportPrefix.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getStripImportPrefixBytes() {
+      java.lang.Object ref = stripImportPrefix_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        stripImportPrefix_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (allowExports_ != false) {
+        output.writeBool(1, allowExports_);
+      }
+      for (int i = 0; i < exports_.size(); i++) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 2, exports_.getRaw(i));
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(importPrefix_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 3, importPrefix_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(stripImportPrefix_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 4, stripImportPrefix_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (allowExports_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, allowExports_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < exports_.size(); i++) {
+          dataSize += computeStringSizeNoTag(exports_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getExportsList().size();
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(importPrefix_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(3, importPrefix_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(stripImportPrefix_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(4, stripImportPrefix_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo)) {
+        return super.equals(obj);
+      }
+      org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo) obj;
+
+      if (getAllowExports()
+          != other.getAllowExports()) return false;
+      if (!getExportsList()
+          .equals(other.getExportsList())) return false;
+      if (!getImportPrefix()
+          .equals(other.getImportPrefix())) return false;
+      if (!getStripImportPrefix()
+          .equals(other.getStripImportPrefix())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + ALLOW_EXPORTS_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getAllowExports());
+      if (getExportsCount() > 0) {
+        hash = (37 * hash) + EXPORTS_FIELD_NUMBER;
+        hash = (53 * hash) + getExportsList().hashCode();
+      }
+      hash = (37 * hash) + IMPORT_PREFIX_FIELD_NUMBER;
+      hash = (53 * hash) + getImportPrefix().hashCode();
+      hash = (37 * hash) + STRIP_IMPORT_PREFIX_FIELD_NUMBER;
+      hash = (53 * hash) + getStripImportPrefix().hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code bazelbsp.ProtobufTargetInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:bazelbsp.ProtobufTargetInfo)
+        org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ProtobufTargetInfo_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ProtobufTargetInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.Builder.class);
+      }
+
+      // Construct using org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        allowExports_ = false;
+        exports_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
+        importPrefix_ = "";
+        stripImportPrefix_ = "";
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.jetbrains.bazel.info.BspTargetInfo.internal_static_bazelbsp_ProtobufTargetInfo_descriptor;
+      }
+
+      @java.lang.Override
+      public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo getDefaultInstanceForType() {
+        return org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo build() {
+        org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo buildPartial() {
+        org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.allowExports_ = allowExports_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          exports_.makeImmutable();
+          result.exports_ = exports_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.importPrefix_ = importPrefix_;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.stripImportPrefix_ = stripImportPrefix_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo) {
+          return mergeFrom((org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo other) {
+        if (other == org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.getDefaultInstance()) return this;
+        if (other.getAllowExports() != false) {
+          setAllowExports(other.getAllowExports());
+        }
+        if (!other.exports_.isEmpty()) {
+          if (exports_.isEmpty()) {
+            exports_ = other.exports_;
+            bitField0_ |= 0x00000002;
+          } else {
+            ensureExportsIsMutable();
+            exports_.addAll(other.exports_);
+          }
+          onChanged();
+        }
+        if (!other.getImportPrefix().isEmpty()) {
+          importPrefix_ = other.importPrefix_;
+          bitField0_ |= 0x00000004;
+          onChanged();
+        }
+        if (!other.getStripImportPrefix().isEmpty()) {
+          stripImportPrefix_ = other.stripImportPrefix_;
+          bitField0_ |= 0x00000008;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                allowExports_ = input.readBool();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              case 18: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureExportsIsMutable();
+                exports_.add(s);
+                break;
+              } // case 18
+              case 26: {
+                importPrefix_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+              case 34: {
+                stripImportPrefix_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private boolean allowExports_ ;
+      /**
+       * <code>bool allow_exports = 1;</code>
+       * @return The allowExports.
+       */
+      @java.lang.Override
+      public boolean getAllowExports() {
+        return allowExports_;
+      }
+      /**
+       * <code>bool allow_exports = 1;</code>
+       * @param value The allowExports to set.
+       * @return This builder for chaining.
+       */
+      public Builder setAllowExports(boolean value) {
+
+        allowExports_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool allow_exports = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearAllowExports() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        allowExports_ = false;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringArrayList exports_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      private void ensureExportsIsMutable() {
+        if (!exports_.isModifiable()) {
+          exports_ = new com.google.protobuf.LazyStringArrayList(exports_);
+        }
+        bitField0_ |= 0x00000002;
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @return A list containing the exports.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getExportsList() {
+        exports_.makeImmutable();
+        return exports_;
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @return The count of exports.
+       */
+      public int getExportsCount() {
+        return exports_.size();
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @param index The index of the element to return.
+       * @return The exports at the given index.
+       */
+      public java.lang.String getExports(int index) {
+        return exports_.get(index);
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the exports at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getExportsBytes(int index) {
+        return exports_.getByteString(index);
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @param index The index to set the value at.
+       * @param value The exports to set.
+       * @return This builder for chaining.
+       */
+      public Builder setExports(
+          int index, java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureExportsIsMutable();
+        exports_.set(index, value);
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @param value The exports to add.
+       * @return This builder for chaining.
+       */
+      public Builder addExports(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureExportsIsMutable();
+        exports_.add(value);
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @param values The exports to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllExports(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureExportsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, exports_);
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearExports() {
+        exports_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string exports = 2;</code>
+       * @param value The bytes of the exports to add.
+       * @return This builder for chaining.
+       */
+      public Builder addExportsBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        ensureExportsIsMutable();
+        exports_.add(value);
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object importPrefix_ = "";
+      /**
+       * <code>string import_prefix = 3;</code>
+       * @return The importPrefix.
+       */
+      public java.lang.String getImportPrefix() {
+        java.lang.Object ref = importPrefix_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          importPrefix_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string import_prefix = 3;</code>
+       * @return The bytes for importPrefix.
+       */
+      public com.google.protobuf.ByteString
+          getImportPrefixBytes() {
+        java.lang.Object ref = importPrefix_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          importPrefix_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string import_prefix = 3;</code>
+       * @param value The importPrefix to set.
+       * @return This builder for chaining.
+       */
+      public Builder setImportPrefix(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        importPrefix_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string import_prefix = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearImportPrefix() {
+        importPrefix_ = getDefaultInstance().getImportPrefix();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string import_prefix = 3;</code>
+       * @param value The bytes for importPrefix to set.
+       * @return This builder for chaining.
+       */
+      public Builder setImportPrefixBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        importPrefix_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object stripImportPrefix_ = "";
+      /**
+       * <code>string strip_import_prefix = 4;</code>
+       * @return The stripImportPrefix.
+       */
+      public java.lang.String getStripImportPrefix() {
+        java.lang.Object ref = stripImportPrefix_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          stripImportPrefix_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string strip_import_prefix = 4;</code>
+       * @return The bytes for stripImportPrefix.
+       */
+      public com.google.protobuf.ByteString
+          getStripImportPrefixBytes() {
+        java.lang.Object ref = stripImportPrefix_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          stripImportPrefix_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string strip_import_prefix = 4;</code>
+       * @param value The stripImportPrefix to set.
+       * @return This builder for chaining.
+       */
+      public Builder setStripImportPrefix(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        stripImportPrefix_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string strip_import_prefix = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearStripImportPrefix() {
+        stripImportPrefix_ = getDefaultInstance().getStripImportPrefix();
+        bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string strip_import_prefix = 4;</code>
+       * @param value The bytes for stripImportPrefix to set.
+       * @return This builder for chaining.
+       */
+      public Builder setStripImportPrefixBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        stripImportPrefix_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:bazelbsp.ProtobufTargetInfo)
+    }
+
+    // @@protoc_insertion_point(class_scope:bazelbsp.ProtobufTargetInfo)
+    private static final org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo();
+    }
+
+    public static org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ProtobufTargetInfo>
+        PARSER = new com.google.protobuf.AbstractParser<ProtobufTargetInfo>() {
+      @java.lang.Override
+      public ProtobufTargetInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<ProtobufTargetInfo> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ProtobufTargetInfo> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface TargetInfoOrBuilder extends
       // @@protoc_insertion_point(interface_extends:bazelbsp.TargetInfo)
       com.google.protobuf.MessageOrBuilder {
@@ -22717,6 +23662,21 @@ java.lang.String defaultValue);
      * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
      */
     org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfoOrBuilder getCToolchainInfoOrBuilder();
+
+    /**
+     * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+     * @return Whether the protobufTargetInfo field is set.
+     */
+    boolean hasProtobufTargetInfo();
+    /**
+     * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+     * @return The protobufTargetInfo.
+     */
+    org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo getProtobufTargetInfo();
+    /**
+     * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+     */
+    org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfoOrBuilder getProtobufTargetInfoOrBuilder();
   }
   /**
    * Protobuf type {@code bazelbsp.TargetInfo}
@@ -23510,6 +24470,32 @@ java.lang.String defaultValue) {
       return cToolchainInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance() : cToolchainInfo_;
     }
 
+    public static final int PROTOBUF_TARGET_INFO_FIELD_NUMBER = 14000;
+    private org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo protobufTargetInfo_;
+    /**
+     * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+     * @return Whether the protobufTargetInfo field is set.
+     */
+    @java.lang.Override
+    public boolean hasProtobufTargetInfo() {
+      return ((bitField0_ & 0x00000800) != 0);
+    }
+    /**
+     * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+     * @return The protobufTargetInfo.
+     */
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo getProtobufTargetInfo() {
+      return protobufTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.getDefaultInstance() : protobufTargetInfo_;
+    }
+    /**
+     * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+     */
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfoOrBuilder getProtobufTargetInfoOrBuilder() {
+      return protobufTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.getDefaultInstance() : protobufTargetInfo_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -23592,6 +24578,9 @@ java.lang.String defaultValue) {
       }
       if (((bitField0_ & 0x00000400) != 0)) {
         output.writeMessage(13000, getCToolchainInfo());
+      }
+      if (((bitField0_ & 0x00000800) != 0)) {
+        output.writeMessage(14000, getProtobufTargetInfo());
       }
       getUnknownFields().writeTo(output);
     }
@@ -23701,6 +24690,10 @@ java.lang.String defaultValue) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(13000, getCToolchainInfo());
       }
+      if (((bitField0_ & 0x00000800) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(14000, getProtobufTargetInfo());
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -23793,6 +24786,11 @@ java.lang.String defaultValue) {
         if (!getCToolchainInfo()
             .equals(other.getCToolchainInfo())) return false;
       }
+      if (hasProtobufTargetInfo() != other.hasProtobufTargetInfo()) return false;
+      if (hasProtobufTargetInfo()) {
+        if (!getProtobufTargetInfo()
+            .equals(other.getProtobufTargetInfo())) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -23884,6 +24882,10 @@ java.lang.String defaultValue) {
       if (hasCToolchainInfo()) {
         hash = (37 * hash) + C_TOOLCHAIN_INFO_FIELD_NUMBER;
         hash = (53 * hash) + getCToolchainInfo().hashCode();
+      }
+      if (hasProtobufTargetInfo()) {
+        hash = (37 * hash) + PROTOBUF_TARGET_INFO_FIELD_NUMBER;
+        hash = (53 * hash) + getProtobufTargetInfo().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -24052,6 +25054,7 @@ java.lang.String defaultValue) {
           getAndroidAarImportInfoFieldBuilder();
           getGoTargetInfoFieldBuilder();
           getCToolchainInfoFieldBuilder();
+          getProtobufTargetInfoFieldBuilder();
         }
       }
       @java.lang.Override
@@ -24149,6 +25152,11 @@ java.lang.String defaultValue) {
         if (cToolchainInfoBuilder_ != null) {
           cToolchainInfoBuilder_.dispose();
           cToolchainInfoBuilder_ = null;
+        }
+        protobufTargetInfo_ = null;
+        if (protobufTargetInfoBuilder_ != null) {
+          protobufTargetInfoBuilder_.dispose();
+          protobufTargetInfoBuilder_ = null;
         }
         return this;
       }
@@ -24313,6 +25321,12 @@ java.lang.String defaultValue) {
               ? cToolchainInfo_
               : cToolchainInfoBuilder_.build();
           to_bitField0_ |= 0x00000400;
+        }
+        if (((from_bitField0_ & 0x00400000) != 0)) {
+          result.protobufTargetInfo_ = protobufTargetInfoBuilder_ == null
+              ? protobufTargetInfo_
+              : protobufTargetInfoBuilder_.build();
+          to_bitField0_ |= 0x00000800;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -24506,6 +25520,9 @@ java.lang.String defaultValue) {
         }
         if (other.hasCToolchainInfo()) {
           mergeCToolchainInfo(other.getCToolchainInfo());
+        }
+        if (other.hasProtobufTargetInfo()) {
+          mergeProtobufTargetInfo(other.getProtobufTargetInfo());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -24703,6 +25720,13 @@ java.lang.String defaultValue) {
                 bitField0_ |= 0x00200000;
                 break;
               } // case 104002
+              case 112002: {
+                input.readMessage(
+                    getProtobufTargetInfoFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00400000;
+                break;
+              } // case 112002
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -27608,6 +28632,127 @@ java.lang.String defaultValue) {
         return cToolchainInfoBuilder_;
       }
 
+      private org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo protobufTargetInfo_;
+      private com.google.protobuf.SingleFieldBuilder<
+          org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfoOrBuilder> protobufTargetInfoBuilder_;
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       * @return Whether the protobufTargetInfo field is set.
+       */
+      public boolean hasProtobufTargetInfo() {
+        return ((bitField0_ & 0x00400000) != 0);
+      }
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       * @return The protobufTargetInfo.
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo getProtobufTargetInfo() {
+        if (protobufTargetInfoBuilder_ == null) {
+          return protobufTargetInfo_ == null ? org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.getDefaultInstance() : protobufTargetInfo_;
+        } else {
+          return protobufTargetInfoBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       */
+      public Builder setProtobufTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo value) {
+        if (protobufTargetInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          protobufTargetInfo_ = value;
+        } else {
+          protobufTargetInfoBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00400000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       */
+      public Builder setProtobufTargetInfo(
+          org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.Builder builderForValue) {
+        if (protobufTargetInfoBuilder_ == null) {
+          protobufTargetInfo_ = builderForValue.build();
+        } else {
+          protobufTargetInfoBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00400000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       */
+      public Builder mergeProtobufTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo value) {
+        if (protobufTargetInfoBuilder_ == null) {
+          if (((bitField0_ & 0x00400000) != 0) &&
+            protobufTargetInfo_ != null &&
+            protobufTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.getDefaultInstance()) {
+            getProtobufTargetInfoBuilder().mergeFrom(value);
+          } else {
+            protobufTargetInfo_ = value;
+          }
+        } else {
+          protobufTargetInfoBuilder_.mergeFrom(value);
+        }
+        if (protobufTargetInfo_ != null) {
+          bitField0_ |= 0x00400000;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       */
+      public Builder clearProtobufTargetInfo() {
+        bitField0_ = (bitField0_ & ~0x00400000);
+        protobufTargetInfo_ = null;
+        if (protobufTargetInfoBuilder_ != null) {
+          protobufTargetInfoBuilder_.dispose();
+          protobufTargetInfoBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.Builder getProtobufTargetInfoBuilder() {
+        bitField0_ |= 0x00400000;
+        onChanged();
+        return getProtobufTargetInfoFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfoOrBuilder getProtobufTargetInfoOrBuilder() {
+        if (protobufTargetInfoBuilder_ != null) {
+          return protobufTargetInfoBuilder_.getMessageOrBuilder();
+        } else {
+          return protobufTargetInfo_ == null ?
+              org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.getDefaultInstance() : protobufTargetInfo_;
+        }
+      }
+      /**
+       * <code>.bazelbsp.ProtobufTargetInfo protobuf_target_info = 14000;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfoOrBuilder> 
+          getProtobufTargetInfoFieldBuilder() {
+        if (protobufTargetInfoBuilder_ == null) {
+          protobufTargetInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.ProtobufTargetInfoOrBuilder>(
+                  getProtobufTargetInfo(),
+                  getParentForChildren(),
+                  isClean());
+          protobufTargetInfo_ = null;
+        }
+        return protobufTargetInfoBuilder_;
+      }
+
       // @@protoc_insertion_point(builder_scope:bazelbsp.TargetInfo)
     }
 
@@ -27745,6 +28890,11 @@ java.lang.String defaultValue) {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_bazelbsp_GoTargetInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_bazelbsp_ProtobufTargetInfo_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_bazelbsp_ProtobufTargetInfo_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_bazelbsp_TargetInfo_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -27839,32 +28989,37 @@ java.lang.String defaultValue) {
       "enerated_sources\030\003 \003(\0132\026.bazelbsp.FileLo" +
       "cation\0223\n\023generated_libraries\030\004 \003(\0132\026.ba" +
       "zelbsp.FileLocation\022\026\n\016library_labels\030\005 " +
-      "\003(\t\"\344\007\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024" +
-      " \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\013" +
-      "2\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(\0132" +
-      "\026.bazelbsp.FileLocation\0221\n\021generated_sou" +
-      "rces\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\tre" +
-      "sources\030< \003(\0132\026.bazelbsp.FileLocation\022*\n" +
-      "\003env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntr" +
-      "y\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001" +
-      "(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_target" +
-      "_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229\n" +
-      "\023java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp.J" +
-      "avaToolchainInfo\0225\n\021java_runtime_info\030\270\027" +
-      " \001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021scala" +
-      "_target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTarg" +
-      "etInfo\0221\n\017cpp_target_info\030\360. \001(\0132\027.bazel" +
-      "bsp.CppTargetInfo\0227\n\022kotlin_target_info\030" +
-      "\3306 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022py" +
-      "thon_target_info\030\300> \001(\0132\032.bazelbsp.Pytho" +
-      "nTargetInfo\0229\n\023android_target_info\030\220N \001(" +
-      "\0132\033.bazelbsp.AndroidTargetInfo\022@\n\027androi" +
-      "d_aar_import_info\030\370U \001(\0132\036.bazelbsp.Andr" +
-      "oidAarImportInfo\022/\n\016go_target_info\030\340] \001(" +
-      "\0132\026.bazelbsp.GoTargetInfo\0223\n\020c_toolchain" +
-      "_info\030\310e \001(\0132\030.bazelbsp.CToolchainInfo\032*" +
-      "\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\002" +
-      "8\001B\032\n\030org.jetbrains.bazel.infob\006proto3"
+      "\003(\t\"p\n\022ProtobufTargetInfo\022\025\n\rallow_expor" +
+      "ts\030\001 \001(\010\022\017\n\007exports\030\002 \003(\t\022\025\n\rimport_pref" +
+      "ix\030\003 \001(\t\022\033\n\023strip_import_prefix\030\004 \001(\t\"\241\010" +
+      "\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014" +
+      "\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\0132\024.baz" +
+      "elbsp.Dependency\022\'\n\007sources\0302 \003(\0132\026.baze" +
+      "lbsp.FileLocation\0221\n\021generated_sources\0303" +
+      " \003(\0132\026.bazelbsp.FileLocation\022)\n\tresource" +
+      "s\030< \003(\0132\026.bazelbsp.FileLocation\022*\n\003env\030F" +
+      " \003(\0132\035.bazelbsp.TargetInfo.EnvEntry\022\023\n\013e" +
+      "nv_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016" +
+      "workspace_name\030d \001(\t\0221\n\017jvm_target_info\030" +
+      "\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229\n\023java_" +
+      "toolchain_info\030\320\017 \001(\0132\033.bazelbsp.JavaToo" +
+      "lchainInfo\0225\n\021java_runtime_info\030\270\027 \001(\0132\031" +
+      ".bazelbsp.JavaRuntimeInfo\0225\n\021scala_targe" +
+      "t_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTargetInfo" +
+      "\0221\n\017cpp_target_info\030\360. \001(\0132\027.bazelbsp.Cp" +
+      "pTargetInfo\0227\n\022kotlin_target_info\030\3306 \001(\013" +
+      "2\032.bazelbsp.KotlinTargetInfo\0227\n\022python_t" +
+      "arget_info\030\300> \001(\0132\032.bazelbsp.PythonTarge" +
+      "tInfo\0229\n\023android_target_info\030\220N \001(\0132\033.ba" +
+      "zelbsp.AndroidTargetInfo\022@\n\027android_aar_" +
+      "import_info\030\370U \001(\0132\036.bazelbsp.AndroidAar" +
+      "ImportInfo\022/\n\016go_target_info\030\340] \001(\0132\026.ba" +
+      "zelbsp.GoTargetInfo\0223\n\020c_toolchain_info\030" +
+      "\310e \001(\0132\030.bazelbsp.CToolchainInfo\022;\n\024prot" +
+      "obuf_target_info\030\260m \001(\0132\034.bazelbsp.Proto" +
+      "bufTargetInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r" +
+      "\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel" +
+      ".infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -27972,12 +29127,18 @@ java.lang.String defaultValue) {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_GoTargetInfo_descriptor,
         new java.lang.String[] { "ImportPath", "SdkHomePath", "GeneratedSources", "GeneratedLibraries", "LibraryLabels", });
-    internal_static_bazelbsp_TargetInfo_descriptor =
+    internal_static_bazelbsp_ProtobufTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(16);
+    internal_static_bazelbsp_ProtobufTargetInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_bazelbsp_ProtobufTargetInfo_descriptor,
+        new java.lang.String[] { "AllowExports", "Exports", "ImportPrefix", "StripImportPrefix", });
+    internal_static_bazelbsp_TargetInfo_descriptor =
+      getDescriptor().getMessageTypes().get(17);
     internal_static_bazelbsp_TargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_TargetInfo_descriptor,
-        new java.lang.String[] { "Id", "Kind", "Tags", "Dependencies", "Sources", "GeneratedSources", "Resources", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "CppTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "AndroidTargetInfo", "AndroidAarImportInfo", "GoTargetInfo", "CToolchainInfo", });
+        new java.lang.String[] { "Id", "Kind", "Tags", "Dependencies", "Sources", "GeneratedSources", "Resources", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "CppTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "AndroidTargetInfo", "AndroidAarImportInfo", "GoTargetInfo", "CToolchainInfo", "ProtobufTargetInfo", });
     internal_static_bazelbsp_TargetInfo_EnvEntry_descriptor =
       internal_static_bazelbsp_TargetInfo_descriptor.getNestedTypes().get(0);
     internal_static_bazelbsp_TargetInfo_EnvEntry_fieldAccessorTable = new

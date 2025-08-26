@@ -9,6 +9,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JdkResolver
 import org.jetbrains.bazel.sync.workspace.languages.java.JdkVersionResolver
 import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.protobuf.ProtobufLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
@@ -30,6 +31,7 @@ class LanguagePluginsService {
     GoLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
     PythonLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
     ThriftLanguagePlugin().also(this::registerLangaugePlugin)
+    ProtobufLanguagePlugin(javaPlugin).also(this::registerLangaugePlugin)
   }
 
   private fun registerLangaugePlugin(plugin: LanguagePlugin<*>) {

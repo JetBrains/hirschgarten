@@ -866,7 +866,7 @@ class AspectBazelProjectMapper(
         targetData.sources to emptyList()
       }
 
-    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, project)
+    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, project, bazelPathsResolver)
     val data = languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(
@@ -914,6 +914,11 @@ class AspectBazelProjectMapper(
 
   private fun inferLanguages(target: TargetInfo): Set<LanguageClass> =
     buildSet {
+      if (target.hasProtobufTargetInfo()) {
+        add(LanguageClass.PROTOBUF)
+        add(LanguageClass.JAVA)
+        return@buildSet
+      }
       // TODO It's a hack preserved from before TargetKind refactorking, to be removed
       if (target.hasJvmTargetInfo()) {
         add(LanguageClass.JAVA)

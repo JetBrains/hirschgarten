@@ -128,6 +128,13 @@ message GoTargetInfo {
   repeated string library_labels = 5;
 }
 
+message ProtobufTargetInfo {
+  bool allow_exports = 1;
+  repeated string exports = 2;
+  string import_prefix = 3;
+  string strip_import_prefix = 4;
+}
+
 message TargetInfo {
   string id = 10;
   string kind = 20;
@@ -151,4 +158,5 @@ message TargetInfo {
   AndroidAarImportInfo android_aar_import_info = 11000;
   GoTargetInfo go_target_info = 12000;
   CToolchainInfo c_toolchain_info = 13000;
+  ProtobufTargetInfo protobuf_target_info = 14000;
 }

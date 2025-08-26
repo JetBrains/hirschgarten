@@ -43,6 +43,7 @@ enum class Language(
     false,
   ),
   Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true, false),
+  Protobuf("//aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto"), listOf("extract_protobuf_info"), false, false),
   ;
 
   fun toLoadStatement(): String =

@@ -1,0 +1,13 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <projectPostSyncHook implementation="org.jetbrains.bazel.protobuf.BazelProtobufSyncHook" />
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij.protobuf">
+    <fileResolveProvider implementation="org.jetbrains.bazel.protobuf.BazelProtobufFileResolveProvider"/>
+  </extensions>
+</idea-plugin>

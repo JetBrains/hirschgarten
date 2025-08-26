@@ -325,6 +325,14 @@ java_import(
 )
 """
 
+_PROTOEDIT_BUILD_FILE = """
+java_import(
+    name = "protoedit",
+    jars = glob(["protoeditor/lib/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
 # SDK 251
 
 SDK_251_PLUGIN_REPOSITORY_VERSION = "251.23774.435"
@@ -512,6 +520,19 @@ http_archive(
     url = TERMINAL_PLUGIN_251_URL,
 )
 
+PROTOEDIT_PLUGIN_251_VERSION = "251.27812.12"
+
+PROTOEDIT_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_251_VERSION, PROTOEDIT_PLUGIN_251_VERSION)
+
+PROTOEDIT_PLUGIN_251_SHA = "9430bddfff42e03556b67e340080fb5356de8fe6eefbc02554f4638840680b8e"
+
+http_archive(
+    name = "protoedit_2025_1",
+    build_file_content = _PROTOEDIT_BUILD_FILE,
+    sha256 = PROTOEDIT_PLUGIN_251_SHA,
+    url = PROTOEDIT_PLUGIN_251_URL,
+)
+
 # SDK 252
 
 SDK_252_PLUGIN_REPOSITORY_VERSION = "252.23892.409"
@@ -674,4 +695,18 @@ TERMINAL_COMPLETION_PLUGIN_252_URL = "https://www.jetbrains.com/intellij-reposit
 http_jar(
     name = "terminal_completion_2025_2",
     url = TERMINAL_COMPLETION_PLUGIN_252_URL,
+)
+
+# protobuf plugin
+PROTOEDIT_PLUGIN_252_VERSION = "252.23892.201"
+
+PROTOEDIT_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_252_VERSION, PROTOEDIT_PLUGIN_252_VERSION)
+
+PROTOEDIT_PLUGIN_252_SHA = "0deea649899098a7b12e37aeba826a5d7658684dbc130634e0ca9bd3c94e0478"
+
+http_archive(
+    name = "protoedit_2025_2",
+    build_file_content = _PROTOEDIT_BUILD_FILE,
+    sha256 = PROTOEDIT_PLUGIN_252_SHA,
+    url = PROTOEDIT_PLUGIN_252_URL,
 )

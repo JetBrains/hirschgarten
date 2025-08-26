@@ -113,6 +113,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/nonmodule/sync/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/performanceImpl",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/protobuf",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/gutter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/resolve",
