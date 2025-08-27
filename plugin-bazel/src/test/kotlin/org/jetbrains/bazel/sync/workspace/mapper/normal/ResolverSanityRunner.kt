@@ -70,6 +70,7 @@ fun main(args: Array<String>) {
 
       // Read target map from aspect outputs
       val rawTargetsMap: Map<Label, TargetInfo> = targetInfoReader.readTargetMapFromAspectOutputs(textprotoFiles)
+        .toSortedMap() // provide deterministic output
 
       // Process with unified configuration
       processWithUnifiedSetup(rawTargetsMap)
