@@ -6,7 +6,6 @@ import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 
 class ProjectViewParser(private val builder: PsiBuilder) {
@@ -25,25 +24,16 @@ class ProjectViewParser(private val builder: PsiBuilder) {
     val sectionMarker = builder.mark()
     when (getCurrentTokenType()) {
       ProjectViewTokenType.SECTION_KEYWORD -> {
-        ProjectViewSection.KEYWORD_MAP[builder.tokenText]?.let { metadata ->
-          val sectionNameMarker = builder.mark()
-          builder.advanceLexer()
-          sectionNameMarker.done(ProjectViewElementTypes.SECTION_NAME)
-          expect(ProjectViewTokenType.COLON)
-          when (metadata.sectionType) {
-            is ProjectViewSection.SectionType.Scalar -> {
-              parseItem(ProjectViewElementTypes.SECTION_ITEM)
-            }
-            is ProjectViewSection.SectionType.List<*> -> {
-              if (!matches(ProjectViewTokenType.NEWLINE)) {
-                parseItem(ProjectViewElementTypes.SECTION_ITEM)
-              }
-              parseListItems()
-            }
-          }
-          sectionMarker.done(ProjectViewElementTypes.SECTION)
-          return
+        val sectionNameMarker = builder.mark()
+        builder.advanceLexer()
+        sectionNameMarker.done(ProjectViewElementTypes.SECTION_NAME)
+        expect(ProjectViewTokenType.COLON)
+        if (!matches(ProjectViewTokenType.NEWLINE)) {
+          parseItem(ProjectViewElementTypes.SECTION_ITEM)
         }
+        parseListItems()
+        sectionMarker.done(ProjectViewElementTypes.SECTION)
+        return
       }
       ProjectViewTokenType.IMPORT_KEYWORD -> {
         builder.advanceLexer()
