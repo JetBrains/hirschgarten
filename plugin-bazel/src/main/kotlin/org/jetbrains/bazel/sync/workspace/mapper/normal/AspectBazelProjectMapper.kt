@@ -222,11 +222,11 @@ class AspectBazelProjectMapper(
       }.toMap()
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
-    !targetInfo.kind.endsWith("_resources") &&
+    !targetInfo.kind.endsWith("_resources") && targetInfo.hasJvmTargetInfo() &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-          (targetInfo.hasJvmTargetInfo() && !hasKnownJvmSources(targetInfo)) ||
-          (targetInfo.hasJvmTargetInfo() && targetInfo.jvmTargetInfo.hasApiGeneratingPlugins)
+          (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
+          targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
       )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
@@ -268,7 +268,7 @@ class AspectBazelProjectMapper(
     val inferredSourceJars =
       kotlinStdlibsJars
         .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
-        .filter { it.exists() }
+        .onEach { if (it.notExists()) logNonExistingFile(it, "[kotlin stdlib]") }
         .toSet()
 
     return if (kotlinStdlibsJars.isNotEmpty()) {
@@ -858,7 +858,6 @@ class AspectBazelProjectMapper(
         .toSet()
         .map(bazelPathsResolver::resolve)
         .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-        .filter { it.exists() }
         .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
     val generatedSources =
@@ -867,7 +866,6 @@ class AspectBazelProjectMapper(
         .map(bazelPathsResolver::resolve)
         .filter { it.extension != "srcjar" }
         .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-        .filter { it.exists() }
         .map { SourceItem(path = it, generated = true, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
     return sources + generatedSources
@@ -880,7 +878,6 @@ class AspectBazelProjectMapper(
 
   private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
     (bazelPathsResolver.resolvePaths(target.resourcesList) + languagePlugin.resolveAdditionalResources(target))
-      .filter { it.exists() }
       .toSet()
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {
