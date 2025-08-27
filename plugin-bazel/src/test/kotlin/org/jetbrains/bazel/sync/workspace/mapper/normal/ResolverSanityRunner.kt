@@ -21,14 +21,6 @@ import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
-import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.java.JdkResolver
-import org.jetbrains.bazel.sync.workspace.languages.java.JdkVersionResolver
-import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
@@ -189,24 +181,8 @@ private suspend fun processAndPrint(
   val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
   // Create language plugins
-  val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
-  val testPackageResolver = TestJvmPackageResolver()
-  val javaLanguagePlugin = JavaLanguagePlugin(bazelPathsResolver, jdkResolver, testPackageResolver)
-  val scalaLanguagePlugin = ScalaLanguagePlugin(javaLanguagePlugin, bazelPathsResolver, testPackageResolver)
-  val kotlinLanguagePlugin = KotlinLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
-  val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
-  val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
-  val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
-
-  val languagePluginsService =
-    LanguagePluginsService(
-      scalaLanguagePlugin,
-      javaLanguagePlugin,
-      kotlinLanguagePlugin,
-      thriftLanguagePlugin,
-      pythonLanguagePlugin,
-      goLanguagePlugin,
-    )
+  val languagePluginsService = LanguagePluginsService()
+  languagePluginsService.registerDefaultPlugins(bazelPathsResolver, TestJvmPackageResolver())
 
   // Create mappers
   val targetTagsResolver = TargetTagsResolver()
@@ -218,21 +194,14 @@ private suspend fun processAndPrint(
       bazelPathsResolver = bazelPathsResolver,
       targetTagsResolver = targetTagsResolver,
       mavenCoordinatesResolver = mavenCoordinatesResolver,
-      environmentProvider = IntellijEnvironmentProvider,
-    )
-
-  val clientMapper =
-    AspectClientProjectMapper(
-      languagePluginsService = languagePluginsService,
       featureFlags = featureFlags,
-      bazelPathsResolver = bazelPathsResolver,
     )
 
   // Determine root targets from the processed targets
   val rootTargets = targets.keys.toSet()
 
   // Run through mappers
-  val bazelMappedProject =
+  val resolvedWorkspace =
     bazelMapper.createProject(
       targets = targets,
       rootTargets = rootTargets,
@@ -241,8 +210,6 @@ private suspend fun processAndPrint(
       repoMapping = repoMapping,
       hasError = false,
     )
-
-  val resolvedWorkspace = clientMapper.resolveWorkspace(bazelMappedProject)
 
   // Print the result with pretty formatting
   println(prettyPrint(resolvedWorkspace.toString()))
