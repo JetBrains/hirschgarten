@@ -50,8 +50,10 @@ class ProjectView(rawSections: List<RawItem>, private val project: Project) {
   inline fun <reified T> getSection(key: SectionKey<T>): T? = sections[key] as T
 
   sealed interface RawItem
-  data class RawSection(val name: String, val contents: List<String>): RawItem
-  data class RawImport(val path: String): RawItem
+
+  data class RawSection(val name: String, val contents: List<String>) : RawItem
+
+  data class RawImport(val path: String) : RawItem
 
   companion object {
     fun fromProjectViewPsiFile(file: ProjectViewPsiFile): ProjectView {
