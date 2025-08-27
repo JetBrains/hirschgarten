@@ -21,12 +21,12 @@ class LanguagePluginsService {
   val all
     get() = registry.values.toList()
 
-  fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver) {
+  fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver) {
     val javaPlugin =
-      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()))
+      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()), jvmPackageResolver)
         .also(this::registerLangaugePlugin)
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
-    ScalaLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
+    ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)
     GoLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
     PythonLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
     ThriftLanguagePlugin().also(this::registerLangaugePlugin)

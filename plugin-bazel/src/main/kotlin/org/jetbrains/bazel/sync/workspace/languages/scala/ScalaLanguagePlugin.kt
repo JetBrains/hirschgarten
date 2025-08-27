@@ -5,6 +5,8 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
+import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
