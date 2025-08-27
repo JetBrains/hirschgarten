@@ -17,7 +17,8 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }
+    val expected = ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
+    lookups shouldContainAll expected
   }
 
   @Test
@@ -27,11 +28,11 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldNotContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }
+    lookups shouldNotContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
   }
 
   @Test
-  fun `should suggest section names inside sections`() {
+  fun `should not suggest section names inside sections`() {
     myFixture.configureByText(
       ".bazelproject",
       """
@@ -44,6 +45,6 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldNotContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }
+    lookups shouldNotContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
   }
 }
