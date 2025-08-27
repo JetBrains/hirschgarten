@@ -33,7 +33,7 @@ class LanguagePluginServiceTest {
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
     val bazelPathsResolver = BazelPathsResolverMock.create()
     languagePluginsService = LanguagePluginsService()
-    languagePluginsService.registerDefaultPlugins(bazelPathsResolver)
+    languagePluginsService.registerDefaultPlugins(bazelPathsResolver, DefaultJvmPackageResolver())
   }
 
   @Nested
