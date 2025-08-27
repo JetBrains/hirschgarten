@@ -18,6 +18,18 @@ class LanguagePluginsService {
   val logger = logger<LanguagePluginsService>()
   val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
 
+  // target data can have only one language data
+  // jvm language plugins include base JavaInfo into their model BUT you have to call their plugin first
+  // TODO: allow BuildTarget have multiple languages data - it is doable I've had done that but haven't merged
+  val languagePriority: List<LanguageClass> = listOf(
+    LanguageClass.KOTLIN,
+    LanguageClass.SCALA,
+    LanguageClass.JAVA,
+    LanguageClass.THRIFT,
+    LanguageClass.PYTHON,
+    LanguageClass.GO,
+  )
+
   val all
     get() = registry.values.toList()
 
@@ -44,7 +56,11 @@ class LanguagePluginsService {
 
   fun getLanguagePlugin(lang: LanguageClass): LanguagePlugin<*>? = registry[lang]
 
-  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*>? = langs.firstNotNullOfOrNull { getLanguagePlugin(it) }
+  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*>? =
+    languagePriority.asSequence()
+      .filter { langs.contains(it) }
+      .mapNotNull { registry[it] }
+      .firstOrNull()?.let { return it }
 
   inline fun <reified PLUGIN> getLanguagePlugin(lang: LanguageClass): PLUGIN =
     getLanguagePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")
