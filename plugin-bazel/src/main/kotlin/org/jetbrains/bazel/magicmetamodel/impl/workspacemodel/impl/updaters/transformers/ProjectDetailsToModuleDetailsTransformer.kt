@@ -15,7 +15,7 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
       javacOptions = extractJvmBuildTarget(target)?.javacOpts ?: emptyList(),
       dependencies = libraryGraph.calculateAllDependencies(target),
       defaultJdkName = projectDetails.defaultJdkName,
-      jvmBinaryJars = extractJvmBuildTarget(target)?.getJvmOrNull()?.binaryOutputs ?: emptyList(),
+      jvmBinaryJars = extractJvmBuildTarget(target)?.binaryOutputs ?: emptyList(),
     )
   }
 }
