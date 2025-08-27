@@ -143,14 +143,6 @@ bazel_aspects_output_test_all_versions(
     ],
 )
 
-bazel_aspects_output_test_all_versions(
-    name = "first_phase_sync_test",
-    bzlmod_project_path = "test-projects/bzlmod/first-phase-sync-project",
-    skipped_versions_for_bzlmod = [
-        "6.4.0",
-    ],
-)
-
 # bazel_aspects_output_test_all_versions(
 #     name = "nested_modules_test",
 #     bzlmod_project_path = "test-projects/bzlmod/nested-modules",
@@ -186,6 +178,8 @@ test_suite(
         ":remote_jdk_test",
         ":sample_repo_partial_sync_test",
         ":sample_repo_test",
+        ":java_diagnostics_test",
+        ":scala_diagnostics_test",
     ],
 )
 
