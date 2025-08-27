@@ -97,7 +97,7 @@ class ProjectViewTest : BasePlatformTestCase() {
 
   @Test
   fun `test not applicable flag annotation`() {
-    val message = ProjectViewBundle.getMessage("annotator.not.applicable.flag.error") + " build_flags"
+    val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error") + " build_flags"
     myFixture.configureByText(".bazelproject", """build_flags: <error descr="$message">--dump_all</error>""")
   }
 }
