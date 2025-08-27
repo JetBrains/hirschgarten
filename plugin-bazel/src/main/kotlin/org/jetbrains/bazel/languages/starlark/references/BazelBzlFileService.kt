@@ -1,9 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -29,8 +27,6 @@ class BazelBzlFileService(private val project: Project) {
   var canonicalRepoNameToBzlFiles: Map<String, List<ResolvedLabel>> = emptyMap()
 
   init {
-    BazelCoroutineService.getInstance(project).start { updateCache() }
-
     project.messageBus.connect().subscribe(
       SyncStatusListener.TOPIC,
       object : SyncStatusListener {
@@ -44,6 +40,7 @@ class BazelBzlFileService(private val project: Project) {
     )
   }
 
+  @Synchronized
   private fun updateCache() {
     val newMap = mutableMapOf<String, List<ResolvedLabel>>()
 
@@ -105,7 +102,9 @@ class BazelBzlFileService(private val project: Project) {
 
   class BazelBzlFileServiceStartUpActivity : BazelProjectActivity() {
     override suspend fun executeForBazelProject(project: Project) {
-      BazelBzlFileService.getInstance(project)
+      BazelCoroutineService.getInstance(project).start {
+        getInstance(project).updateCache()
+      }
     }
   }
 }
