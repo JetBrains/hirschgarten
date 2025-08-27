@@ -21,12 +21,12 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `should complete workspace type variants`() {
-    myFixture.configureByText(".bazelproject", "workspace_type: <caret>")
+  fun `should complete sharding approach variants`() {
+    myFixture.configureByText(".bazelproject", "sharding_approach: <caret>")
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldContainAll listOf("java", "javascript", "dart", "android")
+    lookups shouldContainAll listOf("expand_and_shard", "query_and_shard", "shard_only")
   }
 
   @Test
@@ -97,11 +97,11 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete boolean sections`() {
-    myFixture.configureByText(".bazelproject", "use_query_sync: <caret>")
+    myFixture.configureByText(".bazelproject", "shard_sync: <caret>")
     myFixture.type("t")
     myFixture.completeBasic()
 
-    myFixture.checkResult("use_query_sync: true")
+    myFixture.checkResult("shard_sync: true")
   }
 
   @Test
@@ -135,7 +135,7 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
     myFixture.addFileToProject("subpackage/sub.bazelproject", "")
     myFixture.addFileToProject("otherDir/module.bazelproject", "")
 
-    myFixture.configureByText(".bazelproject", "import: <caret>")
+    myFixture.configureByText(".bazelproject", "import <caret>")
     myFixture.type("baz")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 

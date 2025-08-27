@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
 import org.jetbrains.bazel.languages.fixtures.LexerTestCase
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSyntaxKey
 import org.junit.Test
 
 class ProjectViewLexerTest : LexerTestCase() {
@@ -24,12 +22,6 @@ class ProjectViewLexerTest : LexerTestCase() {
     fun getExampleCode(): String
 
     companion object {
-      fun create(key: ProjectViewSyntaxKey, sectionType: ProjectViewSection.SectionType): Section =
-        when (sectionType) {
-          is ProjectViewSection.SectionType.Scalar -> Scalar(key)
-          is ProjectViewSection.SectionType.List<*> -> List(key)
-        }
-
       private val SCALAR_SECTION =
         listOf(
           "ProjectView:section_keyword",
@@ -70,14 +62,6 @@ class ProjectViewLexerTest : LexerTestCase() {
         "ProjectView:whitespace",
         "ProjectView:identifier",
       )
-  }
-
-  @Test
-  fun `should lex registered sections`() {
-    ProjectViewSection.KEYWORD_MAP.map { (key, metadata) -> Section.create(key, metadata.sectionType) }.forEach { section ->
-      section.getExampleCode() shouldLexTo
-        section.getExpectedTokens()
-    }
   }
 
   @Test
