@@ -24,6 +24,6 @@ class ShardingApproachSection : VariantsScalarSection<ShardingApproach>(VARIANTS
   companion object {
     const val NAME = "sharding_approach"
     val KEY = SectionKey<ShardingApproach>(NAME)
-    private val VARIANTS = ShardingApproach.entries.map { it.name }
+    private val VARIANTS = ShardingApproach.entries.map { it.name.lowercase() }
   }
 }
