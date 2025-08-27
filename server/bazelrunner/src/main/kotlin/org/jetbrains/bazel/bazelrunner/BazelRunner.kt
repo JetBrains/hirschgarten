@@ -17,6 +17,15 @@ import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import kotlin.io.path.pathString
 
+/**
+ * Runs Bazel commands with proper repository configuration.
+ *
+ * @param bazelInfo Required for determining correct repository injection method.
+ *                  When bazelInfo is available, BazelRunner can choose between
+ *                  --inject_repository (newer, preferred) vs --override_repository (fallback)
+ *                  based on Bazel version and bzlmod support. Without bazelInfo,
+ *                  repository injection may fail in newer Bazel versions.
+ */
 class BazelRunner(
   private val bspClientLogger: BspClientLogger?,
   val workspaceRoot: Path?,

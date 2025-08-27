@@ -77,7 +77,7 @@ class BazelBspServer(
     return bazelDataResolver.resolveBazelInfo(workspaceContext)
   }
 
-  private fun createProjectProvider(
+  fun createProjectProvider(
     bspInfo: BspInfo,
     bazelInfo: BazelInfo,
     workspaceContextProvider: WorkspaceContextProvider,

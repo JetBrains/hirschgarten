@@ -4,15 +4,19 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
-import org.jetbrains.bazel.sync.workspace.languages.JVMLanguagePluginParser
+import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
+import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
-class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val jdkResolver: JdkResolver) :
-  LanguagePlugin<JavaModule>() {
+class JavaLanguagePlugin(
+  private val bazelPathsResolver: BazelPathsResolver,
+  private val jdkResolver: JdkResolver,
+  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver(),
+) : LanguagePlugin<JavaModule>() {
   private var jdk: Jdk? = null
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
@@ -40,7 +44,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
       )
     }
 
-  override fun calculateJvmPackagePrefix(source: Path): String? = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
+  override fun calculateJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 
