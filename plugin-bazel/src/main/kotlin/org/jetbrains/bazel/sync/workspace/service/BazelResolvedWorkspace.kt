@@ -10,7 +10,7 @@ data class BazelResolvedWorkspace(
   val hasError: Boolean = false,
 )
 
-class BuildTargetCollection(
+data class BuildTargetCollection(
   internal val buildTargets: MutableList<RawBuildTarget> = mutableListOf(),
   internal val nonModuleTargets: MutableList<RawBuildTarget> = mutableListOf(),
 ) {

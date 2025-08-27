@@ -13,8 +13,11 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import java.nio.file.Path
 
-class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val jdkResolver: JdkResolver) :
-  LanguagePlugin<JvmBuildTarget>, JVMPackagePrefixResolver {
+class JavaLanguagePlugin(
+  private val bazelPathsResolver: BazelPathsResolver,
+  private val jdkResolver: JdkResolver,
+  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver()
+) : LanguagePlugin<JvmBuildTarget>, JVMPackagePrefixResolver {
   private var jdk: Jdk? = null
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
@@ -48,7 +51,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.JAVA)
 
-  override fun resolveJvmPackagePrefix(source: Path): String? = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
+  override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 

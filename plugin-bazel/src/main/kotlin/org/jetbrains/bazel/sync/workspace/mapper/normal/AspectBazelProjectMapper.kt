@@ -11,6 +11,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -47,6 +48,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.plus
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -59,6 +61,7 @@ class AspectBazelProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
+  private val environmentProvider: EnvironmentProvider,
 ) {
   val logger = logger<AspectBazelProjectMapper>()
 
@@ -323,7 +326,7 @@ class AspectBazelProjectMapper(
     val inferredSourceJars =
       kotlinStdlibsJars
         .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
-        .filter { it.exists() }
+        .onEach { if (it.notExists()) logNonExistingFile(it, "[kotlin stdlib]") }
         .toSet()
 
     return if (kotlinStdlibsJars.isNotEmpty()) {
@@ -969,10 +972,19 @@ class AspectBazelProjectMapper(
       .toList()
   }
 
+  private fun environmentItem(target: TargetInfo): Map<String, String> {
+    val inheritedEnvs = collectInheritedEnvs(target)
+    val targetEnv = target.envMap
+    return inheritedEnvs + targetEnv
+  }
+
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
       it.isMainWorkspace && !it.packagePath.toString().startsWith(".bazelbsp")
     }
+
+  private fun collectInheritedEnvs(targetInfo: TargetInfo): Map<String, String> =
+    targetInfo.envInheritList.associateWith { environmentProvider.getValue(it) ?: "" }
 
   private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {
     val tags = tags.mapNotNull(BspMappings::toBspTag)
