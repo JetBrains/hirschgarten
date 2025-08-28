@@ -12,7 +12,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
@@ -45,7 +46,10 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep("should do an initial sync on 1 target and then partial sync on another target") {
       testClient.test(3.minutes) { session ->
         // initial sync
-        val workspaceBuildTargetsResult = session.server.workspaceBuildTargets()
+        val workspaceBuildTargetsResult =
+          session.server.workspaceBuildTargets(
+            WorkspaceBuildTargetParams(WorkspaceBuildTargetSelector.AllTargets),
+          )
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
 
         // partial sync
@@ -79,10 +83,12 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           )
 
         val workspaceBuildTargetsPartialParams =
-          WorkspaceBuildTargetsPartialParams(listOf(Label.parse("$targetPrefix//java_targets:java_binary")))
-        val expectedTargetsResult = WorkspaceBuildTargetsResult(listOf(javaTargetsJavaBinary))
+          WorkspaceBuildTargetParams(
+            WorkspaceBuildTargetSelector.SpecificTargets(listOf(Label.parse("$targetPrefix//java_targets:java_binary"))),
+          )
+        val expectedTargetsResult = WorkspaceBuildTargetsResult(targets = mapOf(), rootTargets = setOf())
 
-        val workspaceBuildTargetsPartialResult = session.server.workspaceBuildTargetsPartial(workspaceBuildTargetsPartialParams)
+        val workspaceBuildTargetsPartialResult = session.server.workspaceBuildTargets(workspaceBuildTargetsPartialParams)
         testClient.assertJsonEquals(expectedTargetsResult, workspaceBuildTargetsPartialResult)
       }
     }
@@ -117,6 +123,6 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
 
-    return WorkspaceBuildTargetsResult(listOf(javaTargetsJavaLibrary))
+    return WorkspaceBuildTargetsResult(targets = mapOf(), rootTargets = setOf())
   }
 }

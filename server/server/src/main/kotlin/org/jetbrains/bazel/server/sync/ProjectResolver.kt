@@ -3,8 +3,13 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.canonicalize
+import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
@@ -15,16 +20,15 @@ import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerat
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
-import org.jetbrains.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.FirstPhaseProject
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.IllegalTargetsSizeException
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
+import java.nio.file.Path
 
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
@@ -32,7 +36,6 @@ class ProjectResolver(
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
   private val workspaceContextProvider: WorkspaceContextProvider,
-  private val bazelProjectMapper: BazelProjectMapper,
   private val targetInfoReader: TargetInfoReader,
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
@@ -44,141 +47,129 @@ class ProjectResolver(
   suspend fun resolve(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
-    firstPhaseProject: FirstPhaseProject?,
+    phasedSyncProject: PhasedSyncProject?,
     originId: String?,
   ): AspectSyncProject =
     bspTracer.spanBuilder("Resolve project").useWithScope {
-      val workspaceContext =
-        measured(
-          "Reading project view and creating workspace context",
-          workspaceContextProvider::readWorkspaceContext,
-        )
-      val featureFlags = workspaceContextProvider.currentFeatureFlags()
+      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, originId)
+      val repoMapping = buildAspectResult.first
+      val aspectResult = buildAspectResult.second
 
-      val repoMapping =
-        measured("Calculating external repository mapping") {
-          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
-        }
-
-      val bazelExternalRulesetsQuery =
-        BazelExternalRulesetsQueryImpl(
-          bazelRunner,
-          bazelInfo.isBzlModEnabled,
-          bazelInfo.isWorkspaceEnabled,
-          bspClientLogger,
-          workspaceContext,
-          repoMapping,
-        )
-
-      val externalRulesetNames =
-        measured(
-          "Discovering supported external rules",
-        ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames() }
-
-      val ruleLanguages =
-        measured(
-          "Mapping rule names to languages",
-        ) {
-          bazelBspAspectsManager.calculateRulesetLanguages(
-            externalRulesetNames,
-            bazelInfo.externalAutoloads,
-            workspaceContext,
-            featureFlags,
-          )
-        }
-
-      val toolchains =
-        measured(
-          "Mapping languages to toolchains",
-        ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, workspaceContext, featureFlags) } }
-
-      measured("Realizing language aspect files from templates") {
-        bazelBspAspectsManager.generateAspectsFromTemplates(
-          ruleLanguages,
-          externalRulesetNames,
-          workspaceContext,
-          toolchains,
-          bazelInfo.release,
-          repoMapping,
-          featureFlags,
-        )
-      }
-
-      measured("Generating language extensions file") {
-        bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
-      }
-
-      measured("Run Gazelle target") {
-        workspaceContext.gazelleTarget.value?.also { gazelleTarget ->
-          runGazelleTarget(workspaceContext, gazelleTarget)
-        }
-      }
-
-      val targetsToSync =
-        requestedTargetsToSync
-          ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
-
-      val buildAspectResult =
-        measured(
-          "Building project with aspect",
-        ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, firstPhaseProject, originId) }
-
-      val aspectOutputs =
-        measured(
-          "Reading aspect output paths",
-        ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
+      val aspectOutputs = extractAspectOutputPaths(aspectResult)
       val targets =
         measured(
           "Parsing aspect outputs",
         ) {
-          targetInfoReader
-            .readTargetMapFromAspectOutputs(aspectOutputs)
-            .map { (k, v) ->
-              // TODO: make sure we canonicalize everything
-              //  (https://youtrack.jetbrains.com/issue/BAZEL-1597/Make-sure-all-labels-in-the-server-are-canonicalized)
-              //  also, this can be done in a more efficient way
-              //  maybe we can do it in the aspect with some flag or something
-              val label = k.canonicalize(repoMapping)
-              label to
-                v
-                  .toBuilder()
-                  .apply {
-                    id = label.toString()
-                    val canonicalizedDependencies =
-                      dependenciesBuilderList.map {
-                        it
-                          .apply {
-                            id = Label.parse(it.id).canonicalize(repoMapping).toString()
-                          }.build()
-                      }
-                    clearDependencies()
-                    addAllDependencies(canonicalizedDependencies)
-                  }.build()
-            }.toMap()
+          val rawTargetsMap =
+            targetInfoReader
+              .readTargetMapFromAspectOutputs(aspectOutputs)
+          processTargetMap(rawTargetsMap, repoMapping)
         }
-      // resolve root targets (expand wildcards)
-      val rootTargets = buildAspectResult.bepOutput.rootTargets()
-      return@useWithScope measured(
-        "Mapping to internal model",
+
+      val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
+      val rootTargets = aspectResult.bepOutput.rootTargets()
+      return@useWithScope AspectSyncProject(
+        workspaceRoot = bazelInfo.workspaceRoot,
+        bazelRelease = bazelInfo.release,
+        repoMapping = repoMapping,
+        workspaceContext = workspaceContextProvider.readWorkspaceContext(),
+        workspaceName = workspaceName,
+        hasError = aspectResult.isFailure,
+        targets = targets,
+        rootTargets = rootTargets,
+      )
+    }
+
+  private suspend fun buildProjectWithAspectAndSetup(
+    build: Boolean,
+    requestedTargetsToSync: List<Label>?,
+    phasedSyncProject: PhasedSyncProject?,
+    originId: String?,
+  ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
+    val workspaceContext =
+      measured(
+        "Reading project view and creating workspace context",
+        workspaceContextProvider::readWorkspaceContext,
+      )
+    val featureFlags = workspaceContextProvider.currentFeatureFlags()
+
+    val repoMapping =
+      measured("Calculating external repository mapping") {
+        calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+      }
+
+    val bazelExternalRulesetsQuery =
+      BazelExternalRulesetsQueryImpl(
+        bazelRunner,
+        bazelInfo.isBzlModEnabled,
+        bazelInfo.isWorkspaceEnabled,
+        bspClientLogger,
+        workspaceContext,
+        repoMapping,
+      )
+
+    val externalRulesetNames =
+      measured(
+        "Discovering supported external rules",
+      ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames() }
+
+    val ruleLanguages =
+      measured(
+        "Mapping rule names to languages",
       ) {
-        bazelProjectMapper.createProject(
-          targets,
-          rootTargets,
+        bazelBspAspectsManager.calculateRulesetLanguages(
+          externalRulesetNames,
+          bazelInfo.externalAutoloads,
           workspaceContext,
           featureFlags,
-          bazelInfo,
-          repoMapping,
-          buildAspectResult.isFailure,
         )
       }
+
+    val toolchains =
+      measured(
+        "Mapping languages to toolchains",
+      ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, workspaceContext, featureFlags) } }
+
+    measured("Realizing language aspect files from templates") {
+      bazelBspAspectsManager.generateAspectsFromTemplates(
+        ruleLanguages,
+        externalRulesetNames,
+        workspaceContext,
+        toolchains,
+        bazelInfo.release,
+        repoMapping,
+        featureFlags,
+      )
     }
+
+    measured("Generating language extensions file") {
+      bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
+    }
+
+    measured("Run Gazelle target") {
+      workspaceContext.gazelleTarget.value?.also { gazelleTarget ->
+        runGazelleTarget(workspaceContext, gazelleTarget)
+      }
+    }
+
+    val targetsToSync =
+      requestedTargetsToSync
+        ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+
+    val buildAspectResult =
+      measured(
+        "Building project with aspect",
+      ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, phasedSyncProject, originId) }
+
+    return Pair(repoMapping, buildAspectResult)
+  }
 
   private suspend fun buildProjectWithAspect(
     workspaceContext: WorkspaceContext,
     featureFlags: FeatureFlags,
     build: Boolean,
     targetsToSync: TargetsSpec,
-    firstPhaseProject: FirstPhaseProject?,
+    phasedSyncProject: PhasedSyncProject?,
     originId: String?,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
@@ -219,7 +210,7 @@ class ProjectResolver(
               featureFlags,
               bazelRunner,
               bspClientLogger,
-              firstPhaseProject,
+              phasedSyncProject,
             )
           var remainingShardedTargetsSpecs = shardedResult.targets.toTargetsSpecs().toMutableList()
           var shardNumber = 1
@@ -320,6 +311,23 @@ class ProjectResolver(
     System.gc()
   }
 
+  suspend fun extractAspectOutputPaths(buildAspectResult: BazelBspAspectsManagerResult): Set<Path> =
+    measured(
+      "Reading aspect output paths",
+    ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
+
+  suspend fun getAspectOutputPaths(
+    build: Boolean = false,
+    requestedTargetsToSync: List<Label>? = null,
+    phasedSyncProject: PhasedSyncProject? = null,
+    originId: String? = null,
+  ): Set<Path> =
+    bspTracer.spanBuilder("Get aspect output paths").useWithScope {
+      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, originId)
+      val aspectResult = buildAspectResult.second
+      return@useWithScope extractAspectOutputPaths(aspectResult)
+    }
+
   companion object {
     private const val ASPECT_NAME = "bsp_target_info_aspect"
     private const val BSP_INFO_OUTPUT_GROUP = "bsp-target-info"
@@ -332,5 +340,55 @@ class ProjectResolver(
 
     // language-specific output groups
     private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
+
+    @JvmStatic
+    fun processTargetMap(targetMap: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, TargetInfo> =
+      targetMap
+        .map { (k, v) ->
+          // TODO: make sure we canonicalize everything
+          //  (https://youtrack.jetbrains.com/issue/BAZEL-1597/Make-sure-all-labels-in-the-server-are-canonicalized)
+          //  also, this can be done in a more efficient way
+          //  maybe we can do it in the aspect with some flag or something
+          val label = k.canonicalize(repoMapping)
+          label to
+            v
+              .toBuilder()
+              .apply {
+                id = label.toString()
+                val processedDependencies = processDependenciesList(dependenciesBuilderList, targetMap, repoMapping)
+                clearDependencies()
+                addAllDependencies(processedDependencies)
+              }.build()
+        }.toMap()
+
+    @JvmStatic
+    fun processDependenciesList(
+      dependenciesBuilderList: List<BspTargetInfo.Dependency.Builder>,
+      targets: Map<Label, TargetInfo>,
+      repoMapping: RepoMapping,
+    ): List<BspTargetInfo.Dependency> {
+      val projectSuffix = "-project"
+      return dependenciesBuilderList.map { dependency ->
+        dependency
+          .apply {
+            // canonicalize the dependency id
+            val label = Label.parse(id)
+            val canonicalizedLabel = label.canonicalize(repoMapping)
+            val canonicalizedId = canonicalizedLabel.toString()
+
+            // Replace dependencies from maven_project_jar with their java_library counterparts
+            // this is to support the macro java_export from rules_jvm_external
+            // refer to its definition for more context: https://github.com/bazel-contrib/rules_jvm_external/blob/935db476ba732576a1f868b092301ce1bc44fe72/private/rules/java_export.bzl#L8
+            // use the original label here instead of canonicalized label as `targets` is still in the original form
+            val target = targets[label]
+            id =
+              if (target?.kind == "maven_project_jar" && canonicalizedId.endsWith(projectSuffix)) {
+                canonicalizedId.dropLast(projectSuffix.length) + "-lib"
+              } else {
+                canonicalizedId
+              }
+          }.build()
+      }
+    }
   }
 }

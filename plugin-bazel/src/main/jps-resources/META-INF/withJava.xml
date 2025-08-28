@@ -21,6 +21,8 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.HotSwapTestBeforeRunTaskProvider" />
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.HotSwapRunBeforeRunTaskProvider" />
     <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher" />
     <java.elementFinder implementation="org.jetbrains.bazel.java.search.BazelJavaClassFinder" />
     <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger" />

@@ -7,18 +7,12 @@ import com.goide.util.GoCommandLineParameter
 import com.goide.util.GoExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
-import org.jetbrains.bazel.taskEvents.OriginId
 
 open class GoDebuggableCommandLineState(
   val environment: ExecutionEnvironment,
   module: Module,
   configuration: GoApplicationConfiguration,
-  protected val originId: OriginId,
-) : GoApplicationRunningState(
-    environment,
-    module,
-    configuration,
-  ) {
+) : GoApplicationRunningState(environment, module, configuration) {
   override fun isDebug(): Boolean = true
 
   override fun getBuildingTarget(): List<GoCommandLineParameter>? = null

@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
