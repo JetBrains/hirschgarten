@@ -946,7 +946,6 @@ class AspectBazelProjectMapper(
     val extraResources = languagePlugin.resolveAdditionalResources(target)
     return (resources.asSequence() + extraResources)
       .distinct()
-      //.filter { it.exists() }
       .toList()
   }
 
