@@ -17,12 +17,12 @@ abstract class FlagListSection(private val command: String) : ListSection<List<F
     val flag = Flag.byName(element.text)
     if (flag == null) {
       val message = ProjectViewBundle.getMessage("annotator.unknown.flag.error", element.text)
-      holder.annotateError(element, message)
+      holder.annotateWarning(element, message)
       return
     }
     if (command !in flag.option.commands) {
-      val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error", element.text, COMMAND)
-      holder.annotateError(element, message)
+      val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error", element.text, command)
+      holder.annotateWarning(element, message)
     }
   }
 }
