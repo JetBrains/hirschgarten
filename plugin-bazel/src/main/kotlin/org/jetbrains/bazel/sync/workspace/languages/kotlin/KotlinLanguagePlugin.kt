@@ -12,7 +12,8 @@ import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.nio.file.Path
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
-  LanguagePlugin<KotlinBuildTarget>, JVMPackagePrefixResolver {
+  LanguagePlugin<KotlinBuildTarget>,
+  JVMPackagePrefixResolver {
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): KotlinBuildTarget? {
     if (!target.hasKotlinTargetInfo()) {
       return null

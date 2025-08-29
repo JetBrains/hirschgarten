@@ -276,7 +276,7 @@ class AspectBazelProjectMapper(
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
           targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
-        )
+      )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -761,9 +761,9 @@ class AspectBazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-              )
-          )
-      ) ||
+            )
+        )
+    ) ||
       featureFlags.isGoSupportEnabled &&
       target.hasGoTargetInfo() &&
       hasKnownGoSources(target) ||
@@ -912,14 +912,16 @@ class AspectBazelProjectMapper(
     }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
-    val sources = target.sourcesList
-      .asSequence()
-      .map(bazelPathsResolver::resolve)
+    val sources =
+      target.sourcesList
+        .asSequence()
+        .map(bazelPathsResolver::resolve)
 
-    val generatedSources = target.generatedSourcesList
-      .asSequence()
-      .map(bazelPathsResolver::resolve)
-      .filter { it.extension != "srcjar" }
+    val generatedSources =
+      target.generatedSourcesList
+        .asSequence()
+        .map(bazelPathsResolver::resolve)
+        .filter { it.extension != "srcjar" }
 
     val extraSources = languagePlugin.calculateAdditionalSources(target)
 
@@ -932,8 +934,7 @@ class AspectBazelProjectMapper(
           generated = false,
           jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
         )
-      }
-      .toList()
+      }.toList()
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {
@@ -948,7 +949,6 @@ class AspectBazelProjectMapper(
       .distinct()
       .toList()
   }
-
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {

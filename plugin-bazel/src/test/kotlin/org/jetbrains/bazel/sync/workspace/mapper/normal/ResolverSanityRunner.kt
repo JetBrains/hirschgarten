@@ -69,8 +69,10 @@ fun main(args: Array<String>) {
       val textprotoFiles = args.map { Paths.get(it) }.toSet()
 
       // Read target map from aspect outputs
-      val rawTargetsMap: Map<Label, TargetInfo> = targetInfoReader.readTargetMapFromAspectOutputs(textprotoFiles)
-        .toSortedMap() // provide deterministic output
+      val rawTargetsMap: Map<Label, TargetInfo> =
+        targetInfoReader
+          .readTargetMapFromAspectOutputs(textprotoFiles)
+          .toSortedMap() // provide deterministic output
 
       // Process with unified configuration
       processWithUnifiedSetup(rawTargetsMap)

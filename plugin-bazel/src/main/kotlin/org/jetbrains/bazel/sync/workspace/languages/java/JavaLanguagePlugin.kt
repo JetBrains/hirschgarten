@@ -17,8 +17,9 @@ class JavaLanguagePlugin(
   private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
   private val packageResolver: JvmPackageResolver,
-  private val environmentProvider: EnvironmentProvider = EnvironmentProvider.getInstance()
-) : LanguagePlugin<JvmBuildTarget>, JVMPackagePrefixResolver {
+  private val environmentProvider: EnvironmentProvider = EnvironmentProvider.getInstance(),
+) : LanguagePlugin<JvmBuildTarget>,
+  JVMPackagePrefixResolver {
   private var jdk: Jdk? = null
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {

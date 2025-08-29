@@ -19,8 +19,9 @@ import java.nio.file.Path
 class ScalaLanguagePlugin(
   private val javaLanguagePlugin: JavaLanguagePlugin,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver()
-) : LanguagePlugin<ScalaBuildTarget>, JVMPackagePrefixResolver {
+  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver(),
+) : LanguagePlugin<ScalaBuildTarget>,
+  JVMPackagePrefixResolver {
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
