@@ -163,7 +163,6 @@ abstract class BazelBspTestBaseScenario {
     val featureFlags =
       FeatureFlags(
         isPythonSupportEnabled = true,
-        isAndroidSupportEnabled = true,
         isGoSupportEnabled = true,
         isPropagateExportsFromDepsEnabled = false,
       )

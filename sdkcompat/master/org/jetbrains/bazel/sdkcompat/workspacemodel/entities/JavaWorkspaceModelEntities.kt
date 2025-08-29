@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sdkcompat.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bsp.protocol.AndroidTargetType
 import java.nio.file.Path
 
 data class JavaSourceRoot(
@@ -42,14 +41,3 @@ data class ScalaAddendum(
 ) : WorkspaceModelEntity()
 
 data class JavaAddendum(val languageVersion: String, val javacOptions: List<String>)
-
-data class AndroidAddendum(
-  val androidSdkName: String,
-  val androidTargetType: AndroidTargetType,
-  val manifest: Path?,
-  val manifestOverrides: Map<String, String>,
-  val resourceDirectories: List<Path>,
-  val resourceJavaPackage: String?,
-  val assetsDirectories: List<Path>,
-  val apk: Path?,
-) : WorkspaceModelEntity()

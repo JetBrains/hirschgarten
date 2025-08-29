@@ -308,23 +308,6 @@ java_import(
 )
 """
 
-_CLION_BUILD_FILE = """
-java_import(
-    name = "cpp",
-    visibility = ["//visibility:public"],
-    jars = glob(["**/*.jar"]),
-    tags = ["intellij-provided-by-sdk"],
-)
-"""
-
-_ANDRIOD_PLUGIN_BUILD_FILE = """
-java_import(
-    name = "android",
-    jars = glob(["android/lib/*.jar"]),
-    visibility = ["//visibility:public"],
-)
-"""
-
 # SDK 251
 
 SDK_251_PLUGIN_REPOSITORY_VERSION = "251.23774.435"
@@ -332,10 +315,6 @@ SDK_251_PLUGIN_REPOSITORY_VERSION = "251.23774.435"
 SDK_251_INTELLIJ_REPOSITORY_VERSION = "251.23774.435"
 
 SDK_251_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
-
-SDK_251_CLION_REPOSITORY_VERSION = "2025.1.1"
-
-SDK_251_CLION_REPOSITORY = "releases"  # releases or snapshots
 
 IC_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
 
@@ -390,28 +369,6 @@ http_archive(
     build_file_content = _GO_BUILD_FILE,
     sha256 = GO_PLUGIN_251_SHA,
     url = GO_PLUGIN_251_URL,
-)
-
-CLION_251_SHA = "5e441b2ddb22811f2f2d3a2db4c177398b6c70bd149c66c4f3fd1915ff8d3c71"
-
-CLION_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/clion/clion/%s/clion-%s.zip" % (SDK_251_CLION_REPOSITORY, SDK_251_CLION_REPOSITORY_VERSION, SDK_251_CLION_REPOSITORY_VERSION)
-
-http_archive(
-    name = "clion_2025_1",
-    build_file_content = _CLION_BUILD_FILE,
-    sha256 = CLION_251_SHA,
-    url = CLION_251_URL,
-)
-
-ANDROID_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
-
-ANDROID_PLUGIN_251_SHA = "a5cf4f65db4f9bb27d113af340013972d8bffc635a56efc2d496b60f8c4b7b34"
-
-http_archive(
-    name = "android_2025_1",
-    build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
-    sha256 = ANDROID_PLUGIN_251_SHA,
-    url = ANDROID_PLUGIN_251_URL,
 )
 
 PERFORMANCE_PLUGIN_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
@@ -576,17 +533,6 @@ http_archive(
     build_file_content = _GO_BUILD_FILE,
     sha256 = GO_PLUGIN_252_SHA,
     url = GO_PLUGIN_252_URL,
-)
-
-ANDROID_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
-
-ANDROID_PLUGIN_252_SHA = "9a888bd258ec7c984a8b8db18fdb27a640d39b03afc74be3dc23db289e9502fd"
-
-http_archive(
-    name = "android_2025_2",
-    build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
-    sha256 = ANDROID_PLUGIN_252_SHA,
-    url = ANDROID_PLUGIN_252_URL,
 )
 
 PERFORMANCE_PLUGIN_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
