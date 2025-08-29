@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.runnerAction
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
@@ -34,14 +35,6 @@ class RunWithLocalJvmRunnerAction(
     },
     isDebugMode = isDebugMode,
   ) {
-  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? {
-    val params = createJvmRunEnvironmentParams(targetInfo.id)
-    return BazelWorkspaceResolveService
-      .getInstance(project)
-      .withEndpointProxy { it.jvmRunEnvironment(params) }
-      .items
-      .firstOrNull()
-  }
-
-  private fun createJvmRunEnvironmentParams(targetId: Label) = JvmRunEnvironmentParams(listOf(targetId))
+  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
+    project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(targetInfo.id)
 }

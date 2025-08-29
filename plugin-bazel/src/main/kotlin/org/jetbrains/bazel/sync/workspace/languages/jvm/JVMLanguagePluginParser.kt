@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.languages
+package org.jetbrains.bazel.sync.workspace.languages.jvm
 
 import java.nio.charset.Charset
 import java.nio.file.Path
