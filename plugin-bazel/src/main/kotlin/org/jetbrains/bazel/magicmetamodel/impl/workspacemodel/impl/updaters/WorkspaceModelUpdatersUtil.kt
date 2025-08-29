@@ -4,10 +4,6 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
 import java.nio.file.Path
 
 internal fun Path.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
@@ -23,8 +19,3 @@ internal fun String.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileU
   url.virtualFile
   return url
 }
-
-suspend fun List<Path>.toResolvedVirtualFileUrls(virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
-  withContext(Dispatchers.IO) {
-    map { async { it.toResolvedVirtualFileUrl(virtualFileUrlManager) } }.awaitAll()
-  }
