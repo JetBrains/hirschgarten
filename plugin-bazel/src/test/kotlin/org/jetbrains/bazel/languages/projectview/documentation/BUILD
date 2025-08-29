@@ -9,3 +9,13 @@ kt_intellij_junit4_test(
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
+
+kt_intellij_junit4_test(
+    name = "ProjectViewSectionDocumentationTest",
+    src = "ProjectViewSectionDocumentationTest.kt",
+    tags = ["exclusive"],
+    deps = [
+        "//plugin-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
+)

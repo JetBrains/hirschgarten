@@ -689,6 +689,11 @@
       implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewFlagDocumentationTargetProvider"
     />
 
+    <platform.backend.documentation.targetProvider
+      id="ProjectViewSectionDocumentationTargetProvider"
+      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewSectionDocumentationTargetProvider"
+    />
+
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
       language="Starlark"
