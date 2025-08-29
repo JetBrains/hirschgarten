@@ -117,11 +117,7 @@ class BuildTargetTask(private val project: Project) {
       val compileParams = CompileParams(targetsIds, originId = originId, arguments = arguments + listOf("--keep_going"))
       try {
         val buildDeferred =
-          async {
-            BazelWorkspaceResolveService
-              .getInstance(project)
-              .withEndpointProxy { it.buildTargetCompile(compileParams) }
-          }
+          async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
         BazelTaskEventsService.getInstance(project).removeListener(originId)

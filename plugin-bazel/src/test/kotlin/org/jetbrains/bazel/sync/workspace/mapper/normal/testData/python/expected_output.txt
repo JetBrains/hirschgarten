@@ -42,6 +42,9 @@ BazelResolvedWorkspace(
           isCodeGenerator=false,
           generatedSources=[
             
+          ],
+          sourceDependencies=[
+            
           ]
         ),
         lowPrioritySharedSources=[
@@ -89,6 +92,9 @@ BazelResolvedWorkspace(
           isCodeGenerator=false,
           generatedSources=[
             
+          ],
+          sourceDependencies=[
+            
           ]
         ),
         lowPrioritySharedSources=[
@@ -130,6 +136,9 @@ BazelResolvedWorkspace(
           ],
           isCodeGenerator=false,
           generatedSources=[
+            
+          ],
+          sourceDependencies=[
             
           ]
         ),

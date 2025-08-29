@@ -10,7 +10,7 @@ import org.jetbrains.bsp.protocol.JavacOptionsItem
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
-  val javacOptions: JavacOptionsItem?,
+  val javacOptions: List<String>,
   val type: ModuleTypeId,
   val associates: List<Label> = listOf(),
   val dependencies: List<Label>,
