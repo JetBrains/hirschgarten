@@ -46,6 +46,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         listOf(),
         false,
         listOf(),
+        listOf(),
       )
 
     val exampleExampleBuildTarget =

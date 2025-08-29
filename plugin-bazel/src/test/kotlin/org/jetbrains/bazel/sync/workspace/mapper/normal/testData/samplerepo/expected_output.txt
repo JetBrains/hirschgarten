@@ -66,6 +66,38 @@ BazelResolvedWorkspace(
         ]
       ),
       RawBuildTarget(
+        id=@//java_targets/subpackage:java_library,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=java_library,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/java_targets/subpackage/JavaLibrary2.java,
+            generated=false,
+            jvmPackagePrefix=java_targets.subpackage
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/java_targets/subpackage,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
         id=@//java_targets:java_binary,
         tags=[
           
@@ -183,38 +215,6 @@ BazelResolvedWorkspace(
           
         ],
         baseDirectory=/tmp/test-workspace/java_targets,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@//java_targets/subpackage:java_library,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=java_library,
-          languageClasses=[
-            JAVA
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          SourceItem(
-            path=/tmp/test-workspace/java_targets/subpackage/JavaLibrary2.java,
-            generated=false,
-            jvmPackagePrefix=java_targets.subpackage
-          )
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/java_targets/subpackage,
         noBuild=false,
         data=null,
         lowPrioritySharedSources=[
@@ -618,6 +618,207 @@ BazelResolvedWorkspace(
             
           ]
         ),
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=jvm_import,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=jvm_import,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=jvm_import,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@@rules_jvm_external++maven+maven//:com_google_guava_guava,
+        tags=[
+          
+        ],
+        dependencies=[
+          @@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305,
+          @@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations,
+          @@rules_jvm_external++maven+maven//:com_google_guava_failureaccess,
+          @@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture,
+          @@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations,
+          @@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual
+        ],
+        kind=TargetKind(
+          kindString=jvm_import,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=jvm_import,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=jvm_import,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=jvm_import,
+          languageClasses=[
+            JAVA
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
+        noBuild=false,
+        data=null,
         lowPrioritySharedSources=[
           
         ]

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import java.nio.file.Path
 
 /**

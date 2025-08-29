@@ -1,42 +1,70 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.java.JdkResolver
+import org.jetbrains.bazel.sync.workspace.languages.java.JdkVersionResolver
 import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.model.Module
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
-class LanguagePluginsService(
-  val scalaLanguagePlugin: ScalaLanguagePlugin,
-  private val javaLanguagePlugin: JavaLanguagePlugin,
-  private val kotlinLanguagePlugin: KotlinLanguagePlugin,
-  private val thriftLanguagePlugin: ThriftLanguagePlugin,
-  val pythonLanguagePlugin: PythonLanguagePlugin,
-  val goLanguagePlugin: GoLanguagePlugin,
-) {
-  private val emptyLanguagePlugin: EmptyLanguagePlugin = EmptyLanguagePlugin()
+@Service(Service.Level.PROJECT)
+class LanguagePluginsService {
+  val logger = logger<LanguagePluginsService>()
+  val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
 
-  fun prepareSync(targetInfos: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
-    scalaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
-    javaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
-    thriftLanguagePlugin.prepareSync(targetInfos, workspaceContext)
-    pythonLanguagePlugin.prepareSync(targetInfos, workspaceContext)
-    goLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+  // target data can have only one language data
+  // jvm language plugins include base JavaInfo into their model BUT you have to call their plugin first
+  // TODO: allow BuildTarget have multiple languages data - it is doable I've had done that but haven't merged
+  val languagePriority: List<LanguageClass> =
+    listOf(
+      LanguageClass.KOTLIN,
+      LanguageClass.SCALA,
+      LanguageClass.JAVA,
+      LanguageClass.THRIFT,
+      LanguageClass.PYTHON,
+      LanguageClass.GO,
+    )
+
+  val all
+    get() = registry.values.toList()
+
+  fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver) {
+    val javaPlugin =
+      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()), jvmPackageResolver)
+        .also(this::registerLangaugePlugin)
+    KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
+    ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)
+    GoLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
+    PythonLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
+    ThriftLanguagePlugin().also(this::registerLangaugePlugin)
   }
 
-  fun getPlugin(languages: Set<LanguageClass>): LanguagePlugin<*> =
-    when {
-      languages.contains(LanguageClass.KOTLIN) -> kotlinLanguagePlugin
-      languages.contains(LanguageClass.SCALA) -> scalaLanguagePlugin
-      languages.contains(LanguageClass.JAVA) -> javaLanguagePlugin
-      languages.contains(LanguageClass.THRIFT) -> thriftLanguagePlugin
-      languages.contains(LanguageClass.PYTHON) -> pythonLanguagePlugin
-      languages.contains(LanguageClass.GO) -> goLanguagePlugin
-      else -> emptyLanguagePlugin
+  private fun registerLangaugePlugin(plugin: LanguagePlugin<*>) {
+    for (language in plugin.getSupportedLanguages()) {
+      if (this.registry.contains(language)) {
+        logger.warn("Language plugin already registered for class: $language")
+        continue
+      }
+      registry[language] = plugin
     }
+  }
+
+  fun getLanguagePlugin(lang: LanguageClass): LanguagePlugin<*>? = registry[lang]
+
+  fun getLanguagePlugin(langs: Set<LanguageClass>): LanguagePlugin<*>? =
+    languagePriority
+      .asSequence()
+      .filter { langs.contains(it) }
+      .mapNotNull { registry[it] }
+      .firstOrNull()
+      ?.let { return it }
+
+  inline fun <reified PLUGIN> getLanguagePlugin(lang: LanguageClass): PLUGIN =
+    getLanguagePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")
 }
