@@ -46,11 +46,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
         resourceRoots = toResourceRoots(inputEntity),
         // Any java module must be assigned a jdk if there is any available.
         jvmJdkName = inputEntity.toJdkNameOrDefault(),
-        jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars },
+        jvmBinaryJars = inputEntity.jvmBinaryJars,
         kotlinAddendum = toKotlinAddendum(inputEntity),
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
-        androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
+        androidAddendum = null,
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
@@ -143,25 +143,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
     extractJvmBuildTarget(inputEntity.target)?.javaVersion?.let {
       JavaAddendum(
         languageVersion = it,
-        javacOptions = inputEntity.javacOptions?.options.orEmpty(),
+        javacOptions = inputEntity.javacOptions,
       )
     }
-
-  private fun toAndroidAddendum(inputEntity: ModuleDetails): AndroidAddendum? {
-    val androidBuildTarget = extractAndroidBuildTarget(inputEntity.target) ?: return null
-    return with(androidBuildTarget) {
-      AndroidAddendum(
-        androidSdkName = androidJar.androidJarToAndroidSdkName(),
-        androidTargetType = androidTargetType,
-        manifest = manifest,
-        manifestOverrides = manifestOverrides,
-        resourceDirectories = resourceDirectories,
-        resourceJavaPackage = resourceJavaPackage,
-        assetsDirectories = assetsDirectories,
-        apk = apk,
-      )
-    }
-  }
 
   private fun toAssociates(inputEntity: ModuleDetails): List<Label> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)

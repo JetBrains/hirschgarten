@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -39,16 +40,8 @@ class TestWithLocalJvmRunnerAction(
     },
     isDebugMode = isDebugMode,
   ) {
-  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? {
-    val params = createJvmTestEnvironmentParams(targetInfo.id)
-    return BazelWorkspaceResolveService
-      .getInstance(project)
-      .withEndpointProxy { it.jvmTestEnvironment(params) }
-      .items
-      .firstOrNull()
-  }
-
-  private fun createJvmTestEnvironmentParams(targetId: Label) = JvmTestEnvironmentParams(listOf(targetId))
+  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
+    project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(targetInfo.id)
 
   override fun calculateConfiguration(
     configurationName: String,

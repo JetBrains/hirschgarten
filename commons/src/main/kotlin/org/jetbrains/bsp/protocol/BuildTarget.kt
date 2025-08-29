@@ -9,6 +9,7 @@ interface BuildTarget {
   val baseDirectory: Path
   val data: BuildTargetData?
   val tags: List<String>
+
   val noBuild: Boolean
 }
 
@@ -60,6 +61,7 @@ data class PythonBuildTarget(
   val imports: List<String>,
   val isCodeGenerator: Boolean,
   val generatedSources: List<Path>,
+  val sourceDependencies: List<Path> = listOf(),
 ) : BuildTargetData
 
 @ClassDiscriminator(3)
@@ -76,6 +78,12 @@ data class JvmBuildTarget(
   // not used if part of PartialBuildTarget
   @Transient @JvmField val javaHome: Path? = null,
   val javaVersion: String,
+  val javacOpts: List<String> = listOf(),
+  val binaryOutputs: List<Path> = listOf(),
+  val environmentVariables: Map<String, String> = mapOf(),
+  val mainClass: String? = null,
+  val jvmArgs: List<String> = listOf(),
+  val programArgs: List<String> = listOf(),
 ) : BuildTargetData
 
 @ClassDiscriminator(5)
@@ -114,3 +122,6 @@ public data class AndroidBuildTarget(
   var jvmBuildTarget: JvmBuildTarget? = null,
   var kotlinBuildTarget: KotlinBuildTarget? = null,
 ) : BuildTargetData
+
+@ClassDiscriminator(8)
+object VoidBuildTarget : BuildTargetData

@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.mapper
+package org.jetbrains.bazel.sync.workspace
 
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
