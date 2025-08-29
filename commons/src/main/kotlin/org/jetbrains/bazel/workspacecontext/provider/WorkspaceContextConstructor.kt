@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
 import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
@@ -10,6 +11,7 @@ class WorkspaceContextConstructor(
   workspaceRoot: Path,
   private val dotBazelBspDirPath: Path,
   projectViewPath: Path,
+  val bazelBinaryPath: Path? = null,
 ) {
   private val directoriesSpecExtractor = DirectoriesSpecExtractor(workspaceRoot, projectViewPath)
 
@@ -24,7 +26,7 @@ class WorkspaceContextConstructor(
       buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
       syncFlags = SyncFlagsSpecExtractor.fromProjectView(projectView),
       debugFlags = DebugFlagsSpecExtractor.fromProjectView(projectView),
-      bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
+      bazelBinary = bazelBinaryPath?.let { BazelBinarySpec(it) } ?: BazelBinarySpecExtractor.fromProjectView(projectView),
       allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
       dotBazelBspDirPath = DotBazelBspDirPathSpec(dotBazelBspDirPath),
       importDepth = ImportDepthSpecExtractor.fromProjectView(projectView),

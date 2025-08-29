@@ -7,8 +7,9 @@ import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextEntityExtractorException
 import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
 
-internal object BazelBinarySpecExtractor : WorkspaceContextEntityExtractor<BazelBinarySpec> {
+object BazelBinarySpecExtractor : WorkspaceContextEntityExtractor<BazelBinarySpec> {
   override fun fromProjectView(projectView: ProjectView): BazelBinarySpec {
     val extracted = projectView.bazelBinary?.value
     return if (extracted != null) {

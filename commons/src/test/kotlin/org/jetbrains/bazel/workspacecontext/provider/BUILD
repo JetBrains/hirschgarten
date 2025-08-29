@@ -85,3 +85,4 @@ intellij_integration_test_suite(
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
     ],
 )
+

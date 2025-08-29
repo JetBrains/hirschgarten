@@ -39,7 +39,7 @@ class TestClient(
 
   fun test(timeout: Duration, doTest: suspend (Session) -> Unit) {
     runTest(timeout = timeout) {
-      val server = startServer(client, workspacePath, null, featureFlags)
+      val server = startServer(client, workspacePath, null, featureFlags, null)
       val session = Session(client, server)
       doTest(session)
     }

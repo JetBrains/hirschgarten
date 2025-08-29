@@ -61,6 +61,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action/registered",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/bazelisk",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/buildTask",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",

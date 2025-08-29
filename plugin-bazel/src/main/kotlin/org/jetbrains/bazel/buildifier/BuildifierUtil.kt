@@ -17,13 +17,13 @@ import kotlin.io.path.isRegularFile
 
 class BuildifierUtil {
   companion object {
-    fun detectBuildifierExecutable(): File? {
+    fun detectBuildifierExecutable(): Path? {
       val name =
         when {
           SystemInfo.isWindows -> "buildifier.exe"
           else -> "buildifier"
         }
-      return PathEnvironmentVariableUtil.findInPath(name)
+      return PathEnvironmentVariableUtil.findInPath(name)?.toPath()
     }
 
     fun validateBuildifierExecutable(executablePath: String?): ValidationInfo? {

@@ -22,6 +22,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.bazelisk.BazeliskDownloader
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
@@ -33,6 +34,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
   Configurable.WithEpDependencies {
   private val projectViewPathField: TextFieldWithBrowseButton
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
+  private val bazelExecutablePathField: TextFieldWithBrowseButton
   private val runBuildifierOnSaveCheckBox: JBCheckBox
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
 
@@ -41,6 +43,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
   init {
     projectViewPathField = initProjectViewFileField()
     buildifierExecutablePathField = initBuildifierExecutablePathField()
+    bazelExecutablePathField = initBazelExecutablePathField()
     runBuildifierOnSaveCheckBox = initRunBuildifierOnSaveCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
   }
@@ -57,6 +60,18 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
       row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
       row(BazelPluginBundle.message("project.settings.buildifier.label")) {
         cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
+      }
+      row("Bazel executable") {
+        cell(bazelExecutablePathField).align(Align.FILL).validationInfo { bazelExecutableValidationInfo() }
+        if (BazeliskDownloader.canDownload()) {
+          button("Download Bazelisk") {
+            BazelCoroutineService.getInstance(project).start {
+              val path = BazeliskDownloader.downloadWithProgress(project)
+              bazelExecutablePathField.text = path.toAbsolutePath().toString()
+              currentProjectSettings = currentProjectSettings.withNewBazelExecutablePath(path)
+            }
+          }
+        }
       }
       row { cell(runBuildifierOnSaveCheckBox).align(Align.FILL) }
       row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
@@ -105,7 +120,29 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
 
   private fun buildifierExecutableValidationInfo(): ValidationInfo? =
     BuildifierUtil.validateBuildifierExecutable(
-      buildifierExecutablePathField.text.takeIf { it.isNotBlank() } ?: BuildifierUtil.detectBuildifierExecutable()?.absolutePath,
+      buildifierExecutablePathField.text.takeIf { it.isNotBlank() } ?: BuildifierUtil.detectBuildifierExecutable()?.toString(),
+    )
+
+  private fun initBazelExecutablePathField(): TextFieldWithBrowseButton =
+    TextFieldWithBrowseButton().apply {
+      val title = "Select path to Bazel/Bazelisk executable"
+      addBrowseFolderListener(
+        project,
+        FileChooserDescriptorFactory
+          .singleFile()
+          .withTitle(title),
+      )
+      whenTextChanged {
+        if (text.isNotBlank()) {
+          val newPath = Path(text)
+          currentProjectSettings = currentProjectSettings.withNewBazelExecutablePath(newPath)
+        }
+      }
+    }
+
+  private fun bazelExecutableValidationInfo(): ValidationInfo? =
+    BuildifierUtil.validateBuildifierExecutable(
+      bazelExecutablePathField.text.takeIf { it.isNotBlank() } ?: currentProjectSettings.getBazelPath().toString(),
     )
 
   private fun initRunBuildifierOnSaveCheckBox(): JBCheckBox =
@@ -148,6 +185,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     super<BoundCompositeSearchableConfigurable>.reset()
     projectViewPathField.text = savedProjectViewPath()
     buildifierExecutablePathField.text = getBuildifierExecPathPlaceholderMessage()
+    bazelExecutablePathField.text = getBazelExecPathPlaceholderMessage()
     runBuildifierOnSaveCheckBox.isSelected = project.bazelProjectSettings.runBuildifierOnSave
 
     showExcludedDirectoriesAsSeparateNodeCheckBox.isSelected = project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
@@ -155,8 +193,12 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     currentProjectSettings = project.bazelProjectSettings
   }
 
+  private fun getBazelExecPathPlaceholderMessage(): String =
+    currentProjectSettings.getBazelPath()?.toString()
+      ?: "Bazel/Bazelisk executable not found on PATH"
+
   private fun getBuildifierExecPathPlaceholderMessage(): String =
-    currentProjectSettings.getBuildifierPathString()
+    currentProjectSettings.getBuildifierPath()?.toString()
       ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
 
   private fun savedProjectViewPath() =

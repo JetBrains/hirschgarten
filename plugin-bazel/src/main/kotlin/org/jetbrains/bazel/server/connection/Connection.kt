@@ -18,6 +18,7 @@ suspend fun startServer(
   workspaceRoot: Path,
   projectViewFile: Path?,
   featureFlags: FeatureFlags,
+  bazelBinaryPath: Path?,
 ): BspServerApi {
   val bspInfo = BspInfo(workspaceRoot)
   val workspaceContextProvider =
@@ -26,6 +27,7 @@ suspend fun startServer(
       projectViewPath = projectViewFile ?: workspaceRoot.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
       dotBazelBspDirPath = bspInfo.bazelBspDir,
       featureFlags = featureFlags,
+      bazelBinaryPath = bazelBinaryPath,
     )
   // Run it here to force the workspace context to be initialized
   val workspaceContext = workspaceContextProvider.readWorkspaceContext()

@@ -30,6 +30,7 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.io.File
+import java.nio.file.Path
 
 private val LOG = logger<StarlarkFormattingService>()
 private const val NOTIFICATION_GROUP_ID = "Buildifier"
@@ -40,13 +41,13 @@ class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun canFormat(file: PsiFile): Boolean {
     val virtualFile = file.virtualFile ?: return false
     if (!FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)) return false
-    return file.project.bazelProjectSettings.getBuildifierPathString() != null
+    return file.project.bazelProjectSettings.getBuildifierPath() != null
   }
 
   override fun createFormattingTask(request: AsyncFormattingRequest): FormattingTask? {
     val formattingContext = request.context
     val project = formattingContext.project
-    val buildifierPath = project.bazelProjectSettings.getBuildifierPathString() ?: return null
+    val buildifierPath = project.bazelProjectSettings.getBuildifierPath() ?: return null
 
     if (!checkDocumentExists(request)) {
       LOG.warn("Document for file ${request.context.containingFile.name} is null")
@@ -83,12 +84,12 @@ class StarlarkFormattingService : AsyncDocumentFormattingService() {
     return document != null
   }
 
-  private fun createProcessHandler(request: AsyncFormattingRequest, buildifierPath: String): CapturingProcessHandler? {
+  private fun createProcessHandler(request: AsyncFormattingRequest, buildifierPath: Path): CapturingProcessHandler? {
     val ioFile = request.ioFile ?: return null
     val commandLine =
       GeneralCommandLine()
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-        .withExePath(buildifierPath)
+        .withExePath(buildifierPath.toString())
         .withInput(ioFile)
         .apply {
           // Because we pass the input file's text into stdin, buildifier doesn't know the original filename.
