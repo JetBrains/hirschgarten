@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.languages.jvm
 import java.nio.charset.Charset
 import java.nio.file.Path
 import kotlin.io.path.bufferedReader
+import kotlin.io.path.notExists
 
 object JVMLanguagePluginParser {
   private val PACKAGE_PATTERN = Regex("^\\s*package\\s+([\\p{L}0-9_.]+)")
@@ -11,7 +12,10 @@ object JVMLanguagePluginParser {
 
   fun calculateJVMSourceRootAndAdditionalData(source: Path, multipleLines: Boolean = false): String? = findPackage(source, multipleLines)
 
-  private fun findPackage(source: Path, multipleLines: Boolean): String? =
+  private fun findPackage(source: Path, multipleLines: Boolean): String? {
+    if (source.notExists()) {
+      return null
+    }
     source.bufferedReader(charset = ONE_BYTE_CHARSET, bufferSize = BUFFER_SIZE).use { bufferedReader ->
       // Not using UTF-8 charset because it is slower to decode
       val packages =
@@ -30,4 +34,5 @@ object JVMLanguagePluginParser {
         packages.firstOrNull()
       }
     }
+  }
 }
