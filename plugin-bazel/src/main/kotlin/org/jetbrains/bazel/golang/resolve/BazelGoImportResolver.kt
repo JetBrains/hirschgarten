@@ -42,9 +42,6 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import java.util.concurrent.ConcurrentHashMap
 
-private const val GO_PACKAGE_MAP_KEY = "BazelGoPackageMap"
-private const val GO_TARGET_MAP_KEY = "BazelGoTargetMap"
-
 /** Converts each go target in the [targetUtils#allBuildTargets()] into a corresponding [BazelGoPackage]. */
 class BazelGoImportResolver : GoImportResolver {
   override fun resolve(
@@ -124,27 +121,35 @@ fun doResolve(importPath: String, project: Project): BazelGoPackage? {
     .computeIfAbsent(importPath) { path -> BazelGoPackage(project = project, importPath = path, target = target) }
 }
 
+private val goPackageMapComputable =
+  SyncCache.SyncCacheComputable {
+    ConcurrentHashMap<String, BazelGoPackage>()
+  }
+
 fun getGoPackageMap(project: Project): ConcurrentHashMap<String, BazelGoPackage> =
   SyncCache
     .getInstance(project)
-    .get(GO_PACKAGE_MAP_KEY) { ConcurrentHashMap<String, BazelGoPackage>() } ?: ConcurrentHashMap()
+    .get(goPackageMapComputable)
+
+private val goTargetMapComputable: SyncCache.SyncCacheComputable<Map<String, Label>> =
+  SyncCache.SyncCacheComputable { project ->
+    val targetUtils = project.targetUtils
+    targetUtils
+      .allBuildTargets()
+      .filter { t -> extractGoBuildTarget(t)?.importPath?.isNotBlank() == true }
+      .groupBy { t -> extractGoBuildTarget(t)?.importPath.orEmpty() }
+        .mapValues { (_, targets) ->
+        // duplicates are possible (e.g., same target with different aspects)
+        // choose the one with the most sources (though they're probably the same)
+        targets.maxByOrNull { extractGoBuildTarget(it)?.generatedSources?.size ?: 0 }?.id
+      }.filterValues { it != null }
+        .mapValues { (_, id) -> id!! }
+  }
 
 private fun getGoTargetMap(project: Project): Map<String, Label> =
   SyncCache
     .getInstance(project)
-    .get(GO_TARGET_MAP_KEY) {
-      val targetUtils = project.targetUtils
-      targetUtils
-        .allBuildTargets()
-        .filter { t -> extractGoBuildTarget(t)?.importPath?.isNotBlank() == true }
-        .groupBy { t -> extractGoBuildTarget(t)?.importPath.orEmpty() }
-        .mapValues { (_, targets) ->
-          // duplicates are possible (e.g., same target with different aspects)
-          // choose the one with the most sources (though they're probably the same)
-          targets.maxByOrNull { extractGoBuildTarget(it)?.generatedSources?.size ?: 0 }?.id
-        }.filterValues { it != null }
-        .mapValues { (_, id) -> id!! }
-    }.orEmpty()
+    .get(goTargetMapComputable)
 
 fun doResolve(goPackage: BazelGoPackage, index: Int): Array<ResolveResult> =
   listOf(goPackage)

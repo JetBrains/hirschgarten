@@ -15,5 +15,6 @@ kt_intellij_junit4_test(
     tags = ["exclusive"],
     deps = [
         "//plugin-bazel",
+        "//plugin-bazel/src:test_fixtures",
     ],
 )

@@ -1,5 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.completion
 
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.project.Project
+import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.workspaceModel
+import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -7,6 +12,9 @@ import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,8 +24,27 @@ import org.junit.runners.JUnit4
 class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
   @Before
   fun setupRootDir() {
-    myFixture.project.isBazelProject = true
-    myFixture.project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+    val project = myFixture.project
+    project.isBazelProject = true
+    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+    if (myFixture.project.bazelProjectDirectoriesEntity() == null) {
+      val workspaceModel = project.workspaceModel
+      val workspaceModelUrlManager = workspaceModel.getVirtualFileUrlManager()
+      runWriteAction {
+        workspaceModel.updateProjectModel("Add bazel project directories entity") { storage ->
+          storage.addEntity(
+            BazelProjectDirectoriesEntity(
+              myFixture.project.rootDir.toVirtualFileUrl(workspaceModelUrlManager),
+              emptyList(),
+              emptyList(),
+              emptyList(),
+              false,
+              BazelProjectEntitySource,
+            ),
+          )
+        }
+      }
+    }
   }
 
   @Test

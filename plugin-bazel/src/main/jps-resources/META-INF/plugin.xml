@@ -346,6 +346,11 @@
       key="bazel.enable.custom.java.class.finder"
     />
     <registryKey
+      defaultValue="false"
+      description="Create fake module on project import"
+      key="bazel.create.fake.module.on.project.import"
+      />
+    <registryKey
       defaultValue="true"
       description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
       key="bazel.merge.source.roots"
@@ -508,7 +513,6 @@
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
-    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
     <notificationGroup
       displayType="BALLOON"
       id="BazelSlowPlugins"
