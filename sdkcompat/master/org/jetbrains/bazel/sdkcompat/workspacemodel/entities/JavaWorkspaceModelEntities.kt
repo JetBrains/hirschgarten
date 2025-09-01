@@ -21,7 +21,6 @@ data class JavaModule(
   val kotlinAddendum: KotlinAddendum? = null,
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
-  val androidAddendum: AndroidAddendum? = null,
   val workspaceModelEntitiesFolderMarker: Boolean = false,
 ) : WorkspaceModelEntity(),
   Module {
