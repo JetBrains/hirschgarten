@@ -9,7 +9,7 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService
+import org.jetbrains.bazel.languages.starlark.references.getCanonicalRepoNameToBzlFiles
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToApparentName
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToPath
 import org.jetbrains.bazel.sdkcompat.indexingTestUtilForceSkipWaiting
@@ -32,7 +32,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
 
     val newRepoNameToPathMap = mapOf("" to myRootPath)
     project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
-    BazelBzlFileService.getInstance(project).forceUpdateCache()
+    getCanonicalRepoNameToBzlFiles(project)
     indexingTestUtilForceSkipWaiting()
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
@@ -59,7 +59,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     val newCanonicalRepoNameToApparentName = mapOf("rules_kotlin" to "rules_kotlin")
     project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
     project.injectCanonicalRepoNameToApparentName(newCanonicalRepoNameToApparentName)
-    BazelBzlFileService.getInstance(project).forceUpdateCache()
+    getCanonicalRepoNameToBzlFiles(project)
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("kt")
