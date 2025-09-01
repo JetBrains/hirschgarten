@@ -17,32 +17,53 @@ package org.jetbrains.bazel.sync
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.TestOnly
+import java.util.concurrent.ConcurrentHashMap
 
 /** Computes a cache on the project data.  */
 @Service(Service.Level.PROJECT)
 class SyncCache(private val project: Project) {
-  /** Computes a value based on the sync project data.  */
-  fun interface SyncCacheComputable<T> {
-    fun compute(project: Project): T & Any
+  /** Computes a value based on the sync project data. */
+  fun interface SyncCacheComputable<T : Any> {
+    fun compute(project: Project): T
   }
 
-  private var cache: MutableMap<Any, Any> = HashMap()
+  private val cache = ConcurrentHashMap<Any, Any>()
 
-  /** Computes a value derived from the sync project data and caches it until the next sync.  */
+  /**
+   * Computes a value derived from the sync project data and caches it until the next sync.
+   * [computable] must be the same object for the cache to work, i.e., this is **wrong**:
+   * ```kotlin
+   * fun getCachedSum(project): Int {
+   *   // Lambda object is created on every function call, bad
+   *   return SyncCache.getInstance(project).get {
+   *     2 + 2
+   *   }
+   * }
+   * ```
+   * And this is correct:
+   * ```kotlin
+   * val computable = SyncCacheComputable {
+   *   2 + 2
+   * }
+   * fun getCachedSum(project): Int {
+   *   return SyncCache.getInstance(project).get(computable)
+   * }
+   * ```
+   *
+   * @see com.intellij.platform.workspace.storage.VersionedEntityStorage.cachedValue
+   */
   @Suppress("UNCHECKED_CAST")
-  @Synchronized
-  fun <T> get(key: Any, computable: SyncCacheComputable<T>): T? {
-    cache[key]?.also { return it as T? }
-    val newValue = computable.compute(project)
-    cache[key] = newValue
-    return newValue
-  }
+  fun <T : Any> get(computable: SyncCacheComputable<T>): T =
+    cache.computeIfAbsent(computable) {
+      computable.compute(project)
+    } as T
 
-  @Synchronized
-  fun clear() {
-    // assign a new map instead of clearing.
-    // this should be faster than clearing the map.
-    cache = HashMap()
+  fun clear(): Unit = cache.clear()
+
+  @TestOnly
+  fun <T : Any> injectValueForTest(key: SyncCacheComputable<T>, value: T) {
+    cache[key] = value
   }
 
   internal class ClearSyncCache : ProjectPostSyncHook {
