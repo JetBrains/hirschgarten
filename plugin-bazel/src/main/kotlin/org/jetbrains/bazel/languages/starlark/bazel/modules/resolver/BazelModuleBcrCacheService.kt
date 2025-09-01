@@ -17,7 +17,7 @@ import kotlinx.coroutines.future.future
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
 
@@ -121,6 +121,6 @@ class BazelModuleBcrCacheService(private val coroutineScope: CoroutineScope) :
   }
 
   companion object {
-    private val CACHE_EVICTION_TIME = 1.days
+    private val CACHE_EVICTION_TIME = 12.hours
   }
 }
