@@ -3,7 +3,6 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
@@ -12,8 +11,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -71,12 +68,11 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         target = target,
         javacOptions = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
-        moduleDependencies =
+        dependencies =
           listOf(
             Label.parse("@//target2"),
             Label.parse("@//target3"),
           ),
-        libraryDependencies = null,
       )
 
     val targetsMap = listOf("@//target1", "@//target2", "@//target3").toDefaultTargetsMap()
@@ -95,16 +91,11 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "target1.target1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency(
-              moduleName = "target2.target2",
-            ),
-            IntermediateModuleDependency(
-              moduleName = "target3.target3",
-            ),
+            "target2.target2",
+            "target3.target3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -113,7 +104,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    shouldBeIgnoringDependenciesOrder(module, expectedModule)
+    shouldBe(module, expectedModule)
   }
 
   @Test
@@ -149,14 +140,11 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             Label.parse("@//target4"),
             Label.parse("@//target5"),
           ),
-        moduleDependencies =
-          listOf(
-            Label.parse("@//target2"),
-            Label.parse("@//target3"),
-          ),
-        libraryDependencies =
+        dependencies =
           listOf(
             Label.parse("@maven//:test"),
+            Label.parse("@//target2"),
+            Label.parse("@//target3"),
           ),
       )
 
@@ -176,27 +164,16 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "target1.target1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency(
-              moduleName = "target2.target2",
-            ),
-            IntermediateModuleDependency(
-              moduleName = "target3.target3",
-            ),
-          ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency("maven.test", true),
+            "maven.test",
+            "target2.target2",
+            "target3.target3",
           ),
         associates =
           listOf(
-            IntermediateModuleDependency(
-              moduleName = "target4.target4",
-            ),
-            IntermediateModuleDependency(
-              moduleName = "target5.target5",
-            ),
+            "target4.target4",
+            "target5.target5",
           ),
         kind =
           TargetKind(
@@ -206,7 +183,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    shouldBeIgnoringDependenciesOrder(module, expectedModule)
+    shouldBe(module, expectedModule)
   }
 
   @Test
@@ -239,12 +216,11 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         target = target1,
         javacOptions = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
-        moduleDependencies =
+        dependencies =
           listOf(
             Label.parse("//target2"),
             Label.parse("//target3"),
           ),
-        libraryDependencies = null,
       )
 
     val target2Name = "@//target2"
@@ -273,11 +249,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         target = target2,
         javacOptions = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
-        moduleDependencies =
+        dependencies =
           listOf(
             Label.parse("//target3"),
           ),
-        libraryDependencies = null,
       )
 
     val targetsMap = listOf("@//target1", "@//target2", "@//target3").toDefaultTargetsMap()
@@ -297,16 +272,11 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "target1.target1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency(
-              moduleName = "target2.target2",
-            ),
-            IntermediateModuleDependency(
-              moduleName = "target3.target3",
-            ),
+            "target2.target2",
+            "target3.target3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -319,13 +289,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "target2.target2",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency(
-              moduleName = "target3.target3",
-            ),
+            "target3.target3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -338,7 +305,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       listOf(
         expectedModule1,
         expectedModule2,
-      ) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) }
+      ) to { actual, expected -> shouldBe(actual, expected) }
     )
   }
 
@@ -353,10 +320,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     this.forAll { actual -> expectedValues.forAny { assertion(actual, it) } }
   }
 
-  private fun shouldBeIgnoringDependenciesOrder(actual: GenericModuleInfo, expected: GenericModuleInfo) {
+  private fun shouldBe(actual: GenericModuleInfo, expected: GenericModuleInfo) {
     actual.name shouldBe expected.name
     actual.type shouldBe expected.type
-    actual.modulesDependencies shouldContainExactlyInAnyOrder expected.modulesDependencies
-    actual.librariesDependencies shouldContainExactlyInAnyOrder expected.librariesDependencies
+    actual.dependencies shouldBe expected.dependencies
   }
 }

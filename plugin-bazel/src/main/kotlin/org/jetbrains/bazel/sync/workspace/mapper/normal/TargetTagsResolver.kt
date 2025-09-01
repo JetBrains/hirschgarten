@@ -21,13 +21,8 @@ class TargetTagsResolver {
         else -> setOf(Tag.LIBRARY)
       }
 
-    return typeTags + mapBazelTags(targetInfo.tagsList) + targetInfo.experimentalTags(workspaceContext)
+    return typeTags + mapBazelTags(targetInfo.tagsList)
   }
-
-  private fun BspTargetInfo.TargetInfo.experimentalTags(workspaceContext: WorkspaceContext): Set<Tag> =
-    buildSet {
-      if (kind in workspaceContext.experimentalPrioritizeLibrariesOverModulesTargetKinds.values) add(Tag.LIBRARIES_OVER_MODULES)
-    }
 
   // https://bazel.build/extending/rules#executable_rules_and_test_rules:
   // "Test rules must have names that end in _test."

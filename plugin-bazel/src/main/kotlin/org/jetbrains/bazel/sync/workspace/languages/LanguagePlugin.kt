@@ -9,11 +9,9 @@ import java.nio.file.Path
 interface LanguagePlugin<BuildTarget : BuildTargetData> {
   fun getSupportedLanguages(): Set<LanguageClass>
 
-  fun calculateJvmPackagePrefix(source: Path): String? = null
+  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
 
-  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
-
-  fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> = emptySet()
+  fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
 
   fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
 

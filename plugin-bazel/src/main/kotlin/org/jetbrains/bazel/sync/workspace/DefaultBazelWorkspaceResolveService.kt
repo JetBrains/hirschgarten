@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
@@ -10,6 +11,7 @@ import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.mapper.normal.AspectBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
@@ -50,10 +52,10 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
     val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
     project
       .service<LanguagePluginsService>()
-      .registerDefaultPlugins(paths.bazelPathsResolver)
+      .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver())
     bazelMapper =
       AspectBazelProjectMapper(
-        project = project,
+        languagePluginsService = project.service<LanguagePluginsService>(),
         featureFlags = featureFlags,
         bazelPathsResolver = paths.bazelPathsResolver,
         targetTagsResolver = TargetTagsResolver(),

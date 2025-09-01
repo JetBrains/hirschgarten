@@ -5,16 +5,23 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
+import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 
-class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
-  LanguagePlugin<ScalaBuildTarget> {
+class ScalaLanguagePlugin(
+  private val javaLanguagePlugin: JavaLanguagePlugin,
+  private val bazelPathsResolver: BazelPathsResolver,
+  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver(),
+) : LanguagePlugin<ScalaBuildTarget>,
+  JVMPackagePrefixResolver {
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
@@ -55,6 +62,5 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
 
-  override fun calculateJvmPackagePrefix(source: Path): String? =
-    JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source, true)
+  override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source, true)
 }

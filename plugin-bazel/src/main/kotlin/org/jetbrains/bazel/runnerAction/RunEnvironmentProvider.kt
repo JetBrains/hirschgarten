@@ -6,12 +6,12 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.JvmMainClass
 import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
-import org.jetbrains.bsp.protocol.getJvmOrNull
+import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
@@ -21,16 +21,15 @@ class RunEnvironmentProvider(private val project: Project) {
       val paths = server.workspaceBazelPaths()
       return@runWithServer this.project.targetUtils
         .getBuildTargetForLabel(target)
-        ?.data
         ?.getJvmEnvironmentItem(paths.bazelPathsResolver, server, target)
     }
 
-  private suspend fun BuildTargetData.getJvmEnvironmentItem(
+  private suspend fun BuildTarget.getJvmEnvironmentItem(
     paths: BazelPathsResolver,
     server: JoinedBuildServer,
     label: Label,
   ): JvmEnvironmentItem? {
-    val jvmTarget = this.getJvmOrNull() ?: return null
+    val jvmTarget = extractJvmBuildTarget(this) ?: return null
     val classpath = server.workspaceTargetClasspathQuery(WorkspaceTargetClasspathQueryParams(label))
     val resolvedClasspath = resolveClasspath(paths, classpath.runtimeClasspath)
 

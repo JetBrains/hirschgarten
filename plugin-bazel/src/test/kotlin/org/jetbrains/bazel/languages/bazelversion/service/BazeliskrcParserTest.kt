@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.languages.bazelversion.service
 
-import io.kotest.matchers.equals.shouldBeEqual
+import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.jupiter.api.Test
 
 class BazeliskrcParserTest {

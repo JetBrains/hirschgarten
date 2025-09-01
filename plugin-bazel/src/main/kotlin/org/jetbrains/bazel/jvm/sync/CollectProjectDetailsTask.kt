@@ -25,7 +25,7 @@ import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
@@ -51,9 +51,7 @@ import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
@@ -265,7 +263,7 @@ class CollectProjectDetailsTask(
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
-            WorkspaceModelUpdaterImpl(
+            WorkspaceModelUpdater(
               workspaceEntityStorageBuilder = diff,
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
@@ -274,8 +272,7 @@ class CollectProjectDetailsTask(
               importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
-          workspaceModelUpdater.loadLibraries(libraries)
+          workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
         }

@@ -2,15 +2,14 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -32,6 +31,7 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.plus
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -53,7 +54,7 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 class AspectBazelProjectMapper(
-  private val project: Project,
+  private val languagePluginsService: LanguagePluginsService,
   private val featureFlags: FeatureFlags,
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
@@ -78,10 +79,7 @@ class AspectBazelProjectMapper(
     extraLibraries: Map<Label, List<Library>>,
   ): IntermediateTargetData? {
     val languages = inferLanguages(this)
-    val languagePlugin =
-      project
-        .service<LanguagePluginsService>()
-        .getLanguagePlugin(languages) ?: return null
+    val languagePlugin = languagePluginsService.getLanguagePlugin(languages) ?: return null
     val tags = targetTagsResolver.resolveTags(this, workspaceContext).toSet()
     val label = this.label().assumeResolved()
     return IntermediateTargetData(
@@ -102,10 +100,7 @@ class AspectBazelProjectMapper(
     repoMapping: RepoMapping,
     hasError: Boolean,
   ): BazelResolvedWorkspace {
-    project
-      .service<LanguagePluginsService>()
-      .all
-      .forEach { it.prepareSync(targets.values.asSequence(), workspaceContext) }
+    languagePluginsService.all.forEach { it.prepareSync(targets.values.asSequence(), workspaceContext) }
     val dependencyGraph =
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, targets)
@@ -212,7 +207,6 @@ class AspectBazelProjectMapper(
 
     val extraLibraries = concatenateMaps(librariesFromDeps, extraLibrariesFromJdeps)
 
-    // val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
     val targets =
       measure("create intermediate targets") {
         targets.values.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }
@@ -277,11 +271,11 @@ class AspectBazelProjectMapper(
       }.toMap()
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
-    !targetInfo.kind.endsWith("_resources") &&
+    !targetInfo.kind.endsWith("_resources") && targetInfo.hasJvmTargetInfo() &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-          (targetInfo.hasJvmTargetInfo() && !hasKnownJvmSources(targetInfo)) ||
-          (targetInfo.hasJvmTargetInfo() && targetInfo.jvmTargetInfo.hasApiGeneratingPlugins)
+          (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
+          targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
       )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
@@ -323,7 +317,7 @@ class AspectBazelProjectMapper(
     val inferredSourceJars =
       kotlinStdlibsJars
         .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
-        .filter { it.exists() }
+        .onEach { if (it.notExists()) logNonExistingFile(it, "[kotlin stdlib]") }
         .toSet()
 
     return if (kotlinStdlibsJars.isNotEmpty()) {
@@ -375,10 +369,7 @@ class AspectBazelProjectMapper(
     val projectLevelScalaSdkLibraries = calculateProjectLevelScalaSdkLibraries()
     val projectLevelScalaTestLibraries = calculateProjectLevelScalaTestLibraries()
     val scalaTargets = targetsToImport.filter { it.hasScalaTargetInfo() }.map { it.label() }
-    val scalaPlugin =
-      project
-        .service<LanguagePluginsService>()
-        .getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
+    val scalaPlugin = languagePluginsService.getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
     return scalaTargets.associateWith {
       val sdkLibraries =
         scalaPlugin.scalaSdks[it]
@@ -408,10 +399,7 @@ class AspectBazelProjectMapper(
 
   // TODO: refactor to language-specific logic
   private fun calculateProjectLevelScalaTestLibraries(): Map<Path, Library> {
-    val scalaPlugin =
-      project
-        .service<LanguagePluginsService>()
-        .getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
+    val scalaPlugin = languagePluginsService.getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
     return scalaPlugin.scalaTestJars.values
       .flatten()
       .toSet()
@@ -427,10 +415,7 @@ class AspectBazelProjectMapper(
 
   // TODO: refactor to language-specific logic
   private fun getProjectLevelScalaSdkLibrariesJars(): Set<Path> {
-    val scalaPlugin =
-      project
-        .service<LanguagePluginsService>()
-        .getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
+    val scalaPlugin = languagePluginsService.getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
     return scalaPlugin.scalaSdks.values
       .toSet()
       .flatMap {
@@ -852,10 +837,7 @@ class AspectBazelProjectMapper(
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
-    val languagePlugin =
-      project
-        .service<LanguagePluginsService>()
-        .getLanguagePlugin(targetData.languages) ?: return null
+    val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.languages) ?: return null
     val resources = resolveResources(target, languagePlugin)
 
     val tags = targetData.tags
@@ -866,7 +848,7 @@ class AspectBazelProjectMapper(
         targetData.sources to emptyList()
       }
 
-    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, project, bazelPathsResolver)
+    val context = LanguagePluginContext(target, dependencyGraph, repoMapping)
     val data = languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(
@@ -875,7 +857,7 @@ class AspectBazelProjectMapper(
       dependencies = directDependencies,
       kind = inferKind(tags, target.kind, targetData.languages),
       sources = targetSources,
-      resources = resources.toList(),
+      resources = resources,
       baseDirectory = baseDirectory,
       noBuild = Tag.NO_BUILD in tags,
       data = data,
@@ -914,11 +896,6 @@ class AspectBazelProjectMapper(
 
   private fun inferLanguages(target: TargetInfo): Set<LanguageClass> =
     buildSet {
-      if (target.hasProtobufTargetInfo()) {
-        add(LanguageClass.PROTOBUF)
-        add(LanguageClass.JAVA)
-        return@buildSet
-      }
       // TODO It's a hack preserved from before TargetKind refactorking, to be removed
       if (target.hasJvmTargetInfo()) {
         add(LanguageClass.JAVA)
@@ -936,23 +913,28 @@ class AspectBazelProjectMapper(
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
     val sources =
-      (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
-        .toSet()
+      target.sourcesList
+        .asSequence()
         .map(bazelPathsResolver::resolve)
-        .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-        .filter { it.exists() }
-        .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
     val generatedSources =
       target.generatedSourcesList
-        .toSet()
+        .asSequence()
         .map(bazelPathsResolver::resolve)
         .filter { it.extension != "srcjar" }
-        .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-        .filter { it.exists() }
-        .map { SourceItem(path = it, generated = true, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
-    return sources + generatedSources
+    val extraSources = languagePlugin.calculateAdditionalSources(target)
+
+    return (sources + extraSources + generatedSources)
+      .distinct()
+      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
+      .map {
+        SourceItem(
+          path = it,
+          generated = false,
+          jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
+        )
+      }.toList()
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {
@@ -960,10 +942,13 @@ class AspectBazelProjectMapper(
     logger.warn(message)
   }
 
-  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
-    (bazelPathsResolver.resolvePaths(target.resourcesList) + languagePlugin.resolveAdditionalResources(target))
-      .filter { it.exists() }
-      .toSet()
+  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<Path> {
+    val resources = bazelPathsResolver.resolvePaths(target.resourcesList)
+    val extraResources = languagePlugin.resolveAdditionalResources(target)
+    return (resources.asSequence() + extraResources)
+      .distinct()
+      .toList()
+  }
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {

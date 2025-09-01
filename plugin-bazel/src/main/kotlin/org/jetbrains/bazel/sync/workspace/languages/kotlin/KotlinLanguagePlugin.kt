@@ -7,11 +7,13 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.nio.file.Path
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
-  LanguagePlugin<KotlinBuildTarget> {
+  LanguagePlugin<KotlinBuildTarget>,
+  JVMPackagePrefixResolver {
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): KotlinBuildTarget? {
     if (!target.hasKotlinTargetInfo()) {
       return null
@@ -43,5 +45,5 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.KOTLIN)
 
-  override fun calculateJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.calculateJvmPackagePrefix(source)
+  override fun resolveJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.resolveJvmPackagePrefix(source)
 }
