@@ -1118,7 +1118,7 @@
       {
         "name": "version",
         "doc": "The version of the module to be added as a direct dependency.",
-        "defaultValue": "\u0027\u0027",
+        "defaultValue": "\"\"",
         "named": true,
         "positional": false,
         "required": false
