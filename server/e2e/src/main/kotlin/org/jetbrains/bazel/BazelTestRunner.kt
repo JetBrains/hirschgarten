@@ -5,7 +5,6 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 
 object BazelTestRunner : BazelBaseTestRunner() {
-
   @JvmStatic
   fun main(args: Array<String>) {
     performTest { session ->
@@ -17,4 +16,3 @@ object BazelTestRunner : BazelBaseTestRunner() {
     }
   }
 }
-

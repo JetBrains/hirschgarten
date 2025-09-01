@@ -6,7 +6,6 @@ import org.jetbrains.bsp.protocol.CompileParams
 import kotlin.time.Duration.Companion.seconds
 
 object BazelTestRunnerWithDiagnostics : BazelBaseTestRunner() {
-
   private const val COMPILE_TARGETS = "COMPILE_TARGETS_"
 
   private fun getSteps(): List<List<Label>> =
@@ -22,9 +21,10 @@ object BazelTestRunnerWithDiagnostics : BazelBaseTestRunner() {
           CompileParams(
             compileTargets,
             originId = "some-id",
-            arguments = listOf(
-              "--action_env=FORCE_REBUILD=${System.currentTimeMillis()}",
-            ),
+            arguments =
+              listOf(
+                "--action_env=FORCE_REBUILD=${System.currentTimeMillis()}",
+              ),
           )
         session.client.clearDiagnostics()
         session.server.buildTargetCompile(params)
@@ -35,4 +35,3 @@ object BazelTestRunnerWithDiagnostics : BazelBaseTestRunner() {
     }
   }
 }
-

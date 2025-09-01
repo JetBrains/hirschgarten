@@ -44,20 +44,22 @@ abstract class BazelBaseTestRunner {
 
   private fun installServer() {
     Install.runInstall(
-      cliOptions = CliOptions(
-        workspaceDir = workspaceDir,
-        projectViewCliOptions = projectViewCliOptions(),
-      ),
+      cliOptions =
+        CliOptions(
+          workspaceDir = workspaceDir,
+          projectViewCliOptions = projectViewCliOptions(),
+        ),
       silent = true,
     )
   }
 
-  protected open fun projectViewCliOptions() = ProjectViewCliOptions(
-    bazelBinary = bazelBinary,
-    targets = targets,
-    gazelleTarget = gazelleTarget,
-    enabledRules = enabledRules,
-  )
+  protected open fun projectViewCliOptions() =
+    ProjectViewCliOptions(
+      bazelBinary = bazelBinary,
+      targets = targets,
+      gazelleTarget = gazelleTarget,
+      enabledRules = enabledRules,
+    )
 
   protected open fun performTest(timeout: Duration = 60.seconds, doTest: suspend (Session) -> Unit) {
     val featureFlags =
@@ -74,5 +76,4 @@ abstract class BazelBaseTestRunner {
       doTest(session)
     }
   }
-
 }
