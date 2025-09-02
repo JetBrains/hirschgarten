@@ -17,13 +17,19 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSect
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.workspace.excludedRoots
 
-private fun Project.getRelativePaths(filter: (VirtualFile) -> Boolean): List<String> {
+private fun Project.getRelativePaths(depthLimit: Int? = null, filter: (VirtualFile) -> Boolean): List<String> {
   val result = mutableListOf<VirtualFile>()
   val excludedRoots = excludedRoots() ?: return emptyList()
   val rootDir = rootDir
+  val options =
+    if (depthLimit != null) {
+      arrayOf(VirtualFileVisitor.limit(depthLimit))
+    } else {
+      emptyArray()
+    }
   VfsUtilCore.visitChildrenRecursively(
     rootDir,
-    object : VirtualFileVisitor<Unit>() {
+    object : VirtualFileVisitor<Unit>(*options) {
       override fun visitFileEx(file: VirtualFile): Result {
         if (file in excludedRoots) return SKIP_CHILDREN
         if (filter(file)) result.add(file)
@@ -34,10 +40,12 @@ private fun Project.getRelativePaths(filter: (VirtualFile) -> Boolean): List<Str
   return result.mapNotNull { VfsUtilCore.getRelativePath(it, rootDir) }
 }
 
+private const val DIRECTORIES_COMPLETION_DEPTH_LIMIT = 4
+
 class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
   private val pathsComputable =
     SyncCache.SyncCacheComputable { project ->
-      project.getRelativePaths { it.isDirectory }
+      project.getRelativePaths(depthLimit = DIRECTORIES_COMPLETION_DEPTH_LIMIT) { it.isDirectory }
     }
 
   override fun addCompletions(
