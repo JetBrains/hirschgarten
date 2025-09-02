@@ -4,7 +4,7 @@ import com.intellij.modcommand.ActionContext
 import com.intellij.modcommand.ModPsiUpdater
 import com.intellij.modcommand.PsiUpdateModCommandAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.text.equalsIgnoreWhitespaces
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
@@ -66,7 +66,7 @@ class StarlarkGlobAllowEmptyQuickFix(callExpression: StarlarkGlobExpression) :
 
       // delete empty parentheses if needed
       val next = writableElement.nextSibling
-      if (next != null && next.text.equalsIgnoreWhitespaces("()")) {
+      if (next != null && StringUtil.equalsIgnoreWhitespaces(next.text, "()")) {
         next.delete()
       }
 
