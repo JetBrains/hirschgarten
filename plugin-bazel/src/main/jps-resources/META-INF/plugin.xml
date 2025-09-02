@@ -523,10 +523,7 @@
       id="Bazel"
       implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"
     />
-    <directoryProjectConfigurator
-      implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"
-      order="after PlatformProjectConfigurator"
-    />
+    <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
       implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"
       key="bazel"
