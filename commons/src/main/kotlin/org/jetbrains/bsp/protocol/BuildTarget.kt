@@ -127,7 +127,7 @@ fun BuildTargetData.getJvmOrNull(): JvmBuildTarget? = this as? JvmBuildTarget?
 
 @ClassDiscriminator(97)
 data class ProtobufBuildTarget(
-  val sources: Map<String, String>,
+  val sources: Map<String, String>, // import path -> real file
   val jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 

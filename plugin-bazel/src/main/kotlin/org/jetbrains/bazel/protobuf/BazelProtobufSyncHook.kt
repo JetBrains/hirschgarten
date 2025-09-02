@@ -11,17 +11,14 @@ class BazelProtobufSyncHook : ProjectPostSyncHook {
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val store = environment.project.serviceAsync<BazelProtobufSyncService>().store
 
-    val protoPathToSources = mutableMapOf<String, BazelProtobufSyncIndexData>()
+    store.clearProtoIndexData()
     environment.project.targetUtils.allBuildTargets()
       .filter { it.kind.languageClasses.contains(LanguageClass.PROTOBUF) }
       .forEach {
         val protoData = it.data as? ProtobufBuildTarget ?: return@forEach
-        for ((importPath, realPath) in protoData.sources) {
-          protoPathToSources.computeIfAbsent(importPath) { _ -> BazelProtobufSyncIndexData(importPath, it.baseDirectory) }
-            .realPaths.add(Path.of(realPath))
+        for ((importPath, absolutePath) in protoData.sources) {
+          store.putProtoIndexData(BazelProtobufSyncIndexData(importPath = importPath, absolutePath = Path.of(absolutePath)))
         }
       }
-
-    protoPathToSources.forEach { store.putProtoIndexData(it.value) }
   }
 }

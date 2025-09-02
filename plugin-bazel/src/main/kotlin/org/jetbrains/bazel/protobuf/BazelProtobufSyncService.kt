@@ -26,13 +26,9 @@ class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
   fun getRealProtoFile(importPath: String): VirtualFile? {
     val data = store.getProtoIndexData(importPath) ?: return null
     val vfsManager = project.service<WorkspaceModel>().getVirtualFileUrlManager()
-    for (realSource in data.realPaths) {
-      val vfsFile = realSource.toVirtualFileUrl(vfsManager).virtualFile
-      if (vfsFile != null && vfsFile.exists()) {
-        return vfsFile
-      }
-    }
-    return null
+    return data.absolutePath.toRealPath()
+      .toVirtualFileUrl(vfsManager)
+      .virtualFile
   }
 
   override suspend fun save() {

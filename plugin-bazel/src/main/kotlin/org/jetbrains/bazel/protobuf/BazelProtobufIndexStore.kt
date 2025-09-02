@@ -29,10 +29,14 @@ class BazelProtobufIndexStore(val project: Project) {
   }
 
   fun putProtoIndexData(data: BazelProtobufSyncIndexData) {
-    protoPathToIndexData[data.protoPath] = data
+    protoPathToIndexData[data.importPath] = data
   }
 
   fun getProtoIndexData(protoPath: String): BazelProtobufSyncIndexData? = protoPathToIndexData[protoPath]
+
+  fun clearProtoIndexData() {
+    protoPathToIndexData.clear()
+  }
 
   fun saveIfNeeded() {
     if (store.hasUnsavedChanges()) {

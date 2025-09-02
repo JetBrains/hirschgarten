@@ -129,10 +129,9 @@ message GoTargetInfo {
 }
 
 message ProtobufTargetInfo {
-  bool allow_exports = 1;
-  repeated string exports = 2;
-  string import_prefix = 3;
-  string strip_import_prefix = 4;
+  string proto_source_root = 1;
+  repeated FileLocation direct_proto_sources = 2;
+//  repeated FileLocation transitive_sources = 2;
 }
 
 message TargetInfo {

@@ -2,12 +2,11 @@ package org.jetbrains.bazel.sync.workspace.languages.protobuf
 
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.protocol.ProtobufBuildTarget
+import kotlin.io.path.absolutePathString
 
 class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : LanguagePlugin<ProtobufBuildTarget> {
 
@@ -20,57 +19,34 @@ class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : Langu
     if (!target.hasProtobufTargetInfo()) {
       return null
     }
-    val protoTarget = target.protobufTargetInfo
+    val sources = target.protobufTargetInfo.directProtoSourcesList
+      .map { resolveSource(context, target, it) }
+      .associateBy { it.importPath }
+      .mapValues { it.value.absoluteSourcePath }
     return ProtobufBuildTarget(
-      sources = resolveRelativeSources(context, target, protoTarget),
+      sources = sources,
       jvmBuildTarget = javaPlugin.createBuildTargetData(context, target),
     )
   }
 
-  private fun resolveRelativeSources(
+  data class SourceMapping(val importPath: String, val absoluteSourcePath: String)
+
+  private fun resolveSource(
     context: LanguagePluginContext,
     target: BspTargetInfo.TargetInfo,
-    protoTarget: BspTargetInfo.ProtobufTargetInfo,
-  ): Map<String, String> {
-    return target.sourcesList.filter { it.relativePath.endsWith(".proto") }
-      .associate { it.resolveSourcePath(target, protoTarget) to it.resolveRelativePath(context) }
-  }
-
-  private fun BspTargetInfo.FileLocation.resolveRelativePath(context: LanguagePluginContext): String {
-    return context.pathsResolver.workspaceRoot().resolve(this.relativePath).toString()
-  }
-
-  // reference documentation: https://bazel.build/reference/be/protocol-buffer#proto_library
-  private fun BspTargetInfo.FileLocation.resolveSourcePath(
-    target: BspTargetInfo.TargetInfo,
-    protoTarget: BspTargetInfo.ProtobufTargetInfo,
-  ): String {
-    val label = target.label().assumeResolved()
-    val packagePrefix = label.packagePath.pathSegments.joinToString("/")
-    val stripped = if (protoTarget.isStripImportPrefixValid()) {
-      this.relativePath.removePrefix(packagePrefix)
-        .removePrefix("/")
-        .removePrefix(protoTarget.stripImportPrefix)
-        .removePrefix("/")
+    source: BspTargetInfo.FileLocation,
+  ): SourceMapping {
+    val proto = target.protobufTargetInfo
+    val absoluteSourcePath = context.pathsResolver.resolve(source).absolutePathString()
+    return if (proto.protoSourceRoot == ".") {
+      SourceMapping(source.relativePath, absoluteSourcePath)
     } else {
-      this.relativePath.removePrefix(packagePrefix)
+      val absoluteProtoSourceRoot = context.pathsResolver.workspaceRoot().resolve(proto.protoSourceRoot)
+        .toRealPath()
+        .absolutePathString()
+      val importPath = absoluteSourcePath.removePrefix(absoluteProtoSourceRoot)
         .removePrefix("/")
-    }
-    return if (protoTarget.importPrefix.isNullOrBlank()) {
-      if (protoTarget.isStripImportPrefixValid()) {
-        stripped
-      } else {
-        "${packagePrefix}/${stripped}"
-      }
-    } else {
-      if (protoTarget.isStripImportPrefixValid()) {
-        "${protoTarget.importPrefix}/${stripped}"
-      } else {
-        "${protoTarget.importPrefix}/${packagePrefix}/${stripped}"
-      }
+      SourceMapping(importPath, absoluteSourcePath)
     }
   }
-
-  private fun BspTargetInfo.ProtobufTargetInfo.isStripImportPrefixValid() = !stripImportPrefix.isNullOrBlank() && stripImportPrefix != "/"
-
 }

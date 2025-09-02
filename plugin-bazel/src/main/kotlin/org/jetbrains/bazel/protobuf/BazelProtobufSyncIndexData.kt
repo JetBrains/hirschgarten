@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
-data class BazelProtobufSyncIndexData(val protoPath: String, val root: Path, val realPaths: MutableList<Path> = mutableListOf())
+data class BazelProtobufSyncIndexData(val importPath: String, val absolutePath: Path)
 
 internal fun WriteBuffer.putString(str: String) {
   if (str.isEmpty()) {
@@ -26,19 +26,15 @@ internal fun ByteBuffer.getString(): String {
   return ByteArray(length).also { get(it) }.decodeToString()
 }
 
+@Suppress("UNCHECKED_CAST")
 object BazelProtobufSyncIndexDataType : DataType<BazelProtobufSyncIndexData> {
   override fun getMemory(obj: BazelProtobufSyncIndexData): Int = 0
 
   override fun isMemoryEstimationAllowed(): Boolean = true
 
   override fun write(buffer: WriteBuffer, data: BazelProtobufSyncIndexData) {
-    buffer.putString(data.protoPath)
-    buffer.putString(data.root.toString())
-
-    buffer.putVarInt(data.realPaths.size)
-    for (path in data.realPaths) {
-      buffer.putString(path.absolutePathString())
-    }
+    buffer.putString(data.importPath)
+    buffer.putString(data.absolutePath.absolutePathString())
   }
 
   override fun write(
@@ -46,7 +42,6 @@ object BazelProtobufSyncIndexDataType : DataType<BazelProtobufSyncIndexData> {
     storage: Any,
     len: Int,
   ) {
-    @Suppress("UNCHECKED_CAST")
     storage as Array<BazelProtobufSyncIndexData>
     for (item in storage) {
       write(buffer, item)
@@ -55,13 +50,8 @@ object BazelProtobufSyncIndexDataType : DataType<BazelProtobufSyncIndexData> {
 
   override fun read(buffer: ByteBuffer): BazelProtobufSyncIndexData {
     val protoPath = buffer.getString()
-    val root = Path.of(buffer.getString())
-    val realPathsLength = DataUtils.readVarInt(buffer)
-    val realPaths = mutableListOf<Path>()
-    for (n in 0..<realPathsLength) {
-      realPaths.add(Path.of(buffer.getString()))
-    }
-    return BazelProtobufSyncIndexData(protoPath, root, realPaths)
+    val absolutePath = Path.of(buffer.getString())
+    return BazelProtobufSyncIndexData(protoPath, absolutePath)
   }
 
   override fun read(
@@ -69,7 +59,6 @@ object BazelProtobufSyncIndexDataType : DataType<BazelProtobufSyncIndexData> {
     storage: Any,
     size: Int,
   ) {
-    @Suppress("UNCHECKED_CAST")
     storage as Array<BazelProtobufSyncIndexData>
     for (i in 0..<size) {
       storage[i] = read(buffer)
