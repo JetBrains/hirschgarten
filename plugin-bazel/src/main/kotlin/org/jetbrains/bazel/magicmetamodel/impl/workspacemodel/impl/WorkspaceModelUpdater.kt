@@ -39,15 +39,12 @@ class WorkspaceModelUpdater(
     libraries: List<Library>,
     libraryModules: List<JavaModule>,
   ) {
-    val libraryNames = libraries.map { it.displayName }.toSet()
-    val libraryModuleNames = libraryModules.map { it.genericModuleInfo.name }.toSet()
     val javaModuleUpdater =
       JavaModuleUpdater(
         workspaceModelEntityUpdaterConfig,
         projectBasePath,
         moduleEntities,
-        libraryNames,
-        libraryModuleNames,
+        libraries.associateBy { it.displayName },
       )
     javaModuleUpdater.addEntities(moduleEntities.filterIsInstance<JavaModule>() + libraryModules)
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig, importIjars)
