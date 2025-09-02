@@ -141,6 +141,27 @@ java_runtime_info {
     root_execution_path_fragment: "external/remotejdk"
   }
 }
+scala_target_info {
+  scalac_opts: "-target:jvm-1.8"
+  compiler_classpath {
+    relative_path: "scala-compiler-2.12.14.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_compiler"
+  }
+  compiler_classpath {
+    relative_path: "scala-library-2.12.14.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_library"
+  }
+  compiler_classpath {
+    relative_path: "scala-reflect-2.12.14.jar"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/io_bazel_rules_scala_scala_reflect"
+  }
+}
 )
 RawAspectTarget(target=id: "@bazel_tools//tools/jdk:current_java_toolchain"
 kind: "java_toolchain_alias"
