@@ -17,18 +17,6 @@ sources {
   is_source: true
 }
 sources {
-  relative_path: ".bazelbsp/aspects/rules/android/android_info.bzl"
-  is_source: true
-}
-sources {
-  relative_path: ".bazelbsp/aspects/rules/android/android_info.bzl.template"
-  is_source: true
-}
-sources {
-  relative_path: ".bazelbsp/aspects/rules/cpp/cpp_info.bzl"
-  is_source: true
-}
-sources {
   relative_path: ".bazelbsp/aspects/rules/go/go_info.bzl"
   is_source: true
 }
