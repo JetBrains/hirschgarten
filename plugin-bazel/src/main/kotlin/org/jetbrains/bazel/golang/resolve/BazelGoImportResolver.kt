@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.golang.resolve
 
-import com.android.utils.mapValuesNotNull
 import com.goide.psi.impl.GoPackage
 import com.goide.psi.impl.imports.GoImportReference
 import com.goide.psi.impl.imports.GoImportResolver
@@ -139,11 +138,12 @@ private val goTargetMapComputable: SyncCache.SyncCacheComputable<Map<String, Lab
       .allBuildTargets()
       .filter { t -> extractGoBuildTarget(t)?.importPath?.isNotBlank() == true }
       .groupBy { t -> extractGoBuildTarget(t)?.importPath.orEmpty() }
-      .mapValuesNotNull { (_, targets) ->
+      .mapValues { (_, targets) ->
         // duplicates are possible (e.g., same target with different aspects)
         // choose the one with the most sources (though they're probably the same)
         targets.maxByOrNull { extractGoBuildTarget(it)?.generatedSources?.size ?: 0 }?.id
-      }
+      }.filterValues { it != null }
+      .mapValues { (_, id) -> id!! }
   }
 
 private fun getGoTargetMap(project: Project): Map<String, Label> =

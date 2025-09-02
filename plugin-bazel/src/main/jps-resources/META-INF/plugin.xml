@@ -36,10 +36,6 @@
     optional="true"
   >com.intellij.modules.coverage</depends>
   <depends
-    config-file="withCpp.xml"
-    optional="true"
-  >com.intellij.clion</depends>
-  <depends
     config-file="withDevKit.xml"
     optional="true"
   >DevKit</depends>
@@ -82,11 +78,6 @@
       dynamic="true"
       interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
       qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
-    />
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
-      qualifiedName="org.jetbrains.bazel.androidFacetEntityUpdaterExtension"
     />
     <extensionPoint
       dynamic="true"
@@ -287,11 +278,6 @@
       defaultValue="true"
       description="Python modules support"
       key="bsp.python.support"
-    />
-    <registryKey
-      defaultValue="false"
-      description="Android modules support"
-      key="bsp.android.support"
     />
     <registryKey
       defaultValue="true"
