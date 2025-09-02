@@ -209,7 +209,7 @@ class AspectBazelProjectMapper(
 
     val targets =
       measure("create intermediate targets") {
-        targets.values.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }
+        targetsToImport.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }.toList()
       }
 
     val highPrioritySources =
