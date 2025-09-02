@@ -51,8 +51,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, false, emptyList(), setOf("lib1", "lib2")) },
-          { JavaModuleUpdater(it, it.projectBasePath, false, emptyList(), setOf("lib1", "lib2")) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), setOf("lib1", "lib2")) },
+          { JavaModuleUpdater(it, it.projectBasePath, emptyList(), setOf("lib1", "lib2")) },
         ),
       ) { updater ->
         // given
@@ -307,8 +307,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, false, emptyList(), setOf("lib1", "lib2")) },
-          { JavaModuleUpdater(it, it.projectBasePath, false, emptyList(), setOf("lib1", "lib2")) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), setOf("lib1", "lib2")) },
+          { JavaModuleUpdater(it, it.projectBasePath, emptyList(), setOf("lib1", "lib2")) },
         ),
       ) { updater ->
         // given
@@ -719,7 +719,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
       runTestForUpdaters(
         listOf(
           { JavaModuleWithoutSourcesUpdater(it) },
-          { JavaModuleUpdater(it, it.projectBasePath, false) },
+          { JavaModuleUpdater(it, it.projectBasePath) },
         ),
       ) { updater ->
         // given
@@ -781,7 +781,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
       runTestForUpdaters(
         listOf(
           { JavaModuleWithoutSourcesUpdater(it) },
-          { JavaModuleUpdater(it, it.projectBasePath, false) },
+          { JavaModuleUpdater(it, it.projectBasePath) },
         ),
       ) { updater ->
         // given

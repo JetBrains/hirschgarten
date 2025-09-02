@@ -95,33 +95,7 @@ data class GoBuildTarget(
   val libraryLabels: List<Label>,
 ) : BuildTargetData
 
-@ClassDiscriminator(6)
-data class CppBuildTarget(
-  val version: String? = null,
-  val compiler: String? = null,
-  val cCompiler: String? = null,
-  val cppCompiler: String? = null,
-) : BuildTargetData
-
-public enum class AndroidTargetType(public val value: Int) {
-  APP(1),
-  LIBRARY(2),
-  TEST(3),
-}
-
-@ClassDiscriminator(7)
-public data class AndroidBuildTarget(
-  val androidJar: Path,
-  val androidTargetType: AndroidTargetType,
-  val manifest: Path?,
-  val manifestOverrides: Map<String, String>,
-  val resourceDirectories: List<Path>,
-  val resourceJavaPackage: String?,
-  val assetsDirectories: List<Path>,
-  val apk: Path? = null,
-  var jvmBuildTarget: JvmBuildTarget? = null,
-  var kotlinBuildTarget: KotlinBuildTarget? = null,
-) : BuildTargetData
+// ClassDiscriminator 6 & 7 were cpp and android, but they have been removed
 
 @ClassDiscriminator(8)
 object VoidBuildTarget : BuildTargetData

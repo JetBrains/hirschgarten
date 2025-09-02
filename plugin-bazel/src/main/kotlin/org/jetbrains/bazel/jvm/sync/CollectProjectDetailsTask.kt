@@ -236,7 +236,6 @@ class CollectProjectDetailsTask(
                 fileToTargetWithoutLowPrioritySharedSources = targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources,
                 projectBasePath = projectBasePath,
                 project = project,
-                isAndroidSupportEnabled = false,
               )
             targetIdToModuleEntityMap
           }
@@ -268,7 +267,6 @@ class CollectProjectDetailsTask(
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              isAndroidSupportEnabled = false,
               importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
             )
 

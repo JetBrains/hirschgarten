@@ -120,7 +120,6 @@ class ProjectResolver(
         bazelBspAspectsManager.calculateRulesetLanguages(
           externalRulesetNames,
           bazelInfo.externalAutoloads,
-          workspaceContext,
           featureFlags,
         )
       }
@@ -128,7 +127,7 @@ class ProjectResolver(
     val toolchains =
       measured(
         "Mapping languages to toolchains",
-      ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, workspaceContext, featureFlags) } }
+      ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it) } }
 
     measured("Realizing language aspect files from templates") {
       bazelBspAspectsManager.generateAspectsFromTemplates(
