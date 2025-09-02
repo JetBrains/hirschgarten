@@ -6,7 +6,6 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
@@ -18,7 +17,6 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendum
 import org.jetbrains.bazel.utils.StringUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
@@ -29,7 +27,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
   fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   projectBasePath: Path,
   private val project: Project,
-  private val isAndroidSupportEnabled: Boolean = false,
 ) {
   private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, project)
   private val type = ModuleTypeId("JAVA_MODULE")
@@ -50,7 +47,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
         kotlinAddendum = toKotlinAddendum(inputEntity),
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
-        androidAddendum = null,
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
@@ -162,5 +158,3 @@ fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 
 fun String.projectNameToJdkName(javaHomeUri: Path): String =
   projectNameToBaseJdkName() + "-" + StringUtils.md5Hash(javaHomeUri.toString(), 5)
-
-fun Path.androidJarToAndroidSdkName(): String = "android-sdk-" + StringUtils.md5Hash(this.toString(), 5)

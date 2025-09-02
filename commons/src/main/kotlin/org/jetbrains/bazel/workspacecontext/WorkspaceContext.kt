@@ -85,8 +85,6 @@ data class WorkspaceContext(
    * Obtained from `ProjectView` simply by mapping `ide_java_home_override` section.
    */
   val ideJavaHomeOverrideSpec: IdeJavaHomeOverrideSpec,
-  val enableNativeAndroidRules: EnableNativeAndroidRules,
-  val androidMinSdkSpec: AndroidMinSdkSpec,
   val shardSync: ShardSyncSpec,
   val targetShardSize: TargetShardSizeSpec,
   val shardingApproachSpec: ShardingApproachSpec,

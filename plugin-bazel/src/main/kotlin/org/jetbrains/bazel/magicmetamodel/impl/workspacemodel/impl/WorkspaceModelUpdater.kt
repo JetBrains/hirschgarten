@@ -19,7 +19,6 @@ class WorkspaceModelUpdater(
   private val virtualFileUrlManager: VirtualFileUrlManager,
   private val projectBasePath: Path,
   project: Project,
-  private val isAndroidSupportEnabled: Boolean,
   private val importIjars: Boolean,
 ) {
   private val workspaceModelEntityUpdaterConfig =
@@ -46,7 +45,6 @@ class WorkspaceModelUpdater(
       JavaModuleUpdater(
         workspaceModelEntityUpdaterConfig,
         projectBasePath,
-        isAndroidSupportEnabled,
         moduleEntities,
         libraryNames,
         libraryModuleNames,
