@@ -18,6 +18,7 @@ package org.jetbrains.bazel.hotswap
 import com.intellij.debugger.impl.HotSwapProgress
 import com.intellij.execution.RunCanceledByUserException
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.util.ui.MessageCategory
@@ -29,15 +30,9 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
-import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.runnerAction.RunEnvironmentProvider
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
-import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
-import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
-import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
-import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import java.nio.file.Files
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.atomic.AtomicReference
@@ -78,22 +73,20 @@ object ClassFileManifestBuilder {
     if (!HotSwapUtils.canHotSwap(env, project)) {
       return null
     }
-    val jvmEnvDeferred: Deferred<JvmEnvironmentResult?> =
-      BazelCoroutineService.getInstance(project).startAsync {
-        project.connection.runWithServer { server ->
-          val targets = configuration.getAffectedTargets()
-          if (targets.isEmpty()) {
-            progress?.addMessage(
-              session.session,
-              MessageCategory.WARNING,
-              BazelHotSwapBundle.message("hotswap.message.manifest.empty.target.error"),
-            )
-            return@runWithServer null
-          }
-          val target = targets.first()
-          val isTest = target.isTestTarget(project)
-          return@runWithServer queryJvmEnvironment(target, server, isTest)
+    val jvmEnvDeferred: Deferred<JvmEnvironmentItem?> =
+      BazelCoroutineService.getInstance(project).startAsync fn@{
+        val targets = configuration.getAffectedTargets()
+        if (targets.isEmpty()) {
+          progress?.addMessage(
+            session.session,
+            MessageCategory.WARNING,
+            BazelHotSwapBundle.message("hotswap.message.manifest.empty.target.error"),
+          )
+          return@fn null
         }
+        val target = targets.first()
+        val isTest = target.isTestTarget(project)
+        return@fn queryJvmEnvironment(project, target)
       }
     progress?.setCancelWorker { jvmEnvDeferred.cancel() }
     val result =
@@ -112,9 +105,7 @@ object ClassFileManifestBuilder {
       return null
     }
     val jars =
-      result
-        .getItems()
-        .flatMap { it.classpath }
+      result.classpath
         .distinct()
         .filter { Files.isRegularFile(it) && it.extension == "jar" }
     val oldManifest = env.getManifest()
@@ -129,40 +120,12 @@ object ClassFileManifestBuilder {
       ?.kind
       ?.ruleType == RuleType.TEST
 
-  private suspend fun queryJvmEnvironment(
-    target: Label,
-    server: JoinedBuildServer,
-    isTest: Boolean,
-  ): JvmEnvironmentResult =
-    if (isTest) {
-      JvmEnvironmentResult.JvmTestEnv(
-        query("buildTarget/jvmTestEnvironment") {
-          server.buildTargetJvmTestEnvironment(JvmTestEnvironmentParams(listOf(target)))
-        },
-      )
-    } else {
-      JvmEnvironmentResult.JvmRunEnv(
-        query("buildTarget/jvmRunEnvironment") {
-          server.buildTargetJvmRunEnvironment(JvmRunEnvironmentParams(listOf(target)))
-        },
-      )
-    }
+  private suspend fun queryJvmEnvironment(project: Project, target: Label): JvmEnvironmentItem? =
+    project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(target)
 
   private fun ExecutionEnvironment.getManifest(): ClassFileManifest? = getManifestRef()?.get()
 
   private fun ExecutionEnvironment.getManifestRef(): AtomicReference<ClassFileManifest>? = getCopyableUserData(MANIFEST_KEY)
 
   private fun getConfiguration(env: ExecutionEnvironment): HotswappableRunConfiguration? = env.runProfile as? HotswappableRunConfiguration
-}
-
-private sealed interface JvmEnvironmentResult {
-  fun getItems(): List<JvmEnvironmentItem> =
-    when (this) {
-      is JvmRunEnv -> result.items
-      is JvmTestEnv -> result.items
-    }
-
-  data class JvmRunEnv(val result: JvmRunEnvironmentResult) : JvmEnvironmentResult
-
-  data class JvmTestEnv(val result: JvmTestEnvironmentResult) : JvmEnvironmentResult
 }

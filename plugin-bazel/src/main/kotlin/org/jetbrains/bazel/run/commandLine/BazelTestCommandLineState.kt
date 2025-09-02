@@ -14,6 +14,7 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
@@ -32,7 +33,11 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     BazelTestTaskListener(handler, coverageReportListener)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
     if (configuration.targets.isEmpty()) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
@@ -68,8 +73,9 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
         .toSet()
         .filterPathsThatDontContainEachOther2()
     if (packages.isEmpty() || packages.singleOrNull() == emptyList<String>()) {
-      return "[:]"
+      // Cover all packages
+      return "^//"
     }
-    return "^//(${packages.joinToString("|") { it.joinToString("/") } })([/:])"
+    return "^//(${packages.joinToString("|") { it.joinToString("/") }})[/:]"
   }
 }

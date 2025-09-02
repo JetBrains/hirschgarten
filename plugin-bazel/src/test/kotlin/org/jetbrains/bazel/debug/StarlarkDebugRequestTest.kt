@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.debug
 
-import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.debug.connector.StarlarkDebugMessenger
 import org.jetbrains.bazel.debug.utils.MockSocket
+import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.jupiter.api.Test
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 

@@ -9,7 +9,6 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/taskEvents",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console/ids",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

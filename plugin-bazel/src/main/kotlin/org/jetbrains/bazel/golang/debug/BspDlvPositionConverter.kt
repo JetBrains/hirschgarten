@@ -18,13 +18,16 @@
 package org.jetbrains.bazel.golang.debug
 
 import com.goide.dlv.location.DlvPositionConverter
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
+import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import java.io.File
@@ -113,24 +116,28 @@ class BspDlvPositionConverter(
     return null
   }
 
-  private suspend fun resolveLocalToRemoteOnServer(localPaths: List<String>): Map<String, String> =
-    project.connection.runWithServer { server ->
-      val params =
-        BazelResolveLocalToRemoteParams(
-          localPaths = localPaths,
-        )
-      val result = server.bazelResolveLocalToRemote(params)
-      result.resolvedPaths
-    }
+  private suspend fun resolveLocalToRemoteOnServer(localPaths: List<String>): Map<String, String> {
+    val params =
+      BazelResolveLocalToRemoteParams(
+        localPaths = localPaths,
+      )
+    return project
+      .service<LanguagePluginsService>()
+      .getLanguagePlugin<GoLanguagePlugin>(LanguageClass.GO)
+      .resolveLocalToRemote(params)
+      .resolvedPaths
+  }
 
-  private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, String> =
-    project.connection.runWithServer { server ->
-      val params =
-        BazelResolveRemoteToLocalParams(
-          remotePaths = remotePaths,
-          goRoot = goRoot,
-        )
-      val result = server.bazelResolveRemoteToLocal(params)
-      result.resolvedPaths
-    }
+  private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, String> {
+    val params =
+      BazelResolveRemoteToLocalParams(
+        remotePaths = remotePaths,
+        goRoot = goRoot,
+      )
+    return project
+      .service<LanguagePluginsService>()
+      .getLanguagePlugin<GoLanguagePlugin>(LanguageClass.GO)
+      .resolveRemoteToLocal(params)
+      .resolvedPaths
+  }
 }

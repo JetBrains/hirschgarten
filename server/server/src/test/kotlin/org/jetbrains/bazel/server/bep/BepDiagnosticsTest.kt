@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.server.bep
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams

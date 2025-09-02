@@ -159,9 +159,8 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
           resources = resourceRoots,
           baseDirectory = Path("base/dir"),
         ),
-      javacOptions = null,
-      libraryDependencies = null,
-      moduleDependencies = emptyList(),
+      javacOptions = listOf(),
+      dependencies = emptyList(),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
     )

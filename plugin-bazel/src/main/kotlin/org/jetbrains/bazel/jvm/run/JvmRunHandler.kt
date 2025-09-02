@@ -13,8 +13,8 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sdkcompat.KOTLIN_COROUTINE_LIB_KEY
-import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
+import org.jetbrains.bazel.sdkcompat.COROUTINE_JVM_FLAGS_KEY
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -24,9 +24,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
+    // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before HotSwapRunBeforeRunTaskProvider
     configuration.beforeRunTasks =
       listOfNotNull(
         KotlinCoroutineLibraryFinderBeforeRunTaskProvider().createTask(configuration),
+        HotSwapRunBeforeRunTaskProvider().createTask(configuration),
       )
   }
 
@@ -38,7 +40,8 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
-        environment.putCopyableUserData(KOTLIN_COROUTINE_LIB_KEY, AtomicReference())
+        environment.putCopyableUserData(SCRIPT_PATH_KEY, AtomicReference())
+        environment.putCopyableUserData(COROUTINE_JVM_FLAGS_KEY, AtomicReference())
         JvmRunWithDebugCommandLineState(environment, state)
       }
 
@@ -59,8 +62,7 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     // TODO: perhaps better solved by having a tag
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
-        (it.kind.isJvmTarget() && it.kind.ruleType != RuleType.TEST) ||
-          (it.kind.includesAndroid() && it.kind.ruleType == RuleType.TEST)
+        it.kind.isJvmTarget() && it.kind.ruleType != RuleType.TEST
       }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
@@ -74,27 +76,36 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
-    val configuration = environment.runProfile as BazelRunConfiguration
-    val kotlinCoroutineLibParam = calculateKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
-    val additionalBazelParams = settings.additionalBazelParams ?: ""
-    val runParams =
-      RunParams(
-        target = configuration.targets.single(),
-        originId = originId.toString(),
-        arguments = transformProgramArguments(settings.programArguments),
-        environmentVariables = settings.env.envs,
-        workingDirectory = settings.workingDirectory,
-        additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
-        pidDeferred = pidDeferred,
-      )
-    val runWithDebugParams =
-      RunWithDebugParams(
-        originId = originId.toString(),
-        runParams = runParams,
-        debug = debugType,
-      )
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
+    val scriptPath = environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()
+    if (scriptPath != null) {
+      debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler)
+    } else {
+      val configuration = environment.runProfile as BazelRunConfiguration
+      val kotlinCoroutineLibParam = retrieveKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
+      val additionalBazelParams = settings.additionalBazelParams ?: ""
+      val runParams =
+        RunParams(
+          target = configuration.targets.single(),
+          originId = originId.toString(),
+          arguments = transformProgramArguments(settings.programArguments),
+          environmentVariables = settings.env.envs,
+          workingDirectory = settings.workingDirectory,
+          additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
+          pidDeferred = pidDeferred,
+        )
+      val runWithDebugParams =
+        RunWithDebugParams(
+          originId = originId.toString(),
+          runParams = runParams,
+          debug = debugType,
+        )
 
-    server.buildTargetRunWithDebug(runWithDebugParams)
+      server.buildTargetRunWithDebug(runWithDebugParams)
+    }
   }
 }

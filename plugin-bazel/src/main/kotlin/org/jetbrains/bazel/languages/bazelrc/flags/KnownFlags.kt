@@ -2871,6 +2871,26 @@ internal object KnownFlags {
   val distdir = Flag.Path("distdir")
 
   @Option(
+    name = "downloader_config",
+    help = """
+      Specify a file to configure the remote downloader with. This file consists of lines, each of which starts
+      with a directive (`allow`, `block` or `rewrite`) followed by either a host name (for `allow` and `block`) or
+      two patterns, one to match against, and one to use as a substitute URL, with back-references starting from
+      `${'$'}1`. It is possible for multiple `rewrite` directives for the same URL to be give, and in this case
+      multiple URLs will be returned.
+    """,
+    valueHelp = "a path",
+    commands = [
+      "analyze-profile", "aquery", "build", "canonicalize-flags", "clean", "config", "coverage",
+      "cquery", "dump", "fetch", "help", "info", "license", "mobile-install", "mod", "print_action",
+      "query", "run", "shutdown", "sync", "test", "vendor", "version",
+    ],
+  )
+  @JvmField
+  @Suppress("unused")
+  val downloaderConfig = Flag.Path("downloaderConfig")
+
+  @Option(
     name = "dump",
     abbrev = 'd',
     effectTags = [OptionEffectTag.BAZEL_MONITORING],
@@ -4636,6 +4656,7 @@ internal object KnownFlags {
 
   @Option(
     name = "experimental_downloader_config",
+    metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """
       Specify a file to configure the remote downloader with. This file consists of lines, each of which starts
       with a directive (`allow`, `block` or `rewrite`) followed by either a host name (for `allow` and `block`) or

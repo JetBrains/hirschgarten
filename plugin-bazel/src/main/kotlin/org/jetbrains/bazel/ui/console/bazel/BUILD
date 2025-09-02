@@ -6,12 +6,8 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console/ids",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

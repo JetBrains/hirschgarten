@@ -25,7 +25,7 @@ import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
@@ -38,13 +38,12 @@ import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
-import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.FullProjectSync
-import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureDiff
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
@@ -52,13 +51,7 @@ import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
@@ -270,7 +263,7 @@ class CollectProjectDetailsTask(
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
-            WorkspaceModelUpdaterImpl(
+            WorkspaceModelUpdater(
               workspaceEntityStorageBuilder = diff,
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
@@ -279,8 +272,7 @@ class CollectProjectDetailsTask(
               importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
-          workspaceModelUpdater.loadLibraries(libraries)
+          workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
         }
@@ -288,6 +280,7 @@ class CollectProjectDetailsTask(
     }
   }
 
+  // TODO: fix imports -- my build has broken sdkcompat
   private fun calculateAllJavacOptions(modulesToLoad: List<Module>) {
     javacOptions =
       modulesToLoad
@@ -403,33 +396,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
 ): ProjectDetails =
   coroutineScope {
     try {
-      val bspBuildTargets = queryWorkspaceBuildTargets(server, syncScope, taskId)
-      val javaTargetIds = bspBuildTargets.targets.calculateJavaTargetIds()
-      val scalaTargetIds = bspBuildTargets.targets.calculateScalaTargetIds()
-      val libraries: WorkspaceLibrariesResult =
-        query("workspace/libraries") {
-          server.workspaceLibraries()
-        }
-
-      val jvmBinaryJarsResult =
-        queryIf(
-          javaTargetIds.isNotEmpty() &&
-            project.shouldImportJvmBinaryJars(),
-          "buildTarget/jvmBinaryJars",
-        ) {
-          server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
-        }
-
-      // We use javacOptions only to build the dependency tree based on the classpath.
-      // If the workspace/libraries endpoint is NOT available (like SBT), we need to retrieve it.
-      // If a server supports buildTarget/jvmCompileClasspath, then the classpath won't be passed via this endpoint
-      // (see https://build-server-protocol.github.io/docs/extensions/java#javacoptionsitem).
-      // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
-      // There's no capability for javacOptions.
-      val javacOptionsResult =
-        asyncQueryIf(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
-          server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-        }
+      val service = BazelWorkspaceResolveService.getInstance(project)
+      val workspace = service.getOrFetchResolvedWorkspace(syncScope, taskId)
+      val targets = workspace.targets
 
       val workspaceContext =
         query("workspace/context") {
@@ -437,11 +406,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       ProjectDetails(
-        targetIds = bspBuildTargets.targets.map { it.id },
-        targets = bspBuildTargets.targets.toSet(),
-        javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
-        libraries = libraries.libraries,
-        jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
+        targetIds = targets.getTargetIDs().toList(),
+        targets = targets.getTargets().toSet(),
+        libraries = workspace.libraries,
         workspaceContext = workspaceContext,
       )
     } catch (e: Exception) {
@@ -456,31 +423,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.kind.includesJava() }.map { it.id }
+private fun Sequence<BuildTarget>.calculateJavaTargetIds(): Sequence<Label> = filter { it.kind.includesJava() }.map { it.id }
 
-private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.kind.includesScala() }.map { it.id }
-
-private suspend fun queryWorkspaceBuildTargets(
-  server: JoinedBuildServer,
-  syncScope: ProjectSyncScope,
-  taskId: String,
-): WorkspaceBuildTargetsResult =
-  coroutineScope {
-    when (syncScope) {
-      is PartialProjectSync -> {
-        query("workspace/buildTargetsPartial") {
-          server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
-        }
-      }
-
-      is FirstPhaseSync -> {
-        query("workspace/buildTargetsFirstPhase") {
-          server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
-        }
-      }
-
-      else -> {
-        query("workspace/buildTargets") { server.workspaceBuildTargets() }
-      }
-    }
-  }
+private fun Sequence<BuildTarget>.calculateScalaTargetIds(): Sequence<Label> = filter { it.kind.includesScala() }.map { it.id }

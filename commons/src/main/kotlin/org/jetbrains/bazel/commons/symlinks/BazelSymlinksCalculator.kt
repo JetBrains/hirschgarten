@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.commons.symlinks
 
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
+import java.io.IOException
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
@@ -28,9 +29,15 @@ object BazelSymlinksCalculator {
         override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
           if (!attrs.isSymbolicLink) return FileVisitResult.CONTINUE
           if (bazelSymlinkEndings.none { file.name.endsWith(it) }) return FileVisitResult.CONTINUE
+          val realPath =
+            try {
+              file.toRealPath()
+            } catch (_: IOException) {
+              return FileVisitResult.CONTINUE
+            }
           // See https://bazel.build/remote/output-directories
           // This string used to be "execroot/_main", but for projects without Bzlmod the relevant path is actually "execroot/<my-project>"
-          if (!file.toRealPath().invariantSeparatorsPathString.contains("/execroot/")) return FileVisitResult.CONTINUE
+          if (!realPath.invariantSeparatorsPathString.contains("/execroot/")) return FileVisitResult.CONTINUE
           symlinksToExclude.add(file)
           return FileVisitResult.CONTINUE
         }

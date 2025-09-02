@@ -9,6 +9,7 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
@@ -19,7 +20,11 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
     if (configuration.targets.singleOrNull() == null) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }

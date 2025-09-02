@@ -193,6 +193,10 @@
                     interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
+                    interface="org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -230,7 +234,7 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache" />
-    <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionFetchSyncHook"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.sync.BazelVersionFetchSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider$NotificationUpdateSyncHook"/>
 
 
@@ -269,6 +273,8 @@
     <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
 
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
+
+    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.language.DefaultProjectViewSectionProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -354,6 +360,11 @@
       key="bazel.enable.custom.java.class.finder"
     />
     <registryKey
+      defaultValue="false"
+      description="Create fake module on project import"
+      key="bazel.create.fake.module.on.project.import"
+      />
+    <registryKey
       defaultValue="true"
       description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
       key="bazel.merge.source.roots"
@@ -389,7 +400,19 @@
       restartRequired="true"
     />
 
+    <registryKey
+      defaultValue="true"
+      description="&quot;Find in files&quot; also searches directories that are neither included nor excluded in the project view"
+      key="bazel.find.in.files.non.indexable"
+      restartRequired="true"
+    />
+
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
+
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
+      serviceInterface="org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService"
+    />
 
     <projectService
       overrides="true"
@@ -504,7 +527,6 @@
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
-    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
     <notificationGroup
       displayType="BALLOON"
       id="BazelSlowPlugins"
@@ -668,6 +690,16 @@
     />
     <typedHandler
       implementation="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor$AutoPopup"
+    />
+
+    <platform.backend.documentation.targetProvider
+      id="ProjectViewFlagDocumentationTargetProvider"
+      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewFlagDocumentationTargetProvider"
+    />
+
+    <platform.backend.documentation.targetProvider
+      id="ProjectViewSectionDocumentationTargetProvider"
+      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewSectionDocumentationTargetProvider"
     />
 
     <runLineMarkerContributor

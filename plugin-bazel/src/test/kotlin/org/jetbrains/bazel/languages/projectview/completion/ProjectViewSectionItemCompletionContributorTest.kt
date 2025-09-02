@@ -1,5 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.completion
 
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.project.Project
+import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.workspaceModel
+import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -7,6 +12,9 @@ import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,17 +24,36 @@ import org.junit.runners.JUnit4
 class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
   @Before
   fun setupRootDir() {
-    myFixture.project.isBazelProject = true
-    myFixture.project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+    val project = myFixture.project
+    project.isBazelProject = true
+    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+    if (myFixture.project.bazelProjectDirectoriesEntity() == null) {
+      val workspaceModel = project.workspaceModel
+      val workspaceModelUrlManager = workspaceModel.getVirtualFileUrlManager()
+      runWriteAction {
+        workspaceModel.updateProjectModel("Add bazel project directories entity") { storage ->
+          storage.addEntity(
+            BazelProjectDirectoriesEntity(
+              myFixture.project.rootDir.toVirtualFileUrl(workspaceModelUrlManager),
+              emptyList(),
+              emptyList(),
+              emptyList(),
+              false,
+              BazelProjectEntitySource,
+            ),
+          )
+        }
+      }
+    }
   }
 
   @Test
-  fun `should complete workspace type variants`() {
-    myFixture.configureByText(".bazelproject", "workspace_type: <caret>")
+  fun `should complete sharding approach variants`() {
+    myFixture.configureByText(".bazelproject", "sharding_approach: <caret>")
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldContainAll listOf("java", "javascript", "dart", "android")
+    lookups shouldContainAll listOf("expand_and_shard", "query_and_shard", "shard_only")
   }
 
   @Test
@@ -97,11 +124,11 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete boolean sections`() {
-    myFixture.configureByText(".bazelproject", "use_query_sync: <caret>")
+    myFixture.configureByText(".bazelproject", "shard_sync: <caret>")
     myFixture.type("t")
     myFixture.completeBasic()
 
-    myFixture.checkResult("use_query_sync: true")
+    myFixture.checkResult("shard_sync: true")
   }
 
   @Test
@@ -135,7 +162,7 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
     myFixture.addFileToProject("subpackage/sub.bazelproject", "")
     myFixture.addFileToProject("otherDir/module.bazelproject", "")
 
-    myFixture.configureByText(".bazelproject", "import: <caret>")
+    myFixture.configureByText(".bazelproject", "import <caret>")
     myFixture.type("baz")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 

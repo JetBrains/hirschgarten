@@ -8,6 +8,7 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -51,8 +52,13 @@ class BazelRepoMappingSyncHook : ProjectSyncHook {
         query("workspace/bazelRepoMapping") {
           environment.server.workspaceBazelRepoMapping()
         }
-      bazelRepoMappingService.apparentRepoNameToCanonicalName = bazelRepoMappingResult.apparentRepoNameToCanonicalName
-      bazelRepoMappingService.canonicalRepoNameToPath = bazelRepoMappingResult.canonicalRepoNameToPath
+      when (val mapping = bazelRepoMappingResult.repoMapping) {
+        is BzlmodRepoMapping -> {
+          bazelRepoMappingService.apparentRepoNameToCanonicalName = mapping.apparentRepoNameToCanonicalName
+          bazelRepoMappingService.canonicalRepoNameToPath = mapping.canonicalRepoNameToPath
+        }
+        else -> {}
+      }
     }
   }
 }

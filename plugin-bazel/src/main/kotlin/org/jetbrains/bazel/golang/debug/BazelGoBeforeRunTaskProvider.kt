@@ -21,7 +21,10 @@ import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
+import org.jetbrains.bazel.server.connection.BazelServerConnection
+import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bsp.protocol.RunParams
@@ -107,23 +110,21 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
       runBlocking {
         val result =
           withBackgroundProgress(project, BazelPluginBundle.message("go.debug.background.progress.start.title", target)) {
-            project.connection.runWithServer { server ->
-              server.buildTargetRun(
-                RunParams(
-                  target = runConfiguration.targets.single(),
-                  originId = "",
-                  workingDirectory = project.rootDir.path,
-                  arguments = emptyList(),
-                  environmentVariables = emptyMap(),
-                  additionalBazelParams = bazelParams.joinToString(" "),
-                ),
+            val params =
+              RunParams(
+                target = runConfiguration.targets.single(),
+                originId = "",
+                workingDirectory = project.rootDir.path,
+                arguments = emptyList(),
+                environmentVariables = emptyMap(),
+                additionalBazelParams = bazelParams.joinToString(" "),
               )
-            }
+            project.connection.runWithServer { server -> server.buildTargetRun(params) }
           }
         if (result.statusCode != BazelStatus.SUCCESS) {
           BazelBalloonNotifier.error(
-            "Cannot calculate executable info for Go targets",
-            "The request failed with status code ${result.statusCode}. \nPlease try again.",
+            BazelPluginBundle.message("go.debug.before.run.script.path.generation.failure.title", target),
+            BazelPluginBundle.message("go.debug.before.run.script.path.generation.failure.content", result.statusCode),
           )
           return@runBlocking false
         }

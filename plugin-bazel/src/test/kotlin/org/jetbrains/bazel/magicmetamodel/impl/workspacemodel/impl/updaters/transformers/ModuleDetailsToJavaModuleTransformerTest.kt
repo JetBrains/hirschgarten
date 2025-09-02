@@ -16,7 +16,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
@@ -24,7 +23,6 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -106,18 +104,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val javacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId,
-        listOf("opt1", "opt2", "opt3"),
-      )
-
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = javacOptionsItem,
-        libraryDependencies = null,
-        moduleDependencies =
+        javacOptions = listOf("opt1", "opt2", "opt3"),
+        dependencies =
           listOf(
             Label.parse("module2"),
             Label.parse("module3"),
@@ -143,12 +134,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2.module2"),
-            IntermediateModuleDependency("module3.module3"),
+            "module2.module2",
+            "module3.module3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -241,9 +231,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = null,
-        libraryDependencies = emptyList(),
-        moduleDependencies =
+        javacOptions = listOf(),
+        dependencies =
           listOf(
             Label.parse("module2"),
             Label.parse("module3"),
@@ -268,16 +257,15 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2.module2"),
-            IntermediateModuleDependency("module3.module3"),
+            "module2.module2",
+            "module3.module3",
           ),
-        librariesDependencies = emptyList(),
         associates =
           listOf(
-            IntermediateModuleDependency("//target4"),
-            IntermediateModuleDependency("//target5"),
+            "//target4",
+            "//target5",
           ),
         kind =
           TargetKind(
@@ -366,18 +354,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val target1JavacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId1,
-        listOf("opt1.1", "opt1.2", "opt1.3"),
-      )
-
     val moduleDetails1 =
       ModuleDetails(
         target = buildTarget1,
-        javacOptions = target1JavacOptionsItem,
-        libraryDependencies = null,
-        moduleDependencies =
+        javacOptions = listOf("opt1.1", "opt1.2", "opt1.3"),
+        dependencies =
           listOf(
             Label.parse("module2"),
             Label.parse("module3"),
@@ -427,18 +408,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val target2JavacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId2,
-        listOf("opt2.1", "opt2.2"),
-      )
-
     val moduleDetails2 =
       ModuleDetails(
         target = buildTarget2,
-        javacOptions = target2JavacOptionsItem,
-        libraryDependencies = null,
-        moduleDependencies =
+        javacOptions = listOf("opt2.1", "opt2.2"),
+        dependencies =
           listOf(
             Label.parse("module3"),
           ),
@@ -465,12 +439,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2.module2"),
-            IntermediateModuleDependency("module3.module3"),
+            "module2.module2",
+            "module3.module3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -517,11 +490,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module2.module2",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module3.module3"),
+            "module3.module3",
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -629,18 +601,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         resources = listOf(resourceFilePath),
       )
 
-    val javacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId,
-        listOf("opt1", "opt2", "opt3"),
-      )
-
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = javacOptionsItem,
-        libraryDependencies = null,
-        moduleDependencies =
+        javacOptions = listOf("opt1", "opt2", "opt3"),
+        dependencies =
           listOf(
             Label.parse("module2"),
             Label.parse("module3"),
@@ -667,13 +632,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       GenericModuleInfo(
         name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2.module2"),
-            IntermediateModuleDependency("module3.module3"),
-            IntermediateModuleDependency(dummyJavaModuleName),
+            "module2.module2",
+            "module3.module3",
+            dummyJavaModuleName,
           ),
-        librariesDependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -746,8 +710,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
   private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {
     actual.name shouldBe expected.name
     actual.type shouldBe expected.type
-    actual.modulesDependencies shouldContainExactlyInAnyOrder expected.modulesDependencies
-    actual.librariesDependencies shouldContainExactlyInAnyOrder expected.librariesDependencies
+    actual.dependencies shouldBe expected.dependencies
   }
 }
 

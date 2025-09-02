@@ -17,7 +17,7 @@ object JvmToolchainQuery {
     workspaceContext: WorkspaceContext,
   ): JvmToolchainInfo {
     val target = Label.parse("@bazel_tools//tools/jdk:current_java_toolchain")
-    val queryFile = bspInfo.bazelBspDir().resolve("aspects/toolchain_query.bzl")
+    val queryFile = bspInfo.bazelBspDir.resolve("aspects/toolchain_query.bzl")
     val command =
       bazelRunner.buildBazelCommand(workspaceContext = workspaceContext, inheritProjectviewOptionsOverride = true) {
         cquery {
