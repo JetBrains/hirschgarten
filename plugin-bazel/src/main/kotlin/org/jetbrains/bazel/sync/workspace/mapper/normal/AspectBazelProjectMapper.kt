@@ -207,7 +207,7 @@ class AspectBazelProjectMapper(
 
     val targets =
       measure("create intermediate targets") {
-        targetsToImport.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }.toList()
+        targets.values.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }.toList()
       }
 
     val highPrioritySources =
@@ -763,12 +763,13 @@ class AspectBazelProjectMapper(
             )
         )
     ) ||
-      featureFlags.isGoSupportEnabled &&
+      (featureFlags.isGoSupportEnabled &&
       target.hasGoTargetInfo() &&
       hasKnownGoSources(target) ||
       featureFlags.isPythonSupportEnabled &&
       target.hasPythonTargetInfo() &&
-      hasKnownPythonSources(target)
+      hasKnownPythonSources(target))
+      || target.hasProtobufTargetInfo()
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
 
@@ -807,18 +808,18 @@ class AspectBazelProjectMapper(
     withContext(Dispatchers.Default) {
       val tasks =
         targets.map { target ->
-          async {
+          //async {
             createRawBuildTarget(
               target,
               highPrioritySources,
               repoMapping,
               dependencyGraph,
             )
-          }
+          //}
         }
 
       return@withContext tasks
-        .awaitAll()
+        //.awaitAll()
         .filterNotNull()
         .filterNot { BuildTargetTag.NO_IDE in it.tags }
     }
