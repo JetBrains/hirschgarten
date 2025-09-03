@@ -1,4 +1,4 @@
-package impl
+package org.jetbrains.bazel.sdkcompat.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
