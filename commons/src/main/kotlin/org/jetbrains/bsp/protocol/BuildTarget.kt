@@ -97,9 +97,7 @@ data class GoBuildTarget(
 
 // ClassDiscriminator 6 & 7 were cpp and android, but they have been removed
 
-fun BuildTargetData.getJvmOrNull(): JvmBuildTarget? = this as? JvmBuildTarget?
-
-@ClassDiscriminator(97)
+@ClassDiscriminator(9)
 data class ProtobufBuildTarget(
   val sources: Map<String, String>, // import path -> real file
   val jvmBuildTarget: JvmBuildTarget? = null,

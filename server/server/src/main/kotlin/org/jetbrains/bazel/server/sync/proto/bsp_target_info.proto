@@ -90,9 +90,12 @@ message GoTargetInfo {
 }
 
 message ProtobufTargetInfo {
-  string proto_source_root = 1;
-  repeated FileLocation direct_proto_sources = 2;
-  //  repeated FileLocation transitive_sources = 2;
+  repeated ProtobufSourceMapping source_mappings = 3;
+}
+
+message ProtobufSourceMapping {
+  string import_path = 1;
+  FileLocation proto_file = 2;
 }
 
 message TargetInfo {
