@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import kotlinx.io.IOException
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.ProtobufBuildTarget
@@ -26,7 +27,14 @@ class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
   fun getRealProtoFile(importPath: String): VirtualFile? {
     val data = store.getProtoIndexData(importPath) ?: return null
     val vfsManager = project.service<WorkspaceModel>().getVirtualFileUrlManager()
-    return data.absolutePath.toRealPath()
+    // handle case when bazel hadn't created protobuf symlinks yet
+    // or user deleted file referenced by symlink
+    val realPath = try {
+      data.absolutePath.toRealPath()
+    } catch (_: IOException) {
+      data.absolutePath
+    }
+    return realPath
       .toVirtualFileUrl(vfsManager)
       .virtualFile
   }
