@@ -5,10 +5,8 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
-import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
@@ -33,7 +31,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
   fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   projectBasePath: Path,
   private val project: Project,
-  private val isAndroidSupportEnabled: Boolean = false,
 ) {
   private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, project)
   private val type = ModuleTypeId("JAVA_MODULE")
@@ -50,11 +47,10 @@ internal class ModuleDetailsToJavaModuleTransformer(
         resourceRoots = toResourceRoots(inputEntity),
         // Any java module must be assigned a jdk if there is any available.
         jvmJdkName = inputEntity.toJdkNameOrDefault(),
-        jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars },
+        jvmBinaryJars = inputEntity.jvmBinaryJars,
         kotlinAddendum = toKotlinAddendum(inputEntity),
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
-        androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
@@ -147,25 +143,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
     extractJvmBuildTarget(inputEntity.target)?.javaVersion?.let {
       JavaAddendum(
         languageVersion = it,
-        javacOptions = inputEntity.javacOptions?.options.orEmpty(),
+        javacOptions = inputEntity.javacOptions,
       )
     }
-
-  private fun toAndroidAddendum(inputEntity: ModuleDetails): AndroidAddendum? {
-    val androidBuildTarget = extractAndroidBuildTarget(inputEntity.target) ?: return null
-    return with(androidBuildTarget) {
-      AndroidAddendum(
-        androidSdkName = androidJar.androidJarToAndroidSdkName(),
-        androidTargetType = androidTargetType,
-        manifest = manifest,
-        manifestOverrides = manifestOverrides,
-        resourceDirectories = resourceDirectories,
-        resourceJavaPackage = resourceJavaPackage,
-        assetsDirectories = assetsDirectories,
-        apk = apk,
-      )
-    }
-  }
 
   private fun toAssociates(inputEntity: ModuleDetails): List<Label> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
@@ -182,5 +162,3 @@ fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 
 fun String.projectNameToJdkName(javaHomeUri: Path): String =
   projectNameToBaseJdkName() + "-" + StringUtils.md5Hash(javaHomeUri.toString(), 5)
-
-fun Path.androidJarToAndroidSdkName(): String = "android-sdk-" + StringUtils.md5Hash(this.toString(), 5)

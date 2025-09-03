@@ -37,3 +37,6 @@ out
 
 .aspect
 node_modules
+
+.junie
+.claude

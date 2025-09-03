@@ -1,30 +1,18 @@
 load("@aspect_rules_js//js:defs.bzl", "js_library")
-# load("@aspect_rules_lint//format:defs.bzl", "format_multirun")
+load("@aspect_rules_lint//format:defs.bzl", "format_multirun")
 load("@npm//:prettier/package_json.bzl", prettier = "bin")
 load("@rules_java//java:defs.bzl", "java_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-# format_multirun(
-#     name = "format",
-#     java = ":java-format",
-#     kotlin = ":ktfmt",
-#     protocol_buffer = "@rules_buf_toolchains//:buf",
-#     starlark = "@buildifier_prebuilt//:buildifier",
-#     xml = ":prettier",
-#     yaml = "@aspect_rules_lint//format:yamlfmt",
-# )
-
-# No-op formatter target
-sh_binary(
+format_multirun(
     name = "format",
-    srcs = ["format_dummy.sh"],
-)
-
-# Optional: keep `//tools/format:format.check` working as a no-op too
-alias(
-    name = "format.check",
-    actual = ":format",
+    java = ":java-format",
+    kotlin = ":ktfmt",
+    protocol_buffer = "@rules_buf_toolchains//:buf",
+    starlark = "@buildifier_prebuilt//:buildifier",
+    xml = ":prettier",
+    yaml = "@aspect_rules_lint//format:yamlfmt",
 )
 
 java_binary(

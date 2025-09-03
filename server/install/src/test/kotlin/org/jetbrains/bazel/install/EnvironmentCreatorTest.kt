@@ -34,7 +34,6 @@ class EnvironmentCreatorTest {
         "aspects/rules/kt/kt_info.bzl.template",
         "aspects/rules/python/python_info.bzl.template",
         "aspects/rules/scala/scala_info.bzl.template",
-        "aspects/rules/cpp/cpp_info.bzl",
       )
 
     @BeforeEach

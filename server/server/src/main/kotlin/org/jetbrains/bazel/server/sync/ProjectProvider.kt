@@ -8,7 +8,7 @@ import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.model.Project
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 
-class ProjectProvider(private val projectResolver: ProjectResolver, private val firstPhaseProjectResolver: FirstPhaseProjectResolver) {
+class ProjectProvider(val projectResolver: ProjectResolver, private val firstPhaseProjectResolver: FirstPhaseProjectResolver) {
   @Volatile
   private var project: Project? = null
   private val projectMutex = Mutex()

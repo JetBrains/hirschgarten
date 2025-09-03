@@ -30,8 +30,6 @@ class WorkspaceContextConstructor(
       importDepth = ImportDepthSpecExtractor.fromProjectView(projectView),
       enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
-      enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
-      androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
       shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),
       targetShardSize = TargetShardSizeSpecExtractor.fromProjectView(projectView),
       shardingApproachSpec = ShardingApproachSpecExtractor.fromProjectView(projectView),

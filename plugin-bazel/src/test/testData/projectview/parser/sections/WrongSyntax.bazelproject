@@ -1,0 +1,11 @@
+targets: //:targetA
+//:targetB
+  //:targetC
+
+targets:
+  //:targetA
+//:targetB
+  //:targetC
+
+targets:
+//:targetA

@@ -18,6 +18,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -25,6 +26,26 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+
+internal val testLibraries: Map<String, Library> =
+  listOf(
+    Library(
+      displayName = "lib1",
+      iJars = emptyList(),
+      sourceJars = emptyList(),
+      classJars = emptyList(),
+      mavenCoordinates = null,
+      isLowPriority = false,
+    ),
+    Library(
+      displayName = "lib2",
+      iJars = emptyList(),
+      sourceJars = emptyList(),
+      classJars = emptyList(),
+      mavenCoordinates = null,
+      isLowPriority = false,
+    ),
+  ).associateBy { it.displayName }
 
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
@@ -43,7 +64,8 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
 
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
-    moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies, setOf("lib1", "lib2"))
+
+    moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies, testLibraries)
   }
 
   @Test

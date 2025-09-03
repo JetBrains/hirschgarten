@@ -1,0 +1,3 @@
+targets: //java/com/google/android/myproject:MyProjectDevTarget
+  -//java/com/google/android/myproject:MyExpensiveTarget
+  //javatests/com/google/android/myproject/...

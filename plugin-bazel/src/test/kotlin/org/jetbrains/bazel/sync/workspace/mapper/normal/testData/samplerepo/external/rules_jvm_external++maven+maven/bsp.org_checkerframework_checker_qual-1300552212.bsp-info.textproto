@@ -1,0 +1,33 @@
+executable: false
+id: "@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual"
+java_runtime_info {
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_linux"
+  }
+}
+jvm_target_info {
+  has_api_generating_plugins: false
+  jars {
+    binary_jars {
+      is_external: true
+      is_source: false
+      relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+    interface_jars {
+      is_external: true
+      is_source: false
+      relative_path: "external/rules_jvm_external++maven+maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/header_checker-qual-3.12.0.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+  }
+}
+kind: "jvm_import"
+tags: "maven_coordinates=org.checkerframework:checker-qual:3.12.0"
+tags: "maven_repository=https://cache-redirector.jetbrains.com/maven-central"
+tags: "maven_sha256=ff10785ac2a357ec5de9c293cb982a2cbb605c0309ea4cc1cb9b9bc6dbe7f3cb"
+tags: "maven_url=https://cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar"
+workspace_name: "_main"

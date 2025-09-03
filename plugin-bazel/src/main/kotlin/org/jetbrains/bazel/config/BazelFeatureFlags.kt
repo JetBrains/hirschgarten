@@ -10,7 +10,6 @@ import org.jetbrains.bsp.protocol.FeatureFlags
 
 object BazelFeatureFlags {
   private const val PYTHON_SUPPORT = "bsp.python.support"
-  private const val ANDROID_SUPPORT = "bsp.android.support"
 
   @VisibleForTesting
   const val GO_SUPPORT = "bsp.go.support"
@@ -39,9 +38,6 @@ object BazelFeatureFlags {
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
-
-  val isAndroidSupportEnabled: Boolean
-    get() = isEnabled(ANDROID_SUPPORT)
 
   val isGoSupportEnabled: Boolean
     get() = isEnabled(GO_SUPPORT)
@@ -119,7 +115,6 @@ object FeatureFlagsProvider {
     with(BazelFeatureFlags) {
       FeatureFlags(
         isPythonSupportEnabled = isPythonSupportEnabled,
-        isAndroidSupportEnabled = isAndroidSupportEnabled,
         isGoSupportEnabled = isGoSupportEnabled,
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,

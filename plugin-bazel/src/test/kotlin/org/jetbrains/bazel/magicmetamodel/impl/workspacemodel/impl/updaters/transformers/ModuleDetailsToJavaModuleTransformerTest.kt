@@ -23,7 +23,6 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -105,16 +104,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val javacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId,
-        listOf("opt1", "opt2", "opt3"),
-      )
-
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = javacOptionsItem,
+        javacOptions = listOf("opt1", "opt2", "opt3"),
         dependencies =
           listOf(
             Label.parse("module2"),
@@ -238,7 +231,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = null,
+        javacOptions = listOf(),
         dependencies =
           listOf(
             Label.parse("module2"),
@@ -361,16 +354,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val target1JavacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId1,
-        listOf("opt1.1", "opt1.2", "opt1.3"),
-      )
-
     val moduleDetails1 =
       ModuleDetails(
         target = buildTarget1,
-        javacOptions = target1JavacOptionsItem,
+        javacOptions = listOf("opt1.1", "opt1.2", "opt1.3"),
         dependencies =
           listOf(
             Label.parse("module2"),
@@ -421,16 +408,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val target2JavacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId2,
-        listOf("opt2.1", "opt2.2"),
-      )
-
     val moduleDetails2 =
       ModuleDetails(
         target = buildTarget2,
-        javacOptions = target2JavacOptionsItem,
+        javacOptions = listOf("opt2.1", "opt2.2"),
         dependencies =
           listOf(
             Label.parse("module3"),
@@ -620,16 +601,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         resources = listOf(resourceFilePath),
       )
 
-    val javacOptionsItem =
-      JavacOptionsItem(
-        buildTargetId,
-        listOf("opt1", "opt2", "opt3"),
-      )
-
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        javacOptions = javacOptionsItem,
+        javacOptions = listOf("opt1", "opt2", "opt3"),
         dependencies =
           listOf(
             Label.parse("module2"),

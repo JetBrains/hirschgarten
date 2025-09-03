@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.psi.impl.PyImportResolver
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContext
@@ -92,10 +93,17 @@ class BazelPyImportResolver : PyImportResolver {
     return null
   }
 
+  private fun PsiManager.findFileOrDirectory(vf: VirtualFile): PsiElement? =
+    if (vf.isDirectory) {
+      findDirectory(vf)
+    } else {
+      findFile(vf)
+    }
+
   private fun resolveShortImport(name: QualifiedName, context: PyQualifiedNameResolveContext): PsiElement? {
     val sourcesIndex = context.project.service<PythonResolveIndexService>().resolveIndex
-    val resolvedName = sourcesIndex[name] ?: return null
-    return resolvedName(context.psiManager)
+    val path = sourcesIndex[name] ?: return null
+    return context.psiManager.findFileOrDirectory(path)
   }
 }
 

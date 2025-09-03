@@ -7,7 +7,7 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolver
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
@@ -45,7 +45,7 @@ interface ProjectSyncHook {
     val project: Project,
     val syncScope: ProjectSyncScope,
     val server: JoinedBuildServer,
-    val resolver: BazelWorkspaceResolver,
+    val resolver: BazelWorkspaceResolveService,
     val diff: AllProjectStructuresDiff,
     val taskId: String,
     val progressReporter: SequentialProgressReporter,

@@ -44,13 +44,6 @@ internal suspend fun configureProjectCounterPlatform(project: Project) {
 
 private suspend fun removeFakeModulesAndLibraries(project: Project) {
   if (!project.serviceAsync<BazelProjectProperties>().isBazelProject) return
-  val createFakeModuleOnProjectImport =
-    try {
-      RegistryManager.getInstanceAsync().`is`("ide.create.fake.module.on.project.import")
-    } catch (_: Throwable) {
-      true
-    }
-  if (!createFakeModuleOnProjectImport) return
 
   val workspaceModel = project.serviceAsync<WorkspaceModel>()
   writeAction {
@@ -59,7 +52,7 @@ private suspend fun removeFakeModulesAndLibraries(project: Project) {
 }
 
 private fun removeFakeModulesAndLibrariesBlocking(project: Project) {
-  if (!project.service<BazelProjectProperties>().isBazelProject || !Registry.`is`("ide.create.fake.module.on.project.import", true)) {
+  if (!project.service<BazelProjectProperties>().isBazelProject) {
     return
   }
 
