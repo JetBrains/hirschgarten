@@ -92,7 +92,7 @@ message GoTargetInfo {
 message ProtobufTargetInfo {
   string proto_source_root = 1;
   repeated FileLocation direct_proto_sources = 2;
-//  repeated FileLocation transitive_sources = 2;
+  //  repeated FileLocation transitive_sources = 2;
 }
 
 message TargetInfo {

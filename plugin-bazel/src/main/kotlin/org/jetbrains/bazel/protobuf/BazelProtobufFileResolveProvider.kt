@@ -11,18 +11,14 @@ class BazelProtobufFileResolveProvider : FileResolveProvider {
     if (!path.endsWith(".proto")) {
       return null
     }
-    return project.service<BazelProtobufSyncService>()
+    return project
+      .service<BazelProtobufSyncService>()
       .getRealProtoFile(path)
   }
 
-  override fun getChildEntries(
-    path: String,
-    project: Project,
-  ): Collection<FileResolveProvider.ChildEntry?> = emptyList()
+  override fun getChildEntries(path: String, project: Project): Collection<FileResolveProvider.ChildEntry?> = emptyList()
 
   override fun getDescriptorFile(project: Project): VirtualFile? = null
 
-  override fun getSearchScope(project: Project): GlobalSearchScope {
-    return GlobalSearchScope.projectScope(project)
-  }
+  override fun getSearchScope(project: Project): GlobalSearchScope = GlobalSearchScope.projectScope(project)
 }

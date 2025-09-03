@@ -21,7 +21,7 @@ internal fun WriteBuffer.putString(str: String) {
 internal fun ByteBuffer.getString(): String {
   val length = DataUtils.readVarInt(this)
   if (length == 0) {
-    return "";
+    return ""
   }
   return ByteArray(length).also { get(it) }.decodeToString()
 }
@@ -75,5 +75,4 @@ object BazelProtobufSyncIndexDataType : DataType<BazelProtobufSyncIndexData> {
     size: Int,
     initialGuess: Int,
   ): Int = throw UnsupportedOperationException()
-
 }

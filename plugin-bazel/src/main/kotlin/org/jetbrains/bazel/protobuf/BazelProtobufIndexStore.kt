@@ -10,16 +10,18 @@ import org.h2.mvstore.type.DataType
 import org.h2.mvstore.type.StringDataType
 
 class BazelProtobufIndexStore(val project: Project) {
-  private val store = createOrResetMvStore(
-    file = project.getProjectDataPath("bazel-protobuf-target-index.db"),
-    readOnly = false,
-    logSupplier = { logger<BazelProtobufIndexStore>() },
-  )
+  private val store =
+    createOrResetMvStore(
+      file = project.getProjectDataPath("bazel-protobuf-target-index.db"),
+      readOnly = false,
+      logSupplier = { logger<BazelProtobufIndexStore>() },
+    )
 
-  private val protoPathToIndexData: MVMap<String, BazelProtobufSyncIndexData> = openStringToObjectMap(
-    "protoPathToIndexData",
-    BazelProtobufSyncIndexDataType,
-  )
+  private val protoPathToIndexData: MVMap<String, BazelProtobufSyncIndexData> =
+    openStringToObjectMap(
+      "protoPathToIndexData",
+      BazelProtobufSyncIndexDataType,
+    )
 
   private fun <V> openStringToObjectMap(name: String, dataType: DataType<V>): MVMap<String, V> {
     val builder = MVMap.Builder<String, V>()

@@ -763,13 +763,15 @@ class AspectBazelProjectMapper(
             )
         )
     ) ||
-      (featureFlags.isGoSupportEnabled &&
-      target.hasGoTargetInfo() &&
-      hasKnownGoSources(target) ||
-      featureFlags.isPythonSupportEnabled &&
-      target.hasPythonTargetInfo() &&
-      hasKnownPythonSources(target))
-      || target.hasProtobufTargetInfo()
+      (
+        featureFlags.isGoSupportEnabled &&
+          target.hasGoTargetInfo() &&
+          hasKnownGoSources(target) ||
+          featureFlags.isPythonSupportEnabled &&
+          target.hasPythonTargetInfo() &&
+          hasKnownPythonSources(target)
+      ) ||
+      target.hasProtobufTargetInfo()
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
 
@@ -808,18 +810,18 @@ class AspectBazelProjectMapper(
     withContext(Dispatchers.Default) {
       val tasks =
         targets.map { target ->
-          //async {
-            createRawBuildTarget(
-              target,
-              highPrioritySources,
-              repoMapping,
-              dependencyGraph,
-            )
-          //}
+          // async {
+          createRawBuildTarget(
+            target,
+            highPrioritySources,
+            repoMapping,
+            dependencyGraph,
+          )
+          // }
         }
 
       return@withContext tasks
-        //.awaitAll()
+        // .awaitAll()
         .filterNotNull()
         .filterNot { BuildTargetTag.NO_IDE in it.tags }
     }

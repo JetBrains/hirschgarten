@@ -21,7 +21,6 @@ import kotlin.io.path.absolutePathString
 
 @Service(Service.Level.PROJECT)
 class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
-
   val store = BazelProtobufIndexStore(project)
 
   fun getRealProtoFile(importPath: String): VirtualFile? {
@@ -29,11 +28,12 @@ class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
     val vfsManager = project.service<WorkspaceModel>().getVirtualFileUrlManager()
     // handle case when bazel hadn't created protobuf symlinks yet
     // or user deleted file referenced by symlink
-    val realPath = try {
-      data.absolutePath.toRealPath()
-    } catch (_: IOException) {
-      data.absolutePath
-    }
+    val realPath =
+      try {
+        data.absolutePath.toRealPath()
+      } catch (_: IOException) {
+        data.absolutePath
+      }
     return realPath
       .toVirtualFileUrl(vfsManager)
       .virtualFile
@@ -42,5 +42,4 @@ class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
   override suspend fun save() {
     store.saveIfNeeded()
   }
-
 }

@@ -12,7 +12,8 @@ class BazelProtobufSyncHook : ProjectPostSyncHook {
     val store = environment.project.serviceAsync<BazelProtobufSyncService>().store
 
     store.clearProtoIndexData()
-    environment.project.targetUtils.allBuildTargets()
+    environment.project.targetUtils
+      .allBuildTargets()
       .filter { it.kind.languageClasses.contains(LanguageClass.PROTOBUF) }
       .forEach {
         val protoData = it.data as? ProtobufBuildTarget ?: return@forEach
