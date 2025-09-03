@@ -2,7 +2,9 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.starlark.StarlarkConstants.ALLOW_EMPTY_KEYWORD
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
+import org.jetbrains.bazel.languages.starlark.globbing.StarlarkGlob
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
@@ -68,5 +70,40 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
       }
       return reference
     }
+  }
+
+  /**
+   * The glob is valid if it resolves to a non-empty set of files,
+   * or the 'allow_empty' argument is set to true.
+   */
+  fun isGlobValid(): Boolean {
+    if (isAllowedEmpty()) return true
+
+    val matchedFiles = StarlarkGlobReference(this).multiResolve(false)
+    return matchedFiles.isNotEmpty()
+  }
+
+  /**
+   * The pattern is valid if matches at least one file
+   * or the 'allow_empty' argument is set to true.
+   */
+  fun isPatternValid(element: StarlarkStringLiteralExpression): Boolean {
+    if (isAllowedEmpty()) return true
+    val pattern = element.getStringContents()
+    val containingDirectory = containingFile.parent?.virtualFile ?: return true
+    return try {
+      StarlarkGlob
+        .forPath(containingDirectory)
+        .addPattern(pattern)
+        .glob()
+        .isNotEmpty()
+    } catch (e: IllegalArgumentException) {
+      true
+    }
+  }
+
+  private fun isAllowedEmpty(): Boolean {
+    val allowEmpty: String? = getArgValue(getKeywordArgument(ALLOW_EMPTY_KEYWORD))?.text
+    return allowEmpty?.lowercase()?.toBooleanStrictOrNull() ?: false
   }
 }

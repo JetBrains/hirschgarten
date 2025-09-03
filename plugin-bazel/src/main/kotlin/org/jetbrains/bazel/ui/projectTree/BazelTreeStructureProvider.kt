@@ -20,11 +20,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.backend.workspace.virtualFile
-import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.storage.CachedValue
 import com.intellij.platform.workspace.storage.EntityStorage
-import com.intellij.platform.workspace.storage.entities
-import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
@@ -32,7 +29,9 @@ import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspace.excludedRoots
+import org.jetbrains.bazel.workspace.includedRoots
 
 private class BazelTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
@@ -113,10 +112,7 @@ private class BazelTreeStructureProvider : TreeStructureProvider {
     val rootDirectory =
       PsiManager.getInstance(project).findDirectory(project.rootDir) ?: return children // should never happen
 
-    val projectIsImported =
-      project.workspaceModel.currentSnapshot
-        .entities<BazelProjectDirectoriesEntity>()
-        .firstOrNull() != null
+    val projectIsImported = project.bazelProjectDirectoriesEntity() != null
 
     val showExcludedDirectoriesAsSeparateNode =
       projectIsImported && project.treeStructureSettings?.showExcludedDirectoriesAsSeparateNode ?: true
@@ -206,34 +202,16 @@ private class BazelTreeStructureProvider : TreeStructureProvider {
    * because on IDEA 2025.2 we by default don't add any file sets for `includedDirectories`, just one for the root directory.
    */
   private fun Project.isExcluded(virtualFile: VirtualFile): Boolean {
-    val (includedDirectories, excludedDirectories) = getIncludedAndExcludedDirectories(this)
+    val includedRoots = this.includedRoots() ?: return false
+    val excludedRoots = this.excludedRoots() ?: return false
     var current: VirtualFile? = virtualFile
     while (current != null) {
-      if (current in includedDirectories) return false
-      if (current in excludedDirectories) return true
+      if (current in includedRoots) return false
+      if (current in excludedRoots) return true
       current = current.parent
     }
     return true
   }
-
-  private fun getIncludedAndExcludedDirectories(project: Project): Pair<Set<VirtualFile>, Set<VirtualFile>> =
-    (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(includedAndExcludedDirectoriesValue)
-
-  private val includedAndExcludedDirectoriesValue =
-    CachedValue { storage ->
-      val bazelProjectDirectories =
-        storage.bazelProjectDirectoriesEntity()
-          ?: return@CachedValue (emptySet<VirtualFile>() to emptySet<VirtualFile>())
-      bazelProjectDirectories.includedRoots.toVirtualFileSet() to bazelProjectDirectories.excludedRoots.toVirtualFileSet()
-    }
-
-  private fun List<VirtualFileUrl>.toVirtualFileSet(): Set<VirtualFile> =
-    asSequence()
-      .mapNotNull { it.virtualFile }
-      .toSet()
-
-  private fun EntityStorage.bazelProjectDirectoriesEntity(): BazelProjectDirectoriesEntity? =
-    entities<BazelProjectDirectoriesEntity>().firstOrNull()
 }
 
 /**

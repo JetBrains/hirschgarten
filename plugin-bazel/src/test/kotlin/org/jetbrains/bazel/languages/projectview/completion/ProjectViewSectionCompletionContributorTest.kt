@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.completion
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAll
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSections
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -17,7 +17,8 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldContainAll ProjectViewSection.KEYWORD_MAP.keys.filter { it.contains("a") }
+    val expected = ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
+    lookups shouldContainAll expected
   }
 
   @Test
@@ -27,11 +28,11 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldNotContainAll ProjectViewSection.KEYWORD_MAP.keys.filter { it.contains("a") }
+    lookups shouldNotContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
   }
 
   @Test
-  fun `should suggest section names inside sections`() {
+  fun `should not suggest section names inside sections`() {
     myFixture.configureByText(
       ".bazelproject",
       """
@@ -44,6 +45,6 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldNotContainAll ProjectViewSection.KEYWORD_MAP.keys.filter { it.contains("a") }
+    lookups shouldNotContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
   }
 }

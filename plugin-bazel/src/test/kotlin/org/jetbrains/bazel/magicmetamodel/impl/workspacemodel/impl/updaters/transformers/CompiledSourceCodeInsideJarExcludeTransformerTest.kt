@@ -109,6 +109,7 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
         sourceJars = listOf(Path("/path/to/sourceJar.jar")),
         mavenCoordinates = null,
         isFromInternalTarget = true,
+        isLowPriority = false,
       )
 
     val usualLibrary =
@@ -120,6 +121,7 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
         sourceJars = listOf(Path("/path/to/another/sourceJar.jar")),
         mavenCoordinates = null,
         isFromInternalTarget = false,
+        isLowPriority = false,
       )
 
     // when
@@ -159,7 +161,7 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
           resources = resourceRoots,
           baseDirectory = Path("base/dir"),
         ),
-      javacOptions = null,
+      javacOptions = listOf(),
       dependencies = emptyList(),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),

@@ -3,7 +3,6 @@ package org.jetbrains.bazel.commons.constants
 object Constants {
   const val NAME: String = "bazelbsp"
   const val VERSION: String = "3.2.0"
-  const val CPP: String = "cpp"
   const val BAZEL_BUILD_COMMAND: String = "build"
   const val BAZEL_TEST_COMMAND: String = "test"
   const val BAZEL_COVERAGE_COMMAND: String = "coverage"

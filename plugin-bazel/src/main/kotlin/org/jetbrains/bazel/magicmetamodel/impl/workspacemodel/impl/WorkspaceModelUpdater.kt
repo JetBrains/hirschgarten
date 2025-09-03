@@ -19,7 +19,6 @@ class WorkspaceModelUpdater(
   private val virtualFileUrlManager: VirtualFileUrlManager,
   private val projectBasePath: Path,
   project: Project,
-  private val isAndroidSupportEnabled: Boolean,
   private val importIjars: Boolean,
 ) {
   private val workspaceModelEntityUpdaterConfig =
@@ -40,16 +39,12 @@ class WorkspaceModelUpdater(
     libraries: List<Library>,
     libraryModules: List<JavaModule>,
   ) {
-    val libraryNames = libraries.map { it.displayName }.toSet()
-    val libraryModuleNames = libraryModules.map { it.genericModuleInfo.name }.toSet()
     val javaModuleUpdater =
       JavaModuleUpdater(
         workspaceModelEntityUpdaterConfig,
         projectBasePath,
-        isAndroidSupportEnabled,
         moduleEntities,
-        libraryNames,
-        libraryModuleNames,
+        libraries.associateBy { it.displayName },
       )
     javaModuleUpdater.addEntities(moduleEntities.filterIsInstance<JavaModule>() + libraryModules)
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig, importIjars)

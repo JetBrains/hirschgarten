@@ -8,7 +8,7 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace/service",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],

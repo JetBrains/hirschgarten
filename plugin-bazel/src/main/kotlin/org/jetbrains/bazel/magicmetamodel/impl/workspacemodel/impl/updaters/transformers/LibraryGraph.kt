@@ -62,6 +62,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
           classJars = it.jars,
           sourceJars = it.sourceJars,
           mavenCoordinates = it.mavenCoordinates,
+          isLowPriority = it.isLowPriority,
         )
       }
 
