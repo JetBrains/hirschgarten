@@ -9,6 +9,7 @@ import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.psi.PsiClass
 import com.intellij.psi.util.ClassUtil
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.sdkcompat.bytecodeViewer.BytecodeViewerClassFileFinderCompat
 import org.jetbrains.bazel.target.targetUtils
@@ -42,7 +43,11 @@ class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinderCompat {
       .resolve(target.id.packagePath.toString())
     return when (target.data) {
       is JvmBuildTarget, is KotlinBuildTarget, is ScalaBuildTarget -> {
-        targetDir.resolve("${target.id.targetName}.jar")
+        if (target.kind.ruleType == RuleType.LIBRARY) {
+          targetDir.resolve("lib${target.id.targetName}.jar")
+        } else {
+          targetDir.resolve("${target.id.targetName}.jar")
+        }
       }
 
       else -> return targetDir.resolve(target.id.targetName)
