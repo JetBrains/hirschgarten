@@ -11,7 +11,7 @@ import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.target.targetUtils
 
-internal class TargetCompletionProvider : CompletionProvider<CompletionParameters>() {
+class TargetCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,

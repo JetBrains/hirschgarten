@@ -145,19 +145,4 @@ class TargetTagsResolverTest {
 
     tags shouldBe setOf(Tag.LIBRARY)
   }
-
-  @Test
-  fun `should mark android_binary as executable`() {
-    val targetInfo =
-      BspTargetInfo.TargetInfo
-        .newBuilder()
-        .apply {
-          kind = "android_binary"
-          executable = false
-        }.build()
-
-    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
-
-    tags shouldBe setOf(Tag.APPLICATION)
-  }
 }

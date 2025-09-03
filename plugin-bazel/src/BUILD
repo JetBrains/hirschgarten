@@ -70,6 +70,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/modify/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/open",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/fus",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/resolve",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/startup",

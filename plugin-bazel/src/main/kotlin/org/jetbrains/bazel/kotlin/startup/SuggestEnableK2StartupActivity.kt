@@ -24,18 +24,30 @@ private class SuggestEnableK2StartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
     if (isKotlinPluginK2Mode || PlatformUtils.isCLion()) return
 
+    val canSetupVMOptions = System.getProperty("jb.vmOptionsFile") != null
+    val notificationMessageKey =
+      if (canSetupVMOptions) {
+        "widget.suggest.enable.k2.message"
+      } else {
+        "widget.suggest.enable.k2.setup.vmOptionsFile.message"
+      }
+
     serviceAsync<NotificationGroupManager>()
       .getNotificationGroup(SUGGEST_ENABLE_K2_NOTIFICATION_GROUP)
       .createNotification(
         BazelPluginBundle.message("widget.suggest.enable.k2.title"),
-        BazelPluginBundle.message("widget.suggest.enable.k2.message"),
+        BazelPluginBundle.message(notificationMessageKey),
         NotificationType.INFORMATION,
       ).setIcon(KotlinIcons.SMALL_LOGO)
-      .addAction(
-        NotificationAction.createExpiring(BazelPluginBundle.message("widget.suggest.enable.k2.action")) { _, _ ->
-          VMOptions.setOption(USE_K2_PLUGIN_VM_OPTION_PREFIX, true.toString())
-          KotlinPluginKindSwitcherController.suggestRestart(ApplicationNamesInfo.getInstance().fullProductName)
-        },
-      ).notify(project)
+      .apply {
+        if (canSetupVMOptions) {
+          addAction(
+            NotificationAction.createExpiring(BazelPluginBundle.message("widget.suggest.enable.k2.action")) { _, _ ->
+              VMOptions.setOption(USE_K2_PLUGIN_VM_OPTION_PREFIX, true.toString())
+              KotlinPluginKindSwitcherController.suggestRestart(ApplicationNamesInfo.getInstance().fullProductName)
+            },
+          )
+        }
+      }.notify(project)
   }
 }

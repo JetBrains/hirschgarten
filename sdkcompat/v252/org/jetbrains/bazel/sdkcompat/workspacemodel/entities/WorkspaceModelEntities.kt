@@ -27,6 +27,7 @@ data class Library(
   val sourceJars: List<Path> = listOf(),
   val classJars: List<Path> = listOf(),
   val mavenCoordinates: MavenCoordinates? = null,
+  val isLowPriority: Boolean = false,
 ) : WorkspaceModelEntity(),
   ResourceRootEntity {
   companion object {

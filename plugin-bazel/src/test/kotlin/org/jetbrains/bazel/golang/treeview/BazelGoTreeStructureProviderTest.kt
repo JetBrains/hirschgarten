@@ -35,7 +35,7 @@ import com.intellij.psi.search.PsiElementProcessor
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.golang.resolve.GO_PACKAGE_FACTORY_KEY
+import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory.Companion.fileToImportPathMapComputable
 import org.jetbrains.bazel.golang.sync.GO_EXTERNAL_LIBRARY_ROOT_NAME
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.libraries.BazelExternalSyntheticLibrary
@@ -74,7 +74,7 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
     val fileNode2 = createPsiFileNode(file2)
     fileToImportPathMap[Path(file2.path)] = "root2"
 
-    SyncCache.getInstance(project).get(GO_PACKAGE_FACTORY_KEY) { fileToImportPathMap }
+    SyncCache.getInstance(project).injectValueForTest(fileToImportPathMapComputable, fileToImportPathMap)
 
     // WHEN
     val actualChildren =

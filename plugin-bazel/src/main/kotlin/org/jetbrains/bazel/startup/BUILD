@@ -4,9 +4,7 @@ kt_jvm_library(
     name = "startup",
     srcs = glob(["*.kt"]),
     visibility = [
-        "//commons:__subpackages__",
-        "//plugin-bazel:__subpackages__",
-        "//server:__subpackages__",
+        "//visibility:public",
     ],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",

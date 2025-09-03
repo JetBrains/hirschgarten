@@ -8,6 +8,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
@@ -38,7 +39,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ProjectDetails(
         targetIds = listOf(targetId),
         targets = setOf(target),
-        javacOptions = emptyList(),
         libraries = null,
       )
 
@@ -50,7 +50,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails =
       ModuleDetails(
         target = target,
-        javacOptions = null,
+        javacOptions = listOf(),
         dependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -76,19 +76,17 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
         listOf(Path("/root/dir/resource/File.txt")),
         baseDirectory = Path("base/dir"),
-      )
-
-    val javacOptions =
-      JavacOptionsItem(
-        targetId,
-        listOf("opt1", "opt2", "opt3"),
+        data =
+          JvmBuildTarget(
+            javaVersion = "",
+            javacOpts = listOf("opt1", "opt2", "opt3"),
+          ),
       )
 
     val projectDetails =
       ProjectDetails(
         targetIds = listOf(targetId),
         targets = setOf(target),
-        javacOptions = listOf(javacOptions),
         libraries = emptyList(),
       )
 
@@ -100,7 +98,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails =
       ModuleDetails(
         target = target,
-        javacOptions = javacOptions,
+        javacOptions = listOf("opt1", "opt2", "opt3"),
         dependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -114,6 +112,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     // given
     val target1Id = Label.parse("target1")
     val target2Id = Label.parse("target2")
+    val target1JavacOptionsItem = listOf("opt1", "opt2", "opt3")
     val target1 =
       RawBuildTarget(
         target1Id,
@@ -127,11 +126,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
         listOf(Path("/root/dir1/resource/File.txt")),
         baseDirectory = Path("base/dir"),
-      )
-    val target1JavacOptionsItem =
-      JavacOptionsItem(
-        target1Id,
-        listOf("opt1", "opt2", "opt3"),
+        data =
+          JvmBuildTarget(
+            javaVersion = "",
+            javacOpts = target1JavacOptionsItem,
+          ),
       )
 
     val target2 =
@@ -152,6 +151,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         baseDirectory = Path("base/dir"),
       )
     val target3Id = Label.parse("target3")
+    val target3JavacOptionsItem = listOf("opt1")
     val target3 =
       RawBuildTarget(
         target3Id,
@@ -165,11 +165,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         emptyList(),
         baseDirectory = Path("base/dir"),
-      )
-    val target3JavacOptionsItem =
-      JavacOptionsItem(
-        target3Id,
-        listOf("opt1"),
+        data =
+          JvmBuildTarget(
+            javaVersion = "",
+            javacOpts = target3JavacOptionsItem,
+          ),
       )
 
     val target4Id = Label.parse("target4")
@@ -193,7 +193,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ProjectDetails(
         targetIds = listOf(target1Id, target3Id, target2Id, target4Id),
         targets = setOf(target2, target1, target3, target4),
-        javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
         libraries = emptyList(),
       )
 
@@ -216,7 +215,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails2 =
       ModuleDetails(
         target = target2,
-        javacOptions = null,
+        javacOptions = listOf(),
         dependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -232,7 +231,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails4 =
       ModuleDetails(
         target = target4,
-        javacOptions = null,
+        javacOptions = listOf(),
         dependencies = listOf(target1Id),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),

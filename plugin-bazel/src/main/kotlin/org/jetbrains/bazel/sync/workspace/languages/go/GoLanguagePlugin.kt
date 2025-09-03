@@ -3,50 +3,42 @@ package org.jetbrains.bazel.sync.workspace.languages.go
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.GoBuildTarget
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoModule>() {
+class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoBuildTarget> {
   private val logger: Logger = logger<GoLanguagePlugin>()
 
-  override fun applyModuleData(moduleData: GoModule, buildTarget: RawBuildTarget) {
-    val goBuildTarget =
-      with(moduleData) {
-        GoBuildTarget(
-          sdkHomePath = sdkHomePath,
-          importPath = importPath,
-          generatedLibraries = generatedLibraries.distinct(),
-          generatedSources = generatedSources.distinct(),
-          libraryLabels = libraryLabels,
-        )
-      }
+  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
 
-    buildTarget.data = goBuildTarget
-  }
-
-  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> {
-    if (!targetInfo.hasGoTargetInfo()) return listOf()
+  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
+    if (!targetInfo.hasGoTargetInfo()) return emptySequence()
     return targetInfo.goTargetInfo.generatedSourcesList
+      .asSequence()
+      .mapNotNull { bazelPathsResolver.resolve(it) }
   }
 
-  override fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): GoModule? {
-    if (!targetInfo.hasGoTargetInfo()) return null
-    val goTargetInfo = targetInfo.goTargetInfo
-    return GoModule(
-      sdkHomePath = calculateSdkPath(goTargetInfo.sdkHomePath),
-      importPath = goTargetInfo.importPath,
-      generatedSources = goTargetInfo.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
-      generatedLibraries = goTargetInfo.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it) },
-      libraryLabels = goTargetInfo.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): GoBuildTarget? {
+    if (!target.hasGoTargetInfo()) {
+      return null
+    }
+    val goTarget = target.goTargetInfo
+    return GoBuildTarget(
+      sdkHomePath = calculateSdkPath(goTarget.sdkHomePath),
+      importPath = goTarget.importPath,
+      generatedSources = goTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      generatedLibraries = goTarget.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      libraryLabels = goTarget.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
     )
   }
 
@@ -106,12 +98,15 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
     when {
       path.startsWith("/build/work/") ->
         afterNthSlash(path, 5)
+
       path.startsWith("/tmp/go-build-release/buildroot/") ->
         afterNthSlash(path, 4)
+
       path.startsWith("GOROOT/") -> {
         val suffix = afterNthSlash(path, 1)
         goRoot.removeSuffix("/") + "/" + suffix
       }
+
       else -> path
     }
 

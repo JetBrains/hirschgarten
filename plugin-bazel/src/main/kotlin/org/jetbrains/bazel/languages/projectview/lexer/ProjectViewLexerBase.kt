@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewImport
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 
 /**
  * A base class responsible for tokenizing a given [input] project view into a list of tokens.
@@ -15,6 +14,7 @@ class ProjectViewLexerBase(input: CharSequence) {
   private var pos = 0
   private var identifierStart: Int? = null
   private var isPosAfterNonWhitespaceCharInLine = false
+  private var lastTokenType: ProjectViewTokenType? = null
 
   init {
     tokenize()
@@ -33,6 +33,7 @@ class ProjectViewLexerBase(input: CharSequence) {
         c == '\n' -> {
           addPrecedingIdentifier(pos - 1)
           tokens.add(Token(ProjectViewTokenType.NEWLINE, pos - 1, pos))
+          lastTokenType = ProjectViewTokenType.NEWLINE
           isPosAfterNonWhitespaceCharInLine = false
         }
         isHorizontalWhitespace(c) -> {
@@ -96,11 +97,14 @@ class ProjectViewLexerBase(input: CharSequence) {
 
   private fun getIdentifierToken(start: Int, end: Int): ProjectViewTokenType {
     val identifier = buffer.substring(start, end)
+    val prevChar = buffer.getOrNull(start - 1)
     return when {
-      ProjectViewSection.KEYWORD_MAP.containsKey(identifier)
+      (prevChar == '\n' || prevChar == null) && buffer.length > end && buffer[end] == ':'
       -> ProjectViewTokenType.SECTION_KEYWORD
+
       ProjectViewImport.KEYWORD_MAP.containsKey(identifier)
       -> ProjectViewTokenType.IMPORT_KEYWORD
+
       else -> ProjectViewTokenType.IDENTIFIER
     }
   }
