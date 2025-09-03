@@ -1,5 +1,4 @@
-load("//aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "do_starlark_string_expansion_dict", "file_location", "get_aspect_ids", "is_valid_aspect_target", "update_sync_output_groups")
-load("@rules_proto//proto:defs.bzl", "proto_common")
+load("//aspects:utils/utils.bzl", "create_struct","file_location")
 
 #if( $bazel8OrAbove == "true" && $rulesetName != "" )
 # Bazel 8+: Use only the rules_proto providers.
