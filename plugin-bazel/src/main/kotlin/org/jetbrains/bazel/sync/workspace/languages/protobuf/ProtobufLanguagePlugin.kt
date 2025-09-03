@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.protobuf
 
+import kotlinx.io.IOException
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -23,7 +24,7 @@ class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : Langu
       return null
     }
     val sources = target.protobufTargetInfo.directProtoSourcesList
-      .map { resolveSource(context, target, it) }
+      .mapNotNull { resolveSource(context, target, it) }
       .associateBy { it.importPath }
       .mapValues { it.value.absoluteSourcePath }
     return ProtobufBuildTarget(
@@ -38,46 +39,39 @@ class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : Langu
     context: LanguagePluginContext,
     target: BspTargetInfo.TargetInfo,
     source: BspTargetInfo.FileLocation,
-  ): SourceMapping {
+  ): SourceMapping? {
     val proto = target.protobufTargetInfo
     val absoluteSourcePath = context.pathsResolver.resolve(source).absolutePathString()
     return if (proto.protoSourceRoot == ".") {
       SourceMapping(source.relativePath, absoluteSourcePath)
     } else {
-      val absoluteProtoSourceRoot = context.pathsResolver.workspaceRoot().resolve(proto.protoSourceRoot)
-        .resolveBazelOutSymlinkInPath()
-        .absolutePathString()
-      val importPath = absoluteSourcePath.removePrefix(absoluteProtoSourceRoot)
+      val absoluteProtoSourceRoot = resolveProtoSourceRoot(context, proto.protoSourceRoot) ?: return null
+      val importPath = absoluteSourcePath.removePrefix(absoluteProtoSourceRoot.absolutePathString())
         .removePrefix("/")
       SourceMapping(importPath, absoluteSourcePath)
     }
   }
 
-  private fun Path.resolveBazelOutSymlinkInPath(): Path {
-    try {
-      return this.toRealPath()
-    } catch (_: Throwable) {
-      // continue with fallback logic
-    }
-    val pathString = this.toString()
-    val bazelOutIndex = pathString.indexOf("bazel-out")
-
-    if (bazelOutIndex == -1) {
-      return this // no bazel-out in path
-    }
-
-    val beforeBazelOut = pathString.take(bazelOutIndex)
-    val afterBazelOut = pathString.substring(bazelOutIndex)
-
-    val bazelOutPath = Path.of(beforeBazelOut + "bazel-out")
-
-    return if (Files.isSymbolicLink(bazelOutPath)) {
-      val resolvedBazelOut = Files.readSymbolicLink(bazelOutPath)
-      val basePath = Path.of(beforeBazelOut)
-      basePath.resolve(resolvedBazelOut).resolve(afterBazelOut.removePrefix("bazel-out/"))
+  private fun resolveProtoSourceRoot(context: LanguagePluginContext, protoSourceRoot: String): Path? {
+    // we don't want to resolve entire path to real because destination path might not exists
+    val bazelOutPath = context.pathsResolver.workspaceRoot().resolve("bazel-out")
+    return if (protoSourceRoot.startsWith("bazel-out")) {
+      // bazel-out should be symlink - but handle every possible case
+      val bazelOut = if (Files.isSymbolicLink(bazelOutPath)) {
+        Files.readSymbolicLink(bazelOutPath)
+      } else {
+        bazelOutPath
+      }
+      val protoSourceRootWithoutBazelOut = protoSourceRoot.removePrefix("bazel-out/")
+      return bazelOut.resolve(protoSourceRootWithoutBazelOut)
     } else {
-      this // somehow bazel-out is not a symlink
+      // toRealPath may and will fail when bazel haven't built proto sources symlinks
+      try {
+        context.pathsResolver.workspaceRoot().resolve(protoSourceRoot)
+          .toRealPath()
+      } catch (_: IOException) {
+        null
+      }
     }
   }
-
 }
