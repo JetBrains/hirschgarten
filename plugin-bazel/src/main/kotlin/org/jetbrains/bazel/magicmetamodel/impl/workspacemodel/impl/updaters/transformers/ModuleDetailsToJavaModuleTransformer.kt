@@ -18,9 +18,6 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendum
 import org.jetbrains.bazel.utils.StringUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
-import org.jetbrains.bsp.protocol.ScalaBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
