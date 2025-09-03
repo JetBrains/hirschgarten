@@ -371,7 +371,7 @@
     },
     "@@aspect_rules_js+//npm:extensions.bzl%pnpm": {
       "general": {
-        "bzlTransitiveDigest": "Q+xvKGUvBoo1bycgbL2czo8tHTT6nZD7S2wPthhg7/8=",
+        "bzlTransitiveDigest": "HhQfu7FSgZuZuerIy8fxDFhYebU2wc27TvqXBk1BDV4=",
         "usagesDigest": "LP/esirEmSsvSSBOr/T9OfhYVnEcvYdpIcAukSjzUMc=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -555,7 +555,7 @@
     },
     "@@googleapis+//:extensions.bzl%switched_rules": {
       "general": {
-        "bzlTransitiveDigest": "RPY/jLLj3dRtfWAj2WDNxEzoKdWQBXnaOeGbYQsSdn8=",
+        "bzlTransitiveDigest": "1ZTg77R3Ks/ksx8QMNIoTRJetbJPRlzGFlJa9hoUn+Y=",
         "usagesDigest": "6SQVqlL3J9xateBgwK5FM4RLMtzcL6H0EPuzp8MwF/M=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -865,7 +865,7 @@
     },
     "@@rules_apple+//apple:apple.bzl%provisioning_profile_repository_extension": {
       "general": {
-        "bzlTransitiveDigest": "cvQcj+yHzRYpB5nQY1+oMqpkfl58kvQzyDEeJH3tIU4=",
+        "bzlTransitiveDigest": "OqnxQGborEbcWak9yoItfAqyNDynaNaP09nF159ZI4U=",
         "usagesDigest": "p3M7zCH+GPHgVjO+LP2VLwBkS3qDJfR7kf9jQ62ZZb4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

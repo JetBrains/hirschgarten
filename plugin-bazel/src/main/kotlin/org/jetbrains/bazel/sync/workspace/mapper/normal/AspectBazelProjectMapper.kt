@@ -9,7 +9,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -46,7 +45,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.plus
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -209,7 +207,7 @@ class AspectBazelProjectMapper(
 
     val targets =
       measure("create intermediate targets") {
-        targets.values.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }
+        targetsToImport.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }.toList()
       }
 
     val highPrioritySources =
@@ -247,6 +245,7 @@ class AspectBazelProjectMapper(
             sourceJars = it.sources.toList(),
             mavenCoordinates = it.mavenCoordinates,
             isFromInternalTarget = it.isFromInternalTarget,
+            isLowPriority = it.isLowPriority,
           )
         },
       hasError = hasError,

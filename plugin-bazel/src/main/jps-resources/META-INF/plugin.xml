@@ -36,10 +36,6 @@
     optional="true"
   >com.intellij.modules.coverage</depends>
   <depends
-    config-file="withCpp.xml"
-    optional="true"
-  >com.intellij.clion</depends>
-  <depends
     config-file="withDevKit.xml"
     optional="true"
   >DevKit</depends>
@@ -86,11 +82,6 @@
       dynamic="true"
       interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
       qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
-    />
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
-      qualifiedName="org.jetbrains.bazel.androidFacetEntityUpdaterExtension"
     />
     <extensionPoint
       dynamic="true"
@@ -293,11 +284,6 @@
       key="bsp.python.support"
     />
     <registryKey
-      defaultValue="false"
-      description="Android modules support"
-      key="bsp.android.support"
-    />
-    <registryKey
       defaultValue="true"
       description="Go modules support"
       key="bsp.go.support"
@@ -363,6 +349,11 @@
       description="Enable a custom class finder for Java instead of &quot;dummy&quot; modules"
       key="bazel.enable.custom.java.class.finder"
     />
+    <registryKey
+      defaultValue="false"
+      description="Create fake module on project import"
+      key="bazel.create.fake.module.on.project.import"
+      />
     <registryKey
       defaultValue="true"
       description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
@@ -526,7 +517,6 @@
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
-    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
     <notificationGroup
       displayType="BALLOON"
       id="BazelSlowPlugins"
@@ -537,10 +527,7 @@
       id="Bazel"
       implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"
     />
-    <directoryProjectConfigurator
-      implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"
-      order="after PlatformProjectConfigurator"
-    />
+    <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
       implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"
       key="bazel"
@@ -618,6 +605,10 @@
     />
     <annotator
       implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkLoadAnnotator"
+      language="Starlark"
+    />
+    <annotator
+      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkGlobAnnotator"
       language="Starlark"
     />
     <completion.confidence

@@ -47,7 +47,6 @@ class BazelBspAspectsManager(
   fun calculateRulesetLanguages(
     externalRulesetNames: List<String>,
     externalAutoloads: List<String>,
-    workspaceContext: WorkspaceContext,
     featureFlags: FeatureFlags,
   ): List<RulesetLanguage> =
     Language
@@ -62,7 +61,6 @@ class BazelBspAspectsManager(
         }
         null
       }.removeDisabledLanguages(featureFlags)
-      .addNativeAndroidLanguageIfNeeded(workspaceContext, featureFlags)
       .addExternalPythonLanguageIfNeeded(externalRulesetNames, featureFlags)
 
   private fun Language.isBundled(externalAutoloads: List<String>): Boolean {
@@ -76,21 +74,10 @@ class BazelBspAspectsManager(
   private fun List<RulesetLanguage>.removeDisabledLanguages(featureFlags: FeatureFlags): List<RulesetLanguage> {
     val disabledLanguages =
       buildSet {
-        if (!featureFlags.isAndroidSupportEnabled) add(Language.Android)
         if (!featureFlags.isGoSupportEnabled) add(Language.Go)
-        if (!featureFlags.isCppSupportEnabled) add(Language.Cpp)
         if (!featureFlags.isPythonSupportEnabled) add(Language.Python)
       }
     return filterNot { it.language in disabledLanguages }
-  }
-
-  private fun List<RulesetLanguage>.addNativeAndroidLanguageIfNeeded(
-    workspaceContext: WorkspaceContext,
-    featureFlags: FeatureFlags,
-  ): List<RulesetLanguage> {
-    if (!featureFlags.isAndroidSupportEnabled) return this
-    if (!workspaceContext.enableNativeAndroidRules.value) return this
-    return this.filterNot { it.language == Language.Android } + RulesetLanguage(null, Language.Android)
   }
 
   private fun List<RulesetLanguage>.addExternalPythonLanguageIfNeeded(
@@ -114,7 +101,6 @@ class BazelBspAspectsManager(
     val languageRuleMap = rulesetLanguages.associateBy { it.language }
     val activeLanguages = rulesetLanguages.map { it.language }.toSet()
     val kotlinEnabled = Language.Kotlin in activeLanguages
-    val cppEnabled = Language.Cpp in activeLanguages
     val javaEnabled = Language.Java in activeLanguages
     val pythonEnabled = Language.Python in activeLanguages
     val bazel8OrAbove = bazelRelease.major >= 8
@@ -167,7 +153,6 @@ class BazelBspAspectsManager(
       aspectsPath.resolve("utils").resolve("utils.bzl"),
       mapOf(
         "repoMapping" to starlarkRepoMapping,
-        "cppDeps" to if (cppEnabled) "\"_cc_toolchain\"," else "",
       ),
     )
   }

@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import com.intellij.projectImport.ProjectOpenProcessor
@@ -16,6 +17,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.sdkcompat.createModule
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.io.IOException
@@ -86,6 +88,8 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
 
       this.forceOpenInNewFrame = forceOpenInNewFrame
       this.projectToClose = projectToClose
+
+      createModule(Registry.`is`("bazel.create.fake.module.on.project.import"))
 
       beforeOpen = {
         it.initProperties(vFileToOpen)

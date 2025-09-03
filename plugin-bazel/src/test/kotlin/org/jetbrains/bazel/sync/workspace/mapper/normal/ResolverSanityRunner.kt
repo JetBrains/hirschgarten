@@ -22,14 +22,12 @@ import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
-import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
 import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
 import org.jetbrains.bazel.workspacecontext.DeriveInstrumentationFilterFromTargetsSpec
 import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
-import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
@@ -140,8 +138,6 @@ private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo
       importDepth = ImportDepthSpec(value = -1),
       enabledRules = EnabledRulesSpec(values = listOf("rules_java", "rules_python", "rules_scala", "rules_kotlin")),
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(value = null),
-      enableNativeAndroidRules = EnableNativeAndroidRules(value = false),
-      androidMinSdkSpec = AndroidMinSdkSpec(value = null),
       shardSync = ShardSyncSpec(value = false),
       targetShardSize = TargetShardSizeSpec(value = 1000),
       shardingApproachSpec = ShardingApproachSpec(value = null),
@@ -157,9 +153,7 @@ private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo
   val featureFlags =
     FeatureFlags(
       isPythonSupportEnabled = true,
-      isAndroidSupportEnabled = false,
       isGoSupportEnabled = true,
-      isCppSupportEnabled = false,
       isPropagateExportsFromDepsEnabled = true,
       isSharedSourceSupportEnabled = false,
       bazelSymlinksScanMaxDepth = 2,

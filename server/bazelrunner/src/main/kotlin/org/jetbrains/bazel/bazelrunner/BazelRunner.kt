@@ -136,29 +136,16 @@ class BazelRunner(
       ),
     )
 
-    val workspaceBazelOptions = workspaceContext.buildFlags.values + workspaceContext.extraFlags
-
     inheritProjectviewOptionsOverride?.let {
       commandBuilder.inheritWorkspaceOptions = it
     }
 
     if (commandBuilder.inheritWorkspaceOptions) {
-      command.options.addAll(workspaceBazelOptions)
+      command.options.addAll(workspaceContext.buildFlags.values)
     }
 
     return command
   }
-
-  private val WorkspaceContext.extraFlags: List<String>
-    get() =
-      if (enableNativeAndroidRules.value) {
-        listOf(
-          BazelFlag.experimentalGoogleLegacyApi(),
-          BazelFlag.experimentalEnableAndroidMigrationApis(),
-        )
-      } else {
-        emptyList()
-      }
 
   fun runBazelCommand(
     command: BazelCommand,

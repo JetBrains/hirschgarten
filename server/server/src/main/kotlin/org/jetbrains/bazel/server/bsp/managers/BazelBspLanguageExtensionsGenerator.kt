@@ -25,7 +25,6 @@ enum class Language(
   ),
   Python("//aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"), true, true, listOf("PyInfo")),
   Scala("//aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala", "rules_scala"), listOf("extract_scala_info"), true, false),
-  Cpp("//aspects:rules/cpp/cpp_info.bzl", listOf("rules_cc"), listOf("extract_cpp_info", "extract_c_toolchain_info"), false, false),
   Kotlin("//aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"), true, false),
   Jvm(
     "//aspects:rules/jvm/jvm_info.bzl",
@@ -34,13 +33,6 @@ enum class Language(
     true,
     true,
     Java.autoloadHints + Scala.autoloadHints + Kotlin.autoloadHints,
-  ),
-  Android(
-    "//aspects:rules/android/android_info.bzl",
-    listOf("rules_android", "build_bazel_rules_android"),
-    listOf("extract_android_info", "extract_android_aar_import_info"),
-    true,
-    false,
   ),
   Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true, false),
   Protobuf("//aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto"), listOf("extract_protobuf_info"), false, false),

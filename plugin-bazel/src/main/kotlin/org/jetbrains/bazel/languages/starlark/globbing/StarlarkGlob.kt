@@ -36,7 +36,7 @@ import kotlin.concurrent.Volatile
  *
  * Largely copied from old Bazel plugin's UnixGlob.java
  */
-object StarlarkUnixGlob {
+object StarlarkGlob {
   @Throws(IOException::class, InterruptedException::class)
   private fun globInternal(
     base: VirtualFile,
@@ -192,7 +192,7 @@ object StarlarkUnixGlob {
      * Adds a pattern to include to the glob builder.
      *
      *
-     * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
+     * For a description of the syntax of the patterns, see [StarlarkGlob].
      */
     @Suppress("unused")
     fun addPattern(pattern: String): Builder {
@@ -204,7 +204,7 @@ object StarlarkUnixGlob {
      * Adds a pattern to include to the glob builder.
      *
      *
-     * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
+     * For a description of the syntax of the patterns, see [StarlarkGlob].
      */
     fun addPatterns(patterns: Collection<String>): Builder {
       this.patterns.addAll(patterns)
@@ -215,7 +215,7 @@ object StarlarkUnixGlob {
      * Adds patterns to exclude from the results to the glob builder.
      *
      *
-     * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
+     * For a description of the syntax of the patterns, see [StarlarkGlob].
      */
     fun addExcludes(excludes: Collection<String>): Builder {
       this.excludes.addAll(excludes)

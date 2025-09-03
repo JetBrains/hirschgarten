@@ -70,9 +70,8 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
           val rootFile = VfsUtilCore.getRootFile(virtualFile)
           val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
           val relativePathWithoutNestedClass = removeNestedClass(relativePath)
-          if (relativePathWithoutNestedClass in relativePathsToExclude) return@registerExclusionCondition true
           if (rootFile.url in librariesFromInternalTargetsUrls) {
-            return@registerExclusionCondition virtualFile.hasNonJvmExtension()
+            return@registerExclusionCondition virtualFile.hasNonJvmExtension() || relativePathWithoutNestedClass in relativePathsToExclude
           }
           false
         },
