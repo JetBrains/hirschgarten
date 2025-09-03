@@ -1,0 +1,15 @@
+PublishDiagnosticsParams(textDocument=TextDocumentIdentifier(path=DeprecatedWarning.java), buildTarget=@//:deprecated_warning, originId=some-id, diagnostics=[Diagnostic(range=Range(start=Position(line=2, character=11), end=Position(line=2, character=11)), message=[removal] deprecatedMethod() in Library has been deprecated and marked for removal
+    Library.deprecatedMethod();
+           ^, severity=WARNING, code=null, codeDescription=null, source=null, tags=null, relatedInformation=null)], reset=true)
+PublishDiagnosticsParams(textDocument=TextDocumentIdentifier(path=NoSuchMethodError.java), buildTarget=@//:no_such_method_error, originId=some-id, diagnostics=[Diagnostic(range=Range(start=Position(line=2, character=4), end=Position(line=2, character=4)), message=cannot find symbol
+    noSuchMethod();
+    ^
+  symbol:   method noSuchMethod()
+  location: class NoSuchMethodError, severity=ERROR, code=null, codeDescription=null, source=null, tags=null, relatedInformation=null)], reset=true)
+PublishDiagnosticsParams(textDocument=TextDocumentIdentifier(path=WarningAndError.java), buildTarget=@//:warning_and_error, originId=some-id, diagnostics=[Diagnostic(range=Range(start=Position(line=2, character=11), end=Position(line=2, character=11)), message=[removal] deprecatedMethod() in Library has been deprecated and marked for removal
+    Library.deprecatedMethod();
+           ^, severity=WARNING, code=null, codeDescription=null, source=null, tags=null, relatedInformation=null), Diagnostic(range=Range(start=Position(line=3, character=4), end=Position(line=3, character=4)), message=cannot find symbol
+    noSuchMethod();
+    ^
+  symbol:   method noSuchMethod()
+  location: class WarningAndError, severity=ERROR, code=null, codeDescription=null, source=null, tags=null, relatedInformation=null)], reset=true)
