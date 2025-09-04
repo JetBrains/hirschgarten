@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.java
 
+import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
@@ -8,12 +9,14 @@ import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
+import org.jetbrains.bazel.sync.workspace.languages.LifecycleAware
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import java.nio.file.Path
 
 class JavaLanguagePlugin(
+  private val project: Project,
   private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
   private val packageResolver: JvmPackageResolver,

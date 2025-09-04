@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
+import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
@@ -14,7 +16,7 @@ import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
 
 @Service(Service.Level.PROJECT)
-class LanguagePluginsService {
+class LanguagePluginsService(val project: Project) : SettingsSavingComponent {
   val logger = logger<LanguagePluginsService>()
   val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
 
@@ -36,7 +38,7 @@ class LanguagePluginsService {
 
   fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver) {
     val javaPlugin =
-      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()), jvmPackageResolver)
+      JavaLanguagePlugin(project, bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()), jvmPackageResolver)
         .also(this::registerLangaugePlugin)
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)
@@ -67,4 +69,8 @@ class LanguagePluginsService {
 
   inline fun <reified PLUGIN> getLanguagePlugin(lang: LanguageClass): PLUGIN =
     getLanguagePlugin(lang) as? PLUGIN ?: error("cannot cast ${lang.javaClass} to ${PLUGIN::class}")
+
+  override suspend fun save() {
+    all.filterIsInstance<LifecycleAware>().forEach { it.onSave() }
+  }
 }

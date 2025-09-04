@@ -848,6 +848,7 @@ class AspectBazelProjectMapper(
       }
 
     val context = LanguagePluginContext(target, dependencyGraph, repoMapping)
+    languagePlugin.processTarget(context, target)
     val data = languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(

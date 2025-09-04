@@ -1,0 +1,34 @@
+load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
+kt_jvm_library(
+    name = "java",
+    srcs = glob(["*.kt"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        ":java_plugin_data",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace/graph",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace/languages/api",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace/languages/jvm",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils/store",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils/store/utils",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
+        "//third_party/bazel/src/main/protobuf:deps_java_proto",
+    ],
+)
+
+proto_library(
+    name = "java_plugin_data_proto",
+    srcs = ["java_plugin_data.proto"],
+)
+
+java_proto_library(
+    name = "java_plugin_data",
+    deps = [":java_plugin_data_proto"],
+)
