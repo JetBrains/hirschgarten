@@ -16,4 +16,5 @@ interface LanguagePlugin<BuildTarget : BuildTargetData> {
   fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
 
   suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): BuildTarget?
+  suspend fun processTarget(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo) {}
 }
