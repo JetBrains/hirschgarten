@@ -26,15 +26,13 @@ class CaffeineWriteThroughCachedKVStore<K : Any, V : Any>(
     cache.cleanUp()
     inner.clear()
   }
-
-  companion object {
-    fun <K : Any, V : Any> withSoftCache(inner: KVStore<K, V>) = CaffeineWriteThroughCachedKVStore(
-      inner = inner,
-      cacheFactory = {
-        Caffeine.newBuilder()
-          .softValues()
-          .build()
-      }
-    )
-  }
 }
+
+fun <K : Any, V : Any> KVStore<K, V>.withSoftCache() = CaffeineWriteThroughCachedKVStore(
+  inner = this,
+  cacheFactory = {
+    Caffeine.newBuilder()
+      .softValues()
+      .build()
+  }
+)
