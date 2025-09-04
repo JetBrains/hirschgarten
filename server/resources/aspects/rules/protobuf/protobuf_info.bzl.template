@@ -1,13 +1,23 @@
 load("//aspects:utils/utils.bzl", "create_struct","file_location")
 
-#if( $bazel8OrAbove == "true" && $rulesetName != "" )
+#if( $bazel8OrAbove == "true" && $rulesetNameApparent == "rules_proto" )
 # Bazel 8+: Use only the rules_proto providers.
-load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
+load("@$protobufRepoName//proto:defs.bzl", "ProtoInfo", "proto_common")
 ProtoInfo_Secondary = None
 
-#elseif( $rulesetName != "" )
+#elseif( $bazel8OrAbove == "true" && $rulesetNameApparent == "protobuf" )
+load("@$protobufRepoName//bazel/common:proto_info.bzl", "ProtoInfo")
+load("@$protobufRepoName//bazel/common:proto_common.bzl", "proto_common")
+ProtoInfo_Secondary = None
+
+#elseif( $rulesetNameApparent == "rules_proto" )
 # Non-Bazel 8+ workspace that has rules_proto present: Support both builtin and rules_proto providers.
-load("@rules_proto//proto:defs.bzl", ProtoInfo_Secondary = "ProtoInfo", "proto_common")
+load("@$protobufRepoName//proto:defs.bzl", ProtoInfo_Secondary = "ProtoInfo", "proto_common")
+
+#elseif( $rulesetNameApparent == "protobuf" )
+load("@$protobufRepoName//bazel/common:proto_info.bzl", "ProtoInfo")
+load("@$protobufRepoName//bazel/common:proto_common.bzl", "proto_common")
+ProtoInfo_Secondary = None
 
 #else
 # Use only builtin providers.

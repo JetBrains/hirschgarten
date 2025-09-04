@@ -35,7 +35,7 @@ enum class Language(
     Java.autoloadHints + Scala.autoloadHints + Kotlin.autoloadHints,
   ),
   Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true, false),
-  Protobuf("//aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto"), listOf("extract_protobuf_info"), true, false),
+  Protobuf("//aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto", "protobuf"), listOf("extract_protobuf_info"), true, false),
   ;
 
   fun toLoadStatement(): String =
