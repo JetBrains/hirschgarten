@@ -1,5 +1,7 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="ByteCodeViewer" >
-    <classFileFinder implementation="org.jetbrains.bazel.sdkcompat.bytecodeViewer.BazelCompatBytecodeViewerClassFileFinder"/>
+  <extensions defaultExtensionNs="ByteCodeViewer">
+    <classFileFinder
+      implementation="org.jetbrains.bazel.sdkcompat.bytecodeViewer.BazelCompatBytecodeViewerClassFileFinder"
+    />
   </extensions>
 </idea-plugin>

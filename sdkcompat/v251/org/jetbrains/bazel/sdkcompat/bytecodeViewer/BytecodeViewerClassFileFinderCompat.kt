@@ -5,10 +5,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiClass
 
 interface BytecodeViewerClassFileFinderCompat {
-  fun findClass(
-    element: PsiClass,
-    containing: PsiClass?,
-  ): VirtualFile?
+  fun findClass(element: PsiClass, containing: PsiClass?): VirtualFile?
 
   companion object {
     val ep = ExtensionPointName<BytecodeViewerClassFileFinderCompat>("org.jetbrains.bazel.bytecodeViewerClassFileFinderCompat")

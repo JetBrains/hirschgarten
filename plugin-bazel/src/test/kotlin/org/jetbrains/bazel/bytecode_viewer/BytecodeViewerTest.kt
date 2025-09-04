@@ -10,13 +10,13 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.tools.ide.performanceTesting.commands.build
 import com.intellij.tools.ide.performanceTesting.commands.goto
+import com.intellij.tools.ide.performanceTesting.commands.openFile
+import com.intellij.tools.ide.performanceTesting.commands.reloadFiles
+import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.buildAndSync
-import com.intellij.tools.ide.performanceTesting.commands.openFile
-import com.intellij.tools.ide.performanceTesting.commands.reloadFiles
-import com.intellij.tools.ide.performanceTesting.commands.sleep
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.jetbrains.bazel.sdkcompat.bytecodeViewer.BytecodeViewerClassFileFinderCompat
 import org.junit.jupiter.api.Test
@@ -47,7 +47,8 @@ class BytecodeViewerTest : IdeStarterBaseProjectTest() {
     createContext().runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       step("Import Bazel project") {
         execute {
-          it.buildAndSync()
+          it
+            .buildAndSync()
             .waitForBazelSync()
             .waitForSmartMode()
             .takeScreenshot("afterImport")
