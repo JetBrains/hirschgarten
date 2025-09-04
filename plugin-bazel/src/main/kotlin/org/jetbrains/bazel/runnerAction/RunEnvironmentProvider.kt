@@ -33,8 +33,8 @@ class RunEnvironmentProvider(private val project: Project) {
 
     val plugin = project.serviceAsync<LanguagePluginsService>()
       .getLanguagePlugin<JavaLanguagePlugin>(LanguageClass.JAVA)
-    val runTargetInfo = plugin.storages.runTargetInfoStore.get(label) ?: return null
-    
+    val runTargetInfo = plugin.runTargetInfoStore.get(label) ?: return null
+
     return JvmEnvironmentItem(
       target = label,
       classpath = resolvedClasspath,
