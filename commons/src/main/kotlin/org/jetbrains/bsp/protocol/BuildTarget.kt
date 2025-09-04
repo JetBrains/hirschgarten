@@ -80,10 +80,6 @@ data class JvmBuildTarget(
   val javaVersion: String,
   val javacOpts: List<String> = listOf(),
   val binaryOutputs: List<Path> = listOf(),
-  val environmentVariables: Map<String, String> = mapOf(),
-  val mainClass: String? = null,
-  val jvmArgs: List<String> = listOf(),
-  val programArgs: List<String> = listOf(),
 ) : BuildTargetData
 
 @ClassDiscriminator(5)

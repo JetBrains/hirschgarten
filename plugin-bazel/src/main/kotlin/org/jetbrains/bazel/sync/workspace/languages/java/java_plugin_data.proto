@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package bazelbsp;
+
+option java_package = "org.jetbrains.bazel.sync.workspace.languages.java";
+option java_multiple_files = true;
+
+message JavaRunTargetInfo {
+  map<string, string> env_variables = 1;
+  optional string main_class = 2;
+  repeated string jvm_args = 3;
+  repeated string program_args = 4;
+}
