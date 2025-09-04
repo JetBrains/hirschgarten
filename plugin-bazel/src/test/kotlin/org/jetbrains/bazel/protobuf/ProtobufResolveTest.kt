@@ -25,7 +25,7 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/Krystian20857/simpleBazelProjectsForTesting.git",
-        commitHash = "6f48bd5ac0f5266b82bbda5052c28a46c8d3a139",
+        commitHash = "148ddeddd07cfc678db20e50d9c955d4d9bbbafb",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("protobufTest") },
         isReusable = true,
