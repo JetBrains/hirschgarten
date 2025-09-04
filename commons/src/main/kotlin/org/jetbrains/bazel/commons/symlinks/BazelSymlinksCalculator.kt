@@ -33,6 +33,7 @@ object BazelSymlinksCalculator {
             try {
               file.toRealPath()
             } catch (_: IOException) {
+              // Symlink may have a broken target after bazel clean
               return FileVisitResult.CONTINUE
             }
           // See https://bazel.build/remote/output-directories
