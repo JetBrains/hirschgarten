@@ -5,10 +5,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiClass
 
 class BazelCompatBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
-  override fun findClass(
-    element: PsiClass,
-    containing: PsiClass?,
-  ): VirtualFile? {
+  override fun findClass(element: PsiClass, containing: PsiClass?): VirtualFile? {
     for (compat in BytecodeViewerClassFileFinderCompat.ep.extensionList) {
       val vFile = compat.findClass(element, containing)
       if (vFile != null) {

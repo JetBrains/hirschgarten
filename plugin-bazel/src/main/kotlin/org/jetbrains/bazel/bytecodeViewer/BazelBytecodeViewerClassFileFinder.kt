@@ -21,26 +21,29 @@ import java.nio.file.Path
 import kotlin.io.path.extension
 
 class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinderCompat {
-  override fun findClass(
-    element: PsiClass,
-    containing: PsiClass?,
-  ): VirtualFile? {
+  override fun findClass(element: PsiClass, containing: PsiClass?): VirtualFile? {
     val targetElement = element.containingClass ?: element
     val project = targetElement.project
     val vFile = targetElement.containingFile.virtualFile
     val targetUtils = project.targetUtils
-    val path = targetUtils.getTargetsForFile(vFile)
-      .asSequence()
-      .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      .firstNotNullOfOrNull { resolveCompiledClassesPathForJVMLanguage(project, it) }
+    val path =
+      targetUtils
+        .getTargetsForFile(vFile)
+        .asSequence()
+        .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+        .firstNotNullOfOrNull { resolveCompiledClassesPathForJVMLanguage(project, it) }
     return path?.toCompiledClassesVFSRoot(project)?.toFullClassPath(targetElement)
   }
 
   private fun resolveCompiledClassesPathForJVMLanguage(project: Project, target: BuildTarget): Path? {
-    val binPath = BazelBinPathService.getInstance(project)
-      .bazelBinPath ?: return null
-    val targetDir = Path.of(binPath)
-      .resolve(target.id.packagePath.toString())
+    val binPath =
+      BazelBinPathService
+        .getInstance(project)
+        .bazelBinPath ?: return null
+    val targetDir =
+      Path
+        .of(binPath)
+        .resolve(target.id.packagePath.toString())
     return when (target.data) {
       is JvmBuildTarget, is KotlinBuildTarget, is ScalaBuildTarget -> {
         if (target.kind.ruleType == RuleType.LIBRARY) {
