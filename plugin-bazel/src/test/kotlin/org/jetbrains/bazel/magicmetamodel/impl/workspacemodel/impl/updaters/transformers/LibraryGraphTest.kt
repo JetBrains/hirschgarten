@@ -39,7 +39,7 @@ class LibraryGraphTest {
       val target =
         mockTarget(
           id = "target",
-          dependencies = listOf("lib1", "lib2[synthetic]"),
+          dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
@@ -48,7 +48,7 @@ class LibraryGraphTest {
             emptyList(),
           ),
           mockLibraryItem(
-            "lib2[synthetic]",
+            "lib2",
             emptyList(),
           ),
         )
@@ -61,7 +61,7 @@ class LibraryGraphTest {
       dependencies shouldBe
         listOf(
           Label.parse("lib1"),
-          Label.parse("lib2[synthetic]"),
+          Label.parse("lib2"),
         )
     }
 
@@ -71,7 +71,7 @@ class LibraryGraphTest {
       val target =
         mockTarget(
           id = "target",
-          dependencies = listOf("lib1", "lib2[synthetic]"),
+          dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
@@ -80,7 +80,7 @@ class LibraryGraphTest {
             listOf("lib3"),
           ),
           mockLibraryItem(
-            "lib2[synthetic]",
+            "lib2",
             listOf("lib4"),
           ),
           mockLibraryItem(
@@ -121,7 +121,7 @@ class LibraryGraphTest {
       dependencies shouldContainExactlyInAnyOrder
         listOf(
           Label.parse("lib1"),
-          Label.parse("lib2[synthetic]"),
+          Label.parse("lib2"),
           Label.parse("lib3"),
           Label.parse("lib4"),
           Label.parse("lib5"),
@@ -136,7 +136,7 @@ class LibraryGraphTest {
       val target =
         mockTarget(
           id = "target1",
-          dependencies = listOf("lib1", "lib2[synthetic]"),
+          dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
@@ -145,7 +145,7 @@ class LibraryGraphTest {
             listOf("lib3"),
           ),
           mockLibraryItem(
-            "lib2[synthetic]",
+            "lib2",
             listOf("lib4"),
           ),
           mockLibraryItem(
@@ -186,7 +186,7 @@ class LibraryGraphTest {
       dependencies shouldContainExactlyInAnyOrder
         listOf(
           Label.parse("lib1"),
-          Label.parse("lib2[synthetic]"),
+          Label.parse("lib2"),
           Label.parse("lib3"),
           Label.parse("lib4"),
           Label.parse("lib5"),
@@ -231,7 +231,7 @@ class LibraryGraphTest {
       val target =
         mockTarget(
           id = "target",
-          dependencies = listOf("lib1", "lib2[synthetic]"),
+          dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
@@ -240,7 +240,7 @@ class LibraryGraphTest {
             emptyList(),
           ),
           mockLibraryItem(
-            "lib2[synthetic]",
+            "lib2",
             emptyList(),
           ),
         )
@@ -253,7 +253,7 @@ class LibraryGraphTest {
       dependencies shouldBe
         listOf(
           Label.parse("lib1"),
-          Label.parse("lib2[synthetic]"),
+          Label.parse("lib2"),
         )
     }
 
@@ -263,7 +263,7 @@ class LibraryGraphTest {
       val target =
         mockTarget(
           id = "target",
-          dependencies = listOf("lib1", "lib2[synthetic]"),
+          dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
@@ -272,7 +272,7 @@ class LibraryGraphTest {
             listOf("lib3"),
           ),
           mockLibraryItem(
-            "lib2[synthetic]",
+            "lib2",
             listOf("lib4"),
           ),
           mockLibraryItem(
@@ -313,7 +313,7 @@ class LibraryGraphTest {
       dependencies shouldBe
         listOf(
           Label.parse("lib1"),
-          Label.parse("lib2[synthetic]"),
+          Label.parse("lib2"),
         )
     }
 
@@ -323,7 +323,7 @@ class LibraryGraphTest {
       val target =
         mockTarget(
           id = "target1",
-          dependencies = listOf("lib1", "target2", "lib2[synthetic]", "target3"),
+          dependencies = listOf("lib1", "target2", "lib2", "target3"),
         )
       val libraries =
         listOf(
@@ -332,7 +332,7 @@ class LibraryGraphTest {
             listOf("lib3"),
           ),
           mockLibraryItem(
-            "lib2[synthetic]",
+            "lib2",
             listOf("lib4"),
           ),
           mockLibraryItem(
@@ -366,7 +366,7 @@ class LibraryGraphTest {
         listOf(
           Label.parse("lib1"),
           Label.parse("target2"),
-          Label.parse("lib2[synthetic]"),
+          Label.parse("lib2"),
           Label.parse("target3"),
         )
     }

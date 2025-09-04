@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-internal val testLibraries: Map<String, Library> =
+internal val testLibraries: List<Library> =
   listOf(
     Library(
       displayName = "lib1",
@@ -45,7 +45,10 @@ internal val testLibraries: Map<String, Library> =
       mavenCoordinates = null,
       isLowPriority = false,
     ),
-  ).associateBy { it.displayName }
+  )
+
+internal val testLibrariesByName: Map<String, Library> =
+  testLibraries.associateBy { it.displayName }
 
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
@@ -65,7 +68,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
 
-    moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies, testLibraries)
+    moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies, testLibrariesByName)
   }
 
   @Test
