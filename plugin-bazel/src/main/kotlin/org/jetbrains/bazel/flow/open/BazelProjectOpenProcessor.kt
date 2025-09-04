@@ -18,6 +18,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sdkcompat.createModule
+import org.jetbrains.bazel.sdkcompat.setProjectRootDir
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.io.IOException
@@ -85,6 +86,8 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
       runConfigurators = true
       isNewProject = !ProjectUtilCore.isValidProjectPath(projectPath)
       isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
+
+      setProjectRootDir(projectPath)
 
       this.forceOpenInNewFrame = forceOpenInNewFrame
       this.projectToClose = projectToClose

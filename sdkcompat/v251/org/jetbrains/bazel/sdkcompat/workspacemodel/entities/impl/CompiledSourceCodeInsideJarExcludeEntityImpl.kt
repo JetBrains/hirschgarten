@@ -1,4 +1,4 @@
-package impl
+package org.jetbrains.bazel.sdkcompat.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.storage.ConnectionId
@@ -25,7 +25,7 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeI
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 
 @GeneratedCodeApiVersion(3)
-@GeneratedCodeImplVersion(7)
+@GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: CompiledSourceCodeInsideJarExcludeEntityData) : CompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(
   dataSource) {
