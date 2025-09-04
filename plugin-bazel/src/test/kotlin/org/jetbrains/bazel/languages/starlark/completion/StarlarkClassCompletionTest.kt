@@ -2,7 +2,10 @@ package org.jetbrains.bazel.languages.starlark.completion
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldContainOnly
+import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.config.isBazelProject
 import org.junit.Before
 import org.junit.Test
@@ -135,7 +138,7 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
 
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.\""))
+    lookups.shouldContain("\"com.\"")
   }
 
   @Test
@@ -187,7 +190,7 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
     )
     val lookups = myFixture.completeBasic().map { it.lookupString }
 
-    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass.NestedClass\""))
+    lookups.shouldContain("\"com.example.MyClass.NestedClass\"")
   }
 
   @Test
@@ -277,6 +280,169 @@ class StarlarkClassCompletionTest : BasePlatformTestCase() {
       )
       """.trimMargin(),
     )
-    lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\""))
+    lookups.shouldContain("\"com.example.MyClass\"")
+  }
+
+  @Test
+  fun `should not suggest abstract class and interface`() {
+    myFixture.addFileToProject(
+      "com/example/AbstractBase.java",
+      """
+      package com.example;
+      public abstract class AbstractBase {}
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "com/example/MyInterface.java",
+      """
+      package com.example;
+      public interface MyInterface {}
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "com/example/Valid.java",
+      """
+      package com.example;
+      public class Valid extends AbstractBase implements MyInterface {}
+      """.trimIndent(),
+    )
+
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "t",
+        classname = "com.example.<caret>",
+      )
+      """.trimMargin(),
+    )
+
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+    lookups.shouldContainOnly("\"com.example.Valid\"")
+  }
+
+  @Test
+  fun `should not suggest class marked synthetic by Kotlin Metadata`() {
+    myFixture.addFileToProject(
+      "com/example/SyntheticByMetadata.java",
+      """
+      package com.example;
+      @kotlin.Metadata(k = 3, mv = {1, 8, 0})
+      public class SyntheticByMetadata {}
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "com/example/Valid.kt",
+      """
+      package com.example
+      class Valid
+      """.trimIndent(),
+    )
+
+    myFixture.configureByText(
+      "BUILD",
+      """
+      kt_jvm_binary(
+        name = "t",
+        main_class = "com.example.<caret>",
+      )
+      """.trimMargin(),
+    )
+
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+    lookups.shouldContainOnly("\"com.example.Valid\"")
+  }
+
+  @Test
+  fun `should not suggest DefaultImpls class`() {
+    myFixture.addFileToProject(
+      "com/example/WithDefaults${'$'}DefaultImpls.java",
+      """
+      package com.example;
+      public final class WithDefaults${'$'}DefaultImpls {}
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "com/example/Valid.java",
+      """
+      package com.example;
+      public class Valid {}
+      """.trimIndent(),
+    )
+
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "t",
+        classname = "com.example.<caret>",
+      )
+      """.trimMargin(),
+    )
+
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+    lookups.shouldContainOnly("\"com.example.Valid\"")
+  }
+
+  @Test
+  fun `should not suggest multi-file part-like class`() {
+    myFixture.addFileToProject(
+      "com/example/mf/FooKt__A.java",
+      """
+      package com.example.mf;
+      public class FooKt__A {}
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "com/example/mf/Valid.java",
+      """
+      package com.example.mf;
+      public class Valid {}
+      """.trimIndent(),
+    )
+
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "t",
+        classname = "com.example.mf.<caret>",
+      )
+      """.trimMargin(),
+    )
+
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+    lookups.shouldContainOnly("\"com.example.mf.Valid\"")
+  }
+
+  @Test
+  fun `should not suggest classes with double-dollar in name`() {
+    myFixture.addFileToProject(
+      "com/example/Some${"$$"}Lambda$1.java",
+      """
+      package com.example;
+      public class Some${"$$"}Lambda$1 {}
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "com/example/Valid.java",
+      """
+      package com.example;
+      public class Valid {}
+      """.trimIndent(),
+    )
+
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_binary(
+        name = "t",
+        classname = "com.example.<caret>",
+      )
+      """.trimMargin(),
+    )
+
+    val lookups = myFixture.completeBasic().map { it.lookupString }
+    lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 }

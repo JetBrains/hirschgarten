@@ -10,6 +10,7 @@ import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiLiteralExpression
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiPackage
 import com.intellij.psi.search.GlobalSearchScope
@@ -19,6 +20,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
+import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader
 
 class StarlarkClassnameCompletionContributor : CompletionContributor() {
   init {
@@ -121,8 +123,27 @@ private class StarlarkClassnameCompletionProvider : CompletionProvider<Completio
     // Filter out interfaces and abstract classes
     if (this.isInterface || this.hasModifierProperty(PsiModifier.ABSTRACT)) return false
 
-    // Filter out synthetic classes
-    if (name == "WhenMappings" || name == "DefaultImpls") return false
+    // Exclude anonymous/local classes
+    val qName = this.qualifiedName ?: return false
+    val name = this.name ?: return false
+
+    val metadataKind: Int? =
+      this.modifierList
+        ?.findAnnotation("kotlin.Metadata")
+        ?.let { ann -> (ann.findAttributeValue("k") as? PsiLiteralExpression)?.value as? Int }
+
+    // Exclude synthetic classes
+    if (metadataKind == KotlinClassHeader.Kind.SYNTHETIC_CLASS.id) return false
+
+    // Exclude kotlin multi-file part implementations (e.g. FooKt__partN)
+    if (metadataKind == KotlinClassHeader.Kind.MULTIFILE_CLASS_PART.id) return false
+    if (metadataKind == null && name.contains("Kt__")) return false
+
+    // Exclude Kotlin helper classes for default interface methods
+    if (name.endsWith("\$DefaultImpls")) return false
+
+    // Exclude compiler/JVM artifacts e.g. lambdas
+    if (qName.contains("$$")) return false
 
     return true
   }
