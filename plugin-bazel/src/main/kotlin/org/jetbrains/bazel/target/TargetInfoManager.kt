@@ -301,7 +301,7 @@ private fun openIdToLabelListMap(
 
 private fun stringToHashId(s: String): HashValue128 = hashBytesTo128Bits(s.encodeToByteArray())
 
-private fun computeLabelHash(label: ResolvedLabel, hash: HashAdapter): HashValue128 {
+fun computeLabelHash(label: ResolvedLabel, hash: HashAdapter): HashValue128 {
   hashLabelRepo(label, hash)
   hashLabelPackage(label, hash)
   hashLabelTarget(label, hash)
