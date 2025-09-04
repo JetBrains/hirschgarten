@@ -28,6 +28,11 @@ kt_jvm_library(
         "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_engine",
+        "@maven//:org_junit_platform_junit_platform_console",
+        "@maven//:org_junit_platform_junit_platform_suite_api",
+        "@maven//:org_junit_platform_junit_platform_suite_engine",
     ],
 )
 

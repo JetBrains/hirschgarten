@@ -1,5 +1,10 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.testFramework.fixtures.IdeaTestExecutionPolicy
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
+import com.intellij.testFramework.fixtures.TempDirTestFixture
+import com.intellij.testFramework.fixtures.impl.LightTempDirTestFixtureImpl
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -47,6 +52,8 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.system.exitProcess
 
+val fixture = createProjectFixture()
+
 fun main(args: Array<String>) {
   if (args.isEmpty()) {
     println("Usage: ResolverSanityRunner <path-to-textproto-file> [<path-to-textproto-file> ...]")
@@ -80,6 +87,23 @@ fun main(args: Array<String>) {
       exitProcess(1)
     }
   }
+}
+
+private fun createProjectFixture(): CodeInsightTestFixture {
+  val factory = IdeaTestFixtureFactory.getFixtureFactory()
+  val fixtureBuilder =
+    factory.createLightFixtureBuilder(null, "sanity_test")
+  val fixture = fixtureBuilder.getFixture()
+
+  return IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(fixture, createTempDirTestFixture())
+}
+
+private fun createTempDirTestFixture(): TempDirTestFixture {
+  val policy = IdeaTestExecutionPolicy.current()
+  return if (policy != null)
+    policy.createTempDirTestFixture()
+  else
+    LightTempDirTestFixtureImpl(true)
 }
 
 private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo>) {
@@ -178,7 +202,7 @@ private suspend fun processAndPrint(
   val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
   // Create language plugins
-  val languagePluginsService = LanguagePluginsService()
+  val languagePluginsService = LanguagePluginsService(fixture.project)
   languagePluginsService.registerDefaultPlugins(bazelPathsResolver, TestJvmPackageResolver())
 
   // Create mappers
@@ -283,11 +307,13 @@ fun prettyPrint(input: String): String {
         indentLevel++
         addNewlineAndIndent()
       }
+
       ')', ']', '}' -> {
         indentLevel--
         addNewlineAndIndent()
         result.append(char)
       }
+
       ',' -> {
         result.append(char)
         // Check if next non-space character starts a new field or is a closing bracket
@@ -299,12 +325,14 @@ fun prettyPrint(input: String): String {
           result.append(' ')
         }
       }
+
       ' ' -> {
         // Skip multiple spaces, we control spacing
         if (result.isNotEmpty() && result.last() != ' ' && result.last() != '\n') {
           result.append(' ')
         }
       }
+
       else -> {
         result.append(char)
       }
