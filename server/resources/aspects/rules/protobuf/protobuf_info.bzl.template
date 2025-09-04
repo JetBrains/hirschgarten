@@ -2,12 +2,12 @@ load("//aspects:utils/utils.bzl", "create_struct","file_location")
 
 #if( $bazel8OrAbove == "true" && $rulesetName != "" )
 # Bazel 8+: Use only the rules_proto providers.
-load("@rules_proto//proto:defs.bzl", "ProtoInfo")
+load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 ProtoInfo_Secondary = None
 
 #elseif( $rulesetName != "" )
 # Non-Bazel 8+ workspace that has rules_proto present: Support both builtin and rules_proto providers.
-load("@rules_proto//proto:defs.bzl", ProtoInfo_Secondary = "ProtoInfo")
+load("@rules_proto//proto:defs.bzl", ProtoInfo_Secondary = "ProtoInfo", "proto_common")
 
 #else
 # Use only builtin providers.
