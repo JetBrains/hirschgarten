@@ -1,4 +1,4 @@
-package impl
+package org.jetbrains.bazel.sdkcompat.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
@@ -26,7 +26,7 @@ import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity
 
 @GeneratedCodeApiVersion(3)
-@GeneratedCodeImplVersion(7)
+@GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEntityData) : ScalaAddendumEntity, WorkspaceEntityBase(
   dataSource) {
