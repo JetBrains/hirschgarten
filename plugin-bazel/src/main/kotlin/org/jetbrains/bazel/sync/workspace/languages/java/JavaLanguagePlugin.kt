@@ -12,7 +12,6 @@ import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LifecycleAware
-import org.jetbrains.bazel.sync.workspace.languages.java.JavaPluginData.JavaRunTargetInfo
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.utils.store.KVStore
 import org.jetbrains.bazel.utils.store.codec.ProtoStoreCodec
@@ -36,7 +35,7 @@ class JavaLanguagePlugin(
   val runTargetInfoStore: KVStore<Label, JavaPluginData.JavaRunTargetInfo> = MVStoreKVStore.createHashedFromCodecs(
     store = mvStore,
     name = "run-target-info",
-    valueCodec = ProtoStoreCodec(JavaRunTargetInfo::parseFrom),
+    valueCodec = ProtoStoreCodec(JavaPluginData.JavaRunTargetInfo::parseFrom),
   ).toLabelStore()
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
@@ -72,7 +71,7 @@ class JavaLanguagePlugin(
     val environmentVariables =
       context.target.envMap + context.target.envInheritList.associateWith { environmentProvider.getValue(it) ?: "" }
 
-    val runTargetInfo = JavaRunTargetInfo.newBuilder()
+    val runTargetInfo = JavaPluginData.JavaRunTargetInfo.newBuilder()
       .putAllEnvVariables(environmentVariables)
       .addAllJvmArgs(jvmTarget.jvmFlagsList)
       .addAllProgramArgs(jvmTarget.argsList)
