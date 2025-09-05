@@ -28,13 +28,6 @@ data class ProjectViewEnabledRulesSection(override val values: List<String>) : P
   }
 }
 
-data class ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection(override val values: List<String>) :
-  ProjectViewListSection<String>(SECTION_NAME) {
-  companion object {
-    const val SECTION_NAME = "experimental_prioritize_libraries_over_modules_target_kinds"
-  }
-}
-
 data class ImportRunConfigurationsSection(override val values: List<String>) : ProjectViewListSection<String>(SECTION_NAME) {
   companion object {
     const val SECTION_NAME = "import_run_configurations"

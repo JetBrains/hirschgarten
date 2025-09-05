@@ -58,7 +58,6 @@ kt_intellij_junit4_test(
     src = "BazelGlobalFunctionArgumentCompletionTest.kt",
     deps = [
         "//plugin-bazel",
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
 
@@ -79,6 +78,13 @@ kt_intellij_junit4_test(
 kt_intellij_junit4_test(
     name = "StarlarkFileCompletionTest",
     src = "StarlarkFileCompletionTest.kt",
+    tags = ["exclusive"],
+    deps = ["//plugin-bazel"],
+)
+
+kt_intellij_junit4_test(
+    name = "StarlarkClassCompletionTest",
+    src = "StarlarkClassCompletionTest.kt",
     tags = ["exclusive"],
     deps = ["//plugin-bazel"],
 )

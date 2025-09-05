@@ -3,7 +3,6 @@ package org.jetbrains.bazel.projectview.model
 import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.projectview.model.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
-import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
 import org.jetbrains.bazel.projectview.model.sections.ImportIjarsSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
@@ -28,35 +27,8 @@ import org.jetbrains.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bazel.projectview.model.sections.TargetShardSizeSection
 import org.slf4j.LoggerFactory
 
-val supportedSections =
-  setOf(
-    ProjectViewTargetsSection.SECTION_NAME,
-    ProjectViewBazelBinarySection.SECTION_NAME,
-    ProjectViewBuildFlagsSection.SECTION_NAME,
-    ProjectViewSyncFlagsSection.SECTION_NAME,
-    ProjectViewAllowManualTargetsSyncSection.SECTION_NAME,
-    ProjectViewDirectoriesSection.SECTION_NAME,
-    ProjectViewDeriveTargetsFromDirectoriesSection.SECTION_NAME,
-    ProjectViewImportDepthSection.SECTION_NAME,
-    ProjectViewEnabledRulesSection.SECTION_NAME,
-    ProjectViewIdeJavaHomeOverrideSection.SECTION_NAME,
-    ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection.SECTION_NAME,
-    EnableNativeAndroidRulesSection.SECTION_NAME,
-    AndroidMinSdkSection.SECTION_NAME,
-    ShardSyncSection.SECTION_NAME,
-    TargetShardSizeSection.SECTION_NAME,
-    ShardingApproachSection.SECTION_NAME,
-    ImportRunConfigurationsSection.SECTION_NAME,
-    GazelleTargetSection.SECTION_NAME,
-    IndexAllFilesInDirectoriesSection.SECTION_NAME,
-    PythonCodeGeneratorRuleNamesSection.SECTION_NAME,
-    ImportIjarsSection.SECTION_NAME,
-    DeriveInstrumentationFilterFromTargetsSection.SECTION_NAME,
-  )
-
 /**
  * Representation of the project view file.
- * IMPORTANT!!! When adding support for a new section, make sure to update the list above.
  * @link https://ij.bazel.build/docs/project-views.html
  */
 data class ProjectView(
@@ -82,8 +54,6 @@ data class ProjectView(
   val enabledRules: ProjectViewEnabledRulesSection?,
   /** local java home path to override to use with IDE, e.g. IntelliJ IDEA */
   val ideJavaHomeOverride: ProjectViewIdeJavaHomeOverrideSection?,
-  /** libraries get higher precedence in the IDE than modules (JVM-related) */
-  val prioritizeLibrariesOverModulesTargetKindsSection: ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection? = null,
   /** enable native (non-starlarkified) Android rules */
   val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
   /** Override the minimum Android SDK version globally for the whole project */
@@ -117,7 +87,6 @@ data class ProjectView(
     private val importDepth: ProjectViewImportDepthSection? = null,
     private val enabledRules: ProjectViewEnabledRulesSection? = null,
     private val ideJavaHomeOverride: ProjectViewIdeJavaHomeOverrideSection? = null,
-    private val prioritizeLibrariesOverModulesTargetKinds: ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection? = null,
     private val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
     private val androidMinSdkSection: AndroidMinSdkSection? = null,
     private val shardSync: ShardSyncSection? = null,
@@ -148,7 +117,6 @@ data class ProjectView(
       val importDepth = combineImportDepthSection(importedProjectViews)
       val enabledRules = combineEnabledRulesSection(importedProjectViews)
       val ideJavaHomeOverride = combineIdeJavaHomeOverrideSection(importedProjectViews)
-      val prioritizeLibrariesOverModulesTargetKinds = combinePrioritizeLibrariesOverModulesTargetKindsSection(importedProjectViews)
       val enableNativeAndroidRules = combineEnableNativeAndroidRulesSection(importedProjectViews)
       val androidMinSdkSection = combineAndroidMinSdkSection(importedProjectViews)
       val shardSyncSection = combineShardSyncSection(importedProjectViews)
@@ -173,7 +141,6 @@ data class ProjectView(
         importDepth,
         enabledRules,
         ideJavaHomeOverride,
-        prioritizeLibrariesOverModulesTargetKinds,
         enableNativeAndroidRules,
         androidMinSdkSection,
         shardSyncSection,
@@ -186,19 +153,6 @@ data class ProjectView(
         importIjars,
         deriveInstrumentationFilterFromTargets,
       )
-    }
-
-    private fun combinePrioritizeLibrariesOverModulesTargetKindsSection(
-      importedProjectViews: List<ProjectView>,
-    ): ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection? {
-      val targetKinds =
-        combineListValuesWithImported(
-          importedProjectViews,
-          prioritizeLibrariesOverModulesTargetKinds,
-          ProjectView::prioritizeLibrariesOverModulesTargetKindsSection,
-          ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection::values,
-        )
-      return createInstanceOfListSectionOrNull(targetKinds, ::ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection)
     }
 
     private fun combineEnableNativeAndroidRulesSection(importedProjectViews: List<ProjectView>): EnableNativeAndroidRulesSection? =

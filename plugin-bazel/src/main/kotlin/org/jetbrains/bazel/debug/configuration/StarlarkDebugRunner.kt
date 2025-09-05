@@ -125,12 +125,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
       BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
       val params = AnalysisDebugParams(originId, port, listOf(target))
 
-      val buildDeferred =
-        async {
-          BazelWorkspaceResolveService
-            .getInstance(project)
-            .withEndpointProxy { it.buildTargetAnalysisDebug(params) }
-        }
+      val buildDeferred = async { server.buildTargetAnalysisDebug(params) }
       try {
         val result = buildDeferred.await()
         futureProxy.complete(result)

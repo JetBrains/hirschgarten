@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

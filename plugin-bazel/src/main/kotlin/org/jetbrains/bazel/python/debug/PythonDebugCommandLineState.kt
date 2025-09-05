@@ -47,9 +47,7 @@ class PythonDebugCommandLineState(environment: ExecutionEnvironment, private val
         originId = originId.toString(),
         arguments = transformProgramArguments(programArguments),
       )
-    BazelWorkspaceResolveService
-      .getInstance(environment.project)
-      .withEndpointProxy { it.buildTargetCompile(buildParams) }
+    server.buildTargetCompile(buildParams)
   }
 
   fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)

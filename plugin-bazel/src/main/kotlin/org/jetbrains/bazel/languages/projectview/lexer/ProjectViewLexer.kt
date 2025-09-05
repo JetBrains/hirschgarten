@@ -26,7 +26,7 @@ class ProjectViewLexer : LexerBase() {
     this.offsetStart = startOffset
     this.endOffset = endOffset
 
-    var lexer = ProjectViewLexerBase(buffer.subSequence(startOffset, endOffset))
+    val lexer = ProjectViewLexerBase(buffer.subSequence(startOffset, endOffset))
     tokens = lexer.getTokens().iterator()
     currentToken = if (tokens.hasNext()) tokens.next() else null
   }

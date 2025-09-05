@@ -8,8 +8,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import org.jetbrains.bazel.commons.LanguageClass
@@ -30,23 +28,17 @@ import kotlin.io.path.relativeTo
 @Service(Service.Level.PROJECT)
 @State(name = "PythonResolveIndexService", storages = [Storage("bazelPython.xml")], reportStatistic = true)
 class PythonResolveIndexService(private val project: Project) : PersistentStateComponent<PythonResolveIndexService.State> {
-  var resolveIndex: Map<QualifiedName, (PsiManager) -> PsiElement?> = emptyMap()
+  var resolveIndex: Map<QualifiedName, VirtualFile?> = emptyMap()
     private set
   private var internalResolveIndex: Map<QualifiedName, Path> = mapOf()
 
   fun updatePythonResolveIndex(rawTargets: List<RawBuildTarget>) {
-    internalResolveIndex = buildIndex(rawTargets)
+    internalResolveIndex = buildIndex(rawTargets.asSequence())
     resolveIndex =
-      internalResolveIndex.mapValues { (_, path) ->
-        { psiManager ->
-          psiManager.findFileOrDirectory(
-            path.toVirtualFile() ?: return@mapValues null,
-          )
-        }
-      }
+      internalResolveIndex.mapValues { (_, path) -> path.toVirtualFile() }
   }
 
-  private fun buildIndex(rawTargets: List<RawBuildTarget>): Map<QualifiedName, Path> {
+  private fun buildIndex(rawTargets: Sequence<RawBuildTarget>): Map<QualifiedName, Path> {
     val executionRoot = BazelBinPathService.getInstance(project).bazelExecPath?.let { Path.of(it) } ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
     val bazelBin = BazelBinPathService.getInstance(project).bazelBinPath?.let { Path.of(it) } ?: return emptyMap()
@@ -203,7 +195,7 @@ class PythonResolveIndexService(private val project: Project) : PersistentStateC
           pair.key.split(".").let { QualifiedName.fromComponents(it) } to Path.of(pair.value)
         }.toMap()
     resolveIndex =
-      internalResolveIndex.mapValues { (_, path) -> { psiManager -> psiManager.findFile(path.toVirtualFile() ?: return@mapValues null) } }
+      internalResolveIndex.mapValues { (_, path) -> path.toVirtualFile() }
   }
 }
 
@@ -219,12 +211,5 @@ private fun Path.toQualifiedName(): QualifiedName? {
     relativePath.split(separator).flatMap { it.split(".") }.filter { it.isNotEmpty() },
   )
 }
-
-private fun PsiManager.findFileOrDirectory(vf: VirtualFile): PsiElement? =
-  if (vf.isDirectory) {
-    findDirectory(vf)
-  } else {
-    findFile(vf)
-  }
 
 private fun Path.toVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(this)

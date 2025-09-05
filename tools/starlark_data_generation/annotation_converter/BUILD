@@ -7,7 +7,7 @@ kt_jvm_binary(
     ]),
     main_class = "AnnotationConverter",
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark",
         "//tools/starlark_data_generation/common:commons",
         "@maven//:com_github_javaparser_javaparser_core",
     ],
