@@ -127,9 +127,8 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       fileToTarget = fileToTarget,
       fileToExecutableTargets =
         calculateFileToExecutableTargets(
-          libraryItems = libraryItems,
+          targetDependentsGraph = TargetDependentsGraph(targets, libraryItems),
           fileToTarget = fileToTarget,
-          targets = targets,
           labelToTargetInfo = labelToTargetInfo,
         ),
       libraryItems = libraryItems,
@@ -148,13 +147,11 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   }
 
   private suspend fun calculateFileToExecutableTargets(
-    libraryItems: List<LibraryItem>?,
+    targetDependentsGraph: TargetDependentsGraph,
     fileToTarget: Map<Path, List<Label>>,
-    targets: List<RawBuildTarget>,
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Map<Path, List<Label>> =
     withContext(Dispatchers.Default) {
-      val targetDependentsGraph = TargetDependentsGraph(targets, libraryItems)
       val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
       transformConcurrent(fileToTarget.entries) { (path, targets) ->
         val dependents =
