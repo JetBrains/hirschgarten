@@ -23,7 +23,7 @@ class CaffeineWriteThroughCachedKVStore<K : Any, V : Any>(
   }
 
   override fun clear() {
-    cache.cleanUp()
+    cache.invalidateAll()
     inner.clear()
   }
 }
