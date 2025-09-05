@@ -18,11 +18,9 @@ class StarlarkFileCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete in src`() {
-    // given
     myFixture.addFileToProject("a.kt", "")
     myFixture.addFileToProject("b.kt", "")
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -36,17 +34,14 @@ class StarlarkFileCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder listOf("\"a.kt\"", "\"b.kt\"")
   }
 
   @Test
   fun `should complete in srcs`() {
-    // given
     myFixture.addFileToProject("c.kt", "")
     myFixture.addFileToProject("d.kt", "")
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -60,17 +55,14 @@ class StarlarkFileCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder listOf("\"c.kt\"", "\"d.kt\"")
   }
 
   @Test
   fun `should complete in hdrs`() {
-    // given
     myFixture.addFileToProject("folder1/e.kt", "")
     myFixture.addFileToProject("/folder2/f.kt", "")
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -83,20 +75,17 @@ class StarlarkFileCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder listOf("\"folder1/e.kt\"", "\"folder2/f.kt\"")
   }
 
   @Test
   fun `should complete in only one directory`() {
-    // given
     myFixture.addFileToProject("testFile1.kt", "kotlin")
     myFixture.addFileToProject("testFile2.java", "java")
     myFixture.addFileToProject("testFile3.py", "python")
     myFixture.addFileToProject("testFile4.cpp", "c++")
     myFixture.addFileToProject("testFile5.rs", "rust")
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -110,7 +99,6 @@ class StarlarkFileCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder
       listOf(
         "\"testFile1.kt\"",
@@ -123,8 +111,6 @@ class StarlarkFileCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete in subdirectories but not in subpackages`() {
-    // given
-
     /* Files structure:
     .
     ├── a.kt
@@ -149,7 +135,6 @@ class StarlarkFileCompletionTest : BasePlatformTestCase() {
     myFixture.addFileToProject("package/dirInPackage/h.java", "")
     myFixture.addFileToProject("package/dirInPackage/i.java", "")
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -163,7 +148,6 @@ class StarlarkFileCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder
       listOf(
         "\"a.kt\"",
