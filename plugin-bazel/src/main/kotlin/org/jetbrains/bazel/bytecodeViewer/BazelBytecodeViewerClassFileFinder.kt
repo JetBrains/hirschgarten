@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.bytecodeViewer
 
+import com.intellij.ide.util.JavaAnonymousClassesHelper
+import com.intellij.ide.util.JavaLocalClassesHelper
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.JarFileSystem
@@ -7,8 +9,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.psi.PsiAnonymousClass
 import com.intellij.psi.PsiClass
 import com.intellij.psi.util.ClassUtil
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.PsiUtil
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.sdkcompat.bytecodeViewer.BytecodeViewerClassFileFinderCompat
@@ -68,7 +73,27 @@ class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinderCompat {
   }
 
   private fun VirtualFile.toFullClassPath(element: PsiClass): VirtualFile? {
-    val jvmClassName = ClassUtil.getBinaryClassName(element) ?: return null
+    val jvmClassName = getBinaryClassName(element) ?: return null
     return this.findChild(StringUtil.getShortName(jvmClassName) + ".class")
+  }
+
+  fun getBinaryClassName(aClass: PsiClass): String? {
+    if (PsiUtil.isLocalOrAnonymousClass(aClass)) {
+      val parentClass = PsiTreeUtil.getParentOfType(aClass, PsiClass::class.java)
+      if (parentClass == null) {
+        return null
+      }
+      val parentName = getBinaryClassName(parentClass)
+      if (parentName == null) {
+        return null
+      }
+      if (aClass is PsiAnonymousClass) {
+        return parentName + JavaAnonymousClassesHelper.getName(aClass)
+      } else {
+        return parentName + JavaLocalClassesHelper.getName(aClass)
+      }
+    }
+
+    return ClassUtil.getJVMClassName(aClass)
   }
 }
