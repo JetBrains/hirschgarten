@@ -12,6 +12,7 @@ import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LifecycleAware
+import org.jetbrains.bazel.sync.workspace.languages.java.JavaPluginData.JavaRunTargetInfo
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.utils.store.KVStore
 import org.jetbrains.bazel.utils.store.codec.ProtoStoreCodec
@@ -32,7 +33,7 @@ class JavaLanguagePlugin(
   private val mvStore = MVStoreUtils.openStoreForProject(project, "java-langauge-plugin")
   private var jdk: Jdk? = null
 
-  val runTargetInfoStore: KVStore<Label, JavaRunTargetInfo> = MVStoreKVStore.createHashedFromCodecs(
+  val runTargetInfoStore: KVStore<Label, JavaPluginData.JavaRunTargetInfo> = MVStoreKVStore.createHashedFromCodecs(
     store = mvStore,
     name = "run-target-info",
     valueCodec = ProtoStoreCodec(JavaRunTargetInfo::parseFrom),

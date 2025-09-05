@@ -30,5 +30,6 @@ proto_library(
 
 java_proto_library(
     name = "java_plugin_data",
+    visibility = ["//visibility:public"],
     deps = [":java_plugin_data_proto"],
 )

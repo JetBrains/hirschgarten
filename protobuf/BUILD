@@ -14,6 +14,10 @@ check_in_protobuf(
             "path": "server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto/bsp_target_info_proto-speed-src.jar",
         },
         {
+            "label": "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace/languages/java:java_plugin_data",
+            "path": "plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/workspace/languages/java/java_plugin_data_proto-speed-src.jar",
+        },
+        {
             "label": "@googleapis//google/devtools/build/v1:build_java_proto",
             "path": "../googleapis+/google/devtools/build/v1/build_proto-speed-src.jar",
         },
