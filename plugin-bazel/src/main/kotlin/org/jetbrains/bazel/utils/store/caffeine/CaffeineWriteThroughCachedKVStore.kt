@@ -26,6 +26,13 @@ class CaffeineWriteThroughCachedKVStore<K : Any, V : Any>(
     cache.invalidateAll()
     inner.clear()
   }
+
+  override fun has(key: K): Boolean {
+    if (cache.getIfPresent(key) != null) {
+      return true
+    }
+    return inner.has(key)
+  }
 }
 
 fun <K : Any, V : Any> KVStore<K, V>.withSoftCache() = CaffeineWriteThroughCachedKVStore(
