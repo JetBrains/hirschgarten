@@ -46,10 +46,8 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete in deps`() {
-    // given
     setTargets(listOf("//target1", "//target2"))
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -68,30 +66,24 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder listOf("\"//target1\"", "\"//target2\"")
   }
 
   @Test
   fun `should not complete outside`() {
-    // given
     setTargets(listOf("//target1", "//target2"))
 
-    // when
     myFixture.configureByText("BUILD", "")
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups.shouldBeEmpty()
   }
 
   @Test
   fun `should search for targets`() {
-    // given
     setTargets(listOf("//abcd1299", "//abcd1239", "//abcd1234"))
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -108,7 +100,6 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
     myFixture.type("4")
     val lookups3 = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder listOf("\"//abcd1234\"", "\"//abcd1239\"", "\"//abcd1299\"")
     lookups2 shouldContainExactlyInAnyOrder listOf("\"//abcd1234\"", "\"//abcd1239\"")
     lookups3 shouldContainExactlyInAnyOrder listOf("\"//abcd1234\"")

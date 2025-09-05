@@ -13,13 +13,9 @@ abstract class WorkspaceContextSingletonEntity<T> : WorkspaceContextEntity() {
 
 data class AllowManualTargetsSyncSpec(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
 
-data class AndroidMinSdkSpec(override val value: Int?) : WorkspaceContextSingletonEntity<Int?>()
-
 data class BazelBinarySpec(override val value: Path) : WorkspaceContextSingletonEntity<Path>()
 
 data class DotBazelBspDirPathSpec(override val value: Path) : WorkspaceContextSingletonEntity<Path>()
-
-data class EnableNativeAndroidRules(override val value: Boolean) : WorkspaceContextSingletonEntity<Boolean>()
 
 data class GazelleTargetSpec(override val value: Label?) : WorkspaceContextSingletonEntity<Label?>()
 

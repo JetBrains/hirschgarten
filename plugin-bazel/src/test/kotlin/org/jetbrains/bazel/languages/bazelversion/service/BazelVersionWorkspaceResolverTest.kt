@@ -2,8 +2,8 @@ package org.jetbrains.bazel.languages.bazelversion.service
 
 import com.google.idea.testing.runfiles.Runfiles
 import com.intellij.util.text.SemVer
-import io.kotest.matchers.equals.shouldBeEqual
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
+import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.jupiter.api.Test
 
 class BazelVersionWorkspaceResolverTest {

@@ -29,8 +29,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
@@ -53,8 +51,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, false) },
-          { JavaModuleUpdater(it, it.projectBasePath, false) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), testLibrariesByName) },
+          { JavaModuleUpdater(it, it.projectBasePath, emptyList(), testLibraries) },
         ),
       ) { updater ->
         // given
@@ -62,25 +60,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericModuleInfo(
             name = "module1",
             type = ModuleTypeId("JAVA_MODULE"),
-            modulesDependencies =
+            dependencies =
               listOf(
-                IntermediateModuleDependency(
-                  moduleName = "module2",
-                ),
-                IntermediateModuleDependency(
-                  moduleName = "module3",
-                ),
-              ),
-            librariesDependencies =
-              listOf(
-                IntermediateLibraryDependency(
-                  libraryName = "lib1",
-                  isProjectLevelLibrary = false,
-                ),
-                IntermediateLibraryDependency(
-                  libraryName = "lib2",
-                  isProjectLevelLibrary = false,
-                ),
+                "module2",
+                "lib1",
+                "module3",
+                "lib2",
               ),
             kind =
               TargetKind(
@@ -159,12 +144,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
                     ),
-                    ModuleDependency(
-                      module = ModuleId("module3"),
-                      exported = true,
-                      scope = DependencyScope.COMPILE,
-                      productionOnTest = true,
-                    ),
                     LibraryDependency(
                       library =
                         LibraryId(
@@ -173,6 +152,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                         ),
                       exported = true,
                       scope = DependencyScope.COMPILE,
+                    ),
+                    ModuleDependency(
+                      module = ModuleId("module3"),
+                      exported = true,
+                      scope = DependencyScope.COMPILE,
+                      productionOnTest = true,
                     ),
                     LibraryDependency(
                       library =
@@ -322,8 +307,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, false) },
-          { JavaModuleUpdater(it, it.projectBasePath, false) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), testLibrariesByName) },
+          { JavaModuleUpdater(it, it.projectBasePath, emptyList(), testLibraries) },
         ),
       ) { updater ->
         // given
@@ -331,31 +316,18 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericModuleInfo(
             name = "module1",
             type = ModuleTypeId("JAVA_MODULE"),
-            modulesDependencies =
+            dependencies =
               listOf(
-                IntermediateModuleDependency(
-                  moduleName = "module2",
-                ),
-                IntermediateModuleDependency(
-                  moduleName = "module3",
-                ),
+                "module2",
+                "module3",
+                "lib1",
+                "lib2",
               ),
             kind =
               TargetKind(
                 kindString = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
-              ),
-            librariesDependencies =
-              listOf(
-                IntermediateLibraryDependency(
-                  libraryName = "lib1",
-                  isProjectLevelLibrary = false,
-                ),
-                IntermediateLibraryDependency(
-                  libraryName = "lib2",
-                  isProjectLevelLibrary = false,
-                ),
               ),
           )
 
@@ -412,24 +384,16 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericModuleInfo(
             name = "module2",
             type = ModuleTypeId("JAVA_MODULE"),
-            modulesDependencies =
+            dependencies =
               listOf(
-                IntermediateModuleDependency(
-                  moduleName = "module3",
-                ),
+                "module3",
+                "lib1",
               ),
             kind =
               TargetKind(
                 kindString = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
-              ),
-            librariesDependencies =
-              listOf(
-                IntermediateLibraryDependency(
-                  libraryName = "lib1",
-                  isProjectLevelLibrary = false,
-                ),
               ),
           )
 
@@ -755,7 +719,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
       runTestForUpdaters(
         listOf(
           { JavaModuleWithoutSourcesUpdater(it) },
-          { JavaModuleUpdater(it, it.projectBasePath, false) },
+          { JavaModuleUpdater(it, it.projectBasePath) },
         ),
       ) { updater ->
         // given
@@ -763,8 +727,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericModuleInfo(
             name = "module1",
             type = ModuleTypeId("JAVA_MODULE"),
-            modulesDependencies = emptyList(),
-            librariesDependencies = emptyList(),
+            dependencies = emptyList(),
             kind =
               TargetKind(
                 kindString = "java_library",
@@ -818,7 +781,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
       runTestForUpdaters(
         listOf(
           { JavaModuleWithoutSourcesUpdater(it) },
-          { JavaModuleUpdater(it, it.projectBasePath, false) },
+          { JavaModuleUpdater(it, it.projectBasePath) },
         ),
       ) { updater ->
         // given
@@ -826,8 +789,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericModuleInfo(
             name = "module1",
             type = ModuleTypeId("JAVA_MODULE"),
-            modulesDependencies = emptyList(),
-            librariesDependencies = emptyList(),
+            dependencies = emptyList(),
             kind =
               TargetKind(
                 kindString = "java_library",
@@ -856,8 +818,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericModuleInfo(
             name = "module2",
             type = ModuleTypeId("JAVA_MODULE"),
-            modulesDependencies = emptyList(),
-            librariesDependencies = emptyList(),
+            dependencies = emptyList(),
             kind =
               TargetKind(
                 kindString = "java_library",

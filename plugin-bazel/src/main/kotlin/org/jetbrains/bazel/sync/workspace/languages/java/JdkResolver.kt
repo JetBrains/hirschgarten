@@ -25,52 +25,68 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
 
   private fun candidatesWithLatestVersion(candidates: Sequence<JdkCandidate>): Sequence<JdkCandidate> =
     findLatestVersion(candidates)
-      ?.let { version -> candidates.filter { it.version == version } }
+      ?.let { version -> candidates.filter { it.sourceVersion == version } }
       .orEmpty()
 
   private fun findLatestVersion(candidates: Sequence<JdkCandidate>): String? =
-    candidates.mapNotNull { it.version }.maxByOrNull { Integer.parseInt(it) }
+    candidates.mapNotNull { it.sourceVersion }.maxByOrNull { Integer.parseInt(it) }
 
   private fun pickCandidateFromJvmRuntime(candidates: Sequence<JdkCandidate>) = candidates.find { it.isRuntime }
 
   private fun pickAnyCandidate(candidates: Sequence<JdkCandidate>): JdkCandidate? = candidates.firstOrNull()
 
-  private fun resolveJdkData(targetInfo: TargetInfo): JdkCandidateData? {
-    val hasRuntimeJavaHome =
-      targetInfo.hasJavaRuntimeInfo() &&
-        targetInfo.javaRuntimeInfo.hasJavaHome()
-    val hasToolchainJavaHome =
-      targetInfo.hasJavaToolchainInfo() &&
-        targetInfo.javaToolchainInfo.hasJavaHome()
+  private fun resolveJdkData(targetInfo: TargetInfo): JdkCandidateData? =
+    if (targetInfo.hasJavaRuntimeInfo()) {
+      val javaRuntimeInfo = targetInfo.javaRuntimeInfo
+      val javaHome = if (javaRuntimeInfo.hasJavaHome()) javaRuntimeInfo.javaHome else null
 
-    val javaHomeFile =
-      if (hasRuntimeJavaHome) {
-        targetInfo.javaRuntimeInfo.javaHome
-      } else if (hasToolchainJavaHome) {
-        targetInfo.javaToolchainInfo.javaHome
-      } else {
-        null
-      }
-    val javaHome = javaHomeFile?.let { bazelPathsResolver.resolve(it) }
+      JdkCandidateData(
+        isRuntime = true,
+        javaHome = javaHome?.let(bazelPathsResolver::resolve),
+      )
+    } else if (targetInfo.hasJavaToolchainInfo()) {
+      val javaToolchainInfo = targetInfo.javaToolchainInfo
+      val javaHome = if (javaToolchainInfo.hasJavaHome()) javaToolchainInfo.javaHome else null
 
-    return JdkCandidateData(hasRuntimeJavaHome, javaHome)
-      .takeIf { javaHome != null }
-  }
+      JdkCandidateData(
+        isRuntime = false,
+        javaHome = javaHome?.let(bazelPathsResolver::resolve),
+        sourceVersion = javaToolchainInfo.sourceVersion,
+        targetVersion = javaToolchainInfo.targetVersion,
+      )
+    } else {
+      null
+    }
 
   private inner class JdkCandidate(private val data: JdkCandidateData) {
-    val version =
-      data.javaHome
-        ?.takeIf { it.exists() }
-        ?.let { jdkVersionResolver.resolve(it) }
-        ?.toString()
+    val sourceVersion: String?
+      get() =
+        data.sourceVersion ?: javaHome
+          ?.takeIf { it.exists() }
+          ?.let(jdkVersionResolver::resolve)
+          ?.toString()
+
+    val targetVersion: String?
+      get() = data.targetVersion
+
     val javaHome by data::javaHome
     val isRuntime by data::isRuntime
-    val isComplete = javaHome != null && version != null
 
-    fun asJdk(): Jdk? = version?.let { Jdk(it, javaHome) }
+    val isComplete: Boolean
+      get() = javaHome != null && sourceVersion != null
+
+    fun asJdk(): Jdk? =
+      sourceVersion?.let {
+        Jdk(it, javaHome)
+      }
   }
 
-  private data class JdkCandidateData(val isRuntime: Boolean, val javaHome: Path?)
+  private data class JdkCandidateData(
+    val isRuntime: Boolean,
+    val javaHome: Path?,
+    val sourceVersion: String? = null,
+    val targetVersion: String? = null,
+  )
 
   private fun <A> Sequence<A>.sortByFrequency(): Sequence<A> =
     groupBy { it }

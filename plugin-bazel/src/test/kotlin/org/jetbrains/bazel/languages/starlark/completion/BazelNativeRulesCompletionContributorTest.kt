@@ -10,14 +10,11 @@ import org.junit.runners.JUnit4
 class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
   @Test
   fun `should complete cc native rule`() {
-    // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("cc")
 
-    // when
     val ccLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     ccLookups shouldContainAll
       listOf(
         "cc_binary",
@@ -30,24 +27,20 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
         "cc_proto_library",
       )
 
-    // when
     myFixture.configureByText("BUILD", "")
     myFixture.type("fd")
     val fdoLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     fdoLookups shouldContainAll
       listOf(
         "fdo_profile",
         "fdo_prefetch_hints",
       )
 
-    // when
     myFixture.configureByText("BUILD", "")
     myFixture.type("pro")
     val propLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     propLookups shouldContainAll
       listOf(
         "propeller_optimize",
@@ -56,14 +49,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete java native rule`() {
-    // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("java")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainAll
       listOf(
         "java_binary",
@@ -73,14 +63,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete objective-c native rule`() {
-    // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("obj")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainAll
       listOf(
         "objc_library",
@@ -90,14 +77,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete protobuf native rule`() {
-    // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("proto")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainAll
       listOf(
         "cc_proto_library",
@@ -112,14 +96,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete python native rule`() {
-    // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("py")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainAll
       listOf(
         "py_binary",
@@ -131,14 +112,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete shell native rule`() {
-    // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("sh")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainAll
       listOf(
         "sh_binary",
@@ -149,14 +127,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should autocomplete brackets `() {
-    // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("java_bin")
 
-    // when
     val lookups = myFixture.completeBasic()
 
-    // then
     assertNull(lookups)
     val expected = "java_binary(<caret>)"
 

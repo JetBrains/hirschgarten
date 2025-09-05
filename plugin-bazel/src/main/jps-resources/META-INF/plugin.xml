@@ -36,10 +36,6 @@
     optional="true"
   >com.intellij.modules.coverage</depends>
   <depends
-    config-file="withCpp.xml"
-    optional="true"
-  >com.intellij.clion</depends>
-  <depends
     config-file="withDevKit.xml"
     optional="true"
   >DevKit</depends>
@@ -82,11 +78,6 @@
       dynamic="true"
       interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
       qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
-    />
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
-      qualifiedName="org.jetbrains.bazel.androidFacetEntityUpdaterExtension"
     />
     <extensionPoint
       dynamic="true"
@@ -193,6 +184,10 @@
                     interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
+                    interface="org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionProvider"
+                    dynamic="true"
+    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.bazelModuleResolver"
                     interface="org.jetbrains.bazel.languages.starlark.bazel.modules.BazelModuleResolver"
                     dynamic="true"
@@ -277,6 +272,8 @@
     <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
 
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
+
+    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.language.DefaultProjectViewSectionProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -289,11 +286,6 @@
       defaultValue="true"
       description="Python modules support"
       key="bsp.python.support"
-    />
-    <registryKey
-      defaultValue="false"
-      description="Android modules support"
-      key="bsp.android.support"
     />
     <registryKey
       defaultValue="true"
@@ -362,6 +354,11 @@
       key="bazel.enable.custom.java.class.finder"
     />
     <registryKey
+      defaultValue="false"
+      description="Create fake module on project import"
+      key="bazel.create.fake.module.on.project.import"
+      />
+    <registryKey
       defaultValue="true"
       description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
       key="bazel.merge.source.roots"
@@ -405,6 +402,11 @@
     />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
+
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
+      serviceInterface="org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService"
+    />
 
     <projectService
       overrides="true"
@@ -519,7 +521,6 @@
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
-    <postStartupActivity implementation="org.jetbrains.bazel.languages.starlark.references.BazelBzlFileService$BazelBzlFileServiceStartUpActivity" />
     <notificationGroup
       displayType="BALLOON"
       id="BazelSlowPlugins"
@@ -530,10 +531,7 @@
       id="Bazel"
       implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"
     />
-    <directoryProjectConfigurator
-      implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"
-      order="after PlatformProjectConfigurator"
-    />
+    <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
       implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"
       key="bazel"
@@ -613,6 +611,10 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkLoadAnnotator"
       language="Starlark"
     />
+    <annotator
+      implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkGlobAnnotator"
+      language="Starlark"
+    />
     <completion.confidence
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"
       language="Starlark"
@@ -631,6 +633,10 @@
     />
     <completion.contributor
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelDepCompletionContributor"
+      language="Starlark"
+    />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkClassnameCompletionContributor"
       language="Starlark"
     />
     <editorTabTitleProvider
@@ -683,6 +689,16 @@
     />
     <typedHandler
       implementation="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor$AutoPopup"
+    />
+
+    <platform.backend.documentation.targetProvider
+      id="ProjectViewFlagDocumentationTargetProvider"
+      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewFlagDocumentationTargetProvider"
+    />
+
+    <platform.backend.documentation.targetProvider
+      id="ProjectViewSectionDocumentationTargetProvider"
+      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewSectionDocumentationTargetProvider"
     />
 
     <runLineMarkerContributor

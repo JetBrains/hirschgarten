@@ -5,6 +5,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/label",
     ],
 )

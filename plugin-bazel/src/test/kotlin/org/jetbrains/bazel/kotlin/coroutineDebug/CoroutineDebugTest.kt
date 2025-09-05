@@ -32,10 +32,10 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() =
       GitProjectInfo(
-        repositoryUrl = "https://github.com/xuansontrinh/bazel-test-projects-by-languages.git",
-        commitHash = "59aa72ad42c212b079633e658fdb51fbe82c5e70",
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "ee100511a31d6a658f0dfdf340a861e504e7f01a",
         branchName = "main",
-        projectHomeRelativePath = { it.resolve("kotlin/coroutineDebug") },
+        projectHomeRelativePath = { it.resolve("coroutineDebug") },
         isReusable = true,
         configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
       )

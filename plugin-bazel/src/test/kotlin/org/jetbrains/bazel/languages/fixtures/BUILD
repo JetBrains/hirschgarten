@@ -6,6 +6,7 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//plugin-bazel/src/test:__subpackages__"],
     deps = [
+        "//plugin-bazel/src:test_fixtures",
         "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "//rules_intellij/testing:lib",
         "@maven//:io_kotest_kotest_assertions_api_jvm",

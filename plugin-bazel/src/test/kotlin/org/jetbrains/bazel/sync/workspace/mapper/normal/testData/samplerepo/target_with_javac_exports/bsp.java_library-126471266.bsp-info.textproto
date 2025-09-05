@@ -1,0 +1,61 @@
+executable: false
+id: "@@//target_with_javac_exports:java_library"
+java_runtime_info {
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_linux"
+  }
+}
+java_toolchain_info {
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk21_linux"
+  }
+  source_version: "11"
+  target_version: "11"
+}
+jvm_target_info {
+  has_api_generating_plugins: false
+  jars {
+    binary_jars {
+      is_external: false
+      is_source: false
+      relative_path: "target_with_javac_exports/libjava_library.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+    interface_jars {
+      is_external: false
+      is_source: false
+      relative_path: "target_with_javac_exports/libjava_library-hjar.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+    source_jars {
+      is_external: false
+      is_source: false
+      relative_path: "target_with_javac_exports/libjava_library-src.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+  }
+  javac_opts: "-XepDisableAllChecks"
+  javac_opts: "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"
+  javac_opts: "--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"
+  javac_opts: "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
+  jdeps {
+    is_external: false
+    is_source: false
+    relative_path: "target_with_javac_exports/libjava_library.jdeps"
+    root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+  }
+}
+kind: "java_library"
+sources {
+  is_external: false
+  is_source: true
+  relative_path: "target_with_javac_exports/JavaLibrary.java"
+  root_execution_path_fragment: ""
+}
+workspace_name: "_main"

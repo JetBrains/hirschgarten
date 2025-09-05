@@ -37,7 +37,6 @@ class BazelBspServer(
     bazelInfo: BazelInfo,
     workspaceContextProvider: WorkspaceContextProvider,
     bazelPathsResolver: BazelPathsResolver,
-    featureFlags: FeatureFlags,
   ): BazelServices {
     val projectProvider =
       createProjectProvider(
@@ -77,7 +76,7 @@ class BazelBspServer(
     return bazelDataResolver.resolveBazelInfo(workspaceContext)
   }
 
-  private fun createProjectProvider(
+  fun createProjectProvider(
     bspInfo: BspInfo,
     bazelInfo: BazelInfo,
     workspaceContextProvider: WorkspaceContextProvider,
@@ -99,7 +98,7 @@ class BazelBspServer(
         aspectsResolver = aspectsResolver,
         bazelRelease = bazelInfo.release,
       )
-    val bazelToolchainManager = BazelToolchainManager(bazelRunner)
+    val bazelToolchainManager = BazelToolchainManager()
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 

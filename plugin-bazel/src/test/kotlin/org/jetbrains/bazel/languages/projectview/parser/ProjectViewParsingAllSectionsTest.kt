@@ -26,4 +26,16 @@ class ProjectViewParsingAllSectionsTest : ProjectViewParsingTestCase("sections")
   fun testTargetShardSize() {
     doTest(true)
   }
+
+  fun testListValueInTheSameLine() {
+    doTest(true)
+  }
+
+  fun testSingleListValueInTheSameLine() {
+    doTest(true)
+  }
+
+  fun testWrongSyntax() {
+    doTest(true)
+  }
 }

@@ -3,10 +3,10 @@ package org.jetbrains.bazel.debug
 import com.intellij.execution.ui.ExecutionConsole
 import com.intellij.openapi.util.Disposer
 import io.kotest.matchers.booleans.shouldBeFalse
-import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.Job
 import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
 import org.jetbrains.bazel.debug.platform.StarlarkDebugProcess
+import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import javax.swing.JComponent

@@ -10,6 +10,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -56,6 +57,7 @@ private class DirectoriesSyncHook : ProjectSyncHook {
       directories.excludedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) } +
         additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
     val buildFiles = buildFiles.map { it.toVirtualFileUrl(virtualFileUrlManager) }
+    val projectViewFile = project.bazelProjectSettings.projectViewPath?.toVirtualFileUrl(virtualFileUrlManager)
 
     return BazelProjectDirectoriesEntity(
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
@@ -64,6 +66,8 @@ private class DirectoriesSyncHook : ProjectSyncHook {
       buildFiles = buildFiles,
       indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots,
       entitySource = BazelProjectEntitySource,
-    )
+    ) {
+      this.projectViewFile = projectViewFile
+    }
   }
 }

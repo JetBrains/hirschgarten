@@ -13,7 +13,10 @@ java_library(
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
         "intellij-2025.1": ["@code_with_me_2025_1//jar"],
-        "intellij-2025.2": ["@code_with_me_2025_2//jar"],
+        "intellij-2025.2": [
+            "@code_with_me_2025_2//jar",
+            "@code_with_me_split_2025_2//jar",
+        ],
         "default": [],
     }),
 )

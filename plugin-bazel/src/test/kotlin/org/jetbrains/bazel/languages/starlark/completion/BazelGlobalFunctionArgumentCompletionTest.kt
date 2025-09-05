@@ -12,14 +12,11 @@ import org.junit.runners.JUnit4
 class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
   @Test
   fun `should complete module function`() {
-    // given
     myFixture.configureByText("MODULE.bazel", "module(<caret>)")
     myFixture.type("a")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     val expectedArgNames =
       BazelGlobalFunctions.moduleGlobalFunctions["module"]!!
         .params
@@ -30,14 +27,11 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete on subsequent parameters`() {
-    // given
     myFixture.configureByText("MODULE.bazel", "module(name = 'testName', <caret>)")
     myFixture.type("a")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     val expectedArgNames =
       BazelGlobalFunctions.moduleGlobalFunctions["module"]!!
         .params
@@ -48,11 +42,9 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete with empty quotes`() {
-    // given
     myFixture.configureByText("MODULE.bazel", "module(<caret>)")
     myFixture.type("name")
 
-    // when
     val lookupElements = myFixture.completeBasic()
 
     // Select first lookup element and simulate pressing Tab key to trigger insert handler.
@@ -61,7 +53,6 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
       myFixture.type('\t')
     }
 
-    // then
     myFixture.checkResult("""module(name = '<caret>',)""")
   }
 }

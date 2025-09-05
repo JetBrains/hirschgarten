@@ -1,7 +1,8 @@
 package org.jetbrains.bazel.ui.notifications
 
 import com.intellij.codeInsight.AttachSourcesProvider
-import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.roots.LibraryOrderEntry
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
@@ -34,9 +35,11 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
           }
         }
       if (modelsToCommit.isNotEmpty()) {
-        WriteAction.run<Exception> {
-          modelsToCommit.forEach {
-            it.commit()
+        invokeAndWaitIfNeeded {
+          runWriteAction {
+            modelsToCommit.forEach {
+              it.commit()
+            }
           }
         }
       }
@@ -51,7 +54,10 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
     }
 
     private fun Library.obtainModelWithAddedSources(availableSources: Array<VirtualFile>): Library.ModifiableModel? {
-      val sourceRoots = LibrarySourceRootDetectorUtil.scanAndSelectDetectedJavaSourceRoots(null, availableSources)
+      val sourceRoots =
+        invokeAndWaitIfNeeded {
+          LibrarySourceRootDetectorUtil.scanAndSelectDetectedJavaSourceRoots(null, availableSources)
+        }
       if (sourceRoots.isEmpty()) return null
       val modifiableModel = this.modifiableModel
       sourceRoots.forEach { source ->

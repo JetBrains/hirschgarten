@@ -120,7 +120,6 @@ class ExecuteService(
           params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.trim().split(" ")) }
         }
       }
-    println(command)
     val bazelProcessResult =
       bazelRunner
         .runBazelCommand(

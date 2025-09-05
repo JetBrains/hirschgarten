@@ -37,9 +37,10 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.golang.targetKinds.GoBazelRules
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.references.resolveLabel
+import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.hasLanguage
 import org.jetbrains.bazel.target.targetUtils
@@ -55,8 +56,6 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
 import kotlin.io.path.invariantSeparatorsPathString
-
-private const val GO_TARGET_TO_FILE_MAP_KEY = "BazelGoTargetToFileMap"
 
 /**
  * [GoPackage] specialized for bazel, with a couple of differences:
@@ -233,10 +232,15 @@ class BazelGoPackage : GoPackage {
       }
     }
 
+    private val goTargetToFileMap =
+      SyncCache.SyncCacheComputable { project ->
+        getUncachedTargetToFileMap(project)
+      }
+
     fun getTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> =
       SyncCache
         .getInstance(project)
-        .get(GO_TARGET_TO_FILE_MAP_KEY) { getUncachedTargetToFileMap(project) } ?: ImmutableMultimap.of()
+        .get(goTargetToFileMap)
 
     fun getUncachedTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> {
       val libraryToTestMap = buildLibraryToTestMap(project)
@@ -366,7 +370,11 @@ class BazelGoPackage : GoPackage {
    */
   override fun getNavigableElement(): PsiElement? {
     navigableElement?.takeIf { it.isValid }?.let { return it }
-    resolveLabel(project, label, null)?.also { navigableElement = it }
+    if (label is ResolvedLabel) {
+      val buildFile = findBuildFile(project, label, null)
+      buildFile?.also { navigableElement = it }?.findRuleTarget(label.targetName)?.also { navigableElement = it }
+    }
+
     return navigableElement
   }
 

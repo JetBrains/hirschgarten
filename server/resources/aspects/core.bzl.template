@@ -213,5 +213,4 @@ bsp_target_info_aspect = aspect(
     required_aspect_providers = [java_info_reference()],
     attr_aspects = ALL_DEPS,
     toolchains = TOOLCHAINS,
-    fragments = ["cpp"]
 )

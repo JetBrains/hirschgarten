@@ -1,9 +1,7 @@
 package org.jetbrains.bazel.languages.projectview.annotator
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.jetbrains.rd.util.firstOrNull
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -12,12 +10,7 @@ import org.junit.runners.JUnit4
 class ProjectViewAnnotatorTest : BasePlatformTestCase() {
   @Test
   fun `should warn about unsupported sections`() {
-    val someUnsupportedSection =
-      ProjectViewSection.KEYWORD_MAP
-        .filter { !ProjectViewSection.isSectionSupported(it.value.sectionName) }
-        .firstOrNull()
-        ?.value
-        ?.sectionName ?: return
+    val someUnsupportedSection = "iAmNotSupported"
 
     val warningMessage = ProjectViewBundle.getMessage("annotator.unsupported.section.warning")
 

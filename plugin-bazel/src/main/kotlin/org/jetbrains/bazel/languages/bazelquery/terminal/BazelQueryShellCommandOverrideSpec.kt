@@ -14,6 +14,7 @@ import org.jetbrains.bazel.languages.bazelquery.documentation.BazelQueryFunction
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunction
 import org.jetbrains.bazel.languages.bazelquery.options.BazelQueryCommonOptions
 import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget
+import org.jetbrains.bazel.languages.bazelrc.documentation.flagToDocumentationMarkdownText
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.plugins.terminal.block.completion.spec.ShellCommandSpec
 import org.jetbrains.plugins.terminal.block.completion.spec.ShellCompletionSuggestion
@@ -196,7 +197,7 @@ private fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, con
 }
 
 private fun flagDescriptionHtml(flag: Flag, project: Project): String {
-  val markdownText = BazelFlagDocumentationTarget.flagToDocumentationMarkdownText(flag)
+  val markdownText = flagToDocumentationMarkdownText(flag)
   return DocMarkdownToHtmlConverter.convert(project, markdownText)
 }
 

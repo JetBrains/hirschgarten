@@ -296,8 +296,7 @@ COMPILE_DEPS = [
     "embed", # from rules_go
     "compilers",  # From go_proto_library
     "java_lib",  # From old proto_library rules
-    "proc_macro_deps",
-    ${cppDeps}
+    "proc_macro_deps"
 ]
 
 PRIVATE_COMPILE_DEPS = [

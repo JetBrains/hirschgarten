@@ -5,6 +5,6 @@ kt_junit5_test(
     size = "small",
     src = "FormatTest.kt",
     deps = [
-        "//server/commons/src/main/kotlin/org/jetbrains/bazel/commons",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
     ],
 )

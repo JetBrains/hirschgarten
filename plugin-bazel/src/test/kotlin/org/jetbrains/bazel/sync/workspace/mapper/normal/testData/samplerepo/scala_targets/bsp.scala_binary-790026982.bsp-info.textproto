@@ -1,0 +1,66 @@
+executable: true
+id: "@@//scala_targets:scala_binary"
+java_runtime_info {
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk11_linux"
+  }
+}
+jvm_target_info {
+  args: "arg1"
+  args: "arg2"
+  has_api_generating_plugins: false
+  jars {
+    binary_jars {
+      is_external: false
+      is_source: false
+      relative_path: "scala_targets/scala_binary.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+    interface_jars {
+      is_external: false
+      is_source: false
+      relative_path: "scala_targets/scala_binary.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+    source_jars {
+      is_external: false
+      is_source: false
+      relative_path: "scala_targets/scala_binary-src.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+  }
+  jvm_flags: "-Xms2G -Xmx5G"
+  main_class: "example.Example"
+}
+kind: "scala_binary"
+scala_target_info {
+  compiler_classpath {
+    is_external: true
+    is_source: true
+    relative_path: "scala-compiler-2.13.14.jar"
+    root_execution_path_fragment: "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_14"
+  }
+  compiler_classpath {
+    is_external: true
+    is_source: true
+    relative_path: "scala-library-2.13.14.jar"
+    root_execution_path_fragment: "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_14"
+  }
+  compiler_classpath {
+    is_external: true
+    is_source: true
+    relative_path: "scala-reflect-2.13.14.jar"
+    root_execution_path_fragment: "external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_14"
+  }
+  scalac_opts: "-target:jvm-1.8"
+}
+sources {
+  is_external: false
+  is_source: true
+  relative_path: "scala_targets/ScalaBinary.scala"
+  root_execution_path_fragment: ""
+}
+workspace_name: "_main"

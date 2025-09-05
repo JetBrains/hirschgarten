@@ -1,49 +1,30 @@
 package org.jetbrains.bazel.sync.workspace.languages.kotlin
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
-  LanguagePlugin<KotlinModule>() {
-  override fun applyModuleData(moduleData: KotlinModule, buildTarget: RawBuildTarget) {
-    val kotlinBuildTarget = toKotlinBuildTarget(moduleData)
-    buildTarget.data = kotlinBuildTarget
-  }
-
-  fun toKotlinBuildTarget(kotlinModule: KotlinModule): KotlinBuildTarget {
-    val kotlinBuildTarget =
-      with(kotlinModule) {
-        KotlinBuildTarget(
-          languageVersion = languageVersion,
-          apiVersion = apiVersion,
-          kotlincOptions = kotlincOptions,
-          associates = associates.distinct(),
-        )
-      }
-    kotlinModule.javaModule?.let { javaLanguagePlugin.toJvmBuildTarget(it) }?.let {
-      kotlinBuildTarget.jvmBuildTarget = it
+  LanguagePlugin<KotlinBuildTarget>,
+  JVMPackagePrefixResolver {
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): KotlinBuildTarget? {
+    if (!target.hasKotlinTargetInfo()) {
+      return null
     }
-    return kotlinBuildTarget
-  }
-
-  override fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): KotlinModule? {
-    if (!targetInfo.hasKotlinTargetInfo()) return null
-
-    val kotlinTargetInfo = targetInfo.kotlinTargetInfo
-
-    return KotlinModule(
-      languageVersion = kotlinTargetInfo.languageVersion,
-      apiVersion = kotlinTargetInfo.apiVersion,
-      associates = kotlinTargetInfo.associatesList.map { Label.parse(it) },
-      kotlincOptions = kotlinTargetInfo.toKotlincOptArguments(),
-      javaModule = javaLanguagePlugin.resolveModule(targetInfo),
+    val kotlinTarget = target.kotlinTargetInfo
+    return KotlinBuildTarget(
+      languageVersion = kotlinTarget.languageVersion,
+      apiVersion = kotlinTarget.apiVersion,
+      associates = kotlinTarget.associatesList.map { Label.parse(it) },
+      kotlincOptions = kotlinTarget.toKotlincOptArguments(),
+      jvmBuildTarget = javaLanguagePlugin.createBuildTargetData(context, target),
     )
   }
 
@@ -62,8 +43,7 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
       .flatMap { it.pluginJarsList }
       .map { "-Xplugin=${bazelPathsResolver.resolve(it)}" }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
-    javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
+  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.KOTLIN)
 
-  override fun calculateJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.calculateJvmPackagePrefix(source)
+  override fun resolveJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.resolveJvmPackagePrefix(source)
 }

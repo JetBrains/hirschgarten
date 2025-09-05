@@ -1,0 +1,268 @@
+BazelResolvedWorkspace(
+  targets=BuildTargetCollection(
+    buildTargets=[
+      RawBuildTarget(
+        id=@//example:go_default_library,
+        tags=[
+          
+        ],
+        dependencies=[
+          @//lib:go_default_library
+        ],
+        kind=TargetKind(
+          kindString=go_library,
+          languageClasses=[
+            GO
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/example/hello.go,
+            generated=false,
+            jvmPackagePrefix=null
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/example,
+        noBuild=false,
+        data=GoBuildTarget(
+          sdkHomePath=/tmp/.cache/bazel/output_base/external/rules_go++go_sdk+go_default_sdk,
+          importPath=go-project/example,
+          generatedLibraries=[
+            
+          ],
+          generatedSources=[
+            /tmp/test-workspace/example/hello.go
+          ],
+          libraryLabels=[
+            
+          ]
+        ),
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//example:hello,
+        tags=[
+          
+        ],
+        dependencies=[
+          @//example:go_default_library
+        ],
+        kind=TargetKind(
+          kindString=go_binary,
+          languageClasses=[
+            GO
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/example,
+        noBuild=false,
+        data=GoBuildTarget(
+          sdkHomePath=/tmp/.cache/bazel/output_base/external/rules_go++go_sdk+go_default_sdk,
+          importPath=,
+          generatedLibraries=[
+            
+          ],
+          generatedSources=[
+            
+          ],
+          libraryLabels=[
+            
+          ]
+        ),
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//lib:go_default_library,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=go_library,
+          languageClasses=[
+            GO
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/lib/example_lib.go,
+            generated=false,
+            jvmPackagePrefix=null
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/lib,
+        noBuild=false,
+        data=GoBuildTarget(
+          sdkHomePath=/tmp/.cache/bazel/output_base/external/rules_go++go_sdk+go_default_sdk,
+          importPath=go-project/lib,
+          generatedLibraries=[
+            
+          ],
+          generatedSources=[
+            /tmp/test-workspace/lib/example_lib.go
+          ],
+          libraryLabels=[
+            
+          ]
+        ),
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//lib:go_default_test,
+        tags=[
+          
+        ],
+        dependencies=[
+          @//lib:go_default_library
+        ],
+        kind=TargetKind(
+          kindString=go_test,
+          languageClasses=[
+            GO
+          ],
+          ruleType=TEST
+        ),
+        sources=[
+          SourceItem(
+            path=/tmp/test-workspace/lib/example_test.go,
+            generated=false,
+            jvmPackagePrefix=null
+          )
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/lib,
+        noBuild=false,
+        data=GoBuildTarget(
+          sdkHomePath=/tmp/.cache/bazel/output_base/external/rules_go++go_sdk+go_default_sdk,
+          importPath=,
+          generatedLibraries=[
+            
+          ],
+          generatedSources=[
+            /tmp/test-workspace/lib/example_test.go
+          ],
+          libraryLabels=[
+            @//lib:go_default_library
+          ]
+        ),
+        lowPrioritySharedSources=[
+          
+        ]
+      )
+    ],
+    nonModuleTargets=[
+      RawBuildTarget(
+        id=@//:gazelle-runner,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=_gazelle_runner,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//example:hello,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=go_binary,
+          languageClasses=[
+            
+          ],
+          ruleType=BINARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/example,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//lib:go_default_test,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=go_test,
+          languageClasses=[
+            
+          ],
+          ruleType=TEST
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/lib,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      )
+    ]
+  ),
+  libraries=[
+    
+  ],
+  hasError=false
+)

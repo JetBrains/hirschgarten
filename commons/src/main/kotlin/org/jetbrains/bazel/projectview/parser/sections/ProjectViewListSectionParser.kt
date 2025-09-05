@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.projectview.parser.sections
 
-import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDebugFlagsSection
@@ -90,16 +89,6 @@ object ProjectViewEnabledRulesSectionParser :
   override fun mapRawValues(rawValue: String): String = rawValue
 
   override fun createInstance(values: List<String>): ProjectViewEnabledRulesSection = ProjectViewEnabledRulesSection(values)
-}
-
-object ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser :
-  ProjectViewListSectionParser<String, ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection>(
-    ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection.SECTION_NAME,
-  ) {
-  override fun mapRawValues(rawValue: String): String = rawValue
-
-  override fun createInstance(values: List<String>): ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection =
-    ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection(values)
 }
 
 object ImportRunConfigurationsSectionParser :

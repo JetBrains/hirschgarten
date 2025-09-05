@@ -8,10 +8,11 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/src:plugin-bazel-lib",
         "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
-        "//rules_intellij/testing:lib",
+        "//rules_intellij/testing/src/com/google/idea/testing/runfiles",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
+        "@maven//:org_junit_vintage_junit_vintage_engine",
     ],
 )
