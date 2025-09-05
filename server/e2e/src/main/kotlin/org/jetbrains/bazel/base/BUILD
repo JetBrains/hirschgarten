@@ -9,13 +9,10 @@ kt_jvm_library(
         "//server/install",
     ],
     deps = [
-        "//bsp-testkit2:bazel-testkit-client",
-        "//bsp-testkit2:testkit-client",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
-        "@maven//:org_slf4j_slf4j_api",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     ],
 )

@@ -1,4 +1,4 @@
-common:ci --remote_cache=https://packages.jetbrains.team/files/p/ij/intellij-bazel-cache
+common:ci --remote_cache=https://ultimate-bazel-cache-http.labs.jb.gg
 common:ci --remote_download_outputs=minimal
 
 common:ci --remote_timeout=60s

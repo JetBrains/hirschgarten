@@ -25,7 +25,7 @@ import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
@@ -51,9 +51,7 @@ import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
@@ -238,7 +236,6 @@ class CollectProjectDetailsTask(
                 fileToTargetWithoutLowPrioritySharedSources = targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources,
                 projectBasePath = projectBasePath,
                 project = project,
-                isAndroidSupportEnabled = false,
               )
             targetIdToModuleEntityMap
           }
@@ -265,17 +262,15 @@ class CollectProjectDetailsTask(
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
-            WorkspaceModelUpdaterImpl(
+            WorkspaceModelUpdater(
               workspaceEntityStorageBuilder = diff,
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              isAndroidSupportEnabled = false,
               importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
-          workspaceModelUpdater.loadLibraries(libraries)
+          workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
         }
@@ -402,28 +397,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
       val service = BazelWorkspaceResolveService.getInstance(project)
       val workspace = service.getOrFetchResolvedWorkspace(syncScope, taskId)
       val targets = workspace.targets
-      val javaTargetIds = targets.getTargets().calculateJavaTargetIds().toList()
-      val scalaTargetIds = targets.getTargets().calculateScalaTargetIds().toList()
-
-      val jvmBinaryJarsResult =
-        queryIf(
-          javaTargetIds.isNotEmpty() &&
-            project.shouldImportJvmBinaryJars(),
-          "buildTarget/jvmBinaryJars",
-        ) {
-          service.withEndpointProxy { it.buildJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds)) }
-        }
-
-      // We use javacOptions only to build the dependency tree based on the classpath.
-      // If the workspace/libraries endpoint is NOT available (like SBT), we need to retrieve it.
-      // If a server supports buildTarget/jvmCompileClasspath, then the classpath won't be passed via this endpoint
-      // (see https://build-server-protocol.github.io/docs/extensions/java#javacoptionsitem).
-      // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
-      // There's no capability for javacOptions.
-      val javacOptionsResult =
-        asyncQueryIf(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
-          service.withEndpointProxy { it.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds)) }
-        }
 
       val workspaceContext =
         query("workspace/context") {
@@ -433,9 +406,7 @@ suspend fun calculateProjectDetailsWithCapabilities(
       ProjectDetails(
         targetIds = targets.getTargetIDs().toList(),
         targets = targets.getTargets().toSet(),
-        javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         libraries = workspace.libraries,
-        jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
         workspaceContext = workspaceContext,
       )
     } catch (e: Exception) {

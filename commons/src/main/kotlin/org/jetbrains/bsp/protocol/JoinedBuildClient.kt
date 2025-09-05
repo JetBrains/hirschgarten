@@ -1,13 +1,9 @@
 package org.jetbrains.bsp.protocol
 
-interface JoinedBuildClient {
-  fun onBuildLogMessage(params: LogMessageParams): Unit
+interface JoinedBuildClient : BuildTaskHandler {
+  fun onBuildLogMessage(params: LogMessageParams)
 
-  fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams): Unit
-
-  fun onBuildTaskStart(params: TaskStartParams): Unit
-
-  fun onBuildTaskFinish(params: TaskFinishParams): Unit
+  fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams)
 
   fun onPublishCoverageReport(report: CoverageReport)
 }

@@ -15,7 +15,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
@@ -53,19 +52,18 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         GenericModuleInfo(
           name = "module1",
           type = ModuleTypeId("JAVA_MODULE"),
-          modulesDependencies =
+          dependencies =
             listOf(
-              IntermediateModuleDependency("module2"),
-              IntermediateModuleDependency("module3"),
+              "module2",
+              "module3",
             ),
-          librariesDependencies = listOf(),
           kind =
             TargetKind(
               kindString = "java_library",
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(LanguageClass.JAVA),
             ),
-          associates = associates.map { IntermediateModuleDependency(it) },
+          associates = associates,
         )
 
       val baseDirContentRoot =

@@ -14,6 +14,7 @@ public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
   public val excludedRoots: List<VirtualFileUrl>
   public val buildFiles: List<VirtualFileUrl>
   public val indexAllFilesInIncludedRoots: Boolean
+  public val projectViewFile: VirtualFileUrl?
 
   //region generated code
   @GeneratedCodeApiVersion(3)
@@ -24,6 +25,7 @@ public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
     var excludedRoots: MutableList<VirtualFileUrl>
     var buildFiles: MutableList<VirtualFileUrl>
     var indexAllFilesInIncludedRoots: Boolean
+    var projectViewFile: VirtualFileUrl?
   }
 
   companion object : EntityType<BazelProjectDirectoriesEntity, Builder>() {

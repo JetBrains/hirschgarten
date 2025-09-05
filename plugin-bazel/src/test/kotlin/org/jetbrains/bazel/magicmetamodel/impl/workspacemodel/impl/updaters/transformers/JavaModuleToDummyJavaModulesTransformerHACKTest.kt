@@ -14,8 +14,6 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
@@ -39,12 +37,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies =
+        dependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
+            "module2",
+            "module3",
+            "@maven//:lib1",
           ),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -135,8 +133,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = listOf("@maven//:lib1"),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -227,8 +224,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = listOf("@maven//:lib1"),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -290,8 +286,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = listOf("@maven//:lib1"),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -360,8 +355,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = listOf("@maven//:lib1"),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -418,8 +412,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = listOf("@maven//:lib1"),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -482,14 +475,13 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}".addIntelliJDummyPrefix(),
         type = ModuleTypeId(BazelDummyModuleType.ID),
-        modulesDependencies = listOf(),
         kind =
           TargetKind(
             kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
           ),
-        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
+        dependencies = givenJavaModule.genericModuleInfo.dependencies,
       )
 
     val expectedJavaModule =
@@ -526,8 +518,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = listOf("@maven//:lib1"),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -616,8 +607,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = listOf("@maven//:lib1"),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -701,8 +691,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRoot1Name,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        dependencies = listOf(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -733,8 +722,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRoot2Name,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        dependencies = listOf(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -784,8 +772,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        dependencies = listOf(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -833,12 +820,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies =
-          listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
-          ),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -910,8 +892,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = listOf("@maven//:lib1"),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -993,12 +974,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies =
-          listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
-          ),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -1071,12 +1047,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies =
-          listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
-          ),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -1141,12 +1112,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies =
-          listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
-          ),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -1204,8 +1170,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -1288,12 +1253,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies =
-          listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
-          ),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -1380,7 +1340,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
   private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {
     actual.name shouldBe expected.name
     actual.type shouldBe expected.type
-    actual.modulesDependencies shouldContainExactlyInAnyOrder expected.modulesDependencies
-    actual.librariesDependencies shouldContainExactlyInAnyOrder expected.librariesDependencies
+    actual.dependencies shouldBe expected.dependencies
   }
 }

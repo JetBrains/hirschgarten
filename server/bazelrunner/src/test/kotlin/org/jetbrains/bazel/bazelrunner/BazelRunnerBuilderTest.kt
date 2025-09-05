@@ -13,14 +13,12 @@ import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
-import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
 import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
 import org.jetbrains.bazel.workspacecontext.DeriveInstrumentationFilterFromTargetsSpec
 import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
-import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
@@ -28,7 +26,6 @@ import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
 import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
@@ -58,9 +55,6 @@ val mockContext =
     importDepth = ImportDepthSpec(2),
     enabledRules = EnabledRulesSpec(listOf("rule1", "rule2")),
     ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
-    experimentalPrioritizeLibrariesOverModulesTargetKinds = PrioritizeLibrariesOverModulesTargetKindsSpec(emptyList()),
-    enableNativeAndroidRules = EnableNativeAndroidRules(false),
-    androidMinSdkSpec = AndroidMinSdkSpec(null),
     shardSync = ShardSyncSpec(false),
     targetShardSize = TargetShardSizeSpec(1000),
     shardingApproachSpec = ShardingApproachSpec(null),

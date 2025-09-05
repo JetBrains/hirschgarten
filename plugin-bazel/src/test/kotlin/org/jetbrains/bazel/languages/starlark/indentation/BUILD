@@ -4,7 +4,10 @@ kt_intellij_junit4_test(
     name = "StarlarkEnterBetweenBracesTest",
     src = "StarlarkEnterBetweenBracesTest.kt",
     tags = ["exclusive"],
-    deps = ["//plugin-bazel"],
+    deps = [
+        "//plugin-bazel",
+        "//plugin-bazel/src:test_fixtures",
+    ],
 )
 
 kt_intellij_junit4_test(

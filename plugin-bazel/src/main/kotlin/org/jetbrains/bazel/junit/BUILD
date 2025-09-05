@@ -5,7 +5,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runfiles",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings/bazel",

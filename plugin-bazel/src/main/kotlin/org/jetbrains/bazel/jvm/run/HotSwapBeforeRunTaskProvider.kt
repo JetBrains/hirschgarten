@@ -15,6 +15,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.hotswap.HotSwapUtils
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.server.sync.DebugHelper
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
@@ -75,7 +76,7 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
         val executionParams = executionParams(runConfiguration)
         val additionalProgramArguments = DebugHelper.generateRunArguments(DebugType.JDWP(executionParams.debugPort))
         val additionalBazelParams = transformProgramArguments(executionParams.additionalBazelParams)
-        val coroutineDebugParams = calculateKotlinCoroutineParams(environment, configuration.project)
+        val coroutineDebugParams = retrieveKotlinCoroutineParams(environment, configuration.project)
         val result =
           withBackgroundProgress(
             project,
@@ -90,9 +91,10 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
                 environmentVariables = executionParams.environmentVariables,
                 additionalBazelParams = (scriptPathParam + coroutineDebugParams + additionalBazelParams).joinToString(" "),
               )
-            BazelWorkspaceResolveService
+            BazelServerService
               .getInstance(project)
-              .withEndpointProxy { it.buildTargetRun(params) }
+              .connection
+              .runWithServer { it.buildTargetRun(params) }
           }
         if (result.statusCode != BazelStatus.SUCCESS) {
           BazelBalloonNotifier.error(

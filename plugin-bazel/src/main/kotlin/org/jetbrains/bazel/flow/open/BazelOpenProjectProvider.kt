@@ -30,20 +30,18 @@ internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
   }
 }
 
-internal suspend fun performOpenBazelProject(project: Project?, projectRootDir: VirtualFile?) {
-  if (projectRootDir != null && project != null) {
-    project.initProperties(projectRootDir)
-    registerBazelToolWindow(project)
-    configureProjectCounterPlatform(project)
-    BazelCoroutineService.getInstance(project).start {
-      StartupActivity.POST_STARTUP_ACTIVITY
-        .filterableLazySequence()
-        .map { item ->
-          item.instance
-        }.filterIsInstance<BazelProjectActivity>()
-        .forEach {
-          it.execute(project)
-        }
-    }
+internal suspend fun performOpenBazelProject(project: Project, projectRootDir: VirtualFile) {
+  project.initProperties(projectRootDir)
+  registerBazelToolWindow(project)
+  configureProjectCounterPlatform(project)
+  BazelCoroutineService.getInstance(project).start {
+    StartupActivity.POST_STARTUP_ACTIVITY
+      .filterableLazySequence()
+      .map { item ->
+        item.instance
+      }.filterIsInstance<BazelProjectActivity>()
+      .forEach {
+        it.execute(project)
+      }
   }
 }

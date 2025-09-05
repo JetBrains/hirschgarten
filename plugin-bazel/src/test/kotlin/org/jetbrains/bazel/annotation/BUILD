@@ -14,7 +14,7 @@ kt_junit5_test(
         "//plugin-bazel",
     ],
     deps = [
-        "//plugin-bazel/src:test_fixtures",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil",
     ],
 )

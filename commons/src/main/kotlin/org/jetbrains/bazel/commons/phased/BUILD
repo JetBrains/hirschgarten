@@ -6,7 +6,6 @@ kt_library(
     visibility = ["//visibility:public"],
     exports = ["//commons/src/main/kotlin/org/jetbrains/bazel/label"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
         "//third_party/bazel/src/main/protobuf:build_java_proto",
         "@maven//:com_google_protobuf_protobuf_java",
     ],

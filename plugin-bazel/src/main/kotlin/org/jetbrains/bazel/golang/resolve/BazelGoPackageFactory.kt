@@ -30,8 +30,6 @@ import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
-internal const val GO_PACKAGE_FACTORY_KEY = "BazelGoPackageFactory"
-
 /** Updates and exposes a map of import paths to files. */
 class BazelGoPackageFactory : GoPackageFactory {
   override fun createPackage(goFile: GoFile): GoPackage? {
@@ -49,10 +47,16 @@ class BazelGoPackageFactory : GoPackageFactory {
 
   companion object {
     @JvmStatic
+    internal val fileToImportPathMapComputable =
+      SyncCache.SyncCacheComputable { project ->
+        buildFileToImportPathMap(project)
+      }
+
+    @JvmStatic
     fun getFileToImportPathMap(project: Project): ConcurrentMap<Path, String> =
       SyncCache
         .getInstance(project)
-        .get(GO_PACKAGE_FACTORY_KEY) { buildFileToImportPathMap(project) } ?: ConcurrentHashMap()
+        .get(fileToImportPathMapComputable)
 
     private fun buildFileToImportPathMap(project: Project): ConcurrentMap<Path, String> {
       val targetUtils = project.targetUtils

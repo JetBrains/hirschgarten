@@ -49,10 +49,8 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete in visibility`() {
-    // given
     setTargets(listOf("//target1", "//target2"))
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -67,7 +65,6 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder
       listOf(
         "\"//visibility:private\"",
@@ -83,10 +80,8 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete only predefined in visibility`() {
-    // given
     setTargets(emptyList())
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -101,7 +96,6 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainExactlyInAnyOrder
       listOf(
         "\"//visibility:private\"",
@@ -111,10 +105,8 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should not complete in deps`() {
-    // given
     setTargets(listOf("//target1", "//target2"))
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -132,7 +124,6 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldNotContain "\"//visibility:private\""
     lookups shouldNotContain "\"//visibility:public\""
     lookups shouldNotContain "\"//target1:__pkg__\""
@@ -143,24 +134,19 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should not complete outside`() {
-    // given
     setTargets(listOf("//target1", "//target2"))
 
-    // when
     myFixture.configureByText("BUILD", "")
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups.shouldBeEmpty()
   }
 
   @Test
   fun `should search for visibilities`() {
-    // given
     setTargets(listOf("//abcd1299", "//abcd1239", "//abcd1234"))
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -180,7 +166,6 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
     myFixture.type("4")
     val lookups4 = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainAll
       listOf(
         "\"//abcd1234:__pkg__\"",
@@ -212,10 +197,8 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should prioritize public and private`() {
-    // given
     setTargets(listOf("//target1", "//target2"))
 
-    // when
     myFixture.configureByText(
       "BUILD",
       """
@@ -230,7 +213,6 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
     myFixture.type("\"")
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups[0] shouldBeIn listOf("\"//visibility:private\"", "\"//visibility:public\"")
     lookups[1] shouldBeIn listOf("\"//visibility:private\"", "\"//visibility:public\"")
   }
