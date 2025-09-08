@@ -917,7 +917,7 @@
       />
     </action>
     <action id="Bazel.JumpToBuildFile"
-            class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
+            class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction$XmlRegistered">
       <add-to-group group-id="EditorPopupMenu" />
       <add-to-group group-id="EditorTabPopupMenu" />
       <keyboard-shortcut
