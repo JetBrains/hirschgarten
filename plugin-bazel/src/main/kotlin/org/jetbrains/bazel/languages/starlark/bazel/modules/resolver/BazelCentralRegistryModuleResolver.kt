@@ -4,9 +4,9 @@ import com.google.gson.Gson
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.HttpRequests
-import com.intellij.util.text.SemVer
 import org.jetbrains.bazel.languages.starlark.bazel.modules.BazelModuleResolver
 import java.io.IOException
+import java.util.Base64
 
 class BazelCentralRegistryModuleResolver : BazelModuleResolver {
   override val id: String = ID
@@ -53,6 +53,8 @@ class BazelCentralRegistryModuleResolver : BazelModuleResolver {
   private val githubApiUrl = "https://api.github.com/repos/bazelbuild/bazel-central-registry/contents/modules"
 
   private data class GitHubContent(val name: String, val type: String)
+  private data class GitHubFileContent(val content: String?, val encoding: String?)
+  private data class ModuleMetadata(val versions: List<String>?)
 
   private fun fetchModuleNamesFromRegistry(): List<String>? =
     try {
@@ -68,15 +70,16 @@ class BazelCentralRegistryModuleResolver : BazelModuleResolver {
 
   private fun fetchModuleVersionsFromRegistry(moduleName: String): List<String>? =
     try {
-      val url = "$githubApiUrl/$moduleName"
+      val url = "$githubApiUrl/$moduleName/metadata.json"
       val json = performHttpRequest(url)
-      gson
-        .fromJson(json, Array<GitHubContent>::class.java)
-        .filter { it.type == "dir" }
-        .map { it.name }
-        .mapNotNull { versionString -> SemVer.parseFromText(versionString)?.let { it to versionString } }
-        .sortedWith(compareByDescending { it.first })
-        .map { it.second }
+      val file = gson.fromJson(json, GitHubFileContent::class.java)
+      val decoded = if (file.content != null && file.encoding == "base64") {
+        String(Base64.getMimeDecoder().decode(file.content))
+      } else {
+        return null
+      }
+      val metadata = gson.fromJson(decoded, ModuleMetadata::class.java)
+      metadata.versions?.toList()?.reversed()
     } catch (_: IOException) {
       null
     }
