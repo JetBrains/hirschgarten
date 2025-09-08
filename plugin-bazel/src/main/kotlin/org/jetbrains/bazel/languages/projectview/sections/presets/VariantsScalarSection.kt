@@ -3,8 +3,8 @@ package org.jetbrains.bazel.languages.projectview.sections.presets
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
-import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.languages.projectview.ScalarSection
+import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 
 abstract class VariantsScalarSection<T>(private val variants: List<String>) : ScalarSection<T>() {
   final override val completionProvider = SimpleCompletionProvider(variants)

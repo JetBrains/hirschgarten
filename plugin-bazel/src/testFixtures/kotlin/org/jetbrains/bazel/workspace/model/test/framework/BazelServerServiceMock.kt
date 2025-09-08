@@ -33,9 +33,8 @@ val mockWorkspaceContext =
   )
 
 class BazelServerConnectionMock : BazelServerConnection {
-  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T {
+  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T =
     throw UnsupportedOperationException("Mock implementation")
-  }
 }
 
 class BazelServerServiceMock : BazelServerService {

@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 import org.jetbrains.bazel.languages.projectview.ScalarSection
 import org.jetbrains.bazel.languages.projectview.SectionKey
+import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 
 class GazelleTargetSection : ScalarSection<Label>() {
   override val name = NAME

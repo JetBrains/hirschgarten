@@ -96,8 +96,7 @@ class ProjectSyncService(
     return bspMapper.jvmBuilderParamsForTarget(project, target)
   }
 
-  fun workspaceContext(): WorkspaceContext =
-    projectProvider.getIfLoaded()?.workspaceContext ?: workspaceContext
+  fun workspaceContext(): WorkspaceContext = projectProvider.getIfLoaded()?.workspaceContext ?: workspaceContext
 
   suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath {
     val project = projectProvider.get() as? AspectSyncProject ?: return BspJvmClasspath(emptyList(), emptyList())

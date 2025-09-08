@@ -2,9 +2,9 @@ package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.commons.ExcludableValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException

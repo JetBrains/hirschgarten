@@ -2,9 +2,9 @@ package org.jetbrains.bazel.languages.projectview.sections
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionProvider
 import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.SectionKey
+import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionProvider
 import java.nio.file.Path
 
 class ImportRunConfigurationsSection : ListSection<List<Path>>() {

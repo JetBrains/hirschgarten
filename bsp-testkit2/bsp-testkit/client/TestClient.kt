@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.gson.bazelGson
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -49,8 +49,8 @@ class TestClient(
     }
   }
 
-  private fun createTestWorkspaceContext(): WorkspaceContext {
-    return WorkspaceContext(
+  private fun createTestWorkspaceContext(): WorkspaceContext =
+    WorkspaceContext(
       targets = emptyList(),
       directories = emptyList(),
       buildFlags = emptyList(),
@@ -70,9 +70,8 @@ class TestClient(
       indexAllFilesInDirectories = false,
       pythonCodeGeneratorRuleNames = emptyList(),
       importIjars = true,
-      deriveInstrumentationFilterFromTargets = false
+      deriveInstrumentationFilterFromTargets = false,
     )
-  }
 
   fun testCompile(
     timeout: Duration,

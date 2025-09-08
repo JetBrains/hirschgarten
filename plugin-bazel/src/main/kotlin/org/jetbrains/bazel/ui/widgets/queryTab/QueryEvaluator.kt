@@ -57,28 +57,29 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
     directoryFile.isDirectoryOrThrow()
 
     val workspaceRoot = directoryFile.toNioPath()
-    val emptyWorkspaceContext = WorkspaceContext(
-      targets = emptyList(),
-      directories = listOf(ExcludableValue.included(workspaceRoot)),
-      buildFlags = emptyList(),
-      syncFlags = emptyList(),
-      debugFlags = emptyList(),
-      bazelBinary = null,
-      allowManualTargetsSync = false,
-      dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp"),
-      importDepth = 1,
-      enabledRules = emptyList(),
-      ideJavaHomeOverride = null,
-      shardSync = false,
-      targetShardSize = 1000,
-      shardingApproach = null,
-      importRunConfigurations = emptyList(),
-      gazelleTarget = null,
-      indexAllFilesInDirectories = false,
-      pythonCodeGeneratorRuleNames = emptyList(),
-      importIjars = false,
-      deriveInstrumentationFilterFromTargets = false,
-    )
+    val emptyWorkspaceContext =
+      WorkspaceContext(
+        targets = emptyList(),
+        directories = listOf(ExcludableValue.included(workspaceRoot)),
+        buildFlags = emptyList(),
+        syncFlags = emptyList(),
+        debugFlags = emptyList(),
+        bazelBinary = null,
+        allowManualTargetsSync = false,
+        dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp"),
+        importDepth = 1,
+        enabledRules = emptyList(),
+        ideJavaHomeOverride = null,
+        shardSync = false,
+        targetShardSize = 1000,
+        shardingApproach = null,
+        importRunConfigurations = emptyList(),
+        gazelleTarget = null,
+        indexAllFilesInDirectories = false,
+        pythonCodeGeneratorRuleNames = emptyList(),
+        importIjars = false,
+        deriveInstrumentationFilterFromTargets = false,
+      )
 
     return Pair(BazelRunner(null, workspaceRoot), emptyWorkspaceContext)
   }

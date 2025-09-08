@@ -9,14 +9,13 @@ import java.nio.file.Path
  * This is a temporary bridge until the server layer can be updated to use the new ProjectView directly.
  */
 object ProjectViewToWorkspaceContextConverter {
-  
   fun convert(
-    projectView: ProjectView, 
-    dotBazelBspDirPath: Path, 
+    projectView: ProjectView,
+    dotBazelBspDirPath: Path,
     workspaceRoot: Path,
-    projectViewPath: Path
-  ): WorkspaceContext {
-    return WorkspaceContext(
+    projectViewPath: Path,
+  ): WorkspaceContext =
+    WorkspaceContext(
       targets = projectView.targets,
       directories = createDirectoriesFromProjectView(projectView, workspaceRoot),
       buildFlags = projectView.buildFlags,
@@ -38,17 +37,16 @@ object ProjectViewToWorkspaceContextConverter {
       importIjars = projectView.importIjars,
       deriveInstrumentationFilterFromTargets = projectView.deriveInstrumentationFilterFromTargets,
     )
-  }
-  
+
   private fun createDirectoriesFromProjectView(projectView: ProjectView, workspaceRoot: Path): List<ExcludableValue<Path>> {
     if (projectView.directories.isEmpty()) {
       // Default to whole project if no directories specified
       return listOf(ExcludableValue.included(workspaceRoot))
     }
-    
+
     return projectView.directories
   }
-  
+
   private fun resolveBazelFromPath(): Path {
     // Simple implementation - look for bazel in PATH
     val pathDirs = System.getenv("PATH")?.split(System.getProperty("path.separator")) ?: emptyList()

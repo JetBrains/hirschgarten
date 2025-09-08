@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.workspacecontext
 
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.commons.ExcludableValue
 import java.nio.file.Path
 
 /**
@@ -14,57 +14,46 @@ data class WorkspaceContext(
    * Targets (included and excluded) on which the user wants to work.
    */
   val targets: List<ExcludableValue<Label>>,
-  
   /**
    * Directories (included and excluded) in the project.
    */
   val directories: List<ExcludableValue<Path>>,
-  
   /**
    * Build flags which should be added to each bazel call.
    */
   val buildFlags: List<String>,
-  
   /**
    * Sync flags which should be added to sync call.
    */
   val syncFlags: List<String>,
-  
   /**
    * Debug flags which should be added to bazel build/run call for debugging.
    */
   val debugFlags: List<String>,
-  
   /**
    * Path to bazel which should be used in the bazel runner.
    */
   val bazelBinary: Path?,
-  
   /**
    * If true targets with `manual` tag will be built
    */
   val allowManualTargetsSync: Boolean,
-  
   /**
    * Path to the `.bazelbsp` dir in the project root
    */
   val dotBazelBspDirPath: Path,
-  
   /**
    * Parameter determining targets importing depth
    */
   val importDepth: Int,
-  
   /**
    * Parameter determining which rules should be used by Bazel BSP, if empty Bazel is queried.
    */
   val enabledRules: List<String>,
-  
   /**
    * Parameter determining the java home path that should be used with the local IDE
    */
   val ideJavaHomeOverride: Path?,
-  
   val shardSync: Boolean,
   val targetShardSize: Int,
   val shardingApproach: String?,
@@ -81,11 +70,12 @@ data class WorkspaceContext(
  * belong to them.
  */
 val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
-  get() = targets
-    .filter { it.isIncluded() }
-    .mapNotNull { excludableValue ->
-      excludableValue.value
-        .assumeResolved()
-        .repo.repoName
-        .takeIf { repoName -> repoName.isNotEmpty() }
-    }.distinct()
+  get() =
+    targets
+      .filter { it.isIncluded() }
+      .mapNotNull { excludableValue ->
+        excludableValue.value
+          .assumeResolved()
+          .repo.repoName
+          .takeIf { repoName -> repoName.isNotEmpty() }
+      }.distinct()

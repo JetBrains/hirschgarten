@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
-import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.languages.projectview.SectionKey
+import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
 import org.jetbrains.bazel.languages.projectview.sections.presets.ExcludableListSection
 import java.nio.file.Path
 

@@ -13,9 +13,9 @@ import com.intellij.patterns.PlatformPatterns.psiComment
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
-import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.ProjectViewSections
 import org.jetbrains.bazel.languages.projectview.ScalarSection
+import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 

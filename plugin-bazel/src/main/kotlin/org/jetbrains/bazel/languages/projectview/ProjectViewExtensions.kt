@@ -3,8 +3,29 @@ package org.jetbrains.bazel.languages.projectview
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.languages.bazelrc.flags.Flag
-import org.jetbrains.bazel.languages.projectview.sections.*
+import org.jetbrains.bazel.languages.projectview.sections.AllowManualTargetsSyncSection
+import org.jetbrains.bazel.languages.projectview.sections.AndroidMinSdkSection
+import org.jetbrains.bazel.languages.projectview.sections.BazelBinarySection
+import org.jetbrains.bazel.languages.projectview.sections.BuildFlagsSection
+import org.jetbrains.bazel.languages.projectview.sections.DebugFlagsSection
+import org.jetbrains.bazel.languages.projectview.sections.DeriveInstrumentationFilterFromTargetsSection
+import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirectoriesSection
+import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
+import org.jetbrains.bazel.languages.projectview.sections.EnableNativeAndroidRulesSection
+import org.jetbrains.bazel.languages.projectview.sections.EnabledRulesSection
+import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
+import org.jetbrains.bazel.languages.projectview.sections.IdeJavaHomeOverrideSection
+import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
+import org.jetbrains.bazel.languages.projectview.sections.ImportIjarsSection
+import org.jetbrains.bazel.languages.projectview.sections.ImportRunConfigurationsSection
+import org.jetbrains.bazel.languages.projectview.sections.IndexAllFilesInDirectoriesSection
+import org.jetbrains.bazel.languages.projectview.sections.PythonCodeGeneratorRuleNamesSection
+import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
+import org.jetbrains.bazel.languages.projectview.sections.ShardingApproachSection
+import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection
+import org.jetbrains.bazel.languages.projectview.sections.TargetShardSizeSection
+import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
+import org.jetbrains.bazel.languages.projectview.sections.TestFlagsSection
 import java.nio.file.Path
 
 // Extension properties to provide convenient access to ProjectView sections
@@ -84,10 +105,11 @@ val ProjectView.deriveInstrumentationFilterFromTargets: Boolean
  * belong to them.
  */
 val ProjectView.externalRepositoriesTreatedAsInternal: List<String>
-  get() = targets
-    .mapNotNull { excludableValue ->
-      excludableValue.value
-        .assumeResolved()
-        .repo.repoName
-        .takeIf { repoName -> repoName.isNotEmpty() }
-    }.distinct()
+  get() =
+    targets
+      .mapNotNull { excludableValue ->
+        excludableValue.value
+          .assumeResolved()
+          .repo.repoName
+          .takeIf { repoName -> repoName.isNotEmpty() }
+      }.distinct()

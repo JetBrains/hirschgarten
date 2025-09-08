@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.EnvironmentProvider
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.SystemInfoProvider
@@ -21,7 +22,6 @@ import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
-import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
@@ -105,10 +105,11 @@ private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo
   val workspaceContext =
     WorkspaceContext(
       targets = listOf(ExcludableValue.included(Label.parse("@//...:all"))),
-      directories = listOf(
-        ExcludableValue.included(workspaceRoot),
-        ExcludableValue.included(workspaceRoot.resolve(".bazelproject"))
-      ),
+      directories =
+        listOf(
+          ExcludableValue.included(workspaceRoot),
+          ExcludableValue.included(workspaceRoot.resolve(".bazelproject")),
+        ),
       buildFlags = emptyList(),
       syncFlags = emptyList(),
       debugFlags = emptyList(),

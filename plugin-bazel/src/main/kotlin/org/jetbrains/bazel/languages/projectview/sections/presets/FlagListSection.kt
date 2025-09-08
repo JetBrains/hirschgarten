@@ -3,9 +3,9 @@ package org.jetbrains.bazel.languages.projectview.sections.presets
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
-import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection.Companion.COMMAND
 
 abstract class FlagListSection(private val command: String) : ListSection<List<Flag>>() {

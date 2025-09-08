@@ -26,18 +26,20 @@ fun String.label() = Label.parse(this)
 
 val mockContext =
   WorkspaceContext(
-    targets = listOf(
-      ExcludableValue.included("in1".label()),
-      ExcludableValue.included("in2".label()),
-      ExcludableValue.excluded("ex1".label()),
-      ExcludableValue.excluded("ex2".label())
-    ),
-    directories = listOf(
-      ExcludableValue.included(Path("in1dir")),
-      ExcludableValue.included(Path("in2dir")),
-      ExcludableValue.excluded(Path("ex1dir")),
-      ExcludableValue.excluded(Path("ex2dir"))
-    ),
+    targets =
+      listOf(
+        ExcludableValue.included("in1".label()),
+        ExcludableValue.included("in2".label()),
+        ExcludableValue.excluded("ex1".label()),
+        ExcludableValue.excluded("ex2".label()),
+      ),
+    directories =
+      listOf(
+        ExcludableValue.included(Path("in1dir")),
+        ExcludableValue.included(Path("in2dir")),
+        ExcludableValue.excluded(Path("ex1dir")),
+        ExcludableValue.excluded(Path("ex2dir")),
+      ),
     buildFlags = listOf("flag1", "flag2"),
     syncFlags = listOf("flag1", "flag2"),
     debugFlags = emptyList(),

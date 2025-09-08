@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
-import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.SectionKey
+import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 import org.jetbrains.bazel.languages.projectview.sections.presets.ExcludableListSection
 
 class TargetsSection : ExcludableListSection<Label>() {

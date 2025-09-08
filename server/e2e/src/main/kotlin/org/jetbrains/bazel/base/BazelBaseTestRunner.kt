@@ -11,15 +11,13 @@ import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.server.connection.startServer
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
 import org.jetbrains.bazel.startup.IntellijBidirectionalMap
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
 import kotlin.time.Duration
@@ -80,8 +78,8 @@ abstract class BazelBaseTestRunner {
     }
   }
 
-  private fun createTestWorkspaceContext(): WorkspaceContext {
-    return WorkspaceContext(
+  private fun createTestWorkspaceContext(): WorkspaceContext =
+    WorkspaceContext(
       targets = emptyList(),
       directories = emptyList(),
       buildFlags = emptyList(),
@@ -101,7 +99,6 @@ abstract class BazelBaseTestRunner {
       indexAllFilesInDirectories = false,
       pythonCodeGeneratorRuleNames = emptyList(),
       importIjars = true,
-      deriveInstrumentationFilterFromTargets = false
+      deriveInstrumentationFilterFromTargets = false,
     )
-  }
 }

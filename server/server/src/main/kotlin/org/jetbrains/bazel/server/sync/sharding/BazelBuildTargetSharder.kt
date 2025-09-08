@@ -19,12 +19,12 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.ShardingApproach
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
-import org.jetbrains.bazel.commons.ShardingApproach
-import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import kotlin.math.min
@@ -102,7 +102,11 @@ object BazelBuildTargetSharder {
   }
 
   private fun getShardingApproach(context: WorkspaceContext): ShardingApproach =
-    context.shardingApproach?.let { ShardingApproach.fromString(it) ?: ShardingApproach.QUERY_AND_SHARD } ?: ShardingApproach.QUERY_AND_SHARD
+    context.shardingApproach?.let {
+      ShardingApproach.fromString(
+        it,
+      ) ?: ShardingApproach.QUERY_AND_SHARD
+    } ?: ShardingApproach.QUERY_AND_SHARD
 
   /** Number of individual targets per blaze build shard.  */
   private fun getTargetShardSize(context: WorkspaceContext): Int = min(context.targetShardSize, MAX_TARGET_SHARD_SIZE)

@@ -7,11 +7,11 @@ import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
-import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

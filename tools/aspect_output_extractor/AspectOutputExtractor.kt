@@ -9,10 +9,7 @@ import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
-import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.install.Install
-import org.jetbrains.bazel.install.InstallationContextProvider
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.server.bsp.info.BspInfo
@@ -21,17 +18,13 @@ import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
 import org.jetbrains.bazel.startup.IntellijBidirectionalMap
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
-import org.jetbrains.bazel.startup.IntellijSpawnedProcess
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.io.path.notExists
 import kotlin.system.exitProcess
 
 /**
@@ -59,12 +52,12 @@ object AspectOutputExtractor {
 
       val projectPath = Path.of(args[0])
       val projectViewPath = Path.of(args[1])
-      
+
       if (!projectPath.exists()) {
         println("Error: Project path does not exist: $projectPath")
         exitProcess(1)
       }
-      
+
       if (!projectViewPath.exists()) {
         println("Error: Project view path does not exist: $projectViewPath")
         exitProcess(1)
@@ -165,8 +158,8 @@ object AspectOutputExtractor {
     return projectProvider.projectResolver.getAspectOutputPaths()
   }
 
-  private fun createMinimalWorkspaceContext(projectPath: Path, dotBazelBspDir: Path): WorkspaceContext {
-    return WorkspaceContext(
+  private fun createMinimalWorkspaceContext(projectPath: Path, dotBazelBspDir: Path): WorkspaceContext =
+    WorkspaceContext(
       targets = emptyList(),
       directories = emptyList(),
       buildFlags = emptyList(),
@@ -186,7 +179,6 @@ object AspectOutputExtractor {
       indexAllFilesInDirectories = false,
       pythonCodeGeneratorRuleNames = emptyList(),
       importIjars = true,
-      deriveInstrumentationFilterFromTargets = false
+      deriveInstrumentationFilterFromTargets = false,
     )
-  }
 }

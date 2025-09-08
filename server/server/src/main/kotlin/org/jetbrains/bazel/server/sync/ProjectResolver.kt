@@ -7,6 +7,7 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.canonicalize
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -23,7 +24,6 @@ import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
-import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
@@ -37,7 +37,7 @@ fun TargetCollection.halve(): List<TargetCollection> {
   val mid = values.size / 2
   return listOf(
     TargetCollection(values.subList(0, mid), excludedValues),
-    TargetCollection(values.subList(mid, values.size), excludedValues)
+    TargetCollection(values.subList(mid, values.size), excludedValues),
   )
 }
 
