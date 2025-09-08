@@ -1,10 +1,10 @@
-package org.jetbrains.bazel.utils
+package org.jetbrains.bazel.sdkcompat
 
 import com.intellij.execution.RunConfigurationProducerService
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 
-internal suspend fun configureRunConfigurationIgnoreProducers(project: Project): Boolean =
+suspend fun configureRunConfigurationIgnoreProducers(project: Project): Boolean =
   project
     .serviceAsync<RunConfigurationProducerService>()
     .state.ignoredProducers

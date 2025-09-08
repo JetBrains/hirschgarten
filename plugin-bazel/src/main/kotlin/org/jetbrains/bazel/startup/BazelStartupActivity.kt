@@ -20,6 +20,7 @@ import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.projectAware.BazelWorkspace
+import org.jetbrains.bazel.sdkcompat.configureRunConfigurationIgnoreProducers
 import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
@@ -28,7 +29,6 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
-import org.jetbrains.bazel.utils.configureRunConfigurationIgnoreProducers
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 
