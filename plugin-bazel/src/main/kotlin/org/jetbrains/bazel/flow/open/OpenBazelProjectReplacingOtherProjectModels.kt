@@ -4,11 +4,10 @@ import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import org.jetbrains.bazel.config.BazelFeatureFlags
 
 class OpenBazelProjectReplacingOtherProjectModels : ProjectActivity {
   override suspend fun execute(project: Project) {
-    if (!BazelFeatureFlags.autoOpenProjectIfPresent && !shouldImportGoogleBazelProject(project)) return
+    if (!shouldImportGoogleBazelProject(project)) return
 
     val externalProjectPath = project.basePath.orEmpty()
     if (BazelUnlinkedProjectAware().isLinkedProject(project, externalProjectPath)) {
