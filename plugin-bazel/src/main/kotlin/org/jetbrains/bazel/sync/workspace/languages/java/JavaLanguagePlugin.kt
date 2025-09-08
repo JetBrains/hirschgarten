@@ -23,7 +23,7 @@ class JavaLanguagePlugin(
   private var jdk: Jdk? = null
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
-    val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverrideSpec.value
+    val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
     jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
   }
 

@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewImport
+import org.jetbrains.bazel.languages.projectview.ProjectViewImport
 
 /**
  * A base class responsible for tokenizing a given [input] project view into a list of tokens.

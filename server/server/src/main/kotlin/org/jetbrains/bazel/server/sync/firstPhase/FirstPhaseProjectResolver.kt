@@ -28,8 +28,7 @@ class FirstPhaseProjectResolver(
             options.add("--output=streamed_proto")
             options.add(BazelFlag.keepGoing())
 
-            targets.addAll(workspaceContext.targets.values)
-            excludedTargets.addAll(workspaceContext.targets.excludedValues)
+            addTargetsFromExcludableList(workspaceContext.targets)
           }
         }
 

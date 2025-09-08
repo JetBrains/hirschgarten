@@ -185,7 +185,7 @@
                     dynamic="true"
     />
     <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
-                    interface="org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionProvider"
+                    interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
                     dynamic="true"
     />
   </extensionPoints>
@@ -265,7 +265,7 @@
 
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
 
-    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.language.DefaultProjectViewSectionProvider"/>
+    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.DefaultProjectViewSectionProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

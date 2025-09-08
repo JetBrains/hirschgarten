@@ -4,7 +4,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -47,9 +47,14 @@ interface HasMultipleTargets {
   // Will be added as `bazel <command> -- <targets> -target1 -target2 ...`
   val excludedTargets: MutableList<Label>
 
-  fun addTargetsFromSpec(targetsSpec: TargetsSpec) {
-    targets.addAll(targetsSpec.values)
-    excludedTargets.addAll(targetsSpec.excludedValues)
+  fun addTargetsFromExcludableList(targets: List<ExcludableValue<Label>>) {
+    targets.forEach { excludableTarget ->
+      if (excludableTarget.isIncluded()) {
+        this.targets.add(excludableTarget.value)
+      } else {
+        this.excludedTargets.add(excludableTarget.value)
+      }
+    }
   }
 
   fun targetCommandLine(): List<String> {

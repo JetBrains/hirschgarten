@@ -9,8 +9,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.createSmartPointer
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSections
-import org.jetbrains.bazel.languages.projectview.language.Section
+import org.jetbrains.bazel.languages.projectview.ProjectViewSections
+import org.jetbrains.bazel.languages.projectview.Section
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 
 class ProjectViewSectionDocumentationTargetProvider : DocumentationTargetProvider {

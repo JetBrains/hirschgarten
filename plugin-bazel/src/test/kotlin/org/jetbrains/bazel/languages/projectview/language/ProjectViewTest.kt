@@ -1,12 +1,13 @@
-package org.jetbrains.bazel.languages.projectview.language
+package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
-import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
-import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
+import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
+import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.junit.Test
 import org.junit.runner.RunWith

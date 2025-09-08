@@ -21,26 +21,7 @@ import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
-import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
-import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
-import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DeriveInstrumentationFilterFromTargetsSpec
-import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
-import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
-import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
-import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
-import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
-import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
-import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
-import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
-import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
-import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
-import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
-import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
@@ -123,30 +104,29 @@ private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo
   // Create unified workspace context
   val workspaceContext =
     WorkspaceContext(
-      targets = TargetsSpec(values = listOf(Label.parse("@//...:all")), excludedValues = emptyList()),
-      directories =
-        DirectoriesSpec(
-          values = listOf(workspaceRoot, workspaceRoot.resolve(".bazelproject")),
-          excludedValues = emptyList(),
-        ),
-      buildFlags = BuildFlagsSpec(values = emptyList()),
-      syncFlags = SyncFlagsSpec(values = emptyList()),
-      debugFlags = DebugFlagsSpec(values = emptyList()),
-      bazelBinary = BazelBinarySpec(value = Paths.get("/usr/bin/bazel")),
-      allowManualTargetsSync = AllowManualTargetsSyncSpec(value = false),
-      dotBazelBspDirPath = DotBazelBspDirPathSpec(value = workspaceRoot.resolve(".bazelbsp")),
-      importDepth = ImportDepthSpec(value = -1),
-      enabledRules = EnabledRulesSpec(values = listOf("rules_java", "rules_python", "rules_scala", "rules_kotlin")),
-      ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(value = null),
-      shardSync = ShardSyncSpec(value = false),
-      targetShardSize = TargetShardSizeSpec(value = 1000),
-      shardingApproachSpec = ShardingApproachSpec(value = null),
-      importRunConfigurations = ImportRunConfigurationsSpec(values = emptyList()),
-      gazelleTarget = GazelleTargetSpec(value = null),
-      indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(value = false),
-      pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(values = emptyList()),
-      importIjarsSpec = ImportIjarsSpec(value = false),
-      deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSpec(value = true),
+      targets = listOf(ExcludableValue.included(Label.parse("@//...:all"))),
+      directories = listOf(
+        ExcludableValue.included(workspaceRoot),
+        ExcludableValue.included(workspaceRoot.resolve(".bazelproject"))
+      ),
+      buildFlags = emptyList(),
+      syncFlags = emptyList(),
+      debugFlags = emptyList(),
+      bazelBinary = Paths.get("/usr/bin/bazel"),
+      allowManualTargetsSync = false,
+      dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp"),
+      importDepth = -1,
+      enabledRules = listOf("rules_java", "rules_python", "rules_scala", "rules_kotlin"),
+      ideJavaHomeOverride = null,
+      shardSync = false,
+      targetShardSize = 1000,
+      shardingApproach = null,
+      importRunConfigurations = emptyList(),
+      gazelleTarget = null,
+      indexAllFilesInDirectories = false,
+      pythonCodeGeneratorRuleNames = emptyList(),
+      importIjars = false,
+      deriveInstrumentationFilterFromTargets = true,
     )
 
   // Setup unified feature flags

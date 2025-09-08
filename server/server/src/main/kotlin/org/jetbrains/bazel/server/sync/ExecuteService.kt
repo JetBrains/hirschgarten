@@ -20,7 +20,7 @@ import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.sync.DebugHelper.buildBeforeRun
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -147,7 +147,7 @@ class ExecuteService(
   }
 
   private suspend fun testImpl(params: TestParams, additionalProgramArguments: List<String>?): TestResult {
-    val targetsSpec = TargetsSpec(params.targets, emptyList())
+    val targetsSpec = TargetCollection(params.targets, emptyList())
     val workspaceContext = workspaceContextProvider.readWorkspaceContext()
     val command =
       when (val instrumentationFilter = params.coverageInstrumentationFilter) {
@@ -156,7 +156,7 @@ class ExecuteService(
         else ->
           bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
             it.options.add(BazelFlag.combinedReportLcov())
-            if (workspaceContext.deriveInstrumentationFilterFromTargets.value) {
+            if (workspaceContext.deriveInstrumentationFilterFromTargets) {
               it.options.add(BazelFlag.instrumentationFilter(instrumentationFilter))
             }
           }
@@ -193,7 +193,10 @@ class ExecuteService(
     additionalProgramArguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     command.options.add(BazelFlag.color(true))
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
-    (command as HasMultipleTargets).addTargetsFromSpec(targetsSpec)
+    with(command as HasMultipleTargets) {
+      targets.addAll(targetsSpec.values)
+      excludedTargets.addAll(targetsSpec.excludedValues)
+    }
 
     // TODO: handle multiple targets
     val result =

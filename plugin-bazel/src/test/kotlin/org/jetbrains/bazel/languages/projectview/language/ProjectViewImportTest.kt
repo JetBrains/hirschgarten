@@ -1,15 +1,16 @@
-package org.jetbrains.bazel.languages.projectview.language
+package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
 import io.kotest.matchers.collections.shouldContainExactly
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.language.sections.DirectoriesSection
-import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
-import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
-import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
+import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
+import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
+import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
+import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.junit.Test
 import org.junit.runner.RunWith

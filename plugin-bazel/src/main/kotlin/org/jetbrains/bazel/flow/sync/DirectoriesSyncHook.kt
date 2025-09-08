@@ -35,7 +35,7 @@ private class DirectoriesSyncHook : ProjectSyncHook {
         }
 
       val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
-      val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories.value
+      val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories
       val entity = createEntity(environment.project, directories, additionalExcludes, buildFiles, indexAllFilesInIncludedRoots)
 
       environment.diff.workspaceModelDiff.mutableEntityStorage

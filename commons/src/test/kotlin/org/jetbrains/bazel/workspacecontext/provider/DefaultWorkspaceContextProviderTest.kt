@@ -8,7 +8,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -54,7 +54,7 @@ class DefaultWorkspaceContextProviderTest {
     val workspaceContext = provider.readWorkspaceContext()
 
     // then
-    workspaceContext.targets shouldBe TargetsSpec(listOf(Label.parse("//a/b/c")), emptyList())
+    workspaceContext.targets shouldBe listOf(ExcludableValue.included(Label.parse("//a/b/c")))
   }
 
   @Test
@@ -67,7 +67,7 @@ class DefaultWorkspaceContextProviderTest {
     val workspaceContext = provider.readWorkspaceContext()
 
     // then
-    workspaceContext.targets shouldBe TargetsSpec(emptyList(), emptyList())
+    workspaceContext.targets shouldBe emptyList()
     projectViewFile.exists() shouldBe true
     projectViewFile.readText().trim() shouldBe ""
   }

@@ -16,13 +16,13 @@
 package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.commons.TargetCollection
 
 /** Partitioned list of Bazel targets.  */
 class ShardedTargetList(private val shardedTargets: List<List<Label>>, private val excludedTargets: List<Label> = listOf()) {
-  fun toTargetsSpecs(): List<TargetsSpec> =
+  fun toTargetCollections(): List<TargetCollection> =
     shardedTargets.map { targets ->
-      TargetsSpec(
+      TargetCollection(
         values = targets,
         excludedValues = excludedTargets,
       )

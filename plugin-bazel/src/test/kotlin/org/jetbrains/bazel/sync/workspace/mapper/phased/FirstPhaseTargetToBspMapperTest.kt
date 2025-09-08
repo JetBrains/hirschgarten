@@ -13,26 +13,7 @@ import org.jetbrains.bazel.commons.orLatestSupported
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
-import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
-import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
-import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DeriveInstrumentationFilterFromTargetsSpec
-import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
-import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
-import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
-import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
-import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
-import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
-import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
-import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
-import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
-import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
-import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
-import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.RawPhasedTarget
@@ -51,26 +32,26 @@ import kotlin.io.path.writeText
 
 private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): WorkspaceContext =
   WorkspaceContext(
-    targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
-    directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
-    buildFlags = BuildFlagsSpec(emptyList()),
-    syncFlags = SyncFlagsSpec(emptyList()),
-    bazelBinary = BazelBinarySpec(Path("bazel")),
-    allowManualTargetsSync = AllowManualTargetsSyncSpec(allowManualTargetsSync),
-    dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
-    importDepth = ImportDepthSpec(-1),
-    enabledRules = EnabledRulesSpec(emptyList()),
-    ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
-    shardSync = ShardSyncSpec(false),
-    targetShardSize = TargetShardSizeSpec(1000),
-    shardingApproachSpec = ShardingApproachSpec(null),
-    importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
-    gazelleTarget = GazelleTargetSpec(null),
-    indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
-    pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
-    importIjarsSpec = ImportIjarsSpec(false),
-    debugFlags = DebugFlagsSpec(emptyList()),
-    deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSpec(true),
+    targets = listOf(ExcludableValue.included(Label.parse("//..."))),
+    directories = listOf(ExcludableValue.included(Path("."))),
+    buildFlags = emptyList(),
+    syncFlags = emptyList(),
+    debugFlags = emptyList(),
+    bazelBinary = Path("bazel"),
+    allowManualTargetsSync = allowManualTargetsSync,
+    dotBazelBspDirPath = Path(".bazelbsp"),
+    importDepth = -1,
+    enabledRules = emptyList(),
+    ideJavaHomeOverride = Path("java_home"),
+    shardSync = false,
+    targetShardSize = 1000,
+    shardingApproach = null,
+    importRunConfigurations = emptyList(),
+    gazelleTarget = null,
+    indexAllFilesInDirectories = false,
+    pythonCodeGeneratorRuleNames = emptyList(),
+    importIjars = false,
+    deriveInstrumentationFilterFromTargets = true,
   )
 
 private fun createMockProject(lightweightModules: List<Build.Target>): PhasedBazelMappedProject =

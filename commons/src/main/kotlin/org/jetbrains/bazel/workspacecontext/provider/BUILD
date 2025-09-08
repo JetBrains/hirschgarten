@@ -5,12 +5,11 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/generator",
-        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/model:model",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser:parser",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/generator:generator",
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
-        "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//server/bazelrunner:params",
-        "@maven//:commons_io_commons_io",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol",
         "@maven//:org_slf4j_slf4j_api",
     ],
 )
