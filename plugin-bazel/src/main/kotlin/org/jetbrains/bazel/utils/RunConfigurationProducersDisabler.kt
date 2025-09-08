@@ -4,7 +4,7 @@ import com.intellij.execution.RunConfigurationProducerService
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 
-suspend fun configureRunConfigurationIgnoreProducers(project: Project): Boolean =
+internal suspend fun configureRunConfigurationIgnoreProducers(project: Project): Boolean =
   project
     .serviceAsync<RunConfigurationProducerService>()
     .state.ignoredProducers
