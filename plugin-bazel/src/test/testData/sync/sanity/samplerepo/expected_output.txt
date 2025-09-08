@@ -621,207 +621,6 @@ BazelResolvedWorkspace(
         lowPrioritySharedSources=[
           
         ]
-      ),
-      RawBuildTarget(
-        id=@@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=jvm_import,
-          languageClasses=[
-            JAVA
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=jvm_import,
-          languageClasses=[
-            JAVA
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=jvm_import,
-          languageClasses=[
-            JAVA
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@@rules_jvm_external++maven+maven//:com_google_guava_guava,
-        tags=[
-          
-        ],
-        dependencies=[
-          @@rules_jvm_external++maven+maven//:com_google_code_findbugs_jsr305,
-          @@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations,
-          @@rules_jvm_external++maven+maven//:com_google_guava_failureaccess,
-          @@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture,
-          @@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations,
-          @@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual
-        ],
-        kind=TargetKind(
-          kindString=jvm_import,
-          languageClasses=[
-            JAVA
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=jvm_import,
-          languageClasses=[
-            JAVA
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=jvm_import,
-          languageClasses=[
-            JAVA
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=jvm_import,
-          languageClasses=[
-            JAVA
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/bazel-out/external/rules_jvm_external++maven+maven,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
       )
     ],
     nonModuleTargets=[
@@ -1211,7 +1010,8 @@ BazelResolvedWorkspace(
         artifactId=jsr305,
         version=3.0.2
       ),
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=@@rules_jvm_external++maven+maven//:com_google_errorprone_error_prone_annotations,
@@ -1232,7 +1032,8 @@ BazelResolvedWorkspace(
         artifactId=error_prone_annotations,
         version=2.7.1
       ),
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=@@rules_jvm_external++maven+maven//:com_google_guava_failureaccess,
@@ -1253,7 +1054,8 @@ BazelResolvedWorkspace(
         artifactId=failureaccess,
         version=1.0.1
       ),
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=@@rules_jvm_external++maven+maven//:com_google_guava_guava,
@@ -1279,7 +1081,8 @@ BazelResolvedWorkspace(
         artifactId=guava,
         version=31.0.1-jre
       ),
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=@@rules_jvm_external++maven+maven//:com_google_guava_listenablefuture,
@@ -1300,7 +1103,8 @@ BazelResolvedWorkspace(
         artifactId=listenablefuture,
         version=9999.0-empty-to-avoid-conflict-with-guava
       ),
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=@@rules_jvm_external++maven+maven//:com_google_j2objc_j2objc_annotations,
@@ -1321,7 +1125,8 @@ BazelResolvedWorkspace(
         artifactId=j2objc-annotations,
         version=1.3
       ),
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=@@rules_jvm_external++maven+maven//:org_checkerframework_checker_qual,
@@ -1342,7 +1147,8 @@ BazelResolvedWorkspace(
         artifactId=checker-qual,
         version=3.12.0
       ),
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scala-compiler-2.13.14.jar[
@@ -1361,7 +1167,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scala-library-2.13.14.jar[
@@ -1380,7 +1187,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scala-reflect-2.13.14.jar[
@@ -1399,7 +1207,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalactic_2.13-3.2.9.jar[
@@ -1418,7 +1227,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest_2.13-3.2.9.jar[
@@ -1437,7 +1247,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-compatible-3.2.9.jar[
@@ -1456,7 +1267,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-core_2.13-3.2.9.jar[
@@ -1475,7 +1287,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-featurespec_2.13-3.2.9.jar[
@@ -1494,7 +1307,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-flatspec_2.13-3.2.9.jar[
@@ -1513,7 +1327,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-freespec_2.13-3.2.9.jar[
@@ -1532,7 +1347,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-funspec_2.13-3.2.9.jar[
@@ -1551,7 +1367,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-funsuite_2.13-3.2.9.jar[
@@ -1570,7 +1387,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-matchers-core_2.13-3.2.9.jar[
@@ -1589,7 +1407,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-mustmatchers_2.13-3.2.9.jar[
@@ -1608,7 +1427,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=scalatest-shouldmatchers_2.13-3.2.9.jar[
@@ -1627,7 +1447,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=librunner.jar[
@@ -1646,7 +1467,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     ),
     LibraryItem(
       id=test_reporter.jar[
@@ -1665,7 +1487,8 @@ BazelResolvedWorkspace(
         
       ],
       mavenCoordinates=null,
-      isFromInternalTarget=false
+      isFromInternalTarget=false,
+      isLowPriority=false
     )
   ],
   hasError=false
