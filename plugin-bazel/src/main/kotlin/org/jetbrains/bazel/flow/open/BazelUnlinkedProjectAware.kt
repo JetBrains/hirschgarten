@@ -16,7 +16,7 @@ import org.jetbrains.bazel.config.isBrokenBazelProject
 internal class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
 
-  override fun isBuildFile(project: Project, buildFile: VirtualFile): Boolean = BazelOpenProjectProvider().isProjectFile(buildFile)
+  override fun isBuildFile(project: Project, buildFile: VirtualFile): Boolean = buildFile.isBuildFile()
 
   override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean =
     project.isBazelProject ||
