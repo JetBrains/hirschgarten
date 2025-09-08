@@ -3,7 +3,7 @@ load("@${rulesetName}//java/common:java_info.bzl", "JavaInfo")
 load("@${rulesetName}//java/common:java_plugin_info.bzl", "JavaPluginInfo")
 #end
 
-load("//aspects:utils/utils.bzl", "create_struct", "to_file_location")
+load("//aspects:utils/utils.bzl", "create_struct", "to_file_location", "BspAspectInfo")
 
 def java_info_in_target(target):
     #if( $javaEnabled == "true" )
@@ -62,8 +62,8 @@ def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
         )
     else:
         for dep in dep_targets:
-            if hasattr(dep.bsp_info, "java_toolchain_info"):
-                toolchain_info = dep.bsp_info.java_toolchain_info
+            if BspAspectInfo in dep and hasattr(dep[BspAspectInfo].bsp_info, "java_toolchain_info"):
+                toolchain_info = dep[BspAspectInfo].bsp_info.java_toolchain_info
                 break
 
     if toolchain_info != None:
@@ -92,8 +92,8 @@ def extract_java_runtime(target, ctx, dep_targets, **kwargs):
         runtime_info = create_struct(java_home = java_home)
     else:
         for dep in dep_targets:
-            if hasattr(dep.bsp_info, "java_runtime_info"):
-                runtime_info = dep.bsp_info.java_runtime_info
+            if BspAspectInfo in dep and hasattr(dep[BspAspectInfo].bsp_info, "java_runtime_info"):
+                runtime_info = dep[BspAspectInfo].bsp_info.java_runtime_info
                 break
 
     if runtime_info != None:
