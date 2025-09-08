@@ -21,7 +21,7 @@ import org.jetbrains.bazel.server.sync.DebugHelper.buildBeforeRun
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
 import org.jetbrains.bazel.commons.TargetCollection
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
@@ -38,7 +38,7 @@ class ExecuteService(
   private val compilationManager: BazelBspCompilationManager,
   private val projectProvider: ProjectProvider,
   private val bazelRunner: BazelRunner,
-  private val workspaceContextProvider: WorkspaceContextProvider,
+  private val workspaceContext: WorkspaceContext,
   private val bazelPathsResolver: BazelPathsResolver,
 ) {
   private suspend fun <T> withBepServer(originId: String, body: suspend (BepReader) -> T): T {
@@ -109,7 +109,7 @@ class ExecuteService(
       }
     }
     val command =
-      bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         run(params.target) {
           options.add(BazelFlag.color(true))
           additionalOptions?.let { options.addAll(it) }
@@ -148,7 +148,7 @@ class ExecuteService(
 
   private suspend fun testImpl(params: TestParams, additionalProgramArguments: List<String>?): TestResult {
     val targetsSpec = TargetCollection(params.targets, emptyList())
-    val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+    // Use the already available workspaceContext
     val command =
       when (val instrumentationFilter = params.coverageInstrumentationFilter) {
         null -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
@@ -223,7 +223,7 @@ class ExecuteService(
     val allTargets = bspIds
     return withBepServer(originId) { bepReader ->
       val command =
-        bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
+        bazelRunner.buildBazelCommand(workspaceContext) {
           build {
             options.addAll(additionalArguments)
             targets.addAll(allTargets)

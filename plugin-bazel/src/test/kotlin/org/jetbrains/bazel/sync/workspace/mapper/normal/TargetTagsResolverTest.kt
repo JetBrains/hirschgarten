@@ -10,7 +10,7 @@ import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -35,9 +35,7 @@ class TargetTagsResolverTest {
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
-    workspaceContext =
-      DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath, FeatureFlags())
-        .readWorkspaceContext()
+    workspaceContext = createTestWorkspaceContext()
   }
 
   @Test
@@ -144,5 +142,30 @@ class TargetTagsResolverTest {
     val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.LIBRARY)
+  }
+
+  private fun createTestWorkspaceContext(): WorkspaceContext {
+    return WorkspaceContext(
+      targets = emptyList(),
+      directories = emptyList(),
+      buildFlags = emptyList(),
+      syncFlags = emptyList(),
+      debugFlags = emptyList(),
+      bazelBinary = null,
+      allowManualTargetsSync = false,
+      dotBazelBspDirPath = dotBazelBspDirPath,
+      importDepth = -1,
+      enabledRules = emptyList(),
+      ideJavaHomeOverride = null,
+      shardSync = false,
+      targetShardSize = 1000,
+      shardingApproach = null,
+      importRunConfigurations = emptyList(),
+      gazelleTarget = null,
+      indexAllFilesInDirectories = false,
+      pythonCodeGeneratorRuleNames = emptyList(),
+      importIjars = true,
+      deriveInstrumentationFilterFromTargets = false
+    )
   }
 }

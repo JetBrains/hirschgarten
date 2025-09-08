@@ -5,7 +5,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelProject
@@ -33,7 +32,7 @@ import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
 class BspServerApi(
   private val projectSyncService: ProjectSyncService,
   private val executeService: ExecuteService,
-  val workspaceContextProvider: DefaultWorkspaceContextProvider,
+  val workspaceContext: WorkspaceContext,
   val bazelPathsResolver: BazelPathsResolver,
 ) : JoinedBuildServer {
   override suspend fun runSync(build: Boolean, originId: String): BazelProject = projectSyncService.runSync(build, originId)

@@ -25,7 +25,6 @@ import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
 
@@ -47,7 +46,8 @@ class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
-  private val workspaceContextProvider: WorkspaceContextProvider,
+  private val workspaceContext: WorkspaceContext,
+  private val featureFlags: FeatureFlags,
   private val targetInfoReader: TargetInfoReader,
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
@@ -84,7 +84,7 @@ class ProjectResolver(
         workspaceRoot = bazelInfo.workspaceRoot,
         bazelRelease = bazelInfo.release,
         repoMapping = repoMapping,
-        workspaceContext = workspaceContextProvider.readWorkspaceContext(),
+        workspaceContext = workspaceContext,
         workspaceName = workspaceName,
         hasError = aspectResult.isFailure,
         targets = targets,
@@ -98,12 +98,7 @@ class ProjectResolver(
     phasedSyncProject: PhasedSyncProject?,
     originId: String?,
   ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
-    val workspaceContext =
-      measured(
-        "Reading project view and creating workspace context",
-        workspaceContextProvider::readWorkspaceContext,
-      )
-    val featureFlags = workspaceContextProvider.currentFeatureFlags()
+    // Use the already available workspaceContext and featureFlags
 
     val repoMapping =
       measured("Calculating external repository mapping") {

@@ -11,6 +11,9 @@ import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.server.connection.startServer
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
 import org.jetbrains.bazel.startup.IntellijBidirectionalMap
@@ -70,9 +73,35 @@ abstract class BazelBaseTestRunner {
       )
     val client = MockClient()
     runTest(timeout = timeout) {
-      val server = startServer(client, workspaceDir, null, featureFlags)
+      val workspaceContext = createTestWorkspaceContext()
+      val server = startServer(client, workspaceDir, workspaceContext, featureFlags)
       val session = Session(client, server)
       doTest(session)
     }
+  }
+
+  private fun createTestWorkspaceContext(): WorkspaceContext {
+    return WorkspaceContext(
+      targets = emptyList(),
+      directories = emptyList(),
+      buildFlags = emptyList(),
+      syncFlags = emptyList(),
+      debugFlags = emptyList(),
+      bazelBinary = null,
+      allowManualTargetsSync = false,
+      dotBazelBspDirPath = workspaceDir.resolve(".bazelbsp"),
+      importDepth = -1,
+      enabledRules = emptyList(),
+      ideJavaHomeOverride = null,
+      shardSync = false,
+      targetShardSize = 1000,
+      shardingApproach = null,
+      importRunConfigurations = emptyList(),
+      gazelleTarget = null,
+      indexAllFilesInDirectories = false,
+      pythonCodeGeneratorRuleNames = emptyList(),
+      importIjars = true,
+      deriveInstrumentationFilterFromTargets = false
+    )
   }
 }

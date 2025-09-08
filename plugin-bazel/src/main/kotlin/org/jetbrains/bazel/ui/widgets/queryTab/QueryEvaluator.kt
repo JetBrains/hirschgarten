@@ -4,9 +4,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextConstructor
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -57,10 +56,31 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
   private fun getRunnerOfDirectory(directoryFile: VirtualFile): Pair<BazelRunner, WorkspaceContext> {
     directoryFile.isDirectoryOrThrow()
 
-    val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""), Path.of(""))
-    val pv = ProjectView.Builder().build()
+    val workspaceRoot = directoryFile.toNioPath()
+    val emptyWorkspaceContext = WorkspaceContext(
+      targets = emptyList(),
+      directories = listOf(ExcludableValue.included(workspaceRoot)),
+      buildFlags = emptyList(),
+      syncFlags = emptyList(),
+      debugFlags = emptyList(),
+      bazelBinary = null,
+      allowManualTargetsSync = false,
+      dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp"),
+      importDepth = 1,
+      enabledRules = emptyList(),
+      ideJavaHomeOverride = null,
+      shardSync = false,
+      targetShardSize = 1000,
+      shardingApproach = null,
+      importRunConfigurations = emptyList(),
+      gazelleTarget = null,
+      indexAllFilesInDirectories = false,
+      pythonCodeGeneratorRuleNames = emptyList(),
+      importIjars = false,
+      deriveInstrumentationFilterFromTargets = false,
+    )
 
-    return Pair(BazelRunner(null, directoryFile.toNioPath()), wcc.construct(pv))
+    return Pair(BazelRunner(null, workspaceRoot), emptyWorkspaceContext)
   }
 
   // Starts a process which evaluates a given query.

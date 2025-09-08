@@ -8,6 +8,7 @@ import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.ConsoleService
@@ -15,7 +16,7 @@ import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
 
-private data class ConnectionResetConfig(val projectViewFile: Path?, val featureFlags: FeatureFlags)
+private data class ConnectionResetConfig(val featureFlags: FeatureFlags)
 
 private val log = logger<DefaultBazelServerConnection>()
 
@@ -26,10 +27,12 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   private val environmentCreator = EnvironmentCreator(workspaceRoot)
   private var server =
     runBlocking {
+      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
+      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
       startServer(
         bspClient,
         workspaceRoot = workspaceRoot,
-        projectViewFile = connectionResetConfig.projectViewFile,
+        workspaceContext = workspaceContext,
         featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
       )
     }
@@ -40,7 +43,6 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
 
   private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
     ConnectionResetConfig(
-      projectViewFile = project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
       featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
     )
 
@@ -66,8 +68,11 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
 
     if (newConnectionResetConfig != connectionResetConfig) {
       connectionResetConfig = newConnectionResetConfig
-      server.workspaceContextProvider.featureFlags = newConnectionResetConfig.featureFlags
-      newConnectionResetConfig.projectViewFile?.let { server.workspaceContextProvider.projectViewPath = it }
+      // Server now receives pre-parsed WorkspaceContext, so we need to restart the server
+      // to pick up any project view changes
+      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
+      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+      server = startServer(bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
     }
 
     return task(server)
@@ -76,7 +81,9 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   private suspend fun resetServerIfNeeded() {
     if (project.service<BazelVersionCheckerService>().updateCurrentVersion()) {
       log.info("Resetting Bazel server")
-      server = startServer(bspClient, workspaceRoot, connectionResetConfig.projectViewFile, connectionResetConfig.featureFlags)
+      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
+      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+      server = startServer(bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
     }
   }
 }

@@ -9,19 +9,19 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.PhasedSyncProject
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Path
 
 class FirstPhaseProjectResolver(
   private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
-  private val workspaceContextProvider: WorkspaceContextProvider,
+  private val workspaceContext: WorkspaceContext,
   private val bazelInfo: BazelInfo,
   private val bspClientLogger: BspClientLogger,
 ) {
   suspend fun resolve(originId: String): PhasedSyncProject =
     coroutineScope {
-      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+      // Use the already available workspaceContext
       val command =
         bazelRunner.buildBazelCommand(workspaceContext) {
           query {

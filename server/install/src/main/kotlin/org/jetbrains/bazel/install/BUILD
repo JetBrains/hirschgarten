@@ -8,7 +8,6 @@ kt_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
-        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/generator",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install/cli",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:fileutils",
