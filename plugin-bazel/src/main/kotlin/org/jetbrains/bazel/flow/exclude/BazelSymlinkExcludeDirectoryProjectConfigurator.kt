@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.flow.open.exclude
 
 import com.intellij.ide.projectView.actions.MarkRootsManager
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.backgroundWriteAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -40,7 +40,7 @@ internal class BazelSymlinkExcludeDirectoryProjectConfigurator : DirectoryProjec
       symlinksToExclude
         .mapNotNull { virtualFileManager.findFileByNioPath(it) }
         .forEach { exclude -> entry.addExcludeFolder(exclude) }
-      writeAction { model.commit() }
+      backgroundWriteAction { model.commit() }
     } else {
       model.dispose()
     }
