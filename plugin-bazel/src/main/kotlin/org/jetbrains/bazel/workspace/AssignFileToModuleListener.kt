@@ -22,6 +22,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -285,6 +286,16 @@ private suspend fun processFileCreated(
     getModulesForFile(newFile, project)
       .filter { it.moduleEntity?.entitySource != BazelDummyEntitySource }
       .mapNotNull { it.moduleEntity }
+  val targetUtils = project.targetUtils
+  if (existingModules.isNotEmpty() && mutableRemovalMap.isEmpty()) {
+    val path = newFile.toNioPathOrNull() ?: return
+    val targets =
+      existingModules.mapNotNull { module ->
+        targetUtils.getTargetForModuleId(module.name)
+      }
+    targetUtils.addFileToTargetIdEntry(path, targets)
+    return
+  }
 
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val path = url.toPath()
@@ -305,7 +316,7 @@ private suspend fun processFileCreated(
       url.addToModule(entityStorageDiff, module, newFile.extension)
     }
   }
-  project.targetUtils.addFileToTargetIdEntry(path, targets)
+  targetUtils.addFileToTargetIdEntry(path, targets)
 }
 
 suspend fun getModulesForFile(newFile: VirtualFile, project: Project): Set<Module> =
@@ -325,11 +336,12 @@ private fun processFileRemoved(
       .getTargetsForPath(oldFilePath)
       .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
   targetUtils.removeFileToTargetIdEntry(oldFilePath)
-  return modules.associateWith { module ->
-    // IntelliJ might have already changed the content root's path to the new one, so we need to check both
-    val newUrlContentRoots = newUrl?.let { findContentRoots(module, it) } ?: emptyList()
-    findContentRoots(module, oldUrl) + newUrlContentRoots
-  }
+  return modules
+    .associateWith { module ->
+      // IntelliJ might have already changed the content root's path to the new one, so we need to check both
+      val newUrlContentRoots = newUrl?.let { findContentRoots(module, it) } ?: emptyList()
+      findContentRoots(module, oldUrl) + newUrlContentRoots
+    }.filter { it.value.isNotEmpty() }
 }
 
 private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
