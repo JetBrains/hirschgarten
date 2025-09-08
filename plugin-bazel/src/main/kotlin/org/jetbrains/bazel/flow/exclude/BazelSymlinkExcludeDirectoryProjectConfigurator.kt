@@ -40,7 +40,6 @@ internal class BazelSymlinkExcludeDirectoryProjectConfigurator : DirectoryProjec
         .mapNotNull { virtualFileManager.findFileByNioPath(it) }
         .forEach { exclude -> entry.addExcludeFolder(exclude) }
       writeAction { model.commit() }
-      project.save()
     } else {
       model.dispose()
     }
