@@ -30,7 +30,6 @@ import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
-import java.io.File
 import java.nio.file.Path
 
 private data class SubtaskParents(val rootTask: Any, val parentTask: Any)
