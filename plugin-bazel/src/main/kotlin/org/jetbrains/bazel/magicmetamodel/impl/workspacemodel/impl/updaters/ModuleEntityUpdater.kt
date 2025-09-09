@@ -45,7 +45,7 @@ internal class ModuleEntityUpdater(
           if (BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled && !entityToAdd.isLibraryModule) {
             toModuleDependencyItemModuleDependency(dependency.addLibraryModulePrefix(), exported)
           } else {
-            toLibraryDependency(dependency, exported)
+            toLibraryDependency(dependency, exported = exported || entityToAdd.isLibraryModule)
           }
         } else {
           toModuleDependencyItemModuleDependency(dependency)
