@@ -265,24 +265,25 @@ abstract class TaskConsole(
     message: String,
     severity: MessageEvent.Kind,
   ) {
-    val event = if (filePosition.file == null) {
-      MessageEventImpl(
-        subtaskId,
-        severity,
-        null,
-        prepareTextToPrint(message),
-        null
-      )
-    } else {
-      FileMessageEventImpl(
-        subtaskId,
-        severity,
-        null,
-        prepareTextToPrint(message),
-        null,
-        filePosition,
-      )
-    }
+    val event =
+      if (filePosition.file == null) {
+        MessageEventImpl(
+          subtaskId,
+          severity,
+          null,
+          prepareTextToPrint(message),
+          null,
+        )
+      } else {
+        FileMessageEventImpl(
+          subtaskId,
+          severity,
+          null,
+          prepareTextToPrint(message),
+          null,
+          filePosition,
+        )
+      }
 
     taskView.onEvent(taskId, event)
   }
