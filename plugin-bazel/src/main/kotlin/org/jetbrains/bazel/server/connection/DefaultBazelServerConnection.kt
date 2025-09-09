@@ -15,8 +15,9 @@ import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 
-private data class ConnectionResetConfig(val featureFlags: FeatureFlags)
+private data class ConnectionResetConfig(val featureFlags: FeatureFlags, val projectViewModTime: FileTime?)
 
 private val log = logger<DefaultBazelServerConnection>()
 
@@ -41,10 +42,13 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     environmentCreator.create()
   }
 
-  private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
-    ConnectionResetConfig(
+  private fun generateNewConnectionResetConfig(): ConnectionResetConfig {
+    val workspaceContextProvider = project.service<WorkspaceContextProvider>()
+    return ConnectionResetConfig(
       featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
+      projectViewModTime = workspaceContextProvider.getConfigurationModificationTime(),
     )
+  }
 
   private fun createBspClient(): BazelClient {
     val consoleService = ConsoleService.getInstance(project)

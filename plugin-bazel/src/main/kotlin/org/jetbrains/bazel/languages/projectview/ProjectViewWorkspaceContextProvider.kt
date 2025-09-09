@@ -7,6 +7,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 
 /**
  * Adapter service that bridges ProjectView to the legacy WorkspaceContext system.
@@ -32,6 +33,11 @@ class ProjectViewWorkspaceContextProvider(private val project: Project) : Worksp
   }
 
   override fun currentFeatureFlags(): FeatureFlags = featureFlags
+
+  override fun getConfigurationModificationTime(): FileTime? {
+    val projectViewService = ProjectViewService.getInstance(project)
+    return projectViewService.getProjectViewModificationTime()
+  }
 
   companion object {
     @JvmStatic

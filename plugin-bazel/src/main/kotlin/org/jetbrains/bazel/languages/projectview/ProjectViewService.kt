@@ -96,6 +96,12 @@ class ProjectViewService(private val project: Project) {
     projectViewPath.toFile().writeText("")
   }
 
+  /**
+   * Returns the current modification time of the cached project view file.
+   * Used for change detection to trigger server restarts when configuration changes.
+   */
+  fun getProjectViewModificationTime(): FileTime? = cachedProjectViewModTime
+
   companion object {
     @JvmStatic
     fun getInstance(project: Project): ProjectViewService = project.getService(ProjectViewService::class.java)
