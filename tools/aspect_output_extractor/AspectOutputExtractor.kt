@@ -6,7 +6,6 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BidirectionalMap
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.install.EnvironmentCreator
@@ -17,7 +16,6 @@ import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
 import org.jetbrains.bazel.startup.IntellijBidirectionalMap
-import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -38,7 +36,6 @@ object AspectOutputExtractor {
     runBlocking {
       SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
       FileUtil.provideFileUtil(FileUtilIntellij)
-      EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
       ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
       TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
       BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }

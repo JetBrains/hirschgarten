@@ -1,89 +1,71 @@
 package org.jetbrains.bazel.languages.projectview
 
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 import kotlin.io.path.exists
+import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.notExists
 
+/**
+ * Service responsible for parsing and caching ProjectView files.
+ * Provides efficient access to project view configuration with automatic cache invalidation.
+ */
 @Service(Service.Level.PROJECT)
-class ProjectViewService(private val project: Project) : WorkspaceContextProvider {
+class ProjectViewService(private val project: Project) {
   private var cachedProjectView: ProjectView? = null
   private var cachedProjectViewPath: Path? = null
-  private var cachedWorkspaceContext: WorkspaceContext? = null
-
-  var featureFlags: FeatureFlags = FeatureFlags()
-
-  // Temporary compatibility methods for interfacing with server
-  var dotBazelBspDirPath: Path? = null
+  private var cachedProjectViewModTime: FileTime? = null
 
   /**
    * Gets the current ProjectView, parsing it if necessary.
-   * Prefer to pass ProjectView as a parameter where possible instead of calling this method to avoid reparsing.
+   * Uses caching with file modification time checking for efficiency.
    */
-  fun currentProjectView(): ProjectView {
+  fun getProjectView(): ProjectView {
     val projectViewPath = findProjectViewPath()
+    val currentModTime = getFileModificationTime(projectViewPath)
 
-    // Return cached version if path hasn't changed and we have a cached result
-    if (cachedProjectView != null && cachedProjectViewPath == projectViewPath) {
+    // Return cached version if path and modification time haven't changed
+    if (isCacheValid(projectViewPath, currentModTime)) {
       return cachedProjectView!!
     }
 
     // Parse the project view
     val projectView = parseProjectView(projectViewPath)
 
-    // Cache the result
-    cachedProjectView = projectView
-    cachedProjectViewPath = projectViewPath
+    // Update cache
+    updateCache(projectView, projectViewPath, currentModTime)
 
     return projectView
   }
 
-  /**
-   * Clears the cached project view, forcing a reparse on next access.
-   */
-  fun invalidateCache() {
-    cachedProjectView = null
-    cachedProjectViewPath = null
-    cachedWorkspaceContext = null
-  }
-
-  // WorkspaceContextProvider implementation for server compatibility
-  override fun readWorkspaceContext(): WorkspaceContext {
-    val projectView = currentProjectView()
-    val projectViewPath = cachedProjectViewPath!!
-
-    // Return cached version if we have it and it's still valid
-    if (cachedWorkspaceContext != null) {
-      return cachedWorkspaceContext!!
+  private fun getFileModificationTime(path: Path): FileTime? =
+    try {
+      if (path.exists()) path.getLastModifiedTime() else null
+    } catch (e: Exception) {
+      null // If we can't get modification time, force reparse
     }
 
-    // Convert ProjectView to WorkspaceContext
-    val workspaceRoot = project.rootDir.toNioPath()
-    val dotBazelBspDir = dotBazelBspDirPath ?: workspaceRoot.resolve(".bazelbsp")
+  private fun isCacheValid(projectViewPath: Path, currentModTime: FileTime?): Boolean =
+    cachedProjectView != null &&
+      cachedProjectViewPath == projectViewPath &&
+      cachedProjectViewModTime == currentModTime
 
-    val workspaceContext =
-      ProjectViewToWorkspaceContextConverter.convert(
-        projectView = projectView,
-        dotBazelBspDirPath = dotBazelBspDir,
-        workspaceRoot = workspaceRoot,
-        projectViewPath = projectViewPath,
-      )
-
-    // Cache the result
-    cachedWorkspaceContext = workspaceContext
-
-    return workspaceContext
+  private fun updateCache(
+    projectView: ProjectView,
+    projectViewPath: Path,
+    modTime: FileTime?,
+  ) {
+    cachedProjectView = projectView
+    cachedProjectViewPath = projectViewPath
+    cachedProjectViewModTime = modTime
   }
-
-  override fun currentFeatureFlags(): FeatureFlags = featureFlags
 
   private fun findProjectViewPath(): Path {
     val rootDir = project.rootDir.toNioPath()
@@ -96,17 +78,18 @@ class ProjectViewService(private val project: Project) : WorkspaceContextProvide
     return projectViewPath
   }
 
-  private fun parseProjectView(projectViewPath: Path): ProjectView {
-    val virtualFile =
-      VirtualFileManager.getInstance().findFileByNioPath(projectViewPath)
-        ?: error("Could not find project view file at $projectViewPath")
+  private fun parseProjectView(projectViewPath: Path): ProjectView =
+    ReadAction.compute<ProjectView, RuntimeException> {
+      val virtualFile =
+        VirtualFileManager.getInstance().findFileByNioPath(projectViewPath)
+          ?: error("Could not find project view file at $projectViewPath")
 
-    val psiFile =
-      PsiManager.getInstance(project).findFile(virtualFile) as? ProjectViewPsiFile
-        ?: error("Could not parse project view file at $projectViewPath")
+      val psiFile =
+        PsiManager.getInstance(project).findFile(virtualFile) as? ProjectViewPsiFile
+          ?: error("Could not parse project view file at $projectViewPath")
 
-    return ProjectView.fromProjectViewPsiFile(psiFile)
-  }
+      ProjectView.fromProjectViewPsiFile(psiFile)
+    }
 
   private fun generateEmptyProjectView(projectViewPath: Path) {
     // Create an empty .bazelproject file

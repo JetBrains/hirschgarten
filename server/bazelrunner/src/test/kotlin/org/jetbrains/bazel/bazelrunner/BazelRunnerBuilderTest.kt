@@ -5,13 +5,11 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.startup.FileUtilIntellij
-import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.junit.jupiter.api.BeforeEach
@@ -81,7 +79,6 @@ class BazelRunnerBuilderTest {
     // Initialize providers for tests
     SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
     FileUtil.provideFileUtil(FileUtilIntellij)
-    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
   }
 
   @Test

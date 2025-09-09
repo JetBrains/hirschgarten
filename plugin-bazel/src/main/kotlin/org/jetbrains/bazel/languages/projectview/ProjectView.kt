@@ -47,7 +47,7 @@ class ProjectView(rawSections: List<RawItem>, private val project: Project) {
     }
   }
 
-  inline fun <reified T> getSection(key: SectionKey<T>): T? = sections[key] as T
+  inline fun <reified T> getSection(key: SectionKey<T>): T? = sections[key] as? T
 
   sealed interface RawItem
 

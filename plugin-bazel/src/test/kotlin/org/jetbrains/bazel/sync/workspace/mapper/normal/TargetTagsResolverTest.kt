@@ -1,14 +1,12 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.commons.Tag
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.startup.FileUtilIntellij
-import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -30,7 +28,6 @@ class TargetTagsResolverTest {
     // Initialize providers for tests
     SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
     FileUtil.provideFileUtil(FileUtilIntellij)
-    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
 
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")

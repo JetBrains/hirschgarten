@@ -5,7 +5,6 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.RepoMapping
@@ -17,7 +16,6 @@ import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.IntellijBidirectionalMap
-import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
@@ -39,7 +37,6 @@ fun main(args: Array<String>) {
       // Initialize providers for tests
       SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
       FileUtil.provideFileUtil(FileUtilIntellij)
-      EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
       TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
 
       val targetInfoReader = TargetInfoReader(null)

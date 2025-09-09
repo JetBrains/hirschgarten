@@ -2,9 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
@@ -28,14 +26,6 @@ class LanguagePluginServiceTest {
   private lateinit var workspaceRoot: Path
   private lateinit var projectViewFile: Path
   private lateinit var dotBazelBspDirPath: Path
-
-  companion object {
-    @BeforeAll
-    @JvmStatic
-    fun beforeAll() {
-      EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
-    }
-  }
 
   @BeforeEach
   fun beforeEach() {
