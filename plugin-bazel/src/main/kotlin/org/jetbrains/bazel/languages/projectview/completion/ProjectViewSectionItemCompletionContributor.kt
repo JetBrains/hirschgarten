@@ -34,7 +34,7 @@ internal class ProjectViewSectionItemCompletionContributor : CompletionContribut
     ): Result {
       if (file !is ProjectViewPsiFile || (!charTyped.isLetterOrDigit() && charTyped !in acceptedChars)) return Result.CONTINUE
 
-      AutoPopupController.getInstance(project).scheduleAutoPopup(editor, CompletionType.BASIC, null)
+      AutoPopupController.getInstance(project).scheduleAutoPopup(editor)
       return Result.CONTINUE
     }
   }

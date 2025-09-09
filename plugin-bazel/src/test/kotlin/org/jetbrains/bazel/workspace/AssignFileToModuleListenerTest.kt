@@ -34,6 +34,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
@@ -50,9 +51,11 @@ import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.PartialBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 
 class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
@@ -64,12 +67,14 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   private val target3 = Label.parse("//src/package:target3")
   private val target4 = Label.parse("//src:target4")
   private val requestor = this
+  private lateinit var inverseSourcesServer: InverseSourcesServer
 
   @BeforeEach
   override fun beforeEach() {
     super.beforeEach()
     project.isBazelProject = true
-    project.replaceService(BazelServerService::class.java, InverseSourcesServer(projectBasePath).serverService, disposable)
+    inverseSourcesServer = InverseSourcesServer(projectBasePath)
+    project.replaceService(BazelServerService::class.java, inverseSourcesServer.serverService, disposable)
     addMockTargetToProject(project)
 
     target1.createModule()
@@ -231,6 +236,28 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
 
+    project.targetUtils.saveTargets(
+      targets =
+        listOf(
+          RawBuildTarget(
+            id = target1,
+            tags = emptyList(),
+            dependencies = emptyList(),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
+              ),
+            sources = emptyList(),
+            resources = emptyList(),
+            baseDirectory = Path("/"),
+          ),
+        ),
+      fileToTarget = emptyMap(),
+      libraryItems = emptyList(),
+    )
+
     val sourceRoot =
       SourceRootEntity(
         url = srcUrl,
@@ -255,10 +282,12 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val fileUrl = file.toVirtualFileUrl(virtualFileUrlManager)
     createEvent(file).process().assertNotNullAndAwait()
 
+    // Calling Bazel is too slow, we can skip it in this case
+    inverseSourcesServer.called.shouldBeFalse()
+
     // should not be added to target1's model
     doesModuleContainFile(target1, fileUrl).shouldBeFalse()
     // but the rest of the actions should happen normally
-    file.assertFileBelongsToTargets(target2 to true)
     fileUrl.belongsToTarget(target1).shouldBeTrue()
   }
 
@@ -391,6 +420,8 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 }
 
 private class InverseSourcesServer(private val projectBasePath: Path) : BuildServerMock() {
+  var called: Boolean = false
+
   private val inverseSourcesData =
     mapOf(
       "src/aaa.java" to listOf("//src:target1", "//src:target2"),
@@ -409,6 +440,7 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
     }
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
+    called = true
     val relativePath =
       inverseSourcesParams.textDocument.path
         .relativeTo(projectBasePath)

@@ -51,7 +51,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), testLibraries) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), testLibrariesByName) },
           { JavaModuleUpdater(it, it.projectBasePath, emptyList(), testLibraries) },
         ),
       ) { updater ->
@@ -307,7 +307,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), testLibraries) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), testLibrariesByName) },
           { JavaModuleUpdater(it, it.projectBasePath, emptyList(), testLibraries) },
         ),
       ) { updater ->

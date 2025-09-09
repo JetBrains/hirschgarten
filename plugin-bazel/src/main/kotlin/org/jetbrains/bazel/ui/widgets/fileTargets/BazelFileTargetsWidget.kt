@@ -109,7 +109,7 @@ class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(proje
       }
       it.fillWithEligibleActions(project, this, false)
       it.addSeparator()
-      it.add(BazelJumpToBuildFileAction(this.id))
+      it.add(BazelJumpToBuildFileAction.NonXmlRegistered({ this }))
       if (StarlarkDebugAction.isApplicableTo(this)) it.add(StarlarkDebugAction(this.id))
     }
 

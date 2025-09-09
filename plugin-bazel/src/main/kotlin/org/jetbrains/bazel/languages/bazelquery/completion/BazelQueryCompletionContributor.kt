@@ -186,7 +186,7 @@ private fun functionLookupElement(
             val shortenedText = currentText.take(nextSlashIndex + 1)
             context.document.replaceString(context.startOffset, context.tailOffset, shortenedText)
             context.editor.caretModel.moveToOffset(context.startOffset + shortenedText.length)
-            AutoPopupController.getInstance(context.project)?.autoPopupMemberLookup(context.editor, null)
+            AutoPopupController.getInstance(context.project)?.scheduleAutoPopup(context.editor)
           }
         }
         /**
