@@ -11,7 +11,7 @@ kt_junit5_test(
     ],
 )
 
-kt_intellij_junit4_test(
+kt_junit5_test(
     name = "LanguagePluginServiceTest",
     size = "small",
     src = "LanguagePluginServiceTest.kt",
