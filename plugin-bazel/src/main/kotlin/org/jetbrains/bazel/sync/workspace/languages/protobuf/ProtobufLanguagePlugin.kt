@@ -15,8 +15,11 @@ class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : Langu
     if (!target.hasProtobufTargetInfo()) {
       return null
     }
-    val sources = target.protobufTargetInfo.sourceMappingsList
-      .associate<BspTargetInfo.ProtobufSourceMapping, String, String> { it.importPath to context.pathsResolver.resolve(it.protoFile).absolutePathString() }
+    val sources =
+      target.protobufTargetInfo.sourceMappingsList
+        .associate<BspTargetInfo.ProtobufSourceMapping, String, String> {
+          it.importPath to context.pathsResolver.resolve(it.protoFile).absolutePathString()
+        }
     return ProtobufBuildTarget(
       sources = sources,
       jvmBuildTarget = javaPlugin.createBuildTargetData(context, target),
