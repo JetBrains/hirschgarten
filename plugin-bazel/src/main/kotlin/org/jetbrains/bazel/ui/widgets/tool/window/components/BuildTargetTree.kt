@@ -8,6 +8,7 @@ import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClas
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
@@ -42,7 +43,7 @@ internal class BuildTargetTree(
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
         val userObject = selected?.userObject
         return if (userObject is TargetNodeData) {
-          userObject.target
+          project.targetUtils.getBuildTargetForLabel(userObject.id)
         } else {
           null
         }
@@ -51,9 +52,10 @@ internal class BuildTargetTree(
       override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
         val userObject = selected?.userObject
+        val targetUtils = project.targetUtils
         return (
           if (userObject is DirectoryNodeData) {
-            userObject.targets.mapNotNull { it.target }
+            userObject.targets.mapNotNull { targetUtils.getBuildTargetForLabel(it.id) }
           } else {
             emptyList()
           }
@@ -87,8 +89,7 @@ internal class BuildTargetTree(
 
   fun updateTree(
     visibleTargets: Collection<Label>,
-    displayAsTree: Boolean,
-    labelToInfo: (Label) -> BuildTarget?,
+    displayAsTree: Boolean
   ) {
     val classifier =
       if (displayAsTree) {
@@ -98,7 +99,7 @@ internal class BuildTargetTree(
       }
 
     // Generate the tree with the current targets
-    generateTree(visibleTargets, labelToInfo, classifier)
+    generateTree(visibleTargets, classifier)
 
     // Notify the tree model that the structure has changed
     (treeModel as? DefaultTreeModel)?.reload()
@@ -108,14 +109,12 @@ internal class BuildTargetTree(
 
   private fun generateTree(
     targets: Collection<Label>,
-    labelToInfo: (Label) -> BuildTarget?,
     classifier: BuildTargetClassifierExtension,
   ) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
           id = it,
-          target = labelToInfo(it),
           path = classifier.calculateBuildTargetPath(it),
           displayName = classifier.calculateBuildTargetName(it),
         )
@@ -196,10 +195,12 @@ internal class BuildTargetTree(
       ?.map { generateTargetNode(it) }
       ?: emptyList()
 
-  private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
-    DefaultMutableTreeNode(
-      TargetNodeData(identifier.target, identifier.displayName, identifier.target != null),
+  private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode {
+    println("Allocating tree node object")
+    return DefaultMutableTreeNode(
+      TargetNodeData(identifier.displayName, identifier.id),
     )
+  }
 
   private fun simplifyNodeIfHasOneChild(
     node: DefaultMutableTreeNode,
@@ -252,14 +253,12 @@ data class DirectoryNodeData(
 )
 
 data class TargetNodeData(
-  @JvmField val target: BuildTarget?,
   @JvmField val displayName: String,
-  @JvmField val isValid: Boolean,
+  @JvmField val id: Label
 )
 
 data class BuildTargetTreeIdentifier(
   @JvmField val id: Label,
-  @JvmField val target: BuildTarget?,
   @JvmField val path: List<String>,
   @JvmField val displayName: String,
 )
