@@ -17,10 +17,10 @@ class RemoveExcludedVcsMappingsSyncHook : ProjectPostSyncHook {
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val project = environment.project
     val manager = ProjectLevelVcsManager.getInstance(project)
-    val directoryMappings = manager.directoryMappings
-    val directoryMappingsWithoutExcludes = manager.directoryMappings.filter { mapping -> !isExcludedPath(project, mapping) }
+    val directoryMappings = manager.getDirectoryMappings()
+    val directoryMappingsWithoutExcludes = directoryMappings.filter { mapping -> !isExcludedPath(project, mapping) }
     if (directoryMappingsWithoutExcludes.size == directoryMappings.size) return
-    manager.directoryMappings = directoryMappingsWithoutExcludes
+    manager.setDirectoryMappings(directoryMappingsWithoutExcludes)
   }
 
   private suspend fun isExcludedPath(project: Project, mapping: VcsDirectoryMapping): Boolean {

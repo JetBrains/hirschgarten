@@ -154,17 +154,18 @@ internal class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   projectBasePath: Path,
   moduleEntities: List<Module> = emptyList(),
-  libraries: Map<String, Library> = emptyMap(),
+  libraries: List<Library> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
+  private val librariesByName = libraries.associateBy { it.displayName }
   private val javaModuleWithSourcesUpdater =
     JavaModuleWithSourcesUpdater(
       workspaceModelEntityUpdaterConfig,
       projectBasePath,
       moduleEntities,
-      libraries,
+      librariesByName,
     )
   private val javaModuleWithoutSourcesUpdater =
-    JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig, libraries)
+    JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig, librariesByName)
 
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity? =
     if (entityToAdd.doesntContainSourcesAndResources() && entityToAdd.containsJavaKotlinLanguageIds()) {

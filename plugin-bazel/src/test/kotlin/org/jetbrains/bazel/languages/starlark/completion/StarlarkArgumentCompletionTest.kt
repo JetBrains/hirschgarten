@@ -10,27 +10,21 @@ import org.junit.runners.JUnit4
 class StarlarkArgumentCompletionTest : StarlarkCompletionTestCase() {
   @Test
   fun `should complete arguments in function call (excluding variadic ones)`() {
-    // given
     myFixture.configureByFile("ArgumentCompletion.bzl")
     myFixture.type("ar")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainOnly listOf("bar = ", "arg = ")
   }
 
   @Test
   fun `should not complete arguments that are already passed`() {
-    // given
     myFixture.configureByFile("PassedArgumentCompletion.bzl")
     myFixture.type("ar")
 
-    // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    // then
     lookups shouldContainOnly listOf("arg = ", "dar = ")
   }
 }
