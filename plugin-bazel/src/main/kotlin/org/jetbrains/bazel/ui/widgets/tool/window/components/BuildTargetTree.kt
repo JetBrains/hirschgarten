@@ -8,6 +8,7 @@ import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClas
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
@@ -65,6 +66,11 @@ internal class BuildTargetTree(
       override val copyTargetIdAction: CopyTargetIdAction =
         object : CopyTargetIdAction.FromContainer(this@BuildTargetTree) {
           override fun getTargetInfo(): BuildTarget? = getSelectedBuildTarget()
+        }
+
+      override val bazelJumpToBuildFileAction: BazelJumpToBuildFileAction =
+        BazelJumpToBuildFileAction.NonXmlRegistered(::getSelectedBuildTarget).also {
+          it.registerShortcut(this@BuildTargetTree)
         }
     }
 
@@ -196,7 +202,6 @@ internal class BuildTargetTree(
       ?: emptyList()
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode {
-    println("Allocating tree node object")
     return DefaultMutableTreeNode(
       TargetNodeData(identifier.displayName, identifier.id),
     )
