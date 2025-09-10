@@ -30,8 +30,8 @@ class TargetTreeCellRenderer(val labelHighlighter: (String) -> String) : TreeCel
 
       is TargetNodeData ->
         JBLabel(
-          labelStrikethrough(userObject.displayName),
-          BazelPluginIcons.bazelError,
+          labelHighlighter(userObject.displayName),
+          BazelPluginIcons.bazel,
           SwingConstants.LEFT,
         )
 
