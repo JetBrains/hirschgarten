@@ -4,7 +4,7 @@ import com.intellij.lang.documentation.ide.IdeDocumentationTargetProvider
 import com.intellij.platform.backend.documentation.impl.computeDocumentationBlocking
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
-open class StarlarkDocumentationTestCase : BasePlatformTestCase() {
+abstract class StarlarkDocumentationTestCase : BasePlatformTestCase() {
   protected fun getDocumentationAtCaret(): String? {
     val provider = IdeDocumentationTargetProvider.getInstance(project)
     val targets = provider.documentationTargets(myFixture.editor, myFixture.file, myFixture.caretOffset)

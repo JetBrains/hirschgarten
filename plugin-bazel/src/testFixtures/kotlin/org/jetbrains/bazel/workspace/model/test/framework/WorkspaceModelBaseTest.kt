@@ -29,7 +29,7 @@ private const val JAVA_SDK_NAME = "11"
 private const val JAVA_SDK_TYPE = "JavaSDK"
 
 @BazelTestApplication
-open class WorkspaceModelBaseTest {
+abstract class WorkspaceModelBaseTest {
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
 
   @JvmField
