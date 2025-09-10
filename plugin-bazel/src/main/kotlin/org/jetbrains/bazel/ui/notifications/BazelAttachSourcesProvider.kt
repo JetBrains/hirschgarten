@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.ui.notifications
 
 import com.intellij.codeInsight.AttachSourcesProvider
+import com.intellij.openapi.application.backgroundWriteAction
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.roots.LibraryOrderEntry
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
@@ -10,6 +10,10 @@ import com.intellij.openapi.roots.ui.configuration.LibrarySourceRootDetectorUtil
 import com.intellij.openapi.util.ActionCallback
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 
@@ -23,27 +27,37 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
     override fun getBusyText(): String = BazelPluginBundle.message("sources.pending.text")
 
     override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback {
-      val libraries = orderEntries.mapNotNull { it.library }.distinct()
-      val modelsToCommit =
-        libraries.mapNotNull { library ->
-          val availableSources = library.getFiles(OrderRootType.SOURCES)
-          if (availableSources.isEmpty()) {
-            showError(library.name.orEmpty())
-            null
-          } else {
-            library.obtainModelWithAddedSources(availableSources)
-          }
-        }
-      if (modelsToCommit.isNotEmpty()) {
-        invokeAndWaitIfNeeded {
-          runWriteAction {
-            modelsToCommit.forEach {
-              it.commit()
+      val callback = ActionCallback()
+      runBlocking {
+        CoroutineScope(Dispatchers.Default).launch {
+          try {
+            val libraries = orderEntries.mapNotNull { it.library }.distinct()
+            val modelsToCommit =
+              libraries.mapNotNull { library ->
+                val availableSources = library.getFiles(OrderRootType.SOURCES)
+                if (availableSources.isEmpty()) {
+                  showError(library.name.orEmpty())
+                  null
+                } else {
+                  library.obtainModelWithAddedSources(availableSources)
+                }
+              }
+            if (modelsToCommit.isNotEmpty()) {
+              backgroundWriteAction {
+                modelsToCommit.forEach {
+                  it.commit()
+                }
+                callback.setDone()
+              }
+            } else {
+              callback.setRejected()
             }
+          } catch (_: Exception) {
+            callback.setRejected()
           }
         }
       }
-      return ActionCallback.DONE
+      return callback
     }
 
     private fun showError(target: String) {
