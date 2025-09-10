@@ -42,9 +42,16 @@ fun getCompletionLookupElemenent(
       .withPresentableText(presentableText ?: name)
       .withTailText(tailText, true)
       .withInsertHandler { context, _ ->
-        // This prevents inserting a duplicate quote at the end.
         val document = context.document
         val offset = context.tailOffset
+
+        // Delete text from the cursor to the end of the currently completed expression.
+        val textAfter = document.charsSequence.subSequence(offset, document.textLength).toString()
+        val suffixLength = listOf("\"", ",\n", ",\t", "\n", "\t").map { textAfter.indexOf(it) }.filter { it != -1 }.minOrNull()
+        val endOffset = if (suffixLength != null) offset + suffixLength else document.textLength
+        document.deleteString(offset, endOffset)
+
+        // This prevents inserting a duplicate quote at the end.
         if (offset < document.textLength && document.charsSequence[offset] == '"') {
           document.deleteString(offset, offset + 1)
         }
