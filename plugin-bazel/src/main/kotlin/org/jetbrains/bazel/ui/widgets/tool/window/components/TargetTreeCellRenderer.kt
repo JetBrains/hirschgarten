@@ -29,19 +29,11 @@ class TargetTreeCellRenderer(val labelHighlighter: (String) -> String) : TreeCel
         )
 
       is TargetNodeData ->
-        if (userObject.isValid) {
-          JBLabel(
-            labelHighlighter(userObject.displayName),
-            BazelPluginIcons.bazel,
-            SwingConstants.LEFT,
-          )
-        } else {
-          JBLabel(
-            labelStrikethrough(userObject.displayName),
-            BazelPluginIcons.bazelError,
-            SwingConstants.LEFT,
-          )
-        }
+        JBLabel(
+          labelHighlighter(userObject.displayName),
+          BazelPluginIcons.bazel,
+          SwingConstants.LEFT,
+        )
 
       else ->
         JBLabel(

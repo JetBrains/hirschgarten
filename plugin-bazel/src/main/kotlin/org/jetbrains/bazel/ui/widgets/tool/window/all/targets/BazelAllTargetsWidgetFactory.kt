@@ -163,9 +163,6 @@ private suspend fun updateVisibleTargets(
       searchRegex = searchRegex,
       hasAnyTargets = hasAnyTargets,
       displayAsTree = model.displayAsTree,
-      labelToInfo = {
-        targetUtils.getBuildTargetForLabel(it)
-      },
     )
   }
 }
