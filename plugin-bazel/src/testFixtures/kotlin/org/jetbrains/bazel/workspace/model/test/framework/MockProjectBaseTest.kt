@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 
 @BazelTestApplication
-open class MockProjectBaseTest {
+abstract class MockProjectBaseTest {
   @TestDisposable
   lateinit var disposable: Disposable
 
