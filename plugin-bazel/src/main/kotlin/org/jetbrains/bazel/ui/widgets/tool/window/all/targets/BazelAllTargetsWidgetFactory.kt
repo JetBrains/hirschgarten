@@ -162,7 +162,7 @@ private suspend fun updateVisibleTargets(
       visibleTargets = visibleTargets,
       searchRegex = searchRegex,
       hasAnyTargets = hasAnyTargets,
-      displayAsTree = model.displayAsTree
+      displayAsTree = model.displayAsTree,
     )
   }
 }

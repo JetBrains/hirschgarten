@@ -8,8 +8,8 @@ import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClas
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
@@ -93,10 +93,7 @@ internal class BuildTargetTree(
     addMouseListener(loadedTargetsMouseListener)
   }
 
-  fun updateTree(
-    visibleTargets: Collection<Label>,
-    displayAsTree: Boolean
-  ) {
+  fun updateTree(visibleTargets: Collection<Label>, displayAsTree: Boolean) {
     val classifier =
       if (displayAsTree) {
         TreeTargetClassifier(project)
@@ -113,10 +110,7 @@ internal class BuildTargetTree(
     expandPath(TreePath(rootNode.path))
   }
 
-  private fun generateTree(
-    targets: Collection<Label>,
-    classifier: BuildTargetClassifierExtension,
-  ) {
+  private fun generateTree(targets: Collection<Label>, classifier: BuildTargetClassifierExtension) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
@@ -201,11 +195,10 @@ internal class BuildTargetTree(
       ?.map { generateTargetNode(it) }
       ?: emptyList()
 
-  private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode {
-    return DefaultMutableTreeNode(
+  private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
+    DefaultMutableTreeNode(
       TargetNodeData(identifier.displayName, identifier.id),
     )
-  }
 
   private fun simplifyNodeIfHasOneChild(
     node: DefaultMutableTreeNode,
@@ -259,7 +252,7 @@ data class DirectoryNodeData(
 
 data class TargetNodeData(
   @JvmField val displayName: String,
-  @JvmField val id: Label
+  @JvmField val id: Label,
 )
 
 data class BuildTargetTreeIdentifier(
