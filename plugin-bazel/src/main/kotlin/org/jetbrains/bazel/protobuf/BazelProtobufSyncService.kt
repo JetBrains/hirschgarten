@@ -16,7 +16,7 @@ class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
 
   fun getRealProtoFile(importPath: String): VirtualFile? {
     val data = store.getProtoIndexData(importPath) ?: return null
-    val vfsManager = project.service<WorkspaceModel>().getVirtualFileUrlManager()
+    val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
     // handle case when bazel hadn't created protobuf symlinks yet
     // or user deleted file referenced by symlink
     val realPath =
