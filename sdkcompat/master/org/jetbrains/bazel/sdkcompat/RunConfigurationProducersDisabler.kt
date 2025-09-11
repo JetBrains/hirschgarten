@@ -2,12 +2,19 @@ package org.jetbrains.bazel.sdkcompat
 
 import com.intellij.execution.RunConfigurationProducerSuppressor
 import com.intellij.execution.actions.RunConfigurationProducer
+import com.intellij.openapi.externalSystem.autolink.ExternalSystemUnlinkedProjectAware
 import com.intellij.openapi.project.Project
 
 suspend fun configureRunConfigurationIgnoreProducers(project: Project): Boolean = true
 
 private class BazelRunConfigurationProducerSuppressor : RunConfigurationProducerSuppressor {
-  override fun shouldSuppress(producer: RunConfigurationProducer<*>): Boolean = producer::class.java.name in producersNames
+  override fun shouldSuppress(producer: RunConfigurationProducer<*>, project: Project): Boolean {
+    val isBazelProject =
+      ExternalSystemUnlinkedProjectAware.EP_NAME
+        .findFirstSafe { it.systemId.id == "bazel" }
+        ?.isLinkedProject(project, project.basePath.orEmpty()) ?: false
+    return isBazelProject && producer::class.java.name in producersNames
+  }
 }
 
 private val producersNames: Set<String> =
