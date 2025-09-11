@@ -221,6 +221,11 @@
       implementation="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook"
       order="after TargetUtilsSyncHook"
     />
+    <projectSyncHook
+      id="IndexAdditionalFilesSyncHook"
+      implementation="org.jetbrains.bazel.flow.sync.IndexAdditionalFilesSyncHook"
+      order="after DirectoriesSyncHook"
+    />
 
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook" />

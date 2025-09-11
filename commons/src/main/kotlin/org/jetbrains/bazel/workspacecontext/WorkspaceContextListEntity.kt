@@ -21,3 +21,5 @@ data class PythonCodeGeneratorRuleNamesSpec(override val values: List<String>) :
 data class SyncFlagsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
 
 data class DebugFlagsSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
+
+data class IndexAdditionalFilesInDirectoriesSpec(override val values: List<String>) : WorkspaceContextListEntity<String>()
