@@ -23,4 +23,9 @@ alias(
     actual = "//tools/format",
 )
 
+alias(
+    name = "format2",
+    actual = "//tools/format",
+)
+
 npm_link_all_packages(name = "node_modules")
