@@ -5,6 +5,7 @@ import org.jetbrains.bazel.projectview.parser.sections.DeriveInstrumentationFilt
 import org.jetbrains.bazel.projectview.parser.sections.GazelleTargetParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportIjarsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.IndexAdditionalFilesInDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.IndexAllFilesInDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
@@ -65,6 +66,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         pythonCodeGeneratorRuleNamesSection = PythonCodeGeneratorRuleNamesSectionParser.parse(rawSections),
         importIjars = ImportIjarsSectionParser.parse(rawSections),
         deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSectionParser.parse(rawSections),
+        indexAdditionalFilesInDirectories = IndexAdditionalFilesInDirectoriesSectionParser.parse(rawSections),
       ).build()
   }
 

@@ -39,3 +39,9 @@ data class PythonCodeGeneratorRuleNamesSection(override val values: List<String>
     const val SECTION_NAME = "python_code_generator_rule_names"
   }
 }
+
+data class IndexAdditionalFilesInDirectoriesSection(override val values: List<String>) : ProjectViewListSection<String>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "index_additional_files_in_directories"
+  }
+}
