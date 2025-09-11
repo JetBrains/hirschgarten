@@ -9,6 +9,7 @@ import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import org.jetbrains.bazel.assets.BazelPluginIcons
@@ -80,7 +81,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         runConfigurators = true
         isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
 
-        setProjectRootDir(projectStoreBaseDir)
+        setProjectRootDir(projectRootDir.toNioPathOrNull())
         this.forceOpenInNewFrame = forceOpenInNewFrame
         this.projectToClose = projectToClose
         createModule(Registry.`is`("bazel.create.fake.module.on.project.import"))

@@ -3,7 +3,7 @@ package org.jetbrains.bazel.sdkcompat
 import com.intellij.ide.impl.OpenProjectTaskBuilder
 import java.nio.file.Path
 
-fun OpenProjectTaskBuilder.setProjectRootDir(projectRootDir: Path) {
+fun OpenProjectTaskBuilder.setProjectRootDir(projectRootDir: Path?) {
   this.projectRootDir = projectRootDir
 }
 
