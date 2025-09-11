@@ -5,7 +5,7 @@ import com.intellij.ide.actions.searcheverywhere.SearchEverywhereContributor
 import com.intellij.ide.actions.searcheverywhere.WeightedSearchEverywhereContributor
 import com.intellij.openapi.project.Project
 import com.intellij.platform.searchEverywhere.SeItemsProvider
-import com.intellij.platform.searchEverywhere.providers.SeAsyncWeightedContributorWrapper
+import com.intellij.platform.searchEverywhere.providers.SeAsyncContributorWrapper
 import com.intellij.platform.searchEverywhere.providers.SeWrappedLegacyContributorItemsProviderFactory
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginConstants.SE_LABEL_PROVIDER_ID
@@ -17,6 +17,6 @@ class SeLabelProviderFactory : SeWrappedLegacyContributorItemsProviderFactory {
 
   override suspend fun getItemsProvider(project: Project?, legacyContributor: SearchEverywhereContributor<Any>): SeItemsProvider? {
     if (project == null || legacyContributor !is WeightedSearchEverywhereContributor<Any>) return null
-    return SeLabelProvider(SeAsyncWeightedContributorWrapper(legacyContributor))
+    return SeLabelProvider(SeAsyncContributorWrapper(legacyContributor))
   }
 }
