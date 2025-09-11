@@ -326,3 +326,21 @@ derive_instrumentation_filter_from_targets: false
 ```
 derive_instrumentation_filter_from_targets: true
 ```
+
+#### index_additional_files_in_directories
+
+List of filenames to index in addition to sources, resources, and libraries defined in the project.
+
+The filenames are scanned inside directories defined in the `directories:` section.
+
+This speeds up searching for these files and can be needed for custom plugins to work on them.
+
+Has no effect if `index_all_files_in_directories` is set to `true`.
+
+##### example:
+
+```
+index_additional_files_in_directories:
+  *.xml
+  package.json
+```
