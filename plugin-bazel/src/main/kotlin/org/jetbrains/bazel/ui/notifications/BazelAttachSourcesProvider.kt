@@ -13,7 +13,6 @@ import com.intellij.psi.PsiFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 
@@ -28,33 +27,31 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
 
     override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback {
       val callback = ActionCallback()
-      runBlocking {
-        CoroutineScope(Dispatchers.Default).launch {
-          try {
-            val libraries = orderEntries.mapNotNull { it.library }.distinct()
-            val modelsToCommit =
-              libraries.mapNotNull { library ->
-                val availableSources = library.getFiles(OrderRootType.SOURCES)
-                if (availableSources.isEmpty()) {
-                  showError(library.name.orEmpty())
-                  null
-                } else {
-                  library.obtainModelWithAddedSources(availableSources)
-                }
+      CoroutineScope(Dispatchers.Default).launch {
+        try {
+          val libraries = orderEntries.mapNotNull { it.library }.distinct()
+          val modelsToCommit =
+            libraries.mapNotNull { library ->
+              val availableSources = library.getFiles(OrderRootType.SOURCES)
+              if (availableSources.isEmpty()) {
+                showError(library.name.orEmpty())
+                null
+              } else {
+                library.obtainModelWithAddedSources(availableSources)
               }
-            if (modelsToCommit.isNotEmpty()) {
-              backgroundWriteAction {
-                modelsToCommit.forEach {
-                  it.commit()
-                }
-                callback.setDone()
-              }
-            } else {
-              callback.setRejected()
             }
-          } catch (_: Exception) {
+          if (modelsToCommit.isNotEmpty()) {
+            backgroundWriteAction {
+              modelsToCommit.forEach {
+                it.commit()
+              }
+              callback.setDone()
+            }
+          } else {
             callback.setRejected()
           }
+        } catch (_: Exception) {
+          callback.setRejected()
         }
       }
       return callback
