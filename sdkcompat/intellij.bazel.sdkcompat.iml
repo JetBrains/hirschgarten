@@ -35,5 +35,6 @@
     <orderEntry type="module" module-name="intellij.platform.split" />
     <orderEntry type="module" module-name="kotlin.jvm-debugger.coroutines" />
     <orderEntry type="module" module-name="intellij.platform.ide.core.impl" />
+    <orderEntry type="module" module-name="intellij.platform.externalSystem" />
   </component>
 </module>
