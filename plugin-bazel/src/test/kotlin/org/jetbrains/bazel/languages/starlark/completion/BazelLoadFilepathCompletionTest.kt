@@ -89,8 +89,8 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
         projectRoot = myRootPathUrl,
         includedRoots = listOf(myRootPathUrl.append("excluded")),
         excludedRoots = emptyList(),
-        buildFiles = emptyList(),
         indexAllFilesInIncludedRoots = false,
+        indexAdditionalFiles = emptyList(),
         entitySource = BazelProjectEntitySource,
       )
 

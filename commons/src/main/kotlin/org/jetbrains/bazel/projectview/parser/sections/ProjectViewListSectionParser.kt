@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.projectview.parser.sections
 
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
+import org.jetbrains.bazel.projectview.model.sections.IndexAdditionalFilesInDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDebugFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
@@ -107,4 +108,14 @@ object PythonCodeGeneratorRuleNamesSectionParser :
   override fun mapRawValues(rawValue: String): String = rawValue
 
   override fun createInstance(values: List<String>): PythonCodeGeneratorRuleNamesSection = PythonCodeGeneratorRuleNamesSection(values)
+}
+
+object IndexAdditionalFilesInDirectoriesSectionParser :
+  ProjectViewListSectionParser<String, IndexAdditionalFilesInDirectoriesSection>(
+    IndexAdditionalFilesInDirectoriesSection.SECTION_NAME,
+  ) {
+  override fun mapRawValues(rawValue: String): String = rawValue
+
+  override fun createInstance(values: List<String>): IndexAdditionalFilesInDirectoriesSection =
+    IndexAdditionalFilesInDirectoriesSection(values)
 }

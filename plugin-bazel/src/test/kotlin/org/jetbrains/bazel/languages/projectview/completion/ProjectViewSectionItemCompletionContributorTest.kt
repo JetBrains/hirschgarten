@@ -37,8 +37,8 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
               myFixture.project.rootDir.toVirtualFileUrl(workspaceModelUrlManager),
               emptyList(),
               emptyList(),
-              emptyList(),
               false,
+              emptyList(),
               BazelProjectEntitySource,
             ),
           )

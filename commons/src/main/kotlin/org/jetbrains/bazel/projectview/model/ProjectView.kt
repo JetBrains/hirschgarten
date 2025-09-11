@@ -6,6 +6,7 @@ import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSe
 import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
 import org.jetbrains.bazel.projectview.model.sections.ImportIjarsSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
+import org.jetbrains.bazel.projectview.model.sections.IndexAdditionalFilesInDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -99,6 +100,7 @@ data class ProjectView(
   val pythonCodeGeneratorRuleNamesSection: PythonCodeGeneratorRuleNamesSection? = null,
   val importIjars: ImportIjarsSection? = null,
   val deriveInstrumentationFilterFromTargets: DeriveInstrumentationFilterFromTargetsSection? = null,
+  val indexAdditionalFilesInDirectories: IndexAdditionalFilesInDirectoriesSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -124,6 +126,7 @@ data class ProjectView(
     private val pythonCodeGeneratorRuleNamesSection: PythonCodeGeneratorRuleNamesSection? = null,
     private val importIjars: ImportIjarsSection? = null,
     private val deriveInstrumentationFilterFromTargets: DeriveInstrumentationFilterFromTargetsSection? = null,
+    private val indexAdditionalFilesInDirectories: IndexAdditionalFilesInDirectoriesSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -154,6 +157,7 @@ data class ProjectView(
       val pythonCodeGeneratorRuleNamesSection = combinePythonCodeGeneratorRuleNamesSection(importedProjectViews)
       val importIjars = combineImportIjarsSection(importedProjectViews)
       val deriveInstrumentationFilterFromTargets = combineDeriveInstrumentationFilterFromTargetsSection(importedProjectViews)
+      val indexAdditionalFilesInDirectories = combineIndexAdditionalFilesInDirectories(importedProjectViews)
 
       return ProjectView(
         targets,
@@ -178,6 +182,7 @@ data class ProjectView(
         pythonCodeGeneratorRuleNamesSection,
         importIjars,
         deriveInstrumentationFilterFromTargets,
+        indexAdditionalFilesInDirectories,
       )
     }
 
@@ -258,6 +263,19 @@ data class ProjectView(
         importedProjectViews,
         ProjectView::deriveInstrumentationFilterFromTargets,
       )
+
+    private fun combineIndexAdditionalFilesInDirectories(
+      importedProjectViews: List<ProjectView>,
+    ): IndexAdditionalFilesInDirectoriesSection? {
+      val indexAdditionalFilesInDirectories =
+        combineListValuesWithImported(
+          importedProjectViews,
+          indexAdditionalFilesInDirectories,
+          ProjectView::indexAdditionalFilesInDirectories,
+          IndexAdditionalFilesInDirectoriesSection::values,
+        )
+      return createInstanceOfListSectionOrNull(indexAdditionalFilesInDirectories, ::IndexAdditionalFilesInDirectoriesSection)
+    }
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {
       val includedTargets =

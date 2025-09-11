@@ -8,7 +8,11 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <projectSyncHook implementation="org.jetbrains.bazel.python.sync.PythonProjectSync" />
+    <!-- IndexAdditionalFilesSyncHook iterates over all added instances of ModuleEntity, so it has to come after PythonProjectSync -->
+    <projectSyncHook
+      implementation="org.jetbrains.bazel.python.sync.PythonProjectSync"
+      order="before IndexAdditionalFilesSyncHook"
+    />
 
     <sourceTypeIconProvider implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider" />
 

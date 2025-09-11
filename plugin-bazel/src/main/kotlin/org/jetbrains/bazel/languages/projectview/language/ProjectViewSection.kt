@@ -81,6 +81,7 @@ object ProjectViewSection {
       SectionMetadata("import_ijars", SectionType.Scalar.Boolean, booleanCompletionProvider()),
       SectionMetadata("debug_flags", SectionType.List.String, FlagCompletionProvider("debug")),
       SectionMetadata("derive_instrumentation_filter_from_targets", SectionType.Scalar.Boolean, booleanCompletionProvider()),
+      SectionMetadata("index_additional_files_in_directories", SectionType.List.String),
     ).associateBy { it.sectionName }
 
   private fun booleanCompletionProvider() = SimpleCompletionProvider(listOf("true", "false"))
