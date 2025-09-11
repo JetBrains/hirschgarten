@@ -25,6 +25,7 @@ import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
+import org.jetbrains.bazel.workspacecontext.IndexAdditionalFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
@@ -65,6 +66,7 @@ val mockContext =
     importIjarsSpec = ImportIjarsSpec(false),
     debugFlags = DebugFlagsSpec(emptyList()),
     deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSpec(false),
+    indexAdditionalFilesInDirectoriesSpec = IndexAdditionalFilesInDirectoriesSpec(emptyList()),
   )
 
 val mockBazelInfo =

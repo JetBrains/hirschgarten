@@ -34,6 +34,7 @@ import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
+import org.jetbrains.bazel.workspacecontext.IndexAdditionalFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
@@ -147,6 +148,7 @@ private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo
       pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(values = emptyList()),
       importIjarsSpec = ImportIjarsSpec(value = false),
       deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSpec(value = true),
+      indexAdditionalFilesInDirectoriesSpec = IndexAdditionalFilesInDirectoriesSpec(emptyList()),
     )
 
   // Setup unified feature flags

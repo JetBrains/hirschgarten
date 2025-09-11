@@ -16,6 +16,7 @@ import org.jetbrains.bazel.languages.projectview.language.sections.IdeJavaHomeOv
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportIjarsSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ImportRunConfigurationsSection
+import org.jetbrains.bazel.languages.projectview.language.sections.IndexAdditionalFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.PythonCodeGeneratorRuleNamesSection
 import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
@@ -59,6 +60,7 @@ class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       TargetShardSizeSection(),
       TargetsSection(),
       TestFlagsSection(),
+      IndexAdditionalFilesInDirectoriesSection(),
     )
 }
 
