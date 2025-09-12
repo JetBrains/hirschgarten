@@ -1,0 +1,42 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_resources")
+
+jvm_resources(
+  name = "server_resources",
+  files = ["//plugins/bazel/server/resources/aspects"],
+  strip_prefix = "resources"
+)
+
+jvm_library(
+  name = "server",
+  module_name = "intellij.bazel.server",
+  visibility = ["//visibility:public"],
+  srcs = glob(["server/src/main/kotlin/**/*.kt", "server/src/main/kotlin/**/*.java", "server/src/main/kotlin/**/*.form", "logger/src/main/kotlin/**/*.kt", "logger/src/main/kotlin/**/*.java", "logger/src/main/kotlin/**/*.form", "install/src/main/kotlin/**/*.kt", "install/src/main/kotlin/**/*.java", "install/src/main/kotlin/**/*.form", "commons/src/main/kotlin/**/*.kt", "commons/src/main/kotlin/**/*.java", "commons/src/main/kotlin/**/*.form", "bazelrunner/src/main/kotlin/**/*.kt", "bazelrunner/src/main/kotlin/**/*.java", "bazelrunner/src/main/kotlin/**/*.form"], allow_empty = True),
+  deps = [
+    "@lib//:guava",
+    "@lib//:velocity",
+    "@lib//:commons-cli",
+    "@lib//:commons-io",
+    "@lib//:grpc-core",
+    "@lib//:grpc-protobuf",
+    "@lib//:grpc-stub",
+    "@lib//:gson",
+    "@lib//:jackson",
+    "@lib//:jackson-databind",
+    "@ultimate_lib//:jackson-dataformat-xml",
+    "@lib//:jackson-module-kotlin",
+    "@lib//:kotlin-stdlib",
+    "@lib//:kotlinx-coroutines-core",
+    "@lib//:opentelemetry",
+    "@ultimate_lib//:opentelemetry-exporter-otlp",
+    "@lib//:opentelemetry-exporter-otlp-common",
+    "@lib//:opentelemetry-extension-kotlin",
+    "@lib//:opentelemetry-semconv",
+    "@lib//:slf4j-api",
+    "@lib//:protobuf",
+    "//plugins/bazel/commons",
+    "//plugins/bazel/protobuf",
+  ],
+  runtime_deps = [":server_resources"]
+)
+
+### skip generation section `build intellij.bazel.server`

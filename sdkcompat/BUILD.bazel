@@ -1,0 +1,40 @@
+### auto-generated section `build intellij.bazel.sdkcompat` start
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jvm_library(
+  name = "sdkcompat",
+  module_name = "intellij.bazel.sdkcompat",
+  visibility = ["//visibility:public"],
+  srcs = glob(["gen/**/*.kt", "gen/**/*.java", "master/**/*.kt", "master/**/*.java", "master/**/*.form"], allow_empty = True),
+  deps = [
+    "@lib//:kotlin-stdlib",
+    "@community//platform/core-api:core",
+    "@community//platform/editor-ui-api:editor-ui",
+    "@community//platform/platform-util-io:ide-util-io",
+    "@community//platform/lang-api:lang",
+    "@community//platform/lang-core",
+    "@community//platform/lang-impl",
+    "@community//plugins/coverage-common:coverage",
+    "@community//java/debugger/impl",
+    "@community//java/execution/openapi:java-execution",
+    "@community//java/execution/impl",
+    "@community//java/idea-ui:ui",
+    "@ultimate_lib//:kotlinc-analysis-api-platform-interface-provided",
+    "@ultimate_lib//:kotlinc-kotlin-compiler-common-provided",
+    "@community//platform/xdebugger-api:debugger",
+    "@community//platform/backend/workspace",
+    "@community//platform/projectModel-api:projectModel",
+    "@community//platform/workspace/storage",
+    "@community//platform/platform-impl:ide-impl",
+    "@community//java/java-psi-api:psi",
+    "@community//plugins/kotlin/refactorings/kotlin.refactorings.common:kotlin-refactorings-common",
+    "@lib//:hash4j",
+    "//plugins/bazel/commons",
+    "@community//platform/workspace/jps",
+    "//remote-dev/cwm-common:split",
+    "@community//plugins/kotlin/jvm-debugger/coroutines",
+    "@community//platform/ide-core-impl",
+    "@community//platform/external-system-api:externalSystem",
+  ]
+)
+### auto-generated section `build intellij.bazel.sdkcompat` end

@@ -1,0 +1,36 @@
+### auto-generated section `build intellij.bazel` start
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jvm_library(
+  name = "bazel",
+  visibility = ["//visibility:public"],
+  srcs = glob([], allow_empty = True)
+)
+
+jvm_library(
+  name = "bazel_test_lib",
+  module_name = "intellij.bazel",
+  visibility = ["//visibility:public"],
+  srcs = glob(["rules_intellij/testing/src/**/*.kt", "rules_intellij/testing/src/**/*.java", "rules_intellij/testing/src/**/*.form"], allow_empty = True),
+  deps = [
+    "@lib//:junit5",
+    "@lib//:guava",
+    "@community//platform/core-api:core",
+    "@community//platform/core-impl",
+    "@community//platform/ide-core",
+    "@community//platform/platform-impl:ide-impl",
+    "@community//platform/platform-impl:ide-impl_test_lib",
+    "@community//platform/testFramework/junit5",
+    "@community//platform/testFramework/junit5:junit5_test_lib",
+  ]
+)
+### auto-generated section `build intellij.bazel` end
+
+### auto-generated section `test intellij.bazel` start
+load("@community//build:tests-options.bzl", "jps_test")
+
+jps_test(
+  name = "bazel_test",
+  runtime_deps = [":bazel_test_lib"]
+)
+### auto-generated section `test intellij.bazel` end

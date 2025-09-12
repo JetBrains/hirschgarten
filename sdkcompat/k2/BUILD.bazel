@@ -1,0 +1,22 @@
+### auto-generated section `build intellij.bazel.sdkcompat.k2` start
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jvm_library(
+  name = "k2",
+  module_name = "intellij.bazel.sdkcompat.k2",
+  visibility = ["//visibility:public"],
+  srcs = glob(["master/**/*.kt", "master/**/*.java", "master/**/*.form"], allow_empty = True),
+  deps = [
+    "@lib//:kotlin-stdlib",
+    "@community//plugins/kotlin/refactorings/kotlin.refactorings.move.k2:kotlin-refactorings-move-k2",
+    "@community//platform/core-api:core",
+    "@ultimate_lib//:kotlinc-kotlin-compiler-common-provided",
+    "@community//platform/util",
+    "@community//platform/core-impl",
+    "@community//java/java-psi-api:psi",
+    "@community//platform/projectModel-api:projectModel",
+    "@community//platform/ide-core",
+    "@community//platform/external-system-api:externalSystem",
+  ]
+)
+### auto-generated section `build intellij.bazel.sdkcompat.k2` end

@@ -1,0 +1,18 @@
+### auto-generated section `build intellij.bazel.protobuf` start
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jvm_library(
+  name = "protobuf",
+  module_name = "intellij.bazel.protobuf",
+  visibility = ["//visibility:public"],
+  srcs = glob(["src/main/gen/**/*.kt", "src/main/gen/**/*.java"], allow_empty = True),
+  deps = [
+    "@lib//:javax-annotation-api",
+    "@lib//:grpc-core",
+    "@lib//:grpc-protobuf",
+    "@lib//:grpc-stub",
+    "@lib//:guava",
+    "@lib//:protobuf",
+  ]
+)
+### auto-generated section `build intellij.bazel.protobuf` end

@@ -1,0 +1,28 @@
+### auto-generated section `build intellij.bazel.commons` start
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jvm_library(
+  name = "commons",
+  module_name = "intellij.bazel.commons",
+  visibility = ["//visibility:public"],
+  srcs = glob(["src/main/kotlin/**/*.kt", "src/main/kotlin/**/*.java", "src/main/kotlin/**/*.form"], allow_empty = True),
+  deps = [
+    "@lib//:kotlin-stdlib",
+    "@lib//:opentelemetry",
+    "@lib//:guava",
+    "@lib//:fastutil-min",
+    "//plugins/bazel/protobuf",
+    "@lib//:protobuf",
+    "@lib//:slf4j-api",
+    "@lib//:gson",
+    "@lib//:commons-cli",
+    "@lib//:commons-io",
+    "@ultimate_lib//:kotlinx-coroutines-core-provided",
+    "@ultimate_lib//:opentelemetry-extension-kotlin-provided",
+    "@lib//:hash4j",
+    "@lib//:jetbrains-annotations",
+    "@lib//:kotlinx-datetime-jvm",
+    "@community//platform/util",
+  ]
+)
+### auto-generated section `build intellij.bazel.commons` end
