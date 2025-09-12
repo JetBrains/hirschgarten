@@ -45,11 +45,7 @@ def java_info_reference():
 
 def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
     toolchain = None
-
-    if hasattr(target, "java_toolchain"):
-        toolchain = target.java_toolchain
-    elif java_common.JavaToolchainInfo != platform_common.ToolchainInfo and \
-         java_common.JavaToolchainInfo in target:
+    if java_common.JavaToolchainInfo != platform_common.ToolchainInfo and java_common.JavaToolchainInfo in target:
         toolchain = target[java_common.JavaToolchainInfo]
 
     toolchain_info = None
