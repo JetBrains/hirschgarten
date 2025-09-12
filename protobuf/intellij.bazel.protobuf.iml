@@ -12,6 +12,6 @@
     <orderEntry type="library" name="grpc-protobuf" level="project" />
     <orderEntry type="library" name="grpc-stub" level="project" />
     <orderEntry type="library" name="Guava" level="project" />
-    <orderEntry type="library" name="protobuf4" level="project" />
+    <orderEntry type="library" name="protobuf" level="project" />
   </component>
 </module>

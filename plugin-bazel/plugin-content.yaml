@@ -48,8 +48,3 @@
   files:
     - name: $MAVEN_REPOSITORY$/io/opentelemetry/opentelemetry-exporter-otlp/1/opentelemetry-exporter-otlp-1.jar
   reason: <- intellij.bazel.server
-- name: lib/protobuf4.jar
-  library: protobuf4
-  files:
-    - name: $MAVEN_REPOSITORY$/com/google/protobuf/protobuf-java/4/protobuf-java-4.jar
-  reason: <- intellij.bazel.plugin
