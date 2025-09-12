@@ -12,7 +12,7 @@
     <orderEntry type="library" name="Guava" level="project" />
     <orderEntry type="library" name="fastutil-min" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />
-    <orderEntry type="library" name="protobuf4" level="project" />
+    <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="library" name="slf4j-api" level="project" />
     <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="commons-cli" level="project" />

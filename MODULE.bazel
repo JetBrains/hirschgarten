@@ -96,6 +96,7 @@ maven.install(
         "org.kodein.di:kodein-di:7.26.1",
         "org.mockito:mockito-core:5.19.0",
         "com.github.javaparser:javaparser-core:3.27.0",
+        "com.google.protobuf:protobuf-java:3.24.4",
     ],
     fail_if_repin_required = True,
     fetch_sources = True,
@@ -194,6 +195,17 @@ single_version_override(
 )
 
 bazel_dep(name = "rules_shell", version = "0.6.0")
+
+# NB: this must come BEFORE bazel_dep(name = "protobuf") because they register the from-source toolchain,
+# and the first registration wins.
+bazel_dep(name = "toolchains_protoc", version = "0.5.0")
+
+protoc = use_extension("@toolchains_protoc//protoc:extensions.bzl", "protoc")
+protoc.toolchain(
+    # Make sure that this version matches the version in IJ monorepo
+    version = "v24.4",
+)
+
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "29.5")
 bazel_dep(name = "rules_cc", version = "0.2.0")
