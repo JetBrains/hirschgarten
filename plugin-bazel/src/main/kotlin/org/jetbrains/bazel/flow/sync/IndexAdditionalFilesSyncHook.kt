@@ -27,7 +27,7 @@ import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 
 private val INDEX_ADDITIONAL_FILES_DEFAULT =
   Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES + Constants.MODULE_BAZEL_FILE_NAME +
-    "*.${Constants.PROJECT_VIEW_FILE_EXTENSION}"
+    Constants.SUPPORTED_EXTENSIONS.map { extension -> "*.$extension" }
 
 private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
