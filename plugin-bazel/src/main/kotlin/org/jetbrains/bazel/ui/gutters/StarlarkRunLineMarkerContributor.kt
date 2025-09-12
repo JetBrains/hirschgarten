@@ -59,11 +59,14 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     return visitor.identifier
   }
 
-  private fun calculateLineMarkerInfo(project: Project, targetInfo: BuildTarget?): Info =
-    Info(
-      AllIcons.Actions.Execute,
-      targetInfo.calculateEligibleActions(project).toTypedArray(),
-    ) { "Run" }
+  private fun calculateLineMarkerInfo(project: Project, targetInfo: BuildTarget?): Info {
+    val actions = targetInfo.calculateEligibleActions(project).toTypedArray()
+    val onlyBuild = actions.singleOrNull() is BuildTargetAction
+    return Info(
+      if (onlyBuild) AllIcons.Actions.Compile else AllIcons.Actions.Execute,
+      actions,
+    )
+  }
 
   private fun BuildTarget?.calculateEligibleActions(project: Project): List<AnAction> =
     if (this == null) {
