@@ -97,6 +97,11 @@ private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
             // splitterClass =
             StateSplitterEx::class.java,
           )
+
+        override fun getProjectName(): String = projectRoot.fileName.toString()
+
+        override suspend fun saveProjectName(project: Project) {
+        }
       }
     }
   }
