@@ -24,7 +24,6 @@ private val shareableConfigFiles =
     "checker.xml",
     "codeInsightSettings.xml",
     "codeStyleSettings.xml",
-    "compiler.xml",
     "csv-editor.xml",
     "dependencyResolver.xml",
     "deployment.xml",
