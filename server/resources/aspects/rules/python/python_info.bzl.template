@@ -78,17 +78,19 @@ def interpreter_from_file(file):
     return file_location(file)
 
 def files_to_list(source):
-    if not hasattr(source, "files"):
+    files = source[DefaultInfo].files
+    if files == None:
         return []
-    return source.files.to_list()
+    else:
+        return files.to_list()
 
 def extract_python_info(target, ctx, output_groups, **kwargs):
     if not py_info_in_target(target):
-      return None, None
+        return None, None
 
     src_attr = getattr(ctx.rule.attr, "srcs", [])
     if type(src_attr) != "list":
-      return None,None
+        return None,None
 
     sources = [
         file_location(f)
