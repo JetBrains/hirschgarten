@@ -5,8 +5,14 @@ package org.jetbrains.bazel.sdkcompat
 import com.intellij.configurationStore.FileStorageAnnotation
 import com.intellij.configurationStore.ProjectStoreDescriptor
 import com.intellij.configurationStore.ProjectStorePathCustomizer
+import com.intellij.configurationStore.StateStorageManager
+import com.intellij.configurationStore.sortStoragesByDeprecated
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.State
 import com.intellij.openapi.components.StateSplitterEx
+import com.intellij.openapi.components.StateStorageOperation
 import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectCacheFileName
 import com.intellij.openapi.project.projectsDataDir
@@ -14,6 +20,74 @@ import com.intellij.util.PathUtilRt
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
+
+private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
+  override fun getStoreDirectoryPath(projectRoot: Path): ProjectStoreDescriptor? {
+    if (projectRoot.isDirectory()) {
+      return null
+    } else {
+      // we should use `getProjectCacheFileName` API,
+      // as in this dir is located a lot of other project-related data, so, location of dir should be in an expected location
+      val cacheDirectoryName = getProjectCacheFileName(projectRoot)
+      val dotIdea = projectsDataDir.resolve(cacheDirectoryName).resolve("bazel.idea")
+      return BazelProjectStoreDescriptor(
+        projectIdentityFile = projectRoot,
+        dotIdea = dotIdea,
+        historicalProjectBasePath = projectRoot.parent,
+      )
+    }
+  }
+}
+
+private class BazelProjectStoreDescriptor(
+  override val projectIdentityFile: Path,
+  override val dotIdea: Path,
+  override val historicalProjectBasePath: Path,
+) : ProjectStoreDescriptor {
+  override fun <T : Any> getStorageSpecs(
+    component: PersistentStateComponent<T>,
+    stateSpec: State,
+    operation: StateStorageOperation,
+    storageManager: StateStorageManager,
+  ): List<Storage> {
+    val storages = stateSpec.storages
+    if (storages.isEmpty()) {
+      return listOf(FileStorageAnnotation.PROJECT_FILE_STORAGE_ANNOTATION)
+    } else {
+      return sortStoragesByDeprecated(storages.asList())
+    }
+  }
+
+  override fun customMacros(): Map<String, Path> {
+    val rootDotIdea = historicalProjectBasePath.resolve(Project.DIRECTORY_STORE_FOLDER)
+    if (Files.notExists(rootDotIdea)) {
+      return emptyMap()
+    }
+
+    val result = HashMap<String, Path>(shareableConfigFiles.size)
+    for (filePath in shareableConfigFiles) {
+      result.put(filePath, rootDotIdea.resolve(filePath))
+    }
+    result.put(StoragePathMacros.PROJECT_FILE, rootDotIdea.resolve("misc.xml"))
+    return result
+  }
+
+  override fun getJpsBridgeAwareStorageSpec(filePath: String, project: Project): Storage {
+    return FileStorageAnnotation(
+      // path =
+      PathUtilRt.getFileName(filePath),
+      // deprecated =
+      false,
+      // splitterClass =
+      StateSplitterEx::class.java,
+    )
+  }
+
+  override fun getProjectName(): String = projectIdentityFile.fileName.toString()
+
+  override suspend fun saveProjectName(project: Project) {
+  }
+}
 
 @Suppress("SpellCheckingInspection")
 private val shareableConfigFiles =
@@ -57,51 +131,3 @@ private val shareableConfigFiles =
     "inspectionProfiles",
     "scopes",
   )
-
-private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
-  override fun getStoreDirectoryPath(projectRoot: Path): ProjectStoreDescriptor? {
-    if (projectRoot.isDirectory()) {
-      return null
-    } else {
-      val historicalProjectBasePath = projectRoot.parent
-      // we should use `getProjectCacheFileName` API,
-      // as in this dir is located a lot of other project-related data, so, location of dir should be in an expected location
-      val cacheDirectoryName = getProjectCacheFileName(projectRoot)
-      val dotIdea = projectsDataDir.resolve(cacheDirectoryName).resolve("bazel.idea")
-      return object : ProjectStoreDescriptor {
-        override val projectIdentityDir = projectRoot
-        override val dotIdea = dotIdea
-        override val historicalProjectBasePath = historicalProjectBasePath
-
-        override fun customMacros(): Map<String, Path> {
-          val rootDotIdea = historicalProjectBasePath.resolve(Project.DIRECTORY_STORE_FOLDER)
-          if (Files.notExists(rootDotIdea)) {
-            return emptyMap()
-          }
-
-          val result = HashMap<String, Path>(shareableConfigFiles.size)
-          for (filePath in shareableConfigFiles) {
-            result.put(filePath, rootDotIdea.resolve(filePath))
-          }
-          result.put($$"$PROJECT_FILE$", rootDotIdea.resolve("misc.xml"))
-          return result
-        }
-
-        override fun getJpsBridgeAwareStorageSpec(filePath: String, project: Project): Storage =
-          FileStorageAnnotation(
-            // path =
-            PathUtilRt.getFileName(filePath),
-            // deprecated =
-            false,
-            // splitterClass =
-            StateSplitterEx::class.java,
-          )
-
-        override fun getProjectName(): String = projectRoot.fileName.toString()
-
-        override suspend fun saveProjectName(project: Project) {
-        }
-      }
-    }
-  }
-}
