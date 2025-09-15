@@ -7,6 +7,7 @@ import com.intellij.configurationStore.ProjectStoreDescriptor
 import com.intellij.configurationStore.ProjectStorePathCustomizer
 import com.intellij.configurationStore.StateStorageManager
 import com.intellij.configurationStore.sortStoragesByDeprecated
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.StateSplitterEx
@@ -19,21 +20,27 @@ import com.intellij.openapi.project.projectsDataDir
 import com.intellij.util.PathUtilRt
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.isDirectory
 
 private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
   override fun getStoreDirectoryPath(projectRoot: Path): ProjectStoreDescriptor? {
-    if (projectRoot.isDirectory()) {
+    if (Files.isDirectory(projectRoot)) {
       return null
     } else {
       // we should use `getProjectCacheFileName` API,
       // as in this dir is located a lot of other project-related data, so, location of dir should be in an expected location
       val cacheDirectoryName = getProjectCacheFileName(projectRoot)
       val dotIdea = projectsDataDir.resolve(cacheDirectoryName).resolve("bazel.idea")
+      val workspaceXml =
+        PathManager
+          .getConfigDir()
+          .resolve("workspace")
+          .resolve("bazel")
+          .resolve("$cacheDirectoryName.xml")
       return BazelProjectStoreDescriptor(
         projectIdentityFile = projectRoot,
         dotIdea = dotIdea,
         historicalProjectBasePath = projectRoot.parent,
+        workspaceXml = workspaceXml,
       )
     }
   }
@@ -43,6 +50,7 @@ private class BazelProjectStoreDescriptor(
   override val projectIdentityFile: Path,
   override val dotIdea: Path,
   override val historicalProjectBasePath: Path,
+  private val workspaceXml: Path,
 ) : ProjectStoreDescriptor {
   override fun <T : Any> getStorageSpecs(
     component: PersistentStateComponent<T>,
@@ -69,11 +77,12 @@ private class BazelProjectStoreDescriptor(
       result.put(filePath, rootDotIdea.resolve(filePath))
     }
     result.put(StoragePathMacros.PROJECT_FILE, rootDotIdea.resolve("misc.xml"))
+    result.put(StoragePathMacros.WORKSPACE_FILE, workspaceXml)
     return result
   }
 
-  override fun getJpsBridgeAwareStorageSpec(filePath: String, project: Project): Storage {
-    return FileStorageAnnotation(
+  override fun getJpsBridgeAwareStorageSpec(filePath: String, project: Project): Storage =
+    FileStorageAnnotation(
       // path =
       PathUtilRt.getFileName(filePath),
       // deprecated =
@@ -81,7 +90,6 @@ private class BazelProjectStoreDescriptor(
       // splitterClass =
       StateSplitterEx::class.java,
     )
-  }
 
   override fun getProjectName(): String = projectIdentityFile.fileName.toString()
 
