@@ -41,13 +41,12 @@ internal class ProjectViewSectionItemCompletionContributor : CompletionContribut
 
   init {
     for (section in ProjectViewSections.REGISTERED_SECTIONS) {
-      if (section.completionProvider != null) {
-        extend(
-          CompletionType.BASIC,
-          sectionItemElement(section.name),
-          section.completionProvider,
-        )
-      }
+      val provider = section.completionProvider ?: continue
+      extend(
+        CompletionType.BASIC,
+        sectionItemElement(section.name),
+        provider,
+      )
     }
 
     extend(
