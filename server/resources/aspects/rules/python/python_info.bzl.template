@@ -9,19 +9,24 @@ load("//aspects:utils/utils.bzl", "create_struct", "file_location", "to_file_loc
 
 #elseif( $bazel8OrAbove == "true" && $rulesetName != "" )
 # Bazel 8+: Use only the rules_python providers.
-load("@rules_python//python:defs.bzl", "PyInfo")
+load("@${rulesetName}//python:defs.bzl", "PyInfo")
 PyInfo_Secondary = None
 
 #elseif( $rulesetName != "" )
 # Non-Bazel 8+ workspace that has rules_python present: Support both builtin and rules_python providers.
-load("@rules_python//python:defs.bzl", PyInfo_Secondary = "PyInfo")
+load("@${rulesetName}//python:defs.bzl", PyInfo_Secondary = "PyInfo")
 
 #else
 # Use only builtin providers.
 PyInfo_Secondary = None
 #end
 
-PYTHON_TOOLCHAIN_TYPE = "@rules_python//python:toolchain_type"
+#if( $rulesetName != "" )
+PYTHON_TOOLCHAIN_TYPE = "@${rulesetName}//python:toolchain_type"
+#else
+PYTHON_TOOLCHAIN_TYPE = None
+#end
+
 CODE_GENERATOR_RULE_NAMES = ${codeGeneratorRules}
 
 def py_info_in_target(target):
