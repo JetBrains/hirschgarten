@@ -31,6 +31,8 @@ def map_with_resolve_files(f, xs):
 def get_interface_jars(output):
     if hasattr(output, "compile_jar") and output.compile_jar:
         return [output.compile_jar]
+    elif hasattr(output, "ijar") and output.ijar: # Kotlin rules don't use compile_jar field
+        return [output.ijar]
     else:
         return []
 
