@@ -223,7 +223,7 @@
     />
     <projectSyncHook
       id="IndexAdditionalFilesSyncHook"
-      implementation="org.jetbrains.bazel.flow.sync.IndexAdditionalFilesSyncHook"
+      implementation="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesSyncHook"
       order="after DirectoriesSyncHook"
     />
 
