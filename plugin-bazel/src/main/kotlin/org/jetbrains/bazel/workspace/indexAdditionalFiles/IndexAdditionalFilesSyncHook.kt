@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.flow.sync
+package org.jetbrains.bazel.workspace.indexAdditionalFiles
 
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
@@ -63,7 +63,8 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
     if (workspaceContext.indexAllFilesInDirectories.value) {
       return emptyList()
     }
-    val acceptedNames = workspaceContext.indexAdditionalFilesInDirectoriesSpec.values.toSet() + INDEX_ADDITIONAL_FILES_DEFAULT
+    val indexAdditionalFilesGlob =
+      ProjectViewGlobSet(workspaceContext.indexAdditionalFilesInDirectoriesSpec.values + INDEX_ADDITIONAL_FILES_DEFAULT)
 
     val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNull { it.virtualFile }
     val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNull { it.virtualFile }.toSet()
@@ -88,6 +89,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
     val visited = mutableSetOf<VirtualFile>()
 
     val indexAdditionalFiles = mutableSetOf<VirtualFile>()
+    val rootDir = environment.project.rootDir
 
     for (includedRoot in includedRootsToIterate) {
       VfsUtilCore.visitChildrenRecursively(
@@ -97,8 +99,8 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
             if (file in excludedRoots || file in contentRoots) return SKIP_CHILDREN
             if (!visited.add(file)) return SKIP_CHILDREN
             if (file.isDirectory) return CONTINUE
-            // TODO: use https://github.com/bazelbuild/intellij/blob/36a45506024a44472bde002171d51dda473ea68e/base/src/com/google/idea/blaze/base/projectview/section/Glob.java#L89C17-L89C39
-            if (file.name in acceptedNames || "*.${file.extension.orEmpty()}" in acceptedNames) {
+            val relativePath = VfsUtilCore.getRelativePath(file, rootDir)
+            if (relativePath != null && indexAdditionalFilesGlob.matches(relativePath)) {
               indexAdditionalFiles.add(file)
             }
             return CONTINUE
