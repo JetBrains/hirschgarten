@@ -68,6 +68,8 @@ private class BazelProjectStoreDescriptor(
     }
   }
 
+  override fun testStoreDirectoryExistsForProjectRoot() = Files.isRegularFile(projectIdentityFile)
+
   override fun customMacros(): Map<String, Path> {
     val rootDotIdea = historicalProjectBasePath.resolve(Project.DIRECTORY_STORE_FOLDER)
     if (Files.notExists(rootDotIdea)) {
