@@ -14,6 +14,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
 class ScalaLanguagePlugin(
@@ -63,4 +64,7 @@ class ScalaLanguagePlugin(
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
 
   override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source, true)
+
+  override fun transformSources(sources: List<SourceItem>): List<SourceItem> = javaLanguagePlugin.transformSources(sources)
+
 }

@@ -30,6 +30,8 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
+import org.jetbrains.bazel.sync.workspace.languages.java.JavaSourceRootPackageInference
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
@@ -85,7 +87,7 @@ class AspectBazelProjectMapper(
       target = this,
       extraLibraries = extraLibraries[label] ?: emptyList(),
       tags = tags,
-      sources = resolveSourceSet(this, languagePlugin),
+      sources = resolveSourceSet(this, languagePlugin).toList(),
       languages = languages,
     )
   }
@@ -229,6 +231,9 @@ class AspectBazelProjectMapper(
           .filter { it.kind.isExecutable }
       }
 
+    println("CALL_COUNT: ${JVMLanguagePluginParser.callCount}")
+    //println("SOURCE_COUNT: ${JavaSourceRootPackageInference.sourceFiles}")
+
     return BazelResolvedWorkspace(
       targets =
         BuildTargetCollection().apply {
@@ -275,7 +280,7 @@ class AspectBazelProjectMapper(
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
           targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
-      )
+        )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -760,9 +765,9 @@ class AspectBazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-            )
-        )
-    ) ||
+              )
+          )
+      ) ||
       featureFlags.isGoSupportEnabled &&
       target.hasGoTargetInfo() &&
       hasKnownGoSources(target) ||
@@ -847,7 +852,7 @@ class AspectBazelProjectMapper(
         targetData.sources to emptyList()
       }
 
-    val context = LanguagePluginContext(target, dependencyGraph, repoMapping)
+    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetSources)
     val data = languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(
@@ -855,7 +860,7 @@ class AspectBazelProjectMapper(
       tags = tags.mapNotNull(BspMappings::toBspTag),
       dependencies = directDependencies,
       kind = inferKind(tags, target.kind, targetData.languages),
-      sources = targetSources,
+      sources = languagePlugin.transformSources(targetSources),
       resources = resources,
       baseDirectory = baseDirectory,
       noBuild = Tag.NO_BUILD in tags,
@@ -910,7 +915,7 @@ class AspectBazelProjectMapper(
       }
     }
 
-  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
+  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Sequence<SourceItem> {
     val sources =
       target.sourcesList
         .asSequence()
@@ -927,13 +932,7 @@ class AspectBazelProjectMapper(
     return (sources + extraSources + generatedSources)
       .distinct()
       .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-      .map {
-        SourceItem(
-          path = it,
-          generated = false,
-          jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
-        )
-      }.toList()
+      .map { SourceItem(path = it, generated = false) }
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {

@@ -11,6 +11,7 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
 class JavaLanguagePlugin(
@@ -20,6 +21,7 @@ class JavaLanguagePlugin(
   private val environmentProvider: EnvironmentProvider = EnvironmentProvider.getInstance(),
 ) : LanguagePlugin<JvmBuildTarget>,
   JVMPackagePrefixResolver {
+    private val packageInference = JavaSourceRootPackageInference(packageResolver)
   private var jdk: Jdk? = null
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
@@ -49,6 +51,11 @@ class JavaLanguagePlugin(
       jvmArgs = jvmTarget.jvmFlagsList,
       programArgs = jvmTarget.argsList,
     )
+  }
+
+  override fun transformSources(sources: List<SourceItem>): List<SourceItem> {
+    packageInference.inferPackages(sources)
+    return sources
   }
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.JAVA)

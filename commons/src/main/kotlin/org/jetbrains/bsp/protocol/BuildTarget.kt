@@ -83,7 +83,7 @@ data class JvmBuildTarget(
   val environmentVariables: Map<String, String> = mapOf(),
   val mainClass: String? = null,
   val jvmArgs: List<String> = listOf(),
-  val programArgs: List<String> = listOf(),
+  val programArgs: List<String> = listOf()
 ) : BuildTargetData
 
 @ClassDiscriminator(5)
