@@ -1,5 +1,6 @@
 load("@aspect_rules_js//js:defs.bzl", "js_library")
 load("@aspect_rules_lint//format:defs.bzl", "format_multirun")
+load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@npm//:prettier/package_json.bzl", prettier = "bin")
 load("@rules_java//java:defs.bzl", "java_binary")
 
@@ -30,7 +31,10 @@ java_binary(
 
 java_binary(
     name = "ktfmt",
-    args = ["--format"],
+    args = [
+        "--format",
+        "--baseline=ktlint-baseline.xml",
+    ],
     main_class = "com.pinterest.ktlint.Main",
     runtime_deps = ["@ktlint//jar"],
 )
@@ -64,3 +68,5 @@ js_library(
         "//:node_modules/@prettier/plugin-xml",
     ],
 )
+
+npm_link_all_packages(name = "node_modules")
