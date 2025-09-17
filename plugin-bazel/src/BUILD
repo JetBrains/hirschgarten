@@ -162,6 +162,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/ideStarter",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/indexAdditionalFiles",
         "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
     ],
 )
