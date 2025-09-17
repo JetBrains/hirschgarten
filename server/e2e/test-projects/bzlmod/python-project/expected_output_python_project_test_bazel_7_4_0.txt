@@ -129,6 +129,13 @@ java_runtime_info {
   }
 }
 python_target_info {
+  interpreter {
+    relative_path: "bin/python3"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/rules_python~~python~python"
+  }
+  version: "PY3"
 }
 )
 RawAspectTarget(target=id: "@//test:test"
