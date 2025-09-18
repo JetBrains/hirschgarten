@@ -14,6 +14,7 @@ import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
@@ -106,7 +107,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
   override val isStrongProjectInfoHolder: Boolean
-    get() = true
+    get() = BazelFeatureFlags.autoOpenProjectIfPresent
 
   /**
    * The project is only eligible to be opened with Bazel Plugin if workspace files can be reached from the given vFile
