@@ -98,7 +98,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/coverage",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/junit",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/startup",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/sync/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ui/gutters",
