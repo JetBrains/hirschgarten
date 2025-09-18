@@ -4,6 +4,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.ProtobufBuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 
@@ -17,7 +18,10 @@ fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? = extractData(targ
 
 fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? = extractData(target)
 
+fun extractProtobufBuildTarget(target: BuildTarget): ProtobufBuildTarget? = extractData(target)
+
 fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
   extractData(target)
     ?: extractKotlinBuildTarget(target)?.jvmBuildTarget
     ?: extractScalaBuildTarget(target)?.jvmBuildTarget
+    ?: extractProtobufBuildTarget(target)?.jvmBuildTarget

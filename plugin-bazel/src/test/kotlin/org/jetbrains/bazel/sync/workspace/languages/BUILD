@@ -1,3 +1,4 @@
+load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 load("@//rules/testing:junit5.bzl", "kt_junit5_test")
 
 kt_junit5_test(
