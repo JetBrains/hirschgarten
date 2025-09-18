@@ -14,6 +14,7 @@ import com.intellij.platform.searchEverywhere.SeParams
 import com.intellij.platform.searchEverywhere.SeSimpleItemPresentation
 import com.intellij.platform.searchEverywhere.providers.AsyncProcessor
 import com.intellij.platform.searchEverywhere.providers.SeAsyncContributorWrapper
+import com.intellij.platform.searchEverywhere.providers.SeWrappedLegacyContributorItemsProvider
 import com.intellij.platform.searchEverywhere.providers.getExtendedInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -43,8 +44,8 @@ class SeLabelItem(
 }
 
 @ApiStatus.Internal
-class SeLabelProvider(private val contributorWrapper: SeAsyncContributorWrapper<Any>) : SeItemsProvider {
-  private val contributor = contributorWrapper.contributor
+class SeLabelProvider(private val contributorWrapper: SeAsyncContributorWrapper<Any>) : SeWrappedLegacyContributorItemsProvider() {
+  override val contributor: SearchEverywhereContributor<Any> = contributorWrapper.contributor
   override val id: String get() = SE_LABEL_PROVIDER_ID
   override val displayName: String
     get() = contributor.fullGroupName
