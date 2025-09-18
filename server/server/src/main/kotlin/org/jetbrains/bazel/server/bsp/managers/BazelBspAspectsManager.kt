@@ -109,10 +109,13 @@ class BazelBspAspectsManager(
 
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
       val templateFilePath = it.toAspectTemplateRelativePath()
+      val canonicalRuleName = ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty()
+      val apparentRuleName = ruleLanguage?.rulesetName.orEmpty()
+      val protobufRepoName = ProtobufRepoMappings(repoMapping).getMappedProtobufRepoName(canonicalRuleName, apparentRuleName)
       val variableMap =
         mapOf(
-          "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty(),
-          "rulesetNameApparent" to ruleLanguage?.rulesetName.orEmpty(),
+          "rulesetName" to canonicalRuleName,
+          "rulesetNameApparent" to apparentRuleName,
           "kotlinEnabled" to kotlinEnabled.toString(),
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
@@ -121,6 +124,7 @@ class BazelBspAspectsManager(
           "bazel8OrAbove" to bazel8OrAbove.toString(),
           "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
           "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.values.toStarlarkString(),
+          "protobufRepoName" to protobufRepoName.orEmpty(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }

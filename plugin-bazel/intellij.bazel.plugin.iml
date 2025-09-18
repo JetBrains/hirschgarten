@@ -114,6 +114,7 @@
     <orderEntry type="module" module-name="intellij.platform.coverage.agent" />
     <orderEntry type="module" module-name="intellij.junit" />
     <orderEntry type="module" module-name="intellij.platform.util.coroutines" />
+    <orderEntry type="module" module-name="intellij.protoeditor.core" />
     <orderEntry type="library" name="mvstore" level="project" />
     <orderEntry type="library" name="hash4j" level="project" />
     <orderEntry type="module" module-name="kotlin.project-wizard.idea" />

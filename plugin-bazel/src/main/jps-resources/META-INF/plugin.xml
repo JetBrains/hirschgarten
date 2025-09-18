@@ -67,6 +67,10 @@
     config-file="withTerminal.xml"
     optional="true"
   >org.jetbrains.plugins.terminal</depends>
+  <depends
+    config-file="withProtobuf.xml"
+    optional="true"
+  >idea.plugin.protoeditor</depends>
 
   <extensionPoints>
     <extensionPoint
