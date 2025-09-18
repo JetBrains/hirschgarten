@@ -68,6 +68,11 @@ private class BazelProjectStoreDescriptor(
     }
   }
 
+  override fun removeProjectConfigurationAndCaches() {
+    super.removeProjectConfigurationAndCaches()
+    Files.deleteIfExists(workspaceXml)
+  }
+
   override fun testStoreDirectoryExistsForProjectRoot() = Files.isRegularFile(projectIdentityFile)
 
   override fun customMacros(): Map<String, Path> {
