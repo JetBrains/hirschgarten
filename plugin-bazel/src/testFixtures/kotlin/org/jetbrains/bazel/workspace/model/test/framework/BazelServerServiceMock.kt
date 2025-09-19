@@ -1,77 +1,41 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
-import org.jetbrains.bazel.commons.RepoMappingDisabled
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
-import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
-import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
-import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DeriveInstrumentationFilterFromTargetsSpec
-import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
-import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
-import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
-import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
-import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
-import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
-import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
-import org.jetbrains.bazel.workspacecontext.IndexAdditionalFilesInDirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
-import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
-import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
-import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
-import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BazelProject
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import kotlin.io.path.Path
 
-private val mockWorkspaceContext =
+val mockWorkspaceContext =
   WorkspaceContext(
-    targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
-    directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
-    buildFlags = BuildFlagsSpec(emptyList()),
-    syncFlags = SyncFlagsSpec(emptyList()),
-    bazelBinary = BazelBinarySpec(Path("bazel")),
-    allowManualTargetsSync = AllowManualTargetsSyncSpec(true),
-    dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
-    importDepth = ImportDepthSpec(-1),
-    enabledRules = EnabledRulesSpec(emptyList()),
-    ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
-    shardSync = ShardSyncSpec(false),
-    targetShardSize = TargetShardSizeSpec(1000),
-    shardingApproachSpec = ShardingApproachSpec(null),
-    importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
-    gazelleTarget = GazelleTargetSpec(null),
-    indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
-    pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
-    importIjarsSpec = ImportIjarsSpec(false),
-    debugFlags = DebugFlagsSpec(emptyList()),
-    deriveInstrumentationFilterFromTargets = DeriveInstrumentationFilterFromTargetsSpec(true),
-    indexAdditionalFilesInDirectoriesSpec = IndexAdditionalFilesInDirectoriesSpec(emptyList()),
+    targets = listOf(ExcludableValue.included(Label.parse("//..."))),
+    directories = listOf(ExcludableValue.included(Path("."))),
+    buildFlags = emptyList(),
+    syncFlags = emptyList(),
+    debugFlags = emptyList(),
+    bazelBinary = Path("bazel"),
+    allowManualTargetsSync = true,
+    dotBazelBspDirPath = Path(".bazelbsp"),
+    importDepth = -1,
+    enabledRules = emptyList(),
+    ideJavaHomeOverride = Path("java_home"),
+    shardSync = false,
+    targetShardSize = 1000,
+    shardingApproach = null,
+    importRunConfigurations = emptyList(),
+    gazelleTarget = null,
+    indexAllFilesInDirectories = false,
+    pythonCodeGeneratorRuleNames = emptyList(),
+    importIjars = false,
+    deriveInstrumentationFilterFromTargets = true,
+    indexAdditionalFilesInDirectories = emptyList(),
   )
 
-private val mockBuildServer =
-  BuildServerMock(
-    bazelProject = BazelProject(emptyMap(), false),
-    workspaceBuildTargetsResult = WorkspaceBuildTargetsResult(emptyMap(), emptySet(), false),
-    workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
-    workspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(RepoMappingDisabled),
-    workspaceContextResult = mockWorkspaceContext,
-  )
-
-private class BazelServerConnectionMock : BazelServerConnection {
-  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T = task(mockBuildServer)
-}
-
-class BazelServerServiceMock : BazelServerService {
-  override val connection: BazelServerConnection = BazelServerConnectionMock()
+class MockBuildServerService(server: JoinedBuildServer) : BazelServerService {
+  override val connection: BazelServerConnection =
+    object : BazelServerConnection {
+      override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T = task(server)
+    }
 }

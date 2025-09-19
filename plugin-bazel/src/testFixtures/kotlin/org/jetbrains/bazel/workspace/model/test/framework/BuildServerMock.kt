@@ -3,6 +3,8 @@ package org.jetbrains.bazel.workspace.model.test.framework
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.orLatestSupported
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -39,11 +41,34 @@ open class BuildServerMock(
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
   private val testResult: TestResult? = null,
-  private val workspaceDirectoriesResult: WorkspaceDirectoriesResult? = null,
+  private val workspaceDirectoriesResult: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(listOf(), listOf()),
   private val analysisDebugResult: AnalysisDebugResult? = null,
   private val runResultWithDebug: RunResult? = null,
-  private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
-  private val workspaceContextResult: WorkspaceContext? = null,
+  private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = WorkspaceBazelRepoMappingResult(RepoMappingDisabled),
+  private val workspaceContextResult: WorkspaceContext? =
+    WorkspaceContext(
+      targets = listOf(ExcludableValue.included(Label.parse("//..."))),
+      directories = listOf(ExcludableValue.included(Path("."))),
+      buildFlags = emptyList(),
+      syncFlags = emptyList(),
+      debugFlags = emptyList(),
+      bazelBinary = Path("bazel"),
+      allowManualTargetsSync = true,
+      dotBazelBspDirPath = Path(".bazelbsp"),
+      importDepth = -1,
+      enabledRules = emptyList(),
+      ideJavaHomeOverride = Path("java_home"),
+      shardSync = false,
+      targetShardSize = 1000,
+      shardingApproach = null,
+      importRunConfigurations = emptyList(),
+      gazelleTarget = null,
+      indexAllFilesInDirectories = false,
+      pythonCodeGeneratorRuleNames = emptyList(),
+      importIjars = false,
+      deriveInstrumentationFilterFromTargets = true,
+      indexAdditionalFilesInDirectories = emptyList(),
+    ),
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val workspacePhasedBuildTargetsResult: WorkspacePhasedBuildTargetsResult? = null,
   private val jvmClasspathResult: BspJvmClasspath? = null,
