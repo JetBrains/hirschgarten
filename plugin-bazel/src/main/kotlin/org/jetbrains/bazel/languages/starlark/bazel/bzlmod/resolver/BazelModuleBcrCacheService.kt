@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.bazel.modules.resolver
+package org.jetbrains.bazel.languages.starlark.bazel.bzlmod.resolver
 
 import com.github.benmanes.caffeine.cache.AsyncCache
 import com.github.benmanes.caffeine.cache.Caffeine
@@ -14,12 +14,9 @@ import com.intellij.util.xmlb.annotations.XMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.future.future
+import java.util.concurrent.CompletableFuture
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.toJavaDuration
 
 @State(name = "BazelBcrCache", storages = [Storage("bazelModuleRegistryCache.xml")])
 @Service(Service.Level.PROJECT)
@@ -47,24 +44,24 @@ class BazelModuleBcrCacheService(private val coroutineScope: CoroutineScope) :
       .newBuilder()
       .expireAfter(
         object : Expiry<String, CachedValue> {
-          private fun getDuration(value: CachedValue): Duration =
+          private fun getDuration(value: CachedValue): Long =
             when (value) {
-              is CachedValue.Found -> (value.lastUpdated.milliseconds + CACHE_EVICTION_TIME) - System.currentTimeMillis().milliseconds
-              is CachedValue.Unavailable -> Duration.ZERO
-            }
+              is CachedValue.Found -> (value.lastUpdated + CACHE_EVICTION_TIME) - System.nanoTime()
+              is CachedValue.Unavailable -> 0.0
+            } as Long
 
           override fun expireAfterCreate(
             key: String,
             value: CachedValue,
             currentTime: Long,
-          ): Long = getDuration(value).toJavaDuration().toNanos()
+          ): Long = getDuration(value)
 
           override fun expireAfterUpdate(
             key: String,
             value: CachedValue,
             currentTime: Long,
             currentDuration: Long,
-          ): Long = getDuration(value).toJavaDuration().toNanos()
+          ): Long = getDuration(value)
 
           override fun expireAfterRead(
             key: String,
@@ -100,27 +97,34 @@ class BazelModuleBcrCacheService(private val coroutineScope: CoroutineScope) :
     cache.synchronous().putAll(newMap)
   }
 
-  suspend fun getCachedData(key: String, supplier: suspend () -> List<String>?): List<String> {
-    val cached =
-      cache
-        .get(key) { _, _ ->
-          coroutineScope.future {
-            supplier()?.let { CachedValue.Found(it, System.currentTimeMillis()) } ?: CachedValue.Unavailable
-          }
-        }.asDeferred()
-        .await()
-    return (cached as? CachedValue.Found)?.values ?: emptyList()
+  /**
+   * Returns cached values if present.
+   * Otherwise, schedules a single asynchronous load per key and awaits it (no thread blocking).
+   */
+  suspend fun getOrFetch(key: String, supplier: suspend () -> List<String>?): List<String> {
+    val cached = cache.synchronous().getIfPresent(key)
+    if (cached is CachedValue.Found) return cached.values
+
+    val fetched = cache.get(key) { _, _ -> loadAsync(supplier) }.asDeferred().await()
+    return (fetched as? CachedValue.Found)?.values ?: emptyList()
   }
+
+  /**
+   * Asynchronous cache loader - bridges a suspend supplier into the CompletableFuture model
+   * required by Caffeine.
+   */
+  private fun loadAsync(supplier: suspend () -> List<String>?): CompletableFuture<CachedValue> =
+    coroutineScope.future {
+      supplier()?.let { CachedValue.Found(it, System.nanoTime()) }
+        ?: CachedValue.Unavailable
+    }
 
   fun invalidate(key: String) {
     cache.synchronous().invalidate(key)
   }
 
-  fun invalidateAll() {
-    cache.synchronous().invalidateAll()
-  }
-
   companion object {
-    private val CACHE_EVICTION_TIME = 12.hours
+    // 12h in nanoseconds
+    private const val CACHE_EVICTION_TIME = 12L * 60 * 60 * 1_000_000_000
   }
 }

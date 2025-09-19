@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.bazel.modules
+package org.jetbrains.bazel.languages.starlark.bazel.bzlmod
 
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.components.PersistentStateComponent
@@ -39,11 +39,6 @@ class BazelModuleRegistryService(private val project: Project) : PersistentState
   suspend fun refreshModuleNames() {
     findResolver()?.refreshModuleNames(project)
   }
-
-  fun getCachedModuleNames(): List<String> = findResolver()?.getCachedModuleNames(project) ?: emptyList()
-
-  fun getCachedModuleVersions(moduleName: String): List<String> =
-    findResolver()?.getCachedModuleVersions(project, moduleName) ?: emptyList()
 
   override fun getState(): State = State().also { it.resolverId = resolverId }
 

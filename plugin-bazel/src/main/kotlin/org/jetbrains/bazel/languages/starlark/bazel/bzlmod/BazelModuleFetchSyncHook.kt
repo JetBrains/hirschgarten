@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.bazel.modules
+package org.jetbrains.bazel.languages.starlark.bazel.bzlmod
 
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 
