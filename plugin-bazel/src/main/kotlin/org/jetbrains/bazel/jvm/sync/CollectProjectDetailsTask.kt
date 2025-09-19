@@ -267,7 +267,7 @@ class CollectProjectDetailsTask(
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
+              importIjars = projectDetails.workspaceContext?.importIjars ?: false,
             )
 
           workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)

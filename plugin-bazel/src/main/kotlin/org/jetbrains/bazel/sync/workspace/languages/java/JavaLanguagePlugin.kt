@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.java
 
+import com.intellij.util.EnvironmentUtil
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -17,13 +17,12 @@ class JavaLanguagePlugin(
   private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
   private val packageResolver: JvmPackageResolver,
-  private val environmentProvider: EnvironmentProvider = EnvironmentProvider.getInstance(),
 ) : LanguagePlugin<JvmBuildTarget>,
   JVMPackagePrefixResolver {
   private var jdk: Jdk? = null
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
-    val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverrideSpec.value
+    val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
     jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
   }
 
@@ -38,7 +37,7 @@ class JavaLanguagePlugin(
     val jdk = jdk ?: return null
     val javaHome = jdk.javaHome ?: return null
     val environmentVariables =
-      context.target.envMap + context.target.envInheritList.associateWith { environmentProvider.getValue(it) ?: "" }
+      context.target.envMap + context.target.envInheritList.associateWith { EnvironmentUtil.getValue(it) ?: "" }
     return JvmBuildTarget(
       javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: jdk.version,
       javaHome = javaHome,

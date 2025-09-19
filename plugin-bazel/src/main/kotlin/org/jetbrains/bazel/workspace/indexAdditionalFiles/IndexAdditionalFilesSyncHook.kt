@@ -60,11 +60,12 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
       query("workspace/context") {
         environment.server.workspaceContext()
       }
-    if (workspaceContext.indexAllFilesInDirectories.value) {
+    if (workspaceContext.indexAllFilesInDirectories) {
       return emptyList()
     }
+    val acceptedNames = workspaceContext.indexAdditionalFilesInDirectories.toSet() + INDEX_ADDITIONAL_FILES_DEFAULT
     val indexAdditionalFilesGlob =
-      ProjectViewGlobSet(workspaceContext.indexAdditionalFilesInDirectoriesSpec.values + INDEX_ADDITIONAL_FILES_DEFAULT)
+      ProjectViewGlobSet(workspaceContext.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT)
 
     val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNull { it.virtualFile }
     val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNull { it.virtualFile }.toSet()

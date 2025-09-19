@@ -112,7 +112,7 @@ class AspectBazelProjectMapper(
         val nonGoTargetsAtDepth =
           dependencyGraph
             .allTargetsAtDepth(
-              workspaceContext.importDepth.value,
+              workspaceContext.importDepth,
               nonGoTargetLabels.toSet(),
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
               targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },

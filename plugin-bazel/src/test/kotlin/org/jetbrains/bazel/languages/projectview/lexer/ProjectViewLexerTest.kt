@@ -58,7 +58,7 @@ class ProjectViewLexerTest : LexerTestCase() {
         "ProjectView:whitespace",
         "ProjectView:identifier",
         "ProjectView:newline",
-        "ProjectView:import_keyword",
+        "ProjectView:try_import_keyword",
         "ProjectView:whitespace",
         "ProjectView:identifier",
       )
