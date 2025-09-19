@@ -11,7 +11,6 @@ import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.commons.BidirectionalMap
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -50,7 +49,6 @@ class BazelStartupActivity : BazelProjectActivity() {
     }
     ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
     TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
     BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
     SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
     FileUtil.provideFileUtil(FileUtilIntellij)

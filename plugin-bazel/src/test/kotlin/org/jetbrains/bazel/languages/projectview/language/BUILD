@@ -17,3 +17,12 @@ kt_intellij_junit4_test(
         "//plugin-bazel",
     ],
 )
+
+kt_intellij_junit4_test(
+    name = "ProjectViewTryImportTest",
+    src = "ProjectViewTryImportTest.kt",
+    tags = ["exclusive"],
+    deps = [
+        "//plugin-bazel",
+    ],
+)
