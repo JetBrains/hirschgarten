@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.bazel.modules
+package org.jetbrains.bazel.languages.starlark.bazel.bzlmod
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
@@ -15,13 +15,7 @@ interface BazelModuleResolver {
 
   suspend fun refreshModuleNames(project: Project)
 
-  fun clearCache(project: Project)
-
-  fun getCachedModuleNames(project: Project): List<String>
-
-  fun getCachedModuleVersions(project: Project, moduleName: String): List<String>
-
   companion object {
-    val EP_NAME: ExtensionPointName<BazelModuleResolver> = ExtensionPointName.create("org.jetbrains.bazel.bazelModuleResolver")
+    val EP_NAME: ExtensionPointName<BazelModuleResolver> = ExtensionPointName.create("org.jetbrains.bazel.bzlmodResolver")
   }
 }

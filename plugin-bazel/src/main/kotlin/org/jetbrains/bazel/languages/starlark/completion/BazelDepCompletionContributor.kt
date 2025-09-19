@@ -1,26 +1,17 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.codeInsight.completion.CodeCompletionHandlerBase
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.codeInsight.hint.HintManager
-import com.intellij.openapi.application.EDT
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.patterns.PsiJavaPatterns.psiElement
-import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.psi.util.parentOfType
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
-import org.jetbrains.bazel.languages.starlark.bazel.modules.BazelModuleRegistryService
+import org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleRegistryService
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
@@ -50,53 +41,28 @@ class BazelDepCompletionProvider : CompletionProvider<CompletionParameters>() {
 
     val project = parameters.editor.project ?: return
     val registryService = BazelModuleRegistryService.getInstance(project)
+    result.restartCompletionWhenNothingMatches()
 
     val argumentName = getArgumentName(stringLiteral, callExpression) ?: return
-    when (argumentName) {
-      "name" -> {
-        val cachedNames = registryService.getCachedModuleNames()
-        if (cachedNames.isNotEmpty()) {
-          result.addAllElements(
-            cachedNames.map { name: String ->
-              getCompletionLookupElemenent(name, PlatformIcons.PACKAGE_ICON, 1.0)
-            },
-          )
-        } else {
-          BazelCoroutineService.getInstance(project).start {
-            withBackgroundProgress(project, StarlarkBundle.message("progress.bcr"), true) {
-              registryService.getModuleNames()
-            }
-            invokeCompletion(project, parameters.editor)
-          }
-        }
-      }
-      "version" -> {
-        val moduleName = getModuleName(callExpression) ?: return
-        val cachedVersions = registryService.getCachedModuleVersions(moduleName)
-        if (cachedVersions.isNotEmpty()) {
-          result.addAllElements(
-            cachedVersions.mapIndexed { index, version ->
-              getCompletionLookupElemenent(version, PlatformIcons.PROPERTY_ICON, (-index).toDouble())
-            },
-          )
-        } else {
-          BazelCoroutineService.getInstance(project).start {
-            withBackgroundProgress(project, StarlarkBundle.message("progress.bcr"), true) {
-              registryService.getModuleVersions(moduleName)
-            }
-            invokeCompletion(project, parameters.editor)
-          }
-        }
-      }
-    }
-  }
 
-  private suspend fun invokeCompletion(project: Project, editor: Editor) {
-    withContext(Dispatchers.EDT) {
-      HintManager.getInstance().hideAllHints()
-      if (project.isDisposed || editor.isDisposed) return@withContext
-      CodeCompletionHandlerBase(CompletionType.BASIC, true, false, true)
-        .invokeCompletion(project, editor)
+    runBlockingCancellable {
+      when (argumentName) {
+        "name" -> {
+          val names = registryService.getModuleNames()
+          names.forEach { name ->
+            result.addElement(getCompletionLookupElemenent(name, PlatformIcons.PACKAGE_ICON, 1.0))
+          }
+        }
+        "version" -> {
+          val moduleName = getModuleName(callExpression) ?: return@runBlockingCancellable
+          val versions = registryService.getModuleVersions(moduleName)
+          result.addAllElements(
+            versions.mapIndexed { index, v ->
+              getCompletionLookupElemenent(v, PlatformIcons.PROPERTY_ICON, (-index).toDouble())
+            },
+          )
+        }
+      }
     }
   }
 

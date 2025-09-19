@@ -7,7 +7,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.languages.starlark.bazel.modules.BazelModuleResolver
+import org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,6 +18,7 @@ class BazelDepModuleCompletionTest : BasePlatformTestCase() {
   @Before
   fun beforeEach() {
     project.isBazelProject = true
+    ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), testRootDisposable)
   }
 
   private val provider =
@@ -25,25 +26,21 @@ class BazelDepModuleCompletionTest : BasePlatformTestCase() {
       override val id = "test_id"
       override val name = "test_name"
 
-      override suspend fun getModuleNames(project: Project): List<String> = emptyList()
+      override suspend fun getModuleNames(project: Project): List<String> = listOf("module_name")
 
-      override fun getCachedModuleNames(project: Project): List<String> = listOf("module_name")
-
-      override suspend fun getModuleVersions(project: Project, moduleName: String): List<String> = emptyList()
-
-      override fun getCachedModuleVersions(project: Project, moduleName: String): List<String> =
-        if (moduleName == "module_name") listOf("1.0.0", "0.1.0")
-        else emptyList()
+      override suspend fun getModuleVersions(project: Project, moduleName: String): List<String> {
+        if (moduleName == "module_name") {
+          return listOf("1.0.0", "0.1.0")
+        } else {
+          return emptyList()
+        }
+      }
 
       override suspend fun refreshModuleNames(project: Project) {}
-
-      override fun clearCache(project: Project) {}
     }
 
   @Test
   fun `should suggest module name in bazel_dep name attribute`() {
-    ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), testRootDisposable)
-
     myFixture.configureByText(
       "BUILD",
       """
@@ -60,8 +57,6 @@ class BazelDepModuleCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should suggest module versions in bazel_dep version attribute`() {
-    ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), testRootDisposable)
-
     myFixture.configureByText(
       "BUILD",
       """
@@ -79,8 +74,6 @@ class BazelDepModuleCompletionTest : BasePlatformTestCase() {
 
   @Test
   fun `should not suggest any version in bazel_dep version attribute if module name is incorrect`() {
-    ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), testRootDisposable)
-
     myFixture.configureByText(
       "BUILD",
       """
