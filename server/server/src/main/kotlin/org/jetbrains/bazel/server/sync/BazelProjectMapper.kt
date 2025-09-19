@@ -974,7 +974,8 @@ class BazelProjectMapper(
     val resolvedDependencies = resolveDirectDependencies(target)
     // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
     val (extraLibraries, lowPriorityExtraLibraries) = extraLibraries.partition { !it.isLowPriority }
-    val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
+    val shardFolkDependencies = resolveShardFolkDependencies(target, dependencyGraph)
+    val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + shardFolkDependencies + lowPriorityExtraLibraries.map { it.label }
     val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
     val tags = targetTagsResolver.resolveTags(target, workspaceContext)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
@@ -1001,6 +1002,24 @@ class BazelProjectMapper(
   }
 
   private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
+
+  private fun resolveShardFolkDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<Label> {
+    if (!target.tagsList.contains("shard")) return emptyList()
+    val umbrellaTargets = dependencyGraph
+      .getSourcesFromReverseDependencies(target.label())
+      .filter{ it.tagsList.contains("umbrella") }
+    return umbrellaTargets
+      .flatMap { umbrellaTarget ->
+        // Include sources from umbrella targets that depend on this shard
+        umbrellaTarget.dependenciesList.mapNotNull { dependency ->
+          dependencyGraph.getTargetInfo(dependency.label())
+        }
+          .filter { dependencyTargetInfo ->
+            dependencyTargetInfo.tagsList.contains("shard")
+          }
+          .map { it.label() }
+      }
+  }
 
   // TODO: this is a re-creation of `Language.allOfKind`. To be removed when this logic is merged with client-side
   private val languagesFromKinds: Map<String, Set<LanguageClass>> =

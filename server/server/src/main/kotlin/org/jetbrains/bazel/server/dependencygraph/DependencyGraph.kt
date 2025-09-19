@@ -30,6 +30,20 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
 
   fun getReverseDependencies(id: Label): Set<Label> = idToReverseDependenciesIds[id].orEmpty()
 
+  /**
+   * Gets source files from reverse dependencies (umbrella targets) that contain Java/Kotlin sources.
+   * This is useful for sharded libraries where each shard needs to see sources from umbrella targets
+   * that depend on all shards.
+   */
+  fun getSourcesFromReverseDependencies(targetId: Label): Set<TargetInfo> {
+    return getReverseDependencies(targetId)
+      .mapNotNull { reverseDep -> idToTargetInfo[reverseDep] }
+      .filter { it.hasJvmTargetInfo() }
+      .toSet()
+  }
+
+  fun getTargetInfo(targetId: Label): TargetInfo? = idToTargetInfo[targetId]
+
   private fun createIdToLazyTransitiveDependenciesMap(idToTargetInfo: Map<Label, TargetInfo>): Map<Label, Lazy<Set<TargetInfo>>> =
     idToTargetInfo.mapValues { (_, targetInfo) ->
       calculateLazyTransitiveDependenciesForTarget(targetInfo)
