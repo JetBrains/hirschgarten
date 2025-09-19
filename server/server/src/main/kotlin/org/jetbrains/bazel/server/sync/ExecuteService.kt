@@ -184,6 +184,9 @@ class ExecuteService(
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
+    // Ensure streamed test output for live UI in IDE
+    ensureTestOutputStreamed(command)
+
     params.testFilter?.let { testFilter ->
       command.options.add(BazelFlag.testFilter(testFilter))
     }
@@ -233,6 +236,22 @@ class ExecuteService(
       bazelRunner
         .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
         .waitAndGetResult(true)
+    }
+  }
+
+  private fun ensureTestOutputStreamed(command: org.jetbrains.bazel.bazelrunner.BazelCommand) {
+    val flagPrefix = "--test_output"
+    val hasInOptions = command.options.any { it.startsWith(flagPrefix) }
+    var added = false
+    if (command is HasAdditionalBazelOptions) {
+      val hasInAdditional = command.additionalBazelOptions.any { it.startsWith(flagPrefix) }
+      if (!hasInAdditional) {
+        command.additionalBazelOptions.add(BazelFlag.testOutputStreamed())
+        added = true
+      }
+    }
+    if (!added && !hasInOptions) {
+      command.options.add(BazelFlag.testOutputStreamed())
     }
   }
 }

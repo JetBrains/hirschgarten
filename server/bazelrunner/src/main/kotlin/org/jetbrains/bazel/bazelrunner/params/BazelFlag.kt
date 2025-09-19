@@ -42,6 +42,8 @@ object BazelFlag {
 
   @JvmStatic fun testOutputAll(): String = arg("test_output", "all")
 
+  @JvmStatic fun testOutputStreamed(): String = arg("test_output", "streamed")
+
   @JvmStatic fun device(device: String): String = arg("device", device)
 
   @JvmStatic fun start(startType: String): String = arg("start", startType)
