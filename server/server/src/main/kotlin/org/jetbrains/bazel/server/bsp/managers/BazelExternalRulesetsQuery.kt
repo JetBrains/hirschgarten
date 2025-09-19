@@ -12,7 +12,6 @@ import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.utils.readXML
 import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
-import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
@@ -27,9 +26,9 @@ interface BazelExternalRulesetsQuery {
   suspend fun fetchExternalRulesetNames(): List<String>
 }
 
-class BazelEnabledRulesetsQueryImpl(private val enabledRulesSpec: EnabledRulesSpec) : BazelExternalRulesetsQuery {
+class BazelEnabledRulesetsQueryImpl(private val enabledRules: List<String>) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> {
-    val specifiedRules = enabledRulesSpec.values
+    val specifiedRules = enabledRules
     val neededTransitiveRules = specifiedRules.mapNotNull { rootRulesToNeededTransitiveRules[it] }.flatten()
 
     return (specifiedRules + neededTransitiveRules).distinct()

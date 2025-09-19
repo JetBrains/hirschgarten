@@ -36,7 +36,7 @@ class BazelRunner(
   }
 
   inner class CommandBuilder(workspaceContext: WorkspaceContext) {
-    private val bazelBinary = workspaceContext.bazelBinary.value.pathString
+    private val bazelBinary = workspaceContext.bazelBinary?.pathString ?: "bazel"
     var inheritWorkspaceOptions = false
 
     fun clean(builder: BazelCommand.Clean.() -> Unit = {}) = BazelCommand.Clean(bazelBinary).apply { builder() }
@@ -107,7 +107,7 @@ class BazelRunner(
   ): BazelCommand {
     val commandBuilder = CommandBuilder(workspaceContext)
     val command = doBuild(commandBuilder)
-    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
+    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath
 
     command.options.add(
       overrideRepository(
@@ -141,7 +141,7 @@ class BazelRunner(
     }
 
     if (commandBuilder.inheritWorkspaceOptions) {
-      command.options.addAll(workspaceContext.buildFlags.values)
+      command.options.addAll(workspaceContext.buildFlags)
     }
 
     return command

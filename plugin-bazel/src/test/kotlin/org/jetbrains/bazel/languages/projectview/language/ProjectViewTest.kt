@@ -3,36 +3,20 @@ package org.jetbrains.bazel.languages.projectview.language
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
-import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
-import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
+import org.jetbrains.bazel.languages.projectview.ProjectViewSections
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
+import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
+import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class ProjectViewTest : BasePlatformTestCase() {
-  @Test
-  fun `test project view from raw values`() {
-    val rawSections =
-      listOf(
-        ProjectView.RawSection("targets", listOf("target1", "-target2")),
-        ProjectView.RawSection("shard_sync", listOf("true")),
-      )
-    val projectView = ProjectView(rawSections, myFixture.project)
-
-    val targetsSection = projectView.getSection(TargetsSection.KEY)
-    targetsSection.shouldNotBeNull()
-    targetsSection shouldContain ExcludableValue.included(Label.parse("target1"))
-    targetsSection shouldContain ExcludableValue.excluded(Label.parse("target2"))
-
-    val shardSyncSection = projectView.getSection(ShardSyncSection.KEY)
-    shardSyncSection.shouldNotBeNull()
-    assertEquals(shardSyncSection, true)
-  }
-
   @Test
   fun `test project view from psi file`() {
     val file =
@@ -45,7 +29,7 @@ class ProjectViewTest : BasePlatformTestCase() {
         shard_sync: true
         """.trimIndent(),
       )
-    val projectView = ProjectView.fromProjectViewPsiFile(file as ProjectViewPsiFile)
+    val projectView = ProjectView.Companion.fromProjectViewPsiFile(file as ProjectViewPsiFile)
 
     val targetsSection = projectView.getSection(TargetsSection.KEY)
     targetsSection.shouldNotBeNull()

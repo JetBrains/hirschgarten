@@ -5,7 +5,6 @@ import java.nio.file.Path
 
 object Install {
   fun runInstall(cliOptions: CliOptions, silent: Boolean = false) {
-    InstallationContextProvider.generateAndSaveProjectViewFileIfNeeded(cliOptions)
     createEnvironment(cliOptions)
     if (!silent) printSuccess(cliOptions.workspaceDir)
   }

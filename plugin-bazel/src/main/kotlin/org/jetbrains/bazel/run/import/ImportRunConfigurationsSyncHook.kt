@@ -40,7 +40,7 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
       val shouldSetSelectedConfiguration = runManager.selectedConfiguration == null
 
       val runConfigurationPaths =
-        workspaceContext.importRunConfigurations.values.mapNotNull { pathString ->
+        workspaceContext.importRunConfigurations.mapNotNull { pathString ->
           project.rootDir.resolveFromRootOrRelative(pathString)
         }
       val runConfigurations =
