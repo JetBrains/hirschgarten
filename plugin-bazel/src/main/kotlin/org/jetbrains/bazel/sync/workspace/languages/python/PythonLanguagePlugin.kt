@@ -13,6 +13,12 @@ import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Path
 
 class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonBuildTarget> {
+  override fun calculateAdditionalSources(targetInfo: TargetInfo): Sequence<Path> {
+    if (!targetInfo.hasPythonTargetInfo()) return emptySequence()
+    return targetInfo.pythonTargetInfo.generatedSourcesList
+      .asSequence()
+      .mapNotNull { bazelPathsResolver.resolve(it) }
+  }
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
 

@@ -12,6 +12,7 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
+import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
@@ -60,7 +61,50 @@ class ScalaLanguagePlugin(
     )
   }
 
+  // Project-level libraries: Scala SDK jars and ScalaTest jars
+  override fun collectProjectLevelLibraries(targets: Sequence<BspTargetInfo.TargetInfo>): Map<Label, Library> {
+    val sdkJars: Set<Path> = scalaSdks.values.flatMap { it.compilerJars }.toSet()
+    val scalatestJars: Set<Path> = scalaTestJars.values.flatten().toSet()
+    val allJars = (sdkJars + scalatestJars)
+    if (allJars.isEmpty()) return emptyMap()
+    return allJars.associate { jar ->
+      val label = Label.synthetic(jar.fileName.toString())
+      label to Library(
+        label = label,
+        outputs = setOf(jar),
+        sources = emptySet(),
+        dependencies = emptyList(),
+      )
+    }
+  }
+
+  // Per-target libraries: map each Scala target to appropriate SDK and ScalaTest libraries
+  override fun collectPerTargetLibraries(targets: Sequence<BspTargetInfo.TargetInfo>): Map<Label, List<Library>> =
+    targets
+      .filter { it.hasScalaTargetInfo() }
+      .associate { targetInfo ->
+        val targetLabel = targetInfo.label()
+        val sdkJars = scalaSdks[targetLabel]?.compilerJars.orEmpty()
+        val testJars = scalaTestJars[targetLabel].orEmpty()
+        val libs = (sdkJars + testJars).map { jar ->
+          val libLabel = Label.synthetic(jar.fileName.toString())
+          Library(
+            label = libLabel,
+            outputs = setOf(jar),
+            sources = emptySet(),
+            dependencies = emptyList(),
+          )
+        }
+        targetLabel to libs
+      }
+
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
+
+  override fun collectResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
+    if (!targetInfo.hasScalaTargetInfo()) return emptySequence()
+    val base = targetInfo.resourcesList.asSequence().map(bazelPathsResolver::resolve)
+    return base + resolveAdditionalResources(targetInfo)
+  }
 
   override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source, true)
 }

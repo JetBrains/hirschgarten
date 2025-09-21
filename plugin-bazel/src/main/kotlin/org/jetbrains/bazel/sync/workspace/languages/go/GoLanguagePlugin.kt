@@ -21,6 +21,8 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
 
+  override fun requiresTransitiveSelection(targetInfo: BspTargetInfo.TargetInfo): Boolean = targetInfo.hasGoTargetInfo()
+
   override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
     if (!targetInfo.hasGoTargetInfo()) return emptySequence()
     return targetInfo.goTargetInfo.generatedSourcesList

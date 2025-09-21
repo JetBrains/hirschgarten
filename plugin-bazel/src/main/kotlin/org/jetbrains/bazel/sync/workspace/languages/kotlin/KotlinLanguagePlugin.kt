@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.nio.file.Path
+import org.jetbrains.bazel.server.label.label
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<KotlinBuildTarget>,
@@ -28,6 +29,60 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
     )
   }
 
+  // Project-level libraries: Kotlin stdlibs bundled under a synthetic label
+  override fun collectProjectLevelLibraries(targets: Sequence<BspTargetInfo.TargetInfo>): Map<Label, org.jetbrains.bazel.sync.workspace.model.Library> {
+    val jars = calculateProjectLevelKotlinStdlibsJars(targets)
+    if (jars.isEmpty()) return emptyMap()
+
+    val inferredSourceJars = jars
+      .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
+      .toSet()
+
+    val lib = org.jetbrains.bazel.sync.workspace.model.Library(
+      label = Label.synthetic("rules_kotlin_kotlin-stdlibs"),
+      outputs = jars,
+      sources = inferredSourceJars,
+      dependencies = emptyList(),
+      isLowPriority = true, // allow user-provided stdlib to override
+    )
+    return mapOf(lib.label to lib)
+  }
+
+  // Per-target libraries: stdlibs (as dependency edge) + kotlinc plugin jars
+  override fun collectPerTargetLibraries(targets: Sequence<BspTargetInfo.TargetInfo>): Map<Label, List<org.jetbrains.bazel.sync.workspace.model.Library>> {
+    val stdlibLib = collectProjectLevelLibraries(targets).values.firstOrNull()
+    return targets
+      .filter { it.hasKotlinTargetInfo() }
+      .associate { targetInfo ->
+        val kotlinInfo = targetInfo.kotlinTargetInfo
+        val pluginClasspath = kotlinInfo.kotlincPluginInfosList
+          .flatMap { it.pluginJarsList }
+          .map { bazelPathsResolver.resolve(it) }
+          .distinct()
+
+        val pluginLibs = pluginClasspath.map { classpath ->
+          org.jetbrains.bazel.sync.workspace.model.Library(
+            label = Label.synthetic(classpath.fileName.toString()),
+            outputs = setOf(classpath),
+            sources = emptySet(),
+            dependencies = emptyList(),
+          )
+        }
+
+        val libs = mutableListOf<org.jetbrains.bazel.sync.workspace.model.Library>()
+        if (stdlibLib != null) libs.add(stdlibLib)
+        libs.addAll(pluginLibs)
+        targetInfo.label() to libs
+      }
+  }
+
+  private fun calculateProjectLevelKotlinStdlibsJars(targets: Sequence<BspTargetInfo.TargetInfo>): Set<Path> =
+    targets
+      .filter { it.hasKotlinTargetInfo() }
+      .map { it.kotlinTargetInfo.stdlibsList }
+      .flatMap { it.map(bazelPathsResolver::resolve) }
+      .toSet()
+
   private fun BspTargetInfo.KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
 
   private fun BspTargetInfo.KotlinTargetInfo.additionalKotlinOpts(): List<String> =
@@ -44,6 +99,12 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
       .map { "-Xplugin=${bazelPathsResolver.resolve(it)}" }
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.KOTLIN)
+
+  override fun collectResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
+    if (!targetInfo.hasKotlinTargetInfo()) return emptySequence()
+    val base = targetInfo.resourcesList.asSequence().map(bazelPathsResolver::resolve)
+    return base + resolveAdditionalResources(targetInfo)
+  }
 
   override fun resolveJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.resolveJvmPackagePrefix(source)
 }

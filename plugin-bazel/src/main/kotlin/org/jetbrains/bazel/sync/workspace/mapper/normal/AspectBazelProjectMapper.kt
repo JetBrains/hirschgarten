@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
-import com.google.common.hash.Hashing
-import com.google.devtools.build.lib.view.proto.Deps
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -31,7 +29,6 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
-import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
@@ -41,14 +38,8 @@ import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.exists
 import kotlin.io.path.extension
-import kotlin.io.path.inputStream
-import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 class AspectBazelProjectMapper(
@@ -105,85 +96,96 @@ class AspectBazelProjectMapper(
       }
     val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
-        // the import depth mechanism does not apply for go targets sync
-        // for now, go sync assumes to retrieve all transitive targets, which is equivalent to `import_depth: -1`
-        // in fact, go sync should not even go through this highly overfitted JVM model: https://youtrack.jetbrains.com/issue/BAZEL-2210
-        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { targets[it]?.hasGoTargetInfo() == true }
-        val nonGoTargetsAtDepth =
+        // the import depth mechanism does not apply for certain languages (e.g., Go)
+        // plugins can require transitive selection for their roots
+        val (transitiveRoots, normalRoots) = rootTargets.partition { label ->
+          targets[label]?.let { t ->
+            val langs = inferLanguages(t)
+            val plugin = languagePluginsService.getLanguagePlugin(langs)
+            plugin?.requiresTransitiveSelection(t) == true
+          } == true
+        }
+        val normalAtDepth =
           dependencyGraph
             .allTargetsAtDepth(
               workspaceContext.importDepth,
-              nonGoTargetLabels.toSet(),
+              normalRoots.toSet(),
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
-              targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
+              targetSupportsStrictDeps = { id ->
+                targets[id]?.let { t ->
+                  val langs = inferLanguages(t)
+                  val plugin = languagePluginsService.getLanguagePlugin(langs)
+                  plugin?.targetSupportsStrictDeps(t) == true
+                } == true
+              },
               isWorkspaceTarget = { id ->
                 targets[id]?.let { target ->
                   target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
                 } == true
               },
             )
-        val (nonGoTargetsToImport, nonWorkspaceTargets) =
-          nonGoTargetsAtDepth.targets.partition {
+        val (normalTargetsToImport, nonWorkspaceTargets) =
+          normalAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, featureFlags)
           }
-        val goTargetsToImport =
+        val transitiveTargetsToImport =
           dependencyGraph
-            .allTransitiveTargets(goTargetLabels.toSet())
+            .allTransitiveTargets(transitiveRoots.toSet())
             .targets
             .filter { isWorkspaceTarget(it, repoMapping, featureFlags) }
-        val libraries = (nonWorkspaceTargets + nonGoTargetsAtDepth.directDependencies).associateBy { it.label() }
-        (nonGoTargetsToImport + goTargetsToImport).asSequence() to libraries
+        val libraries = (nonWorkspaceTargets + normalAtDepth.directDependencies).associateBy { it.label() }
+        (normalTargetsToImport + transitiveTargetsToImport).asSequence() to libraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
         collectInterfacesAndClasses(targetsToImport)
       }
-    val outputJarsLibraries =
-      measure("Create output jars libraries") {
-        calculateOutputJarsLibraries(targetsToImport)
+
+    // New: collect libraries from language plugins (per-target and project-level)
+    val pluginPerTargetLibraries =
+      measure("Collect per-target libraries from plugins") {
+        languagePluginsService.all
+          .map { it.collectPerTargetLibraries(targetsToImport) }
+          .fold(emptyMap<Label, List<Library>>()) { acc, next -> concatenateMaps(acc, next) }
       }
-    val annotationProcessorLibraries =
-      measure("Create AP libraries") {
-        annotationProcessorLibraries(targetsToImport)
+    val pluginProjectLevelLibraries =
+      measure("Collect project-level libraries from plugins") {
+        languagePluginsService.all
+          .map { it.collectProjectLevelLibraries(targetsToImport) }
+          .fold(emptyMap<Label, Library>()) { acc, next -> acc + next }
       }
-    val kotlinStdlibsMapper =
-      measure("Create kotlin stdlibs") {
-        calculateKotlinStdlibsMapper(targetsToImport)
-      }
-    val kotlincPluginLibrariesMapper =
-      measure("Create kotlinc plugin libraries") {
-        calculateKotlincPluginLibrariesMapper(targetsToImport)
-      }
-    val scalaLibrariesMapper =
-      measure("Create scala libraries") {
-        calculateScalaLibrariesMapper(targetsToImport)
-      }
+
     val librariesFromDeps =
       measure("Merge libraries from deps") {
-        concatenateMaps(
-          outputJarsLibraries,
-          annotationProcessorLibraries,
-          kotlinStdlibsMapper,
-          kotlincPluginLibrariesMapper,
-          scalaLibrariesMapper,
-        )
+        pluginPerTargetLibraries
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
         createLibraries(targetsAsLibraries, repoMapping) +
-          librariesFromDeps.values
-            .flatten()
-            .distinct()
-            .associateBy { it.label }
+          (
+            pluginProjectLevelLibraries.values +
+              librariesFromDeps.values
+                .flatten()
+                .distinct()
+          ).associateBy { it.label }
+      }
+    // New: allow plugins to contribute jdeps-derived libraries (JVM-specific), merged with existing jdeps logic
+    val pluginJdepsLibraries =
+      measure("Libraries from plugins' jdeps") {
+        languagePluginsService.all
+          .map {
+            it.collectJdepsLibraries(
+              targetsToImport.associateBy { it.label() },
+              librariesFromDeps,
+              librariesFromDepsAndTargets,
+              interfacesAndBinariesFromTargetsToImport,
+            )
+          }
+          .fold(emptyMap<Label, List<Library>>()) { acc, next -> concatenateMaps(acc, next) }
       }
     val extraLibrariesFromJdeps =
       measure("Libraries from jdeps") {
-        jdepsLibraries(
-          targetsToImport.associateBy { it.label() },
-          librariesFromDeps,
-          librariesFromDepsAndTargets,
-          interfacesAndBinariesFromTargetsToImport,
-        )
+        pluginJdepsLibraries
       }
     val librariesToImport =
       measure("Merge all libraries") {
@@ -260,339 +262,23 @@ class AspectBazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
-    targetsToImport
-      .filter { shouldCreateOutputJarsLibrary(it) }
-      .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
-          target.label() to listOf(library)
-        }
-      }.toMap()
 
-  private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
-    !targetInfo.kind.endsWith("_resources") && targetInfo.hasJvmTargetInfo() &&
-      (
-        targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-          (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
-          targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
-      )
 
-  private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
-    targetsToImport
-      .filter { it.jvmTargetInfo.generatedJarsList.isNotEmpty() }
-      .associate { targetInfo ->
-        targetInfo.id to
-          Library(
-            label = Label.parse(targetInfo.id + "_generated"),
-            outputs =
-              targetInfo.jvmTargetInfo.generatedJarsList
-                .flatMap { it.binaryJarsList }
-                .map { bazelPathsResolver.resolve(it) }
-                .toSet(),
-            sources =
-              targetInfo.jvmTargetInfo.generatedJarsList
-                .flatMap { it.sourceJarsList }
-                .map { bazelPathsResolver.resolve(it) }
-                .toSet(),
-            dependencies = emptyList(),
-            interfaceJars = emptySet(),
-          )
-      }.map { Label.parse(it.key) to listOf(it.value) }
-      .toMap()
 
-  private fun calculateKotlinStdlibsMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
-    val projectLevelKotlinStdlibsLibrary = calculateProjectLevelKotlinStdlibsLibrary(targetsToImport)
-    val kotlinTargetsIds = targetsToImport.filter { it.hasKotlinTargetInfo() }.map { it.label() }
 
-    return projectLevelKotlinStdlibsLibrary
-      ?.let { stdlibsLibrary -> kotlinTargetsIds.associateWith { listOf(stdlibsLibrary) } }
-      .orEmpty()
-  }
 
-  private fun calculateProjectLevelKotlinStdlibsLibrary(targetsToImport: Sequence<TargetInfo>): Library? {
-    val kotlinStdlibsJars = calculateProjectLevelKotlinStdlibsJars(targetsToImport)
 
-    // rules_kotlin does not expose source jars for jvm stdlibs, so this is the way they can be retrieved for now
-    val inferredSourceJars =
-      kotlinStdlibsJars
-        .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
-        .onEach { if (it.notExists()) logNonExistingFile(it, "[kotlin stdlib]") }
-        .toSet()
 
-    return if (kotlinStdlibsJars.isNotEmpty()) {
-      Library(
-        label = Label.synthetic("rules_kotlin_kotlin-stdlibs"),
-        outputs = kotlinStdlibsJars,
-        sources = inferredSourceJars,
-        dependencies = emptyList(),
-        // https://youtrack.jetbrains.com/issue/BAZEL-2284/NotNull-not-applicable-to-type-use#focus=Comments-27-12502660.0-0
-        // Make sure that if the user provides Kotlin stdlib in deps then it overrides the one inferred from rules_kotlin
-        isLowPriority = true,
-      )
-    } else {
-      null
-    }
-  }
 
-  private fun calculateProjectLevelKotlinStdlibsJars(targetsToImport: Sequence<TargetInfo>): Set<Path> =
-    targetsToImport
-      .filter { it.hasKotlinTargetInfo() }
-      .map { it.kotlinTargetInfo.stdlibsList }
-      .flatMap { it.resolvePaths() }
-      .toSet()
 
-  private fun calculateKotlincPluginLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
-    targetsToImport
-      .filter { it.hasKotlinTargetInfo() && it.kotlinTargetInfo.kotlincPluginInfosList.isNotEmpty() }
-      .associate {
-        val pluginClasspaths =
-          it.kotlinTargetInfo.kotlincPluginInfosList
-            .flatMap { it.pluginJarsList }
-            .map { bazelPathsResolver.resolve(it) }
-            .distinct()
-        Pair(
-          it.label(),
-          pluginClasspaths.map { classpath ->
-            Library(
-              label = Label.synthetic(classpath.name),
-              outputs = setOf(classpath),
-              sources = emptySet(),
-              dependencies = emptyList(),
-            )
-          },
-        )
-      }
 
-  // TODO: refactor to language-specific logic
-  private fun calculateScalaLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
-    val projectLevelScalaSdkLibraries = calculateProjectLevelScalaSdkLibraries()
-    val projectLevelScalaTestLibraries = calculateProjectLevelScalaTestLibraries()
-    val scalaTargets = targetsToImport.filter { it.hasScalaTargetInfo() }.map { it.label() }
-    val scalaPlugin = languagePluginsService.getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
-    return scalaTargets.associateWith {
-      val sdkLibraries =
-        scalaPlugin.scalaSdks[it]
-          ?.compilerJars
-          ?.mapNotNull {
-            projectLevelScalaSdkLibraries[it]
-          }.orEmpty()
-      val testLibraries =
-        scalaPlugin.scalaTestJars[it]
-          ?.mapNotNull {
-            projectLevelScalaTestLibraries[it]
-          }.orEmpty()
 
-      (sdkLibraries + testLibraries).distinct()
-    }
-  }
 
-  private fun calculateProjectLevelScalaSdkLibraries(): Map<Path, Library> =
-    getProjectLevelScalaSdkLibrariesJars().associateWith {
-      Library(
-        label = Label.synthetic(it.name),
-        outputs = setOf(it),
-        sources = emptySet(),
-        dependencies = emptyList(),
-      )
-    }
 
-  // TODO: refactor to language-specific logic
-  private fun calculateProjectLevelScalaTestLibraries(): Map<Path, Library> {
-    val scalaPlugin = languagePluginsService.getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
-    return scalaPlugin.scalaTestJars.values
-      .flatten()
-      .toSet()
-      .associateWith {
-        Library(
-          label = Label.synthetic(it.name),
-          outputs = setOf(it),
-          sources = emptySet(),
-          dependencies = emptyList(),
-        )
-      }
-  }
 
-  // TODO: refactor to language-specific logic
-  private fun getProjectLevelScalaSdkLibrariesJars(): Set<Path> {
-    val scalaPlugin = languagePluginsService.getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
-    return scalaPlugin.scalaSdks.values
-      .toSet()
-      .flatMap {
-        it.compilerJars
-      }.toSet()
-  }
 
-  /**
-   * In some cases, the jar dependencies of a target might be injected by bazel or rules and not are not
-   * available via `deps` field of a target. For this reason, we read JavaOutputInfo's jdeps file and
-   * filter out jars that have not been included in the target's `deps` list.
-   *
-   * The old Bazel Plugin performs similar step here
-   * https://github.com/bazelbuild/intellij/blob/b68ec8b33aa54ead6d84dd94daf4822089b3b013/java/src/com/google/idea/blaze/java/sync/importer/BlazeJavaWorkspaceImporter.java#L256
-   */
-  private suspend fun jdepsLibraries(
-    targetsToImport: Map<Label, TargetInfo>,
-    libraryDependencies: Map<Label, List<Library>>,
-    librariesToImport: Map<Label, Library>,
-    interfacesAndBinariesFromTargetsToImport: Map<Label, Set<Path>>,
-  ): Map<Label, List<Library>> {
-    val targetsToJdepsJars =
-      getAllJdepsDependencies(targetsToImport, libraryDependencies, librariesToImport)
-    val libraryNameToLibraryValueMap = HashMap<Label, Library>()
-    return targetsToJdepsJars.mapValues { target ->
-      val interfacesAndBinariesFromTarget =
-        interfacesAndBinariesFromTargetsToImport.getOrDefault(target.key, emptySet())
-      target.value
-        .map { path -> bazelPathsResolver.resolve(path) }
-        .filter { it !in interfacesAndBinariesFromTarget }
-        .mapNotNull {
-          if (shouldSkipJdepsJar(it)) return@mapNotNull null
-          val label = syntheticLabel(it)
-          libraryNameToLibraryValueMap.computeIfAbsent(label) { _ ->
-            Library(
-              label = label,
-              dependencies = emptyList(),
-              interfaceJars = emptySet(),
-              outputs = setOf(it),
-              sources = emptySet(),
-            )
-          }
-        }
-    }
-  }
 
-  // See https://github.com/bazel-contrib/rules_jvm_external/issues/786
-  private fun shouldSkipJdepsJar(jar: Path): Boolean =
-    jar.name.startsWith("header_") && jar.resolveSibling("processed_${jar.name.substring(7)}").exists()
 
-  private suspend fun getAllJdepsDependencies(
-    targetsToImport: Map<Label, TargetInfo>,
-    libraryDependencies: Map<Label, List<Library>>,
-    librariesToImport: Map<Label, Library>,
-  ): Map<Label, Set<Path>> {
-    val jdepsJars =
-      withContext(Dispatchers.IO) {
-        targetsToImport.values
-          .filter { targetSupportsJdeps(it) }
-          .map { target ->
-            async {
-              target.label() to dependencyJarsFromJdepsFiles(target)
-            }
-          }.awaitAll()
-      }.filter { it.second.isNotEmpty() }.toMap()
-
-    val allJdepsJars =
-      jdepsJars.values
-        .asSequence()
-        .flatten()
-        .toSet()
-
-    return withContext(Dispatchers.Default) {
-      val outputJarsFromTransitiveDepsCache = ConcurrentHashMap<Label, Set<Path>>()
-      jdepsJars
-        .map { (targetLabel, jarsFromJdeps) ->
-          async {
-            val transitiveJdepsJars =
-              getJdepsJarsFromTransitiveDependencies(
-                targetLabel,
-                targetsToImport,
-                libraryDependencies,
-                librariesToImport,
-                outputJarsFromTransitiveDepsCache,
-                allJdepsJars,
-              )
-            targetLabel to jarsFromJdeps - transitiveJdepsJars
-          }
-        }.awaitAll()
-        .toMap()
-        .filterValues { it.isNotEmpty() }
-    }
-  }
-
-  private fun getJdepsJarsFromTransitiveDependencies(
-    targetOrLibrary: Label,
-    targetsToImport: Map<Label, TargetInfo>,
-    libraryDependencies: Map<Label, List<Library>>,
-    librariesToImport: Map<Label, Library>,
-    outputJarsFromTransitiveDepsCache: ConcurrentHashMap<Label, Set<Path>>,
-    allJdepsJars: Set<Path>,
-  ): Set<Path> =
-    outputJarsFromTransitiveDepsCache.getOrPut(targetOrLibrary) {
-      val jarsFromTargets =
-        targetsToImport[targetOrLibrary]?.let { getTargetOutputJarsSet(it) + getTargetInterfaceJarsSet(it) }.orEmpty()
-      val jarsFromLibraries =
-        librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty()
-      val outputJars =
-        listOfNotNull(jarsFromTargets, jarsFromLibraries)
-          .asSequence()
-          .flatten()
-          .filter { it in allJdepsJars }
-          .toMutableSet()
-
-      val dependencies =
-        targetsToImport[targetOrLibrary]?.dependenciesList.orEmpty().map { it.label() } +
-          libraryDependencies[targetOrLibrary].orEmpty().map { it.label } +
-          librariesToImport[targetOrLibrary]?.dependencies.orEmpty()
-
-      dependencies.flatMapTo(outputJars) { dependency ->
-        getJdepsJarsFromTransitiveDependencies(
-          dependency,
-          targetsToImport,
-          libraryDependencies,
-          librariesToImport,
-          outputJarsFromTransitiveDepsCache,
-          allJdepsJars,
-        )
-      }
-      outputJars
-    }
-
-  private fun dependencyJarsFromJdepsFiles(targetInfo: TargetInfo): Set<Path> =
-    targetInfo.jvmTargetInfo.jdepsList
-      .flatMap { jdeps ->
-        val path = bazelPathsResolver.resolve(jdeps)
-        if (path.toFile().exists()) {
-          val dependencyList =
-            path.inputStream().use {
-              Deps.Dependencies.parseFrom(it).dependencyList
-            }
-          dependencyList
-            .asSequence()
-            .filter { it.isRelevant() }
-            .map { bazelPathsResolver.resolveOutput(Paths.get(it.path)) }
-            .toList()
-        } else {
-          emptySet()
-        }
-      }.toSet()
-
-  /**
-   * Similar to what was done in the Google's Bazel plugin in JdepsFileReader#relevantDep,
-   * we should only include deps that are actually used by the compiler
-   */
-  private fun Deps.Dependency.isRelevant() = kind in sequenceOf(Deps.Dependency.Kind.EXPLICIT, Deps.Dependency.Kind.IMPLICIT)
-
-  private fun targetSupportsJdeps(targetInfo: TargetInfo): Boolean {
-    val languages = inferLanguages(targetInfo)
-    return setOf(LanguageClass.JAVA, LanguageClass.KOTLIN, LanguageClass.SCALA).containsAll(languages)
-  }
-
-  private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
-
-  private fun syntheticLabel(lib: Path): Label {
-    val shaOfPath =
-      Hashing
-        .sha256()
-        .hashString(lib.toString(), StandardCharsets.UTF_8)
-        .toString()
-        .take(7) // just in case of a conflict in filename
-    return Label.synthetic(
-      lib
-        .fileName
-        .toString()
-        .replace(replacementRegex, "-") + "-" + shaOfPath,
-    )
-  }
 
   private fun createNonModuleTargets(
     targets: Map<Label, TargetInfo>,
@@ -675,7 +361,7 @@ class AspectBazelProjectMapper(
     sources: Collection<Path>,
   ): Boolean = dependencies.isNotEmpty() || !outputs.isEmptyJarList() || !interfaceJars.isEmptyJarList() || !sources.isEmptyJarList()
 
-  private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
+  private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.fileName?.toString() == "empty.jar"
 
   private fun List<FileLocation>.resolvePaths() = map { bazelPathsResolver.resolve(it) }.toSet()
 
@@ -796,10 +482,6 @@ class AspectBazelProjectMapper(
       "go_test",
     )
 
-  // TODO BAZEL-2208
-  // The only language that supports strict deps by default is Java, in Kotlin and Scala strict deps are disabled by default.
-  private fun targetSupportsStrictDeps(target: TargetInfo): Boolean =
-    target.hasJvmTargetInfo() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
 
   private suspend fun createRawBuildTargets(
     targets: List<IntermediateTargetData>,
@@ -947,13 +629,11 @@ class AspectBazelProjectMapper(
     logger.warn(message)
   }
 
-  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<Path> {
-    val resources = bazelPathsResolver.resolvePaths(target.resourcesList)
-    val extraResources = languagePlugin.resolveAdditionalResources(target)
-    return (resources.asSequence() + extraResources)
+  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<Path> =
+    languagePlugin
+      .collectResources(target)
       .distinct()
       .toList()
-  }
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
