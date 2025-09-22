@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
-import com.google.idea.testing.BazelTestApplication
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.TestDisposable
 import com.intellij.testFramework.rules.ProjectModelExtension
 import org.jetbrains.bazel.config.rootDir
@@ -13,8 +13,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 
-@BazelTestApplication
+@TestApplication
 abstract class MockProjectBaseTest {
+
   @TestDisposable
   lateinit var disposable: Disposable
 

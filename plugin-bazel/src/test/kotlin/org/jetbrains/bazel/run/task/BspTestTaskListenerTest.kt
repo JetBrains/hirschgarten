@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.run.task
 
-import com.google.idea.testing.BazelTestApplication
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.testFramework.junit5.TestApplication
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
@@ -32,7 +32,7 @@ internal class MockBazelProcessHandler(project: Project) : BazelProcessHandler(p
   override fun detachProcessImpl() {}
 }
 
-@BazelTestApplication
+@TestApplication
 class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   private lateinit var handler: MockBazelProcessHandler
   private lateinit var listener: BazelTestTaskListener

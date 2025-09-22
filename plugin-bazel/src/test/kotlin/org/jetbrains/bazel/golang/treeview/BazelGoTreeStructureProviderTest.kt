@@ -21,6 +21,7 @@ import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.SyntheticLibraryElementNode
 import com.intellij.lang.FileASTNode
 import com.intellij.mock.MockVirtualFile
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
@@ -51,8 +52,7 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
   private lateinit var fileToImportPathMap: ConcurrentHashMap<Path, String>
   private lateinit var rootNode: SyntheticLibraryElementNode
 
-  @BeforeEach
-  fun setUp() {
+  override fun beforeEach() {
     super.beforeEach()
     project.isBazelProject = true
     rootNode = createRootNode(GO_EXTERNAL_LIBRARY_ROOT_NAME)

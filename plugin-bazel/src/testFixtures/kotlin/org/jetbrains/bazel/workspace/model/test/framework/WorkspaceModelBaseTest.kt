@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
-import com.google.idea.testing.BazelTestApplication
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.module.StdModuleTypes
@@ -28,7 +27,6 @@ import java.nio.file.Path
 private const val JAVA_SDK_NAME = "11"
 private const val JAVA_SDK_TYPE = "JavaSDK"
 
-@BazelTestApplication
 abstract class WorkspaceModelBaseTest {
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
 
