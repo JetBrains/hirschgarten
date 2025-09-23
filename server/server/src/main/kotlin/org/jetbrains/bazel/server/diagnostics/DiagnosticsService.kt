@@ -13,8 +13,9 @@ class DiagnosticsService(
     bazelOutput: String,
     targetLabel: Label,
     originId: String,
+    commandLineOutput: Boolean = false,
   ): List<PublishDiagnosticsParams> {
-    val parsedDiagnostics = parser.parse(bazelOutput, targetLabel)
+    val parsedDiagnostics = parser.parse(bazelOutput, targetLabel, commandLineOutput)
     val events = mapper.createDiagnostics(parsedDiagnostics, originId)
     return events
   }

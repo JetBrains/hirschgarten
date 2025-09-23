@@ -4,6 +4,7 @@ import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.MessageType
+import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import java.time.Duration
 
 private val LOG_OPERATION_THRESHOLD: Duration = Duration.ofMillis(100)
@@ -27,6 +28,10 @@ data class BspClientLogger(private val bspClient: JoinedBuildClient, private val
 
   fun warn(message: String) {
     log(MessageType.WARNING, message)
+  }
+
+  fun publishDiagnostics(event: PublishDiagnosticsParams) {
+    bspClient.onBuildPublishDiagnostics(event)
   }
 
   private fun log(messageType: MessageType, message: String) {
