@@ -3,13 +3,21 @@ package org.jetbrains.bazel.server.diagnostics
 import org.jetbrains.bazel.label.Label
 
 interface DiagnosticsParser {
-  fun parse(bazelOutput: String, target: Label): List<Diagnostic>
+  fun parse(
+    bazelOutput: String,
+    target: Label,
+    commandLineOutput: Boolean = false,
+  ): List<Diagnostic>
 }
 
 class DiagnosticsParserImpl : DiagnosticsParser {
-  override fun parse(bazelOutput: String, target: Label): List<Diagnostic> {
+  override fun parse(
+    bazelOutput: String,
+    target: Label,
+    commandLineOutput: Boolean,
+  ): List<Diagnostic> {
     val output = prepareOutput(bazelOutput, target)
-    val diagnostics = collectDiagnostics(output)
+    val diagnostics = collectDiagnostics(output, commandLineOutput)
     return deduplicate(diagnostics)
   }
 
@@ -19,10 +27,11 @@ class DiagnosticsParserImpl : DiagnosticsParser {
     return Output(relevantLines, target)
   }
 
-  private fun collectDiagnostics(output: Output): List<Diagnostic> {
+  private fun collectDiagnostics(output: Output, commandLineOutput: Boolean): List<Diagnostic> {
     val diagnostics = mutableListOf<Diagnostic>()
     while (output.nonEmpty()) {
-      for (parser in Parsers) {
+      val parsers = if (commandLineOutput) CommandLineOutputParser else Parsers
+      for (parser in parsers) {
         val result = parser.tryParse(output)
         if (result.isNotEmpty()) {
           diagnostics.addAll(result)
@@ -58,6 +67,10 @@ class DiagnosticsParserImpl : DiagnosticsParser {
         CompilerDiagnosticParser,
         Scala3CompilerDiagnosticParser,
         AllCatchParser,
+      )
+    private val CommandLineOutputParser =
+      listOf(
+        BazelOutputMessageParser,
       )
     private val IgnoredLines =
       listOf(

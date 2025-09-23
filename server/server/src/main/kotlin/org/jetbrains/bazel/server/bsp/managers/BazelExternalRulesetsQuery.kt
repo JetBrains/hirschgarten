@@ -3,15 +3,19 @@ package org.jetbrains.bazel.server.bsp.managers
 import com.google.gson.JsonObject
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.gson.bazelGson
+import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.utils.readXML
 import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
+import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
@@ -36,10 +40,12 @@ class BazelEnabledRulesetsQueryImpl(private val enabledRules: List<String>) : Ba
 }
 
 class BazelExternalRulesetsQueryImpl(
+  private val originId: String?,
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
   private val isWorkspaceEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
+  private val bazelPathsResolver: BazelPathsResolver,
   private val workspaceContext: WorkspaceContext,
   private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
@@ -48,6 +54,7 @@ class BazelExternalRulesetsQueryImpl(
       workspaceContext.enabledRules.isNotEmpty() -> BazelEnabledRulesetsQueryImpl(workspaceContext.enabledRules).fetchExternalRulesetNames()
       else ->
         BazelBzlModExternalRulesetsQueryImpl(
+          originId,
           bazelRunner,
           isBzlModEnabled,
           bspClientLogger,
@@ -55,6 +62,7 @@ class BazelExternalRulesetsQueryImpl(
           repoMapping,
         ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
+            originId,
             bazelRunner,
             isWorkspaceEnabled,
             bspClientLogger,
@@ -64,6 +72,7 @@ class BazelExternalRulesetsQueryImpl(
 }
 
 class BazelWorkspaceExternalRulesetsQueryImpl(
+  private val originId: String?,
   private val bazelRunner: BazelRunner,
   private val isWorkspaceEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
@@ -122,6 +131,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
 }
 
 class BazelBzlModExternalRulesetsQueryImpl(
+  private val originId: String?,
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
@@ -140,17 +150,31 @@ class BazelBzlModExternalRulesetsQueryImpl(
       (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap.getTypedInstance()
     val bzlmodGraphJson =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-        .waitAndGetResult(ensureAllOutputRead = true)
+        .runBazelCommand(
+          command,
+          originId = originId,
+          logProcessOutput = false,
+          serverPidFuture = null,
+        ).waitAndGetResult(ensureAllOutputRead = true)
         .let { result ->
           if (result.isNotSuccess) {
             val queryFailedMessage = getQueryFailedMessage(result)
             bspClientLogger.warn(queryFailedMessage)
+            bazelRunner.workspaceRoot
+              ?.takeIf { originId != null }
+              ?.let { workspaceRoot ->
+                val target = SyntheticLabel(AllRuleTargets)
+                val diagnostics =
+                  DiagnosticsService(workspaceRoot)
+                    .extractDiagnostics(result.stderr, target, originId!!, commandLineOutput = true)
+                diagnostics.forEach { bspClientLogger.publishDiagnostics(it) }
+              }
             log.warn(queryFailedMessage)
           }
           // best effort to parse the output even when there are errors
           result.stdout.toJson(log)
         } as? JsonObject
+
     return try {
       val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
       val directDeps = graph.getAllDirectRulesetDependencies()

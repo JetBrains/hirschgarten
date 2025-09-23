@@ -107,10 +107,12 @@ class ProjectResolver(
 
     val bazelExternalRulesetsQuery =
       BazelExternalRulesetsQueryImpl(
+        originId,
         bazelRunner,
         bazelInfo.isBzlModEnabled,
         bazelInfo.isWorkspaceEnabled,
         bspClientLogger,
+        bazelPathsResolver,
         workspaceContext,
         repoMapping,
       )
