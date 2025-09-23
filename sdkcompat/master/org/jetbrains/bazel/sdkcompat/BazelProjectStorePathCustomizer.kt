@@ -54,6 +54,15 @@ private class BazelProjectStoreDescriptor(
   override val historicalProjectBasePath: Path,
   private val workspaceXml: Path,
 ) : ProjectStoreDescriptor {
+  // https://youtrack.jetbrains.com/issue/BAZEL-2527 - we may have a fake module, that still a persistent module
+  override fun getModuleStorageSpecs(
+    component: PersistentStateComponent<*>,
+    stateSpec: State,
+    operation: StateStorageOperation,
+    storageManager: StateStorageManager,
+    project: Project,
+  ): List<Storage> = listOf(FileStorageAnnotation.MODULE_FILE_STORAGE_ANNOTATION)
+
   override fun <T : Any> getStorageSpecs(
     component: PersistentStateComponent<T>,
     stateSpec: State,
