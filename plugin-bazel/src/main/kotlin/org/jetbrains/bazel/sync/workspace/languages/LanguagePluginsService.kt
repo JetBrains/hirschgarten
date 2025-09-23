@@ -38,7 +38,7 @@ class LanguagePluginsService {
 
   fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver) {
     val javaPlugin =
-      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()), jvmPackageResolver)
+      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()), jvmPackageResolver, org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver())
         .also(this::registerLangaugePlugin)
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)

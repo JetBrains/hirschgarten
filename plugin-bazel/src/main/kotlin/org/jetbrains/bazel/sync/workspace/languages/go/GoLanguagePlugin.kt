@@ -3,15 +3,21 @@ package org.jetbrains.bazel.sync.workspace.languages.go
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -20,6 +26,28 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
   private val logger: Logger = logger<GoLanguagePlugin>()
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
+
+  override fun supportsTarget(targetInfo: BspTargetInfo.TargetInfo): Boolean = targetInfo.hasGoTargetInfo() || targetInfo.kind in setOf(
+    "go_library", "go_binary", "go_test", "go_source"
+  )
+
+  override fun isWorkspaceTarget(
+    target: BspTargetInfo.TargetInfo,
+    repoMapping: RepoMapping,
+    featureFlags: FeatureFlags,
+  ): Boolean {
+    if (!featureFlags.isGoSupportEnabled) return false
+    val internal = isInternal(target.label().assumeResolved(), repoMapping)
+    return internal && supportsTarget(target) && hasKnownGoSources(target)
+  }
+
+  private fun isInternal(label: ResolvedLabel, repoMapping: RepoMapping): Boolean =
+    label.isMainWorkspace || (label.isGazelleGenerated) || (
+      repoMapping is BzlmodRepoMapping && repoMapping.canonicalRepoNameToLocalPath.containsKey(label.repo.repoName)
+    )
+
+  private fun hasKnownGoSources(target: BspTargetInfo.TargetInfo): Boolean =
+    target.sourcesList.any { it.relativePath.endsWith(".go") }
 
   override fun requiresTransitiveSelection(targetInfo: BspTargetInfo.TargetInfo): Boolean = targetInfo.hasGoTargetInfo()
 

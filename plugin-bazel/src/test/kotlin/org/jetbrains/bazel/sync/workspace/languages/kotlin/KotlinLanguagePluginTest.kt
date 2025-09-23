@@ -23,7 +23,7 @@ class KotlinLanguagePluginTest {
     BazelPathsResolverMock.create(tmp ?: Path.of("") )
 
   private fun kotlinPlugin(resolver: BazelPathsResolver): KotlinLanguagePlugin {
-    val javaPlugin = JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver())
+    val javaPlugin = JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver(), org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver())
     return KotlinLanguagePlugin(javaPlugin, resolver)
   }
 

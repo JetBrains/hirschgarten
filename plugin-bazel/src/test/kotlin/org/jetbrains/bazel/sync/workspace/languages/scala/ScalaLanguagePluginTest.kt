@@ -19,7 +19,7 @@ class ScalaLanguagePluginTest {
   private fun resolver(tmp: Path? = null): BazelPathsResolver = BazelPathsResolverMock.create(tmp ?: Path.of(""))
 
   private fun scalaPlugin(resolver: BazelPathsResolver): ScalaLanguagePlugin {
-    val java = JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver())
+    val java = JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver(), org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver())
     return ScalaLanguagePlugin(java, resolver)
   }
 

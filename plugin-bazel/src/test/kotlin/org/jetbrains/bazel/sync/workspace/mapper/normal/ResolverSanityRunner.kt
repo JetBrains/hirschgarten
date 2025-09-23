@@ -162,14 +162,11 @@ private suspend fun processAndPrint(
 
   // Create mappers
   val targetTagsResolver = TargetTagsResolver()
-  val mavenCoordinatesResolver = MavenCoordinatesResolver()
-
   val bazelMapper =
     AspectBazelProjectMapper(
       languagePluginsService = languagePluginsService,
       bazelPathsResolver = bazelPathsResolver,
       targetTagsResolver = targetTagsResolver,
-      mavenCoordinatesResolver = mavenCoordinatesResolver,
       featureFlags = featureFlags,
     )
 
@@ -182,7 +179,6 @@ private suspend fun processAndPrint(
       targets = targets,
       rootTargets = rootTargets,
       workspaceContext = workspaceContext,
-      featureFlags = featureFlags,
       repoMapping = repoMapping,
       hasError = false,
     )

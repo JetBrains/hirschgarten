@@ -13,7 +13,6 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.mapper.normal.AspectBazelProjectMapper
-import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
 import org.jetbrains.bazel.sync.workspace.mapper.normal.TargetTagsResolver
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapper
@@ -58,7 +57,6 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
         featureFlags = featureFlags,
         bazelPathsResolver = paths.bazelPathsResolver,
         targetTagsResolver = TargetTagsResolver(),
-        mavenCoordinatesResolver = MavenCoordinatesResolver(),
       )
     phasedMapper =
       PhasedBazelProjectMapper(bazelPathsResolver = paths.bazelPathsResolver, workspaceContext = workspaceContext)
@@ -131,7 +129,6 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
               targets = synced.earlyProject.targets,
               rootTargets = buildTargets.rootTargets,
               workspaceContext = workspaceContext,
-              featureFlags = featureFlags,
               repoMapping = repoMapping.repoMapping,
               hasError = synced.earlyProject.hasError,
             )

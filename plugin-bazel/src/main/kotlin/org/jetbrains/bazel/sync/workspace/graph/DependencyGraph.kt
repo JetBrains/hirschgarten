@@ -3,9 +3,6 @@ package org.jetbrains.bazel.sync.workspace.graph
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import java.util.PriorityQueue
-import kotlin.collections.filter
-import kotlin.collections.orEmpty
-import kotlin.math.min
 
 class DependencyGraph(
   private val rootTargets: Set<Label> = emptySet(),

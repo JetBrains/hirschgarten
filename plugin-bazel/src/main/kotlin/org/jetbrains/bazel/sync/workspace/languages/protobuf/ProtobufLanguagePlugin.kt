@@ -1,7 +1,12 @@
 package org.jetbrains.bazel.sync.workspace.languages.protobuf
 
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
@@ -10,6 +15,22 @@ import kotlin.io.path.absolutePathString
 
 class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : LanguagePlugin<ProtobufBuildTarget> {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PROTOBUF)
+
+  override fun supportsTarget(target: BspTargetInfo.TargetInfo): Boolean = target.hasProtobufTargetInfo()
+
+  override fun isWorkspaceTarget(
+    target: BspTargetInfo.TargetInfo,
+    repoMapping: RepoMapping,
+    featureFlags: org.jetbrains.bsp.protocol.FeatureFlags,
+  ): Boolean {
+    val internal = isInternal(target.label().assumeResolved(), repoMapping)
+    return internal && supportsTarget(target)
+  }
+
+  private fun isInternal(label: ResolvedLabel, repoMapping: RepoMapping): Boolean =
+    label.isMainWorkspace || (label.isGazelleGenerated) || (
+      repoMapping is BzlmodRepoMapping && repoMapping.canonicalRepoNameToLocalPath.containsKey(label.repo.repoName)
+    )
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): ProtobufBuildTarget? {
     if (!target.hasProtobufTargetInfo()) {

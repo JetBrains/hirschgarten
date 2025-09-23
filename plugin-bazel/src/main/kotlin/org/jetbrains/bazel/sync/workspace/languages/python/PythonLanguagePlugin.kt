@@ -1,14 +1,19 @@
 package org.jetbrains.bazel.sync.workspace.languages.python
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Path
 
@@ -23,6 +28,29 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   private var defaultVersion: String? = null
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
+
+  override fun supportsTarget(target: TargetInfo): Boolean = target.hasPythonTargetInfo() || target.kind in setOf(
+    "py_binary", "py_test", "py_library"
+  )
+
+  override fun isWorkspaceTarget(
+    target: TargetInfo,
+    repoMapping: RepoMapping,
+    featureFlags: FeatureFlags,
+  ): Boolean {
+    if (!featureFlags.isPythonSupportEnabled) return false
+    val internal = isInternal(target.label().assumeResolved(), repoMapping)
+    return internal && supportsTarget(target) && hasKnownPythonSources(target)
+  }
+
+  private fun isInternal(label: ResolvedLabel, repoMapping: RepoMapping): Boolean =
+    label.isMainWorkspace || (label.isGazelleGenerated) || (
+      repoMapping is BzlmodRepoMapping && repoMapping.canonicalRepoNameToLocalPath.containsKey(label.repo.repoName)
+    )
+
+  private fun hasKnownPythonSources(targetInfo: TargetInfo): Boolean =
+    targetInfo.sourcesList.any { it.relativePath.endsWith(".py") } ||
+      targetInfo.pythonTargetInfo.isCodeGenerator
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val defaultTargetInfo = calculateDefaultTargetInfo(targets)

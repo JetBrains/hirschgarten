@@ -1,16 +1,21 @@
 package org.jetbrains.bazel.sync.workspace.languages.kotlin
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.nio.file.Path
-import org.jetbrains.bazel.server.label.label
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<KotlinBuildTarget>,
@@ -99,6 +104,24 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
       .map { "-Xplugin=${bazelPathsResolver.resolve(it)}" }
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.KOTLIN)
+
+  override fun supportsTarget(target: BspTargetInfo.TargetInfo): Boolean = target.hasKotlinTargetInfo() || target.kind in setOf(
+    "kt_jvm_library", "kt_jvm_binary", "kt_jvm_test"
+  )
+
+  override fun isWorkspaceTarget(
+    target: BspTargetInfo.TargetInfo,
+    repoMapping: RepoMapping,
+    featureFlags: FeatureFlags,
+  ): Boolean {
+    val internal = isInternal(target.label().assumeResolved(), repoMapping)
+    return internal && supportsTarget(target)
+  }
+
+  private fun isInternal(label: ResolvedLabel, repoMapping: RepoMapping): Boolean =
+    label.isMainWorkspace || (label.isGazelleGenerated) || (
+      repoMapping is BzlmodRepoMapping && repoMapping.canonicalRepoNameToLocalPath.containsKey(label.repo.repoName)
+    )
 
   override fun collectResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
     if (!targetInfo.hasKotlinTargetInfo()) return emptySequence()

@@ -1,19 +1,23 @@
 package org.jetbrains.bazel.sync.workspace.languages.scala
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 
@@ -99,6 +103,24 @@ class ScalaLanguagePlugin(
       }
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
+
+  override fun supportsTarget(target: BspTargetInfo.TargetInfo): Boolean = target.hasScalaTargetInfo() || target.kind in setOf(
+    "scala_library", "scala_binary", "scala_test"
+  )
+
+  override fun isWorkspaceTarget(
+    target: BspTargetInfo.TargetInfo,
+    repoMapping: RepoMapping,
+    featureFlags: FeatureFlags,
+  ): Boolean {
+    val internal = isInternal(target.label().assumeResolved(), repoMapping)
+    return internal && supportsTarget(target)
+  }
+
+  private fun isInternal(label: ResolvedLabel, repoMapping: RepoMapping): Boolean =
+    label.isMainWorkspace || (label.isGazelleGenerated) || (
+      repoMapping is BzlmodRepoMapping && repoMapping.canonicalRepoNameToLocalPath.containsKey(label.repo.repoName)
+    )
 
   override fun collectResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
     if (!targetInfo.hasScalaTargetInfo()) return emptySequence()
