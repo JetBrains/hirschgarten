@@ -16,7 +16,7 @@ class JavaLanguagePluginTest {
   private fun resolver(tmp: Path? = null): BazelPathsResolver = BazelPathsResolverMock.create(tmp ?: Path.of(""))
 
   private fun javaPlugin(resolver: BazelPathsResolver): JavaLanguagePlugin =
-    JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver())
+    JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver(), org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver())
 
   private fun fileLocation(path: String): FileLocation = FileLocation.newBuilder().setRelativePath(path).build()
 

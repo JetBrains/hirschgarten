@@ -1,16 +1,15 @@
 package org.jetbrains.bazel.sync.workspace.languages.kotlin
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
-import org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo
 import org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
+import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JdkResolver
 import org.jetbrains.bazel.sync.workspace.languages.java.JdkVersionResolver
-import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -23,7 +22,7 @@ class KotlinLanguagePluginTest {
     BazelPathsResolverMock.create(tmp ?: Path.of("") )
 
   private fun kotlinPlugin(resolver: BazelPathsResolver): KotlinLanguagePlugin {
-    val javaPlugin = JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver())
+    val javaPlugin = JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver(), org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver())
     return KotlinLanguagePlugin(javaPlugin, resolver)
   }
 

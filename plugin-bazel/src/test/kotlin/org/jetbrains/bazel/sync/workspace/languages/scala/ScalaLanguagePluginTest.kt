@@ -6,9 +6,9 @@ import org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
+import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JdkResolver
 import org.jetbrains.bazel.sync.workspace.languages.java.JdkVersionResolver
-import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.junit.Assert.assertTrue
@@ -19,7 +19,7 @@ class ScalaLanguagePluginTest {
   private fun resolver(tmp: Path? = null): BazelPathsResolver = BazelPathsResolverMock.create(tmp ?: Path.of(""))
 
   private fun scalaPlugin(resolver: BazelPathsResolver): ScalaLanguagePlugin {
-    val java = JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver())
+    val java = JavaLanguagePlugin(resolver, JdkResolver(resolver, JdkVersionResolver()), DefaultJvmPackageResolver(), org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver())
     return ScalaLanguagePlugin(java, resolver)
   }
 

@@ -12,8 +12,8 @@ object BazelPathsResolverMock {
   fun create(workspaceRoot: Path = Path.of("")): BazelPathsResolver {
     val bazelInfo =
       BazelInfo(
-        execRoot = Paths.get(""),
-        outputBase = Paths.get(""),
+        execRoot = workspaceRoot, // align execRoot with workspace root for tests
+        outputBase = workspaceRoot, // keep outputs under the temp workspace for tests
         workspaceRoot = workspaceRoot,
         bazelBin = Path("bazel-bin"),
         release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),

@@ -3,19 +3,31 @@ package org.jetbrains.bazel.sync.workspace.languages.java
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
 import com.intellij.util.EnvironmentUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
+import org.jetbrains.bazel.sync.workspace.languages.hasSourcesWithExtensions
+import org.jetbrains.bazel.sync.workspace.languages.isInternalTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
+import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -25,6 +37,7 @@ class JavaLanguagePlugin(
   private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
   private val packageResolver: JvmPackageResolver,
+  private val mavenCoordinatesResolver: MavenCoordinatesResolver,
 ) : LanguagePlugin<JvmBuildTarget>,
   JVMPackagePrefixResolver {
   private var jdk: Jdk? = null
@@ -60,17 +73,46 @@ class JavaLanguagePlugin(
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.JAVA)
 
+  override fun supportsTarget(target: TargetInfo): Boolean =
+    target.hasJvmTargetInfo() || target.kind in setOf(
+      "java_library",
+      "java_binary",
+      "java_test",
+      "kt_jvm_library",
+      "kt_jvm_binary",
+      "kt_jvm_test",
+      "jvm_library",
+      "jvm_binary",
+      "jvm_resources",
+      "scala_library",
+      "scala_binary",
+      "scala_test",
+      "intellij_plugin_debug_target",
+      "_repackaged_files",
+    )
+
+  override fun isWorkspaceTarget(
+    target: TargetInfo,
+    repoMapping: RepoMapping,
+    featureFlags: org.jetbrains.bsp.protocol.FeatureFlags,
+  ): Boolean {
+    val internal = isInternalTarget(target.label().assumeResolved(), repoMapping)
+    if (!internal) return false
+    // JVM targets are considered workspace targets when they have deps or sources, or are explicit runnable/test/resources kinds
+    val runnableOrTestOrResourcesKind = target.kind in setOf(
+      "java_binary", "java_test", "kt_jvm_binary", "kt_jvm_test", "scala_binary", "scala_test", "jvm_binary", "intellij_plugin_debug_target", "jvm_resources",
+    )
+    return supportsTarget(target) && (runnableOrTestOrResourcesKind || target.dependenciesCount > 0 || target.resourcesCount > 0 || hasKnownJvmSources(target))
+  }
+
   override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source)
 
-  override fun collectResources(targetInfo: TargetInfo): Sequence<Path> {
-    if (!targetInfo.hasJvmTargetInfo()) return emptySequence()
-    val base = targetInfo.resourcesList.asSequence().map(bazelPathsResolver::resolve)
-    return base + resolveAdditionalResources(targetInfo)
-  }
+  override fun collectResources(targetInfo: TargetInfo): Sequence<Path> =
+    collectResourcesWithCheck(targetInfo, bazelPathsResolver) { it.hasJvmTargetInfo() }
 
   override fun targetSupportsStrictDeps(target: TargetInfo): Boolean = target.hasJvmTargetInfo() && !target.hasKotlinTargetInfo() && !target.hasScalaTargetInfo()
 
-  override fun collectJdepsLibraries(
+  override suspend fun collectJdepsLibraries(
     targetsToImport: Map<Label, TargetInfo>,
     existingPerTargetLibs: Map<Label, List<Library>>,
     allKnownLibraries: Map<Label, Library>,
@@ -81,7 +123,6 @@ class JavaLanguagePlugin(
     return targetsToJdepsJars.mapValues { (targetLabel, jars) ->
       val excluded = interfacesAndBinaries[targetLabel].orEmpty()
       jars
-        .map { bazelPathsResolver.resolve(it) }
         .filter { it !in excluded }
         .mapNotNull { jar ->
           if (shouldSkipJdepsJar(jar)) null else {
@@ -100,31 +141,42 @@ class JavaLanguagePlugin(
     }
   }
 
-  private fun getAllJdepsDependencies(
+  private suspend fun getAllJdepsDependencies(
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
   ): Map<Label, Set<Path>> {
-    val jdepsJars: Map<Label, Set<Path>> = targetsToImport.values
-      .filter { targetSupportsJdeps(it) }
-      .map { it.label() to dependencyJarsFromJdepsFiles(it) }
-      .filter { it.second.isNotEmpty() }
-      .toMap()
+    // Parse jdeps files in parallel using IO dispatcher
+    val jdepsJars: Map<Label, Set<Path>> =
+      withContext(Dispatchers.IO) {
+        targetsToImport.values
+          .filter { targetSupportsJdeps(it) }
+          .map { target ->
+            async {
+              target.label() to dependencyJarsFromJdepsFiles(target)
+            }
+          }.awaitAll()
+      }.filter { it.second.isNotEmpty() }.toMap()
 
     val allJdepsJars: Set<Path> = jdepsJars.values.flatten().toSet()
     val cache = ConcurrentHashMap<Label, Set<Path>>()
 
-    return jdepsJars.mapValues { (targetLabel, jarsFromJdeps) ->
-      val transitive = getJdepsJarsFromTransitiveDependencies(
-        targetLabel,
-        targetsToImport,
-        libraryDependencies,
-        librariesToImport,
-        cache,
-        allJdepsJars,
-      )
-      (jarsFromJdeps - transitive).toSet()
-    }.filterValues { it.isNotEmpty() }
+    // Compute transitive dependencies in parallel
+    return withContext(Dispatchers.Default) {
+      jdepsJars.map { (targetLabel, jarsFromJdeps) ->
+        async {
+          val transitive = getJdepsJarsFromTransitiveDependencies(
+            targetLabel,
+            targetsToImport,
+            libraryDependencies,
+            librariesToImport,
+            cache,
+            allJdepsJars,
+          )
+          targetLabel to (jarsFromJdeps - transitive).toSet()
+        }
+      }.awaitAll().toMap().filterValues { it.isNotEmpty() }
+    }
   }
 
   private fun getJdepsJarsFromTransitiveDependencies(
@@ -183,12 +235,13 @@ class JavaLanguagePlugin(
   private fun syntheticLabel(lib: Path): Label {
     val shaOfPath = Hashing.sha256().hashString(lib.toString(), StandardCharsets.UTF_8).toString().take(7)
     val safeName = lib.fileName.toString().replace(replacementRegex, "-")
-    return Label.synthetic("${'$'}safeName-${'$'}shaOfPath")
+    return Label.synthetic("$safeName-$shaOfPath")
   }
 
   private fun shouldSkipJdepsJar(jar: Path): Boolean {
     val name = jar.fileName.toString()
-    return name.startsWith("header_") && jar.parent.resolve("processed_${'$'}{name.substring(7)}").toFile().exists()
+    // Skip header_ jars when a processed_ counterpart exists in the same directory
+    return name.startsWith("header_") && jar.parent.resolve("processed_${name.substring(7)}").toFile().exists()
   }
 
   override fun collectPerTargetLibraries(targets: Sequence<TargetInfo>): Map<Label, List<Library>> =
@@ -221,19 +274,91 @@ class JavaLanguagePlugin(
       }
       .toMap()
 
+  override fun provideBinaryArtifacts(target: TargetInfo): Set<Path> =
+    if (!target.hasJvmTargetInfo()) emptySet() else (getTargetInterfaceJarsSet(target) + getTargetOutputJarsSet(target))
+
+  override fun collectLibrariesForNonImportedTargets(
+    targets: Sequence<TargetInfo>,
+    repoMapping: org.jetbrains.bazel.commons.RepoMapping,
+  ): Map<Label, Library> =
+    targets
+      .filter { it.hasJvmTargetInfo() || it.kind == "_repackaged_files" }
+      .mapNotNull { targetInfo ->
+        val label = targetInfo.label()
+        val outputs = getTargetOutputJarsSet(targetInfo) + getIntellijPluginJars(targetInfo)
+        val sources = getSourceJarPaths(targetInfo)
+        val interfaceJars = getTargetInterfaceJarsSet(targetInfo)
+        val dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) }
+        val isUseful = dependencies.isNotEmpty() || !isEmptyJarList(outputs) || !isEmptyJarList(interfaceJars) || !isEmptyJarList(sources)
+        if (!isUseful) null
+        else {
+          val firstJarForCoords = (outputs + interfaceJars).firstOrNull()
+          val coords = firstJarForCoords?.let { mavenCoordinatesResolver.resolveMavenCoordinates(label, it) }
+          label to Library(
+            label = label,
+            outputs = outputs,
+            sources = sources,
+            dependencies = dependencies,
+            interfaceJars = interfaceJars,
+            mavenCoordinates = coords,
+          )
+        }
+      }
+      .toMap()
+
+  private fun getSourceJarPaths(targetInfo: TargetInfo): Set<Path> =
+    targetInfo.jvmTargetInfo.jarsList
+      .flatMap { it.sourceJarsList }
+      .map(bazelPathsResolver::resolve)
+      .toSet()
+
+  private fun getIntellijPluginJars(targetInfo: TargetInfo): Set<Path> {
+    // _repackaged_files is created upon calling repackaged_files in rules_intellij
+    if (targetInfo.kind != "_repackaged_files") return emptySet()
+    return targetInfo.generatedSourcesList
+      .map(bazelPathsResolver::resolve)
+      .filter { it.fileName.toString().endsWith(".jar") }
+      .toSet()
+  }
+
+  private fun isEmptyJarList(paths: Collection<Path>): Boolean = paths.isEmpty() || (paths.size == 1 && paths.first().fileName.toString() == "empty.jar")
+
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo): Boolean =
     !targetInfo.kind.endsWith("_resources") && targetInfo.hasJvmTargetInfo() && (
+      targetInfo.jvmTargetInfo.jarsList.isNotEmpty() ||
       targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-        (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
-        targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
-      )
+      (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
+      targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
+    )
 
   private fun hasKnownJvmSources(targetInfo: TargetInfo): Boolean =
-    targetInfo.sourcesList.any {
-      it.relativePath.endsWith(".java") ||
-        it.relativePath.endsWith(".kt") ||
-        it.relativePath.endsWith(".scala")
-    }
+    hasSourcesWithExtensions(targetInfo, ".java", ".kt", ".scala")
+
+  override fun collectNonModuleTargets(
+    targets: Map<Label, TargetInfo>,
+    repoMapping: RepoMapping,
+    workspaceContext: WorkspaceContext,
+    pathsResolver: BazelPathsResolver,
+  ): List<RawBuildTarget> =
+    targets.filter { (_, t) -> isRunnableKind(t.kind) }
+      .map { (label, t) ->
+        val baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping)
+        RawBuildTarget(
+          id = label,
+          tags = emptyList(),
+          dependencies = emptyList(),
+          kind = TargetKind(kindString = t.kind, languageClasses = getSupportedLanguages(), ruleType = RuleType.BINARY),
+          sources = emptyList(),
+          resources = emptyList(),
+          baseDirectory = baseDirectory,
+          noBuild = false,
+          data = null,
+          lowPrioritySharedSources = emptyList(),
+        )
+      }
+
+  private fun isRunnableKind(kind: String): Boolean =
+    kind.endsWith("_binary") || kind == "intellij_plugin_debug_target" || kind == "jvm_binary" || kind == "java_binary"
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 

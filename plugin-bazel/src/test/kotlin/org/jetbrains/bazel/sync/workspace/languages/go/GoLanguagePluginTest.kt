@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.go
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
