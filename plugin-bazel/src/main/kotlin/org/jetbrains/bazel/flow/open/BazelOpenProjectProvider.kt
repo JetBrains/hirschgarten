@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.flow.open
 
+import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.importing.AbstractOpenProjectProvider
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
@@ -23,7 +24,7 @@ internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
 
   @Suppress("RedundantVisibilityModifier")
   public override suspend fun linkProject(projectFile: VirtualFile, project: Project) {
-    log.debug("Link BazelBsp project $projectFile to existing project ${project.name}")
+    log.debug { "Link BazelBsp project $projectFile to existing project ${project.name}" }
     performOpenBazelProject(project, projectFile)
   }
 }
