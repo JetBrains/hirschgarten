@@ -15,7 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.ExtensionContext
 import kotlin.jvm.optionals.getOrNull
 
-@TestApplication
+@BazelTestApplication
 @ExtendWith(BazelProjectFixtureTestExtension::class)
 abstract class MockProjectBaseTest {
 

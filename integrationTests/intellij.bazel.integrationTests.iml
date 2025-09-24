@@ -23,6 +23,7 @@
     <orderEntry type="module" module-name="intellij.platform.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.starter.driver" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.java.jshell" scope="TEST" />
         <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" scope="TEST" />
         <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector.starter" scope="TEST" />
         <orderEntry type="library" name="jackson" level="project" scope="TEST"/>
