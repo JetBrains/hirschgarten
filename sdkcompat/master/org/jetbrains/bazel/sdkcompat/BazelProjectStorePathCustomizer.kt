@@ -108,11 +108,6 @@ private class BazelProjectStoreDescriptor(
       // splitterClass =
       StateSplitterEx::class.java,
     )
-
-  override fun getProjectName(): String = projectIdentityFile.fileName.toString()
-
-  override suspend fun saveProjectName(project: Project) {
-  }
 }
 
 @Suppress("SpellCheckingInspection")
