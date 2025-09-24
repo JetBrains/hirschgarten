@@ -1,19 +1,2 @@
 <idea-plugin>
-
-  <dependencies>
-    <plugin id="com.intellij.java"/>
-    <plugin id="PythonCore"/>
-  </dependencies>
-
-  <!--<depends>com.intellij.java</depends>-->
-  <!--<module value="com.intellij.java"/>-->
-  <!--<depends>com.intellij.modules.java-capable</depends>-->
-
-  <!--<depends>com.intellij.modules.go</depends>-->
-  <!--<module value="com.intellij.modules.go"/>-->
-
-  <!--<depends>com.intellij.modules.python</depends>-->
-  <!--<module value="com.intellij.modules.python"/>-->
-  <!--<module value="com.intellij.modules.pycharm.community"/>-->
-  <!--<module value="com.intellij.modules.python-core-capable"/>-->
 </idea-plugin>
