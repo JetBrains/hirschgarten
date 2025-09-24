@@ -52,8 +52,8 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
   private lateinit var fileToImportPathMap: ConcurrentHashMap<Path, String>
   private lateinit var rootNode: SyntheticLibraryElementNode
 
-  override fun beforeEach() {
-    super.beforeEach()
+  @BeforeEach
+  fun beforeEach() {
     project.isBazelProject = true
     rootNode = createRootNode(GO_EXTERNAL_LIBRARY_ROOT_NAME)
     fileToImportPathMap = ConcurrentHashMap<Path, String>()

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
+import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -63,7 +64,8 @@ class BazelRepoMappingSyncHook : ProjectSyncHook {
   }
 }
 
-internal data class BazelRepoMappingServiceState(
+@VisibleForTesting
+data class BazelRepoMappingServiceState(
   var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap(),
   var canonicalRepoNameToPath: Map<String, String> = emptyMap(),
 )
@@ -74,9 +76,9 @@ internal data class BazelRepoMappingServiceState(
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingServiceState> {
+class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingServiceState> {
   @Volatile
-  internal var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
+  var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
     set(value) {
       field = value
       canonicalRepoNameToApparentName = value.entries.associate { (apparent, canonical) -> canonical to apparent }
@@ -100,6 +102,6 @@ internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappi
   }
 
   companion object {
-    internal fun getInstance(project: Project): BazelRepoMappingService = project.service<BazelRepoMappingService>()
+    fun getInstance(project: Project): BazelRepoMappingService = project.service<BazelRepoMappingService>()
   }
 }

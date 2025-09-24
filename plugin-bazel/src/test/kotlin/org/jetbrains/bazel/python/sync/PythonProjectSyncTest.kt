@@ -62,8 +62,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   lateinit var virtualFileUrlManager: VirtualFileUrlManager
 
   @BeforeEach
-  override fun beforeEach() {
-    super.beforeEach()
+  fun beforeEach() {
     // given
     hook = PythonProjectSync()
     virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
