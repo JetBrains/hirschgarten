@@ -194,18 +194,10 @@
         <orderEntry type="module" module-name="intellij.platform.inspect" />
         <orderEntry type="module" module-name="intellij.platform.core.ui" />
         <orderEntry type="module" module-name="intellij.platform.ide.bootstrap" />
-        <orderEntry type="module" module-name="intellij.platform.images.copyright" scope="RUNTIME" />
         <orderEntry type="module" module-name="intellij.platform.util.jdom" scope="TEST" />
         <orderEntry type="module" module-name="intellij.java.tests" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.warmup" scope="RUNTIME" />
         <orderEntry type="library" scope="TEST" name="kotlinx-coroutines-core" level="project" />
-        <orderEntry type="module" module-name="intellij.color.scheme.github" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.tools.ide.metrics.benchmark" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.vcs.github" scope="TEST" />
+
         <orderEntry type="module" module-name="intellij.platform.testFramework.junit5" />
-        <orderEntry type="module" module-name="intellij.vcs.github.ultimate.cron" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.vcs.github.ultimate.docker" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.vcs.github.ultimate.features" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.ijent.testFramework" scope="TEST" />
   </component>
 </module>

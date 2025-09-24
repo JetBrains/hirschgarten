@@ -413,7 +413,7 @@ class BazelGoPackage : GoPackage {
  * In IDE Starter Test, this logic does not work properly, so it is disabled.
  */
 @VisibleForTesting
-internal fun toRealFile(maybeExternal: Path): Path {
+fun toRealFile(maybeExternal: Path): Path {
   if (TestUtils.isInIdeStarterTest()) return maybeExternal
   val externalString = maybeExternal.invariantSeparatorsPathString
   return if (externalString.contains("/external/") &&

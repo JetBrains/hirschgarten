@@ -35,7 +35,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
 
     // when
     myFixture.configureByText(
-      "BUILD",
+      "BUILD.bazel",
       """
       load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
       kt_jvm_library(
@@ -71,7 +71,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
 
     // when
     myFixture.configureByText(
-      "BUILD",
+      "BUILD.bazel",
       """
       java_binary(
         name = "testTarget",
@@ -108,7 +108,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
     )
 
     myFixture.configureByText(
-      "BUILD",
+      "BUILD.bazel",
       """
       custom_rule(
           name = "my_rule",
@@ -118,7 +118,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
     )
 
     // when
-    val element = myFixture.getReferenceAtCaretPosition("BUILD")?.resolve()
+    val element = myFixture.getReferenceAtCaretPosition("BUILD.bazel")?.resolve()
 
     // then
     assertNotNull(element)

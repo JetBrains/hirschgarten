@@ -3,7 +3,6 @@ package org.jetbrains.bazel.workspace.model.test.framework
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.TestDisposable
 import com.intellij.testFramework.junit5.fixture.TestFixture
@@ -24,13 +23,9 @@ abstract class MockProjectBaseTest {
   lateinit var disposable: Disposable
 
   val projectDir = tempPathFixture()
-  val projectFixture: TestFixture<Project> = projectFixture(
-    pathFixture = projectDir,
-    openAfterCreation = false)
+  val projectFixture: TestFixture<Project> = projectFixture(pathFixture = projectDir, openAfterCreation = false)
 
   val project by projectFixture
-  val virtualFileUrlManger get() = project.workspaceModel.getVirtualFileUrlManager()
-
 
   protected fun <T : Any> ExtensionPointName<T>.registerExtension(extension: T) {
     point.registerExtension(extension, disposable)

@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.testResultsTree
+package org.jetbrains.bazel.tests.ui
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI

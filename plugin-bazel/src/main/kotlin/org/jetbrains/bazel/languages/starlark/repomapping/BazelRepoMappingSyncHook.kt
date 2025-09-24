@@ -85,10 +85,10 @@ class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingService
     }
 
   @Volatile
-  internal var canonicalRepoNameToApparentName: Map<String, String> = emptyMap()
+  var canonicalRepoNameToApparentName: Map<String, String> = emptyMap()
 
   @Volatile
-  internal var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
+  var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
 
   override fun getState(): BazelRepoMappingServiceState? =
     BazelRepoMappingServiceState(
