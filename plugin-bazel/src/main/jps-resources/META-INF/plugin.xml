@@ -987,4 +987,18 @@
       topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
     />
   </applicationListeners>
+  <extensions defaultExtensionNs="com.intellij">
+    <externalSystemOutputParserProvider implementation="org.jetbrains.bazel.build.BazelOutputParserProvider" id="bazel"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey
+      key="bazel.legacy.bsp.diagnostics.enabled"
+      description="Enable legacy BSP diagnostics publishing for Bazel (isolated)"
+      defaultValue="false"/>
+    <registryKey
+      key="bazel.buildEvents.bep.enabled"
+      description="Enable BEP-based target grouping for Bazel BuildEvents pipeline"
+      defaultValue="false"/>
+  </extensions>
 </idea-plugin>
+

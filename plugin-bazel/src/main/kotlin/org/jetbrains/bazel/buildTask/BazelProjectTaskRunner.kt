@@ -3,23 +3,18 @@ package org.jetbrains.bazel.buildTask
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.util.toPromise
 import com.intellij.task.ModuleBuildTask
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
+import org.jetbrains.bazel.build.session.BazelBuildRunner
+import org.jetbrains.bazel.label.Label
 
 class BazelProjectTaskRunner : ProjectTaskRunner() {
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
@@ -52,33 +47,29 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
   }
 
   private fun runModuleBuildTasks(project: Project, tasks: List<ModuleBuildTask>): Promise<Result> {
-    val targetsToBuild = obtainTargetsToBuild(project, tasks)
-    return buildBspTargets(project, targetsToBuild)
+    val labelsToBuild = obtainTargetsToBuild(project, tasks)
+    return buildTargets(project, labelsToBuild)
   }
 
-  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTarget> {
+  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<Label> {
     val targetUtils = project.targetUtils
-    return tasks.mapNotNull { targetUtils.getBuildTargetForModule(it.module) }
+    return tasks.mapNotNull { task -> targetUtils.getBuildTargetForModule(task.module)?.id }
   }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
-    val targetIdentifiers = targetsToBuild.filter { !it.noBuild }.map { it.id }
-    val result =
-      BazelCoroutineService.getInstance(project).startAsync {
-        runBuildTargetTask(targetIdentifiers, project)
-      }
-    return result
-      .toPromise()
-      .then { it?.toTaskRunnerResult() ?: TaskRunnerResults.FAILURE }
-  }
-
-  private fun CompileResult.toTaskRunnerResult() =
-    when (statusCode) {
-      BazelStatus.SUCCESS -> TaskRunnerResults.SUCCESS
-      BazelStatus.CANCEL -> TaskRunnerResults.ABORTED
-      else -> TaskRunnerResults.FAILURE
+  private fun buildTargets(project: Project, targetsToBuild: List<Label>): Promise<Result> {
+    val result = AsyncPromise<Result>()
+    val filtered = targetsToBuild.distinct()
+    if (filtered.isEmpty()) {
+      result.setResult(TaskRunnerResults.SUCCESS)
+      return result
     }
+
+    BazelBuildRunner(project).build(filtered) { exitCode ->
+      val status = if (exitCode == 0) TaskRunnerResults.SUCCESS else TaskRunnerResults.FAILURE
+      result.setResult(status)
+    }
+    return result
+  }
 }
 
 /**

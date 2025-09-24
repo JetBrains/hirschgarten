@@ -29,7 +29,7 @@ class BazelBspCompilationManager(
     workspaceContext: WorkspaceContext,
   ): BepBuildResult {
     val diagnosticsService = DiagnosticsService(workspaceRoot)
-    val bepServer = BepServer(client, diagnosticsService, originId, bazelPathsResolver)
+    val bepServer = BepServer(client, diagnosticsService, originId, bazelPathsResolver, enableLegacyDiagnostics = false)
     val bepReader = BepReader(bepServer)
     return try {
       coroutineScope {

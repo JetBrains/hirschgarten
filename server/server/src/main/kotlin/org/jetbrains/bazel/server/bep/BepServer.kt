@@ -39,6 +39,7 @@ class BepServer(
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
   bazelPathsResolver: BazelPathsResolver,
+  private val enableLegacyDiagnostics: Boolean = false,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)
   private val bepLogger = BepLogger(bspClientLogger)
@@ -312,17 +313,13 @@ class BepServer(
     targetLabel: Label,
     originId: String,
   ) {
+    // Legacy BSP diagnostics are opt-in and disabled by default to avoid double-reporting
+    if (!enableLegacyDiagnostics) return
+
     if (stdErrText.isNotEmpty()) {
-      val events =
-        diagnosticsService.extractDiagnostics(
-          stdErrText,
-          targetLabel,
-          originId,
-        )
-      events.forEach {
-        bspClient.onBuildPublishDiagnostics(
-          it,
-        )
+      val events = diagnosticsService.extractDiagnostics(stdErrText, targetLabel, originId)
+      events.forEach { params ->
+        bspClient.onBuildPublishDiagnostics(params)
       }
     }
   }
