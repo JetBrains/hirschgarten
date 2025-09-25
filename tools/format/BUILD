@@ -1,5 +1,6 @@
 load("@aspect_rules_js//js:defs.bzl", "js_library")
 load("@aspect_rules_lint//format:defs.bzl", "format_multirun")
+load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@npm//:prettier/package_json.bzl", prettier = "bin")
 load("@rules_java//java:defs.bzl", "java_binary")
 
@@ -8,7 +9,9 @@ package(default_visibility = ["//visibility:public"])
 format_multirun(
     name = "format",
     java = ":java-format",
-    kotlin = ":ktfmt",
+    kotlin = ":ktlint",
+    kotlin_check_args = [],
+    kotlin_fix_args = ["-F"],
     protocol_buffer = "@rules_buf_toolchains//:buf",
     starlark = "@buildifier_prebuilt//:buildifier",
     xml = ":prettier",
@@ -29,8 +32,7 @@ java_binary(
 )
 
 java_binary(
-    name = "ktfmt",
-    args = ["--format"],
+    name = "ktlint",
     main_class = "com.pinterest.ktlint.Main",
     runtime_deps = ["@ktlint//jar"],
 )
@@ -64,3 +66,5 @@ js_library(
         "//:node_modules/@prettier/plugin-xml",
     ],
 )
+
+npm_link_all_packages(name = "node_modules")

@@ -18,6 +18,7 @@ plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelquery/lexer/_Baz
 plugin-bazel/src/main/jps-resources/META-INF/plugin.xml rules-lint-ignored
 # exclude test projects for e2e tests
 server/e2e/test-projects/** rules-lint-ignored
-ktlint-baseline.xml rules-lint-ignored
+server/example/** rules-lint-ignored
+sdkcompat/**/Dummy.kt rules-lint-ignored
 # exclude lexer generated files
 **/_*.java rules-lint-ignored

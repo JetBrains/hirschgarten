@@ -1,0 +1,45 @@
+build --java_language_version=17 --java_runtime_version=17
+build --tool_java_language_version=17 --tool_java_runtime_version=17
+
+# Note: Use `common` for options to be applied to all applicable commands
+# Allow the Bazel server to check directory sources for changes. Ensures that the Bazel server
+# notices when a directory changes, if you have a directory listed in the srcs of some target.
+# Recommended when using
+# [copy_directory](https://github.com/aspect-build/bazel-lib/blob/main/docs/copy_directory.md) and
+# [rules_js](https://github.com/aspect-build/rules_js) since npm package are source directories
+# inputs to copy_directory actions.
+# Docs: https://bazel.build/reference/command-line-reference#flag--host_jvm_args
+startup --host_jvm_args=-DBAZEL_TRACK_SOURCE_DIRECTORIES=1
+
+# Use a static value for `PATH` and does not inherit `LD_LIBRARY_PATH`. Doesn't let environment
+# variables like `PATH` sneak into the build, which can cause massive cache misses when they change.
+# Use `--action_env=ENV_VARIABLE` if you want to inherit specific environment variables from the
+# client, but note that doing so can prevent cross-user caching if a shared cache is used.
+# Docs: https://bazel.build/reference/command-line-reference#flag--incompatible_strict_action_env
+build --incompatible_strict_action_env
+
+# Do not automatically create `__init__.py` files in the runfiles of Python targets. Fixes the wrong
+# default that comes from Google's internal monorepo by using `__init__.py` to delimit a Python
+# package. Precisely, when a `py_binary` or `py_test` target has `legacy_create_init` set to `auto (the
+# default), it is treated as false if and only if this flag is set. See
+# https://github.com/bazelbuild/bazel/issues/10076.
+# Docs: https://bazel.build/reference/command-line-reference#flag--incompatible_default_to_explicit_init_py
+build --incompatible_default_to_explicit_init_py
+
+# Speed up all builds by not checking if external repository files have been modified.
+# Docs: https://github.com/bazelbuild/bazel/blob/1af61b21df99edc2fc66939cdf14449c2661f873/src/main/java/com/google/devtools/build/lib/bazel/repository/RepositoryOptions.java#L244
+common --noexperimental_check_external_repository_files
+
+# Speed up all builds by not checking if output files have been modified. Lets you make changes to
+# the output tree without triggering a build for local debugging. For example, you can modify
+# [rules_js](https://github.com/aspect-build/rules_js) 3rd party npm packages in the output tree
+# when local debugging.
+# Docs: https://github.com/bazelbuild/bazel/blob/1af61b21df99edc2fc66939cdf14449c2661f873/src/main/java/com/google/devtools/build/lib/pkgcache/PackageOptions.java#L185
+# NB: This flag is in bazel6.bazelrc as when used in Bazel 7 is has been observed to break
+# "build without the bytes" --remote_download_outputs=toplevel. See https://github.com/aspect-build/bazel-lib/pull/711
+# for more info.
+common --noexperimental_check_output_files
+common --symlink_prefix=out/bazel-
+
+# Required to use the prebuilt protoc
+common --incompatible_enable_proto_toolchain_resolution
