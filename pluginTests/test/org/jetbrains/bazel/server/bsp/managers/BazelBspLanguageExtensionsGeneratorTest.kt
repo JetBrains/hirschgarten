@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
-import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.bsp.info.BspInfo
@@ -98,7 +98,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
 
     // then
     val fileContent = getExtensionsFileContent()
-    fileContent shouldBeEqual defaultFileContent
+    fileContent shouldBe defaultFileContent
   }
 
   @Test
@@ -118,7 +118,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
 
     // then
     val fileContent = getExtensionsFileContent()
-    fileContent shouldBeEqual goFileContent
+    fileContent shouldBe goFileContent
   }
 
   @Test
@@ -139,7 +139,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
 
     // then
     val fileContent = getExtensionsFileContent()
-    fileContent shouldBeEqual allExtensionsFileContent
+    fileContent shouldBe allExtensionsFileContent
   }
 
   @Test
@@ -164,13 +164,13 @@ class BazelBspLanguageExtensionsGeneratorTest {
     var fileContent = getExtensionsFileContent()
 
     // then
-    fileContent shouldBeEqual allExtensionsFileContent
+    fileContent shouldBe allExtensionsFileContent
 
     // when
     emptyBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(defaultRulesetLanguages, defaultToolchains)
 
     // then
     fileContent = getExtensionsFileContent()
-    fileContent shouldBeEqual defaultFileContent
+    fileContent shouldBe defaultFileContent
   }
 }

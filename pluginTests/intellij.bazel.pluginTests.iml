@@ -12,7 +12,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Guava" level="project" />
     <orderEntry type="library" name="fastutil-min" level="project" />
-    <orderEntry type="library" name="grpc-protobuf" level="project" />
     <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="library" name="kotlin-tooling-core" level="project" />
@@ -28,13 +27,14 @@
     <orderEntry type="library" scope="PROVIDED" name="studio-platform" level="project" />
     <orderEntry type="library" name="swingx" level="project" />
     <orderEntry type="library" name="caffeine" level="project" />
+    <orderEntry type="library" name="OroMatcher" level="project" />
     <orderEntry type="module" module-name="intellij.android.common" scope="TEST" />
     <orderEntry type="module" module-name="intellij.android.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.android.jps.model" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.commons" exported="" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.protobuf" exported="" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.sdkcompat" exported="" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.server" exported="" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.commons" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.sdkcompat" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.server" scope="TEST" />
     <orderEntry type="module" module-name="intellij.devkit.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.go.frontback" scope="TEST" />
     <orderEntry type="module" module-name="intellij.go.impl" scope="TEST" />
@@ -42,8 +42,6 @@
     <orderEntry type="module" module-name="intellij.java.analysis.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.compiler" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.compiler.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.debugger" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.debugger.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.execution" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.execution.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.impl" scope="TEST" />
@@ -75,7 +73,6 @@
     <orderEntry type="module" module-name="intellij.platform.ide.core.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ide.observable" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide.util.io" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.indexing" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.jps.model" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.lang.core" scope="TEST" />
@@ -113,8 +110,6 @@
     <orderEntry type="module" module-name="intellij.junit" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.util.coroutines" scope="TEST" />
     <orderEntry type="module" module-name="intellij.protoeditor.core" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="mvstore" level="project" />
-    <orderEntry type="library" scope="TEST" name="hash4j" level="project" />
     <orderEntry type="module" module-name="kotlin.project-wizard.idea" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.util.text.matching" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.debugger.impl.shared" scope="TEST" />
@@ -126,13 +121,6 @@
     <orderEntry type="module" module-name="intellij.terminal.completion" scope="TEST" />
     <orderEntry type="module" module-name="intellij.driver.sdk" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.refactoring" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="jackson" level="project" />
-    <orderEntry type="library" scope="TEST" name="jackson-databind" level="project" />
-    <orderEntry type="library" scope="TEST" name="jackson-dataformat-xml" level="project" />
-    <orderEntry type="library" scope="TEST" name="jackson-module-kotlin" level="project" />
-    <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
-    <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
-    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="module" module-name="intellij.bazel" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.testFramework" />
     <orderEntry type="module" module-name="intellij.java.rt" scope="PROVIDED" />
@@ -147,57 +135,48 @@
     <orderEntry type="module" module-name="intellij.python.plugin" />
     <orderEntry type="module" module-name="intellij.python.community.plugin.modules" />
     <orderEntry type="module" module-name="intellij.java.plugin" />
-
     <orderEntry type="module" module-name="intellij.java.debugger" />
-        <orderEntry type="module" module-name="intellij.java.debugger.impl" />
-        <orderEntry type="module" module-name="intellij.platform.core" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.editor.ex" />
-        <orderEntry type="module" module-name="intellij.java.execution" />
-        <orderEntry type="module" module-name="intellij.java.execution.impl" />
-        <orderEntry type="module" module-name="intellij.java.rt" />
-        <orderEntry type="module" module-name="intellij.java.guiForms.designer" />
-        <orderEntry type="module" module-name="intellij.platform.editor.ui" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.indexing" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.jps.model" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.projectModel" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.java.compiler" />
-        <orderEntry type="library" scope="TEST" name="jmock" level="project" />
-        <orderEntry type="module" module-name="intellij.xml.dom.impl" />
-        <orderEntry type="module" module-name="intellij.java.jam.impl" />
-        <orderEntry type="module" module-name="intellij.platform.vcs" />
-        <orderEntry type="module" module-name="intellij.platform.vcs.impl" />
-        <orderEntry type="library" name="OroMatcher" level="project" />
-        <orderEntry type="module" module-name="intellij.platform.lvcs.impl" />
-        <orderEntry type="module" module-name="intellij.junit.rt" />
-        <orderEntry type="module" module-name="intellij.java.ui" />
-        <orderEntry type="module" module-name="intellij.platform.ide" />
-        <orderEntry type="module" module-name="intellij.platform.util" />
-        <orderEntry type="module" module-name="intellij.java.langInjection" />
-        <orderEntry type="module" module-name="intellij.xml.langInjection" />
-        <orderEntry type="module" module-name="intellij.platform.tests" />
-        <orderEntry type="module" module-name="intellij.xml.tests" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.idea.ultimate.customization" scope="RUNTIME" />
-        <orderEntry type="module" module-name="intellij.properties.psi" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.properties.backend.psi" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.commercial" scope="RUNTIME" />
-        <orderEntry type="library" scope="TEST" name="kotlin-stdlib" level="project" />
-        <orderEntry type="module" module-name="intellij.platform.util.tests" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.lang.tests" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.lang.core" scope="TEST" />
-        <orderEntry type="library" scope="TEST" name="assertJ" level="project" />
-        <orderEntry type="module" module-name="intellij.idea.ultimate.codeInsight.tests" scope="TEST" />
-        <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
-        <orderEntry type="module" module-name="intellij.platform.vcs.tests" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.testExtensions" />
-        <orderEntry type="module" module-name="intellij.properties.resource.bundle.editor" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.platform.inspect" />
-        <orderEntry type="module" module-name="intellij.platform.core.ui" />
-        <orderEntry type="module" module-name="intellij.platform.ide.bootstrap" />
-        <orderEntry type="module" module-name="intellij.platform.util.jdom" scope="TEST" />
-        <orderEntry type="module" module-name="intellij.java.tests" scope="TEST" />
-        <orderEntry type="library" scope="TEST" name="kotlinx-coroutines-core" level="project" />
-
-        <orderEntry type="module" module-name="intellij.platform.testFramework.junit5" />
+    <orderEntry type="module" module-name="intellij.java.debugger.impl" />
+    <orderEntry type="module" module-name="intellij.platform.editor.ex" />
+    <orderEntry type="module" module-name="intellij.java.guiForms.designer" />
+    <orderEntry type="module" module-name="intellij.xml.dom.impl" />
+    <orderEntry type="module" module-name="intellij.java.jam.impl" />
+    <orderEntry type="module" module-name="intellij.platform.vcs.impl" />
+    <orderEntry type="module" module-name="intellij.platform.lvcs.impl" />
+    <orderEntry type="module" module-name="intellij.junit.rt" />
+    <orderEntry type="module" module-name="intellij.java.langInjection" />
+    <orderEntry type="module" module-name="intellij.xml.langInjection" />
+    <orderEntry type="module" module-name="intellij.platform.tests" />
+    <orderEntry type="module" module-name="intellij.xml.tests" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.idea.ultimate.customization" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.properties.psi" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.properties.backend.psi" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.commercial" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.util.tests" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.lang.tests" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.idea.ultimate.codeInsight.tests" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.vcs.tests" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.testExtensions" />
+    <orderEntry type="module" module-name="intellij.properties.resource.bundle.editor" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.inspect" />
+    <orderEntry type="module" module-name="intellij.platform.ide.bootstrap" />
+    <orderEntry type="module" module-name="intellij.java.tests" scope="TEST" />
+    <orderEntry type="library" scope="TEST" name="mvstore" level="project" />
+    <orderEntry type="library" scope="TEST" name="hash4j" level="project" />
+    <orderEntry type="library" scope="TEST" name="jackson" level="project" />
+    <orderEntry type="library" scope="TEST" name="jackson-databind" level="project" />
+    <orderEntry type="library" scope="TEST" name="jackson-dataformat-xml" level="project" />
+    <orderEntry type="library" scope="TEST" name="jackson-module-kotlin" level="project" />
+    <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
+    <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
+    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
+    <orderEntry type="library" scope="TEST" name="jmock" level="project" />
+    <orderEntry type="library" scope="TEST" name="assertJ" level="project" />
+    <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
+    <orderEntry type="library" scope="TEST" name="kotlinx-coroutines-core" level="project" />
+    <orderEntry type="library" scope="TEST" name="grpc-core" level="project" />
+    <orderEntry type="library" scope="TEST" name="grpc-protobuf" level="project" />
+    <orderEntry type="library" scope="TEST" name="grpc-stub" level="project" />
+    <orderEntry type="library" name="kotlinx-coroutines-test" level="project" />
   </component>
 </module>

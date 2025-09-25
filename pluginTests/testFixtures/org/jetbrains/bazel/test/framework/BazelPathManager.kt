@@ -19,5 +19,5 @@ object BazelPathManager {
   }
 
   fun getTestFixture(path: String) = getTestFixturePath(path).absolutePathString()
-  fun getTestFixturePath(path: String) = testDataRoot.resolve(path)
+  fun getTestFixturePath(path: String): Path = testDataRoot.resolve(path)
 }

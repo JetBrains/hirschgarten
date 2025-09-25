@@ -11,9 +11,10 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 
 abstract class BazelBasePlatformTestCase : BasePlatformTestCase() {
-  private val disposable = Disposer.newDisposable()
+  private var disposable = Disposer.newCheckedDisposable()
 
   override fun setUp() {
+    disposable = Disposer.newCheckedDisposable()
     super.setUp()
     project.isBazelProject = true
     project.rootDir = LightPlatformTestCase.getSourceRoot()

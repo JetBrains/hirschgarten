@@ -2,8 +2,6 @@ package org.jetbrains.bazel.server.bep
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotBeEmpty
-import io.kotest.matchers.equals.shouldBeEqual
-import io.kotest.matchers.equals.shouldNotBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -400,12 +398,12 @@ class TestXmlParserTest {
       val data = (it.data as TestFinish)
       when (data.displayName) {
         "com.example.optimization.TestSuite1", "com.example.testing.base.Tests" -> {
-          it.taskId.parents shouldBeEqual emptyList()
+          it.taskId.parents shouldBe emptyList()
           data.status shouldBe TestStatus.FAILED
         }
 
         "sampleFailedTest" -> {
-          it.taskId.parents shouldNotBeEqual emptyList()
+          it.taskId.parents shouldNotBe emptyList<String>()
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldContain "expected:"
