@@ -9,7 +9,9 @@ package(default_visibility = ["//visibility:public"])
 format_multirun(
     name = "format",
     java = ":java-format",
-    kotlin = ":ktfmt",
+    kotlin = ":ktlint",
+    kotlin_check_args = [],
+    kotlin_fix_args = ["-F"],
     protocol_buffer = "@rules_buf_toolchains//:buf",
     starlark = "@buildifier_prebuilt//:buildifier",
     xml = ":prettier",
@@ -30,11 +32,7 @@ java_binary(
 )
 
 java_binary(
-    name = "ktfmt",
-    args = [
-        "--format",
-        "--baseline=ktlint-baseline.xml",
-    ],
+    name = "ktlint",
     main_class = "com.pinterest.ktlint.Main",
     runtime_deps = ["@ktlint//jar"],
 )

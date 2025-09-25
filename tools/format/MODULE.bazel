@@ -29,7 +29,7 @@ use_repo(pnpm, "pnpm")
 
 bazel_dep(
     name = "aspect_rules_lint",
-    version = "1.7.0",
+    version = "1.9.0",
 )
 
 http_jar(
