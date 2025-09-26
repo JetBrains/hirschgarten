@@ -1,4 +1,3 @@
-load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain", "kt_kotlinc_options")
 load("//rules_intellij/intellij_platform_sdk:build_defs.bzl", "select_for_plugin_api")
 
@@ -29,7 +28,5 @@ define_kt_toolchain(
 
 alias(
     name = "format",
-    actual = "//tools/format",
+    actual = "@format//:format",
 )
-
-npm_link_all_packages(name = "node_modules")
