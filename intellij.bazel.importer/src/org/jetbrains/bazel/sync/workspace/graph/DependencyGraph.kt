@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.graph
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import java.util.PriorityQueue
 
@@ -204,4 +205,19 @@ class DependencyGraph(
         .toSet()
     return dependencies + target
   }
+
+  /**
+   * Gets source files from reverse dependencies (umbrella targets) that contain Java/Kotlin sources.
+   * This is useful for sharded libraries where each shard needs to see sources from umbrella targets
+   * that depend on all shards.
+   */
+  fun getSourcesFromReverseDependencies(targetId: Label): Set<TargetInfo> {
+    return getReverseDependencies(targetId)
+      .mapNotNull { reverseDep -> idToTargetInfo[reverseDep] }
+      .filter { it.hasJvmTargetInfo() }
+      .toSet()
+  }
+
+  fun getTargetInfo(targetId: Label): TargetInfo? = idToTargetInfo[targetId]
+
 }

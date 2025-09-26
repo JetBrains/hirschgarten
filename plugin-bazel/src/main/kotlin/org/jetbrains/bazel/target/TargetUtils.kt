@@ -206,27 +206,43 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     targetDirectDependentsGraph: Map<Label, Set<Label>>,
     target: Label,
     labelToTargetInfo: Map<Label, BuildTarget>,
+    visited: MutableSet<Label> = HashSet(),
   ): Set<Label> =
     resultCache.getOrPut(target) {
+      // Check if we've already visited this target in the current path to prevent cycles
+      if (target in visited) {
+        return@getOrPut emptySet()
+      }
+
       val targetInfo = labelToTargetInfo[target]
       if (targetInfo?.kind?.isExecutable == true) {
         return@getOrPut setOf(target)
       }
+
+      // Add current target to visited set
+      visited.add(target)
 
       val directDependentIds = targetDirectDependentsGraph[target] ?: return@getOrPut emptySet()
 
       val executableTargetsFromSamePackage = directDependentIds.filter {
         it.packagePath == target.packagePath && labelToTargetInfo[it]?.kind?.isExecutable == true
       }
-      if (executableTargetsFromSamePackage.isNotEmpty()) return@getOrPut executableTargetsFromSamePackage.toHashSet()
+      if (executableTargetsFromSamePackage.isNotEmpty()) {
+        val result = executableTargetsFromSamePackage.toHashSet()
+        visited.remove(target)
+        return@getOrPut result
+      }
 
-      return@getOrPut directDependentIds
+      val result = directDependentIds
         .asSequence()
         .flatMap { dependency ->
-          calculateTransitivelyExecutableTargets(resultCache, targetDirectDependentsGraph, dependency, labelToTargetInfo)
+          calculateTransitivelyExecutableTargets(resultCache, targetDirectDependentsGraph, dependency, labelToTargetInfo, visited)
         }.distinct()
         .take(MAX_EXECUTABLE_TARGET_IDS)
         .toHashSet()
+      // Remove current target from visited set (backtracking)
+      visited.remove(target)
+      return@getOrPut result
     }
 
   fun notifyTargetListUpdated() {
