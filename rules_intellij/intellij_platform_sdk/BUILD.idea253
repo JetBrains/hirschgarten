@@ -2,7 +2,7 @@
 # This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
 # It was modified by JetBrains s.r.o. and contributors
 #
-# Copyright 2024 The Bazel Authors. All rights reserved.
+# Copyright 2025 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ java_import(
         ]
     ),
     tags = ["intellij-provided-by-sdk"],
-    srcjar = "@intellij_ce_2024_3_sources//jar",
+    srcjar = "@intellij_ce_2025_3_sources//jar",
     deps = ["@maven//:com_google_errorprone_error_prone_annotations"],
 )
 
@@ -65,6 +65,9 @@ java_import(
         "plugins/java-i18n/lib/*.jar",
         "plugins/junit/lib/*.jar",
         "plugins/properties/lib/*.jar",
+        "plugins/json/lib/*.jar",
+        "plugins/json/lib/modules/*.jar",
+        "plugins/toml/lib/*.jar",
     ]),
 )
 
