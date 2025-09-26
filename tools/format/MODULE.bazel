@@ -1,0 +1,57 @@
+module(name = "format")
+
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+bazel_dep(name = "rules_java", version = "8.14.0")
+bazel_dep(name = "aspect_rules_js", version = "2.6.0")
+
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm")
+npm.npm_translate_lock(
+    name = "npm",
+    data = ["//:package.json"],
+    npmrc = "//:.npmrc",
+    pnpm_lock = "//:pnpm-lock.yaml",
+    public_hoist_packages = {
+        "typescript-eslint": [""],
+    },
+    update_pnpm_lock = True,
+    verify_node_modules_ignored = "//:.bazelignore",
+)
+use_repo(npm, "npm")
+
+pnpm = use_extension("@aspect_rules_js//npm:extensions.bzl", "pnpm")
+
+# Allows developers to use the matching pnpm version, for example:
+# bazel run -- @pnpm --dir /home/runner/work/rules_js/rules_js install
+use_repo(pnpm, "pnpm")
+
+bazel_dep(
+    name = "aspect_rules_lint",
+    version = "1.9.0",
+)
+
+http_jar(
+    name = "ktlint",
+    integrity = "sha256-tZagXwk2ThmXtkQVJoOvEv71iUTzrPq994Bx9aSQ65g=",
+    url = "https://github.com/pinterest/ktlint/releases/download/1.7.1/ktlint",
+)
+
+http_jar(
+    name = "google_java_format",
+    integrity = "sha256-MjQufBtGAPgN80cdpGrugBLT4URdXqG+H7cSibB8xzU=",
+    url = "https://github.com/google/google-java-format/releases/download/v1.28.0/google-java-format-1.28.0-all-deps.jar",
+)
+
+bazel_dep(
+    name = "buildifier_prebuilt",
+    version = "8.2.0.2",
+)
+bazel_dep(
+    name = "rules_buf",
+    version = "0.5.2",
+)
+
+buf = use_extension("@rules_buf//buf:extensions.bzl", "buf")
+use_repo(buf, "rules_buf_toolchains")
