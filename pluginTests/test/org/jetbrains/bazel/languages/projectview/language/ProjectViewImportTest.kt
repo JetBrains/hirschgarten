@@ -13,12 +13,14 @@ import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
+import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import kotlin.io.path.Path
 
-@RunWith(JUnit4::class)
+//@RunWith(JUnit4::class)
+@BazelTest
 class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
   @Test
   fun `test import no overlap`() {

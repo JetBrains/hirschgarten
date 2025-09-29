@@ -1,5 +1,9 @@
 filegroup(
-    name = "projectview",
-    srcs = glob(["projectview/**/*.bazelproject"]),
+    name = "test_data",
+    srcs = glob([
+        "**/*",
+        "**/*.*",
+        "**/*.bazelproject",
+    ]),
     visibility = ["//visibility:public"],
 )

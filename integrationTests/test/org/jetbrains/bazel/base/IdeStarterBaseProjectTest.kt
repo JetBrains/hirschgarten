@@ -16,8 +16,6 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.execute
-import com.intellij.ide.starter.extended.engine.AdditionalModulesForDevBuildServer
-import com.intellij.ide.starter.extended.plugins.asExtended
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
@@ -31,6 +29,7 @@ import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
+import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
@@ -44,18 +43,13 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalPathApi::class)
 abstract class IdeStarterBaseProjectTest {
-  val requiredModules = arrayOf("intellij.bazel.plugin", "intellij.protoeditor")
-  val requiredPlugins = arrayOf("org.jetbrains.bazel", "idea.plugin.protoeditor")
-
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 1200).seconds
 
   protected fun createContext(projectName: String, case: TestCase<*>): IDETestContext {
-    AdditionalModulesForDevBuildServer.addAdditionalModules(*requiredModules)
+    IntegrationTestCompat.onPreCreateContext()
     val ctx = Starter.newContext(projectName, case)
-    for (pluginId in requiredPlugins) {
-      ctx.pluginConfigurator.asExtended().installPluginFromTeamCity(pluginId)
-    }
+    IntegrationTestCompat.onPostCreateContext(ctx)
 
     return ctx
       .executeRightAfterIdeOpened(true)

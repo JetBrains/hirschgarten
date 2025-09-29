@@ -24,7 +24,7 @@ import org.jetbrains.bazel.sync.libraries.BazelExternalLibraryProvider
 import java.nio.file.Path
 import kotlin.io.path.extension
 
-const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries"
+public const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries"
 
 class GoAdditionalLibraryRootsProvider : BazelExternalLibraryProvider() {
   override val libraryName: String = GO_EXTERNAL_LIBRARY_ROOT_NAME

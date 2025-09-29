@@ -21,12 +21,14 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 
 /** Tests for [BazelGoPackage.getImportReferences]. */
+@BazelTest
 class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
   @Test
   fun testFromBuildFile() {

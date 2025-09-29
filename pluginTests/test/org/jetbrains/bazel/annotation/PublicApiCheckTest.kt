@@ -4,16 +4,17 @@ import com.google.common.reflect.ClassPath
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.resourceUtil.ResourceUtil
+import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.ResourceUtil
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Modifier
 import java.net.URLClassLoader
 import kotlin.io.path.readText
 
 private const val PLUGIN_BAZEL_JAR = "plugin-bazel/plugin-bazel.jar"
-private const val PUBLIC_API_CLASSES = "org/jetbrains/bazel/annotation/public-api-classes.txt"
-private const val PUBLIC_API_METHODS = "org/jetbrains/bazel/annotation/public-api-methods.txt"
-private const val PUBLIC_API_FIELDS = "org/jetbrains/bazel/annotation/public-api-fields.txt"
+private const val PUBLIC_API_CLASSES = "public_api/public-api-classes.txt"
+private const val PUBLIC_API_METHODS = "public_api/public-api-methods.txt"
+private const val PUBLIC_API_FIELDS = "public_api/public-api-fields.txt"
 private const val PACKAGE_PREFIX = "org.jetbrains.bazel"
 
 /**
@@ -71,26 +72,26 @@ class PublicApiCheckTest {
             )
           }
 
-      ResourceUtil.useResource(PUBLIC_API_CLASSES) { expectedPublicApiClasses ->
-        publicApiClasses
-          .map { it.toString() }
-          .distinct()
-          .sorted()
-          .joinToString("\n") shouldBe expectedPublicApiClasses.readText().trim()
-      }
-      ResourceUtil.useResource(PUBLIC_API_METHODS) { expectedPublicApiMethods ->
-        publicApiMethods
-          .map { it.toString() }
-          .distinct()
-          .sorted()
-          .joinToString("\n") shouldBe expectedPublicApiMethods.readText().trim()
-      }
-      ResourceUtil.useResource(PUBLIC_API_FIELDS) { expectedPublicApiFields ->
-        publicApiFields
-          .map { it.toString() }
-          .distinct()
-          .sorted()
-          .joinToString("\n") shouldBe expectedPublicApiFields.readText().trim()
-      }
+      val expectedPublicApiClasses = BazelPathManager.getTestFixturePath(PUBLIC_API_CLASSES)
+      publicApiClasses
+        .map { it.toString() }
+        .distinct()
+        .sorted()
+        .joinToString("\n") shouldBe expectedPublicApiClasses.readText().trim()
+
+      val expectedPublicApiMethods = BazelPathManager.getTestFixturePath(PUBLIC_API_METHODS)
+      publicApiMethods
+        .map { it.toString() }
+        .distinct()
+        .sorted()
+        .joinToString("\n") shouldBe expectedPublicApiMethods.readText().trim()
+
+      val expectedPublicApiFields = BazelPathManager.getTestFixturePath(PUBLIC_API_FIELDS)
+      publicApiFields
+        .map { it.toString() }
+        .distinct()
+        .sorted()
+        .joinToString("\n") shouldBe expectedPublicApiFields.readText().trim()
+
     }
 }

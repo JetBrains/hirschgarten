@@ -20,6 +20,10 @@ import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.rootDir
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
+import com.intellij.testFramework.junit5.TestDisposable
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
@@ -27,7 +31,12 @@ import java.nio.file.Path
 private const val JAVA_SDK_NAME = "11"
 private const val JAVA_SDK_TYPE = "JavaSDK"
 
+@BazelTestApplication
 abstract class WorkspaceModelBaseTest {
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
 
   @JvmField

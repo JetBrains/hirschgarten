@@ -1,16 +1,17 @@
 package org.jetbrains.bazel.test.framework
 
-import com.intellij.openapi.application.PathManager
+import org.jetbrains.bazel.test.compat.PluginTestsCompat
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 object BazelPathManager {
-  private const val BAZEL_RELATIVE_PATH = "plugins/bazel"
+  val pluginSourceRoot: Path by lazy {
+    //Path.of(PathManager.getHomePath())
+    PluginTestsCompat.bazelPluginPath
+  }
 
   val testSourceRoot: Path by lazy {
-    PathManager.getHomeDir()
-      .resolve(BAZEL_RELATIVE_PATH)
-      .resolve("pluginTests")
+    pluginSourceRoot.resolve("pluginTests")
   }
 
   val testDataRoot: Path by lazy {

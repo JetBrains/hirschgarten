@@ -10,6 +10,8 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.test.framework.annotation.BazelTest
+import org.jetbrains.bazel.test.framework.annotation.TestKind
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -18,6 +20,7 @@ import kotlin.time.Duration.Companion.minutes
  * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/nonmodule/sync:NonModuleTargetsTest --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
  * ```
  */
+@BazelTest(kind = TestKind.IDE_STARTER)
 class NonModuleTargetsTest : IdeStarterBaseProjectTest() {
 
   @Test

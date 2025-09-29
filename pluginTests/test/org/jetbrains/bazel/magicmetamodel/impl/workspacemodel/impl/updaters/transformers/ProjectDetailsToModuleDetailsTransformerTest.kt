@@ -7,6 +7,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -16,7 +17,9 @@ import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
 @DisplayName("ProjectDetailsToModuleDetailsTransformer.moduleDetailsForTargetId(projectDetails) tests")
+@BazelTestApplication
 class ProjectDetailsToModuleDetailsTransformerTest {
+  
   @Test
   fun `should return empty module details for singular module`() {
     // given

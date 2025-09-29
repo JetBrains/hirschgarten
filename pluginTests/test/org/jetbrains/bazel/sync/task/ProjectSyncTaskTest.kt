@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.sync.task
 
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
@@ -26,11 +28,19 @@ import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveS
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 @DisplayName("ProjectSyncTask tests")
 class ProjectSyncTaskTest : MockProjectBaseTest() {
+
+  @BeforeEach
+  fun beforeAll() {
+    project.rootDir = VirtualFileManager.getInstance().findFileByNioPath(Path(project.basePath!!))!!
+  }
+
   @Test
   fun `should call all enabled pre-sync, sync and post-sync hooks`() {
     // given

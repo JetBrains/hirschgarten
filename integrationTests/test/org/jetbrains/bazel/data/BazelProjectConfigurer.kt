@@ -30,13 +30,14 @@ object BazelProjectConfigurer {
   }
 
   private fun runBazelClean(context: IDETestContext) {
-    val exitCode =
-      ProcessBuilder("bazel", "clean", "--expunge")
-        .directory(context.resolvedProjectHome.toFile())
-        .start()
-        .waitFor()
-    check(exitCode == 0) { "Bazel clean exited with code $exitCode" }
+    //val exitCode =
+    //  ProcessBuilder("bazel", "clean", "--expunge")
+    //    .directory(context.resolvedProjectHome.toFile())
+    //    .start()
+    //    .waitFor()
+    //check(exitCode == 0) { "Bazel clean exited with code $exitCode" }
   }
+
 
   private fun createProjectViewFile(context: IDETestContext) {
     val projectView = context.resolvedProjectHome / "projectview.bazelproject"

@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-internal val testLibraries: List<Library> =
+val testLibraries: List<Library> =
   listOf(
     Library(
       displayName = "lib1",
@@ -46,8 +46,7 @@ internal val testLibraries: List<Library> =
       isLowPriority = false,
     ),
   )
-
-internal val testLibrariesByName: Map<String, Library> =
+val testLibrariesByName: Map<String, Library> =
   testLibraries.associateBy { it.displayName }
 
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")

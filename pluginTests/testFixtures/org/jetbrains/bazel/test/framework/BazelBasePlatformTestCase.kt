@@ -1,12 +1,9 @@
 package org.jetbrains.bazel.test.framework
 
 import com.intellij.openapi.extensions.ExtensionPointName
-import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
 import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.LightPlatformTestCase
-import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 

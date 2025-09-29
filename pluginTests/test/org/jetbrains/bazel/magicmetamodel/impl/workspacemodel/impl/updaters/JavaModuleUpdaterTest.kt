@@ -31,19 +31,43 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
+val testLibraries: List<Library> =
+  listOf(
+    Library(
+      displayName = "lib1",
+      iJars = emptyList(),
+      sourceJars = emptyList(),
+      classJars = emptyList(),
+      mavenCoordinates = null,
+      isLowPriority = false,
+    ),
+    Library(
+      displayName = "lib2",
+      iJars = emptyList(),
+      sourceJars = emptyList(),
+      classJars = emptyList(),
+      mavenCoordinates = null,
+      isLowPriority = false,
+    ),
+  )
+val testLibrariesByName: Map<String, Library> =
+  testLibraries.associateBy { it.displayName }
+
 // TODO add libraries tests
-internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
+class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
   @Nested
   @DisplayName("javaModuleWithSourcesUpdater.addEntity(entityToAdd) tests")
   inner class JavaModuleWithSourcesUpdaterTest {

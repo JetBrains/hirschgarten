@@ -40,6 +40,7 @@ import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory.Companion.fileTo
 import org.jetbrains.bazel.golang.sync.GO_EXTERNAL_LIBRARY_ROOT_NAME
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.libraries.BazelExternalSyntheticLibrary
+import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

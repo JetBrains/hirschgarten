@@ -5,6 +5,7 @@ package org.jetbrains.bazel.workspace
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.ChildInfo
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
@@ -45,6 +46,8 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySo
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.test.framework.annotation.BazelTest
+import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -59,9 +62,6 @@ import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 
 class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
-  @TestDisposable
-  lateinit var disposable: Disposable
-
   private val target1 = Label.parse("//src:target1")
   private val target2 = Label.parse("//src:target2")
   private val target3 = Label.parse("//src/package:target3")
@@ -73,6 +73,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   override fun beforeEach() {
     super.beforeEach()
     project.isBazelProject = true
+    project.rootDir = VirtualFileManager.getInstance().findFileByNioPath(Path(project.basePath!!))!!
     inverseSourcesServer = InverseSourcesServer(projectBasePath)
     project.replaceService(BazelServerService::class.java, inverseSourcesServer.serverService, disposable)
     addMockTargetToProject(project)

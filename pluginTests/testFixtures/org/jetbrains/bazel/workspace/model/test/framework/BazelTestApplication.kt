@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @TestOnly
 @Target(AnnotationTarget.CLASS)
-@ExtendWith(TestApplicationExtension::class)
+@ExtendWith(
+  TestApplicationExtension::class, BazelIdeaTextExtension::class,
+)
 @TestFixtures
 annotation class BazelTestApplication

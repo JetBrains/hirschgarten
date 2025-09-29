@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.commons
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -20,6 +21,7 @@ private fun getData() =
     Arguments.of(Duration.ofMillis((90 * 1000 + 501).toLong()), "1m 31s"),
   )
 
+@BazelTest
 class FormatTest {
   @ParameterizedTest(name = "Format.duration({0}) should be {1}")
   @MethodSource("org.jetbrains.bazel.commons.FormatTestKt#getData")
