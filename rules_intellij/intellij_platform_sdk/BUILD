@@ -117,6 +117,7 @@ java_library(
     neverlink = 1,
     visibility = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/modify/ideStarter:__pkg__",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ideStarter:__pkg__",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java:__subpackages__",
         "//sdkcompat:__subpackages__",
     ],

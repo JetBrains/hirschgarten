@@ -4,7 +4,7 @@ kt_jvm_library(
     name = "settings",
     srcs = glob(["*.kt"]),
     associates = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings/bazel",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/settings/bazel",
     ],
     visibility = ["//visibility:public"],
     deps = [
