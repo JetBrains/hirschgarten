@@ -35,7 +35,7 @@ object ProjectViewToWorkspaceContextConverter {
     val dirs = createDirectoriesFromProjectView(projectView, workspaceRoot)
     val targets =
       if (projectView.deriveTargetsFromDirectories) {
-        createTargetsFromDirectories(projectView.targets, dirs)
+        createTargetsFromDirectories(projectView.targets, projectView.directories)
       } else {
         projectView.targets
       }
@@ -70,7 +70,13 @@ object ProjectViewToWorkspaceContextConverter {
       return listOf(ExcludableValue.included(workspaceRoot))
     }
 
-    return projectView.directories
+    return projectView.directories.map { directory ->
+      val relativeToWorkspaceRoot = workspaceRoot.resolve(directory.value).normalize()
+      when (directory) {
+        is ExcludableValue.Included<Path> -> ExcludableValue.Included(relativeToWorkspaceRoot)
+        is ExcludableValue.Excluded<Path> -> ExcludableValue.Excluded(relativeToWorkspaceRoot)
+      }
+    }
   }
 
   private fun resolveBazelBinary(): Path {

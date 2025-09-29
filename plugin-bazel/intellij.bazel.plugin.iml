@@ -145,5 +145,6 @@
     <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector.starter" scope="TEST" />
     <orderEntry type="module" module-name="intellij.driver.model" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.ide.updateChecker" />
   </component>
 </module>

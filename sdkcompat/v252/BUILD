@@ -8,6 +8,7 @@ kt_jvm_library(
         "intellij-2025.2": glob([
             "org/jetbrains/bazel/sdkcompat/**",
         ]),
+        "intellij-2025.3": ["Dummy.kt"],
     }),
     visibility = ["//sdkcompat:__pkg__"],
     exports = [

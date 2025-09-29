@@ -19,6 +19,10 @@ java_library(
             "@terminal_2025_2//jar",
             "@terminal_completion_2025_2//jar",
         ],
+        "intellij-2025.3": [
+            "@terminal_2025_3//jar",
+            "@terminal_completion_2025_3//jar",
+        ],
         "default": [],
     }),
 )
