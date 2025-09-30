@@ -192,6 +192,10 @@
                     interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.testLocatorProvider"
+                    interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->

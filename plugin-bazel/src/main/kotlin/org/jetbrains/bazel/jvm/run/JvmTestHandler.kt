@@ -14,7 +14,9 @@ import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
+import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
+import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.sdkcompat.COROUTINE_JVM_FLAGS_KEY
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -70,7 +72,12 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
 
 class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val settings: JvmTestState) :
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
-  override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelTestTaskListener(handler)
+  override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
+    if (environment.project.useJetBrainsTestRunner()) {
+      BazelRunTaskListener(handler)
+    } else {
+      BazelTestTaskListener(handler)
+    }
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
@@ -81,9 +88,9 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
   ) {
     val scriptPath = environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()
     if (scriptPath != null) {
-      debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler, settings.testFilter)
+      debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler, settings.env.envs, settings.testFilter)
     } else {
-      val configuration = environment.runProfile as BazelRunConfiguration
+      val configuration = BazelRunConfiguration.get(environment)
       val kotlinCoroutineLibParam = retrieveKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
       val additionalBazelParams = settings.additionalBazelParams ?: ""
       val testParams =
@@ -96,6 +103,7 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
           debug = debugType,
           testFilter = settings.testFilter,
           additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
+          useJetBrainsTestRunner = environment.project.useJetBrainsTestRunner(),
         )
 
       server.buildTargetTest(testParams)

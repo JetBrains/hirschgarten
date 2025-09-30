@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.HasAdditionalBazelOptions
@@ -184,8 +185,10 @@ class ExecuteService(
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
-    // Ensure streamed test output for live UI in IDE
-    ensureTestOutputStreamed(command)
+    if (params.useJetBrainsTestRunner) {
+      // Ensure streamed test output for live UI in IDE
+      ensureTestOutputStreamed(command)
+    }
 
     params.testFilter?.let { testFilter ->
       command.options.add(BazelFlag.testFilter(testFilter))
@@ -239,19 +242,9 @@ class ExecuteService(
     }
   }
 
-  private fun ensureTestOutputStreamed(command: org.jetbrains.bazel.bazelrunner.BazelCommand) {
-    val flagPrefix = "--test_output"
-    val hasInOptions = command.options.any { it.startsWith(flagPrefix) }
-    var added = false
-    if (command is HasAdditionalBazelOptions) {
-      val hasInAdditional = command.additionalBazelOptions.any { it.startsWith(flagPrefix) }
-      if (!hasInAdditional) {
-        command.additionalBazelOptions.add(BazelFlag.testOutputStreamed())
-        added = true
-      }
-    }
-    if (!added && !hasInOptions) {
-      command.options.add(BazelFlag.testOutputStreamed())
-    }
+  private fun ensureTestOutputStreamed(command: BazelCommand) {
+    // Add to the beginning to make overriding possible
+    command.options.addFirst(BazelFlag.testOutputStreamed())
+    command.options.addFirst(BazelFlag.dontCacheTestResults())
   }
 }
