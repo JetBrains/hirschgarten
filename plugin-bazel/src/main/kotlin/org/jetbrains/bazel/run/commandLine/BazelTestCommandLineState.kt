@@ -13,8 +13,9 @@ import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
+import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
@@ -26,12 +27,16 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
   BazelCommandLineStateBase(environment) {
   var coverageReportListener: ((Path) -> Unit)? = null
 
-  private val configuration = environment.runProfile as BazelRunConfiguration
+  private val configuration = BazelRunConfiguration.get(environment)
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
-    BazelTestTaskListener(handler, coverageReportListener)
+    if (configuration.project.useJetBrainsTestRunner()) {
+      BazelRunTaskListener(handler)
+    } else {
+      BazelTestTaskListener(handler, coverageReportListener)
+    }
 
   override suspend fun startBsp(
     server: JoinedBuildServer,
@@ -61,6 +66,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
         coverageInstrumentationFilter = coverageInstrumentationFilter,
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,
+        useJetBrainsTestRunner = configuration.project.useJetBrainsTestRunner(),
       )
     server.buildTargetTest(params)
   }

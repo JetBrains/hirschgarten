@@ -44,6 +44,8 @@ object BazelFlag {
 
   @JvmStatic fun testOutputStreamed(): String = arg("test_output", "streamed")
 
+  @JvmStatic fun dontCacheTestResults(): String = arg("cache_test_results", "no")
+
   @JvmStatic fun device(device: String): String = arg("device", device)
 
   @JvmStatic fun start(startType: String): String = arg("start", startType)

@@ -11,10 +11,9 @@ import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
+import org.jetbrains.bazel.sync.SyncCache
 import java.nio.file.Path
-import java.nio.file.attribute.FileTime
 import kotlin.io.path.exists
-import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.notExists
 
 /**
@@ -42,6 +41,12 @@ class ProjectViewService(private val project: Project) {
 
     return parseProjectView(projectViewPath)
   }
+
+  private val cachedProjectViewComputable = SyncCache.SyncCacheComputable {
+    getProjectView()
+  }
+
+  fun getCachedProjectView(): ProjectView = SyncCache.getInstance(project).get(cachedProjectViewComputable)
 
   private fun findProjectViewPath(): Path {
     val pathFromSettings = project.bazelProjectSettings.projectViewPath

@@ -56,6 +56,7 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
     scriptPath: String,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
+    env: Map<String, String>,
     testFilter: String? = null,
   ) {
     val commandLine =
@@ -64,6 +65,7 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
         .withExePath(scriptPath)
         // don't inherit IntelliJ's environment variables as the script should be self-contained
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
+        .withEnvironment(env)
     if (testFilter != null) {
       commandLine.environment[BAZEL_TEST_FILTER_ENV] = testFilter
     }

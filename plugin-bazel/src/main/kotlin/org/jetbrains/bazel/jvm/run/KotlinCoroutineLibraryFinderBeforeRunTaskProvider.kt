@@ -46,7 +46,7 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
     environment: ExecutionEnvironment,
     task: Task,
   ): Boolean {
-    val runConfiguration = environment.runProfile as BazelRunConfiguration
+    val runConfiguration = BazelRunConfiguration.get(environment)
     // skipping this task for non-debugging run config
     if (environment.executor !is DefaultDebugExecutor) return true
     val project = environment.project

@@ -2,12 +2,18 @@ package org.jetbrains.bazel.kotlin.ui.gutters
 
 import com.intellij.psi.PsiNameIdentifierOwner
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
+import org.jetbrains.kotlin.idea.base.psi.KotlinPsiHeuristics
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
+import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 
 class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
-  override fun PsiNameIdentifierOwner.getClassName(): String? = this.getStrictParentOfType<KtClassOrObject>()?.name
+  override fun PsiNameIdentifierOwner.getClassName(): String? = this.getNonStrictParentOfType<KtClassOrObject>()?.name
+
+  override fun PsiNameIdentifierOwner.getFullyQualifiedClassName(): String? {
+    val classOrObject = this.getNonStrictParentOfType<KtClassOrObject>() ?: return null
+    return KotlinPsiHeuristics.getJvmName(classOrObject)
+  }
 
   override fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean = this is KtClassOrObject || this is KtNamedFunction
 

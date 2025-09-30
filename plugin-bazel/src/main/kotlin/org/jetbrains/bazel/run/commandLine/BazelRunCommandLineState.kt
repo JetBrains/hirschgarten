@@ -9,14 +9,13 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 
 class BazelRunCommandLineState(environment: ExecutionEnvironment, private val runState: AbstractGenericRunState<*>) :
   BazelCommandLineStateBase(environment) {
-  private val configuration = environment.runProfile as BazelRunConfiguration
+  private val configuration = BazelRunConfiguration.get(environment)
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
