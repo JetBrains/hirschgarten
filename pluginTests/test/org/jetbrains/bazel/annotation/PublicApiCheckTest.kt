@@ -6,6 +6,7 @@ import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.ResourceUtil
+import org.jetbrains.bazel.test.framework.annotation.OnlyHirschgertenTest
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Modifier
 import java.net.URLClassLoader
@@ -28,6 +29,7 @@ private const val PACKAGE_PREFIX = "org.jetbrains.bazel"
  *
  * - For other contributors: consult with Bazel plugin team members before changing any public APIs, as any changes can break other dependent plugins/customers.
  */
+@OnlyHirschgertenTest
 class PublicApiCheckTest {
   @Test
   fun `check that plugin's public API did not change`() =

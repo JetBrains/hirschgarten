@@ -6,6 +6,8 @@ import com.intellij.openapi.Disposable
 import java.nio.file.Path
 
 object PluginTestsCompat {
+  val isHirschgarten: Boolean = true
+
   val bazelPluginPath: Path by lazy {
     Runfiles.runfilesPath()
   }

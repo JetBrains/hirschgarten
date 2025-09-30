@@ -5,6 +5,8 @@ import com.intellij.openapi.application.PathManager
 import java.nio.file.Path
 
 object PluginTestsCompat {
+  val isHirschgarten: Boolean = false
+
   private const val BAZEL_RELATIVE_PATH = "plugins/bazel"
 
   val bazelPluginPath: Path by lazy {
