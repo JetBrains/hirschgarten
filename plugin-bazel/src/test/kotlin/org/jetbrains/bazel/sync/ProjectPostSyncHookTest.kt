@@ -5,8 +5,10 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
+import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
-import org.jetbrains.bazel.workspace.model.test.framework.BazelServerServiceMock
+import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
+import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -15,7 +17,7 @@ import org.junit.jupiter.api.Test
 class ProjectPostSyncHookTest : MockProjectBaseTest() {
   @Test
   fun `should return all enabled project post-sync hooks`() {
-    project.registerOrReplaceServiceInstance(BazelServerService::class.java, BazelServerServiceMock(), disposable)
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
 
     // given
     ProjectPostSyncHook.ep.registerExtension(TestProjectPostSyncHook())

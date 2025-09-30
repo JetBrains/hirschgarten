@@ -34,6 +34,9 @@ class ProjectViewTokenType private constructor(debugName: String) : IElementType
     /** An identifier that is an import keyword. */
     val IMPORT_KEYWORD = ProjectViewTokenType("import_keyword")
 
+    /** An identifier that is an try_import keyword. */
+    val TRY_IMPORT_KEYWORD = ProjectViewTokenType("try_import_keyword")
+
     /** The character '\n'. */
     val NEWLINE = ProjectViewTokenType("newline")
 

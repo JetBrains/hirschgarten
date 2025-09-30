@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.completion
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAll
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSections
+import org.jetbrains.bazel.languages.projectview.ProjectViewSections
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

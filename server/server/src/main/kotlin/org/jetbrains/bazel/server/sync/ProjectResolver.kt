@@ -7,6 +7,7 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.canonicalize
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -23,19 +24,30 @@ import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
-import org.jetbrains.bazel.workspacecontext.IllegalTargetsSizeException
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
+
+class IllegalTargetsSizeException(message: String) : Exception(message)
+
+fun TargetCollection.halve(): List<TargetCollection> {
+  if (values.size <= 1) {
+    throw IllegalTargetsSizeException("Cannot split target collection with ${values.size} targets")
+  }
+  val mid = values.size / 2
+  return listOf(
+    TargetCollection(values.subList(0, mid), excludedValues),
+    TargetCollection(values.subList(mid, values.size), excludedValues),
+  )
+}
 
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
-  private val workspaceContextProvider: WorkspaceContextProvider,
+  private val workspaceContext: WorkspaceContext,
+  private val featureFlags: FeatureFlags,
   private val targetInfoReader: TargetInfoReader,
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
@@ -72,7 +84,7 @@ class ProjectResolver(
         workspaceRoot = bazelInfo.workspaceRoot,
         bazelRelease = bazelInfo.release,
         repoMapping = repoMapping,
-        workspaceContext = workspaceContextProvider.readWorkspaceContext(),
+        workspaceContext = workspaceContext,
         workspaceName = workspaceName,
         hasError = aspectResult.isFailure,
         targets = targets,
@@ -86,12 +98,7 @@ class ProjectResolver(
     phasedSyncProject: PhasedSyncProject?,
     originId: String?,
   ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
-    val workspaceContext =
-      measured(
-        "Reading project view and creating workspace context",
-        workspaceContextProvider::readWorkspaceContext,
-      )
-    val featureFlags = workspaceContextProvider.currentFeatureFlags()
+    // Use the already available workspaceContext and featureFlags
 
     val repoMapping =
       measured("Calculating external repository mapping") {
@@ -146,14 +153,14 @@ class ProjectResolver(
     }
 
     measured("Run Gazelle target") {
-      workspaceContext.gazelleTarget.value?.also { gazelleTarget ->
+      workspaceContext.gazelleTarget?.also { gazelleTarget ->
         runGazelleTarget(workspaceContext, gazelleTarget)
       }
     }
 
     val targetsToSync =
       requestedTargetsToSync
-        ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+        ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(workspaceContext.targets)
 
     val buildAspectResult =
       measured(
@@ -167,7 +174,7 @@ class ProjectResolver(
     workspaceContext: WorkspaceContext,
     featureFlags: FeatureFlags,
     build: Boolean,
-    targetsToSync: TargetsSpec,
+    targetsToSync: TargetCollection,
     phasedSyncProject: PhasedSyncProject?,
     originId: String?,
   ): BazelBspAspectsManagerResult =
@@ -199,7 +206,7 @@ class ProjectResolver(
         }
 
       val res =
-        if (workspaceContext.shardSync.value) {
+        if (workspaceContext.shardSync) {
           val shardedResult =
             BazelBuildTargetSharder.expandAndShardTargets(
               bazelPathsResolver,
@@ -211,10 +218,10 @@ class ProjectResolver(
               bspClientLogger,
               phasedSyncProject,
             )
-          var remainingShardedTargetsSpecs = shardedResult.targets.toTargetsSpecs().toMutableList()
+          var remainingShardedTargetsSpecs = shardedResult.targets.toTargetCollections().toMutableList()
           var shardNumber = 1
           var shardedBuildResult: BazelBspAspectsManagerResult = BazelBspAspectsManagerResult.emptyResult()
-          var suggestedTargetShardSize: Int = workspaceContext.targetShardSize.value
+          var suggestedTargetShardSize: Int = workspaceContext.targetShardSize
           while (remainingShardedTargetsSpecs.isNotEmpty()) {
             ensureActive()
             if (featureFlags.bazelShutDownBeforeShardBuild) {
@@ -262,7 +269,7 @@ class ProjectResolver(
             bspClientLogger.message("---")
             ++shardNumber
           }
-          if (suggestedTargetShardSize != workspaceContext.targetShardSize.value) {
+          if (suggestedTargetShardSize != workspaceContext.targetShardSize) {
             bspClientLogger.message(
               "Bazel ran out of memory during sync. To mitigate, consider setting shard size in your project view file: `target_shard_size: $suggestedTargetShardSize`",
             )

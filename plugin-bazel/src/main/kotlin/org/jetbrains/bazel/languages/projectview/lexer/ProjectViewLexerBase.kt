@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewImport
-
 /**
  * A base class responsible for tokenizing a given [input] project view into a list of tokens.
  *
@@ -99,11 +97,11 @@ class ProjectViewLexerBase(input: CharSequence) {
     val identifier = buffer.substring(start, end)
     val prevChar = buffer.getOrNull(start - 1)
     return when {
+      identifier == "import" -> ProjectViewTokenType.IMPORT_KEYWORD
+      identifier == "try_import" -> ProjectViewTokenType.TRY_IMPORT_KEYWORD
+
       (prevChar == '\n' || prevChar == null) && buffer.length > end && buffer[end] == ':'
       -> ProjectViewTokenType.SECTION_KEYWORD
-
-      ProjectViewImport.KEYWORD_MAP.containsKey(identifier)
-      -> ProjectViewTokenType.IMPORT_KEYWORD
 
       else -> ProjectViewTokenType.IDENTIFIER
     }

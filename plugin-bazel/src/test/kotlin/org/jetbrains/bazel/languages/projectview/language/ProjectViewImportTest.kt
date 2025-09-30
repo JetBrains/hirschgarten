@@ -4,13 +4,15 @@ import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
 import io.kotest.matchers.collections.shouldContainExactly
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.language.sections.DirectoriesSection
-import org.jetbrains.bazel.languages.projectview.language.sections.ImportDepthSection
-import org.jetbrains.bazel.languages.projectview.language.sections.ShardSyncSection
-import org.jetbrains.bazel.languages.projectview.language.sections.TargetsSection
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
+import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
+import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
+import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
+import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -43,7 +45,7 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         import A.bazelproject
         """.trimIndent(),
       )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     assertEquals(projectView.sections[ImportDepthSection.KEY], 123)
     assertEquals(projectView.sections[ShardSyncSection.KEY], false)
     projectView.getSection(TargetsSection.KEY)!! shouldContainExactly
@@ -83,7 +85,7 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         import A.bazelproject
         """.trimIndent(),
       )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     assertEquals(projectView.sections[ImportDepthSection.KEY], 123)
     projectView.getSection(TargetsSection.KEY)!! shouldContainExactly
       listOf(
@@ -119,7 +121,7 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
           targetD
         """.trimIndent(),
       )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     assertEquals(projectView.sections[ImportDepthSection.KEY], 321)
     projectView.getSection(TargetsSection.KEY)!! shouldContainExactly
       listOf(

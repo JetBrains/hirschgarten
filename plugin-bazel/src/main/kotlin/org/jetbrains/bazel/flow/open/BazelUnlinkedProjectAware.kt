@@ -63,6 +63,12 @@ internal class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
     }
   }
 
+  override suspend fun unlinkProject(project: Project, externalProjectPath: String) {
+    // This method must be implemented as it is a part of an API.
+    // If was mandatory from the very beginning, this assertion sat in a parent.
+    TODO("Not yet implemented")
+  }
+
   override fun subscribe(
     project: Project,
     listener: ExternalSystemProjectLinkListener,
