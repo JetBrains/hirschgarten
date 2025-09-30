@@ -3,6 +3,9 @@ package org.jetbrains.bazel.test.compat
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.extended.engine.AdditionalModulesForDevBuildServer
 import com.intellij.ide.starter.extended.plugins.asExtended
+import com.intellij.ide.starter.models.IdeInfo
+import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.project.ProjectInfoSpec
 
 object IntegrationTestCompat {
   val requiredModules = arrayOf("intellij.bazel.plugin", "intellij.protoeditor")
@@ -18,6 +21,6 @@ object IntegrationTestCompat {
     }
   }
 
-  fun <T : ProjectInfoSpec> interceptTestCase(case: TestCase<T>): TestCase<T> = case
+  fun <T : ProjectInfoSpec> interceptTestCase(case: TestCase<T>, ide: IdeInfo): TestCase<T> = case
 
 }

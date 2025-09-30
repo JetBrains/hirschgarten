@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/testData" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/testFixtures" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/compat/ultimate" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -107,7 +108,7 @@
     <orderEntry type="module" module-name="intellij.python.pydev" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.coverage" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.coverage.agent" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.junit" scope="TEST" />
+    <!--<orderEntry type="module" module-name="intellij.junit" scope="TEST" />-->
     <orderEntry type="module" module-name="intellij.platform.util.coroutines" scope="TEST" />
     <orderEntry type="module" module-name="intellij.protoeditor.core" scope="TEST" />
     <orderEntry type="module" module-name="kotlin.project-wizard.idea" scope="TEST" />
@@ -143,7 +144,7 @@
     <orderEntry type="module" module-name="intellij.java.jam.impl" />
     <orderEntry type="module" module-name="intellij.platform.vcs.impl" />
     <orderEntry type="module" module-name="intellij.platform.lvcs.impl" />
-    <orderEntry type="module" module-name="intellij.junit.rt" />
+    <!--<orderEntry type="module" module-name="intellij.junit.rt" />-->
     <orderEntry type="module" module-name="intellij.java.langInjection" />
     <orderEntry type="module" module-name="intellij.xml.langInjection" />
     <orderEntry type="module" module-name="intellij.platform.tests" />

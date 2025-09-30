@@ -16,7 +16,6 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
-import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.junit.jupiter.api.Test
 import kotlin.collections.forEach
 import kotlin.collections.listOf
@@ -34,7 +33,6 @@ private val FILES_TO_CHECK_FOR_RED_CODE =
 /**
  * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/resolve/golandSync --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
  */
-@BazelTest
 class GolandSyncTest : IdeStarterBaseProjectTest() {
   @Test
   fun `check basic Go support functionality`() {

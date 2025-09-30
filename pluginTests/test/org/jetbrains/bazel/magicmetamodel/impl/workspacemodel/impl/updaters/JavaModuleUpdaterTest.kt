@@ -44,30 +44,30 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
-val testLibraries: List<Library> =
-  listOf(
-    Library(
-      displayName = "lib1",
-      iJars = emptyList(),
-      sourceJars = emptyList(),
-      classJars = emptyList(),
-      mavenCoordinates = null,
-      isLowPriority = false,
-    ),
-    Library(
-      displayName = "lib2",
-      iJars = emptyList(),
-      sourceJars = emptyList(),
-      classJars = emptyList(),
-      mavenCoordinates = null,
-      isLowPriority = false,
-    ),
-  )
-val testLibrariesByName: Map<String, Library> =
-  testLibraries.associateBy { it.displayName }
-
 // TODO add libraries tests
 class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
+  val testLibraries: List<Library> =
+    listOf(
+      Library(
+        displayName = "lib1",
+        iJars = emptyList(),
+        sourceJars = emptyList(),
+        classJars = emptyList(),
+        mavenCoordinates = null,
+        isLowPriority = false,
+      ),
+      Library(
+        displayName = "lib2",
+        iJars = emptyList(),
+        sourceJars = emptyList(),
+        classJars = emptyList(),
+        mavenCoordinates = null,
+        isLowPriority = false,
+      ),
+    )
+  val testLibrariesByName: Map<String, Library> =
+    testLibraries.associateBy { it.displayName }
+
   @Nested
   @DisplayName("javaModuleWithSourcesUpdater.addEntity(entityToAdd) tests")
   inner class JavaModuleWithSourcesUpdaterTest {

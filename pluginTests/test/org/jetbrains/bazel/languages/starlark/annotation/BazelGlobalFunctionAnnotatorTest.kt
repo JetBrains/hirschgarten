@@ -9,6 +9,7 @@ import org.jetbrains.bazel.languages.starlark.bazel.Environment
 import org.jetbrains.bazel.languages.starlark.bazel.StarlarkGlobalFunctionProvider
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
@@ -148,8 +149,8 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
 
 @RunWith(JUnit4::class)
 class BazelGlobalFunctionAnnotatorTest : BasePlatformTestCase() {
-  @Before
-  fun beforeAll() {
+  @BeforeEach
+  fun beforeEach() {
     ExtensionTestUtil.maskExtensions(
       StarlarkGlobalFunctionProvider.extensionPoint,
       listOf(TestStarlarkGlobalFunctionProvider()),

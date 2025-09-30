@@ -13,7 +13,6 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -26,7 +25,6 @@ import kotlin.time.Duration.Companion.seconds
  * A more complex version of this test should be introduced to capture this case. e.g., importing the project with an older plugin version,
  * and reopening such a project with the current plugin version.
  */
-@BazelTest
 class ReopenWithoutResyncTest : IdeStarterBaseProjectTest() {
 
   @Test
