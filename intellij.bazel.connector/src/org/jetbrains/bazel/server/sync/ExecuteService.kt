@@ -27,6 +27,7 @@ import org.jetbrains.bazel.server.bep.BepBuildResult
 import org.jetbrains.bazel.server.bep.BepReader
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bazel.server.sync.DebugHelper.commonDebugBazelOptions
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -219,6 +220,9 @@ class ExecuteService(
         ),
       )
     }
+
+    // Add common debug bazel options (e.g., force local test execution)
+    commonDebugBazelOptions(debugType).forEach { command.options.add(it) }
 
     params.additionalBazelParams?.let { additionalParams ->
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))

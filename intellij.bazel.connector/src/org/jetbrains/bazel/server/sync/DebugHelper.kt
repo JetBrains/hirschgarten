@@ -28,4 +28,13 @@ object DebugHelper {
         )
       else -> emptyList()
     }
+
+  /**
+   * Common Bazel options we want to apply for any debug execution (run or test).
+   * Currently forces local test strategy to make debugging reliable.
+   */
+  fun commonDebugBazelOptions(debugType: DebugType?): List<String> =
+    if (debugType != null) listOf("--strategy=TestRunner=standalone") else emptyList()
+
+  fun buildBeforeRun(debugType: DebugType?): Boolean = debugType !is DebugType.GoDlv
 }
