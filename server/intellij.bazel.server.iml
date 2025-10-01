@@ -16,9 +16,7 @@
     <orderEntry type="library" name="Velocity" level="project" />
     <orderEntry type="library" name="commons-cli" level="project" />
     <orderEntry type="library" name="commons-io" level="project" />
-    <orderEntry type="library" name="grpc-core" level="project" />
-    <orderEntry type="library" name="grpc-protobuf" level="project" />
-    <orderEntry type="library" name="grpc-stub" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.grpc" />
     <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="jackson" level="project" />
     <orderEntry type="library" name="jackson-databind" level="project" />
