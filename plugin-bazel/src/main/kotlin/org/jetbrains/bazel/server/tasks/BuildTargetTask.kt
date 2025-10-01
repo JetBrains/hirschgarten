@@ -156,11 +156,23 @@ suspend fun runBuildTargetTask(
 ): CompileResult? {
   saveAllFiles()
   return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
+    // TODO: Handle debug flags - for now skip them
     // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
     // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
-    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags } else listOf()
-    project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds, debugFlag) }
+    // val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags } else listOf()
+
+    // Use client-side build runner instead of BSP server
+    runBuildTargetTaskClientSide(project, targetIds)
   }.also {
     VirtualFileManager.getInstance().asyncRefresh()
+  }
+}
+
+private suspend fun runBuildTargetTaskClientSide(project: Project, targetIds: List<Label>): CompileResult {
+  return kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+    org.jetbrains.bazel.build.session.BazelBuildRunner(project).build(targetIds) { exitCode ->
+      val status = if (exitCode == 0) BazelStatus.SUCCESS else BazelStatus.BUILD_ERROR
+      continuation.resumeWith(Result.success(CompileResult(statusCode = status)))
+    }
   }
 }

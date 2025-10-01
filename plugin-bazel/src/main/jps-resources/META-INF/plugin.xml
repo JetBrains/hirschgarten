@@ -998,7 +998,7 @@
     <registryKey
       key="bazel.buildEvents.bep.enabled"
       description="Enable BEP-based target grouping for Bazel BuildEvents pipeline"
-      defaultValue="false"/>
+      defaultValue="true"/>
   </extensions>
 </idea-plugin>
 

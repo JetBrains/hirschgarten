@@ -4,9 +4,12 @@ import com.intellij.build.BuildViewManager
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
@@ -28,8 +31,12 @@ class BazelBuildRunner(private val project: Project) {
     val title = "Bazel build $displayTargets"
 
     val buildView = project.getService(BuildViewManager::class.java)
+
+    // Use negative timestamp to force newest builds at top (IntelliJ sorts by build ID/timestamp)
+    val buildId = -System.currentTimeMillis()
+
     val descriptor = com.intellij.build.DefaultBuildDescriptor(
-      Any(),
+      buildId,
       BazelPluginConstants.SYSTEM_ID,
       title,
       project.rootDir.path,
@@ -39,8 +46,20 @@ class BazelBuildRunner(private val project: Project) {
     descriptor.setNavigateToError(com.intellij.util.ThreeState.YES)
     descriptor.setActivateToolWindowWhenAdded(true)
 
+    // Add restart action so users can re-run the build
+    descriptor.withRestartAction(object : AnAction() {
+      override fun actionPerformed(e: AnActionEvent) {
+        build(targets, onFinished)
+      }
+    })
+
     val session = BazelBuildSession(buildView, descriptor)
-    val pipeline = BazelOutputPipeline(session)
+    // Use context-aware parsers from Google plugin for better issue detection
+    val workspaceRoot = project.rootDir.toNioPathOrNull()?.toFile()
+      ?: error("Cannot resolve workspace root to file")
+    val parsers = org.jetbrains.bazel.build.BazelOutputParserProvider()
+      .getBuildOutputParsersWithContext(project, workspaceRoot)
+    val pipeline = BazelOutputPipeline(session, parsers)
 
     // Optional BEP text file tailer for target grouping
     val useBep = com.intellij.openapi.util.registry.Registry.get("bazel.buildEvents.bep.enabled").asBoolean()
@@ -122,7 +141,7 @@ class BazelBuildRunner(private val project: Project) {
       "--show_progress_rate_limit=0"
     )
     if (bepFile != null) {
-      args += "--build_event_text_file=${'$'}{bepFile.absolutePath}"
+      args += "--build_event_json_file=${bepFile.absolutePath}"
       args += "--build_event_publish_all_actions"
     }
     args += targets.map { it.toString() }
