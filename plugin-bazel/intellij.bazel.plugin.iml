@@ -140,10 +140,6 @@
     <orderEntry type="module" module-name="intellij.platform.testFramework.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework.junit5" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.starter" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.starter.driver" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector.starter" scope="TEST" />
     <orderEntry type="module" module-name="intellij.driver.model" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ide.updateChecker" />
   </component>
