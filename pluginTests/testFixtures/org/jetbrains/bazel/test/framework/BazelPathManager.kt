@@ -2,13 +2,9 @@ package org.jetbrains.bazel.test.framework
 
 import org.jetbrains.bazel.test.compat.PluginTestsCompat
 import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 
 object BazelPathManager {
-  val pluginSourceRoot: Path by lazy {
-    //Path.of(PathManager.getHomePath())
-    PluginTestsCompat.bazelPluginPath
-  }
+  val pluginSourceRoot: Path = PluginTestsCompat.bazelPluginPath
 
   val testSourceRoot: Path by lazy {
     pluginSourceRoot.resolve("pluginTests")
@@ -19,6 +15,6 @@ object BazelPathManager {
       .resolve("testData")
   }
 
-  fun getTestFixture(path: String) = getTestFixturePath(path).absolutePathString()
+  fun getTestFixture(path: String) = getTestFixturePath(path).toString()
   fun getTestFixturePath(path: String): Path = testDataRoot.resolve(path)
 }
