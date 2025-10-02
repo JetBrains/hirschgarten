@@ -58,7 +58,10 @@ abstract class IdeStarterBaseProjectTest {
       .patchPathVariable()
       .withKotlinPluginK2()
       .addIdeStarterTestMarker()
-      .applyVMOptionsPatch { addSystemProperty("JETBRAINS_LICENSE_SERVER", "https://flsv1.labs.jb.gg") }
+      .applyVMOptionsPatch {
+        addSystemProperty("JETBRAINS_LICENSE_SERVER", "https://flsv1.labs.jb.gg")
+        addSystemProperty("idea.trust.disabled", "true")
+      }
   }
 
   @BeforeEach
@@ -170,6 +173,11 @@ fun <T : CommandChain> T.buildAndSync(): T {
 
 fun <T : CommandChain> T.assertFileContentsEqual(expectedRelativePath: String, actualRelativePath: String): T {
   addCommand(CMD_PREFIX + "assertFileContentsEqual $expectedRelativePath $actualRelativePath")
+  return this
+}
+
+fun <T : CommandChain> T.assertEitherFileContentIsEqual(actualRelativePath: String, vararg expectedRelativePaths: String): T {
+  addCommand(CMD_PREFIX + "assertEitherContentsEqual $actualRelativePath ${expectedRelativePaths.joinToString(" ")}")
   return this
 }
 
