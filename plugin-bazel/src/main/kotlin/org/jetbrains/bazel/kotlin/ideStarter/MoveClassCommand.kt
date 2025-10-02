@@ -16,6 +16,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.performanceImpl.resolveFromRelativeOrRoot
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import java.util.concurrent.CountDownLatch
 import kotlin.collections.component1
@@ -35,8 +36,8 @@ internal class MoveClassCommand(text: String, line: Int) : PlaybackCommandCorout
       }
     val project = context.project
     val rootDir = project.rootDir
-    val sourceFile = checkNotNull(rootDir.resolveFromRootOrRelative(sourceFilePath))
-    val destinationDirectory = checkNotNull(rootDir.resolveFromRootOrRelative(destinationDirectoryPath))
+    val sourceFile = checkNotNull(rootDir.resolveFromRelativeOrRoot(sourceFilePath))
+    val destinationDirectory = checkNotNull(rootDir.resolveFromRelativeOrRoot(destinationDirectoryPath))
 
     val targetDirectory =
       readAction {
