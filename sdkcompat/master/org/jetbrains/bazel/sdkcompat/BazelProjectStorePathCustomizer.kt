@@ -50,7 +50,8 @@ private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
   }
 }
 
-private class BazelProjectStoreDescriptor(
+// todo make inner
+class BazelProjectStoreDescriptor(
   override val projectIdentityFile: Path,
   override val dotIdea: Path,
   override val historicalProjectBasePath: Path,
