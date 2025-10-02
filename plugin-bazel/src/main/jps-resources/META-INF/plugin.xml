@@ -709,6 +709,12 @@
             class="org.jetbrains.bazel.action.registered.OpenProjectViewAction">
     </action>
 
+    <action id="Bazel.AddFileToModuleAction"
+            class="org.jetbrains.bazel.action.registered.AddFileToModuleAction">
+      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    </action>
+
     <group id="Bazel.ModifyProjectViewDirectories">
       <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       <reference id="Bazel.AddToProjectViewDirectoriesAction"/>
