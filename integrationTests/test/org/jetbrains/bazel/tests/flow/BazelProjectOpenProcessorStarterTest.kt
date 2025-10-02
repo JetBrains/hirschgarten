@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.tests.flow
 
+import com.intellij.driver.sdk.step
+import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
@@ -7,6 +9,7 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.sleep
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.execute
 import org.junit.jupiter.api.Test
 
 /**
@@ -17,15 +20,18 @@ import org.junit.jupiter.api.Test
  * If we use hirschgarten as parent folder, Bazel plugin will detect this as legal bazel repo in parent folder and open it.
  */
 class BazelProjectOpenProcessorStarterTest : IdeStarterBaseProjectTest() {
+
+  // FIXME: is this test even necessary? current project open behavior breaks this test
   @Test
   fun openBazelProject() {
-    val commands =
-      CommandChain()
-        .openFile("BUILD")
-        .sleep(2000)
-        .exitApp()
     createContext("bazelProjectOpenProcessorStarter", IdeaBazelCases.BazelProjectOpenProcessorStarter)
-      .runIDE(commands = commands, runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        step("Open file") {
+          execute { openFile("BUILD") }
+          execute { sleep(2000) }
+        }
+      }
   }
 }
 
