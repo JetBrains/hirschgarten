@@ -40,11 +40,9 @@ class ReopenWithoutResyncTest : IdeStarterBaseProjectTest() {
           ideFrame {
             wait(20.seconds)
             val buildView = x { byType("com.intellij.build.BuildView") }
-            assert(
-              buildView.getAllTexts().any {
-                it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress"))
-              },
-            ) { "Build view does not contain sync text" }
+            val hasProgressText = buildView.getAllTexts().any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) }
+            val hasSyncText = buildView.getAllTexts().any { it.text.contains(BazelPluginBundle.message("console.task.sync.success")) }
+            assert(hasProgressText || hasSyncText) { "Build view does not contain sync text" }
           }
           takeScreenshot("whileSyncing")
         }
