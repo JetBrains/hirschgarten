@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.references
+package org.jetbrains.languages.starlark.references
 
 import com.intellij.psi.PsiClass
 import com.intellij.testFramework.ExtensionTestUtil
@@ -35,7 +35,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
 
     // when
     myFixture.configureByText(
-      "BUILD.bazel",
+      "BUILD",
       """
       load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
       kt_jvm_library(
@@ -71,7 +71,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
 
     // when
     myFixture.configureByText(
-      "BUILD.bazel",
+      "BUILD",
       """
       java_binary(
         name = "testTarget",
@@ -108,7 +108,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
     )
 
     myFixture.configureByText(
-      "BUILD.bazel",
+      "BUILD",
       """
       custom_rule(
           name = "my_rule",
@@ -118,7 +118,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
     )
 
     // when
-    val element = myFixture.getReferenceAtCaretPosition("BUILD.bazel")?.resolve()
+    val element = myFixture.getReferenceAtCaretPosition("BUILD")?.resolve()
 
     // then
     assertNotNull(element)
