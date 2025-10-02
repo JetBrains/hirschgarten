@@ -27,10 +27,10 @@
     <orderEntry type="module" module-name="intellij.java.jshell" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector.starter" scope="TEST" />
-    <orderEntry type="library" name="jackson" level="project" scope="TEST"/>
-    <orderEntry type="library" name="jackson-databind" level="project" scope="TEST" />
-    <orderEntry type="library" name="jackson-dataformat-xml" level="project" scope="TEST"/>
-    <orderEntry type="library" name="jackson-module-kotlin" level="project" scope="TEST"/>
-    <orderEntry type="library" name="opentelemetry" level="project" scope="TEST"/>
+    <orderEntry type="library" scope="TEST" name="jackson" level="project" />
+    <orderEntry type="library" scope="TEST" name="jackson-databind" level="project" />
+    <orderEntry type="library" scope="TEST" name="jackson-dataformat-xml" level="project" />
+    <orderEntry type="library" scope="TEST" name="jackson-module-kotlin" level="project" />
+    <orderEntry type="library" scope="TEST" name="opentelemetry" level="project" />
   </component>
 </module>
