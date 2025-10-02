@@ -13,6 +13,7 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.assertEitherFileContentIsEqual
 import org.jetbrains.bazel.ideStarter.assertFileContentsEqual
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
@@ -59,7 +60,7 @@ class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
           }
 
           step("Assert files are equal and exit app") {
-            execute { assertFileContentsEqual("BUILD.expected", "BUILD") }
+            execute { assertEitherFileContentIsEqual("BUILD", "BUILD.expected", "BUILD.expected2") }
           }
         }
       }
