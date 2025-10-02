@@ -1,4 +1,5 @@
 #if( $javaEnabled == "true" && $bazel8OrAbove == "true" && $rulesetName != "" )
+load("@${rulesetName}//java/common:java_common.bzl", "java_common")
 load("@${rulesetName}//java/common:java_info.bzl", "JavaInfo")
 load("@${rulesetName}//java/common:java_plugin_info.bzl", "JavaPluginInfo")
 load("@${rulesetName}//java:java_utils.bzl", java_utils = "utils")
