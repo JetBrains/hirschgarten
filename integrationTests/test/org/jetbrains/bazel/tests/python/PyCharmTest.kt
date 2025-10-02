@@ -29,11 +29,9 @@ import kotlin.time.Duration.Companion.minutes
  */
 class PyCharmTest : IdeStarterBaseProjectTest() {
 
-  private val context by lazy { createContext("pyCharm", PyCharmBazelCases.PyCharm) }
-
   @Test
   fun openBazelProject() {
-    context
+    createContext("pyCharm", PyCharmBazelCases.PyCharm)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -53,7 +51,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProjectWithTestFile() {
-    context
+    createContext("pyCharm", PyCharmBazelCases.PyCharm)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -73,7 +71,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun checkImportStatements() {
-    context
+    createContext("pyCharm", PyCharmBazelCases.PyCharm)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
