@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.resolveFromRootOrRelative
 import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
+import com.intellij.refactoring.BaseRefactoringProcessor
 import com.intellij.refactoring.move.MoveHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +25,7 @@ import kotlin.collections.component2
 
 internal class MoveClassCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
-    const val PREFIX = CMD_PREFIX + "moveClass"
+    const val PREFIX = CMD_PREFIX + "moveKtClass"
   }
 
   override suspend fun doExecute(context: PlaybackContext) {
@@ -54,13 +55,16 @@ internal class MoveClassCommand(text: String, line: Int) : PlaybackCommandCorout
       }
 
     withContext(Dispatchers.EDT) {
-      MoveHandler.doMove(
-        project,
-        arrayOf(sourceClass),
-        targetDirectory,
-        SimpleDataContext.getProjectContext(project),
-        null,
-      )
+      // TODO: move commands to integration test source set
+      BaseRefactoringProcessor.ConflictsInTestsException.withIgnoredConflicts<Throwable> {
+        MoveHandler.doMove(
+          project,
+          arrayOf(sourceClass),
+          targetDirectory,
+          SimpleDataContext.getProjectContext(project),
+          null,
+        )
+      }
     }
   }
 }

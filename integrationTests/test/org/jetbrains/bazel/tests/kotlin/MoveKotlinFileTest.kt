@@ -25,43 +25,41 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProject() {
-    val context =
-
-      createContext("MoveFilesTest", IdeaBazelCases.MoveKotlinFile)
-        .applyVMOptionsPatch {
-          skipRefactoringDialogs()
+    createContext("MoveFilesTest", IdeaBazelCases.MoveKotlinFile)
+      .applyVMOptionsPatch {
+        skipRefactoringDialogs()
+      }
+      .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
+        syncBazelProject()
+        step("Create a new subpackage") {
+          execute { createDirectory("subpackage") }
         }
-        .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
-          syncBazelProject()
-          step("Create a new subpackage") {
-            execute { createDirectory("subpackage") }
-          }
 
-          step("Move Class2.kt to subpackage") {
-            execute { moveClass("Class2.kt", "subpackage") }
-          }
+        step("Move Class2.kt to subpackage") {
+          execute { moveClass("Class2.kt", "subpackage") }
+        }
 
-          step("Close Add file to Git popup") {
-            ideFrame {
-              dialog().waitFound(timeout = 30.seconds)
-              dialog {
-                closeDialog()
-              }
+        step("Close Add file to Git popup") {
+          ideFrame {
+            dialog().waitFound(timeout = 30.seconds)
+            dialog {
+              closeDialog()
             }
           }
-
-          execute { saveDocumentsAndSettings() }
-
-          step("Check that Class2.kt is correct after move") {
-            execute { assertFileContentsEqual("expected/Class2.kt", "subpackage/Class2.kt") }
-          }
-
-          step("Check that Class1.java is correct after move") {
-            execute { assertFileContentsEqual("expected/Class1.java", "Class1.java") }
-          }
-
-          Thread.sleep(30000)
         }
+
+        execute { saveDocumentsAndSettings() }
+
+        step("Check that Class2.kt is correct after move") {
+          execute { assertFileContentsEqual("expected/Class2.kt", "subpackage/Class2.kt") }
+        }
+
+        step("Check that Class1.java is correct after move") {
+          execute { assertFileContentsEqual("expected/Class1.java", "Class1.java") }
+        }
+
+        Thread.sleep(30000)
+      }
   }
 }
 
@@ -71,6 +69,6 @@ fun <T : CommandChain> T.createDirectory(directoryPath: String): T {
 }
 
 fun <T : CommandChain> T.moveClass(sourceFile: String, destinationDirectory: String): T {
-  addCommand(CMD_PREFIX + "moveClass $sourceFile $destinationDirectory")
+  addCommand(CMD_PREFIX + "moveKtClass $sourceFile $destinationDirectory")
   return this
 }
