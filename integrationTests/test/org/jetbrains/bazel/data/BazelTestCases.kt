@@ -21,7 +21,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val BazelProjectModelModifier = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "a78cfae3291e984e77bd533a630e76f13d441a23",
+        commitHash = "7b6fe68ddb6b21145fd41434bb95af41af48d483",
         branchName = "main",
         relativePath = "bazelProjectModelModifierTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
