@@ -161,8 +161,8 @@
     <orderEntry type="module" module-name="intellij.platform.ide.bootstrap" />
     <orderEntry type="module" module-name="intellij.java.tests" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="mvstore" level="project" />
-    <orderEntry type="library" scope="TEST" name="hash4j" level="project" />
-    <orderEntry type="library" scope="TEST" name="jackson" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.hash4j" />
+    <orderEntry type="module" module-name="intellij.libraries.jackson" />
     <orderEntry type="library" scope="TEST" name="jackson-databind" level="project" />
     <orderEntry type="library" scope="TEST" name="jackson-dataformat-xml" level="project" />
     <orderEntry type="library" scope="TEST" name="jackson-module-kotlin" level="project" />
