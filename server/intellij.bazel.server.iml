@@ -17,7 +17,7 @@
     <orderEntry type="library" name="commons-cli" level="project" />
     <orderEntry type="library" name="commons-io" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.grpc" />
-    <orderEntry type="library" name="gson" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.gson" />
     <orderEntry type="library" name="jackson" level="project" />
     <orderEntry type="library" name="jackson-databind" level="project" />
     <orderEntry type="library" name="jackson-dataformat-xml" level="project" />
