@@ -6,7 +6,6 @@ kt_library(
         "*.java",
         "*.kt",
     ]),
-    resources = ["//server/log4j_config"],
     visibility = ["//server/server:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
