@@ -196,6 +196,26 @@ class TargetsCacheStorage(
     }
   }
 
+  fun addTargets(labelToTargetInfo: Map<Label, BuildTarget>, project: Project) {
+    val hashStream = createHashStream128()
+    for ((label, info) in labelToTargetInfo) {
+      // must be canonical label
+      this.labelToTargetInfo.put(
+        computeLabelHash(label as ResolvedLabel, hashStream),
+        PartialBuildTarget(
+          id = info.id,
+          tags = info.tags,
+          kind = info.kind,
+          baseDirectory = info.baseDirectory,
+          data = info.data,
+          noBuild = info.noBuild,
+        ),
+      )
+      moduleIdToTarget.put(stringToHashId(label.formatAsModuleName(project)), label)
+    }
+  }
+
+
   fun reset(
     fileToTarget: Map<Path, List<Label>>,
     executableTargets: Map<ResolvedLabel, List<Label>>,

@@ -29,6 +29,7 @@ import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
@@ -43,12 +44,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
@@ -305,15 +309,16 @@ private suspend fun processFileCreated(
       text = BazelPluginBundle.message("file.change.processing.step.query"),
     ) { queryTargetsForFile(project, url) } ?: return
 
-  val modules =
+  val modulesWithTestFlag =
     targets
-      .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
-  for (module in modules) {
+      .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, entityStorageDiff, project) }
+
+  for ((module, isTestModule) in modulesWithTestFlag) {
     // if we want a file to be both added and removed in the same module, neither of them will be done
     val moduleContainsContentRootForRemoval = mutableRemovalMap.remove(module) != null
     val alreadyAdded = existingModules.contains(module)
     if (!moduleContainsContentRootForRemoval && !alreadyAdded) {
-      url.addToModule(entityStorageDiff, module, newFile.extension)
+      url.addToModule(entityStorageDiff, module, newFile.extension, isTestModule)
     }
   }
   targetUtils.addFileToTargetIdEntry(path, targets)
@@ -334,7 +339,7 @@ private fun processFileRemoved(
   val modules =
     targetUtils
       .getTargetsForPath(oldFilePath)
-      .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
+      .mapNotNull { it.toExistingModuleEntity(workspaceModel.currentSnapshot, project) }
   targetUtils.removeFileToTargetIdEntry(oldFilePath)
   return modules
     .associateWith { module ->
@@ -342,6 +347,12 @@ private fun processFileRemoved(
       val newUrlContentRoots = newUrl?.let { findContentRoots(module, it) } ?: emptyList()
       findContentRoots(module, oldUrl) + newUrlContentRoots
     }.filter { it.value.isNotEmpty() }
+}
+
+// Helper function for cases where we only want to resolve existing modules, not create new ones
+private fun Label.toExistingModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
+  val moduleId = ModuleId(this.formatAsModuleName(project))
+  return storage.resolve(moduleId)
 }
 
 private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
@@ -364,24 +375,60 @@ public suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUr
       .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.toPath())))
   }
 
-fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
+// Convert a Label to a ModuleEntity, creating it from partial sync if it doesn't exist
+suspend fun Label.toModuleEntity(snapshot: ImmutableEntityStorage, storageUpdates: MutableEntityStorage, project: Project): Pair<ModuleEntity, Boolean>? {
   val moduleId = ModuleId(this.formatAsModuleName(project))
-  return storage.resolve(moduleId)
+
+  // First check if module exists in the mutable storage (from previous calls in this batch)
+  // note in short, the snapshot + the mutable storage = the current state
+  // the storage updates here contains already commited changes that are not pushed into the final module storage
+  val existingInStorage = storageUpdates.resolve(moduleId) ?: snapshot.resolve(moduleId)
+  var cachedTarget = project.targetUtils.getBuildTargetForLabel(this)
+  if (existingInStorage != null) {
+    // For existing modules, check if it's a test module from the cached target
+    val isTestModule = (cachedTarget?.kind?.ruleType == RuleType.TEST)
+    return existingInStorage to isTestModule
+  }
+
+  // Try to get build target information from TargetUtils first (for synced targets)
+  val dependencies = mutableListOf<ModuleDependencyItem>()
+
+  // Determine module type based on target kind (TEST or JAVA_MODULE for non-test)
+  // If target is not in cache, trigger a partial sync to fetch it via UnsyncedTargetUpdater
+  if (cachedTarget == null) {
+    val result = UnsyncedTargetUpdater.fetchAndCacheUnsyncedTarget(this, project, snapshot, storageUpdates) ?: return null
+    cachedTarget = result.first
+    dependencies.addAll(result.second)
+  }
+  val isTestModule = cachedTarget.kind.ruleType == RuleType.TEST
+  // Use BazelModuleEntitySource for dynamically created modules
+  // Note: We can't use the full JPS entity source logic from ModuleEntityUpdater here because
+  // BazelProjectModelExternalSource is not accessible from this package due to module boundaries.
+  // Dynamically created modules (added via file listener) should use BazelModuleEntitySource.
+  val entitySource = BazelModuleEntitySource(moduleId.name)
+  val moduleEntity = ModuleEntity(
+    name = moduleId.name,
+    dependencies = dependencies,
+    entitySource = entitySource,
+  )
+  val addedEntity = storageUpdates.addEntity(moduleEntity)
+  return addedEntity to isTestModule
 }
 
 fun VirtualFileUrl.addToModule(
   entityStorageDiff: MutableEntityStorage,
   module: ModuleEntity,
   extension: String?,
+  isTestModule: Boolean = false,
 ) {
   if (module.contentRoots.any { it.url == this }) return // we don't want to duplicate content roots
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1917
   val sourceRootType =
     when (extension) {
-      "java" -> SourceRootTypeId("java-source")
-      "kt" -> SourceRootTypeId("kotlin-source")
-      "py" -> SourceRootTypeId("python-source")
+      "java" -> if (isTestModule) SourceRootTypeId("java-test") else SourceRootTypeId("java-source")
+      "kt" -> SourceRootTypeId("kotlin-source") // Kotlin uses same type for test and production
+      "py" -> SourceRootTypeId("python-source") // Python uses same type for test and production
       else -> {
         logger.warn("Bazel recognised a file as a source, but we failed to parse its extension: .$extension")
         SourceRootTypeId("unknown-source")

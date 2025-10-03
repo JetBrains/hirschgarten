@@ -116,6 +116,11 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     notifyTargetListUpdated()
   }
 
+  fun addTargets(labelToTargetInfo: Map<Label, BuildTarget>, project: Project) {
+    db.addTargets(labelToTargetInfo, project)
+    notifyTargetListUpdated()
+  }
+
   // todo expensive operation
   fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<Label, BuildTarget>): Map<Label, BuildTarget> =
     db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
