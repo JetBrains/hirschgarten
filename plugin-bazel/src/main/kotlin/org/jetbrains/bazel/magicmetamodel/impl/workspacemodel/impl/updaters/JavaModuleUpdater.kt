@@ -21,7 +21,7 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import java.nio.file.Path
 
-internal class JavaModuleWithSourcesUpdater(
+class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val projectBasePath: Path,
   moduleEntities: List<Module>,
@@ -132,7 +132,7 @@ internal class JavaModuleWithSourcesUpdater(
   }
 }
 
-internal class JavaModuleWithoutSourcesUpdater(
+class JavaModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val libraries: Map<String, Library> = emptyMap(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
@@ -150,7 +150,7 @@ internal class JavaModuleWithoutSourcesUpdater(
       } ?: listOf()
 }
 
-internal class JavaModuleUpdater(
+class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   projectBasePath: Path,
   moduleEntities: List<Module> = emptyList(),
