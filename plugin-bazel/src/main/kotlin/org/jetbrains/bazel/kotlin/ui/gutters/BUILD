@@ -3,7 +3,7 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 kt_jvm_library(
     name = "gutters",
     srcs = glob(["*.kt"]),
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/ui/gutters",
         "//rules_intellij/intellij_platform_sdk:kotlin",

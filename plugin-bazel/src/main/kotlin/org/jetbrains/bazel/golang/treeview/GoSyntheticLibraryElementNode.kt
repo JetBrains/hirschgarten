@@ -32,7 +32,7 @@ import javax.swing.Icon
  * It can have an arbitrary amount of child nodes, forming a tree. Child nodes may be added and
  * queried with the appropriate methods.
  */
-internal class GoSyntheticLibraryElementNode(
+class GoSyntheticLibraryElementNode(
   project: Project,
   library: BazelGoExternalSyntheticLibrary,
   dirName: String,

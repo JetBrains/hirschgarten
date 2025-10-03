@@ -8,7 +8,7 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 
-internal data class BspModuleDetails(
+data class BspModuleDetails(
   val target: BuildTarget,
   val javacOptions: List<String>,
   val type: ModuleTypeId,
@@ -16,7 +16,7 @@ internal data class BspModuleDetails(
   val dependencies: List<Label>,
 )
 
-internal class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
+class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
   WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
     GenericModuleInfo(
