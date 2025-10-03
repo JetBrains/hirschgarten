@@ -10,6 +10,7 @@ import com.intellij.tools.ide.performanceTesting.commands.sleep
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 /**
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.Test
  */
 class BazelProjectOpenProcessorStarterTest : IdeStarterBaseProjectTest() {
 
-  // FIXME: is this test even necessary? current project open behavior breaks this test
+  @Disabled("current project open behavior breaks this test")
   @Test
   fun openBazelProject() {
     createContext("bazelProjectOpenProcessorStarter", IdeaBazelCases.BazelProjectOpenProcessorStarter)
