@@ -61,10 +61,14 @@ class BazelBuildRunner(private val project: Project) {
       .getBuildOutputParsersWithContext(project, workspaceRoot)
     val pipeline = BazelOutputPipeline(session, parsers)
 
-    // Optional BEP text file tailer for target grouping
+    // Optional BEP (Build Event Protocol) file reader for target grouping and enhanced diagnostics.
+    // We use --build_event_binary_file (same as Google plugin) with protobuf parsing for:
+    // - Better performance (binary is smaller and faster than JSON)
+    // - Richer event data (ActionCompleted, Aborted events with full details)
+    // - Proper alignment with Bazel's native format
     val useBep = com.intellij.openapi.util.registry.Registry.get("bazel.buildEvents.bep.enabled").asBoolean()
-    val bepFile = if (useBep) kotlin.io.path.createTempFile("bazel-bep-", ".jsonl").toFile() else null
-    val tailer = if (bepFile != null) org.jetbrains.bazel.build.bep.BazelBepTextTailer(bepFile, session) else null
+    val bepFile = if (useBep) kotlin.io.path.createTempFile("bazel-bep-", ".pb").toFile() else null
+    val bepReader = if (bepFile != null) org.jetbrains.bazel.build.bep.BazelBepStreamReader(bepFile, session) else null
 
     val cmd = buildCommand(targets, bepFile)
 
@@ -106,8 +110,8 @@ class BazelBuildRunner(private val project: Project) {
 
     handler.addProcessListener(object : ProcessAdapter() {
       override fun startNotified(event: ProcessEvent) {
-        // tailer now that process actually started
-        tailer?.start()
+        // Start BEP reader now that process actually started
+        bepReader?.start()
       }
 
       override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
@@ -117,9 +121,15 @@ class BazelBuildRunner(private val project: Project) {
       override fun processTerminated(event: ProcessEvent) {
         // Flush any remaining partial line
         splitter.flush()
-        tailer?.stop()
+        bepReader?.stop()
         // best-effort delete temp file
-        try { bepFile?.delete() } catch (_: Throwable) {}
+        try {
+          if (bepFile != null && !bepFile.delete()) {
+            log.warn("Could not delete BEP output file: $bepFile")
+          }
+        } catch (t: Throwable) {
+          log.warn("Failed to delete BEP output file: $bepFile", t)
+        }
         session.finish(event.exitCode)
         onFinished(event.exitCode)
       }
@@ -141,8 +151,10 @@ class BazelBuildRunner(private val project: Project) {
       "--show_progress_rate_limit=0"
     )
     if (bepFile != null) {
-      args += "--build_event_json_file=${bepFile.absolutePath}"
+      args += "--build_event_binary_file=${bepFile.absolutePath}"
       args += "--build_event_publish_all_actions"
+      // Use local file paths instead of blobstore URIs for better portability
+      args += "--nobuild_event_binary_file_path_conversion"
     }
     args += targets.map { it.toString() }
 

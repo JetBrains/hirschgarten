@@ -192,6 +192,18 @@
                     interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
                     dynamic="true"
     />
+
+    <!-- Build Event Protocol (BEP) parsing -->
+    <extensionPoint
+      name="buildEventParser"
+      interface="org.jetbrains.bazel.build.events.BuildEventParser"
+      dynamic="true"/>
+
+    <!-- File path resolution from build output -->
+    <extensionPoint
+      name="fileResolver"
+      interface="org.jetbrains.bazel.build.fileresolver.FileResolver"
+      dynamic="true"/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -275,6 +287,16 @@
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
 
     <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.DefaultProjectViewSectionProvider"/>
+
+    <!-- BEP event parsers -->
+    <buildEventParser implementation="org.jetbrains.bazel.build.events.ActionCompletedParser"/>
+    <buildEventParser implementation="org.jetbrains.bazel.build.events.AbortedParser"/>
+    <buildEventParser implementation="org.jetbrains.bazel.build.events.TestResultParser"/>
+    <buildEventParser implementation="org.jetbrains.bazel.build.events.TestSummaryParser"/>
+    <buildEventParser implementation="org.jetbrains.bazel.build.events.BuildFinishedParser"/>
+
+    <!-- File resolvers -->
+    <fileResolver implementation="org.jetbrains.bazel.build.fileresolver.StandardFileResolver"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -989,8 +1011,6 @@
   </applicationListeners>
   <extensions defaultExtensionNs="com.intellij">
     <externalSystemOutputParserProvider implementation="org.jetbrains.bazel.build.BazelOutputParserProvider" id="bazel"/>
-  </extensions>
-  <extensions defaultExtensionNs="com.intellij">
     <registryKey
       key="bazel.legacy.bsp.diagnostics.enabled"
       description="Enable legacy BSP diagnostics publishing for Bazel (isolated)"

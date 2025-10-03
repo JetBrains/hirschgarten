@@ -5,13 +5,15 @@ import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.FileMessageEvent
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.output.BuildOutputInstantReader
-import org.junit.jupiter.api.Assertions.*
+import com.intellij.testFramework.junit5.impl.TestApplicationExtension
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import java.io.File
-import java.util.ArrayDeque
-import java.util.function.Consumer
 
-@org.junit.jupiter.api.extension.ExtendWith(com.intellij.testFramework.junit5.impl.TestApplicationExtension::class)
+@ExtendWith(TestApplicationExtension::class)
 class BazelBuildScriptErrorParserTest {
 
   private fun reader(parentId: Any = "PARENT"): BuildOutputInstantReader = object : BuildOutputInstantReader {

@@ -5,10 +5,12 @@ import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.events.*
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.testFramework.junit5.impl.TestApplicationExtension
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
-@org.junit.jupiter.api.extension.ExtendWith(com.intellij.testFramework.junit5.impl.TestApplicationExtension::class)
+@ExtendWith(TestApplicationExtension::class)
 class BazelBuildSessionTest {
 
   private class RecordingBuildListener : BuildProgressListener {

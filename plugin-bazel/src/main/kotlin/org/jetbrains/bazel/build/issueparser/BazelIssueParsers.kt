@@ -336,16 +336,11 @@ class BazelKotlincErrorParser(private val project: Project, private val workspac
 
 /**
  * Helper to resolve file paths relative to the project.
+ * Delegates to the extensible FileResolver system.
  */
 object FileResolver {
   fun resolveToFile(project: Project, path: String): File? {
-    val file = File(path)
-    if (file.isAbsolute) {
-      return file
-    }
-
-    // Try to resolve relative to project base path
-    val basePath = project.basePath ?: return file
-    return File(basePath, path)
+    val resolved = org.jetbrains.bazel.build.fileresolver.FileResolver.resolve(project, path)
+    return resolved?.toFile()
   }
 }

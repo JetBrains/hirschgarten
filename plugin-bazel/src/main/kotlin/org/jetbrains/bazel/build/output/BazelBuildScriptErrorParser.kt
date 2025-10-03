@@ -8,7 +8,9 @@ import com.intellij.build.output.BuildOutputInstantReader
 import com.intellij.build.output.BuildOutputParser
 import com.intellij.openapi.util.NlsSafe
 import java.io.File
+import java.nio.file.Path
 import java.util.function.Consumer
+import kotlin.io.path.Path
 
 /**
  * Parses Bazel loading-phase errors that point to BUILD/WORKSPACE/.bzl files and reports them

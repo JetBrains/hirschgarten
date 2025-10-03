@@ -7,10 +7,12 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.output.BuildOutputInstantReader
 import com.intellij.build.output.BuildOutputParser
 import com.intellij.build.events.BuildEvents
+import com.intellij.testFramework.junit5.impl.TestApplicationExtension
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
-@org.junit.jupiter.api.extension.ExtendWith(com.intellij.testFramework.junit5.impl.TestApplicationExtension::class)
+@ExtendWith(TestApplicationExtension::class)
 class BazelOutputPipelineTest {
 
   private class RecordingBuildListener : BuildProgressListener {
