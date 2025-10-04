@@ -28,6 +28,7 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "8.14.0")
 bazel_dep(name = "rules_jvm_external", version = "6.8")
 bazel_dep(name = "aspect_rules_js", version = "2.5.0")
+bazel_dep(name = "contrib_rules_jvm", version = "0.30.0")
 
 npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
 npm.npm_translate_lock(
@@ -98,6 +99,8 @@ maven.install(
         "org.mockito:mockito-core:5.19.0",
         "com.github.javaparser:javaparser-core:3.27.0",
         "com.google.protobuf:protobuf-java:3.24.4",
+        "org.ow2.asm:asm:9.8",
+        "info.picocli:picocli:4.7.7",
     ],
     fail_if_repin_required = True,
     fetch_sources = True,

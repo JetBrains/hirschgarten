@@ -22,10 +22,7 @@ import com.google.idea.blaze.common.vcs.WorkspaceFileChange.Operation;
 import java.nio.file.Path;
 import java.util.Optional;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-@RunWith(JUnit4.class)
 public class VcsStateTest {
 
   @Test

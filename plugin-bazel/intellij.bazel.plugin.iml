@@ -7,14 +7,12 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/gen" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/jps-resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/kotlin" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testFixtures/kotlin" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Guava" level="project" />
     <orderEntry type="library" name="fastutil-min" level="project" />
-    <orderEntry type="library" name="grpc-protobuf" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.grpc" />
     <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="jetbrains-annotations" level="project" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
@@ -140,10 +138,6 @@
     <orderEntry type="module" module-name="intellij.platform.testFramework.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework.junit5" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.starter" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.starter.driver" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector.starter" scope="TEST" />
     <orderEntry type="module" module-name="intellij.driver.model" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ide.updateChecker" />
   </component>
