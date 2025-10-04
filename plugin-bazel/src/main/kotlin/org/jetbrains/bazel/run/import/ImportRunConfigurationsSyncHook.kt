@@ -24,6 +24,7 @@ import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 
 private const val GOOGLE_BAZEL_RUN_CONFIG_TYPE = "BlazeCommandRunConfigurationType"
+private const val SHELL_SCRIPT_RUN_CONFIG_TYPE = "ShConfigurationType"
 
 internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
   private val log = logger<ImportRunConfigurationsSyncHook>()
@@ -61,12 +62,12 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
 
   private fun importRunConfiguration(project: Project, runConfigurationPath: Path): RunnerAndConfigurationSettings? {
     val runConfigurationXml = getConfigurationElement(JDOMUtil.load(runConfigurationPath)) ?: return null
-    val settings =
-      if (checkNotNull(runConfigurationXml.getAttributeValue("type")) == GOOGLE_BAZEL_RUN_CONFIG_TYPE) {
-        loadGoogleBazelRunConfiguration(project, runConfigurationXml)
-      } else {
-        loadRunConfigurationXmlNormally(project, runConfigurationXml)
-      }
+    val configurationType = checkNotNull(runConfigurationXml.getAttributeValue("type"))
+    val settings = when (configurationType) {
+      GOOGLE_BAZEL_RUN_CONFIG_TYPE -> loadGoogleBazelRunConfiguration(project, runConfigurationXml)
+      SHELL_SCRIPT_RUN_CONFIG_TYPE -> loadShellScriptRunConfiguration(project, runConfigurationXml)
+      else -> loadRunConfigurationXmlNormally(project, runConfigurationXml)
+    }
     return settings
   }
 
@@ -125,6 +126,41 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     }
 
     return settings
+  }
+
+  private fun loadShellScriptRunConfiguration(project: Project, runConfigurationXml: Element): RunnerAndConfigurationSettings {
+    // Create a copy of the XML element to modify it
+    val modifiedXml = runConfigurationXml.clone()
+    println(modifiedXml)
+    // Apply replaceProjectDir to the specified shell script configuration fields
+    modifiedXml.children.filter { it.name == "option" }.forEach { option ->
+      when (option.getAttributeValue("name")) {
+        "SCRIPT_TEXT" -> {
+          option.getAttributeValue("value")?.let { value ->
+            option.setAttribute("value", value.replaceProjectDir(project))
+          }
+        }
+        "SCRIPT_PATH" -> {
+          option.getAttributeValue("value")?.let { value ->
+            option.setAttribute("value", value.replaceProjectDir(project))
+          }
+        }
+        "SCRIPT_OPTIONS" -> {
+          option.getAttributeValue("value")?.let { value ->
+            option.setAttribute("value", value.replaceProjectDir(project))
+          }
+        }
+        "SCRIPT_WORKING_DIRECTORY" -> {
+          option.getAttributeValue("value")?.let { value ->
+            option.setAttribute("value", value.replaceProjectDir(project))
+          }
+        }
+      }
+    }
+
+    // Load the modified configuration normally
+    val runManager = RunManagerImpl.getInstanceImpl(project)
+    return runManager.loadConfiguration(modifiedXml, false)
   }
 
   /**
