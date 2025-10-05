@@ -11,3 +11,13 @@ kt_intellij_junit4_test(
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )
+
+kt_intellij_junit4_test(
+    name = "StarlarkFileFindUsagesTest",
+    src = "StarlarkFileFindUsagesTest.kt",
+    tags = ["exclusive"],
+    deps = [
+        "//plugin-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
+)
