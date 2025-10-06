@@ -89,7 +89,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
     )
 
     val usages = myFixture.findUsages(ktFile).map { it.element?.text }
-    usages.shouldContain("\"**/*.kt\"")
+    usages.shouldContain("glob([\"**/*.kt\"])")
   }
 
   @Test

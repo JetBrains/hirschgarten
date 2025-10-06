@@ -12,7 +12,7 @@ class StarlarkStringLiteralManipulator : AbstractElementManipulator<StarlarkStri
     newContent: String,
   ): StarlarkStringLiteralExpression {
     val stringLeafNode = element.node.firstChildNode as? LeafElement ?: return element
-    if (!getRangeInElement(element).contains(range)) return element // Do not replace the full string with quotes
+    if (!getRangeInElement(element).contains(range)) return element
     val oldText = element.text
     val newText = oldText.take(range.startOffset) + newContent + oldText.substring(range.endOffset)
     stringLeafNode.replaceWithText(newText)

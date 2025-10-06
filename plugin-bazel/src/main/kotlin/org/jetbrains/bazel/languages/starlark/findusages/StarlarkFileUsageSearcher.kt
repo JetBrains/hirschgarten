@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Computable
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -76,10 +77,8 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
         override fun isReferenceTo(element: PsiElement): Boolean = psiManager.areElementsEquivalent(resolve(), element)
 
         override fun handleElementRename(newElementName: String): PsiElement {
-          val manipulator = ElementManipulators.getManipulator(element)
-          val contentRange = manipulator?.getRangeInElement(element) ?: return element
           val newContent = buildNewLabelContent(element.getStringContents(), newElementName)
-          return manipulator.handleContentChange(element, contentRange, newContent) ?: element
+          return ElementManipulators.getManipulator(element)?.handleContentChange(element, range, newContent) ?: element
         }
       }
     processor.process(reference)
@@ -94,31 +93,33 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
     val arguments = call.getArgumentList()?.getArguments() ?: return
 
     val includeArgument = arguments.firstOrNull { it !is StarlarkNamedArgumentExpression || it.name == "include" }
-    val (includePatterns, includeLiterals) = includeArgument?.let { extractPatternsAndLiterals(it) } ?: return
+    val includePatterns = includeArgument?.let { extractPatterns(it) } ?: return
     if (includePatterns.isEmpty()) return
 
     val excludeArgument = arguments.filterIsInstance<StarlarkNamedArgumentExpression>().firstOrNull { it.name == "exclude" }
-    val excludePatterns = excludeArgument?.let { extractPatternsAndLiterals(it).first } ?: emptyList()
+    val excludePatterns = excludeArgument?.let { extractPatterns(it) } ?: emptyList()
 
-    try {
-      val includedFiles =
-        StarlarkGlob.forPath(baseDir).addPatterns(includePatterns).glob()
-      if (!includedFiles.contains(file.virtualFile)) return
-
-      val excludedFiles =
-        if (excludePatterns.isNotEmpty()) {
-          StarlarkGlob.forPath(baseDir).addPatterns(excludePatterns).glob()
+    val isUsage =
+      try {
+        val includedFiles = StarlarkGlob.forPath(baseDir).addPatterns(includePatterns).glob()
+        if (includedFiles.contains(file.virtualFile)) {
+          val excludedFiles =
+            if (excludePatterns.isNotEmpty()) {
+              StarlarkGlob.forPath(baseDir).addPatterns(excludePatterns).glob()
+            } else {
+              emptyList()
+            }
+          !excludedFiles.contains(file.virtualFile)
         } else {
-          emptyList()
+          false
         }
-      if (excludedFiles.contains(file.virtualFile)) return
-    } catch (e: Exception) {
-      Logger.getInstance(StarlarkGlob::class.java).warn(e.message)
-    }
+      } catch (e: Exception) {
+        Logger.getInstance(StarlarkGlob::class.java).warn(e.message)
+        false
+      }
 
-    includeLiterals.forEach { literal ->
-      val textRange = ElementManipulators.getValueTextRange(literal)
-      processor.process(PsiReferenceBase.Immediate(literal, textRange, file))
+    if (isUsage) {
+      processor.process(PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file))
     }
   }
 
@@ -147,13 +148,13 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
     }
   }
 
-  private fun extractPatternsAndLiterals(arg: StarlarkArgumentElement): Pair<List<String>, List<StarlarkStringLiteralExpression>> {
+  private fun extractPatterns(arg: StarlarkArgumentElement): List<String> {
     val literals =
       when (val expr = arg.lastChild) {
         is StarlarkStringLiteralExpression -> listOf(expr)
         is StarlarkListLiteralExpression -> expr.getElements().filterIsInstance<StarlarkStringLiteralExpression>()
         else -> emptyList()
       }
-    return literals.map { it.getStringContents() } to literals
+    return literals.map { it.getStringContents() }
   }
 }
