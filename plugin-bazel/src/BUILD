@@ -20,27 +20,6 @@ kt_jvm_library(
 )
 
 kt_jvm_library(
-    name = "test_fixtures",
-    testonly = 1,
-    srcs = glob([
-        "testFixtures/kotlin/**/*.kt",
-    ]),
-    visibility = ["//visibility:public"],
-    deps = [
-        ":plugin-bazel-lib",
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//rules_intellij/testing:lib",
-        "@maven//:io_kotest_kotest_assertions_api_jvm",
-        "@maven//:io_kotest_kotest_assertions_core_jvm",
-        "@maven//:io_kotest_kotest_assertions_shared_jvm",
-        "@maven//:io_kotest_kotest_common_jvm",
-        "@maven//:org_junit_jupiter_junit_jupiter",
-        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
-    ],
-)
-
-kt_jvm_library(
     name = "plugin-bazel-lib",
     resources = glob([
         "main/resources/**",
@@ -174,28 +153,4 @@ kt_jvm_library(
         "main/resources/**",
     ]),
     visibility = ["//visibility:public"],
-)
-
-intellij_integration_test_suite(
-    name = "plugin_tests",
-    srcs = glob([
-        "test/kotlin/org/jetbrains/**/*.kt",
-    ]),
-    associates = [":plugin-bazel-lib"],
-    tags = ["exclusive"],
-    test_package_root = "org.jetbrains",
-    runtime_deps = [
-        ":plugin-bazel-lib",
-    ],
-    deps = [
-        "//plugin-bazel/src:test_fixtures",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extensionPoints/buildTargetClassifier",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
-        "//rules_intellij/intellij_platform_sdk:kotlin_for_tests",
-        "//sdkcompat",
-        "@maven//:io_kotest_kotest_assertions_api_jvm",
-        "@maven//:io_kotest_kotest_assertions_core_jvm",
-        "@maven//:io_kotest_kotest_assertions_shared_jvm",
-        "@maven//:io_kotest_kotest_common_jvm",
-    ],
 )
