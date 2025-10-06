@@ -7,8 +7,8 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
 
-class BazelRunTaskListener(private val handler: BazelProcessHandler) : BazelTaskListener {
-  private val ansiEscapeDecoder = AnsiEscapeDecoder()
+open class BazelRunTaskListener(protected val handler: BazelProcessHandler) : BazelTaskListener {
+  protected val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   override fun onOutputStream(taskId: TaskId?, text: String) {
     ansiEscapeDecoder.escapeText(text, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
@@ -22,7 +22,7 @@ class BazelRunTaskListener(private val handler: BazelProcessHandler) : BazelTask
     }
   }
 
-  // For compatibility with older BSP servers
+  // For compatibility with older BSP servers and JB test runner
   // TODO: Log messages in the correct place
   override fun onLogMessage(message: String) {
     val messageWithNewline = if (message.endsWith("\n")) message else "$message\n"

@@ -13,8 +13,8 @@ import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
-import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
+import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
@@ -33,7 +33,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     if (configuration.project.useJetBrainsTestRunner()) {
-      BazelRunTaskListener(handler)
+      JetBrainsTestRunnerTaskListener(handler)
     } else {
       BazelTestTaskListener(handler, coverageReportListener)
     }

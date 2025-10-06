@@ -245,6 +245,5 @@ class ExecuteService(
   private fun ensureTestOutputStreamed(command: BazelCommand) {
     // Add to the beginning to make overriding possible
     command.options.addFirst(BazelFlag.testOutputStreamed())
-    command.options.addFirst(BazelFlag.dontCacheTestResults())
   }
 }

@@ -14,8 +14,8 @@ import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
-import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
+import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.sdkcompat.COROUTINE_JVM_FLAGS_KEY
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
@@ -74,7 +74,7 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     if (environment.project.useJetBrainsTestRunner()) {
-      BazelRunTaskListener(handler)
+      JetBrainsTestRunnerTaskListener(handler)
     } else {
       BazelTestTaskListener(handler)
     }
