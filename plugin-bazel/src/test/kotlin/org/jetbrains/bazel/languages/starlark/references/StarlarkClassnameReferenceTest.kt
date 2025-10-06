@@ -107,8 +107,8 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    myFixture.configureByText(
-      "BUILD",
+    val file = myFixture.configureByText(
+      "BUILD.bazel",
       """
       custom_rule(
           name = "my_rule",
@@ -118,7 +118,7 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
     )
 
     // when
-    val element = myFixture.getReferenceAtCaretPosition("BUILD")?.resolve()
+    val element = myFixture.getReferenceAtCaretPosition()?.resolve()
 
     // then
     assertNotNull(element)
