@@ -3,7 +3,6 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 kt_jvm_binary(
     name = "install",
     main_class = "org.jetbrains.bazel.install.Install",
-    resources = ["//server/log4j_config"],
     visibility = ["//visibility:public"],
     runtime_deps = [
         "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
