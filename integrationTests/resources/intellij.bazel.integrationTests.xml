@@ -1,0 +1,8 @@
+<idea-plugin>
+  <dependencies>
+    <plugin id="PythonCore"/>
+    <plugin id="org.jetbrains.bazel"/>
+    <plugin id="idea.plugin.protoeditor"/>
+    <plugin id="org.jetbrains.plugins.go"/>
+  </dependencies>
+</idea-plugin>

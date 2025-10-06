@@ -62,7 +62,7 @@ import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import java.nio.file.Path
 
-internal class AssignFileToModuleListener : BulkFileListener {
+class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
     // if the list has multiple events, a resync is required
     val event = events.singleOrNull()

@@ -3,7 +3,6 @@ load("//rules/kotlin:macros.bzl", "kt_library")
 kt_library(
     name = "bazelrunner",
     srcs = glob(["*.kt"]),
-    resources = ["//server/log4j_config"],
     visibility = ["//server/bazelrunner:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",

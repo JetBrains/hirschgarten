@@ -23,10 +23,7 @@ import com.google.idea.blaze.common.proto.TestMessage.MyMessage;
 import com.google.protobuf.TextFormat;
 import com.google.protobuf.TextFormat.ParseException;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-@RunWith(JUnit4.class)
 public class ProtoStringInternerTest {
 
   private static MyMessage parse(String... lines) throws ParseException {

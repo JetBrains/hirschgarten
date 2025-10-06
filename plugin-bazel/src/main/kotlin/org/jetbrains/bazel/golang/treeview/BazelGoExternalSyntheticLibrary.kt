@@ -24,7 +24,7 @@ import java.util.TreeSet
 import javax.swing.Icon
 
 /** Represents a [SyntheticLibrary] with a mutable set of child files.  */
-internal class BazelGoExternalSyntheticLibrary(private val presentableText: String, childFiles: Set<VirtualFile>) :
+class BazelGoExternalSyntheticLibrary(private val presentableText: String, childFiles: Set<VirtualFile>) :
   SyntheticLibrary(),
   ItemPresentation {
   private val childFiles: SortedSet<VirtualFile> = TreeSet(Comparator.comparing(VirtualFile::toString)).also { it.addAll(childFiles) }

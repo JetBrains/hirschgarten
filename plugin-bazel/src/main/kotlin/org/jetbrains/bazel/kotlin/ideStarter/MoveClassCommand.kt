@@ -10,12 +10,14 @@ import com.intellij.openapi.vfs.resolveFromRootOrRelative
 import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
+import com.intellij.refactoring.BaseRefactoringProcessor
 import com.intellij.refactoring.move.MoveHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.performanceImpl.resolveFromRelativeOrRoot
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import java.util.concurrent.CountDownLatch
 import kotlin.collections.component1
@@ -23,7 +25,7 @@ import kotlin.collections.component2
 
 internal class MoveClassCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
-    const val PREFIX = CMD_PREFIX + "moveClass"
+    const val PREFIX = CMD_PREFIX + "moveKtClass"
   }
 
   override suspend fun doExecute(context: PlaybackContext) {
@@ -35,8 +37,8 @@ internal class MoveClassCommand(text: String, line: Int) : PlaybackCommandCorout
       }
     val project = context.project
     val rootDir = project.rootDir
-    val sourceFile = checkNotNull(rootDir.resolveFromRootOrRelative(sourceFilePath))
-    val destinationDirectory = checkNotNull(rootDir.resolveFromRootOrRelative(destinationDirectoryPath))
+    val sourceFile = checkNotNull(rootDir.resolveFromRelativeOrRoot(sourceFilePath))
+    val destinationDirectory = checkNotNull(rootDir.resolveFromRelativeOrRoot(destinationDirectoryPath))
 
     val targetDirectory =
       readAction {
@@ -53,13 +55,16 @@ internal class MoveClassCommand(text: String, line: Int) : PlaybackCommandCorout
       }
 
     withContext(Dispatchers.EDT) {
-      MoveHandler.doMove(
-        project,
-        arrayOf(sourceClass),
-        targetDirectory,
-        SimpleDataContext.getProjectContext(project),
-        null,
-      )
+      // TODO: move commands to integration test source set
+      BaseRefactoringProcessor.ConflictsInTestsException.withIgnoredConflicts<Throwable> {
+        MoveHandler.doMove(
+          project,
+          arrayOf(sourceClass),
+          targetDirectory,
+          SimpleDataContext.getProjectContext(project),
+          null,
+        )
+      }
     }
   }
 }

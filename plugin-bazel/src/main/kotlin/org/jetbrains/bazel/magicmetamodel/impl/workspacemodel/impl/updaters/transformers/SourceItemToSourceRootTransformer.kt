@@ -10,7 +10,7 @@ data class SourceRoot(
   val jvmPackagePrefix: String? = null,
 ) : WorkspaceModelEntity()
 
-internal object SourceItemToSourceRootTransformer :
+object SourceItemToSourceRootTransformer :
   WorkspaceModelEntityTransformer<SourceItem, SourceRoot> {
   override fun transform(inputEntity: SourceItem): SourceRoot {
     val sourcePath = inputEntity.path

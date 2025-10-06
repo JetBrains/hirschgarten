@@ -4,7 +4,7 @@ kt_jvm_library(
     name = "coverage",
     srcs = glob(["*.kt"]),
     associates = ["//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run"],
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//rules_intellij/intellij_platform_sdk:kotlin",
         "//rules_intellij/intellij_platform_sdk:plugin_api",

@@ -525,7 +525,7 @@
 
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
-    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
+    <projectPreInit implementation="org.jetbrains.bazel.sdkcompat.OpenBazelProjectAndSyncStartupActivity"/>
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
     <notificationGroup
       displayType="BALLOON"

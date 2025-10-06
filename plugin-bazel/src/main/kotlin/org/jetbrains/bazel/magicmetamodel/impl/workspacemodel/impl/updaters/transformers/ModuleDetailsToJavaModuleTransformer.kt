@@ -22,7 +22,7 @@ import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
 
-internal class ModuleDetailsToJavaModuleTransformer(
+class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTarget>,
   fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   projectBasePath: Path,

@@ -15,6 +15,7 @@ single_version_override(
     patch_strip = 1,
     patches = [
         "//rules_intellij/third_party/kotlin/patches:strip_stdlib.patch",
+        "//rules_intellij/third_party/kotlin/patches:support_new_kotlin_versions.patch",
     ],
 )
 
@@ -27,6 +28,7 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "8.14.0")
 bazel_dep(name = "rules_jvm_external", version = "6.8")
 bazel_dep(name = "aspect_rules_js", version = "2.5.0")
+bazel_dep(name = "contrib_rules_jvm", version = "0.30.0")
 
 npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
 npm.npm_translate_lock(
@@ -87,7 +89,7 @@ maven.install(
         "org.apache.httpcomponents:httpclient:4.5.14",
         "org.slf4j:slf4j-api:2.0.17",
         "org.apache.velocity:velocity-engine-core:2.4.1",
-        "org.jetbrains.kotlin:kotlin-stdlib:2.2.0-RC2",
+        "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0",
         "org.junit.jupiter:junit-jupiter:5.13.4",
         "org.junit.platform:junit-platform-console:1.13.4",
@@ -97,6 +99,8 @@ maven.install(
         "org.mockito:mockito-core:5.19.0",
         "com.github.javaparser:javaparser-core:3.27.0",
         "com.google.protobuf:protobuf-java:3.24.4",
+        "org.ow2.asm:asm:9.8",
+        "info.picocli:picocli:4.7.7",
     ],
     fail_if_repin_required = True,
     fetch_sources = True,
@@ -664,4 +668,145 @@ http_archive(
     build_file_content = _PROTOEDIT_BUILD_FILE,
     sha256 = PROTOEDIT_PLUGIN_252_SHA,
     url = PROTOEDIT_PLUGIN_252_URL,
+)
+
+# SDK 253
+
+SDK_253_PLUGIN_REPOSITORY_VERSION = "253.22441.33"
+
+SDK_253_INTELLIJ_REPOSITORY_VERSION = "253.22441.33-EAP-SNAPSHOT"
+
+SDK_253_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
+
+IC_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+
+IC_253_SHA = "0f81c61837be81623fd039459fa1cc00a18d57bead5d74102125b2a66b435a50"
+
+http_archive(
+    name = "intellij_ce_2025_3",
+    build_file = "//rules_intellij/intellij_platform_sdk:BUILD.idea253",
+    sha256 = IC_253_SHA,
+    url = IC_253_URL,
+)
+
+IC_253_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+
+IC_253_SOURCES_SHA = "ad44bb6010d8da72e5c04cf27847d9d266929a14d044e3139d57f0a2003474ae"
+
+http_jar(
+    name = "intellij_ce_2025_3_sources",
+    sha256 = IC_253_SOURCES_SHA,
+    url = IC_253_SOURCES_URL,
+)
+
+DEVKIT_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
+
+DEVKIT_253_SHA = "02c8a8044adc9c2e1de86a563c8402b84c2bfd9a0444649e10fabc008f0d61db"
+
+http_archive(
+    name = "devkit_2025_3",
+    build_file_content = DEVKIT_BUILD_FILE,
+    sha256 = DEVKIT_253_SHA,
+    url = DEVKIT_253_URL,
+)
+
+PYTHON_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
+
+PYTHON_PLUGIN_253_SHA = "d9f744dc392605981fc9d014b388942edaac7dd2788badd8eb76fab8133b7c72"
+
+http_archive(
+    name = "python_2025_3",
+    build_file_content = _PYTHON_CE_BUILD_FILE,
+    sha256 = PYTHON_PLUGIN_253_SHA,
+    url = PYTHON_PLUGIN_253_URL,
+)
+
+GO_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
+
+GO_PLUGIN_253_SHA = "2383926f357eb19f23ea89ead0766a7ced2d8b0dad02d49433d0f19c15e3dd4c"
+
+http_archive(
+    name = "go_2025_3",
+    build_file_content = _GO_BUILD_FILE,
+    sha256 = GO_PLUGIN_253_SHA,
+    url = GO_PLUGIN_253_URL,
+)
+
+PERFORMANCE_PLUGIN_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+
+PERFORMANCE_PLUGIN_253_SHA = "c1018d31474cf181c6dd696b72615ec5cb1384f3fda468dd4b35b09462c339fd"
+
+http_jar(
+    name = "performance_2025_3",
+    sha256 = PERFORMANCE_PLUGIN_253_SHA,
+    url = PERFORMANCE_PLUGIN_253_URL,
+)
+
+CODE_WITH_ME_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+
+CODE_WITH_ME_253_SHA = "9dfb2603682c3f008f74c5b83b2750dc4a020ee7ed27e7b39672841fc4aba17c"
+
+http_jar(
+    name = "code_with_me_2025_3",
+    sha256 = CODE_WITH_ME_253_SHA,
+    url = CODE_WITH_ME_253_URL,
+)
+
+CODE_WITH_ME_SPLIT_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+
+CODE_WITH_ME_SPLIT_253_SHA = "d02e1eb46814ac61f571b57ac9bb4412fe80ced382b2561ba30bc93d03abbe13"
+
+http_jar(
+    name = "code_with_me_split_2025_3",
+    sha256 = CODE_WITH_ME_SPLIT_253_SHA,
+    url = CODE_WITH_ME_SPLIT_253_URL,
+)
+
+JSON_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/json/json/%s/json-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+
+JSON_253_SHA = "ef6eed20e334fca2b910e769c85e9a3a418ddc0bad00acd9f719cbffcfbd9a40"
+
+http_jar(
+    name = "json_2025_3",
+    sha256 = JSON_253_SHA,
+    url = JSON_253_URL,
+)
+
+# From 252 python plugin requires toml plugin to be loaded
+TOML_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.toml.lang/%s/org.toml.lang-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
+
+TOML_PLUGIN_253_SHA = "af37c7b309d2dc63d8ae22a127c96e8c5a69433c0b1eddd2817f8fa3e06051ab"
+
+http_archive(
+    name = "toml_plugin_2025_3",
+    build_file_content = _TOML_BUILD_FILE,
+    sha256 = TOML_PLUGIN_253_SHA,
+    url = TOML_PLUGIN_253_URL,
+)
+
+TERMINAL_PLUGIN_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+
+http_jar(
+    name = "terminal_2025_3",
+    url = TERMINAL_PLUGIN_253_URL,
+)
+
+TERMINAL_COMPLETION_PLUGIN_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal-completion/%s/terminal-completion-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+
+http_jar(
+    name = "terminal_completion_2025_3",
+    url = TERMINAL_COMPLETION_PLUGIN_253_URL,
+)
+
+PROTOEDIT_PLUGIN_253_VERSION = "253.22441.25"
+
+PROTOEDIT_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_253_VERSION, PROTOEDIT_PLUGIN_253_VERSION)
+
+PROTOEDIT_PLUGIN_253_SHA = "b34af2595b4f2a87dc93712c494bca93dd6e94c2dbaa076518fb473dd131e358"
+
+http_archive(
+    name = "protoedit_2025_3",
+    build_file_content = _PROTOEDIT_BUILD_FILE,
+    sha256 = PROTOEDIT_PLUGIN_253_SHA,
+    url = PROTOEDIT_PLUGIN_253_URL,
 )

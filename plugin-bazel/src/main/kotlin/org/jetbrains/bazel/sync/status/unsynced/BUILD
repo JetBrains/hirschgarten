@@ -4,7 +4,7 @@ kt_jvm_library(
     name = "unsynced",
     srcs = glob(["*.kt"]),
     associates = ["//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action/registered"],
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
