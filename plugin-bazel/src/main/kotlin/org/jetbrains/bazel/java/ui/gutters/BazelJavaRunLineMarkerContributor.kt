@@ -3,9 +3,11 @@ package org.jetbrains.bazel.java.ui.gutters
 import com.intellij.lang.jvm.util.JvmClassUtil
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.PsiParameter
 import com.intellij.psi.util.parentOfType
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
@@ -31,7 +33,8 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
       val methodName = psiIdentifier.getMethodName()
       return if (element.project.useJetBrainsTestRunner()) {
         val fullyQualifiedClassName = psiIdentifier.getFullyQualifiedClassName() ?: return null
-        "$fullyQualifiedClassName:$methodName"
+        val methodParameterTypes = psiIdentifier.getMethodParameterTypes()
+        "$fullyQualifiedClassName:$methodName:$methodParameterTypes"
       } else {
         val className = psiIdentifier.getClassName() ?: return methodName
         "$className.$methodName$"
@@ -46,6 +49,22 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   }
 
   protected open fun PsiNameIdentifierOwner.getMethodName(): String? = if (isMethod()) name else null
+
+  /**
+   * See [JUnit docs](https://docs.junit.org/5.2.0/api/org/junit/platform/engine/discovery/MethodSelector.html#getMethodParameterTypes())
+   */
+  private fun PsiNameIdentifierOwner.getMethodParameterTypes(): String =
+    getPsiParameters().orEmpty().map { it.type }.mapNotNull { type ->
+      if (type is PsiClassType) {
+        // canonicalText will include type arguments if they are present, avoid that in simple cases
+        type.resolve()?.qualifiedName
+      } else {
+        type.canonicalText
+      }
+    }.joinToString(separator = ",")
+
+  protected open fun PsiNameIdentifierOwner.getPsiParameters(): Array<out PsiParameter>? =
+    (this as? PsiMethod)?.parameterList?.parameters
 
   protected open fun PsiNameIdentifierOwner.getClassName(): String? = getNonStrictParentOfType<PsiClass>()?.name
 
