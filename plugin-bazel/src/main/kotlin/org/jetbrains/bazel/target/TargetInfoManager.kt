@@ -118,6 +118,20 @@ internal class TargetInfoManager(
     return result
   }
 
+  fun <T> allBuildTargetFilterMap(filterMap: (BuildTarget) -> T?): List<T> {
+    val result = ArrayList<T>(labelToTargetInfo.size)
+    val cursor = labelToTargetInfo.cursor(null)
+    while (cursor.hasNext()) {
+      cursor.next()
+      val target = cursor.value
+      val t = filterMap(target)
+      if (t != null) {
+        result.add(t)
+      }
+    }
+    return result
+  }
+
   fun getAllTargets(): Sequence<Label> =
     sequence {
       val cursor = labelToTargetInfo.cursor(null)

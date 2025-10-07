@@ -245,6 +245,10 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   @InternalApi
   fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<Label> = db.allBuildTargetAsLabelToTargetMap(predicate)
 
+  // todo: avoid such methods as we load all targets into memory
+  @InternalApi
+  fun <T> allBuildTargetFilterMap(filterMap: (BuildTarget) -> T?): List<T> = db.allBuildTargetFilterMap(filterMap)
+
   fun getTotalFileCount(): Int = db.getTotalFileCount()
 }
 

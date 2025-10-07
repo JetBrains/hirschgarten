@@ -3,6 +3,10 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
 import com.intellij.openapi.diagnostic.logger
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap
+import it.unimi.dsi.fastutil.objects.Reference2BooleanMap
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -103,7 +107,8 @@ class AspectBazelProjectMapper(
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, targets)
       }
-    val (targetsToImport, targetsAsLibraries) =
+    val externalWorkspaceTargetCache = Object2BooleanOpenHashMap<Label>()
+    val (workspaceTargets, targetsAsLibraries) =
       measure("Select targets") {
         // the import depth mechanism does not apply for go targets sync
         // for now, go sync assumes to retrieve all transitive targets, which is equivalent to `import_depth: -1`
@@ -118,22 +123,25 @@ class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 targets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
+                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags, targets, externalWorkspaceTargetCache)
                 } == true
               },
             )
         val (nonGoTargetsToImport, nonWorkspaceTargets) =
           nonGoTargetsAtDepth.targets.partition {
-            isWorkspaceTarget(it, repoMapping, featureFlags)
+            isWorkspaceTarget(it, repoMapping, featureFlags, targets, externalWorkspaceTargetCache)
           }
         val goTargetsToImport =
           dependencyGraph
             .allTransitiveTargets(goTargetLabels.toSet())
             .targets
-            .filter { isWorkspaceTarget(it, repoMapping, featureFlags) }
+            .filter { isWorkspaceTarget(it, repoMapping, featureFlags, targets, externalWorkspaceTargetCache) }
         val libraries = (nonWorkspaceTargets + nonGoTargetsAtDepth.directDependencies).associateBy { it.label() }
-        (nonGoTargetsToImport + goTargetsToImport).asSequence() to libraries
+        val workspaceTargets = (nonGoTargetsToImport + goTargetsToImport).asSequence()
+          .toCollection(ReferenceOpenHashSet()) // using a reference set to avoid computing hashcode and calling equals
+        workspaceTargets to libraries
       }
+    val targetsToImport = targets.values.asSequence()
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
         collectInterfacesAndClasses(targetsToImport)
@@ -221,7 +229,8 @@ class AspectBazelProjectMapper(
           .toSet()
       }
 
-    val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, highPrioritySources, repoMapping, dependencyGraph) }
+    val rawTargets =
+      measure("create raw targets") { createRawBuildTargets(targets, workspaceTargets, highPrioritySources, repoMapping, dependencyGraph) }
     val nonModuleRawTargets =
       measure("create non module raw targets") {
         nonModuleTargets
@@ -275,7 +284,7 @@ class AspectBazelProjectMapper(
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
           targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
-      )
+        )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -751,27 +760,41 @@ class AspectBazelProjectMapper(
     target: TargetInfo,
     repoMapping: RepoMapping,
     featureFlags: FeatureFlags,
-  ): Boolean =
-    (
-      isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
-        (
-          shouldImportTargetKind(target.kind) ||
-            target.hasJvmTargetInfo() &&
-            (
-              target.dependenciesCount > 0 ||
-                hasKnownJvmSources(target)
-            )
-        )
-    ) ||
-      (
-        featureFlags.isGoSupportEnabled &&
-          target.hasGoTargetInfo() &&
-          hasKnownGoSources(target) ||
-          featureFlags.isPythonSupportEnabled &&
-          target.hasPythonTargetInfo() &&
-          hasKnownPythonSources(target)
-      ) ||
-      target.hasProtobufTargetInfo()
+    targetMap: Map<Label, TargetInfo>,
+    cache: Object2BooleanMap<Label>,
+  ): Boolean = cache.computeIfAbsent(target.label()) {
+    val isInternal = isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping)
+
+    // dependency is considered external if any of its descendants is not external
+    fun hasAtLeastOneNonExternalDependency(target: TargetInfo): Boolean {
+      if (target.dependenciesCount == 0) {
+        return false
+      }
+      return target.dependenciesList
+        .asSequence()
+        .mapNotNull { targetMap[it.label()] }
+        .any { isWorkspaceTarget(it, repoMapping, featureFlags, targetMap, cache) }
+    }
+
+    val isJvmTarget = target.hasJvmTargetInfo() &&
+      (hasAtLeastOneNonExternalDependency(target) || hasKnownJvmSources(target))
+
+    val isImportableKind = shouldImportTargetKind(target.kind)
+
+    val isValidJvmTarget = isInternal && (isImportableKind || isJvmTarget)
+
+    val isGoTarget = featureFlags.isGoSupportEnabled &&
+      target.hasGoTargetInfo() &&
+      hasKnownGoSources(target)
+
+    val isPythonTarget = featureFlags.isPythonSupportEnabled &&
+      target.hasPythonTargetInfo() &&
+      hasKnownPythonSources(target)
+
+    val isProtobufTarget = target.hasProtobufTargetInfo()
+
+    return@computeIfAbsent isValidJvmTarget || isGoTarget || isPythonTarget || isProtobufTarget
+  }
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
 
@@ -803,6 +826,7 @@ class AspectBazelProjectMapper(
 
   private suspend fun createRawBuildTargets(
     targets: List<IntermediateTargetData>,
+    workspaceTargets: Set<TargetInfo>,
     highPrioritySources: Set<Path>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
@@ -813,6 +837,7 @@ class AspectBazelProjectMapper(
           // async {
           createRawBuildTarget(
             target,
+            workspaceTargets,
             highPrioritySources,
             repoMapping,
             dependencyGraph,
@@ -828,6 +853,7 @@ class AspectBazelProjectMapper(
 
   private suspend fun createRawBuildTarget(
     targetData: IntermediateTargetData,
+    workspaceTargets: Set<TargetInfo>,
     highPrioritySources: Set<Path>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
@@ -842,9 +868,8 @@ class AspectBazelProjectMapper(
     val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.languages) ?: return null
     val resources = resolveResources(target, languagePlugin)
 
-    val tags = targetData.tags
     val (targetSources, lowPrioritySharedSources) =
-      if (tags.hasLowSharedSourcesPriority()) {
+      if (targetData.tags.hasLowSharedSourcesPriority()) {
         targetData.sources.partition { it.path !in highPrioritySources }
       } else {
         targetData.sources to emptyList()
@@ -853,15 +878,23 @@ class AspectBazelProjectMapper(
     val context = LanguagePluginContext(target, dependencyGraph, repoMapping, bazelPathsResolver)
     val data = languagePlugin.createBuildTargetData(context, target)
 
+    val tags = targetData.tags.mapNotNull(BspMappings::toBspTag)
+      .toMutableList()
+
+    // we want to hide targets present outside the current workspace
+    if (target !in workspaceTargets) {
+      tags.add(BuildTargetTag.HIDDEN)
+    }
+
     return RawBuildTarget(
       id = label,
-      tags = tags.mapNotNull(BspMappings::toBspTag),
+      tags = tags,
       dependencies = directDependencies,
-      kind = inferKind(tags, target.kind, targetData.languages),
+      kind = inferKind(targetData.tags, target.kind, targetData.languages),
       sources = targetSources,
       resources = resources,
       baseDirectory = baseDirectory,
-      noBuild = Tag.NO_BUILD in tags,
+      noBuild = Tag.NO_BUILD in targetData.tags,
       data = data,
       lowPrioritySharedSources = lowPrioritySharedSources,
     )

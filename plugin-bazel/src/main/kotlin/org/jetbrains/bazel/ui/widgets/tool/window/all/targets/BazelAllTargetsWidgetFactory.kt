@@ -32,7 +32,9 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
+import org.jetbrains.bazel.ui.widgets.tool.window.components.LightBuildTarget
 import org.jetbrains.bazel.ui.widgets.tool.window.components.configureBazelToolWindowToolBar
+import org.jetbrains.bsp.protocol.BuildTargetTag
 import java.awt.BorderLayout
 
 private class BazelAllTargetsWidgetFactory :
@@ -133,7 +135,20 @@ private suspend fun updateVisibleTargets(
   targetPanel: Deferred<BazelTargetsPanel>,
 ) {
   // First, apply the filter
-  val filteredTargets = targetUtils.allBuildTargetAsLabelToTargetMap(model.targetFilter.predicate)
+  val predicate = model.targetFilter.predicate
+  val filteredTargets = targetUtils.allBuildTargetFilterMap fn@{ target ->
+    if (!predicate(target)) {
+      return@fn null
+    }
+    val isHidden = BuildTargetTag.HIDDEN in target.tags
+    if (isHidden && !model.showHidden) {
+      return@fn null
+    }
+    return@fn LightBuildTarget(
+      id = target.id,
+      isHidden = isHidden,
+    )
+  }
   val hasAnyTargets = targetUtils.getTotalTargetCount() > 0
   // Then, apply the search query
   var searchRegex: Regex?
@@ -150,12 +165,12 @@ private suspend fun updateVisibleTargets(
 
       searchRegex = model.searchQuery.toRegex(options)
       filteredTargets.filter { target ->
-        searchRegex.containsMatchIn(target.toString()) || searchRegex.containsMatchIn(target.toShortString(project))
+        searchRegex.containsMatchIn(target.toString()) || searchRegex.containsMatchIn(target.id.toShortString(project))
       }
     }
 
   // Finally, sort the results
-  val visibleTargets = searchResults.sortedBy { it.toShortString(project) }
+  val visibleTargets = searchResults.sortedBy { it.id.toShortString(project) }
   val targetPanel = targetPanel.await()
   withContext(Dispatchers.EDT) {
     targetPanel.update(

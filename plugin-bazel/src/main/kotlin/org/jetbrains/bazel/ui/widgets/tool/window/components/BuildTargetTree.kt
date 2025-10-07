@@ -25,7 +25,7 @@ import javax.swing.tree.TreeSelectionModel
 
 internal class BuildTargetTree(
   private val project: Project,
-  private val rootNode: DefaultMutableTreeNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList())),
+  private val rootNode: DefaultMutableTreeNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList(), false)),
 ) : Tree(rootNode) {
   private val loadedTargetsMouseListener: LoadedTargetsMouseListener =
     object : LoadedTargetsMouseListener(project) {
@@ -93,7 +93,7 @@ internal class BuildTargetTree(
     addMouseListener(loadedTargetsMouseListener)
   }
 
-  fun updateTree(visibleTargets: Collection<Label>, displayAsTree: Boolean) {
+  fun updateTree(visibleTargets: Collection<LightBuildTarget>, displayAsTree: Boolean) {
     val classifier =
       if (displayAsTree) {
         TreeTargetClassifier(project)
@@ -110,13 +110,14 @@ internal class BuildTargetTree(
     expandPath(TreePath(rootNode.path))
   }
 
-  private fun generateTree(targets: Collection<Label>, classifier: BuildTargetClassifierExtension) {
+  private fun generateTree(targets: Collection<LightBuildTarget>, classifier: BuildTargetClassifierExtension) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
-          id = it,
-          path = classifier.calculateBuildTargetPath(it),
-          displayName = classifier.calculateBuildTargetName(it),
+          id = it.id,
+          path = classifier.calculateBuildTargetPath(it.id),
+          displayName = classifier.calculateBuildTargetName(it.id),
+          isHidden = it.isHidden,
         )
       },
       classifier.separator,
@@ -147,7 +148,8 @@ internal class BuildTargetTree(
     depth: Int,
   ): DefaultMutableTreeNode {
     val node = DefaultMutableTreeNode()
-    node.userObject = DirectoryNodeData(dirname, targets)
+    val isHidden = targets.all { it.isHidden }
+    node.userObject = DirectoryNodeData(dirname, targets, isHidden)
 
     val pathToIdentifierMap = targets.groupBy { it.path.getOrNull(depth + 1) }
     val childrenNodeList =
@@ -197,7 +199,7 @@ internal class BuildTargetTree(
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(
-      TargetNodeData(identifier.displayName, identifier.id),
+      TargetNodeData(identifier.displayName, identifier.id, identifier.isHidden),
     )
 
   private fun simplifyNodeIfHasOneChild(
@@ -210,7 +212,8 @@ internal class BuildTargetTree(
       val onlyChild = childrenList.first() as? DefaultMutableTreeNode
       val onlyChildObject = onlyChild?.userObject
       if (onlyChildObject is DirectoryNodeData) {
-        node.userObject = DirectoryNodeData("${dirname}${separator}${onlyChildObject.name}", onlyChildObject.targets)
+        node.userObject = DirectoryNodeData("${dirname}${separator}${onlyChildObject.name}",
+                                            onlyChildObject.targets, onlyChildObject.isHidden)
         childrenList.clear()
         childrenList.addAll(onlyChild.children().toList())
       }
@@ -248,15 +251,23 @@ internal class BuildTargetTree(
 data class DirectoryNodeData(
   @JvmField val name: String,
   @JvmField val targets: List<BuildTargetTreeIdentifier>,
+  @JvmField val isHidden: Boolean,
 )
 
 data class TargetNodeData(
   @JvmField val displayName: String,
   @JvmField val id: Label,
+  @JvmField val isHidden: Boolean,
 )
 
 data class BuildTargetTreeIdentifier(
   @JvmField val id: Label,
   @JvmField val path: List<String>,
   @JvmField val displayName: String,
+  @JvmField val isHidden: Boolean,
+)
+
+data class LightBuildTarget(
+  val id: Label,
+  val isHidden: Boolean,
 )

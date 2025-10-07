@@ -33,6 +33,12 @@ internal class BazelTargetsPanelModel(private val updateRequests: MutableSharedF
       updateTargets()
     }
 
+  var showHidden: Boolean = false
+    set(value) {
+      field = value
+      updateTargets()
+    }
+
   private fun updateTargets() {
     check(updateRequests.tryEmit(Unit))
   }

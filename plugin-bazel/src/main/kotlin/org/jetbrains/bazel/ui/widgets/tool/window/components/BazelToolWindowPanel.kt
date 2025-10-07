@@ -28,6 +28,7 @@ internal fun configureBazelToolWindowToolBar(
       addAll(defaultActions)
       addSeparator()
       add(FilterActionGroup(model))
+      add(ShowHiddenAction(model))
       addSeparator()
       add(BazelToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
       addSeparator()
