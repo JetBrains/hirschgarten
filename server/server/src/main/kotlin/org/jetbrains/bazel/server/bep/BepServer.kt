@@ -196,7 +196,7 @@ class BepServer(
             progress.stderr,
             SyntheticLabel(AllRuleTargets),
             originId,
-            commandLineOutput = true,
+            isCommandLineFormattedOutput = true,
           )
         events.forEach {
           bspClient.onBuildPublishDiagnostics(

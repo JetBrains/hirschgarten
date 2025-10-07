@@ -188,7 +188,7 @@ class DiagnosticsServiceTest {
 
     // when
     val label = Label.parse("//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics")
-    val diagnostics = extractDiagnostics(output, label, commandLineOutput = true)
+    val diagnostics = extractDiagnostics(output, label, isCommandLineFormattedOutput = true)
 
     // then
     val expected =
@@ -901,7 +901,7 @@ class DiagnosticsServiceTest {
   private fun extractDiagnostics(
     output: String,
     buildTarget: Label,
-    commandLineOutput: Boolean = false,
+    isCommandLineFormattedOutput: Boolean = false,
   ): List<PublishDiagnosticsParams> =
-    DiagnosticsService(workspacePath).extractDiagnostics(output, buildTarget, "originId", commandLineOutput)
+    DiagnosticsService(workspacePath).extractDiagnostics(output, buildTarget, "originId", isCommandLineFormattedOutput)
 }

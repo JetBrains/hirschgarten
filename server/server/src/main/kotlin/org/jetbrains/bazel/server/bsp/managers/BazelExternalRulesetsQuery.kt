@@ -166,7 +166,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
                 val target = SyntheticLabel(AllRuleTargets)
                 val diagnostics =
                   DiagnosticsService(workspaceRoot)
-                    .extractDiagnostics(result.stderr, target, originId!!, commandLineOutput = true)
+                    .extractDiagnostics(result.stderr, target, originId!!, isCommandLineFormattedOutput = true)
                 diagnostics.forEach { bspClientLogger.publishDiagnostics(it) }
               }
             log.warn(queryFailedMessage)

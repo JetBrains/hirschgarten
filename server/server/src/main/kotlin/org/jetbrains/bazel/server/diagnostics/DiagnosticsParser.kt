@@ -6,7 +6,7 @@ interface DiagnosticsParser {
   fun parse(
     bazelOutput: String,
     target: Label,
-    commandLineOutput: Boolean = false,
+    isCommandLineFormattedOutput: Boolean = false,
   ): List<Diagnostic>
 }
 
@@ -14,10 +14,10 @@ class DiagnosticsParserImpl : DiagnosticsParser {
   override fun parse(
     bazelOutput: String,
     target: Label,
-    commandLineOutput: Boolean,
+    isCommandLineFormattedOutput: Boolean,
   ): List<Diagnostic> {
     val output = prepareOutput(bazelOutput, target)
-    val diagnostics = collectDiagnostics(output, commandLineOutput)
+    val diagnostics = collectDiagnostics(output, isCommandLineFormattedOutput)
     return deduplicate(diagnostics)
   }
 
@@ -27,10 +27,10 @@ class DiagnosticsParserImpl : DiagnosticsParser {
     return Output(relevantLines, target)
   }
 
-  private fun collectDiagnostics(output: Output, commandLineOutput: Boolean): List<Diagnostic> {
+  private fun collectDiagnostics(output: Output, isCommandLineFormattedOutput: Boolean): List<Diagnostic> {
     val diagnostics = mutableListOf<Diagnostic>()
     while (output.nonEmpty()) {
-      val parsers = if (commandLineOutput) CommandLineOutputParser else Parsers
+      val parsers = if (isCommandLineFormattedOutput) CommandLineOutputParser else Parsers
       for (parser in parsers) {
         val result = parser.tryParse(output)
         if (result.isNotEmpty()) {

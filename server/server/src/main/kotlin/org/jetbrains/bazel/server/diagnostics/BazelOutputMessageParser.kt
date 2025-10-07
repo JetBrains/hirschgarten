@@ -4,6 +4,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
+import kotlin.io.path.exists
 
 object BazelOutputMessageParser : Parser {
   private val COLOR = "\\u001B\\[[0-9]+m".toRegex()
@@ -38,16 +39,18 @@ object BazelOutputMessageParser : Parser {
 
   private fun createError(match: MatchResult, targetLabel: Label): Diagnostic {
     FileBasedError.matchEntire(match.groupValues[1])?.let { fileMatch ->
-      try {
-        val file = fileMatch.groups["file"]!!.let { Paths.get(it.value) }
-        val position =
-          Position(
-            fileMatch.groups["line"]!!.value.toInt(),
-            fileMatch.groups["char"]!!.value.toInt(),
-          )
+      val file = try {
+        fileMatch.groups["file"]!!.let { Paths.get(it.value) }?.takeIf { file -> file.exists() }
+      } catch (_: InvalidPathException) {
+        null
+      }
+      if (file != null) {
+        val position = Position(
+          fileMatch.groups["line"]!!.value.toInt(),
+          fileMatch.groups["char"]!!.value.toInt()
+        )
         val message = fileMatch.groups["message"]!!.value
         return Diagnostic(position, message, file, targetLabel, DiagnosticSeverity.ERROR)
-      } catch (_: Exception) {
       }
     }
     return Diagnostic(
