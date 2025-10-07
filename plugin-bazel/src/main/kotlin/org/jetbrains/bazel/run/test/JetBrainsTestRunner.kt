@@ -7,8 +7,10 @@ import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasTestFilter
 
-public const val JB_TEST_UNIQUE_IDS = "JB_TEST_UNIQUE_IDS"
-public const val JB_TEST_FILTER = "JB_TEST_FILTER"
+// Constants copied from JUnit5BazelRunner
+private const val JB_TEST_UNIQUE_IDS = "JB_TEST_UNIQUE_IDS"
+private const val JB_TEST_FILTER = "JB_TEST_FILTER"
+private const val JB_IDE_SM_RUN = "JB_IDE_SM_RUN"
 
 fun Project.useJetBrainsTestRunner(): Boolean =
   ProjectViewService.getInstance(this).getCachedProjectView().useJetBrainsTestRunner
@@ -23,12 +25,14 @@ fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFi
       } else {
         it.remove(JB_TEST_FILTER)
       }
+      it[JB_IDE_SM_RUN] = "true"
     }
   } else {
     (state as? HasTestFilter)?.testFilter = testFilter
     (state as? HasEnv)?.env?.envs?.let {
       it.remove(JB_TEST_UNIQUE_IDS)
       it.remove(JB_TEST_FILTER)
+      it.remove(JB_IDE_SM_RUN)
     }
   }
 }
@@ -38,5 +42,6 @@ fun setTestUniqueIds(state: BazelRunConfigurationState<*>, testUniqueIds: String
   (state as? HasEnv)?.env?.envs?.let {
     it.remove(JB_TEST_FILTER)
     it[JB_TEST_UNIQUE_IDS] = testUniqueIds
+    it[JB_IDE_SM_RUN] = "true"
   }
 }
