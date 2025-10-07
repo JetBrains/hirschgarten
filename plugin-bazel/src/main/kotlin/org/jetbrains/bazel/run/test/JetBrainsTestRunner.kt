@@ -37,11 +37,18 @@ fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFi
   }
 }
 
-fun setTestUniqueIds(state: BazelRunConfigurationState<*>, testUniqueIds: String) {
+fun setTestUniqueIds(state: BazelRunConfigurationState<*>, testUniqueIds: List<String>) {
   (state as? HasTestFilter)?.testFilter = null
   (state as? HasEnv)?.env?.envs?.let {
     it.remove(JB_TEST_FILTER)
-    it[JB_TEST_UNIQUE_IDS] = testUniqueIds
+    it[JB_TEST_UNIQUE_IDS] = testUniqueIds.joinToString(separator = ";")
     it[JB_IDE_SM_RUN] = "true"
   }
+}
+
+fun getTestUniqueIds(state: BazelRunConfigurationState<*>): List<String>? {
+  (state as? HasEnv)?.env?.envs?.let {
+    return it[JB_TEST_UNIQUE_IDS]?.split(";")
+  }
+  return null
 }

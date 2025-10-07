@@ -3,6 +3,7 @@ package org.jetbrains.bazel.run.test
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.testframework.AbstractTestProxy
 import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
@@ -25,7 +26,7 @@ class BazelRerunFailedTestsAction(
     val handler = configuration.handler ?: return null
 
     val state = handler.state as? AbstractGenericTestState<*> ?: return null
-    setTestUniqueIds(state = state, testUniqueIds = failedTestIds.joinToString(separator = ";"))
+    setTestUniqueIds(state = state, testUniqueIds = failedTestIds)
     return object : MyRunProfile(configuration) {
       override fun getState(
         executor: Executor,
@@ -38,3 +39,7 @@ class BazelRerunFailedTestsAction(
     }
   }
 }
+
+fun List<AbstractTestProxy>.getTestIds(): List<String> =
+  filter { it.metainfo == "test" }
+  .mapNotNull { it.getUserData(SMTestProxy.NODE_ID) }
