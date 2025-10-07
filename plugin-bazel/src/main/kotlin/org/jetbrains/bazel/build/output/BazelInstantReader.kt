@@ -7,7 +7,7 @@ import java.util.ArrayDeque
  * A BuildOutputInstantReader backed by a shared deque of lines. It allows parsers to
  * read subsequent lines after the head line passed to BuildOutputParser.parse.
  */
-internal class BazelInstantReader(
+class BazelInstantReader(
   private val lines: ArrayDeque<String>,
   private val parentIdProvider: () -> Any
 ) : BuildOutputInstantReader {

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.build.session
 
 import com.intellij.build.events.BuildEvent
 import com.intellij.build.output.BuildOutputParser
+import com.intellij.execution.process.AnsiEscapeDecoder
 import org.jetbrains.bazel.build.BazelOutputParserProvider
 import org.jetbrains.bazel.build.output.BazelInstantReader
 import java.util.ArrayDeque
@@ -13,23 +14,11 @@ import java.util.function.Consumer
  */
 import org.jetbrains.annotations.TestOnly
 
-class BazelOutputPipeline(private val session: BazelBuildSession) {
+class BazelOutputPipeline(private val session: BazelBuildSession, private val parsers: List<BuildOutputParser>) {
 
-  private lateinit var parsers: List<BuildOutputParser>
   private val lines: ArrayDeque<String> = ArrayDeque()
   private val deduplicator = BazelBuildEventDeduplicator()
-  private val ansiDecoder = com.intellij.execution.process.AnsiEscapeDecoder()
-
-  @TestOnly
-  internal constructor(session: BazelBuildSession, parsers: List<BuildOutputParser>) : this(session) {
-    this.parsers = parsers
-  }
-
-  init {
-    if (!this::parsers.isInitialized) {
-      parsers = BazelOutputParserProvider().getBuildOutputParsersForStandalone()
-    }
-  }
+  private val ansiDecoder = AnsiEscapeDecoder()
 
   fun onLine(text: String) {
     val normalized = text.removeSuffix("\n").removeSuffix("\r")
@@ -70,9 +59,19 @@ class BazelOutputPipeline(private val session: BazelBuildSession) {
         }
       }
 
-      // No parser consumed the head; do not emit an OutputBuildEvent to avoid duplicating console output.
-      // The attached process console already renders this line (with colors if applicable).
-      lines.removeFirst()
+      // No parser consumed the head yet. Keep it in the deque to allow multi-line parsers
+      // (e.g., Javac/Kotlinc) to consume it once more lines arrive. To prevent unbounded growth,
+      // drop the oldest line only when the buffer exceeds the safety limit.
+      if (lines.size > LOOKAHEAD_BUFFER_LIMIT) {
+        lines.removeFirst()
+      } else {
+        break@processQueue
+      }
     }
+  }
+
+  private companion object {
+    // Upper bound on buffered lines to avoid unbounded memory usage when no parser matches.
+    private const val LOOKAHEAD_BUFFER_LIMIT: Int = 256
   }
 }

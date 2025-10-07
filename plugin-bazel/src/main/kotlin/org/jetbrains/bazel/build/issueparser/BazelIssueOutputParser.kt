@@ -37,18 +37,14 @@ class BazelIssueOutputParser(
 
   private fun createDefaultParsers(): List<BazelIssueParser.Parser> {
     // Only include Bazel-specific parsers here.
-    // Generic compiler errors (Java, Kotlin, C++, etc.) are handled by IntelliJ's built-in parsers
-    // (JavacOutputParser, KotlincOutputParser) which run before this parser in the chain.
+    // Generic compiler errors (Java, Kotlin, etc.) are handled by IntelliJ's built-in parsers
+    // (JavacOutputParser, KotlincOutputParser) provided by BazelOutputParserProvider.
     return listOf(
       // Bazel-specific: BUILD/Starlark files
       BuildParser(),
       StarlarkErrorParser(),
       LinelessBuildParser(),
       FileNotFoundBuildParser(workspaceRoot),
-      // Java/Javac errors (fallback if IntelliJ's JavacOutputParser misses them)
-      BazelJavacErrorParser(project, workspaceRoot),
-      // Kotlin/Kotlinc errors (fallback if IntelliJ's KotlincOutputParser misses them)
-      BazelKotlincErrorParser(project, workspaceRoot),
       // Python-specific (not well handled by built-in parsers)
       PythonCompileParser(project),
       TracebackParser(),

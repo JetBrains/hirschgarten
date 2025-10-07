@@ -7,6 +7,8 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.output.BuildOutputInstantReader
 import com.intellij.build.output.BuildOutputParser
 import com.intellij.build.events.BuildEvents
+import com.intellij.build.output.JavacOutputParser
+import com.intellij.build.output.KotlincOutputParser
 import com.intellij.testFramework.junit5.impl.TestApplicationExtension
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -85,5 +87,49 @@ class BazelOutputPipelineTest {
 
     val msgs = manager.records.map { it.event }.filterIsInstance<MessageEvent>()
     assertTrue(msgs.any { it.message == "OK" })
+  }
+
+  @Test
+  fun `parses javac errors via built-in parser`() {
+    val (session, manager) = newSession()
+    session.start()
+
+    val pipeline = BazelOutputPipeline(session, listOf(JavacOutputParser()))
+
+    val tmpDir = java.nio.file.Files.createTempDirectory("bazelJavac").toFile()
+    val javaFile = java.io.File(tmpDir, "Bar.java")
+    javaFile.parentFile.mkdirs()
+    javaFile.writeText("class Bar { }")
+
+    // Typical javac error snippet (absolute path to satisfy file existence check)
+    pipeline.onLine("${javaFile.absolutePath}:7: error: cannot find symbol")
+    pipeline.onLine("    Baz qux = new Baz();")
+    pipeline.onLine("              ^")
+    pipeline.onLine("  symbol:   class Baz")
+    pipeline.onLine("  location: class Bar")
+
+    val msgs = manager.records.map { it.event }.filterIsInstance<MessageEvent>()
+    assertTrue(msgs.any { it.kind == MessageEvent.Kind.ERROR && it.message.contains("cannot find symbol") })
+  }
+
+  @Test
+  fun `parses kotlinc errors via built-in parser`() {
+    val (session, manager) = newSession()
+    session.start()
+
+    val pipeline = BazelOutputPipeline(session, listOf(KotlincOutputParser()))
+
+    val tmpDir = java.nio.file.Files.createTempDirectory("bazelKotlinc").toFile()
+    val ktFile = java.io.File(tmpDir, "Baz.kt")
+    ktFile.parentFile.mkdirs()
+    ktFile.writeText("fun main() { println(\"hi\") }")
+
+    // Typical kotlinc error snippet (with severity prefix as kotlinc prints)
+    pipeline.onLine("e: ${ktFile.absolutePath}: (12, 9): unresolved reference: Qux")
+    pipeline.onLine("    val x = Qux()")
+    pipeline.onLine("            ^~~")
+
+    val msgs = manager.records.map { it.event }.filterIsInstance<MessageEvent>()
+    assertTrue(msgs.any { it.kind == MessageEvent.Kind.ERROR && it.message.contains("unresolved reference: Qux") })
   }
 }
