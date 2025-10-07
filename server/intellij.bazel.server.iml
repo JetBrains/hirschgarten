@@ -14,8 +14,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.libraries.guava" />
     <orderEntry type="library" name="Velocity" level="project" />
-    <orderEntry type="library" name="commons-cli" level="project" />
-    <orderEntry type="library" name="commons-io" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.commons.cli" />
+    <orderEntry type="module" module-name="intellij.libraries.commons.io" />
     <orderEntry type="module" module-name="intellij.libraries.grpc" />
     <orderEntry type="module" module-name="intellij.libraries.gson" />
     <orderEntry type="module" module-name="intellij.libraries.jackson" />

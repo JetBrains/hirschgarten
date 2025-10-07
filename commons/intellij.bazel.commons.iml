@@ -15,8 +15,8 @@
     <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="library" name="slf4j-api" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.gson" />
-    <orderEntry type="library" name="commons-cli" level="project" />
-    <orderEntry type="library" name="commons-io" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.commons.cli" />
+    <orderEntry type="module" module-name="intellij.libraries.commons.io" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinx-coroutines-core" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="opentelemetry-extension-kotlin" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.hash4j" />
