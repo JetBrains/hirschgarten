@@ -93,7 +93,7 @@ internal class BuildTargetTree(
     addMouseListener(loadedTargetsMouseListener)
   }
 
-  fun updateTree(visibleTargets: Collection<LightBuildTarget>, displayAsTree: Boolean) {
+  fun updateTree(visibleTargets: Collection<TargetDisplayProperties>, displayAsTree: Boolean) {
     val classifier =
       if (displayAsTree) {
         TreeTargetClassifier(project)
@@ -110,7 +110,7 @@ internal class BuildTargetTree(
     expandPath(TreePath(rootNode.path))
   }
 
-  private fun generateTree(targets: Collection<LightBuildTarget>, classifier: BuildTargetClassifierExtension) {
+  private fun generateTree(targets: Collection<TargetDisplayProperties>, classifier: BuildTargetClassifierExtension) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
@@ -267,7 +267,7 @@ data class BuildTargetTreeIdentifier(
   @JvmField val isHidden: Boolean,
 )
 
-data class LightBuildTarget(
+data class TargetDisplayProperties(
   val id: Label,
   val isHidden: Boolean,
 )

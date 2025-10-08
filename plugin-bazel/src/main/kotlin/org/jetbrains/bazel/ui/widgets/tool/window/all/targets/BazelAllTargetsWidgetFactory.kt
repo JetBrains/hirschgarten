@@ -32,7 +32,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
-import org.jetbrains.bazel.ui.widgets.tool.window.components.LightBuildTarget
+import org.jetbrains.bazel.ui.widgets.tool.window.components.TargetDisplayProperties
 import org.jetbrains.bazel.ui.widgets.tool.window.components.configureBazelToolWindowToolBar
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import java.awt.BorderLayout
@@ -144,7 +144,7 @@ private suspend fun updateVisibleTargets(
     if (isHidden && !model.showHidden) {
       return@fn null
     }
-    return@fn LightBuildTarget(
+    return@fn TargetDisplayProperties(
       id = target.id,
       isHidden = isHidden,
     )

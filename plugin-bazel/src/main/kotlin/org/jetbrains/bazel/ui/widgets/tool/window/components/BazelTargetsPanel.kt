@@ -6,10 +6,8 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.concurrency.annotations.RequiresEdt
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
-import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.BorderLayout
 import javax.swing.SwingConstants
 
@@ -54,7 +52,7 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
 
   @RequiresEdt
   fun update(
-    visibleTargets: List<LightBuildTarget>,
+    visibleTargets: List<TargetDisplayProperties>,
     searchRegex: Regex?,
     hasAnyTargets: Boolean,
     displayAsTree: Boolean,
