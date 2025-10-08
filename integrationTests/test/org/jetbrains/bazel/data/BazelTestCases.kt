@@ -180,7 +180,17 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       )
     )
 
-    val TestTargetActionResultsTree = withBazelProject(
+  val TestTargetActionResultsTree = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "c88d3cb84fae0c8a42cd8ddd78306a40595ff764",
+      branchName = "main",
+      relativePath = "simpleKotlinTest",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+    )
+  )
+
+    val TestHiddenTargetsTest = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
         commitHash = "c88d3cb84fae0c8a42cd8ddd78306a40595ff764",
