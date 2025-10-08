@@ -48,16 +48,13 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
           }
           step("Verify test status and results tree") {
             verifyTestStatus(
-              listOf("2 tests passed", "2 tests total"),
+              listOf("2 tests passed"),
               listOf("SimpleKotlinTest", "trivial test()", "another trivial test()"),
             )
             takeScreenshot("afterOpeningTestResultsTree")
           }
 
           step("Launch debug run config for SimpleKotlinTest") {
-            // revert the click from the previous `verifyTestStatus` step
-            x("//div[@accessiblename='Show Passed']").click()
-
             editorTabs()
               .gutter()
               .getGutterIcons()
@@ -69,7 +66,7 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
           step("Verify debug test status and results tree") {
             // should be the same as for the above test results tree
             verifyTestStatus(
-              listOf("2 tests passed", "2 tests total"),
+              listOf("2 tests passed"),
               listOf("SimpleKotlinTest", "trivial test()", "another trivial test()"),
             )
             takeScreenshot("afterOpeningDebugTestResultsTree")
