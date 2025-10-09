@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.isFile
 import com.intellij.projectImport.ProjectOpenProcessor
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
@@ -23,7 +24,6 @@ import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.io.IOException
 import java.nio.file.Path
 import javax.swing.Icon
-import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.listDirectoryEntries
 
@@ -116,16 +116,12 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
   override val isStrongProjectInfoHolder: Boolean
-    get() = true
+    get() = BazelFeatureFlags.autoOpenProjectIfPresent
 
   /**
    * The project is only eligible to be opened with Bazel Plugin if workspace files can be reached from the given vFile
    */
-  override fun canOpenProject(file: VirtualFile): Boolean {
-    if (file.isDirectory && file.findChild(Project.DIRECTORY_STORE_FOLDER) != null) return false
-
-    return findProjectFolderFromVFile(file) != null
-  }
+  override fun canOpenProject(file: VirtualFile): Boolean = findProjectFolderFromVFile(file) != null
 
   /**
    * this method can be used to set up additional project properties before opening the Bazel project
@@ -179,14 +175,11 @@ private fun VirtualFile.isEligibleFile() = isWorkspaceFile() || isBuildFile() ||
 
 private fun VirtualFile.isProjectViewFile() = isFile && extension == Constants.PROJECT_VIEW_FILE_EXTENSION
 
-private fun VirtualFile.isWorkspaceRoot(): Boolean = toNioPath().isWorkspaceRoot()
-
-private fun Path.isWorkspaceRoot(): Boolean =
-  isDirectory() &&
-    Constants.WORKSPACE_FILE_NAMES
-      .asSequence()
-      .map { resolve(it) }
-      .any { it.isRegularFile() }
+private fun VirtualFile.isWorkspaceRoot(): Boolean {
+  if (!isDirectory) return false
+  val path = toNioPath()
+  return Constants.WORKSPACE_FILE_NAMES.any { path.resolve(it).isRegularFile() }
+}
 
 private fun VirtualFile.isWorkspaceFile() = isFile && name in Constants.WORKSPACE_FILE_NAMES
 
