@@ -22,7 +22,6 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -80,7 +79,7 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
     ?.sdk
     ?.name
     ?.let { PythonSdkUtil.getAllSdks().firstOrNull { sdk -> sdk.name == it } } // the first SDK matching the module SDK dependency
-    ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
+         ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
 
 private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
