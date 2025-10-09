@@ -8,11 +8,9 @@ import com.google.gson.JsonSyntaxException
 import com.google.gson.annotations.SerializedName
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.RoamingType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.HttpRequests
@@ -110,7 +108,7 @@ class BazelGithubVersionResolver : BazelVersionResolver {
 val GITHUB_CACHE_EVICTION_TIME = 24.hours
 
 @Service(Service.Level.PROJECT)
-@State(name = "BazelGithubResolverVersionCache", storages = [Storage(StoragePathMacros.CACHE_FILE, roamingType = RoamingType.DISABLED)])
+@State(name = "BazelGithubResolverVersionCache", storages = [Storage("bazelVersionCache.xml")])
 class BazelGithubGlobalCacheService(val coroutineScope: CoroutineScope) : PersistentStateComponent<BazelGithubGlobalCacheService.State> {
   class State : BaseState() {
     @get:XMap
