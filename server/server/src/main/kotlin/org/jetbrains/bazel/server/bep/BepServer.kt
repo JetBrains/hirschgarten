@@ -18,6 +18,7 @@ import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileTask
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -126,6 +127,23 @@ class BepServer(
             coverageReport,
           ),
         )
+      }
+
+      if (testResult.cachedLocally) {
+        val testLog =
+          testResult.testActionOutputList
+            .find { it.name == "test.log" }
+            ?.uri
+            ?.let { URI(it).toPath() }
+
+        if (testLog != null) {
+          bspClient.onCachedTestLog(
+            CachedTestLog(
+              originId,
+              testLog,
+            ),
+          )
+        }
       }
 
       val testXmlUri = testResult.testActionOutputList.find { it.name == "test.xml" }?.uri

@@ -192,6 +192,10 @@
                     interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.testLocatorProvider"
+                    interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -403,6 +407,8 @@
     />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
+    <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.sdkcompat.BazelRunConfigurationProducerSuppressor" />
+    <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />
 
     <projectService
       serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
@@ -524,7 +530,7 @@
 
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
-    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
+    <projectPreInit implementation="org.jetbrains.bazel.sdkcompat.OpenBazelProjectAndSyncStartupActivity"/>
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
     <notificationGroup
       displayType="BALLOON"
@@ -536,10 +542,10 @@
       id="Bazel"
       implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"
     />
-    <directoryProjectConfigurator
-      implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"
-      order="after PlatformProjectConfigurator"
-    />
+
+    <projectStorePathCustomizer implementation="org.jetbrains.bazel.sdkcompat.BazelProjectStorePathCustomizer"/>
+
+    <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
       implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"
       key="bazel"

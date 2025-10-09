@@ -25,6 +25,7 @@ import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetShardSizeSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.TestFlagsSection
+import org.jetbrains.bazel.languages.projectview.sections.UseJetBrainsTestRunnerSection
 
 interface ProjectViewSectionProvider {
   val sections: List<Section<*>>
@@ -61,6 +62,7 @@ class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       TargetsSection(),
       TestFlagsSection(),
       IndexAdditionalFilesInDirectoriesSection(),
+      UseJetBrainsTestRunnerSection(),
     )
 }
 

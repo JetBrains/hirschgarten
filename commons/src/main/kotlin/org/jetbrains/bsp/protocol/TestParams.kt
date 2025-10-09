@@ -12,4 +12,5 @@ data class TestParams(
   val coverageInstrumentationFilter: String? = null,
   val testFilter: String? = null,
   val additionalBazelParams: String? = null,
+  val useJetBrainsTestRunner: Boolean = false,
 )
