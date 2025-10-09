@@ -109,11 +109,9 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
     findProjectFolderFromVFile(virtualFile)
       ?: error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")
 
-  override val icon: Icon
-    get() = BazelPluginIcons.bazel
+  override val icon: Icon = BazelPluginIcons.bazel
 
-  override val name: String
-    get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
+  override val name: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
   override val isStrongProjectInfoHolder: Boolean
     get() = BazelFeatureFlags.autoOpenProjectIfPresent
