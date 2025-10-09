@@ -19,9 +19,7 @@ class BazelRerunFailedTestsAction(
 
   override fun getRunProfile(environment: ExecutionEnvironment): MyRunProfile? {
     val configuration = (myConsoleProperties.configuration as? BazelRunConfiguration)?.clone() as? BazelRunConfiguration ?: return null
-    val failedTestIds = getFailedTests(configuration.project)
-      .filter { it.metainfo == "test" }
-      .mapNotNull { it.getUserData(SMTestProxy.NODE_ID) }
+    val failedTestIds = getFailedTests(configuration.project).getTestIds()
     if (failedTestIds.isEmpty()) return null
     val handler = configuration.handler ?: return null
 
