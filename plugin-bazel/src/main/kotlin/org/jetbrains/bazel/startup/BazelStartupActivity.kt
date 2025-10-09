@@ -3,6 +3,8 @@ package org.jetbrains.bazel.startup
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.UserDataHolderEx
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
@@ -31,6 +33,8 @@ import kotlin.io.path.isDirectory
 
 private val log = logger<BazelStartupActivity>()
 
+private val EXECUTED_FOR_PROJECT = Key<Boolean>("bazel.startup.executed.for.project")
+
 /**
  * Runs actions after the project has started up and the index is up to date.
  *
@@ -39,6 +43,10 @@ private val log = logger<BazelStartupActivity>()
  */
 class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
+    if (startupActivityExecutedAlready(project)) {
+      log.info("Bazel startup activity executed already for project: $project")
+      return
+    }
     ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
     TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
     BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
@@ -90,6 +98,13 @@ private fun executeOnSyncedProject(project: Project) {
     setFindInFilesNonIndexable(project)
   }
 }
+
+/**
+ * Make sure calling [org.jetbrains.bazel.flow.open.performOpenBazelProject]
+ * won't cause [BazelStartupActivity] to execute twice.
+ */
+private fun startupActivityExecutedAlready(project: Project): Boolean =
+  !(project as UserDataHolderEx).replace(EXECUTED_FOR_PROJECT, null, true)
 
 /**
  * [workspaceModelLoadedFromCache] is always false with GoLand

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.flow.open
 import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.util.registry.Registry
@@ -13,6 +14,8 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sdkcompat.createModule
 import org.jetbrains.bazel.sdkcompat.setProjectRootDir
 import org.jetbrains.bazel.settings.bazel.openProjectViewInEditor
@@ -107,4 +110,11 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
 
     return findProjectFolderFromVFile(file) != null
   }
+}
+
+fun Project.initProperties(projectRootDir: VirtualFile) {
+  thisLogger().debug("Initializing properties for project: $projectRootDir")
+
+  this.isBazelProject = true
+  this.rootDir = projectRootDir
 }
