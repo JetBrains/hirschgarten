@@ -6,4 +6,6 @@ interface JoinedBuildClient : BuildTaskHandler {
   fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams)
 
   fun onPublishCoverageReport(report: CoverageReport)
+
+  fun onCachedTestLog(testLog: CachedTestLog)
 }

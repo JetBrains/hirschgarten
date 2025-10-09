@@ -3,12 +3,10 @@ package org.jetbrains.bazel.tests.ui
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
-import com.intellij.driver.sdk.ui.components.common.requireProject
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
 import com.intellij.driver.sdk.ui.components.elements.popupMenu
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
@@ -41,8 +39,8 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
         }
 
         verifyTestStatus(
-          listOf("2 tests passed", "2 tests total"),
-          listOf("AdditionTest", "MultiplicationTest"),
+          listOf("2 tests passed"),
+          setOf("AdditionTest", "testAddition", "MultiplicationTest", "testMultiplication"),
         )
       }
     }
