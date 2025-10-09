@@ -374,11 +374,6 @@
       key="bazel.check.shared.sources"
     />
     <registryKey
-      defaultValue="false"
-      description="Whether the Bazel plugin should import automatically even if .idea or another project model (e.g., Gradle) exists already"
-      key="bazel.project.auto.open.if.present"
-    />
-    <registryKey
       defaultValue="true"
       description="Whether the Bazel Query tab should be enabled in tool window (where target tree is)"
       key="bazel.query.tab.enabled"
