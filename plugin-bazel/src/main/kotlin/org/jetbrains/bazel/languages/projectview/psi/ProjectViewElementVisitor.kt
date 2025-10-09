@@ -6,9 +6,14 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImpo
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionItem
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiTryImport
 
 open class ProjectViewElementVisitor : PsiElementVisitor() {
   fun visitImport(node: ProjectViewPsiImport) {
+    visitElement(node)
+  }
+
+  fun visitTryImport(node: ProjectViewPsiTryImport) {
     visitElement(node)
   }
 

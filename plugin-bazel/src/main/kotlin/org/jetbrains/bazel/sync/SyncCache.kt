@@ -55,7 +55,9 @@ class SyncCache(private val project: Project) {
    */
   @Suppress("UNCHECKED_CAST")
   fun <T : Any> get(computable: SyncCacheComputable<T>): T =
-    cache.computeIfAbsent(computable) {
+    // From computeIfAbsent docs: "The mapping function must not modify this map during computation."
+    // So we're using getOrPut instead
+    cache.getOrPut(computable) {
       computable.compute(project)
     } as T
 

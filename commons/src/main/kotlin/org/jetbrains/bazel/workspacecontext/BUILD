@@ -5,6 +5,7 @@ kt_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "@maven//:commons_io_commons_io",

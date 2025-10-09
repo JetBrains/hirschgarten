@@ -153,9 +153,9 @@ private object AspectsJarFileSystem {
     if (usages == 0) {
       try {
         checkNotNull(aspectsFileSystem).close()
-      } catch (_: IOException) {
+      } finally {
+        aspectsFileSystem = null
       }
-      aspectsFileSystem = null
     }
   }
 }

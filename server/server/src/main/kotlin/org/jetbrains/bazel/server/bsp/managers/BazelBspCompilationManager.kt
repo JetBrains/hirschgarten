@@ -5,9 +5,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
@@ -21,7 +21,7 @@ class BazelBspCompilationManager(
   val workspaceRoot: Path,
 ) {
   suspend fun buildTargetsWithBep(
-    targetsSpec: TargetsSpec,
+    targetsSpec: TargetCollection,
     extraFlags: List<String> = emptyList(),
     originId: String?,
     environment: List<Pair<String, String>> = emptyList(),
@@ -41,7 +41,8 @@ class BazelBspCompilationManager(
           bazelRunner.buildBazelCommand(workspaceContext) {
             build {
               options.addAll(extraFlags)
-              addTargetsFromSpec(targetsSpec)
+              targets.addAll(targetsSpec.values)
+              excludedTargets.addAll(targetsSpec.excludedValues)
               this.environment.putAll(environment)
               useBes(bepReader.eventFile.toPath().toAbsolutePath())
             }

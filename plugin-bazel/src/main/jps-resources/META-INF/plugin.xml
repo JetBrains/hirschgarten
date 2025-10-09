@@ -67,6 +67,10 @@
     config-file="withTerminal.xml"
     optional="true"
   >org.jetbrains.plugins.terminal</depends>
+  <depends
+    config-file="withProtobuf.xml"
+    optional="true"
+  >idea.plugin.protoeditor</depends>
 
   <extensionPoints>
     <extensionPoint
@@ -185,7 +189,7 @@
                     dynamic="true"
     />
     <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
-                    interface="org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionProvider"
+                    interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
                     dynamic="true"
     />
   </extensionPoints>
@@ -223,7 +227,7 @@
     />
     <projectSyncHook
       id="IndexAdditionalFilesSyncHook"
-      implementation="org.jetbrains.bazel.flow.sync.IndexAdditionalFilesSyncHook"
+      implementation="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesSyncHook"
       order="after DirectoriesSyncHook"
     />
 
@@ -270,7 +274,7 @@
 
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
 
-    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.language.DefaultProjectViewSectionProvider"/>
+    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.DefaultProjectViewSectionProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -364,6 +368,11 @@
       defaultValue="true"
       description="Check and warn about shared sources in the project by showing the &quot;Shared sources detected&quot; notification"
       key="bazel.check.shared.sources"
+    />
+    <registryKey
+      defaultValue="false"
+      description="Whether the Bazel plugin should import automatically even if .idea or another project model (e.g., Gradle) exists already"
+      key="bazel.project.auto.open.if.present"
     />
     <registryKey
       defaultValue="true"
@@ -507,12 +516,16 @@
       serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"
       serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
     />
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.languages.projectview.ProjectViewWorkspaceContextProvider"
+      serviceInterface="org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider"
+    />
 
     <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider" />
 
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
-    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
+    <projectPreInit implementation="org.jetbrains.bazel.sdkcompat.OpenBazelProjectAndSyncStartupActivity"/>
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
     <notificationGroup
       displayType="BALLOON"
