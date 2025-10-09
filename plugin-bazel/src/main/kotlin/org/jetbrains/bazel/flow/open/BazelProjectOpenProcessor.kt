@@ -190,7 +190,7 @@ private fun Path.isWorkspaceRoot(): Boolean =
 
 private fun VirtualFile.isWorkspaceFile() = isFile && name in Constants.WORKSPACE_FILE_NAMES
 
-fun VirtualFile.isBuildFile() = isFile && name in Constants.BUILD_FILE_NAMES
+private fun VirtualFile.isBuildFile() = isFile && name in Constants.BUILD_FILE_NAMES
 
 fun getBuildFileForPackageDirectory(packageDirectory: VirtualFile): VirtualFile? {
   try {
