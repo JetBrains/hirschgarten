@@ -26,13 +26,8 @@ internal class LoadProjectViewFileAction :
   ),
   DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val projectViewFile =
-      e
-        .getPsiFile()
-        ?.virtualFile
-        ?.toNioPath()
-        ?: return
-    project.setProjectViewPath(projectViewFile)
+    val projectViewFile = e.getPsiFile()?.virtualFile ?: return
+    project.setProjectViewPath(projectViewFile.toNioPath().toAbsolutePath(), openProjectViewInEditor = false)
     withContext(Dispatchers.EDT) {
       ActionUtilCompat.performAction(ResyncAction(), e)
     }

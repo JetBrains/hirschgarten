@@ -20,8 +20,7 @@ data class BazelProjectSettings(
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
   // experimental settings
 ) {
-  internal fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings =
-    copy(projectViewPath = newProjectViewFilePath.toAbsolutePath())
+  internal fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
 
   fun withNewBuildifierExecutablePath(newBuildifierExecutablePath: Path): BazelProjectSettings =
     copy(buildifierExecutablePath = newBuildifierExecutablePath)

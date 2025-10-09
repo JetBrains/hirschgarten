@@ -1,15 +1,18 @@
 package org.jetbrains.bazel.flow.open
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.readText
 import com.intellij.openapi.vfs.resolveFromRootOrRelative
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
+import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import org.jetbrains.bazel.commons.constants.Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.commons.constants.Constants.PROJECT_VIEW_FILE_EXTENSION
+import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.extension
@@ -37,44 +40,43 @@ private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.
 
 object ProjectViewFileUtils {
   fun calculateProjectViewFilePath(
-    projectRootDir: VirtualFile,
-    projectViewPath: Path?,
-    overwrite: Boolean = false,
-    bazelPackageDir: VirtualFile? = null,
+    project: Project,
+    generateContent: Boolean,
+    overwrite: Boolean,
+    bazelPackageDir: Path?,
   ): Path {
     val projectViewFilePath =
-      projectViewPath?.toAbsolutePath()
-        ?: System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let(Path::of)
-        ?: calculateDefaultProjectViewFile(projectRootDir, overwrite)
-
-    val content = createProjectViewFileContent(projectRootDir, bazelPackageDir)
-    setProjectViewFileContent(projectViewFilePath, content, overwrite)
-
+      project.bazelProjectSettings.projectViewPath?.toAbsolutePath() ?: calculateDefaultProjectViewFile(project, overwrite)
+    if (generateContent) {
+      setProjectViewFileContent(projectViewFilePath, project, bazelPackageDir, overwrite)
+    }
     return projectViewFilePath
   }
 
-  fun projectViewTemplate(projectRootDir: VirtualFile): String {
-    val path = projectRootDir.resolveFromRootOrRelative(PROJECTVIEW_DEFAULT_TEMPLATE_PATH)
+  fun projectViewTemplate(project: Project): String {
+    val path = project.rootDir.resolveFromRootOrRelative(PROJECTVIEW_DEFAULT_TEMPLATE_PATH)
     return path?.readText() ?: INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE
   }
 
-  private fun calculateDefaultProjectViewFile(projectRootDir: VirtualFile, overwrite: Boolean): Path {
-    val rootDir = projectRootDir.toNioPath()
-    return (if (overwrite) null else calculateLegacyManagedProjectViewFile(rootDir))
-      ?: calculateProjectViewFileInCurrentDirectory(rootDir.resolve(Constants.DOT_BAZELBSP_DIR_NAME))
+  private fun calculateDefaultProjectViewFile(project: Project, overwrite: Boolean): Path {
+    val projectViewFileInSystemProperty = System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)
+    if (projectViewFileInSystemProperty != null) return Path(projectViewFileInSystemProperty)
+    val dotBazelBspProjectViewFile = calculateProjectViewFileInCurrentDirectory(project.rootDir.toNioPath().resolve(DOT_BAZELBSP_DIR_NAME))
+    return calculateLegacyManagedProjectViewFile(project).takeIf { !overwrite }
+      ?: dotBazelBspProjectViewFile
   }
 
-  private fun calculateLegacyManagedProjectViewFile(projectRootDir: Path): Path? {
+  private fun calculateLegacyManagedProjectViewFile(project: Project): Path? {
     val projectViewFilesFromRoot =
       Files
-        .list(projectRootDir)
-        .filter { it.isRegularFile() }
-        .filter { it.extension == PROJECT_VIEW_FILE_EXTENSION }
-        .toList()
-
-    return projectViewFilesFromRoot.firstOrNull { it.name == DEFAULT_PROJECT_VIEW_FILE_NAME }
-      ?: projectViewFilesFromRoot.firstOrNull { it.name == LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME }
-      ?: projectViewFilesFromRoot.firstOrNull()
+        .list(project.rootDir.toNioPath())
+        .filter {
+          it.isRegularFile() &&
+            it.extension == PROJECT_VIEW_FILE_EXTENSION
+        }.toList()
+    val dotProjectViewFile = projectViewFilesFromRoot.firstOrNull { it.name == DEFAULT_PROJECT_VIEW_FILE_NAME }
+    val legacyProjectViewFile = projectViewFilesFromRoot.firstOrNull { it.name == LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME }
+    return dotProjectViewFile ?: legacyProjectViewFile ?: projectViewFilesFromRoot.firstOrNull()
   }
 
   /**
@@ -86,11 +88,17 @@ object ProjectViewFileUtils {
     return directory.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
   }
 
-  private fun createProjectViewFileContent(rootDir: VirtualFile, bazelPackageDir: VirtualFile?): String {
-    val projectRoot = rootDir.toNioPath()
-    val realizedBazelPackageDir = bazelPackageDir?.toNioPath() ?: projectRoot
+  private fun setProjectViewFileContent(
+    projectViewFilePath: Path,
+    project: Project,
+    bazelPackageDir: Path?,
+    overwrite: Boolean,
+  ) {
+    val projectRoot = project.rootDir.toNioPath()
+    val realizedBazelPackageDir = bazelPackageDir ?: projectRoot
     val relativePath = calculateRelativePathForInferredDirectory(projectRoot, realizedBazelPackageDir)
-    return projectViewTemplate(rootDir).format(relativePath)
+    val content = projectViewTemplate(project).format(relativePath)
+    setProjectViewFileContent(projectViewFilePath, content, overwrite)
   }
 
   private fun setProjectViewFileContent(
