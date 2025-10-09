@@ -8,8 +8,8 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
-interface BazelProjectDirectoriesEntity : org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity {
-  override val projectRoot: VirtualFileUrl
+public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
+  public val projectRoot: VirtualFileUrl
   public val includedRoots: List<VirtualFileUrl>
   public val excludedRoots: List<VirtualFileUrl>
   public val indexAllFilesInIncludedRoots: Boolean

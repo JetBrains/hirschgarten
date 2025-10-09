@@ -7,11 +7,11 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext/provider",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//commons/src/main/kotlin/org/jetbrains/bazel/settings/bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelversion",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/client",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings/bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install",

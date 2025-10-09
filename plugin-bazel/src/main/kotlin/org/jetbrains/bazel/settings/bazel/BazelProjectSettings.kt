@@ -20,7 +20,7 @@ data class BazelProjectSettings(
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
   // experimental settings
 ) {
-  fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings =
+  internal fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings =
     copy(projectViewPath = newProjectViewFilePath.toAbsolutePath())
 
   fun withNewBuildifierExecutablePath(newBuildifierExecutablePath: Path): BazelProjectSettings =
@@ -28,10 +28,10 @@ data class BazelProjectSettings(
 
   fun getBuildifierPathString(): String? =
     buildifierExecutablePath?.takeIf { it.exists() }?.toAbsolutePath()?.toString()
-      ?: BuildifierUtil.detectBuildifierExecutable()
+      ?: BuildifierUtil.detectBuildifierExecutable()?.absolutePath
 }
 
-data class BazelProjectSettingsState(
+internal data class BazelProjectSettingsState(
   var projectViewPathUri: String? = null,
   var buildifierExecutablePathUri: String? = null,
   var runBuildifierOnSave: Boolean = true,
@@ -46,7 +46,7 @@ data class BazelProjectSettingsState(
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-class BazelProjectSettingsService :
+internal class BazelProjectSettingsService :
   DumbAware,
   PersistentStateComponent<BazelProjectSettingsState> {
   var settings: BazelProjectSettings = BazelProjectSettings()

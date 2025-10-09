@@ -14,7 +14,7 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 data class BazelProjectPropertiesState(
   var isBazelProject: Boolean = false,
@@ -37,10 +37,7 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
   var isBrokenBazelProject: Boolean = false
   var workspaceName: String? = null
 
-  // todo the whole class should be removed
-  //   because almost all the entities duplicate already existing platform entities
-
-  override fun getState(): BazelProjectPropertiesState =
+  override fun getState(): BazelProjectPropertiesState? =
     BazelProjectPropertiesState(
       isInitialized = isInitialized,
       isBazelProject = isBazelProject,
@@ -75,7 +72,6 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
 val Project.bazelProjectProperties: BazelProjectProperties
   get() = service<BazelProjectProperties>()
 
-// todo replace with an instanceof BazelProjectStoreDescriptor check in some way
 @PublicApi
 var Project.isBazelProject: Boolean
   get() = bazelProjectProperties.isBazelProject

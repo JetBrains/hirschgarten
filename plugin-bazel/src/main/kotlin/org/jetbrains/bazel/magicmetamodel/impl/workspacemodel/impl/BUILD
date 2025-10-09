@@ -6,6 +6,7 @@ kt_jvm_library(
     associates = ["//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters"],
     visibility = ["//visibility:public"],
     deps = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//sdkcompat",

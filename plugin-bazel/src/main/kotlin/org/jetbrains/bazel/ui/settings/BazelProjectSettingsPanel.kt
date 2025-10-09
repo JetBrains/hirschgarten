@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.ui.settings
 
-import com.intellij.execution.Platform
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.extensions.BaseExtensionPointName
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -14,7 +13,6 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.openapi.util.io.OSAgnosticPathUtil
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
@@ -24,13 +22,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import java.io.IOException
-import java.nio.file.InvalidPathException
-import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isExecutable
-import kotlin.io.path.isRegularFile
 import kotlin.io.path.pathString
 
 class BazelProjectSettingsConfigurable(private val project: Project) :
@@ -112,9 +104,8 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     }
 
   private fun buildifierExecutableValidationInfo(): ValidationInfo? =
-    validateBuildifierExecutable(
-      buildifierExecutablePathField.text.takeIf { it.isNotBlank() }
-        ?: BuildifierUtil.detectBuildifierExecutable(),
+    BuildifierUtil.validateBuildifierExecutable(
+      buildifierExecutablePathField.text.takeIf { it.isNotBlank() } ?: BuildifierUtil.detectBuildifierExecutable()?.absolutePath,
     )
 
   private fun initRunBuildifierOnSaveCheckBox(): JBCheckBox =
@@ -197,39 +188,6 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
         "project.settings.plugin.run.buildifier.on.save.checkbox.text",
       )
   }
-
-  private fun validateBuildifierExecutable(executablePath: String?): ValidationInfo? {
-    val message =
-      when {
-        executablePath.isNullOrEmpty() -> BazelPluginBundle.message("path.validation.field.empty")
-        !isAbsolutePath(executablePath) -> BazelPluginBundle.message("path.validation.must.be.absolute")
-        executablePath.endsWith(" ") -> BazelPluginBundle.message("path.validation.ends.with.whitespace")
-        else ->
-          try {
-            val nioPath = Path("").resolve(executablePath)
-            nioPath.getErrorMessage()
-          } catch (e: InvalidPathException) {
-            BazelPluginBundle.message("path.validation.invalid", e.message.orEmpty())
-          } catch (e: IOException) {
-            BazelPluginBundle.message("path.validation.inaccessible", e.message.orEmpty())
-          }
-      }
-    return message?.let { ValidationInfo(it, null) }
-  }
-
-  private fun Path.getErrorMessage(): String? =
-    when {
-      this.isRegularFile() -> if (this.isExecutable()) null else BazelPluginBundle.message("path.validation.cannot.execute", this)
-      this.isDirectory() -> BazelPluginBundle.message("path.validation.cannot.execute", this)
-      else -> BazelPluginBundle.message("path.validation.file.not.found", this)
-    }
-
-  private fun isAbsolutePath(path: String): Boolean =
-    when (Platform.current()) {
-      Platform.UNIX -> path.startsWith("/")
-      // On Windows user may create project in \\wsl
-      Platform.WINDOWS -> OSAgnosticPathUtil.isAbsoluteDosPath(path) || path.startsWith("\\\\wsl")
-    }
 }
 
 internal class BazelProjectSettingsConfigurableProvider(private val project: Project) : ConfigurableProvider() {
