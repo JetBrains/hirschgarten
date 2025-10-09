@@ -124,11 +124,14 @@ inline fun Driver.execute(builder: CommandChain.() -> Unit) {
   this.execute(CommandChain().apply(builder))
 }
 
-fun Driver.syncBazelProject() {
+fun Driver.syncBazelProject(buildAndSync: Boolean = false) {
   execute(CommandChain().takeScreenshot("startSync"))
   execute(CommandChain().openBspToolWindow())
   execute(CommandChain().takeScreenshot("openBspToolWindow"))
   execute(CommandChain().waitForBazelSync())
+  if (buildAndSync) {
+    execute(CommandChain().buildAndSync())
+  }
   execute(CommandChain().waitForSmartMode())
 }
 

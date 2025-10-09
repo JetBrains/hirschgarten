@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
@@ -34,6 +35,8 @@ class BepDiagnosticsTest {
     override fun onBuildTaskFinish(p0: TaskFinishParams) {}
 
     override fun onPublishCoverageReport(report: CoverageReport) {}
+
+    override fun onCachedTestLog(testLog: CachedTestLog) {}
   }
 
   fun newBepServer(client: JoinedBuildClient): BepServer {
