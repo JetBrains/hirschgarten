@@ -13,7 +13,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.libraries.guava" />
-    <orderEntry type="library" name="Velocity" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.velocity" />
     <orderEntry type="module" module-name="intellij.libraries.commons.cli" />
     <orderEntry type="module" module-name="intellij.libraries.commons.io" />
     <orderEntry type="module" module-name="intellij.libraries.grpc" />
