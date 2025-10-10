@@ -18,6 +18,7 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.AbstractBazelProjectDirectoriesEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
@@ -110,7 +111,7 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         error("Field WorkspaceEntity#entitySource should be initialized")
       }
       if (!getEntityData().isProjectRootInitialized()) {
-        error("Field BazelProjectDirectoriesEntity#projectRoot should be initialized")
+        error("Field AbstractBazelProjectDirectoriesEntity#projectRoot should be initialized")
       }
       if (!getEntityData().isIncludedRootsInitialized()) {
         error("Field BazelProjectDirectoriesEntity#includedRoots should be initialized")
