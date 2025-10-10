@@ -33,7 +33,7 @@
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.platform.workspace.jps" />
     <orderEntry type="module" module-name="intellij.platform.split" />
-    <orderEntry type="module" module-name="kotlin.jvm-debugger.coroutines" />
+    <orderEntry type="module" module-name="intellij.kotlin.jvm.debugger.coroutines" />
     <orderEntry type="module" module-name="intellij.platform.ide.core.impl" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem" />
     <orderEntry type="module" module-name="intellij.platform.analysis" />
