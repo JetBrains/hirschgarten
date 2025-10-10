@@ -9,6 +9,7 @@ import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.io.path.createTempFile
 import org.jetbrains.bsp.protocol.Diagnostic as BspDiagnostic
 import org.jetbrains.bsp.protocol.Position as BspPosition
 
@@ -178,11 +179,12 @@ class DiagnosticsServiceTest {
   @Test
   fun `parse multiple errors from color formatted command line output`() {
     // given
+    val tmpFile = createTempFile().toAbsolutePath()
     val output =
       """
         |[31m[1mERROR: [0mmodule extension @@googleapis+//:extensions.bzl%switched_rules does not generate repository "com_google_googleapis_imports", yet it is imported as "com_google_googleapis_imports" in the usage at https://bcr.bazel.build/modules/grpc/1.66.0.bcr.2/MODULE.bazel:39:31
         |[31m[1mERROR: [0mResults may be incomplete as 1 extension failed.
-        |[31m[1mERROR: [0m/Users/bkardys/workspace/hirschgarten/commons/src/main/kotlin/org/jetbrains/bsp/protocol/BUILD:3:11: KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrain
+        |[31m[1mERROR: [0m$tmpFile:3:11: KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains
         |[31m[1mERROR: [0mBuild did NOT complete successfully
       """.trimMargin()
 
@@ -212,12 +214,12 @@ class DiagnosticsServiceTest {
         publishDiagnosticsParams(
           textDocument =
             TextDocumentIdentifier(
-              Path("/Users/bkardys/workspace/hirschgarten/commons/src/main/kotlin/org/jetbrains/bsp/protocol/BUILD"),
+              Path("$tmpFile"),
             ),
           buildTarget = label,
           errorDiagnostic(
             Position(3, 11),
-            message = "KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrain",
+            message = "KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains",
           ),
         ),
       )

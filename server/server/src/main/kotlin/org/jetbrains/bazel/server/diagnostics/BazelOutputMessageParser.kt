@@ -40,7 +40,7 @@ object BazelOutputMessageParser : Parser {
   private fun createError(match: MatchResult, targetLabel: Label): Diagnostic {
     FileBasedError.matchEntire(match.groupValues[1])?.let { fileMatch ->
       val file = try {
-        fileMatch.groups["file"]!!.let { Paths.get(it.value) }?.takeIf { file -> file.exists() }
+        fileMatch.groups["file"]!!.let { Paths.get(it.value) }.takeIf { file -> file.exists() }
       } catch (_: InvalidPathException) {
         null
       }
