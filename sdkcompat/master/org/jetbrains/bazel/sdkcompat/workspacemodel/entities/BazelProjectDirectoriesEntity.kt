@@ -7,9 +7,9 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.bazel.workspacemodel.entities.AbstractBazelProjectDirectoriesEntity
 
-interface BazelProjectDirectoriesEntity : org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity {
-  override val projectRoot: VirtualFileUrl
+interface BazelProjectDirectoriesEntity : AbstractBazelProjectDirectoriesEntity {
   public val includedRoots: List<VirtualFileUrl>
   public val excludedRoots: List<VirtualFileUrl>
   public val indexAllFilesInIncludedRoots: Boolean
@@ -17,16 +17,17 @@ interface BazelProjectDirectoriesEntity : org.jetbrains.bazel.workspacemodel.ent
 
   //region generated code
   @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<BazelProjectDirectoriesEntity> {
+  interface Builder : WorkspaceEntity.Builder<BazelProjectDirectoriesEntity>,
+                      AbstractBazelProjectDirectoriesEntity.Builder<BazelProjectDirectoriesEntity> {
     override var entitySource: EntitySource
-    var projectRoot: VirtualFileUrl
+    override var projectRoot: VirtualFileUrl
     var includedRoots: MutableList<VirtualFileUrl>
     var excludedRoots: MutableList<VirtualFileUrl>
     var indexAllFilesInIncludedRoots: Boolean
     var indexAdditionalFiles: MutableList<VirtualFileUrl>
   }
 
-  companion object : EntityType<BazelProjectDirectoriesEntity, Builder>() {
+  companion object : EntityType<BazelProjectDirectoriesEntity, Builder>(AbstractBazelProjectDirectoriesEntity) {
     @JvmOverloads
     @JvmStatic
     @JvmName("create")
