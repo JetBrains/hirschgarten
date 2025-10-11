@@ -95,7 +95,6 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       // Builder may switch to snapshot at any moment and lock entity data to modification
       this.currentEntityData = null
 
-      index(this, "projectRoot", this.projectRoot)
       index(this, "includedRoots", this.includedRoots)
       index(this, "excludedRoots", this.excludedRoots)
       index(this, "indexAdditionalFiles", this.indexAdditionalFiles)
