@@ -175,7 +175,7 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
         if (_diff != null && value is ModifiableWorkspaceEntityBase<*, *> && value.diff == null) {
           // Setting backref of the list
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: arrayListOf()) + this
+            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: emptyList()) + this
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = data
           }
           // else you're attaching a new entity to an existing entity that is not modifiable
@@ -187,7 +187,7 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
         else {
           // Setting backref of the list
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: arrayListOf()) + this
+            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: emptyList()) + this
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = data
           }
           // else you're attaching a new entity to an existing entity that is not modifiable

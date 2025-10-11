@@ -17,8 +17,7 @@ interface BazelProjectDirectoriesEntity : AbstractBazelProjectDirectoriesEntity 
 
   //region generated code
   @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<BazelProjectDirectoriesEntity>,
-                      AbstractBazelProjectDirectoriesEntity.Builder<BazelProjectDirectoriesEntity> {
+  interface Builder : WorkspaceEntity.Builder<BazelProjectDirectoriesEntity>, AbstractBazelProjectDirectoriesEntity.Builder<BazelProjectDirectoriesEntity> {
     override var entitySource: EntitySource
     override var projectRoot: VirtualFileUrl
     var includedRoots: MutableList<VirtualFileUrl>
