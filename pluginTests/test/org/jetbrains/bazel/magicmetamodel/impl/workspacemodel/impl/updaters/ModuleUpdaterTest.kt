@@ -64,6 +64,9 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
     // given
     super.beforeEach()
 
+    System.setProperty("bsp.wrap.libraries.inside.modules", "false")
+    System.setProperty("idea.kotlin.plugin.use.k1", "true")
+
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
 
