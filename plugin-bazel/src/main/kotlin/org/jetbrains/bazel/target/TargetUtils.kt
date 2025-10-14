@@ -180,12 +180,18 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Set<Label> =
     resultCache.getOrPut(target) {
-      val targetInfo = labelToTargetInfo.get(target)
+      val targetInfo = labelToTargetInfo[target]
       if (targetInfo?.kind?.isExecutable == true) {
         return@getOrPut setOf(target)
       }
 
       val directDependentIds = targetDependentsGraph.directDependentIds(target)
+
+      val executableTargetsFromSamePackage = directDependentIds.filter {
+        it.packagePath == target.packagePath && labelToTargetInfo[it]?.kind?.isExecutable == true
+      }
+      if (executableTargetsFromSamePackage.isNotEmpty()) return@getOrPut executableTargetsFromSamePackage.toHashSet()
+
       return@getOrPut directDependentIds
         .asSequence()
         .flatMap { dependency ->
