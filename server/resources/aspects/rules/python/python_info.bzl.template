@@ -54,6 +54,9 @@ def get_py_runtime_info(ctx):
     #if( $pythonEnabled == "true" )
     if PYTHON_TOOLCHAIN_TYPE in ctx.toolchains:
         toolchain = ctx.toolchains[PYTHON_TOOLCHAIN_TYPE]
+        if not toolchain:
+            # Optional toolchain will be None if not present
+            return None
         return getattr(toolchain, "py3_runtime", None)
     else:
         return None
