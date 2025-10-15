@@ -18,6 +18,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
@@ -535,7 +536,7 @@ class AspectBazelProjectMapper(
       val dependencies =
         targetsToImport[targetOrLibrary]?.dependenciesList.orEmpty().map { it.label() } +
           libraryDependencies[targetOrLibrary].orEmpty().map { it.label } +
-          librariesToImport[targetOrLibrary]?.dependencies.orEmpty()
+          librariesToImport[targetOrLibrary]?.dependencies.orEmpty().map { it.label }
 
       dependencies.flatMapTo(outputJars) { dependency ->
         getJdepsJarsFromTransitiveDependencies(
@@ -664,7 +665,7 @@ class AspectBazelProjectMapper(
       label = label,
       outputs = outputs,
       sources = sources,
-      dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
+      dependencies = targetInfo.dependenciesList.map { it.toDependencyLabel() },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
       isFromInternalTarget = isInternalTarget,
@@ -840,7 +841,7 @@ class AspectBazelProjectMapper(
     val resolvedDependencies = resolveDirectDependencies(target)
     // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
-    val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
+    val directDependencies = extraLibraries.toDependencyLabels() + resolvedDependencies + lowPriorityExtraLibraries.toDependencyLabels()
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.languages) ?: return null
     val resources = resolveResources(target, languagePlugin)
@@ -870,7 +871,16 @@ class AspectBazelProjectMapper(
     )
   }
 
-  private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
+  private fun resolveDirectDependencies(target: TargetInfo): List<DependencyLabel> =
+    target.dependenciesList.map { it.toDependencyLabel() }
+
+  private fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
+    DependencyLabel(
+      label = label(),
+      isRuntime = dependencyType == BspTargetInfo.Dependency.DependencyType.RUNTIME,
+    )
+
+  private fun List<Library>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.label) }
 
   // TODO: this is a re-creation of `Language.allOfKind`. To be removed when this logic is merged with client-side
   private val languagesFromKinds: Map<String, Set<LanguageClass>> =

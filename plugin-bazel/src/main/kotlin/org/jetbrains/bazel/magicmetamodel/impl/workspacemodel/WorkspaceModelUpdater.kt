@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel
 
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
@@ -11,7 +12,7 @@ import java.nio.file.Path
 data class ModuleDetails(
   val target: RawBuildTarget,
   val javacOptions: List<String>,
-  val dependencies: List<Label>,
+  val dependencies: List<DependencyLabel>,
   val defaultJdkName: String?,
   val jvmBinaryJars: List<Path>,
 )

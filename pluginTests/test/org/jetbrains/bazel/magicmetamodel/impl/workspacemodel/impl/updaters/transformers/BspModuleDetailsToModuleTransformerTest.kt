@@ -8,6 +8,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
@@ -49,9 +50,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         targetId,
         emptyList(),
         listOf(
-          Label.parse("@maven//:test"),
-          Label.parse("@//target2"),
-          Label.parse("@//target3"),
+          DependencyLabel(Label.parse("@maven//:test")),
+          DependencyLabel(Label.parse("@//target2")),
+          DependencyLabel(Label.parse("@//target3")),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -117,9 +118,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         targetId,
         emptyList(),
         listOf(
-          Label.parse("@maven//:test"),
-          Label.parse("@//target2"),
-          Label.parse("@//target3"),
+          DependencyLabel(Label.parse("@maven//:test")),
+          DependencyLabel(Label.parse("@//target2")),
+          DependencyLabel(Label.parse("@//target3")),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -197,9 +198,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         target1Id,
         emptyList(),
         listOf(
-          Label.parse("@maven//:test"),
-          Label.parse("//target2"),
-          Label.parse("//target3"),
+          DependencyLabel(Label.parse("@maven//:test")),
+          DependencyLabel(Label.parse("//target2")),
+          DependencyLabel(Label.parse("//target3")),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -231,8 +232,8 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         target2Id,
         emptyList(),
         listOf(
-          Label.parse("@maven//:test"),
-          Label.parse("//target3"),
+          DependencyLabel(Label.parse("@maven//:test")),
+          DependencyLabel(Label.parse("//target3")),
         ),
         TargetKind(
           kindString = "java_binary",

@@ -4,6 +4,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -377,7 +378,7 @@ private fun mockTarget(id: String, dependencies: List<String>): RawBuildTarget =
   RawBuildTarget(
     Label.parse(id),
     emptyList(),
-    dependencies.map { Label.parse(it) },
+    dependencies.map { DependencyLabel(Label.parse(it)) },
     TargetKind(
       kindString = "java_binary",
       ruleType = RuleType.BINARY,
@@ -391,7 +392,7 @@ private fun mockTarget(id: String, dependencies: List<String>): RawBuildTarget =
 private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem =
   LibraryItem(
     id = Label.parse(id),
-    dependencies = dependencies.map { Label.parse(it) },
+    dependencies = dependencies.map { DependencyLabel(Label.parse(it)) },
     ijars = emptyList(),
     jars = emptyList(),
     sourceJars = emptyList(),

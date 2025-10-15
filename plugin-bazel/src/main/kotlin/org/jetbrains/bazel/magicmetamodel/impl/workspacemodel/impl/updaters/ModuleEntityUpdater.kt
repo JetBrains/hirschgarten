@@ -31,6 +31,7 @@ class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
   private val libraries: Map<String, Library>,
+  private val runtimeDependencies: List<String> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
   override suspend fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
@@ -39,16 +40,17 @@ class ModuleEntityUpdater(
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val dependenciesFromEntity =
       entityToAdd.dependencies.map { dependency ->
+        val runtime = runtimeDependencies.contains(dependency)
         val libraryDependency = libraries[dependency]
         if (libraryDependency != null) {
           val exported = !libraryDependency.isLowPriority
           if (BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled && !entityToAdd.isLibraryModule) {
-            toModuleDependencyItemModuleDependency(dependency.addLibraryModulePrefix(), exported)
+            toModuleDependencyItemModuleDependency(dependency.addLibraryModulePrefix(), exported, runtime)
           } else {
-            toLibraryDependency(dependency, exported = exported || entityToAdd.isLibraryModule)
+            toLibraryDependency(dependency, exported = exported || entityToAdd.isLibraryModule, runtime)
           }
         } else {
-          toModuleDependencyItemModuleDependency(dependency)
+          toModuleDependencyItemModuleDependency(dependency, runtime = runtime)
         }
       }
 
@@ -84,18 +86,18 @@ class ModuleEntityUpdater(
         )
     }
 
-  private fun toModuleDependencyItemModuleDependency(moduleName: String, exported: Boolean = true): ModuleDependency =
+  private fun toModuleDependencyItemModuleDependency(moduleName: String, exported: Boolean = true, runtime: Boolean = false): ModuleDependency =
     dependencyInterner.intern(
       ModuleDependency(
         module = idInterner.intern(ModuleId(moduleName)) as ModuleId,
         exported = exported,
-        scope = DependencyScope.COMPILE,
+        scope = dependencyScope(runtime),
         productionOnTest = true,
       ),
     ) as ModuleDependency
 }
 
-internal fun toLibraryDependency(libraryName: String, exported: Boolean = true): LibraryDependency =
+internal fun toLibraryDependency(libraryName: String, exported: Boolean = true, runtime: Boolean = false): LibraryDependency =
   dependencyInterner.intern(
     LibraryDependency(
       library =
@@ -106,6 +108,9 @@ internal fun toLibraryDependency(libraryName: String, exported: Boolean = true):
           ),
         ) as LibraryId,
       exported = exported, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
-      scope = DependencyScope.COMPILE,
+      scope = dependencyScope(runtime),
     ),
   ) as LibraryDependency
+
+private fun dependencyScope(runtime: Boolean): DependencyScope =
+  if (runtime) DependencyScope.RUNTIME else DependencyScope.COMPILE

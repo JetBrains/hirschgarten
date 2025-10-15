@@ -23,6 +23,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
@@ -223,7 +224,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       RawBuildTarget(
         info.targetId,
         listOf(info.type),
-        info.dependencies,
+        info.dependencies.map { DependencyLabel(it) },
         TargetKind(
           kindString = "python_binary",
           ruleType = RuleType.BINARY,

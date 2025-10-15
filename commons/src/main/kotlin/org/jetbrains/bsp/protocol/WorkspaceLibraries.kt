@@ -1,11 +1,12 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 public data class LibraryItem(
   val id: Label,
-  val dependencies: List<Label>,
+  val dependencies: List<DependencyLabel>,
   val ijars: List<Path>,
   val jars: List<Path>,
   val sourceJars: List<Path>,
