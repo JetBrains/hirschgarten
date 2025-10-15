@@ -6,6 +6,7 @@ import com.intellij.workspaceModel.ide.toPath
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ModifiablePackageMarkerEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.packageMarkerEntities
@@ -50,8 +51,8 @@ class PackageMarkerEntityUpdater(
     return parentModuleEntity.packageMarkerEntities
   }
 
-  private fun iterateSubdirectories(entityToAdd: JavaSourceRoot): List<PackageMarkerEntity.Builder> {
-    val entities = mutableListOf<PackageMarkerEntity.Builder>()
+  private fun iterateSubdirectories(entityToAdd: JavaSourceRoot): List<ModifiablePackageMarkerEntity> {
+    val entities = mutableListOf<ModifiablePackageMarkerEntity>()
     val visitor =
       object : SimpleFileVisitor<Path>() {
         override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
