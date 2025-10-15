@@ -22,10 +22,7 @@ import kotlin.io.path.notExists
  */
 @Service(Service.Level.PROJECT)
 class ProjectViewService(private val project: Project) {
-  /**
-   * Gets the current ProjectView, parsing it if necessary.
-   * Uses caching with file modification time checking for efficiency.
-   */
+
   fun getProjectView(): ProjectView {
     var projectViewPath = findProjectViewPath()
 

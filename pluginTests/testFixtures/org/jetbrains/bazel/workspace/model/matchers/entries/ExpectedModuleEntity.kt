@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.model.matchers.entries
 
+import com.intellij.openapi.ui.naturalSorted
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder

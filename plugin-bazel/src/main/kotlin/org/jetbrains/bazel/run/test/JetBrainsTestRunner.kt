@@ -12,8 +12,14 @@ private const val JB_TEST_UNIQUE_IDS = "JB_TEST_UNIQUE_IDS"
 private const val JB_TEST_FILTER = "JB_TEST_FILTER"
 private const val JB_IDE_SM_RUN = "JB_IDE_SM_RUN"
 
-fun Project.useJetBrainsTestRunner(): Boolean =
-  ProjectViewService.getInstance(this).getCachedProjectView().useJetBrainsTestRunner
+public var forceDisableJetBrainsTestRunner = false
+
+fun Project.useJetBrainsTestRunner(): Boolean {
+  if (forceDisableJetBrainsTestRunner) {
+    return false
+  }
+  return ProjectViewService.getInstance(this).getCachedProjectView().useJetBrainsTestRunner
+}
 
 fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFilter: String?) {
   if (project.useJetBrainsTestRunner()) {

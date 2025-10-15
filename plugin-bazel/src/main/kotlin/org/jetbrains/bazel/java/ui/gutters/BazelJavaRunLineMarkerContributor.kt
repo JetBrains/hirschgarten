@@ -40,8 +40,11 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
         "$className.$methodName$"
       }
     } else {
-      return if (element.project.useJetBrainsTestRunner()) {
-        psiIdentifier?.getFullyQualifiedClassName()
+      if (element.project.useJetBrainsTestRunner()) {
+        return psiIdentifier?.getFullyQualifiedClassName()
+      }
+      return if (psiIdentifier is PsiClass) {
+        psiIdentifier.getFullyQualifiedClassName()
       } else {
         psiIdentifier?.getClassName()
       }
