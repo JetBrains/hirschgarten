@@ -22,84 +22,9 @@ interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolic
   public val excludeId: CompiledSourceCodeInsideJarExcludeId
   override val symbolicId: CompiledSourceCodeInsideJarExcludeId
     get() = excludeId
-
-  //region generated code
-  @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<CompiledSourceCodeInsideJarExcludeEntity> {
-    override var entitySource: EntitySource
-    var relativePathsInsideJarToExclude: MutableSet<String>
-    var librariesFromInternalTargetsUrls: MutableSet<String>
-    var excludeId: CompiledSourceCodeInsideJarExcludeId
-  }
-
-  companion object : EntityType<CompiledSourceCodeInsideJarExcludeEntity, Builder>() {
-    @JvmOverloads
-    @JvmStatic
-    @JvmName("create")
-    operator fun invoke(
-      relativePathsInsideJarToExclude: Set<String>,
-      librariesFromInternalTargetsUrls: Set<String>,
-      excludeId: CompiledSourceCodeInsideJarExcludeId,
-      entitySource: EntitySource,
-      init: (Builder.() -> Unit)? = null,
-    ): Builder {
-      val builder = builder()
-      builder.relativePathsInsideJarToExclude = relativePathsInsideJarToExclude.toMutableWorkspaceSet()
-      builder.librariesFromInternalTargetsUrls = librariesFromInternalTargetsUrls.toMutableWorkspaceSet()
-      builder.excludeId = excludeId
-      builder.entitySource = entitySource
-      init?.invoke(builder)
-      return builder
-    }
-  }
-  //endregion
 }
-
-//region generated code
-fun MutableEntityStorage.modifyCompiledSourceCodeInsideJarExcludeEntity(
-  entity: CompiledSourceCodeInsideJarExcludeEntity,
-  modification: CompiledSourceCodeInsideJarExcludeEntity.Builder.() -> Unit,
-): CompiledSourceCodeInsideJarExcludeEntity =
-  modifyEntity(CompiledSourceCodeInsideJarExcludeEntity.Builder::class.java, entity, modification)
-//endregion
 
 interface LibraryCompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntity {
   val libraryId: LibraryId
   val compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
-
-  //region generated code
-  @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
-    override var entitySource: EntitySource
-    var libraryId: LibraryId
-    var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
-  }
-
-  companion object : EntityType<LibraryCompiledSourceCodeInsideJarExcludeEntity, Builder>() {
-    @JvmOverloads
-    @JvmStatic
-    @JvmName("create")
-    operator fun invoke(
-      libraryId: LibraryId,
-      compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId,
-      entitySource: EntitySource,
-      init: (Builder.() -> Unit)? = null,
-    ): Builder {
-      val builder = builder()
-      builder.libraryId = libraryId
-      builder.compiledSourceCodeInsideJarExcludeId = compiledSourceCodeInsideJarExcludeId
-      builder.entitySource = entitySource
-      init?.invoke(builder)
-      return builder
-    }
-  }
-  //endregion
 }
-
-//region generated code
-fun MutableEntityStorage.modifyLibraryCompiledSourceCodeInsideJarExcludeEntity(
-  entity: LibraryCompiledSourceCodeInsideJarExcludeEntity,
-  modification: LibraryCompiledSourceCodeInsideJarExcludeEntity.Builder.() -> Unit,
-): LibraryCompiledSourceCodeInsideJarExcludeEntity =
-  modifyEntity(LibraryCompiledSourceCodeInsideJarExcludeEntity.Builder::class.java, entity, modification)
-//endregion

@@ -15,6 +15,8 @@ import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.jps.entities.ModifiableContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModifiableLibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -162,7 +164,7 @@ class PythonProjectSync : ProjectSyncHook {
     sourceDependencies: List<Path>,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): LibraryEntity.Builder? {
+  ): ModifiableLibraryEntity? {
     val roots =
       sourceDependencies.distinct().map {
         LibraryRoot(
@@ -190,7 +192,7 @@ class PythonProjectSync : ProjectSyncHook {
     virtualFileUrlManager: VirtualFileUrlManager,
     project: Project,
     sdk: Sdk?,
-    sourceDependencyLibrary: LibraryEntity.Builder? = null,
+    sourceDependencyLibrary: ModifiableLibraryEntity? = null,
   ): ModuleEntity {
     val contentRoots = getContentRootEntities(target, entitySource, virtualFileUrlManager)
 
@@ -230,7 +232,7 @@ class PythonProjectSync : ProjectSyncHook {
     target: BuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntity.Builder> {
+  ): List<ModifiableContentRootEntity> {
     val sourceContentRootEntities = getSourceContentRootEntities(target as RawBuildTarget, entitySource, virtualFileUrlManager)
     val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
 
@@ -241,7 +243,7 @@ class PythonProjectSync : ProjectSyncHook {
     target: RawBuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntity.Builder> =
+  ): List<ModifiableContentRootEntity> =
     target.sources.map { source ->
       val sourceUrl = source.path.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity =
@@ -264,7 +266,7 @@ class PythonProjectSync : ProjectSyncHook {
     target: RawBuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntity.Builder> =
+  ): List<ModifiableContentRootEntity> =
     target.resources.map { resource ->
       val resourceUrl = resource.toVirtualFileUrl(virtualFileUrlManager)
       val resourceRootEntity =
