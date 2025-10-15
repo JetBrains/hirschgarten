@@ -14,48 +14,4 @@ public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
   public val excludedRoots: List<VirtualFileUrl>
   public val indexAllFilesInIncludedRoots: Boolean
   public val indexAdditionalFiles: List<VirtualFileUrl>
-
-  //region generated code
-  @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<BazelProjectDirectoriesEntity> {
-    override var entitySource: EntitySource
-    var projectRoot: VirtualFileUrl
-    var includedRoots: MutableList<VirtualFileUrl>
-    var excludedRoots: MutableList<VirtualFileUrl>
-    var indexAllFilesInIncludedRoots: Boolean
-    var indexAdditionalFiles: MutableList<VirtualFileUrl>
-  }
-
-  companion object : EntityType<BazelProjectDirectoriesEntity, Builder>() {
-    @JvmOverloads
-    @JvmStatic
-    @JvmName("create")
-    operator fun invoke(
-      projectRoot: VirtualFileUrl,
-      includedRoots: List<VirtualFileUrl>,
-      excludedRoots: List<VirtualFileUrl>,
-      indexAllFilesInIncludedRoots: Boolean,
-      indexAdditionalFiles: List<VirtualFileUrl>,
-      entitySource: EntitySource,
-      init: (Builder.() -> Unit)? = null,
-    ): Builder {
-      val builder = builder()
-      builder.projectRoot = projectRoot
-      builder.includedRoots = includedRoots.toMutableWorkspaceList()
-      builder.excludedRoots = excludedRoots.toMutableWorkspaceList()
-      builder.indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots
-      builder.indexAdditionalFiles = indexAdditionalFiles.toMutableWorkspaceList()
-      builder.entitySource = entitySource
-      init?.invoke(builder)
-      return builder
-    }
-  }
-  //endregion
 }
-
-//region generated code
-fun MutableEntityStorage.modifyBazelProjectDirectoriesEntity(
-  entity: BazelProjectDirectoriesEntity,
-  modification: BazelProjectDirectoriesEntity.Builder.() -> Unit,
-): BazelProjectDirectoriesEntity = modifyEntity(BazelProjectDirectoriesEntity.Builder::class.java, entity, modification)
-//endregion
