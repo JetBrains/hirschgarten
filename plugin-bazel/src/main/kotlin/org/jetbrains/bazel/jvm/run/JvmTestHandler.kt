@@ -50,9 +50,22 @@ internal class JvmTestHandler(private val configuration: BazelRunConfiguration) 
     return if (((!state.runWithBazel && executor is DefaultRunExecutor) || executor is DefaultDebugExecutor) && configuration.targets.size == 1) {
       environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
       ScriptPathTestCommandLineState(environment, state)
-    }
-    else {
-      BazelTestCommandLineState(environment, state)
+      return ScriptPathTestCommandLineState(environment, state)
+    } else {
+      val configuration = environment.runProfile as BazelRunConfiguration
+      if (configuration.targets.size == 1) {
+        val paramsToAdd: MutableList<String> = mutableListOf()
+        if (state.additionalBazelParams?.contains("--test_output") != true) {
+          paramsToAdd.add("--test_output=streamed")
+        }
+        if (state.additionalBazelParams?.contains("--strategy") != true) {
+          paramsToAdd.add("--strategy=TestRunner=standalone")
+        }
+        if (state.additionalBazelParams?.contains("--cache_test_results") != true) {
+          paramsToAdd.add("--cache_test_results=no")
+        }
+        state.additionalBazelParams = (state.additionalBazelParams ?: "") + paramsToAdd.joinToString(" ")
+        BazelTestCommandLineState(environment, state)
     }
   }
 
