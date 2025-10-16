@@ -179,7 +179,7 @@ private suspend fun processAndPrint(
   // Run through mappers
   val resolvedWorkspace =
     bazelMapper.createProject(
-      targets = targets,
+      allTargets = targets,
       rootTargets = rootTargets,
       workspaceContext = workspaceContext,
       featureFlags = featureFlags,
