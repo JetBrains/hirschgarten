@@ -5,7 +5,7 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSections
+import org.jetbrains.bazel.languages.projectview.ProjectViewSections
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
 class ProjectViewAnnotator : Annotator {

@@ -1,0 +1,57 @@
+load("//aspects:utils/utils.bzl", "create_struct","file_location")
+
+#if( $bazel8OrAbove == "true" && $rulesetNameApparent == "rules_proto" )
+# Bazel 8+: Use only the rules_proto providers.
+load("@$protobufRepoName//proto:defs.bzl", "ProtoInfo", "proto_common")
+ProtoInfo_Secondary = None
+
+#elseif( $bazel8OrAbove == "true" && $rulesetNameApparent == "protobuf" )
+load("@$protobufRepoName//bazel/common:proto_info.bzl", "ProtoInfo")
+load("@$protobufRepoName//bazel/common:proto_common.bzl", "proto_common")
+ProtoInfo_Secondary = None
+
+#elseif( $rulesetNameApparent == "rules_proto" )
+# Non-Bazel 8+ workspace that has rules_proto present: Support both builtin and rules_proto providers.
+load("@$protobufRepoName//proto:defs.bzl", ProtoInfo_Secondary = "ProtoInfo", "proto_common")
+
+#elseif( $rulesetNameApparent == "protobuf" )
+load("@$protobufRepoName//bazel/common:proto_info.bzl", "ProtoInfo")
+load("@$protobufRepoName//bazel/common:proto_common.bzl", "proto_common")
+ProtoInfo_Secondary = None
+
+#else
+# Use only builtin providers.
+ProtoInfo_Secondary = None
+#end
+CODE_GENERATOR_RULE_NAMES = ${codeGeneratorRules}
+
+def has_protoinfo_in_target(target):
+    return ProtoInfo in target or (ProtoInfo_Secondary != None and ProtoInfo_Secondary in target)
+
+def get_proto_info(target):
+    if ProtoInfo in target:
+        return target[ProtoInfo]
+    elif ProtoInfo_Secondary != None and ProtoInfo_Secondary in target:
+        return target[ProtoInfo_Secondary]
+    else:
+        return None
+
+def extract_protobuf_info(target, ctx, output_groups, **kwargs):
+    if not has_protoinfo_in_target(target):
+      return None, None
+
+    protobuf_info = get_proto_info(target)
+    proto_target_info = create_struct(
+        source_mappings = list(extract_source_mappings(protobuf_info)),
+    )
+    return dict(protobuf_target_info = proto_target_info), None
+
+def extract_source_mappings(protobuf_info):
+    mappings = []
+    for source in protobuf_info.direct_sources:
+        proto = create_struct(
+            import_path = proto_common.get_import_path(source),
+            proto_file = file_location(source),
+        )
+        mappings.append(proto)
+    return mappings

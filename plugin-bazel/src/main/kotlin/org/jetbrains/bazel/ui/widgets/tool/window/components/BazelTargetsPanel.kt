@@ -58,7 +58,6 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
     searchRegex: Regex?,
     hasAnyTargets: Boolean,
     displayAsTree: Boolean,
-    labelToInfo: (Label) -> BuildTarget?,
   ) {
     val isSearchActive = searchRegex != null
     // Update the tree highlighter to highlight search matches
@@ -82,7 +81,7 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
       showTargetTree()
     }
 
-    targetTree.updateTree(visibleTargets, displayAsTree, labelToInfo)
+    targetTree.updateTree(visibleTargets, displayAsTree)
 
     // Refresh the panel
     revalidate()

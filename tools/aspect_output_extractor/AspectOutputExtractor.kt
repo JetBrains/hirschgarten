@@ -6,35 +6,28 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BidirectionalMap
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
-import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.install.Install
-import org.jetbrains.bazel.install.InstallationContextProvider
-import org.jetbrains.bazel.install.ProjectViewCLiOptionsProvider
-import org.jetbrains.bazel.install.cli.CliOptions
-import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
-import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
-import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
 import org.jetbrains.bazel.startup.IntellijBidirectionalMap
-import org.jetbrains.bazel.startup.IntellijEnvironmentProvider
-import org.jetbrains.bazel.startup.IntellijSpawnedProcess
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
-import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.LogMessageParams
+import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+import org.jetbrains.bsp.protocol.TaskFinishParams
+import org.jetbrains.bsp.protocol.TaskStartParams
 import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.io.path.notExists
 import kotlin.system.exitProcess
 
 /**
@@ -48,25 +41,32 @@ object AspectOutputExtractor {
     runBlocking {
       SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
       FileUtil.provideFileUtil(FileUtilIntellij)
-      EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
       ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
       TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
       BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
 
-      if (args.isEmpty()) {
-        println("Usage: AspectOutputExtractor <project-path>")
+      if (args.size < 2) {
+        println("Usage: AspectOutputExtractor <project-path> <project-view-path>")
         println("  project-path: Path to the Bazel project where the server should be installed")
+        println("  project-view-path: Path to the project view file to use")
         exitProcess(1)
       }
 
       val projectPath = Path.of(args[0])
+      val projectViewPath = Path.of(args[1])
+
       if (!projectPath.exists()) {
         println("Error: Project path does not exist: $projectPath")
         exitProcess(1)
       }
 
+      if (!projectViewPath.exists()) {
+        println("Error: Project view path does not exist: $projectViewPath")
+        exitProcess(1)
+      }
+
       try {
-        val aspectPaths = extractAspectOutputPaths(projectPath)
+        val aspectPaths = extractAspectOutputPaths(projectPath, projectViewPath)
         println("Aspect output paths:")
         aspectPaths.forEach { path ->
           println(path.toString())
@@ -78,22 +78,7 @@ object AspectOutputExtractor {
       }
     }
 
-  private suspend fun extractAspectOutputPaths(projectPath: Path): Set<Path> {
-    // Install server in .bazelbsp directory (standard way)
-    val cliOptions =
-      CliOptions(
-        workspaceDir = projectPath,
-        projectViewCliOptions =
-          ProjectViewCliOptions(
-            directories = listOf("."),
-            deriveTargetsFromDirectories = true,
-          ),
-      )
-
-    // Always regenerate project view with our targets
-    val projectViewPath = projectPath.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
-    ProjectViewCLiOptionsProvider.generateProjectViewAndSave(cliOptions, projectViewPath)
-
+  private suspend fun extractAspectOutputPaths(projectPath: Path, projectViewPath: Path): Set<Path> {
     // Create environment (.bazelbsp directory and files)
     EnvironmentCreator(projectPath).create()
 
@@ -103,15 +88,15 @@ object AspectOutputExtractor {
     // Create a dummy BSP client
     val dummyClient =
       object : JoinedBuildClient {
-        override fun onBuildLogMessage(params: org.jetbrains.bsp.protocol.LogMessageParams) {}
+        override fun onBuildLogMessage(params: LogMessageParams) {}
 
-        override fun onBuildTaskStart(params: org.jetbrains.bsp.protocol.TaskStartParams) {}
+        override fun onBuildTaskStart(params: TaskStartParams) {}
 
-        override fun onBuildTaskFinish(params: org.jetbrains.bsp.protocol.TaskFinishParams) {}
+        override fun onBuildTaskFinish(params: TaskFinishParams) {}
 
-        override fun onBuildPublishDiagnostics(params: org.jetbrains.bsp.protocol.PublishDiagnosticsParams) {}
+        override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {}
 
-        override fun onPublishCoverageReport(report: org.jetbrains.bsp.protocol.CoverageReport) {}
+        override fun onPublishCoverageReport(report: CoverageReport) {}
       }
 
     // Create logger
@@ -120,25 +105,21 @@ object AspectOutputExtractor {
     // Create initial Bazel runner to resolve bazel info
     val initialBazelRunner = BazelRunner(bspClientLogger, projectPath)
 
-    // Create workspace context provider with Python support enabled
+    // Create feature flags with Python support enabled
     val featureFlags =
       FeatureFlags(
         isPythonSupportEnabled = true,
         isGoSupportEnabled = true,
       )
-    val workspaceContextProvider =
-      DefaultWorkspaceContextProvider(
-        workspaceRoot = projectPath,
-        projectViewPath = projectViewPath,
-        dotBazelBspDirPath = dotBazelBspDir,
-        featureFlags = featureFlags,
-      )
+
+    // TODO: For now, create a minimal WorkspaceContext for aspect extraction
+    // In the future, this should parse the actual project view file
+    val workspaceContext = createMinimalWorkspaceContext(projectPath, dotBazelBspDir)
 
     // Create BSP info
     val bspInfo = BspInfo(projectPath)
 
     // Resolve bazel info with initial runner
-    val workspaceContext = workspaceContextProvider.readWorkspaceContext()
     val bazelInfoResolver = BazelInfoResolver(initialBazelRunner)
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(workspaceContext)
 
@@ -159,7 +140,7 @@ object AspectOutputExtractor {
     val bazelBspServer =
       BazelBspServer(
         bspInfo = bspInfo,
-        workspaceContextProvider = workspaceContextProvider,
+        workspaceContext = workspaceContext,
         workspaceRoot = projectPath,
       )
 
@@ -168,7 +149,8 @@ object AspectOutputExtractor {
       bazelBspServer.createProjectProvider(
         bspInfo = bspInfo,
         bazelInfo = bazelInfo,
-        workspaceContextProvider = workspaceContextProvider,
+        workspaceContext = workspaceContext,
+        featureFlags = featureFlags,
         bazelRunner = bazelRunner,
         bazelPathsResolver = bazelPathsResolver,
         compilationManager = compilationManager,
@@ -177,4 +159,29 @@ object AspectOutputExtractor {
 
     return projectProvider.projectResolver.getAspectOutputPaths()
   }
+
+  private fun createMinimalWorkspaceContext(projectPath: Path, dotBazelBspDir: Path): WorkspaceContext =
+    WorkspaceContext(
+      targets = emptyList(),
+      directories = emptyList(),
+      buildFlags = emptyList(),
+      syncFlags = emptyList(),
+      debugFlags = emptyList(),
+      bazelBinary = null,
+      allowManualTargetsSync = false,
+      dotBazelBspDirPath = dotBazelBspDir,
+      importDepth = -1,
+      enabledRules = emptyList(),
+      ideJavaHomeOverride = null,
+      shardSync = false,
+      targetShardSize = 1000,
+      shardingApproach = null,
+      importRunConfigurations = emptyList(),
+      gazelleTarget = null,
+      indexAllFilesInDirectories = false,
+      pythonCodeGeneratorRuleNames = emptyList(),
+      importIjars = true,
+      deriveInstrumentationFilterFromTargets = false,
+      indexAdditionalFilesInDirectories = emptyList(),
+    )
 }

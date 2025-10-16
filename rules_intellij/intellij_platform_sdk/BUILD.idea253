@@ -1,0 +1,77 @@
+#
+# This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
+# It was modified by JetBrains s.r.o. and contributors
+#
+# Copyright 2025 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Description:
+#
+# Plugin source jars for IntelliJ CE, accessed remotely.
+
+package(default_visibility = ["//visibility:public"])
+
+java_import(
+    name = "sdk",
+    jars = glob([
+            "lib/*.jar",
+            "lib/modules/*.jar"
+        ]
+    ),
+    tags = ["intellij-provided-by-sdk"],
+    srcjar = "@intellij_ce_2025_3_sources//jar",
+    deps = ["@maven//:com_google_errorprone_error_prone_annotations"],
+)
+
+java_import(
+    name = "java",
+    jars = glob(["plugins/java/lib/*.jar", "plugins/java/lib/modules/*.jar"]) + ["plugins/java/lib/resources/jdkAnnotations.jar"],
+)
+
+java_import(
+    name = "platform_images",
+    jars = glob(["plugins/platform-images/lib/*.jar"]),
+)
+
+java_import(
+    name = "kotlin",
+    jars = glob(["plugins/Kotlin/lib/*.jar"]),
+)
+
+filegroup(
+    name = "kotlinc_version",
+    srcs = ["plugins/Kotlin/kotlinc/build.txt"],
+)
+
+java_import(
+    name = "junit",
+    jars = glob(["plugins/junit/lib/*.jar"]),
+)
+
+java_import(
+    name = "bundled_plugins",
+    jars = glob([
+        "plugins/java-i18n/lib/*.jar",
+        "plugins/junit/lib/*.jar",
+        "plugins/properties/lib/*.jar",
+        "plugins/json/lib/*.jar",
+        "plugins/json/lib/modules/*.jar",
+        "plugins/toml/lib/*.jar",
+    ]),
+)
+
+filegroup(
+    name = "application_info_json",
+    srcs = ["product-info.json"],
+)

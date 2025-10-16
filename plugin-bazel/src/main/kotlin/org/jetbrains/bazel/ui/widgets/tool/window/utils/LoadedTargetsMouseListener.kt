@@ -42,6 +42,8 @@ abstract class LoadedTargetsMouseListener(private val project: Project) : PopupH
 
   abstract val copyTargetIdAction: CopyTargetIdAction
 
+  abstract val bazelJumpToBuildFileAction: BazelJumpToBuildFileAction
+
   abstract fun getSelectedComponentName(): String
 
   override fun mouseClicked(mouseEvent: MouseEvent) {
@@ -91,7 +93,7 @@ abstract class LoadedTargetsMouseListener(private val project: Project) : PopupH
         addAction(BuildTargetAction(target.id))
       }
       fillWithEligibleActions(project, target, false)
-      add(BazelJumpToBuildFileAction(target.id))
+      addAction(bazelJumpToBuildFileAction)
       if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
     }
 

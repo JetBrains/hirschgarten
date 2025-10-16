@@ -7,9 +7,6 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
-import com.intellij.platform.workspace.jps.JpsFileDependentEntitySource
-import com.intellij.platform.workspace.jps.JpsFileEntitySource
-import com.intellij.platform.workspace.jps.JpsGlobalFileEntitySource
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -42,7 +39,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
   ) {
     val sourceFilter: (EntitySource) -> Boolean =
       when (syncScope) {
-        is FullProjectSync -> ::isBazelRelevantForFullSync
+        is FullProjectSync -> { entitySource -> entitySource is BazelEntitySource }
         is PartialProjectSync -> {
           val moduleNames =
             lazy {
@@ -107,19 +104,6 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
 
     postApplyActions.forEach { it() }
   }
-
-  private fun isBazelRelevantForFullSync(entitySource: EntitySource): Boolean =
-    when (entitySource) {
-      // avoid touching global sources
-      is JpsGlobalFileEntitySource -> false
-
-      is JpsFileEntitySource,
-      is JpsFileDependentEntitySource,
-      is BazelEntitySource,
-      -> true
-
-      else -> false
-    }
 }
 
 val AllProjectStructuresDiff.workspaceModelDiff: WorkspaceModelProjectStructureDiff

@@ -35,6 +35,7 @@ enum class LanguageClass(
   SCALA(9, "scala", setOf("scala")),
   KOTLIN(10, "kotlin", setOf("kt")),
   THRIFT(11, "thrift", setOf("thrift")),
+  PROTOBUF(12, "protobuf", setOf("proto", "protodevel")),
   ;
 
   override fun toString(): String = name
@@ -76,6 +77,7 @@ enum class LanguageClass(
         Language.KOTLIN -> KOTLIN
         Language.PYTHON -> PYTHON
         Language.THRIFT -> THRIFT
+        Language.PROTOBUF -> PROTOBUF
       }
 
     /** Returns the LanguageClass associated with the given filename extension, if it's recognized.  */

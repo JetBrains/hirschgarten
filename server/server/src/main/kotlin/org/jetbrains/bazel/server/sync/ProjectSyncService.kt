@@ -6,7 +6,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelProject
 import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -29,7 +28,7 @@ class ProjectSyncService(
   private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
   private val bazelInfo: BazelInfo,
-  private val workspaceContextProvider: WorkspaceContextProvider,
+  private val workspaceContext: WorkspaceContext,
 ) {
   suspend fun runSync(build: Boolean, originId: String): BazelProject {
     val project = projectProvider.refreshAndGet(build = build, originId = originId)
@@ -97,8 +96,7 @@ class ProjectSyncService(
     return bspMapper.jvmBuilderParamsForTarget(project, target)
   }
 
-  fun workspaceContext(): WorkspaceContext =
-    projectProvider.getIfLoaded()?.workspaceContext ?: workspaceContextProvider.readWorkspaceContext()
+  fun workspaceContext(): WorkspaceContext = projectProvider.getIfLoaded()?.workspaceContext ?: workspaceContext
 
   suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath {
     val project = projectProvider.get() as? AspectSyncProject ?: return BspJvmClasspath(emptyList(), emptyList())

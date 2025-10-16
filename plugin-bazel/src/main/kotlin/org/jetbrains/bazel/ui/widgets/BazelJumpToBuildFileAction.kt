@@ -5,6 +5,7 @@ import com.intellij.ide.util.EditorHelper
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.util.concurrency.annotations.RequiresReadLock
@@ -19,34 +20,42 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bsp.protocol.BuildTarget
+import javax.swing.JComponent
 
-class BazelJumpToBuildFileAction(private val target: Label?) :
+sealed class BazelJumpToBuildFileAction :
   SuspendableAction({ BazelPluginBundle.message("widget.open.build.file") }, AllIcons.Actions.OpenNewTab) {
-  // Used in plugin.xml for source file popup menu
-  @Suppress("UNUSED")
-  constructor() : this(null)
-
-  override fun update(project: Project, e: AnActionEvent) {
-    e.presentation.isEnabledAndVisible = shouldBeEnabledAndVisible(project, e)
-  }
-
-  private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean {
-    if (target != null) {
-      // Action was created via BazelFileTargetsWidget. In this case `e.getPsiFile()` is `null`, but we should enable the action regardless.
-      return true
-    }
-    return e.getPsiFile()?.virtualFile?.let {
-      project.targetUtils.getTargetsForFile(it).isNotEmpty()
-    } == true
-  }
+  protected abstract suspend fun getTargetLabel(project: Project, e: AnActionEvent): Label?
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val target =
-      this.target ?: run {
-        val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return
-        project.targetUtils.getTargetsForFile(virtualFile).chooseTarget(e.getEditor()) ?: return
-      }
+    val target = getTargetLabel(project, e) ?: return
     jumpToBuildFile(project, target)
+  }
+
+  @Suppress("ComponentNotRegistered", "unused") // it is registered in plugin.xml
+  class XmlRegistered : BazelJumpToBuildFileAction() {
+    override suspend fun getTargetLabel(project: Project, e: AnActionEvent): Label? {
+      val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return null
+      return project.targetUtils.getTargetsForFile(virtualFile).chooseTarget(e.getEditor())
+    }
+
+    override fun update(project: Project, e: AnActionEvent) {
+      e.presentation.isEnabledAndVisible = shouldBeEnabledAndVisible(project, e)
+    }
+
+    private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean =
+      e.getPsiFile()?.virtualFile?.let {
+        project.targetUtils.getTargetsForFile(it).isNotEmpty()
+      } == true
+  }
+
+  class NonXmlRegistered(private val getTarget: () -> BuildTarget?) : BazelJumpToBuildFileAction() {
+    override suspend fun getTargetLabel(project: Project, e: AnActionEvent): Label? = getTarget()?.id
+
+    fun registerShortcut(component: JComponent) {
+      val shortcutSet = KeymapUtil.getActiveKeymapShortcuts("EditSource")
+      registerCustomShortcutSet(shortcutSet, component)
+    }
   }
 }
 

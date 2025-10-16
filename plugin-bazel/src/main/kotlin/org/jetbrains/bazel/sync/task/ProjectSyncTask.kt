@@ -27,7 +27,6 @@ import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.performance.bspTracer
-import org.jetbrains.bazel.projectview.parser.ProjectViewParser
 import org.jetbrains.bazel.sdkcompat.suspendScanningAndIndexingThenExecute
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
@@ -98,13 +97,6 @@ class ProjectSyncTask(private val project: Project) {
             PROJECT_SYNC_TASK_ID,
             BazelPluginBundle.message("console.task.sync.fatalfailure"),
             FailureResultImpl(),
-          )
-        } catch (e: ProjectViewParser.ImportNotFound) {
-          val projectViewFile = project.bazelProjectSettings.projectViewPath.toString()
-          project.syncConsole.finishTask(
-            PROJECT_SYNC_TASK_ID,
-            BazelPluginBundle.message("console.task.sync.failed"),
-            FailureResultImpl(BazelPluginBundle.message("console.task.sync.import.fail", e.file, projectViewFile)),
           )
         } catch (e: Exception) {
           project.syncConsole.finishTask(

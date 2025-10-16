@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.logger.bazelLogger
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -122,6 +123,12 @@ class BazelClient(
   override fun onPublishCoverageReport(report: CoverageReport) {
     BazelTaskEventsService.getInstance(project).withListener(report.originId) {
       onPublishCoverageReport(report.coverageReport)
+    }
+  }
+
+  override fun onCachedTestLog(testLog: CachedTestLog) {
+    BazelTaskEventsService.getInstance(project).withListener(testLog.originId) {
+      onCachedTestLog(testLog.testLog)
     }
   }
 }

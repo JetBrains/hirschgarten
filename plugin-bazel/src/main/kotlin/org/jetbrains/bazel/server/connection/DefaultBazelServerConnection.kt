@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.connection
 
+import com.google.common.hash.HashCode
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -11,11 +12,13 @@ import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerSer
 import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.ConsoleService
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 
-private data class ConnectionResetConfig(val projectViewFile: Path?, val featureFlags: FeatureFlags)
+private data class ConnectionResetConfig(val featureFlags: FeatureFlags, val configurationHash: HashCode)
 
 private val log = logger<DefaultBazelServerConnection>()
 
@@ -26,10 +29,12 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   private val environmentCreator = EnvironmentCreator(workspaceRoot)
   private var server =
     runBlocking {
+      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
+      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
       startServer(
         bspClient,
         workspaceRoot = workspaceRoot,
-        projectViewFile = connectionResetConfig.projectViewFile,
+        workspaceContext = workspaceContext,
         featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
       )
     }
@@ -38,11 +43,13 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     environmentCreator.create()
   }
 
-  private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
-    ConnectionResetConfig(
-      projectViewFile = project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
+  private fun generateNewConnectionResetConfig(): ConnectionResetConfig {
+    val workspaceContextProvider = project.service<WorkspaceContextProvider>()
+    return ConnectionResetConfig(
       featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
+      configurationHash = workspaceContextProvider.getConfigurationHash(),
     )
+  }
 
   private fun createBspClient(): BazelClient {
     val consoleService = ConsoleService.getInstance(project)
@@ -66,8 +73,11 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
 
     if (newConnectionResetConfig != connectionResetConfig) {
       connectionResetConfig = newConnectionResetConfig
-      server.workspaceContextProvider.featureFlags = newConnectionResetConfig.featureFlags
-      newConnectionResetConfig.projectViewFile?.let { server.workspaceContextProvider.projectViewPath = it }
+      // Server now receives pre-parsed WorkspaceContext, so we need to restart the server
+      // to pick up any project view changes
+      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
+      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+      server = startServer(bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
     }
 
     return task(server)
@@ -76,7 +86,9 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   private suspend fun resetServerIfNeeded() {
     if (project.service<BazelVersionCheckerService>().updateCurrentVersion()) {
       log.info("Resetting Bazel server")
-      server = startServer(bspClient, workspaceRoot, connectionResetConfig.projectViewFile, connectionResetConfig.featureFlags)
+      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
+      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+      server = startServer(bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
     }
   }
 }

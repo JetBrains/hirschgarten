@@ -40,7 +40,7 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
       val shouldSetSelectedConfiguration = runManager.selectedConfiguration == null
 
       val runConfigurationPaths =
-        workspaceContext.importRunConfigurations.values.mapNotNull { pathString ->
+        workspaceContext.importRunConfigurations.mapNotNull { pathString ->
           project.rootDir.resolveFromRootOrRelative(pathString)
         }
       val runConfigurations =
@@ -113,6 +113,7 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
   }
 
   /**
+   * todo remove
    * Google's plugin sets the $PROJECT_DIR$ to <workspace_root>/.ijwb, while we instead use plain <workspace_root>.
    * That means that even if we just copied Google's run configurations, loading them directly would still not be possible.
    * Example: Google's plugin serializes the path to MODULE.bazel as $PROJECT_DIR$/../MODULE.bazel instead of $PROJECT_DIR$/MODULE.bazel

@@ -54,7 +54,7 @@ class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     }
 }
 
-internal fun regexifyTestFilter(text: String): String = "^${escapeRegexChars(text)}$"
+fun regexifyTestFilter(text: String): String = "^${escapeRegexChars(text)}$"
 
 private fun escapeRegexChars(name: String): String {
   val output = StringBuilder()

@@ -20,6 +20,10 @@ java_library(
             "@json_2025_2//jar",
             "@json_split_2025_2//jar",
         ],
+        "intellij-2025.3": [
+            "@json_2025_3//jar",
+            # TODO: Python tests fail probably because of this
+        ],
         "default": [],
     }),
 )

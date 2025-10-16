@@ -25,6 +25,9 @@ import java.nio.file.Path
 // Longer timeout to account for Bazel build
 private const val DEBUGGER_ATTACH_TIMEOUT: Long = 3 * 60 * 1000
 
+// See: https://bazel.build/reference/test-encyclopedia
+private const val BAZEL_TEST_FILTER_ENV = "TESTBRIDGE_TEST_ONLY"
+
 abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, private val port: Int) :
   BazelCommandLineStateBase(environment) {
   fun createDebugEnvironment(environment: ExecutionEnvironment): DefaultDebugEnvironment {
@@ -53,6 +56,8 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
     scriptPath: String,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
+    env: Map<String, String>,
+    testFilter: String? = null,
   ) {
     val commandLine =
       GeneralCommandLine()
@@ -60,6 +65,10 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
         .withExePath(scriptPath)
         // don't inherit IntelliJ's environment variables as the script should be self-contained
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
+        .withEnvironment(env)
+    if (testFilter != null) {
+      commandLine.environment[BAZEL_TEST_FILTER_ENV] = testFilter
+    }
 
     val scriptHandler = OSProcessHandler(commandLine)
     scriptHandler.addProcessListener(

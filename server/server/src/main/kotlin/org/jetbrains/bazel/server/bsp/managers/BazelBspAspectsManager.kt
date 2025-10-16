@@ -11,10 +11,10 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
@@ -109,10 +109,13 @@ class BazelBspAspectsManager(
 
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
       val templateFilePath = it.toAspectTemplateRelativePath()
+      val canonicalRuleName = ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty()
+      val apparentRuleName = ruleLanguage?.rulesetName.orEmpty()
+      val protobufRepoName = ProtobufRepoMappings(repoMapping).getMappedProtobufRepoName(canonicalRuleName, apparentRuleName)
       val variableMap =
         mapOf(
-          "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty(),
-          "rulesetNameApparent" to ruleLanguage?.rulesetName.orEmpty(),
+          "rulesetName" to canonicalRuleName,
+          "rulesetNameApparent" to apparentRuleName,
           "kotlinEnabled" to kotlinEnabled.toString(),
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
@@ -120,7 +123,8 @@ class BazelBspAspectsManager(
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
           "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
-          "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.values.toStarlarkString(),
+          "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.toStarlarkString(),
+          "protobufRepoName" to protobufRepoName.orEmpty(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
@@ -172,7 +176,7 @@ class BazelBspAspectsManager(
   private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 
   suspend fun fetchFilesFromOutputGroups(
-    targetsSpec: TargetsSpec,
+    targetsSpec: TargetCollection,
     aspect: String,
     outputGroups: List<String>,
     shouldLogInvocation: Boolean,
@@ -188,8 +192,8 @@ class BazelBspAspectsManager(
         color(true),
         curses(false),
       )
-    val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync.value) listOf(buildManualTests()) else emptyList()
-    val syncFlags = workspaceContext.syncFlags.values
+    val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
+    val syncFlags = workspaceContext.syncFlags
 
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags + syncFlags
 

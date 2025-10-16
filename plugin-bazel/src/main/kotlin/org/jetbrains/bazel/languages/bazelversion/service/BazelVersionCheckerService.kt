@@ -5,6 +5,7 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
@@ -12,7 +13,7 @@ import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionStringLiteral
 
 @Service(Service.Level.PROJECT)
-@State(name = "BazelVersionCache", storages = [Storage("bazelVersionCache.xml")])
+@State(name = "BazelVersionCache", storages = [Storage(StoragePathMacros.CACHE_FILE)])
 class BazelVersionCheckerService(private val project: Project) : PersistentStateComponent<BazelVersionCheckerService.State> {
   class State : BaseState() {
     var resolverId by string(null)

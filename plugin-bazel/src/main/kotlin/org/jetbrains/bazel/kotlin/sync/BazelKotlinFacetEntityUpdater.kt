@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerSettingsData
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
+import org.jetbrains.kotlin.idea.workspaceModel.ModifiableKotlinSettingsEntity
 import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import java.nio.file.Path
@@ -113,7 +114,7 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
 
   private fun MutableEntityStorage.addKotlinSettingsEntity(
     parentModuleEntity: ModuleEntity,
-    kotlinSettingsEntity: KotlinSettingsEntity.Builder,
+    kotlinSettingsEntity: ModifiableKotlinSettingsEntity,
   ): KotlinSettingsEntity {
     val updatedParentModuleEntity =
       modifyModuleEntity(parentModuleEntity) {

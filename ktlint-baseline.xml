@@ -27,6 +27,12 @@
     <file name="sdkcompat/v252/org/jetbrains/bazel/sdkcompat/Dummy.kt">
       <error line="1" column="1" source="standard:no-empty-file" />
     </file>
+    <file name="sdkcompat/v253/Dummy.kt">
+      <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
+    <file name="sdkcompat/v253/org/jetbrains/bazel/sdkcompat/Dummy.kt">
+      <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
     <file name="server/example/kotlincplugin/User.kt">
         <error line="3" column="1" source="standard:no-wildcard-imports" />
     </file>

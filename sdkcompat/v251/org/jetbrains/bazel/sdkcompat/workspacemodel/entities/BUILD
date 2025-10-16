@@ -9,6 +9,7 @@ kt_jvm_library(
             "impl/*.kt",
         ]),
         "intellij-2025.2": ["Dummy.kt"],
+        "intellij-2025.3": ["Dummy.kt"],
     }),
     visibility = ["//visibility:public"],
     deps = [

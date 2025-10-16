@@ -35,6 +35,7 @@ enum class Language(
   PYTHON("python", hashSetOf(".py")),
   THRIFT("thrift", hashSetOf(".thrift")),
   GO("go", hashSetOf(".go"), setOf("go_binary")),
+  PROTOBUF("protobuf", hashSetOf(".proto")),
   ;
 
   val allNames: Set<String> = dependentNames + id

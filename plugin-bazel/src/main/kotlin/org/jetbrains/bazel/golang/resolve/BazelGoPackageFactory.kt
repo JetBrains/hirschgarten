@@ -47,7 +47,7 @@ class BazelGoPackageFactory : GoPackageFactory {
 
   companion object {
     @JvmStatic
-    internal val fileToImportPathMapComputable =
+    val fileToImportPathMapComputable =
       SyncCache.SyncCacheComputable { project ->
         buildFileToImportPathMap(project)
       }

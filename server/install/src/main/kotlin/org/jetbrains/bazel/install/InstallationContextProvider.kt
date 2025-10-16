@@ -7,17 +7,8 @@ import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
 object InstallationContextProvider {
-  fun generateAndSaveProjectViewFileIfNeeded(cliOptions: CliOptions) {
-    val generatedProjectViewFilePath = calculateGeneratedProjectViewPath(cliOptions)
-    if (!generatedProjectViewFilePath.isFileExisted() || cliOptions.projectViewCliOptions != null) {
-      if (!generatedProjectViewFilePath.exists()) {
-        ProjectViewCLiOptionsProvider.generateProjectViewAndSave(cliOptions, generatedProjectViewFilePath)
-      }
-    }
-  }
-
-  private fun calculateGeneratedProjectViewPath(cliOptions: CliOptions): Path =
-    cliOptions.projectViewFilePath ?: cliOptions.workspaceDir.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+  fun calculateProjectViewPath(workspaceDir: Path, projectViewFilePath: Path?): Path =
+    projectViewFilePath ?: workspaceDir.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
 
   private fun Path.isFileExisted() = this.exists() && this.isRegularFile()
 }

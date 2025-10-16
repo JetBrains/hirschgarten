@@ -28,7 +28,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
     if (entity.indexAllFilesInIncludedRoots || !CONTENT_NON_INDEXABLE_SUPPORTED) {
       registrar.registerIncludedDirectories(entity)
     } else {
-      registrar.registerNecessaryFiles(entity)
+      registrar.registerIndexAdditionalFiles(entity)
     }
     registrar.registerExcludedDirectories(entity)
     registrar.registerOtherRootsCompat(entity.projectRoot, entity.includedRoots, entity)
@@ -54,16 +54,8 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
     }
   }
 
-  private fun WorkspaceFileSetRegistrar.registerNecessaryFiles(entity: BazelProjectDirectoriesEntity) {
-    entity.buildFiles.forEach {
-      registerNonRecursiveFileSet(
-        file = it,
-        kind = WorkspaceFileKind.CONTENT,
-        entity = entity,
-        customData = null,
-      )
-    }
-    entity.projectViewFile?.also {
+  private fun WorkspaceFileSetRegistrar.registerIndexAdditionalFiles(entity: BazelProjectDirectoriesEntity) {
+    entity.indexAdditionalFiles.forEach {
       registerNonRecursiveFileSet(
         file = it,
         kind = WorkspaceFileKind.CONTENT,

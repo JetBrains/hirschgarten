@@ -24,3 +24,9 @@ ktlint_ignore_back_ticked_identifier = false
 ktlint_standard_binary-expression-wrapping = disabled
 ktlint_standard_expression-operand-wrapping = disabled
 max_line_length = 140
+
+
+[*.{bzl,bzl.template}]
+indent_size = 4
+indent_style = space
+

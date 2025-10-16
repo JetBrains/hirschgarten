@@ -6,7 +6,7 @@ import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.state.HasTestFilter
+import org.jetbrains.bazel.run.test.setTestFilter
 import org.jetbrains.bsp.protocol.BuildTarget
 
 class RunWithCoverageAction(
@@ -38,7 +38,9 @@ class RunWithCoverageAction(
     isCoverageAction = true,
   ) {
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {
-    (configuration as BazelRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
+    (configuration as BazelRunConfiguration).handler?.apply {
+      setTestFilter(configuration.project, state, singleTestFilter)
+    }
     (configuration as BazelRunConfiguration).handler?.apply {
       (state as? HasProgramArguments)?.programArguments?.addAll(testExecutableArguments)
     }

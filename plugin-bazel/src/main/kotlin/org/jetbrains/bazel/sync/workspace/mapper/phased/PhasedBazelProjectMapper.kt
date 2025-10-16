@@ -31,7 +31,7 @@ import kotlin.io.path.isRegularFile
 
 class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) {
   fun resolveWorkspace(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): BazelResolvedWorkspace {
-    val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync.value
+    val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync
     val targets =
       project.targets
         .asSequence()

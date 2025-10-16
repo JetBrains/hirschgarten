@@ -1,5 +1,6 @@
 load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion")
-load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info", "get_java_plugin_info")
+load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info", "get_java_plugin_info", "get_javacopts")
+
 #if( $kotlinEnabled == "true" )
 load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_additional_javac_options", "get_kotlin_plugins")
 #else
@@ -28,7 +29,9 @@ def map_with_resolve_files(f, xs):
     return results, resolve_files
 
 def get_interface_jars(output):
-    if hasattr(output, "ijar") and output.ijar:
+    if hasattr(output, "compile_jar") and output.compile_jar:
+        return [output.compile_jar]
+    elif hasattr(output, "ijar") and output.ijar: # Kotlin rules don't use compile_jar field
         return [output.ijar]
     else:
         return []
@@ -129,13 +132,7 @@ def get_jvm_provider(target):
     return None
 
 def get_javac_opts(target, ctx):
-    # Copy the list so that it's possible to append to it
-    javac_opts = [opt for opt in getattr(ctx.rule.attr, "javacopts", [])]
-    for export in getattr(ctx.rule.attr, "add_exports", []):
-        javac_opts.append("--add-exports=" + export + "=ALL-UNNAMED")
-    for open in getattr(ctx.rule.attr, "add_opens", []):
-        javac_opts.append("--add-opens=" + open + "=ALL-UNNAMED")
-    return javac_opts + get_additional_javac_options(ctx, target)
+    return get_javacopts(target, ctx) + get_additional_javac_options(ctx, target)
 
 def has_api_generating_plugins(target, ctx, dep_targets, provider):
     if hasattr(provider, "api_generating_plugins"):

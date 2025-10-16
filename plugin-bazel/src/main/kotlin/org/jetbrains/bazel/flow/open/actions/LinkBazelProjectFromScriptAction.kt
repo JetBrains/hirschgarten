@@ -11,7 +11,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.flow.open.BazelOpenProjectProvider
-import org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor
+import org.jetbrains.bazel.flow.open.findProjectFolderFromVFile
 
 internal class LinkBazelProjectFromScriptAction :
   DumbAwareAction(
@@ -20,7 +20,7 @@ internal class LinkBazelProjectFromScriptAction :
   ) {
   override fun actionPerformed(e: AnActionEvent) {
     val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
-    val projectFile = BazelProjectOpenProcessor().calculateProjectFolderToOpen(virtualFile)
+    val projectFile = findProjectFolderFromVFile(virtualFile) ?: return
     val project = e.project ?: return
 
     BazelCoroutineService.getInstance(project).start {
