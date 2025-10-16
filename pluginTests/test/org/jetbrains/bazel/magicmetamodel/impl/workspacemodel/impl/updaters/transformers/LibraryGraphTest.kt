@@ -61,8 +61,8 @@ class LibraryGraphTest {
       // then
       dependencies shouldBe
         listOf(
-          Label.parse("lib1"),
-          Label.parse("lib2"),
+          DependencyLabel.parse("lib1"),
+          DependencyLabel.parse("lib2"),
         )
     }
 
@@ -121,13 +121,13 @@ class LibraryGraphTest {
       // then
       dependencies shouldContainExactlyInAnyOrder
         listOf(
-          Label.parse("lib1"),
-          Label.parse("lib2"),
-          Label.parse("lib3"),
-          Label.parse("lib4"),
-          Label.parse("lib5"),
-          Label.parse("lib6"),
-          Label.parse("lib7"),
+          DependencyLabel.parse("lib1"),
+          DependencyLabel.parse("lib2"),
+          DependencyLabel.parse("lib3"),
+          DependencyLabel.parse("lib4"),
+          DependencyLabel.parse("lib5"),
+          DependencyLabel.parse("lib6"),
+          DependencyLabel.parse("lib7"),
         )
     }
 
@@ -186,15 +186,15 @@ class LibraryGraphTest {
       // then
       dependencies shouldContainExactlyInAnyOrder
         listOf(
-          Label.parse("lib1"),
-          Label.parse("lib2"),
-          Label.parse("lib3"),
-          Label.parse("lib4"),
-          Label.parse("lib5"),
-          Label.parse("lib6"),
-          Label.parse("lib7"),
-          Label.parse("target2"),
-          Label.parse("target3"),
+          DependencyLabel.parse("lib1"),
+          DependencyLabel.parse("lib2"),
+          DependencyLabel.parse("lib3"),
+          DependencyLabel.parse("lib4"),
+          DependencyLabel.parse("lib5"),
+          DependencyLabel.parse("lib6"),
+          DependencyLabel.parse("lib7"),
+          DependencyLabel.parse("target2"),
+          DependencyLabel.parse("target3"),
         )
     }
 
@@ -220,7 +220,7 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, true)
 
       // then
-      dependencies shouldContainExactlyInAnyOrder (1..1000).map { Label.parse("lib$it") }
+      dependencies shouldContainExactlyInAnyOrder (1..1000).map { DependencyLabel.parse("lib$it") }
     }
   }
 
@@ -253,8 +253,8 @@ class LibraryGraphTest {
       // then
       dependencies shouldBe
         listOf(
-          Label.parse("lib1"),
-          Label.parse("lib2"),
+          DependencyLabel.parse("lib1"),
+          DependencyLabel.parse("lib2"),
         )
     }
 
@@ -313,8 +313,8 @@ class LibraryGraphTest {
       // then
       dependencies shouldBe
         listOf(
-          Label.parse("lib1"),
-          Label.parse("lib2"),
+          DependencyLabel.parse("lib1"),
+          DependencyLabel.parse("lib2"),
         )
     }
 
@@ -365,10 +365,10 @@ class LibraryGraphTest {
       // then
       dependencies shouldBe
         listOf(
-          Label.parse("lib1"),
-          Label.parse("target2"),
-          Label.parse("lib2"),
-          Label.parse("target3"),
+          DependencyLabel.parse("lib1"),
+          DependencyLabel.parse("target2"),
+          DependencyLabel.parse("lib2"),
+          DependencyLabel.parse("target3"),
         )
     }
   }
@@ -378,7 +378,7 @@ private fun mockTarget(id: String, dependencies: List<String>): RawBuildTarget =
   RawBuildTarget(
     Label.parse(id),
     emptyList(),
-    dependencies.map { DependencyLabel(Label.parse(it)) },
+    dependencies.map { DependencyLabel.parse(it) },
     TargetKind(
       kindString = "java_binary",
       ruleType = RuleType.BINARY,
@@ -392,7 +392,7 @@ private fun mockTarget(id: String, dependencies: List<String>): RawBuildTarget =
 private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem =
   LibraryItem(
     id = Label.parse(id),
-    dependencies = dependencies.map { DependencyLabel(Label.parse(it)) },
+    dependencies = dependencies.map { DependencyLabel.parse(it) },
     ijars = emptyList(),
     jars = emptyList(),
     sourceJars = emptyList(),

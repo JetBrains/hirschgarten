@@ -222,7 +222,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target1"),
             tags = listOf(),
-            dependencies = listOf(DependencyLabel(Label.parse("//dep/target1")), DependencyLabel(Label.parse("//dep/target2"))),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_library",
@@ -245,7 +245,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target2"),
             tags = listOf(),
-            dependencies = listOf(DependencyLabel(Label.parse("//dep/target1")), DependencyLabel(Label.parse("//dep/target2"))),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_binary",
@@ -264,7 +264,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target3"),
             tags = listOf(),
-            dependencies = listOf(DependencyLabel(Label.parse("//dep/target1")), DependencyLabel(Label.parse("//dep/target2"))),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_test",
@@ -283,7 +283,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target4"),
             tags = listOf(),
-            dependencies = listOf(DependencyLabel(Label.parse("//dep/target1")), DependencyLabel(Label.parse("//dep/target2"))),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_library",
@@ -298,7 +298,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target5"),
             tags = listOf(),
-            dependencies = listOf(DependencyLabel(Label.parse("//dep/target1")), DependencyLabel(Label.parse("//dep/target2"))),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_binary",
@@ -313,7 +313,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target6"),
             tags = listOf(),
-            dependencies = listOf(DependencyLabel(Label.parse("//dep/target1")), DependencyLabel(Label.parse("//dep/target2"))),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_test",

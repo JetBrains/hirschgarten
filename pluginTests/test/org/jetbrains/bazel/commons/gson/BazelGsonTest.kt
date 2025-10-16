@@ -22,7 +22,7 @@ class BazelGsonTest {
       RawBuildTarget(
         id = Label.parse("//foo:bar"),
         tags = listOf("tag1", "tag2"),
-        dependencies = listOf(DependencyLabel(Label.parse("//baz:qux"))),
+        dependencies = listOf(DependencyLabel.parse("//baz:qux")),
         kind =
           TargetKind(
             kindString = "java_library",

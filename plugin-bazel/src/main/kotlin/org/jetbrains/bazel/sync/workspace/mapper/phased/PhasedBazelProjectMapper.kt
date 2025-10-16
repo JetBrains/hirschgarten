@@ -54,7 +54,7 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
     return RawBuildTarget(
       id = label,
       tags = inferTags(),
-      dependencies = interestingDeps.map { DependencyLabel(Label.parse(it)) },
+      dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
       sources = calculateSources(project),
       resources = calculateResources(project),

@@ -50,9 +50,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         targetId,
         emptyList(),
         listOf(
-          DependencyLabel(Label.parse("@maven//:test")),
-          DependencyLabel(Label.parse("@//target2")),
-          DependencyLabel(Label.parse("@//target3")),
+          DependencyLabel.parse("@maven//:test"),
+          DependencyLabel.parse("@//target2"),
+          DependencyLabel.parse("@//target3"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -118,9 +118,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         targetId,
         emptyList(),
         listOf(
-          DependencyLabel(Label.parse("@maven//:test")),
-          DependencyLabel(Label.parse("@//target2")),
-          DependencyLabel(Label.parse("@//target3")),
+          DependencyLabel.parse("@maven//:test"),
+          DependencyLabel.parse("@//target2"),
+          DependencyLabel.parse("@//target3"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -198,9 +198,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         target1Id,
         emptyList(),
         listOf(
-          DependencyLabel(Label.parse("@maven//:test")),
-          DependencyLabel(Label.parse("//target2")),
-          DependencyLabel(Label.parse("//target3")),
+          DependencyLabel.parse("@maven//:test"),
+          DependencyLabel.parse("//target2"),
+          DependencyLabel.parse("//target3"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -232,8 +232,8 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         target2Id,
         emptyList(),
         listOf(
-          DependencyLabel(Label.parse("@maven//:test")),
-          DependencyLabel(Label.parse("//target3")),
+          DependencyLabel.parse("@maven//:test"),
+          DependencyLabel.parse("//target3"),
         ),
         TargetKind(
           kindString = "java_binary",
