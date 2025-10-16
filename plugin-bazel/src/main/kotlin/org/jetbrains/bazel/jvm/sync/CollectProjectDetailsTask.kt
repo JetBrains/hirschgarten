@@ -280,7 +280,7 @@ class CollectProjectDetailsTask(
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
-    SdkUtils.cleanUpInvalidJdks(project.bazelProjectName)
+    SdkUtils.cleanUpInvalidJdks(project)
     addBspFetchedJdks()
     JavacConfiguration.getOptions(project, JavacConfiguration::class.java).ADDITIONAL_OPTIONS_OVERRIDE =
       requireNotNull(this.javacOptions) {
