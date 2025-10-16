@@ -8,6 +8,7 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/widgets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",

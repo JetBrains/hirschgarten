@@ -120,6 +120,21 @@ jvm_target_info {
       root_execution_path_fragment: "bazel-out/fastbuild/bin"
     }
   }
+  javac_opts: "-source"
+  javac_opts: "11"
+  javac_opts: "-target"
+  javac_opts: "11"
+  javac_opts: "-XDskipDuplicateBridges=true"
+  javac_opts: "-XDcompilePolicy=simple"
+  javac_opts: "--should-stop=ifError=FLOW"
+  javac_opts: "-g"
+  javac_opts: "-parameters"
+  javac_opts: "-Xep:ReturnValueIgnored:OFF"
+  javac_opts: "-Xep:IgnoredPureGetter:OFF"
+  javac_opts: "-Xep:EmptyTopLevelDeclaration:OFF"
+  javac_opts: "-Xep:LenientFormatStringValidation:OFF"
+  javac_opts: "-Xep:ReturnMissingNullable:OFF"
+  javac_opts: "-Xep:UseCorrectAssertInTests:OFF"
   jdeps {
     relative_path: "src/libmain.jdeps"
     root_execution_path_fragment: "bazel-out/fastbuild/bin"

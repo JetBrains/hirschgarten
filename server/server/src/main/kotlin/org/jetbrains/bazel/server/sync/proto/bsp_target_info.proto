@@ -89,6 +89,15 @@ message GoTargetInfo {
   repeated string library_labels = 5;
 }
 
+message ProtobufTargetInfo {
+  repeated ProtobufSourceMapping source_mappings = 3;
+}
+
+message ProtobufSourceMapping {
+  string import_path = 1;
+  FileLocation proto_file = 2;
+}
+
 message TargetInfo {
   string id = 10;
   string kind = 20;
@@ -108,4 +117,5 @@ message TargetInfo {
   KotlinTargetInfo kotlin_target_info = 7000;
   PythonTargetInfo python_target_info = 8000;
   GoTargetInfo go_target_info = 12000;
+  ProtobufTargetInfo protobuf_target_info = 14000;
 }

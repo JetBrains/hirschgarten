@@ -22,7 +22,7 @@ import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import java.nio.file.Path
 
-internal class LibraryEntityUpdater(
+class LibraryEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val importIjars: Boolean,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<Library, LibraryEntity> {
@@ -112,7 +112,7 @@ internal class LibraryEntityUpdater(
   }
 }
 
-internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
+fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
   when {
     !workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps -> BazelProjectEntitySource
     else ->

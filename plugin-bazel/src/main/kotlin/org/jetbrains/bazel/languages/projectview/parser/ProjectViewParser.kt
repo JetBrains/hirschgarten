@@ -42,6 +42,13 @@ class ProjectViewParser(private val builder: PsiBuilder) {
         sectionMarker.done(ProjectViewElementTypes.IMPORT)
         return
       }
+      ProjectViewTokenType.TRY_IMPORT_KEYWORD -> {
+        builder.advanceLexer()
+        parseItem(ProjectViewElementTypes.IMPORT_ITEM)
+        builder.advanceLexer()
+        sectionMarker.done(ProjectViewElementTypes.TRY_IMPORT)
+        return
+      }
     }
     // Error handling
     when {
@@ -133,6 +140,7 @@ class ProjectViewParser(private val builder: PsiBuilder) {
       setOf(
         ProjectViewTokenType.IDENTIFIER,
         ProjectViewTokenType.IMPORT_KEYWORD,
+        ProjectViewTokenType.TRY_IMPORT_KEYWORD,
         ProjectViewTokenType.SECTION_KEYWORD,
       )
   }

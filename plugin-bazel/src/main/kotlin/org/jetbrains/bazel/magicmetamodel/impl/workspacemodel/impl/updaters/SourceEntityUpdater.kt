@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericSourceRoot
 
-internal open class SourceEntityUpdater(
+open class SourceEntityUpdater(
   val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   val workspaceModelEntityFolderMarkerExists: Boolean = false,
 ) : WorkspaceModelEntityWithParentModuleUpdater<GenericSourceRoot, SourceRootEntity> {

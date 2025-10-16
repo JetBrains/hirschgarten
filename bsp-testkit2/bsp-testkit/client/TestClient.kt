@@ -1,8 +1,11 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.gson.bazelGson
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.startServer
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -39,11 +42,37 @@ class TestClient(
 
   fun test(timeout: Duration, doTest: suspend (Session) -> Unit) {
     runTest(timeout = timeout) {
-      val server = startServer(client, workspacePath, null, featureFlags)
+      val workspaceContext = createTestWorkspaceContext()
+      val server = startServer(client, workspacePath, workspaceContext, featureFlags)
       val session = Session(client, server)
       doTest(session)
     }
   }
+
+  private fun createTestWorkspaceContext(): WorkspaceContext =
+    WorkspaceContext(
+      targets = emptyList(),
+      directories = emptyList(),
+      buildFlags = emptyList(),
+      syncFlags = emptyList(),
+      debugFlags = emptyList(),
+      bazelBinary = null,
+      allowManualTargetsSync = false,
+      dotBazelBspDirPath = workspacePath.resolve(".bazelbsp"),
+      importDepth = -1,
+      enabledRules = emptyList(),
+      ideJavaHomeOverride = null,
+      shardSync = false,
+      targetShardSize = 1000,
+      shardingApproach = null,
+      importRunConfigurations = emptyList(),
+      gazelleTarget = null,
+      indexAllFilesInDirectories = false,
+      pythonCodeGeneratorRuleNames = emptyList(),
+      importIjars = true,
+      deriveInstrumentationFilterFromTargets = false,
+      indexAdditionalFilesInDirectories = emptyList(),
+    )
 
   fun testCompile(
     timeout: Duration,

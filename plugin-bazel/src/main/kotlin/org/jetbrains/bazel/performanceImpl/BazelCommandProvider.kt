@@ -13,5 +13,6 @@ public class BazelCommandProvider : CommandProvider {
       RecordMemoryCommand.PREFIX to CreateCommand(::RecordMemoryCommand),
       OpenBspToolWindowCommand.PREFIX to CreateCommand(::OpenBspToolWindowCommand),
       AssertFileContentsEqualCommand.PREFIX to CreateCommand(::AssertFileContentsEqualCommand),
+      AssertEitherFileContentIsEqualCommand.PREFIX to CreateCommand(::AssertEitherFileContentIsEqualCommand)
     )
 }

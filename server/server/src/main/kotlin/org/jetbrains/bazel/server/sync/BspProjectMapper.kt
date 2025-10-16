@@ -39,11 +39,12 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     val workspaceRoot = project.workspaceRoot
 
     val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude(workspaceRoot)
-    val directoriesToExclude = directoriesSection.excludedValues + additionalDirectoriesToExclude
+    val includedDirectories = directoriesSection.filter { it.isIncluded() }.map { it.value }
+    val excludedDirectories = directoriesSection.filter { it.isExcluded() }.map { it.value } + additionalDirectoriesToExclude
 
     return WorkspaceDirectoriesResult(
-      includedDirectories = directoriesSection.values.map { it.toDirectoryItem() },
-      excludedDirectories = directoriesToExclude.map { it.toDirectoryItem() },
+      includedDirectories = includedDirectories.map { it.toDirectoryItem() },
+      excludedDirectories = excludedDirectories.map { it.toDirectoryItem() },
     )
   }
 
