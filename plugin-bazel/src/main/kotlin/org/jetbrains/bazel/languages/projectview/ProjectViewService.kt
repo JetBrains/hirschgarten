@@ -36,7 +36,7 @@ class ProjectViewService(private val project: Project) {
 
       return@computeAndWait vfs
     }
-  
+
   /**
    * Gets the current ProjectView, parsing it if necessary.
    * Uses caching with file modification time checking for efficiency.

@@ -11,6 +11,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
+import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -29,6 +30,7 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
 
   private fun CodeInsightTestFixture.setBuildTool() {
     project.isBazelProject = true
+    forceDisableJetBrainsTestRunner = true
   }
 
   private fun CodeInsightTestFixture.getKotlinTestFile(): PsiFile =

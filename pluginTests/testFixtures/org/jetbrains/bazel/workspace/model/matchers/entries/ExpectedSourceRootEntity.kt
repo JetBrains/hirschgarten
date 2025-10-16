@@ -2,17 +2,21 @@ package org.jetbrains.bazel.workspace.model.matchers.entries
 
 import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.ModifiableJavaResourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.ModifiableJavaSourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.javaResourceRoots
 import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModifiableContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModifiableSourceRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
 public data class ExpectedSourceRootEntity(
-  val sourceRootEntity: SourceRootEntity.Builder,
-  val contentRootEntity: ContentRootEntity.Builder,
+  val sourceRootEntity: ModifiableSourceRootEntity,
+  val contentRootEntity: ModifiableContentRootEntity,
   val parentModuleEntity: ModuleEntity,
 )
 
@@ -40,12 +44,12 @@ private fun validateSourceRootEntity(actual: SourceRootEntity, expected: Expecte
   actual.contentRoot shouldBeEqual toExpectedContentRootEntity(expected)
 }
 
-private fun validateJavaSourceRootEntity(actual: JavaSourceRootPropertiesEntity, expected: JavaSourceRootPropertiesEntity.Builder) {
+private fun validateJavaSourceRootEntity(actual: JavaSourceRootPropertiesEntity, expected: ModifiableJavaSourceRootPropertiesEntity) {
   actual.generated shouldBe expected.generated
   actual.packagePrefix shouldBe expected.packagePrefix
 }
 
-private fun validateJavaResourceRootEntity(actual: JavaResourceRootPropertiesEntity, expected: JavaResourceRootPropertiesEntity.Builder) {
+private fun validateJavaResourceRootEntity(actual: JavaResourceRootPropertiesEntity, expected: ModifiableJavaResourceRootPropertiesEntity) {
   actual.generated shouldBe expected.generated
   actual.relativeOutputPath shouldBe expected.relativeOutputPath
 }
