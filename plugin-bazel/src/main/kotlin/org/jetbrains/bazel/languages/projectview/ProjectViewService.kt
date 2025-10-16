@@ -2,9 +2,12 @@ package org.jetbrains.bazel.languages.projectview
 
 import com.google.common.hash.HashCode
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.ex.dummy.DummyFileSystem
 import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
@@ -22,6 +25,18 @@ import kotlin.io.path.notExists
  */
 @Service(Service.Level.PROJECT)
 class ProjectViewService(private val project: Project) {
+  val defaultProjectViewVirtualFile: VirtualFile =
+    WriteAction.computeAndWait<VirtualFile, RuntimeException> {
+      val vfs = DummyFileSystem.getInstance()
+        .createRoot("tmp")
+        .createChildData(null, ".bazelproject")
+
+      val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir)
+      vfs.setBinaryContent(content.toByteArray())
+
+      return@computeAndWait vfs
+    }
+  
   /**
    * Gets the current ProjectView, parsing it if necessary.
    * Uses caching with file modification time checking for efficiency.
@@ -67,7 +82,7 @@ class ProjectViewService(private val project: Project) {
     ReadAction.compute<ProjectView, RuntimeException> {
       val virtualFile =
         VirtualFileManager.getInstance().findFileByNioPath(projectViewPath)
-          ?: error("Could not find project view file at $projectViewPath")
+          ?: defaultProjectViewVirtualFile
 
       val psiFile =
         PsiManager.getInstance(project).findFile(virtualFile) as? ProjectViewPsiFile
