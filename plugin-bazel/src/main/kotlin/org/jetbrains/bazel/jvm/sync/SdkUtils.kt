@@ -9,6 +9,7 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.ProjectRootManager
+import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToBaseJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import java.nio.file.Path
@@ -34,9 +35,9 @@ object SdkUtils {
     }
   }
 
-  suspend fun cleanUpInvalidJdks(projectName: String) {
+  suspend fun cleanUpInvalidJdks(project: Project) {
     val sdkTable = ProjectJdkTable.getInstance()
-    val jdkPrefix = projectName.projectNameToBaseJdkName()
+    val jdkPrefix = project.bazelProjectName.projectNameToBaseJdkName()
     getAllAvailableJdks()
       .filter { it.name.startsWith(jdkPrefix) && !isValidJdk(it) }
       .let { invalidJdks ->
@@ -44,6 +45,10 @@ object SdkUtils {
           invalidJdks.forEach { sdkTable.removeJdk(it) }
         }
       }
+
+    // We don't need the project SDK anyway. If the user sets it manually, it can cause red code, so remove it upon sync.
+    val rootManager = ProjectRootManager.getInstance(project)
+    writeAction { rootManager.projectSdk = null }
   }
 
   private fun isValidJdk(sdk: Sdk): Boolean {
