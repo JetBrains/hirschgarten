@@ -324,9 +324,29 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
         testCase.skipped != null -> testCase.skipped.message
         else -> null
       }
+    val testStatus =
+      when {
+        testCase.error != null -> TestStatus.FAILED
+        testCase.failure != null -> TestStatus.FAILED
+        testCase.skipped != null -> TestStatus.SKIPPED
+        else -> TestStatus.PASSED
+      }
+    val fullOutput =
+      when {
+        testCase.error != null -> testCase.error.content
+        testCase.failure != null -> testCase.failure.content
+        testCase.skipped != null -> testCase.skipped.content
+        else -> null
+      }
+    val errorType =
+      when {
+        testCase.error != null -> testCase.error.type
+        testCase.failure != null -> testCase.failure.type
+        else -> null
+      }
     val message = listOfNotNull(outcomeMessage, fallbackMessage).joinToString("\n")
 
-    val testCaseData = JUnitStyleTestCaseData(testCase.time, null, message, null, null)
+    val testCaseData = JUnitStyleTestCaseData(testCase.time, testCase.name, message, fullOutput, errorType)
 
     // In the generated xml, suite name and test case name are the same, but in the Test Console test names have
     // to be unique
@@ -335,8 +355,8 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     bspClientTestNotifier.finishTest(
       testCaseName,
       testCaseTaskId,
-      testSuiteStatus,
-      null,
+      testStatus,
+      message,
       testCaseData,
     )
   }
