@@ -5,6 +5,7 @@ import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -88,7 +89,7 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
     call: StarlarkCallExpression,
     file: PsiFile,
     processor: Processor<in PsiReference>,
-    baseDir: com.intellij.openapi.vfs.VirtualFile,
+    baseDir: VirtualFile,
   ) {
     val arguments = call.getArgumentList()?.getArguments() ?: return
 

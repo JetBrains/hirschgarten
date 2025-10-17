@@ -27,6 +27,7 @@ import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetShardSizeSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.TestFlagsSection
+import org.jetbrains.bazel.languages.projectview.sections.UseJetBrainsTestRunnerSection
 import java.nio.file.Path
 
 // Extension properties to provide convenient access to ProjectView sections
@@ -103,6 +104,9 @@ val ProjectView.deriveInstrumentationFilterFromTargets: Boolean
 
 val ProjectView.indexAdditionalFilesInDirectories: List<String>
   get() = getSection(IndexAdditionalFilesInDirectoriesSection.KEY) ?: emptyList()
+
+val ProjectView.useJetBrainsTestRunner: Boolean
+  get() = getSection(UseJetBrainsTestRunnerSection.KEY) ?: false
 
 /**
  * List of names of repositories that should be treated as internal because there are some targets that we want to be imported that

@@ -344,3 +344,19 @@ index_additional_files_in_directories:
   *.xml
   package.json
 ```
+
+#### use_jetbrains_test_runner
+
+Whether the project is using a custom JUnit test runner by JetBrains.
+
+##### example:
+
+```
+use_jetbrains_test_runner: true
+```
+
+##### default:
+
+```
+use_jetbrains_test_runner: false
+```

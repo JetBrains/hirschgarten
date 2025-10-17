@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -38,6 +39,8 @@ class TestXmlParserTest {
     }
 
     override fun onPublishCoverageReport(report: CoverageReport) {}
+
+    override fun onCachedTestLog(testLog: CachedTestLog) {}
   }
 
   @Test

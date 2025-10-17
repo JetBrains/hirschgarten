@@ -9,6 +9,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ModifiableBazelProjectDirectoriesEntity
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -40,7 +41,7 @@ private class DirectoriesSyncHook : ProjectSyncHook {
     directories: WorkspaceDirectoriesResult,
     additionalExcludes: List<Path>,
     indexAllFilesInIncludedRoots: Boolean,
-  ): BazelProjectDirectoriesEntity.Builder {
+  ): ModifiableBazelProjectDirectoriesEntity {
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
     val includedRoots = directories.includedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) }

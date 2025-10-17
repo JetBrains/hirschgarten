@@ -51,4 +51,6 @@ interface BazelTaskListener {
   fun onShowMessage(message: String) {}
 
   fun onPublishCoverageReport(coverageReport: Path) {}
+
+  fun onCachedTestLog(testLog: Path) {}
 }

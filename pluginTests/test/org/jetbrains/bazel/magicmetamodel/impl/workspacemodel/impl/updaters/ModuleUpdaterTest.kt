@@ -13,6 +13,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
+import com.intellij.testFramework.junit5.SystemProperty
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -49,6 +50,8 @@ val testLibraries: List<Library> =
 val testLibrariesByName: Map<String, Library> =
   testLibraries.associateBy { it.displayName }
 
+@SystemProperty("bsp.wrap.libraries.inside.modules", "false")
+@SystemProperty("idea.kotlin.plugin.use.k1", "true")
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
   private val defaultDependencies =

@@ -12,7 +12,7 @@ import com.jetbrains.python.run.PythonCommandLineState
 import com.jetbrains.python.run.PythonConfigurationType
 import com.jetbrains.python.run.PythonRunConfiguration
 import com.jetbrains.python.run.PythonScriptCommandLineState
-import com.jetbrains.python.sdk.PythonSdkUtil
+import com.jetbrains.python.sdk.legacy.PythonSdkUtil
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
@@ -22,7 +22,6 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -39,7 +38,7 @@ class PythonDebugCommandLineState(environment: ExecutionEnvironment, private val
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
   ) {
-    val configuration = environment.runProfile as BazelRunConfiguration
+    val configuration = BazelRunConfiguration.get(environment)
     val targetId = configuration.targets.single()
     val buildParams =
       CompileParams(
@@ -80,7 +79,7 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
     ?.sdk
     ?.name
     ?.let { PythonSdkUtil.getAllSdks().firstOrNull { sdk -> sdk.name == it } } // the first SDK matching the module SDK dependency
-    ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
+         ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
 
 private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {

@@ -5,6 +5,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
+import com.intellij.platform.workspace.storage.ModifiableWorkspaceEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
@@ -18,6 +19,8 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ModifiableBazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.AbstractBazelProjectDirectoriesEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
@@ -74,7 +77,7 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
 
 
   internal class Builder(result: BazelProjectDirectoriesEntityData?) : ModifiableWorkspaceEntityBase<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityData>(
-    result), BazelProjectDirectoriesEntity.Builder {
+    result), ModifiableBazelProjectDirectoriesEntity {
     internal constructor() : this(BazelProjectDirectoriesEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -95,7 +98,6 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       // Builder may switch to snapshot at any moment and lock entity data to modification
       this.currentEntityData = null
 
-      index(this, "projectRoot", this.projectRoot)
       index(this, "includedRoots", this.includedRoots)
       index(this, "excludedRoots", this.excludedRoots)
       index(this, "indexAdditionalFiles", this.indexAdditionalFiles)
@@ -110,7 +112,7 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         error("Field WorkspaceEntity#entitySource should be initialized")
       }
       if (!getEntityData().isProjectRootInitialized()) {
-        error("Field BazelProjectDirectoriesEntity#projectRoot should be initialized")
+        error("Field AbstractBazelProjectDirectoriesEntity#projectRoot should be initialized")
       }
       if (!getEntityData().isIncludedRootsInitialized()) {
         error("Field BazelProjectDirectoriesEntity#includedRoots should be initialized")
@@ -269,7 +271,7 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
 
   internal fun isIndexAdditionalFilesInitialized(): Boolean = ::indexAdditionalFiles.isInitialized
 
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<BazelProjectDirectoriesEntity> {
+  override fun wrapAsModifiable(diff: MutableEntityStorage): ModifiableWorkspaceEntity<BazelProjectDirectoriesEntity> {
     val modifiable = BazelProjectDirectoriesEntityImpl.Builder(null)
     modifiable.diff = diff
     modifiable.id = createEntityId()
@@ -305,7 +307,7 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     return BazelProjectDirectoriesEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
+  override fun createDetachedEntity(parents: List<ModifiableWorkspaceEntity<*>>): ModifiableWorkspaceEntity<*> {
     return BazelProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, indexAllFilesInIncludedRoots, indexAdditionalFiles,
                                          entitySource) {
     }

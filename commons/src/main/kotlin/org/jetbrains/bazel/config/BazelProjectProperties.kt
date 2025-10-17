@@ -14,7 +14,7 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.AbstractBazelProjectDirectoriesEntity
 
 data class BazelProjectPropertiesState(
   var isBazelProject: Boolean = false,
@@ -64,11 +64,11 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
     isBrokenBazelProject = true
   }
 
-  private fun getBazelProjectDirectoriesEntity(): BazelProjectDirectoriesEntity? =
+  private fun getBazelProjectDirectoriesEntity(): AbstractBazelProjectDirectoriesEntity? =
     WorkspaceModel
       .getInstance(project)
       .currentSnapshot
-      .entities(BazelProjectDirectoriesEntity::class.java)
+      .entities(AbstractBazelProjectDirectoriesEntity::class.java)
       .firstOrNull()
 }
 

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.HasAdditionalBazelOptions
@@ -184,6 +185,11 @@ class ExecuteService(
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
+    if (params.useJetBrainsTestRunner) {
+      // Ensure streamed test output for live UI in IDE
+      ensureTestOutputStreamed(command)
+    }
+
     params.testFilter?.let { testFilter ->
       command.options.add(BazelFlag.testFilter(testFilter))
     }
@@ -234,5 +240,10 @@ class ExecuteService(
         .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
         .waitAndGetResult(true)
     }
+  }
+
+  private fun ensureTestOutputStreamed(command: BazelCommand) {
+    // Add to the beginning to make overriding possible
+    command.options.addFirst(BazelFlag.testOutputStreamed())
   }
 }

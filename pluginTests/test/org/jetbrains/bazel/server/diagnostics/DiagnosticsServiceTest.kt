@@ -9,6 +9,7 @@ import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.io.path.createTempFile
 import org.jetbrains.bsp.protocol.Diagnostic as BspDiagnostic
 import org.jetbrains.bsp.protocol.Position as BspPosition
 
@@ -169,6 +170,56 @@ class DiagnosticsServiceTest {
                   |    val x: Int = "test"
                   |                 ^
             """.trimMargin(),
+          ),
+        ),
+      )
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
+  @Test
+  fun `parse multiple errors from color formatted command line output`() {
+    // given
+    val tmpFile = createTempFile().toAbsolutePath()
+    val output =
+      """
+        |[31m[1mERROR: [0mmodule extension @@googleapis+//:extensions.bzl%switched_rules does not generate repository "com_google_googleapis_imports", yet it is imported as "com_google_googleapis_imports" in the usage at https://bcr.bazel.build/modules/grpc/1.66.0.bcr.2/MODULE.bazel:39:31
+        |[31m[1mERROR: [0mResults may be incomplete as 1 extension failed.
+        |[31m[1mERROR: [0m$tmpFile:3:11: KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains
+        |[31m[1mERROR: [0mBuild did NOT complete successfully
+      """.trimMargin()
+
+    // when
+    val label = Label.parse("//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics")
+    val diagnostics = extractDiagnostics(output, label, isCommandLineFormattedOutput = true)
+
+    // then
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          textDocument = null,
+          buildTarget = label,
+          errorDiagnostic(
+            Position(-1, -1),
+            "module extension @@googleapis+//:extensions.bzl%switched_rules does not generate repository \"com_google_googleapis_imports\", yet it is imported as \"com_google_googleapis_imports\" in the usage at https://bcr.bazel.build/modules/grpc/1.66.0.bcr.2/MODULE.bazel:39:31",
+          ),
+          errorDiagnostic(
+            Position(-1, -1),
+            "Results may be incomplete as 1 extension failed.",
+          ),
+          errorDiagnostic(
+            Position(-1, -1),
+            "Build did NOT complete successfully",
+          ),
+        ),
+        publishDiagnosticsParams(
+          textDocument =
+            TextDocumentIdentifier(
+              Path("$tmpFile"),
+            ),
+          buildTarget = label,
+          errorDiagnostic(
+            Position(3, 11),
+            message = "KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains",
           ),
         ),
       )
@@ -822,7 +873,7 @@ class DiagnosticsServiceTest {
   }
 
   private fun publishDiagnosticsParams(
-    textDocument: TextDocumentIdentifier,
+    textDocument: TextDocumentIdentifier?,
     buildTarget: Label,
     vararg diagnostics: BspDiagnostic,
   ): PublishDiagnosticsParams =
@@ -849,6 +900,10 @@ class DiagnosticsServiceTest {
     return BspDiagnostic(Range(adjustedPosition, adjustedPosition), severity = severity, message = message)
   }
 
-  private fun extractDiagnostics(output: String, buildTarget: Label): List<PublishDiagnosticsParams> =
-    DiagnosticsService(workspacePath).extractDiagnostics(output, buildTarget, "originId")
+  private fun extractDiagnostics(
+    output: String,
+    buildTarget: Label,
+    isCommandLineFormattedOutput: Boolean = false,
+  ): List<PublishDiagnosticsParams> =
+    DiagnosticsService(workspacePath).extractDiagnostics(output, buildTarget, "originId", isCommandLineFormattedOutput)
 }

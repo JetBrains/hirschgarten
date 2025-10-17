@@ -81,7 +81,6 @@ class StaticAnalysisTest(
       additionalQodanaArguments = listOf(
         "--property=bsp.build.project.on.sync=true",
         "--property=idea.is.internal=true",
-        "--property=idea.kotlin.plugin.use.k2=true",
         "--report-dir /data/results/report",
         "--save-report",
         "--baseline ${analysisDef.qodanaBaseline}",
