@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.testing.TestRunner
 
 data class TaskStartParams(
   val taskId: TaskId,
@@ -12,7 +13,12 @@ data class TaskStartParams(
 
 sealed interface TaskStartData
 
-data class TestStart(val displayName: String, val location: Location? = null) : TaskStartData
+data class TestStart(
+  val displayName: String,
+  val location: Location? = null,
+  val parentName: String? = null,
+  val testRunner: TestRunner = TestRunner.UNKNOWN,
+) : TaskStartData
 
 data class TestTask(val target: Label) : TaskStartData
 
