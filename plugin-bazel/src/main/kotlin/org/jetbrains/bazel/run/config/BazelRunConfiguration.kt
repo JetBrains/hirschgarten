@@ -2,17 +2,21 @@ package org.jetbrains.bazel.run.config
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
+import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 
@@ -141,8 +145,8 @@ class BazelRunConfiguration internal constructor(
     element.addContent(bspElementState.clone())
   }
 
-  override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
-    SMTRunnerConsoleProperties(this, "BSP", executor)
+  override fun createTestConsoleProperties(executor: Executor): BazelSMTRunnerConsoleProperties =
+    BazelSMTRunnerConsoleProperties(this, "BSP", executor)
 
   override fun getAffectedTargets(): List<Label> = targets
 
@@ -151,5 +155,15 @@ class BazelRunConfiguration internal constructor(
     private const val BSP_STATE_TAG = "bsp-state"
     private const val HANDLER_STATE_TAG = "handler-state"
     private const val HANDLER_PROVIDER_ATTR = "handler-provider-id"
+  }
+
+  class BazelSMTRunnerConsoleProperties(
+    config: RunConfiguration,
+    testFrameworkName: @NlsSafe String,
+    executor: Executor,
+  ) : SMTRunnerConsoleProperties(config, testFrameworkName, executor) {
+    var smTestLocator: SMTestLocator? = null
+
+    override fun getTestLocator(): SMTestLocator? = this.smTestLocator
   }
 }
