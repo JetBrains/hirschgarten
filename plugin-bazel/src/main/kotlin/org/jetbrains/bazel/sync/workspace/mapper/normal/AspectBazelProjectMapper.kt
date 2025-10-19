@@ -118,7 +118,7 @@ class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
+                  isWorkspaceTarget(target, repoMapping, featureFlags)
                 } == true
               },
             )
