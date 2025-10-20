@@ -219,7 +219,9 @@ class DiagnosticsServiceTest {
           buildTarget = label,
           errorDiagnostic(
             Position(3, 11),
-            message = "KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains",
+            message =
+              "KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol" +
+                " { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains",
           ),
         ),
       )
