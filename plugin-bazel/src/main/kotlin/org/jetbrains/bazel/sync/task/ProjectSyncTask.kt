@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
@@ -115,6 +116,7 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
     saveAllFiles()
+    project.serviceAsync<ProjectViewService>().forceReparseCurrentProjectViewFiles()
     project.serviceAsync<SyncStatusService>().startSync()
   }
 
