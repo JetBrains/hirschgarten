@@ -21,7 +21,6 @@ class TargetTagsResolverTest {
   private lateinit var workspaceRoot: Path
   private lateinit var projectViewFile: Path
   private lateinit var dotBazelBspDirPath: Path
-  private lateinit var workspaceContext: WorkspaceContext
 
   @BeforeEach
   fun beforeEach() {
@@ -32,7 +31,6 @@ class TargetTagsResolverTest {
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
-    workspaceContext = createTestWorkspaceContext()
   }
 
   @Test
@@ -44,7 +42,7 @@ class TargetTagsResolverTest {
           it.executable = true
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
+    val tags = TargetTagsResolver().resolveTags(targetInfo)
 
     tags shouldBe setOf(Tag.APPLICATION)
   }
@@ -59,7 +57,7 @@ class TargetTagsResolverTest {
           executable = false
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
+    val tags = TargetTagsResolver().resolveTags(targetInfo)
 
     tags shouldBe setOf(Tag.LIBRARY)
   }
@@ -74,7 +72,7 @@ class TargetTagsResolverTest {
           it.executable = true
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
+    val tags = TargetTagsResolver().resolveTags(targetInfo)
 
     tags shouldBe setOf(Tag.TEST)
   }
@@ -88,7 +86,7 @@ class TargetTagsResolverTest {
           it.kind = "intellij_plugin_debug_target"
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
+    val tags = TargetTagsResolver().resolveTags(targetInfo)
 
     tags shouldBe setOf(Tag.INTELLIJ_PLUGIN, Tag.APPLICATION)
   }
@@ -103,7 +101,7 @@ class TargetTagsResolverTest {
           it.addTags("manual")
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
+    val tags = TargetTagsResolver().resolveTags(targetInfo)
 
     tags shouldBe setOf(Tag.LIBRARY, Tag.NO_IDE, Tag.MANUAL)
   }
@@ -119,7 +117,7 @@ class TargetTagsResolverTest {
           it.addTags("manual")
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
+    val tags = TargetTagsResolver().resolveTags(targetInfo)
 
     tags shouldBe setOf(Tag.APPLICATION, Tag.NO_IDE, Tag.MANUAL)
   }
@@ -136,33 +134,8 @@ class TargetTagsResolverTest {
           it.kind = name
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
+    val tags = TargetTagsResolver().resolveTags(targetInfo)
 
     tags shouldBe setOf(Tag.LIBRARY)
   }
-
-  private fun createTestWorkspaceContext(): WorkspaceContext =
-    WorkspaceContext(
-      targets = emptyList(),
-      directories = emptyList(),
-      buildFlags = emptyList(),
-      syncFlags = emptyList(),
-      debugFlags = emptyList(),
-      bazelBinary = null,
-      allowManualTargetsSync = false,
-      dotBazelBspDirPath = dotBazelBspDirPath,
-      importDepth = -1,
-      enabledRules = emptyList(),
-      ideJavaHomeOverride = null,
-      shardSync = false,
-      targetShardSize = 1000,
-      shardingApproach = null,
-      importRunConfigurations = emptyList(),
-      gazelleTarget = null,
-      indexAllFilesInDirectories = false,
-      pythonCodeGeneratorRuleNames = emptyList(),
-      importIjars = true,
-      deriveInstrumentationFilterFromTargets = false,
-      indexAdditionalFilesInDirectories = emptyList(),
-    )
 }
