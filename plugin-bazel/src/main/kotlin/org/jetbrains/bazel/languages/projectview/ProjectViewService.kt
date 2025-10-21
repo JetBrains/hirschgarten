@@ -6,14 +6,13 @@ import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.ex.dummy.DummyFileSystem
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
+import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
@@ -28,21 +27,6 @@ import kotlin.io.path.notExists
  */
 @Service(Service.Level.PROJECT)
 class ProjectViewService(private val project: Project) {
-  val defaultProjectViewVirtualFile: VirtualFile by lazy {
-    runBlockingCancellable {
-      writeAction {
-        val vfs = DummyFileSystem.getInstance()
-          .createRoot("tmp")
-          .createChildData(null, ".bazelproject")
-
-        val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir).format(".")
-        vfs.setBinaryContent(content.toByteArray())
-
-        return@writeAction vfs
-      }
-    }
-  }
-
   /**
    * Gets the current ProjectView, parsing it if necessary.
    * Uses caching with file modification time checking for efficiency.
@@ -85,23 +69,34 @@ class ProjectViewService(private val project: Project) {
   }
 
   private fun parseProjectView(projectViewPath: Path): ProjectView {
-    val defaultProjectViewVirtualFile = defaultProjectViewVirtualFile
     return runBlockingCancellable {
-      val virtualFile = readAction {
-        VirtualFileManager.getInstance().findFileByNioPath(projectViewPath)
-          ?: defaultProjectViewVirtualFile
-      }
+      parseProjectViewAsync(projectViewPath) ?: getDefaultProjectView()
+    }
+  }
 
-      writeAction {
-        PsiDocumentManager.getInstance(project)
-          .reparseFiles(listOf(virtualFile), false)
-      }
+  private suspend fun parseProjectViewAsync(projectViewPath: Path): ProjectView? = readAction {
+    val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(projectViewPath)
+      ?: return@readAction null
+    val psi = PsiManager.getInstance(project).findFile(virtualFile) as? ProjectViewPsiFile
+      ?: return@readAction null
+    return@readAction ProjectView.fromProjectViewPsiFile(psi)
+  }
 
-      readAction {
-        val psi = PsiManager.getInstance(project).findFile(virtualFile) as? ProjectViewPsiFile
-          ?: error("Could not parse project view file at $projectViewPath")
-        return@readAction ProjectView.fromProjectViewPsiFile(psi)
-      }
+  private fun getDefaultProjectView(): ProjectView {
+    val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir).format(".")
+    val psiFile = PsiFileFactory.getInstance(project)
+      .createFileFromText(".bazelproject", ProjectViewLanguage, content) as ProjectViewPsiFile
+    return ProjectView.fromProjectViewPsiFile(psiFile)
+  }
+
+  suspend fun forceReparseCurrentProjectViewFiles() {
+    val projectViewPath = findProjectViewPath()
+    val imports = parseProjectViewAsync(projectViewPath)?.imports ?: emptyList()
+    val projectViewVFile = VirtualFileManager.getInstance().findFileByNioPath(projectViewPath) ?: return
+
+    writeAction {
+      PsiDocumentManager.getInstance(project)
+        .reparseFiles(imports + projectViewVFile, false)
     }
   }
 
