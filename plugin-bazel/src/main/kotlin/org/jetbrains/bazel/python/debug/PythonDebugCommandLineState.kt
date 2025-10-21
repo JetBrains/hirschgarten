@@ -79,7 +79,7 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
     ?.sdk
     ?.name
     ?.let { PythonSdkUtil.getAllSdks().firstOrNull { sdk -> sdk.name == it } } // the first SDK matching the module SDK dependency
-         ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
+    ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
 
 private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {

@@ -330,6 +330,11 @@
       key="bazel.enable.jvm.fastbuild"
     />
     <registryKey
+            defaultValue="false"
+          description="By default jdk resolver will use at first java runtime info as source of java version. Setting this flag to true will change behavior to rely on toolchain configuration at first"
+          key="bazel.jdk.resolver.toolchain.first"
+    />
+    <registryKey
       defaultValue="25"
       description="Maximum number of attempts to connect with the Starlark debugger socket"
       key="bazel.starlark.debug.socket.attempts"

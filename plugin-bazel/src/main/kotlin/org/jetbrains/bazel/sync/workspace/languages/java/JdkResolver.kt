@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.java
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -35,28 +36,15 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
 
   private fun pickAnyCandidate(candidates: Sequence<JdkCandidate>): JdkCandidate? = candidates.firstOrNull()
 
-  private fun resolveJdkData(targetInfo: TargetInfo): JdkCandidateData? =
-    if (targetInfo.hasJavaRuntimeInfo()) {
-      val javaRuntimeInfo = targetInfo.javaRuntimeInfo
-      val javaHome = if (javaRuntimeInfo.hasJavaHome()) javaRuntimeInfo.javaHome else null
-
-      JdkCandidateData(
-        isRuntime = true,
-        javaHome = javaHome?.let(bazelPathsResolver::resolve),
-      )
-    } else if (targetInfo.hasJavaToolchainInfo()) {
-      val javaToolchainInfo = targetInfo.javaToolchainInfo
-      val javaHome = if (javaToolchainInfo.hasJavaHome()) javaToolchainInfo.javaHome else null
-
-      JdkCandidateData(
-        isRuntime = false,
-        javaHome = javaHome?.let(bazelPathsResolver::resolve),
-        sourceVersion = javaToolchainInfo.sourceVersion,
-        targetVersion = javaToolchainInfo.targetVersion,
-      )
+  private fun resolveJdkData(targetInfo: TargetInfo): JdkCandidateData? {
+    val jdkCandidateProviders = mutableListOf(::javaRuntimeInfoJdkCandidateProvider)
+    if (BazelFeatureFlags.isJdkResolverToolchainFirst) {
+      jdkCandidateProviders.add(0, ::javaToolchainInfoJdkCandidateProvider)
     } else {
-      null
+      jdkCandidateProviders.add(::javaToolchainInfoJdkCandidateProvider)
     }
+    return jdkCandidateProviders.firstNotNullOfOrNull { it(targetInfo, bazelPathsResolver) }
+  }
 
   private inner class JdkCandidate(private val data: JdkCandidateData) {
     val sourceVersion: String?
@@ -94,4 +82,32 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
       .sortedByDescending { it.size }
       .map { it.first() }
       .asSequence()
+
+  companion object {
+    private fun javaRuntimeInfoJdkCandidateProvider(targetInfo: TargetInfo, bazelPathsResolver: BazelPathsResolver): JdkCandidateData? {
+      if (targetInfo.hasJavaRuntimeInfo()) {
+        val javaRuntimeInfo = targetInfo.javaRuntimeInfo
+        val javaHome = if (javaRuntimeInfo.hasJavaHome()) javaRuntimeInfo.javaHome else null
+
+        JdkCandidateData(
+          isRuntime = true,
+          javaHome = javaHome?.let(bazelPathsResolver::resolve),
+        )
+      }
+      return null
+    }
+
+    private fun javaToolchainInfoJdkCandidateProvider(targetInfo: TargetInfo, bazelPathsResolver: BazelPathsResolver): JdkCandidateData? {
+      val javaToolchainInfo = targetInfo.javaToolchainInfo
+      val javaHome = if (javaToolchainInfo.hasJavaHome()) javaToolchainInfo.javaHome else null
+
+      JdkCandidateData(
+        isRuntime = false,
+        javaHome = javaHome?.let(bazelPathsResolver::resolve),
+        sourceVersion = javaToolchainInfo.sourceVersion,
+        targetVersion = javaToolchainInfo.targetVersion,
+      )
+      return null
+    }
+  }
 }
