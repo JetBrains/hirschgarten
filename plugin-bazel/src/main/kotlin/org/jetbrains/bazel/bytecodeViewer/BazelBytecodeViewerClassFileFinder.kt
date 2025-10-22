@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bytecodeViewer
 
+import com.intellij.byteCodeViewer.BytecodeViewerClassFileFinder
 import com.intellij.ide.util.JavaAnonymousClassesHelper
 import com.intellij.ide.util.JavaLocalClassesHelper
 import com.intellij.openapi.project.Project
@@ -16,7 +17,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtil
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
-import org.jetbrains.bazel.sdkcompat.bytecodeViewer.BytecodeViewerClassFileFinderCompat
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
@@ -25,7 +25,7 @@ import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.extension
 
-class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinderCompat {
+class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
   override fun findClass(element: PsiClass, containing: PsiClass?): VirtualFile? {
     val targetElement = element.containingClass ?: element
     val project = targetElement.project

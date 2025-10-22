@@ -281,6 +281,10 @@
     <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.DefaultProjectViewSectionProvider"/>
   </extensions>
 
+  <extensions defaultExtensionNs="ByteCodeViewer">
+    <classFileFinder implementation="org.jetbrains.bazel.bytecodeViewer.BazelBytecodeViewerClassFileFinder"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <registryKey
       defaultValue="false"
