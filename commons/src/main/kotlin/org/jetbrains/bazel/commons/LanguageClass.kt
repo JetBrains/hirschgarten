@@ -15,25 +15,34 @@
  */
 package org.jetbrains.bazel.commons
 
-/** Language classes.  */
-enum class LanguageClass(val languageName: String, private val recognizedFilenameExtensions: Set<String>) {
-  GENERIC("generic", setOf()),
-  C("c", setOf("c", "cc", "cpp", "h", "hh", "hpp")),
-  JAVA("java", setOf("java")),
-  ANDROID("android", setOf("aidl")),
-  JAVASCRIPT("javascript", setOf("js", "applejs")),
-  TYPESCRIPT("typescript", setOf("ts", "ats")),
-  DART("dart", setOf("dart")),
-  GO("go", setOf("go")),
-  PYTHON("python", setOf("py", "pyw")),
-  SCALA("scala", setOf("scala")),
-  KOTLIN("kotlin", setOf("kt")),
-  THRIFT("thrift", setOf("thrift")),
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+
+/** Language classes.
+ * serialId is being used in serialization - keep it unchanged
+ * */
+enum class LanguageClass(
+  val serialId: Int,
+  val languageName: String,
+  private val recognizedFilenameExtensions: Set<String>,
+) {
+  GENERIC(0, "generic", setOf()),
+  JAVA(2, "java", setOf("java")),
+  JAVASCRIPT(4, "javascript", setOf("js", "applejs")),
+  TYPESCRIPT(5, "typescript", setOf("ts", "ats")),
+  DART(6, "dart", setOf("dart")),
+  GO(7, "go", setOf("go")),
+  PYTHON(8, "python", setOf("py", "pyw")),
+  SCALA(9, "scala", setOf("scala")),
+  KOTLIN(10, "kotlin", setOf("kt")),
+  THRIFT(11, "thrift", setOf("thrift")),
+  PROTOBUF(12, "protobuf", setOf("proto", "protodevel")),
   ;
 
   override fun toString(): String = name
 
   companion object {
+    private val VALUE_BY_SERIAL_ID: Int2ObjectOpenHashMap<LanguageClass> =
+      Int2ObjectOpenHashMap(LanguageClass.entries.associateBy { it.serialId })
     private val RECOGNIZED_EXTENSIONS: Map<String, LanguageClass> =
       extensionToClassMap()
 
@@ -65,14 +74,15 @@ enum class LanguageClass(val languageName: String, private val recognizedFilenam
         Language.JAVA -> JAVA
         Language.GO -> GO
         Language.SCALA -> SCALA
-        Language.CPP -> C
         Language.KOTLIN -> KOTLIN
         Language.PYTHON -> PYTHON
         Language.THRIFT -> THRIFT
-        Language.ANDROID -> ANDROID
+        Language.PROTOBUF -> PROTOBUF
       }
 
     /** Returns the LanguageClass associated with the given filename extension, if it's recognized.  */
     fun fromExtension(filenameExtension: String): LanguageClass? = RECOGNIZED_EXTENSIONS[filenameExtension]
+
+    fun fromSerialId(id: Int): LanguageClass? = VALUE_BY_SERIAL_ID.get(id)
   }
 }

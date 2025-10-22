@@ -3,7 +3,6 @@ package org.jetbrains.bazel.commons.constants
 object Constants {
   const val NAME: String = "bazelbsp"
   const val VERSION: String = "3.2.0"
-  const val CPP: String = "cpp"
   const val BAZEL_BUILD_COMMAND: String = "build"
   const val BAZEL_TEST_COMMAND: String = "test"
   const val BAZEL_COVERAGE_COMMAND: String = "coverage"
@@ -16,10 +15,13 @@ object Constants {
 
   const val WORKSPACE_FILE_NAME: String = "WORKSPACE"
   const val MODULE_BAZEL_FILE_NAME = "MODULE.bazel"
+  const val BAZELISK_VERSION_FILE_NAME = ".bazelversion"
+  const val BAZELISK_RC_FILE_NAME = ".bazeliskrc"
   val WORKSPACE_FILE_NAMES = listOf(MODULE_BAZEL_FILE_NAME, WORKSPACE_FILE_NAME, "WORKSPACE.bazel", "WORKSPACE.bzlmod")
   val BUILD_FILE_NAMES = listOf("BUILD.bazel", "BUILD")
+  val BAZELISK_FILE_NAMES = listOf(BAZELISK_VERSION_FILE_NAME, BAZELISK_RC_FILE_NAME)
   val SUPPORTED_EXTENSIONS = listOf("bazel", "bazelproject", "bzlmod", "bzl")
-  val SUPPORTED_CONFIG_FILE_NAMES = WORKSPACE_FILE_NAMES + BUILD_FILE_NAMES
+  val SUPPORTED_CONFIG_FILE_NAMES = WORKSPACE_FILE_NAMES + BUILD_FILE_NAMES + BAZELISK_FILE_NAMES
 
   fun defaultBuildFileName() = BUILD_FILE_NAMES.first()
 

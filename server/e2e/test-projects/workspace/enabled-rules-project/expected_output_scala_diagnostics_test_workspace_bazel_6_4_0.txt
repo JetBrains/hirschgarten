@@ -1,0 +1,4 @@
+PublishDiagnosticsParams(textDocument=TextDocumentIdentifier(path=Example.scala), buildTarget=@//scala_targets:library, originId=some-id, diagnostics=[Diagnostic(range=Range(start=Position(line=4, character=2), end=Position(line=4, character=2)), message=match may not be exhaustive.
+It would fail on the following input: C(_)
+  aa match {
+  ^, severity=WARNING, code=null, codeDescription=null, source=null, tags=null, relatedInformation=null)], reset=true)

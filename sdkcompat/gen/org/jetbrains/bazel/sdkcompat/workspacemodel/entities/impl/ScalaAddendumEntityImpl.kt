@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.sdkcompat.workspacemodel.entities.impl
 
+import com.intellij.platform.workspace.jps.entities.ModifiableModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
+import com.intellij.platform.workspace.storage.ModifiableWorkspaceEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
@@ -23,17 +25,19 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ModifiableScalaAddendumEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEntityData) : ScalaAddendumEntity,
-                                                                                          WorkspaceEntityBase(dataSource) {
+internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEntityData) : ScalaAddendumEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId =
-      ConnectionId.create(ModuleEntity::class.java, ScalaAddendumEntity::class.java, ConnectionId.ConnectionType.ONE_TO_ONE, false)
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, ScalaAddendumEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -73,8 +77,8 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
   }
 
 
-  internal class Builder(result: ScalaAddendumEntityData?) :
-    ModifiableWorkspaceEntityBase<ScalaAddendumEntity, ScalaAddendumEntityData>(result), ScalaAddendumEntity.Builder {
+  internal class Builder(result: ScalaAddendumEntityData?) : ModifiableWorkspaceEntityBase<ScalaAddendumEntity, ScalaAddendumEntityData>(
+    result), ModifiableScalaAddendumEntity {
     internal constructor() : this(ScalaAddendumEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -215,16 +219,16 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
         sdkClasspathsUpdater.invoke(value)
       }
 
-    override var module: ModuleEntity.Builder
+    override var module: ModifiableModuleEntity
       get() {
         val _diff = diff
         return if (_diff != null) {
           @OptIn(EntityStorageInstrumentationApi::class)
-          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
-          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModifiableModuleEntity)
+          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModifiableModuleEntity)
         }
         else {
-          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
+          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModifiableModuleEntity
         }
       }
       set(value) {
@@ -265,7 +269,7 @@ internal class ScalaAddendumEntityData : WorkspaceEntityData<ScalaAddendumEntity
   internal fun isScalacOptionsInitialized(): Boolean = ::scalacOptions.isInitialized
   internal fun isSdkClasspathsInitialized(): Boolean = ::sdkClasspaths.isInitialized
 
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<ScalaAddendumEntity> {
+  override fun wrapAsModifiable(diff: MutableEntityStorage): ModifiableWorkspaceEntity<ScalaAddendumEntity> {
     val modifiable = ScalaAddendumEntityImpl.Builder(null)
     modifiable.diff = diff
     modifiable.id = createEntityId()
@@ -285,8 +289,7 @@ internal class ScalaAddendumEntityData : WorkspaceEntityData<ScalaAddendumEntity
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity"
-    ) as EntityMetadata
+      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity") as EntityMetadata
   }
 
   override fun clone(): ScalaAddendumEntityData {
@@ -301,9 +304,9 @@ internal class ScalaAddendumEntityData : WorkspaceEntityData<ScalaAddendumEntity
     return ScalaAddendumEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
+  override fun createDetachedEntity(parents: List<ModifiableWorkspaceEntity<*>>): ModifiableWorkspaceEntity<*> {
     return ScalaAddendumEntity(compilerVersion, scalacOptions, sdkClasspaths, entitySource) {
-      parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
+      parents.filterIsInstance<ModifiableModuleEntity>().singleOrNull()?.let { this.module = it }
     }
   }
 

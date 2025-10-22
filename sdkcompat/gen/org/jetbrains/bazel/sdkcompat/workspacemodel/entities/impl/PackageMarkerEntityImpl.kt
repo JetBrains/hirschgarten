@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.sdkcompat.workspacemodel.entities.impl
 
+import com.intellij.platform.workspace.jps.entities.ModifiableModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
+import com.intellij.platform.workspace.storage.ModifiableWorkspaceEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
@@ -21,17 +23,18 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ModifiablePackageMarkerEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEntityData) : PackageMarkerEntity,
-                                                                                          WorkspaceEntityBase(dataSource) {
+internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEntityData) : PackageMarkerEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId =
-      ConnectionId.create(ModuleEntity::class.java, PackageMarkerEntity::class.java, ConnectionId.ConnectionType.ONE_TO_MANY, false)
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, PackageMarkerEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_MANY, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -65,8 +68,8 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
   }
 
 
-  internal class Builder(result: PackageMarkerEntityData?) :
-    ModifiableWorkspaceEntityBase<PackageMarkerEntity, PackageMarkerEntityData>(result), PackageMarkerEntity.Builder {
+  internal class Builder(result: PackageMarkerEntityData?) : ModifiableWorkspaceEntityBase<PackageMarkerEntity, PackageMarkerEntityData>(
+    result), ModifiablePackageMarkerEntity {
     internal constructor() : this(PackageMarkerEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -157,16 +160,16 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
         changedProperty.add("packagePrefix")
       }
 
-    override var module: ModuleEntity.Builder
+    override var module: ModifiableModuleEntity
       get() {
         val _diff = diff
         return if (_diff != null) {
           @OptIn(EntityStorageInstrumentationApi::class)
-          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
-          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModifiableModuleEntity)
+          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModifiableModuleEntity)
         }
         else {
-          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
+          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModifiableModuleEntity
         }
       }
       set(value) {
@@ -209,7 +212,7 @@ internal class PackageMarkerEntityData : WorkspaceEntityData<PackageMarkerEntity
   internal fun isRootInitialized(): Boolean = ::root.isInitialized
   internal fun isPackagePrefixInitialized(): Boolean = ::packagePrefix.isInitialized
 
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<PackageMarkerEntity> {
+  override fun wrapAsModifiable(diff: MutableEntityStorage): ModifiableWorkspaceEntity<PackageMarkerEntity> {
     val modifiable = PackageMarkerEntityImpl.Builder(null)
     modifiable.diff = diff
     modifiable.id = createEntityId()
@@ -229,17 +232,16 @@ internal class PackageMarkerEntityData : WorkspaceEntityData<PackageMarkerEntity
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity"
-    ) as EntityMetadata
+      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity") as EntityMetadata
   }
 
   override fun getEntityInterface(): Class<out WorkspaceEntity> {
     return PackageMarkerEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
+  override fun createDetachedEntity(parents: List<ModifiableWorkspaceEntity<*>>): ModifiableWorkspaceEntity<*> {
     return PackageMarkerEntity(root, packagePrefix, entitySource) {
-      parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
+      parents.filterIsInstance<ModifiableModuleEntity>().singleOrNull()?.let { this.module = it }
     }
   }
 

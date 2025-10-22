@@ -1,9 +1,10 @@
 <idea-plugin>
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
+    <!-- IndexAdditionalFilesSyncHook iterates over all added instances of ModuleEntity, so it has to come after JvmSyncHook -->
     <projectSyncHook
       implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"
-      order="after BazelRepoMappingSyncHook, after TargetUtilsSyncHook, after DirectoriesSyncHook"
+      order="after BazelRepoMappingSyncHook, after TargetUtilsSyncHook, after DirectoriesSyncHook, before IndexAdditionalFilesSyncHook"
     />
 
     <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider" />
@@ -19,9 +20,12 @@
     <bazelCoverageClassNodeDecoratorPsiElementClassifier
       implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
+    <testLocatorProvider implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider" />
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.HotSwapTestBeforeRunTaskProvider" />
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.HotSwapRunBeforeRunTaskProvider" />
     <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher" />
     <java.elementFinder implementation="org.jetbrains.bazel.java.search.BazelJavaClassFinder" />
     <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger" />

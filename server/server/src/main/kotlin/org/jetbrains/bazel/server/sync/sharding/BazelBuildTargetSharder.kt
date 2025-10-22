@@ -16,15 +16,15 @@
 package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.ShardingApproach
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.model.FirstPhaseProject
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
-import org.jetbrains.bazel.workspacecontext.ShardingApproach
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import kotlin.math.min
@@ -45,12 +45,12 @@ object BazelBuildTargetSharder {
   suspend fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    targets: TargetsSpec,
+    targets: TargetCollection,
     context: WorkspaceContext,
     featureFlags: FeatureFlags,
     bazelRunner: BazelRunner,
     bspClientLogger: BspClientLogger,
-    firstPhaseProject: FirstPhaseProject?,
+    firstPhaseProject: PhasedSyncProject?,
   ): ShardedTargetsResult {
     if (firstPhaseProject != null) {
       return ShardedTargetsResult(
@@ -102,10 +102,14 @@ object BazelBuildTargetSharder {
   }
 
   private fun getShardingApproach(context: WorkspaceContext): ShardingApproach =
-    context.shardingApproachSpec.value ?: ShardingApproach.QUERY_AND_SHARD
+    context.shardingApproach?.let {
+      ShardingApproach.fromString(
+        it,
+      ) ?: ShardingApproach.QUERY_AND_SHARD
+    } ?: ShardingApproach.QUERY_AND_SHARD
 
   /** Number of individual targets per blaze build shard.  */
-  private fun getTargetShardSize(context: WorkspaceContext): Int = min(context.targetShardSize.value, MAX_TARGET_SHARD_SIZE)
+  private fun getTargetShardSize(context: WorkspaceContext): Int = min(context.targetShardSize, MAX_TARGET_SHARD_SIZE)
 
   /**
    *  Expand wildcard target patterns into individual bazel targets.

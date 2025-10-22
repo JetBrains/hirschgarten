@@ -7,9 +7,6 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
-import com.intellij.platform.workspace.jps.JpsFileDependentEntitySource
-import com.intellij.platform.workspace.jps.JpsFileEntitySource
-import com.intellij.platform.workspace.jps.JpsGlobalFileEntitySource
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -40,6 +37,31 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     syncScope: ProjectSyncScope,
     taskId: String,
   ) {
+    val sourceFilter: (EntitySource) -> Boolean =
+      when (syncScope) {
+        is FullProjectSync -> { entitySource -> entitySource is BazelEntitySource }
+        is PartialProjectSync -> {
+          val moduleNames =
+            lazy {
+              syncScope.targetsToSync
+                .map { it.formatAsModuleName(project) }
+            }
+
+          object : (EntitySource) -> Boolean {
+            override fun invoke(entitySource: EntitySource): Boolean =
+              entitySource is BazelModuleEntitySource &&
+                entitySource.moduleName in moduleNames.value
+          }
+        }
+      }
+
+    fun MutableEntityStorage.replaceBySource() {
+      replaceBySource(
+        sourceFilter = sourceFilter,
+        replaceWith = mutableEntityStorage,
+      )
+    }
+
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "apply-changes-on-workspace-model",
@@ -50,7 +72,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
         repeat(MAX_REPLACE_WSM_ATTEMPTS) { attemptIdx ->
           val snapshot = workspaceModel.getBuilderSnapshot()
           bspTracer.spanBuilder("replacebysource.in.apply.on.workspace.model.ms").use {
-            snapshot.builder.replaceBySource({ it.isBazelRelevant(project, syncScope) }, mutableEntityStorage)
+            snapshot.builder.replaceBySource()
           }
           // quickly return if there are no changes to apply
           if (!snapshot.areEntitiesChanged()) return@useWithScope
@@ -75,42 +97,13 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
           BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.fallback", MAX_REPLACE_WSM_ATTEMPTS),
         )
         workspaceModel.update(BazelPluginBundle.message("console.task.model.apply.changes.wsm")) { builder ->
-          builder.replaceBySource({ it.isBazelRelevant(project, syncScope) }, mutableEntityStorage)
+          builder.replaceBySource()
         }
       }
     }
 
     postApplyActions.forEach { it() }
   }
-
-  private fun EntitySource.isBazelRelevant(project: Project, syncScope: ProjectSyncScope): Boolean =
-    when (syncScope) {
-      is FullProjectSync -> isBazelRelevantForFullSync()
-      is PartialProjectSync -> isBazelRelevantForPartialSync(project, syncScope)
-    }
-
-  private fun EntitySource.isBazelRelevantForPartialSync(project: Project, syncScope: PartialProjectSync): Boolean {
-    val targetsToSyncNames = syncScope.targetsToSync.map { it.formatAsModuleName(project) }
-
-    if (this is BazelModuleEntitySource) {
-      return moduleName in targetsToSyncNames
-    }
-
-    return false
-  }
-
-  private fun EntitySource.isBazelRelevantForFullSync(): Boolean =
-    when (this) {
-      // avoid touching global sources
-      is JpsGlobalFileEntitySource -> false
-
-      is JpsFileEntitySource,
-      is JpsFileDependentEntitySource,
-      is BazelEntitySource,
-      -> true
-
-      else -> false
-    }
 }
 
 val AllProjectStructuresDiff.workspaceModelDiff: WorkspaceModelProjectStructureDiff

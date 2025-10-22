@@ -21,6 +21,12 @@ def filter_not_none(xs):
 def flatten(xss):
     return [x for xs in xss for x in xs]
 
+# Provider used by the bsp_target_info_aspect. Holds aspect data returned from
+# `core.bzl`.
+BspAspectInfo = provider(
+    fields = ["bsp_info"],
+)
+
 def flatmap(f, xs):
     return flatten(map(f, xs))
 
@@ -145,7 +151,7 @@ def log_warn(text):
     log(text, "WARN")
 
 def is_valid_aspect_target(target):
-    return hasattr(target, "bsp_info")
+    return BspAspectInfo in target
 
 def _collect_target_from_attr(rule_attrs, attr_name, result):
     """Collects the targets from the given attr into the result."""
@@ -296,8 +302,7 @@ COMPILE_DEPS = [
     "embed", # from rules_go
     "compilers",  # From go_proto_library
     "java_lib",  # From old proto_library rules
-    "proc_macro_deps",
-    ${cppDeps}
+    "proc_macro_deps"
 ]
 
 PRIVATE_COMPILE_DEPS = [

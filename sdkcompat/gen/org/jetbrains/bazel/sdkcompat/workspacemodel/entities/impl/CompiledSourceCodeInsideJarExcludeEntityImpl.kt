@@ -6,6 +6,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
+import com.intellij.platform.workspace.storage.ModifiableWorkspaceEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.WorkspaceEntity
@@ -23,12 +24,13 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ModifiableCompiledSourceCodeInsideJarExcludeEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: CompiledSourceCodeInsideJarExcludeEntityData) :
-  CompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(dataSource) {
+internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: CompiledSourceCodeInsideJarExcludeEntityData) : CompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
 
@@ -69,9 +71,8 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
   }
 
 
-  internal class Builder(result: CompiledSourceCodeInsideJarExcludeEntityData?) :
-    ModifiableWorkspaceEntityBase<CompiledSourceCodeInsideJarExcludeEntity, CompiledSourceCodeInsideJarExcludeEntityData>(result),
-    CompiledSourceCodeInsideJarExcludeEntity.Builder {
+  internal class Builder(result: CompiledSourceCodeInsideJarExcludeEntityData?) : ModifiableWorkspaceEntityBase<CompiledSourceCodeInsideJarExcludeEntity, CompiledSourceCodeInsideJarExcludeEntityData>(
+    result), ModifiableCompiledSourceCodeInsideJarExcludeEntity {
     internal constructor() : this(CompiledSourceCodeInsideJarExcludeEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -132,10 +133,8 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
     override fun relabel(dataSource: WorkspaceEntity, parents: Set<WorkspaceEntity>?) {
       dataSource as CompiledSourceCodeInsideJarExcludeEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
-      if (this.relativePathsInsideJarToExclude != dataSource.relativePathsInsideJarToExclude) this.relativePathsInsideJarToExclude =
-        dataSource.relativePathsInsideJarToExclude.toMutableSet()
-      if (this.librariesFromInternalTargetsUrls != dataSource.librariesFromInternalTargetsUrls) this.librariesFromInternalTargetsUrls =
-        dataSource.librariesFromInternalTargetsUrls.toMutableSet()
+      if (this.relativePathsInsideJarToExclude != dataSource.relativePathsInsideJarToExclude) this.relativePathsInsideJarToExclude = dataSource.relativePathsInsideJarToExclude.toMutableSet()
+      if (this.librariesFromInternalTargetsUrls != dataSource.librariesFromInternalTargetsUrls) this.librariesFromInternalTargetsUrls = dataSource.librariesFromInternalTargetsUrls.toMutableSet()
       if (this.excludeId != dataSource.excludeId) this.excludeId = dataSource.excludeId
       updateChildToParentReferences(parents)
     }
@@ -208,8 +207,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityData<CompiledSourceCodeInsideJarExcludeEntity>(),
-                                                              SoftLinkable {
+internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityData<CompiledSourceCodeInsideJarExcludeEntity>(), SoftLinkable {
   lateinit var relativePathsInsideJarToExclude: MutableSet<String>
   lateinit var librariesFromInternalTargetsUrls: MutableSet<String>
   lateinit var excludeId: CompiledSourceCodeInsideJarExcludeId
@@ -267,7 +265,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
     return changed
   }
 
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<CompiledSourceCodeInsideJarExcludeEntity> {
+  override fun wrapAsModifiable(diff: MutableEntityStorage): ModifiableWorkspaceEntity<CompiledSourceCodeInsideJarExcludeEntity> {
     val modifiable = CompiledSourceCodeInsideJarExcludeEntityImpl.Builder(null)
     modifiable.diff = diff
     modifiable.id = createEntityId()
@@ -287,8 +285,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity"
-    ) as EntityMetadata
+      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity") as EntityMetadata
   }
 
   override fun clone(): CompiledSourceCodeInsideJarExcludeEntityData {
@@ -303,10 +300,9 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
     return CompiledSourceCodeInsideJarExcludeEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return CompiledSourceCodeInsideJarExcludeEntity(
-      relativePathsInsideJarToExclude, librariesFromInternalTargetsUrls, excludeId, entitySource
-    ) {
+  override fun createDetachedEntity(parents: List<ModifiableWorkspaceEntity<*>>): ModifiableWorkspaceEntity<*> {
+    return CompiledSourceCodeInsideJarExcludeEntity(relativePathsInsideJarToExclude, librariesFromInternalTargetsUrls, excludeId,
+                                                    entitySource) {
     }
   }
 

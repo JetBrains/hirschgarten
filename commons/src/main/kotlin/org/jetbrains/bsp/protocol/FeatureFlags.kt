@@ -1,10 +1,12 @@
 package org.jetbrains.bsp.protocol
 
+/**
+ * This is NOT the source of truth for feature flag settings.
+ * They are set based on registry values in org.jetbrains.bazel.config.BazelFeatureFlags
+ */
 data class FeatureFlags(
   val isPythonSupportEnabled: Boolean = false,
-  val isAndroidSupportEnabled: Boolean = false,
   val isGoSupportEnabled: Boolean = false,
-  val isCppSupportEnabled: Boolean = false,
   val isPropagateExportsFromDepsEnabled: Boolean = true,
   val isSharedSourceSupportEnabled: Boolean = false,
   /** Bazel specific */

@@ -41,8 +41,8 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
     when (data) {
       is TestTask -> {
         // OutputToGeneralTestEventsConverter.MyServiceMessageVisitor.visitServiceMessage ignores the first testingStarted event
-        handler.notifyTextAvailable(ServiceMessageBuilder("testingStarted").toString(), ProcessOutputType.STDOUT)
-        handler.notifyTextAvailable(ServiceMessageBuilder("testingStarted").toString(), ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(ServiceMessageBuilder("testingStarted").toStringWithNewline(), ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(ServiceMessageBuilder("testingStarted").toStringWithNewline(), ProcessOutputType.STDOUT)
       }
 
       is TestStart -> {
@@ -62,7 +62,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
               .addAttribute("locationHint", data.locationHint)
               .toString()
           }
-        handler.notifyTextAvailable(serviceMessage, ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(serviceMessage.toStringWithNewline(), ProcessOutputType.STDOUT)
       }
     }
   }
@@ -83,7 +83,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
             processTestSuiteFinish(taskId, data)
           }
 
-        handler.notifyTextAvailable(serviceMessage.toString(), ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(serviceMessage.toStringWithNewline(), ProcessOutputType.STDOUT)
       }
     }
   }
@@ -103,7 +103,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
   // For compatibility with older BSP servers
   // TODO: Log messages in the correct place
   override fun onLogMessage(message: String) {
-    val messageWithNewline = if (message.endsWith("\n")) message else "$message\n"
+    val messageWithNewline = message.toStringWithNewline()
     ansiEscapeDecoder.escapeText(messageWithNewline, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
       handler.notifyTextAvailable(s, key)
     }
@@ -140,12 +140,15 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
       }
 
     if (failureMessageBuilder != null) {
+      // if the error message is empty or blank, IntelliJ will see the test case as successful
+      val errorMessage =
+        details?.errorMessage?.takeIf { it.isNotBlank() } ?: "Failed"
       failureMessageBuilder
         .addNodeId(taskId)
-        .addMessage(details?.errorMessage)
+        .addMessage(errorMessage)
         .let { if (details?.errorType == null) it else it.addAttribute("type", details.errorType) }
         .toString()
-      handler.notifyTextAvailable(failureMessageBuilder.toString(), ProcessOutputType.STDOUT)
+      handler.notifyTextAvailable(failureMessageBuilder.toStringWithNewline(), ProcessOutputType.STDOUT)
       details?.errorContent?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
     }
   }
@@ -188,3 +191,9 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
 
   private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish): Data? = testFinishData.data as? Data
 }
+
+/**
+ * If a system message sent to the process handler does not end with a newline,
+ * it might connect to another message and not be parsed correctly
+ * */
+private fun Any?.toStringWithNewline(): String = this.toString().let { if (it.endsWith("\n")) it else "$it\n" }

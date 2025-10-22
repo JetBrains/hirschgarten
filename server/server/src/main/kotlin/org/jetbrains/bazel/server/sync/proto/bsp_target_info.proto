@@ -35,7 +35,7 @@ message JvmTargetInfo {
   string main_class = 8;
   repeated string args = 9;
   repeated FileLocation jdeps = 10;
-  repeated FileLocation transitive_compile_time_jars = 11;
+  bool has_api_generating_plugins = 12;
 }
 
 message JavaToolchainInfo {
@@ -52,27 +52,6 @@ message ScalaTargetInfo {
   repeated string scalac_opts = 1;
   repeated FileLocation compiler_classpath = 2;
   repeated FileLocation scalatest_classpath = 3;
-}
-
-message CppTargetInfo {
-  repeated string copts = 1;
-  repeated FileLocation headers = 2;
-  repeated FileLocation textual_headers = 3;
-  repeated string transitive_include_directory = 6;
-  repeated string transitive_quote_include_directory = 7;
-  repeated string transitive_define = 8;
-  repeated string transitive_system_include_directory = 9;
-  string include_prefix = 10;
-  string strip_include_prefix = 11;
-}
-
-message CToolchainInfo {
-  string target_name = 1;
-  repeated string cpp_option = 2;
-  repeated string c_option = 3;
-  string c_compiler = 4;
-  string cpp_compiler = 5;
-  repeated string built_in_include_directory = 6;
 }
 
 message KotlincPluginOption {
@@ -102,30 +81,21 @@ message PythonTargetInfo {
   repeated FileLocation generated_sources = 5;
 }
 
-message AndroidTargetInfo {
-  FileLocation android_jar = 100;
-  FileLocation manifest = 200;
-  map<string, string> manifest_overrides = 250;
-  repeated FileLocation resource_directories = 300;
-  string resource_java_package = 400;
-  repeated FileLocation assets_directories = 450;
-  FileLocation aidl_binary_jar = 500;
-  FileLocation aidl_source_jar = 600;
-  FileLocation apk = 700;
-}
-
-message AndroidAarImportInfo {
-  FileLocation manifest = 1;
-  FileLocation resource_folder = 2;
-  FileLocation r_txt = 3;
-}
-
 message GoTargetInfo {
   string import_path = 1;
   FileLocation sdk_home_path = 2;
   repeated FileLocation generated_sources = 3;
   repeated FileLocation generated_libraries = 4;
   repeated string library_labels = 5;
+}
+
+message ProtobufTargetInfo {
+  repeated ProtobufSourceMapping source_mappings = 3;
+}
+
+message ProtobufSourceMapping {
+  string import_path = 1;
+  FileLocation proto_file = 2;
 }
 
 message TargetInfo {
@@ -144,11 +114,8 @@ message TargetInfo {
   JavaToolchainInfo java_toolchain_info = 2000;
   JavaRuntimeInfo java_runtime_info = 3000;
   ScalaTargetInfo scala_target_info = 4000;
-  CppTargetInfo cpp_target_info = 6000;
   KotlinTargetInfo kotlin_target_info = 7000;
   PythonTargetInfo python_target_info = 8000;
-  AndroidTargetInfo android_target_info = 10000;
-  AndroidAarImportInfo android_aar_import_info = 11000;
   GoTargetInfo go_target_info = 12000;
-  CToolchainInfo c_toolchain_info = 13000;
+  ProtobufTargetInfo protobuf_target_info = 14000;
 }

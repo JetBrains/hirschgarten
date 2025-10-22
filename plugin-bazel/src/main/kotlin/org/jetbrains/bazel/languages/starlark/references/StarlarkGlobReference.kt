@@ -10,7 +10,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
-import org.jetbrains.bazel.languages.starlark.globbing.StarlarkUnixGlob
+import org.jetbrains.bazel.languages.starlark.globbing.StarlarkGlob
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
@@ -37,7 +37,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
 
     try {
       val files: List<VirtualFile> =
-        StarlarkUnixGlob
+        StarlarkGlob
           .forPath(containingDirectory)
           .addPatterns(includes)
           .addExcludes(excludes)

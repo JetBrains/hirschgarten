@@ -2,6 +2,10 @@ package org.jetbrains.bazel.install
 
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
+import java.io.IOException
+import java.lang.Thread.sleep
+import java.nio.file.FileAlreadyExistsException
+import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,7 +17,8 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
-import kotlin.io.path.writeText
+
+private const val ASPECTS_JAR_PATH = "/" + Constants.ASPECTS_ROOT
 
 class EnvironmentCreator(private val projectRootDir: Path) {
   fun create() = createDotBazelBsp()
@@ -32,7 +37,7 @@ class EnvironmentCreator(private val projectRootDir: Path) {
 
   private fun copyAspects(dotBazelBspDir: Path) {
     val destinationAspectsPath = dotBazelBspDir.resolve(Constants.ASPECTS_ROOT)
-    copyAspectsFromResources("/" + Constants.ASPECTS_ROOT, destinationAspectsPath)
+    copyAspectsFromResources(destinationAspectsPath)
   }
 
   private fun createEmptyBuildFile(dotBazelBspDir: Path) {
@@ -44,16 +49,19 @@ class EnvironmentCreator(private val projectRootDir: Path) {
 
   fun createGitIgnoreFile(dotBazelBspDir: Path) {
     val outputFile = dotBazelBspDir.resolve(".gitignore")
-    outputFile.writeText("*")
+    outputFile.writeIfDifferent("*")
   }
 
-  private fun copyAspectsFromResources(aspectsJarPath: String, destinationPath: Path) =
-    javaClass.getResource(aspectsJarPath)?.let {
+  private fun copyAspectsFromResources(destinationPath: Path) =
+    javaClass.getResource(ASPECTS_JAR_PATH)?.let {
       val uri = it.toURI()
       // this is the case in bazel build
       if (uri.scheme == "jar") {
-        FileSystems.newFileSystem(uri, emptyMap<String, String>()).use { fileSystem ->
-          copyFileTree(fileSystem.getPath(aspectsJarPath), destinationPath)
+        val fileSystem = AspectsJarFileSystem.get()
+        try {
+          copyFileTree(fileSystem.getPath(ASPECTS_JAR_PATH), destinationPath)
+        } finally {
+          AspectsJarFileSystem.close()
         }
         // and this in JPS
       } else if (uri.scheme == "file") {
@@ -111,5 +119,43 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     } catch (_: FileAlreadyExistsException) {
     }
     return dir
+  }
+}
+
+/**
+ * See https://youtrack.jetbrains.com/issue/BAZEL-2444
+ * If we unpack aspects in two different projects at the same time this may cause [FileSystemAlreadyExistsException]
+ * unless we make sure only one jar file system exists at one time
+ */
+private object AspectsJarFileSystem {
+  private var usages: Int = 0
+  private var aspectsFileSystem: FileSystem? = null
+
+  @Synchronized
+  fun get(): FileSystem {
+    if (usages > 0) {
+      usages += 1
+      return checkNotNull(aspectsFileSystem)
+    }
+
+    val url = javaClass.getResource(ASPECTS_JAR_PATH)
+    val uri = url.toURI()
+    check(uri.scheme == "jar")
+    aspectsFileSystem = FileSystems.newFileSystem(uri, emptyMap<String, String>())
+    usages += 1
+    return checkNotNull(aspectsFileSystem)
+  }
+
+  @Synchronized
+  fun close() {
+    usages -= 1
+    check(usages >= 0)
+    if (usages == 0) {
+      try {
+        checkNotNull(aspectsFileSystem).close()
+      } finally {
+        aspectsFileSystem = null
+      }
+    }
   }
 }

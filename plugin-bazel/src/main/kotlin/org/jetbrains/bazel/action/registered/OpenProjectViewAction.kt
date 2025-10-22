@@ -5,6 +5,7 @@ import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiFile
@@ -20,15 +21,19 @@ class OpenProjectViewAction :
   SuspendableAction(
     { BazelPluginBundle.message("widget.config.file.popup.message", BazelPluginBundle.message("tool.window.generic.config.file")) },
     AllIcons.FileTypes.Config,
-  ) {
+  ),
+  DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val configFile = project.bazelProjectSettings.projectViewPath
-    e.presentation.isEnabled = configFile != null
-    withContext(Dispatchers.EDT) {
-      project.serviceAsync<ProjectView>().refresh()
-      if (configFile != null) {
-        getPsiFile(configFile, project)?.navigate(true)
-      }
+    openProjectView(project)
+  }
+}
+
+internal suspend fun openProjectView(project: Project) {
+  val configFile = project.bazelProjectSettings.projectViewPath
+  withContext(Dispatchers.EDT) {
+    project.serviceAsync<ProjectView>().refresh()
+    if (configFile != null) {
+      getPsiFile(configFile, project)?.navigate(true)
     }
   }
 }

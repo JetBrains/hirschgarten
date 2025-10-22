@@ -5,9 +5,9 @@ kt_jvm_library(
     srcs = glob([
         "*.kt",
     ]),
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runfiles",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//rules_intellij/third_party/python",

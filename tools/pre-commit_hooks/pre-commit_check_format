@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# run bazel formatter iff staged paths live under plugins/bazel
+# drop this file into `.git/hooks` folder
+# than from root run `chmod +x .git/hooks/pre-commit`
+
+if git diff --cached --name-only | grep -q '^plugins/bazel/'; then
+  echo 'checking formatingcd plugins/bazel'
+  ( cd plugins/bazel && bazel run //tools/format:format.check ) || exit 1           # fail commit on bazel error
+
+  # if the formatter rewrote files, restage them so commit is clean
+  git add $(git ls-files -m | grep '^plugins/bazel/') 2>/dev/null
+fi

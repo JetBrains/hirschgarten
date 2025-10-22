@@ -11,18 +11,18 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bsp.protocol.BuildTarget
 
-class PythonBazelTestHandler : PythonBazelHandler() {
-  override val name: String = "Python Test Handler"
+class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
+  override val name: String
+    get() = "Python Test Handler"
 
-  override val state = GenericTestState()
+  override val state: GenericTestState = GenericTestState()
 
-  override fun createCommandLineState(environment: ExecutionEnvironment, originId: String): BazelCommandLineStateBase =
-    BazelTestCommandLineState(environment, originId, state)
-
-  override fun getProgramArguments(): String? = state.programArguments
+  override fun createCommandLineState(environment: ExecutionEnvironment): BazelCommandLineStateBase =
+    BazelTestCommandLineState(environment, state)
 
   class Provider : GooglePluginAwareRunHandlerProvider {
-    override val id: String = "PythonBazelTestHandlerProvider"
+    override val id: String
+      get() = "PythonBazelTestHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = PythonBazelTestHandler()
 

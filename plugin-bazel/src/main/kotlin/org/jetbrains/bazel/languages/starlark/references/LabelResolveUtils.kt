@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
@@ -19,6 +18,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPat
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
 import org.jetbrains.bazel.languages.starlark.repomapping.singleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
+import org.jetbrains.bazel.utils.findVirtualFile
 
 /**
  * @param containingFile the file that should be used as context for resolving, e.g., relative labels
@@ -134,10 +134,8 @@ private fun findReferredAbsolutePackage(
       project.canonicalRepoNameToPath[canonicalLabel.repoName]
     }
 
-  val repoRoot =
-    foundRepoRoot?.let {
-      VirtualFileManager.getInstance().refreshAndFindFileByNioPath(foundRepoRoot)
-    } ?: return null
+  // BAZEL-2280 LabelResolveUtilsKt#findReferredAbsolutePackage may not be able to resolve repo root
+  val repoRoot = foundRepoRoot?.findVirtualFile() ?: return null
 
   return repoRoot.findFileByRelativePath(label.packagePath.toString())
 }

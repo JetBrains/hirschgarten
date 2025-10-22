@@ -37,25 +37,25 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.golang.targetKinds.GoBazelRules
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.toPath
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.references.resolveLabel
+import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.hasLanguage
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.utils.toVirtualFile
+import org.jetbrains.bazel.testing.TestUtils
+import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
-import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.Objects
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
-
-private const val GO_TARGET_TO_FILE_MAP_KEY = "BazelGoTargetToFileMap"
+import kotlin.io.path.invariantSeparatorsPathString
 
 /**
  * [GoPackage] specialized for bazel, with a couple of differences:
@@ -232,10 +232,15 @@ class BazelGoPackage : GoPackage {
       }
     }
 
+    private val goTargetToFileMap =
+      SyncCache.SyncCacheComputable { project ->
+        getUncachedTargetToFileMap(project)
+      }
+
     fun getTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> =
       SyncCache
         .getInstance(project)
-        .get(GO_TARGET_TO_FILE_MAP_KEY) { getUncachedTargetToFileMap(project) } ?: ImmutableMultimap.of()
+        .get(goTargetToFileMap)
 
     fun getUncachedTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> {
       val libraryToTestMap = buildLibraryToTestMap(project)
@@ -261,25 +266,6 @@ class BazelGoPackage : GoPackage {
         }
       }
       return builder.build()
-    }
-
-    /**
-     * Workaround for https://github.com/bazelbuild/intellij/issues/2057. External workspace symlinks
-     * can be changed externally by practically any bazel command. Such changes to symlinks will make
-     * IntelliJ red. This helper resolves such symlink to an actual location.
-     *
-     * @see com.google.idea.blaze.java.libraries.JarCache.patchExternalFilePath()
-     */
-    private fun toRealFile(maybeExternal: Path): Path {
-      val externalString = maybeExternal.toFile().toString()
-      return if (externalString.contains("/external/") &&
-        !externalString.contains("/bazel-out/") &&
-        !externalString.contains("/blaze-out/")
-      ) {
-        File(externalString.replace(Regex("/execroot.*?/external/"), "/external/")).toPath()
-      } else {
-        maybeExternal
-      }
     }
 
     private fun getSourceFiles(target: BuildTarget, libraryToTestMap: ImmutableMultimap<Label, GoBuildTarget>): ImmutableSet<Path> {
@@ -308,7 +294,7 @@ class BazelGoPackage : GoPackage {
       val psiManager = PsiManager.getInstance(project)
       files
         .mapNotNull { file ->
-          file.toVirtualFile()?.let {
+          file.findVirtualFile()?.let {
             psiManager.findFile(it) as? GoFile
           }
         }.firstOrNull { it.buildFlags != "ignore" }
@@ -324,7 +310,7 @@ class BazelGoPackage : GoPackage {
       if (oldVirtualFile.filter(VirtualFile::isValid).isPresent) {
         oldVirtualFile
       } else {
-        Optional.ofNullable(file.toVirtualFile())
+        Optional.ofNullable(file.findVirtualFile())
       }
     }
     return directories.values
@@ -341,7 +327,7 @@ class BazelGoPackage : GoPackage {
         oldGoFile
       } else {
         Optional
-          .ofNullable(file.toVirtualFile())
+          .ofNullable(file.findVirtualFile())
           .map(psiManager::findFile)
           .filter { it is GoFile }
           .map { it as GoFile }
@@ -384,7 +370,11 @@ class BazelGoPackage : GoPackage {
    */
   override fun getNavigableElement(): PsiElement? {
     navigableElement?.takeIf { it.isValid }?.let { return it }
-    resolveLabel(project, label, null)?.also { navigableElement = it }
+    if (label is ResolvedLabel) {
+      val buildFile = findBuildFile(project, label, null)
+      buildFile?.also { navigableElement = it }?.findRuleTarget(label.targetName)?.also { navigableElement = it }
+    }
+
     return navigableElement
   }
 
@@ -412,5 +402,26 @@ class BazelGoPackage : GoPackage {
   override fun getPsiDirectories(): StreamEx<PsiDirectory> {
     val psiManager = PsiManager.getInstance(project)
     return StreamEx.of(getDirectories().mapNotNull { directory -> psiManager.findDirectory(directory)?.takeIf { it.isValid } })
+  }
+}
+
+/**
+ * Workaround for https://github.com/bazelbuild/intellij/issues/2057. External workspace symlinks
+ * can be changed externally by practically any bazel command. Such changes to symlinks will make
+ * IntelliJ red. This helper resolves such symlink to an actual location.
+ *
+ * In IDE Starter Test, this logic does not work properly, so it is disabled.
+ */
+@VisibleForTesting
+fun toRealFile(maybeExternal: Path): Path {
+  if (TestUtils.isInIdeStarterTest()) return maybeExternal
+  val externalString = maybeExternal.invariantSeparatorsPathString
+  return if (externalString.contains("/external/") &&
+    !externalString.contains("/bazel-out/") &&
+    !externalString.contains("/blaze-out/")
+  ) {
+    Paths.get(externalString.replace(Regex("/execroot.*?/external/"), "/external/"))
+  } else {
+    maybeExternal
   }
 }

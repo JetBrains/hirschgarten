@@ -42,9 +42,7 @@ object BazelFlag {
 
   @JvmStatic fun testOutputAll(): String = arg("test_output", "all")
 
-  @JvmStatic fun experimentalGoogleLegacyApi(): String = flag("experimental_google_legacy_api")
-
-  @JvmStatic fun experimentalEnableAndroidMigrationApis(): String = flag("experimental_enable_android_migration_apis")
+  @JvmStatic fun testOutputStreamed(): String = arg("test_output", "streamed")
 
   @JvmStatic fun device(device: String): String = arg("device", device)
 
@@ -64,7 +62,7 @@ object BazelFlag {
 
   @JvmStatic fun combinedReportLcov(): String = arg("combined_report", "lcov")
 
-  @JvmStatic fun instrumentationFilterAll(): String = arg("instrumentation_filter", "[:]")
+  @JvmStatic fun instrumentationFilter(filter: String): String = arg("instrumentation_filter", filter)
 
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
 

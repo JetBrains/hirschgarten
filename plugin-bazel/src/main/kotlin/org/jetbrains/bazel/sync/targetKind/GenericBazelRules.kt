@@ -32,7 +32,7 @@ class GenericBazelRules : TargetKindProvider {
     INTELLIJ_PLUGIN_DEBUG_TARGET(
       "intellij_plugin_debug_target",
       LanguageClass.JAVA,
-      RuleType.UNKNOWN,
+      RuleType.BINARY,
     ),
     WEB_TEST("web_test", LanguageClass.GENERIC, RuleType.TEST),
     SH_TEST("sh_test", LanguageClass.GENERIC, RuleType.TEST),

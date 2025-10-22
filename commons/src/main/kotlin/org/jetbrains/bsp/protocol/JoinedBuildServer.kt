@@ -9,11 +9,12 @@ data class BazelProject(val targets: Map<Label, BspTargetInfo.TargetInfo>, val h
 interface JoinedBuildServer {
   suspend fun runSync(build: Boolean, originId: String): BazelProject
 
-  suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
+  suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult
 
+  suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): WorkspacePhasedBuildTargetsResult
+
+  // TODO: should be replaced with some query that can be crafted on the client side
   suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
-
-  suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult
 
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
 
@@ -21,35 +22,11 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetTest(params: TestParams): TestResult
 
-  suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult
-
-  suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult
-
-  suspend fun buildTargetJvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult
-
-  suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
-
-  suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
-
-  suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
-
-  suspend fun workspaceLibraries(): WorkspaceLibrariesResult
-
-  suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult
-
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult
 
   suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult
 
   suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
-
-  suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult
-
-  suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult
-
-  suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult
-
-  suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult
 
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
 
@@ -59,5 +36,10 @@ interface JoinedBuildServer {
 
   suspend fun workspaceContext(): WorkspaceContext
 
+  // TODO: implement language-specific global build metadata exchange
   suspend fun jvmToolchainInfo(): JvmToolchainInfo
+
+  suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath
+
+  suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo
 }

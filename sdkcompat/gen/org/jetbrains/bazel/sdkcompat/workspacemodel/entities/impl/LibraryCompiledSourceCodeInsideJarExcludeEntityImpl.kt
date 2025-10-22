@@ -6,6 +6,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
+import com.intellij.platform.workspace.storage.ModifiableWorkspaceEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.WorkspaceEntity
@@ -22,12 +23,13 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: LibraryCompiledSourceCodeInsideJarExcludeEntityData) :
-  LibraryCompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(dataSource) {
+internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: LibraryCompiledSourceCodeInsideJarExcludeEntityData) : LibraryCompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
 
@@ -60,10 +62,8 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
   }
 
 
-  internal class Builder(result: LibraryCompiledSourceCodeInsideJarExcludeEntityData?) :
-    ModifiableWorkspaceEntityBase<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityData>(
-      result
-    ), LibraryCompiledSourceCodeInsideJarExcludeEntity.Builder {
+  internal class Builder(result: LibraryCompiledSourceCodeInsideJarExcludeEntityData?) : ModifiableWorkspaceEntityBase<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityData>(
+    result), ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity {
     internal constructor() : this(LibraryCompiledSourceCodeInsideJarExcludeEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -111,8 +111,7 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
       dataSource as LibraryCompiledSourceCodeInsideJarExcludeEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
       if (this.libraryId != dataSource.libraryId) this.libraryId = dataSource.libraryId
-      if (this.compiledSourceCodeInsideJarExcludeId != dataSource.compiledSourceCodeInsideJarExcludeId) this.compiledSourceCodeInsideJarExcludeId =
-        dataSource.compiledSourceCodeInsideJarExcludeId
+      if (this.compiledSourceCodeInsideJarExcludeId != dataSource.compiledSourceCodeInsideJarExcludeId) this.compiledSourceCodeInsideJarExcludeId = dataSource.compiledSourceCodeInsideJarExcludeId
       updateChildToParentReferences(parents)
     }
 
@@ -150,8 +149,7 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityData<LibraryCompiledSourceCodeInsideJarExcludeEntity>(),
-                                                                     SoftLinkable {
+internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityData<LibraryCompiledSourceCodeInsideJarExcludeEntity>(), SoftLinkable {
   lateinit var libraryId: LibraryId
   lateinit var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
 
@@ -211,7 +209,7 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEn
     return changed
   }
 
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
+  override fun wrapAsModifiable(diff: MutableEntityStorage): ModifiableWorkspaceEntity<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
     val modifiable = LibraryCompiledSourceCodeInsideJarExcludeEntityImpl.Builder(null)
     modifiable.diff = diff
     modifiable.id = createEntityId()
@@ -231,15 +229,14 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEn
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity"
-    ) as EntityMetadata
+      "org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity") as EntityMetadata
   }
 
   override fun getEntityInterface(): Class<out WorkspaceEntity> {
     return LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
+  override fun createDetachedEntity(parents: List<ModifiableWorkspaceEntity<*>>): ModifiableWorkspaceEntity<*> {
     return LibraryCompiledSourceCodeInsideJarExcludeEntity(libraryId, compiledSourceCodeInsideJarExcludeId, entitySource) {
     }
   }

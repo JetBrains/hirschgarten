@@ -6,6 +6,7 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
@@ -13,44 +14,74 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
+import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
+import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.OriginId
+import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
-class BazelTestCommandLineState(
-  environment: ExecutionEnvironment,
-  originId: OriginId,
-  val state: AbstractGenericTestState<*>,
-) : BazelCommandLineStateBase(environment, originId) {
+class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: AbstractGenericTestState<*>) :
+  BazelCommandLineStateBase(environment) {
   var coverageReportListener: ((Path) -> Unit)? = null
 
-  private val configuration = environment.runProfile as BazelRunConfiguration
+  private val configuration = BazelRunConfiguration.get(environment)
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
-    BazelTestTaskListener(handler, coverageReportListener)
+    if (configuration.project.useJetBrainsTestRunner()) {
+      JetBrainsTestRunnerTaskListener(handler)
+    } else {
+      BazelTestTaskListener(handler, coverageReportListener)
+    }
 
-  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
+  override suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  ) {
     if (configuration.targets.isEmpty()) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
+
+    val coverageInstrumentationFilter =
+      if (environment.executor.id == CoverageExecutor.EXECUTOR_ID) {
+        getCoverageInstrumentationFilter(configuration.project)
+      } else {
+        null
+      }
 
     val targets = configuration.targets
     // TODO: add pidDeferred to TestParams
     val params =
       TestParams(
-        targets,
-        originId = originId,
+        targets = configuration.targets,
+        originId = originId.toString(),
         workingDirectory = state.workingDirectory,
         arguments = transformProgramArguments(state.programArguments),
         environmentVariables = state.env.envs,
-        coverage = environment.executor.id == CoverageExecutor.EXECUTOR_ID,
+        coverageInstrumentationFilter = coverageInstrumentationFilter,
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,
+        useJetBrainsTestRunner = configuration.project.useJetBrainsTestRunner(),
       )
     server.buildTargetTest(params)
+  }
+
+  private fun getCoverageInstrumentationFilter(project: Project): String {
+    val packages =
+      project.targetUtils
+        .allTargets()
+        .map { it.packagePath.pathSegments }
+        .toSet()
+        .filterPathsThatDontContainEachOther2()
+    if (packages.isEmpty() || packages.singleOrNull() == emptyList<String>()) {
+      // Cover all packages
+      return "^//"
+    }
+    return "^//(${packages.joinToString("|") { it.joinToString("/") }})[/:]"
   }
 }

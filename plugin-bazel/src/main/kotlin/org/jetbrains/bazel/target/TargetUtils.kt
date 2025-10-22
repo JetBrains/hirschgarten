@@ -13,21 +13,19 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
-import com.intellij.platform.util.coroutines.forEachConcurrent
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.util.awaitCancellationAndInvoke
 import com.intellij.util.concurrency.SynchronizedClearableLazy
+import com.intellij.util.concurrency.ThreadingAssertions
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
@@ -40,8 +38,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.experimental.ExperimentalTypeInference
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -117,19 +113,19 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
 
   @InternalApi
-  suspend fun saveTargets(
+  fun saveTargets(
     targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
   ) {
+    ThreadingAssertions.assertBackgroundThread()
     val labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id }
     db.reset(
       fileToTarget = fileToTarget,
       fileToExecutableTargets =
         calculateFileToExecutableTargets(
-          libraryItems = libraryItems,
+          targetDependentsGraph = TargetDependentsGraph(targets, libraryItems),
           fileToTarget = fileToTarget,
-          targets = targets,
           labelToTargetInfo = labelToTargetInfo,
         ),
       libraryItems = libraryItems,
@@ -147,16 +143,14 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
   }
 
-  private suspend fun calculateFileToExecutableTargets(
-    libraryItems: List<LibraryItem>?,
+  private fun calculateFileToExecutableTargets(
+    targetDependentsGraph: TargetDependentsGraph,
     fileToTarget: Map<Path, List<Label>>,
-    targets: List<RawBuildTarget>,
     labelToTargetInfo: Map<Label, BuildTarget>,
-  ): Map<Path, List<Label>> =
-    withContext(Dispatchers.Default) {
-      val targetDependentsGraph = TargetDependentsGraph(targets, libraryItems)
-      val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
-      transformConcurrent(fileToTarget.entries) { (path, targets) ->
+  ): Map<Path, List<Label>> {
+    val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
+    return fileToTarget.entries
+      .mapNotNull { (path, targets) ->
         val dependents =
           targets
             .flatMap { label ->
@@ -173,22 +167,28 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
         } else {
           path to dependents
         }
-      }
-    }
+      }.toMap()
+  }
 
   private fun calculateTransitivelyExecutableTargets(
-    resultCache: ConcurrentHashMap<Label, Set<Label>>,
+    resultCache: MutableMap<Label, Set<Label>>,
     targetDependentsGraph: TargetDependentsGraph,
     target: Label,
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Set<Label> =
     resultCache.getOrPut(target) {
-      val targetInfo = labelToTargetInfo.get(target)
+      val targetInfo = labelToTargetInfo[target]
       if (targetInfo?.kind?.isExecutable == true) {
         return@getOrPut setOf(target)
       }
 
       val directDependentIds = targetDependentsGraph.directDependentIds(target)
+
+      val executableTargetsFromSamePackage = directDependentIds.filter {
+        it.packagePath == target.packagePath && labelToTargetInfo[it]?.kind?.isExecutable == true
+      }
+      if (executableTargetsFromSamePackage.isNotEmpty()) return@getOrPut executableTargetsFromSamePackage.toHashSet()
+
       return@getOrPut directDependentIds
         .asSequence()
         .flatMap { dependency ->
@@ -254,8 +254,13 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun getTotalFileCount(): Int = db.getTotalFileCount()
 }
 
+private val LIBRARY_MODULE_PREFIX = "_aux.libraries."
+
 @InternalApi
-fun String.addLibraryModulePrefix() = "_aux.libraries.$this"
+fun String.addLibraryModulePrefix() = LIBRARY_MODULE_PREFIX + this
+
+@InternalApi
+fun String.isLibraryModule() = startsWith(LIBRARY_MODULE_PREFIX)
 
 @PublicApi
 val Project.targetUtils: TargetUtils
@@ -278,26 +283,4 @@ val Module.moduleEntity: ModuleEntity?
 fun BuildTarget.getModule(project: Project): Module? {
   val moduleName = this.id.formatAsModuleName(project)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
-}
-
-@OptIn(ExperimentalTypeInference::class)
-private suspend fun <T : Any, K : Any, V : Any, R : Pair<K, V>> transformConcurrent(
-  collection: Collection<T>,
-  @BuilderInference action: suspend ProducerScope<R>.(T) -> R?,
-): Map<K, V> {
-  val flow =
-    channelFlow {
-      collection.forEachConcurrent {
-        val result = action(it)
-        if (result != null) {
-          channel.send(result)
-        }
-      }
-    }
-
-  val map = HashMap<K, V>()
-  flow.collect { value ->
-    map.put(value.first, value.second)
-  }
-  return map
 }

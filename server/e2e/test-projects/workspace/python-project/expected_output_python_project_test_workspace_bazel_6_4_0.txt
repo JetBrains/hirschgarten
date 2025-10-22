@@ -1,0 +1,3097 @@
+RawAspectTarget(target=id: "@//.bazelbsp/aspects:aspects"
+kind: "filegroup"
+sources {
+  relative_path: ".bazelbsp/aspects/BUILD"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/core.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/core.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/extensions.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/go/go_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/go/go_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/java/java_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/java/java_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/jvm/jvm_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/jvm/jvm_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/kt/kt_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/kt/kt_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/python/python_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/python/python_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/scala/scala_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/scala/scala_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/runtime_classpath_query.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/toolchain_query.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/utils/utils.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/utils/utils.bzl.template"
+  is_source: true
+}
+workspace_name: "python_test"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//example:example"
+kind: "py_binary"
+tags: "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+dependencies {
+  id: "@//lib:example_library"
+}
+sources {
+  relative_path: "example/example.py"
+  is_source: true
+}
+executable: true
+workspace_name: "python_test"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+python_target_info {
+  interpreter {
+    relative_path: "bin/python3"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/python"
+  }
+  version: "PY3"
+}
+)
+RawAspectTarget(target=id: "@//lib:example_library"
+kind: "py_library"
+tags: "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+dependencies {
+  id: "@pip_deps_numpy//:pkg"
+}
+sources {
+  relative_path: "lib/example_lib.py"
+  is_source: true
+}
+workspace_name: "python_test"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+python_target_info {
+  interpreter {
+    relative_path: "bin/python3"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/python"
+  }
+  version: "PY3"
+}
+)
+RawAspectTarget(target=id: "@//test:test"
+kind: "py_test"
+tags: "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+sources {
+  relative_path: "test/test.py"
+  is_source: true
+}
+executable: true
+workspace_name: "python_test"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+python_target_info {
+  interpreter {
+    relative_path: "bin/python3"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/python"
+  }
+  version: "PY3"
+}
+)
+RawAspectTarget(target=id: "@pip_deps_numpy//:pkg"
+kind: "py_library"
+tags: "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+tags: "pypi_name=numpy"
+tags: "pypi_version=1.23.3"
+sources {
+  relative_path: "site-packages/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/__config__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_distributor_init.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_globals.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_pyinstaller/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_pyinstaller/hook-numpy.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_pyinstaller/pyinstaller-smoke.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_pyinstaller/test_pyinstaller.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_pytesttester.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_add_docstring.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_array_like.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_char_codes.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_dtype_like.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_extended_precision.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_generic_alias.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_nbit.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_nested_sequence.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_scalars.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/_shape.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_typing/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/_version.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_array_object.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_constants.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_creation_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_data_type_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_dtypes.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_elementwise_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_manipulation_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_searching_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_set_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_sorting_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_statistical_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_typing.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/_utility_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/linalg.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/tests/test_array_object.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/tests/test_creation_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/tests/test_data_type_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/tests/test_elementwise_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/tests/test_set_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/tests/test_sorting_functions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/array_api/tests/test_validation.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/compat/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/compat/_inspect.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/compat/_pep440.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/compat/py3k.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/compat/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/compat/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/compat/tests/test_compat.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/conftest.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_add_newdocs.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_add_newdocs_scalars.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_asarray.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_dtype.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_dtype_ctypes.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_exceptions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_internal.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_machar.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_methods.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_string_helpers.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_type_aliases.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/_ufunc_config.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/arrayprint.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/cversions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/defchararray.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/einsumfunc.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/fromnumeric.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/function_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/generate_numpy_api.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/getlimits.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/memmap.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/multiarray.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/numeric.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/numerictypes.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/overrides.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/records.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/setup_common.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/shape_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/_locales.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/examples/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/examples/cython/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/examples/cython/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/examples/limited_api/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/examples/limited_api/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test__exceptions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_abc.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_api.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_argparse.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_array_coercion.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_array_interface.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_arraymethod.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_arrayprint.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_casting_unittests.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_conversion_utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_cpu_dispatcher.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_cpu_features.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_custom_dtypes.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_cython.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_datetime.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_defchararray.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_deprecations.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_dlpack.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_dtype.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_einsum.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_errstate.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_extint128.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_function_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_getlimits.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_half.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_hashtable.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_indexerrors.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_indexing.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_item_selection.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_limited_api.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_longdouble.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_machar.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_mem_overlap.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_mem_policy.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_memmap.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_multiarray.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_nditer.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_numeric.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_numerictypes.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_overrides.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_print.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_protocols.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_records.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_regression.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_scalar_ctors.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_scalar_methods.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_scalarbuffer.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_scalarinherit.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_scalarmath.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_scalarprint.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_shape_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_simd.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_simd_module.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_ufunc.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_umath.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_umath_accuracy.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_umath_complex.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/tests/test_unicode.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/umath.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/core/umath_tests.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ctypeslib.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/__config__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/_shell_utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/armccompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/ccompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/ccompiler_opt.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/autodist.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/bdist_rpm.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/build.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/build_clib.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/build_ext.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/build_py.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/build_scripts.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/build_src.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/config.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/config_compiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/develop.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/egg_info.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/install.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/install_clib.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/install_data.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/install_headers.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/command/sdist.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/conv_template.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/core.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/cpuinfo.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/exec_command.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/extension.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/absoft.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/arm.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/compaq.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/environment.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/fujitsu.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/g95.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/gnu.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/hpux.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/ibm.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/intel.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/lahey.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/mips.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/nag.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/none.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/nv.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/pathf95.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/pg.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/sun.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/fcompiler/vast.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/from_template.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/intelccompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/lib2def.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/line_endings.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/log.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/mingw32ccompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/misc_util.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/msvc9compiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/msvccompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/npy_pkg_config.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/numpy_distribution.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/pathccompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/system_info.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_build_ext.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_ccompiler_opt.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_ccompiler_opt_conf.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_exec_command.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_fcompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_fcompiler_gnu.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_fcompiler_intel.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_fcompiler_nagfor.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_from_template.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_log.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_mingw32ccompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_misc_util.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_npy_pkg_config.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_shell_utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/tests/test_system_info.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/distutils/unixccompiler.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/doc/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/doc/constants.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/doc/ufuncs.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/dual.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/__main__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/__version__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/auxfuncs.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/capi_maps.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/cb_rules.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/cfuncs.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/common_rules.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/crackfortran.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/diagnose.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/f2py2e.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/f90mod_rules.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/func2subr.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/rules.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/symbolic.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_abstract_interface.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_array_from_pyobj.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_assumed_shape.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_block_docstring.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_callback.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_common.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_compile_function.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_crackfortran.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_f2cmap.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_f2py2e.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_kind.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_mixed.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_module_doc.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_parameter.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_quoted_character.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_regression.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_return_character.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_return_complex.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_return_integer.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_return_logical.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_return_real.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_semicolon_split.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_size.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_string.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/test_symbolic.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/tests/util.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/f2py/use_rules.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/fft/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/fft/_pocketfft.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/fft/helper.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/fft/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/fft/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/fft/tests/test_helper.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/fft/tests/test_pocketfft.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/_datasource.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/_iotools.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/_version.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/arraypad.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/arraysetops.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/arrayterator.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/format.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/function_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/histograms.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/index_tricks.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/mixins.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/nanfunctions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/npyio.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/polynomial.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/recfunctions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/scimath.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/shape_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/stride_tricks.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test__datasource.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test__iotools.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test__version.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_arraypad.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_arraysetops.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_arrayterator.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_financial_expired.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_format.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_function_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_histograms.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_index_tricks.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_io.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_loadtxt.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_mixins.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_nanfunctions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_packbits.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_polynomial.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_recfunctions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_regression.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_shape_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_stride_tricks.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_twodim_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_type_check.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_ufunclike.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/tests/test_utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/twodim_base.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/type_check.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/ufunclike.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/user_array.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/lib/utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/linalg/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/linalg/linalg.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/linalg/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/linalg/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/linalg/tests/test_deprecations.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/linalg/tests/test_linalg.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/linalg/tests/test_regression.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/bench.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/core.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/extras.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/mrecords.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/tests/test_core.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/tests/test_deprecations.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/tests/test_extras.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/tests/test_mrecords.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/tests/test_old_ma.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/tests/test_regression.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/tests/test_subclassing.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/testutils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/ma/timer_comparison.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matlib.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/defmatrix.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/tests/test_defmatrix.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/tests/test_interaction.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/tests/test_masked_matrix.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/tests/test_matrix_linalg.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/tests/test_multiarray.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/tests/test_numeric.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/matrixlib/tests/test_regression.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/_polybase.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/chebyshev.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/hermite.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/hermite_e.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/laguerre.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/legendre.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/polynomial.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/polyutils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_chebyshev.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_classes.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_hermite.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_hermite_e.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_laguerre.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_legendre.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_polynomial.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_polyutils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/polynomial/tests/test_printing.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/cffi/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/cffi/extending.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/cffi/parse.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/cython/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/cython/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/numba/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/numba/extending.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_examples/numba/extending_distributions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/_pickle.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/data/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_direct.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_extending.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_generator_mt19937.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_generator_mt19937_regressions.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_random.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_randomstate.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_randomstate_regression.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_regression.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_seed_sequence.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/random/tests/test_smoke.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/_private/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/_private/decorators.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/_private/extbuild.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/_private/noseclasses.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/_private/nosetester.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/_private/parameterized.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/_private/utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/print_coercion_tables.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/tests/test_doctesting.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/tests/test_utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/testing/utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/test__all__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/test_ctypeslib.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/test_matlib.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/test_numpy_version.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/test_public_api.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/test_reloading.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/test_scripts.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/tests/test_warnings.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/mypy_plugin.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/setup.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/__init__.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/arithmetic.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/array_constructors.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/array_like.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/arrayprint.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/arrayterator.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/bitwise_ops.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/comparisons.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/dtype.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/einsumfunc.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/flatiter.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/fromnumeric.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/index_tricks.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/lib_utils.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/lib_version.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/literal.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/mod.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/modules.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/multiarray.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/ndarray_conversion.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/ndarray_misc.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/ndarray_shape_manipulation.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/numeric.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/numerictypes.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/random.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/scalars.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/simple.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/simple_py3.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/ufunc_config.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/ufunclike.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/ufuncs.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/data/pass/warnings_and_errors.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/test_generic_alias.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/test_isfile.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/test_runtime.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/typing/tests/test_typing.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+sources {
+  relative_path: "site-packages/numpy/version.py"
+  is_source: true
+  is_external: true
+  root_execution_path_fragment: "external/pip_deps_numpy"
+}
+workspace_name: "python_test"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/remotejdk"
+  }
+}
+python_target_info {
+  interpreter {
+    relative_path: "bin/python3"
+    is_source: true
+    is_external: true
+    root_execution_path_fragment: "external/python"
+  }
+  version: "PY3"
+  imports: "site-packages"
+}
+)

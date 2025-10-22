@@ -14,55 +14,48 @@ import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.containers.Interner
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.addLibraryModulePrefix
-import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTargetTag
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
 
-internal class ModuleEntityUpdater(
+class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
-  libraryModules: List<JavaModule> = emptyList(),
+  private val libraries: Map<String, Library>,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
-  val libraryModuleLookupTable = libraryModules.map { it.genericModuleInfo.name }.toHashSet()
-
   override suspend fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addModuleEntity(builder: MutableEntityStorage, entityToAdd: GenericModuleInfo): ModuleEntity {
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
-    val (libraryModulesDependencies, librariesDependencies) =
-      entityToAdd.librariesDependencies.partition {
-        !entityToAdd.isLibraryModule && it.libraryName.addLibraryModulePrefix() in libraryModuleLookupTable
+    val dependenciesFromEntity =
+      entityToAdd.dependencies.map { dependency ->
+        val libraryDependency = libraries[dependency]
+        if (libraryDependency != null) {
+          val exported = !libraryDependency.isLowPriority
+          if (BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled && !entityToAdd.isLibraryModule) {
+            toModuleDependencyItemModuleDependency(dependency.addLibraryModulePrefix(), exported)
+          } else {
+            toLibraryDependency(dependency, exported = exported || entityToAdd.isLibraryModule)
+          }
+        } else {
+          toModuleDependencyItemModuleDependency(dependency)
+        }
       }
-    val allLibrariesDependencies =
-      librariesDependencies.map { toLibraryDependency(it) } +
-        libraryModulesDependencies.toLibraryModuleDependencies().map { toModuleDependencyItemModuleDependency(it) }
-    val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
-    val isLibsOverModules = isLibrariesOverModules(entityToAdd)
+
     val dependencies =
-      if (isLibsOverModules) {
-        defaultDependencies +
-          allLibrariesDependencies +
-          modulesDependencies +
-          associatesDependencies
-      } else {
-        defaultDependencies +
-          modulesDependencies +
-          allLibrariesDependencies +
-          associatesDependencies
-      }
+      defaultDependencies +
+        dependenciesFromEntity +
+        associatesDependencies
 
     val moduleEntityBuilder =
       ModuleEntity(
@@ -75,17 +68,6 @@ internal class ModuleEntityUpdater(
 
     return builder.addEntity(moduleEntityBuilder)
   }
-
-  private fun isLibrariesOverModules(entityToAdd: GenericModuleInfo): Boolean {
-    val targetUtils = workspaceModelEntityUpdaterConfig.project.targetUtils
-    val buildTarget = targetUtils.getTargetForModuleId(entityToAdd.name)?.let { targetUtils.getBuildTargetForLabel(it) } ?: return false
-    return buildTarget.tags.contains(BuildTargetTag.LIBRARIES_OVER_MODULES)
-  }
-
-  private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =
-    this.map {
-      IntermediateModuleDependency(it.libraryName.addLibraryModulePrefix())
-    }
 
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
     when {
@@ -102,28 +84,28 @@ internal class ModuleEntityUpdater(
         )
     }
 
-  private fun toModuleDependencyItemModuleDependency(intermediateModuleDependency: IntermediateModuleDependency): ModuleDependency =
+  private fun toModuleDependencyItemModuleDependency(moduleName: String, exported: Boolean = true): ModuleDependency =
     dependencyInterner.intern(
       ModuleDependency(
-        module = idInterner.intern(ModuleId(intermediateModuleDependency.moduleName)) as ModuleId,
-        exported = true,
+        module = idInterner.intern(ModuleId(moduleName)) as ModuleId,
+        exported = exported,
         scope = DependencyScope.COMPILE,
         productionOnTest = true,
       ),
     ) as ModuleDependency
 }
 
-internal fun toLibraryDependency(intermediateLibraryDependency: IntermediateLibraryDependency): LibraryDependency =
+internal fun toLibraryDependency(libraryName: String, exported: Boolean = true): LibraryDependency =
   dependencyInterner.intern(
     LibraryDependency(
       library =
         idInterner.intern(
           LibraryId(
-            name = intermediateLibraryDependency.libraryName,
+            name = libraryName,
             tableId = LibraryTableId.ProjectLibraryTableId, // treat all libraries as project-level libraries
           ),
         ) as LibraryId,
-      exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
+      exported = exported, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
       scope = DependencyScope.COMPILE,
     ),
   ) as LibraryDependency

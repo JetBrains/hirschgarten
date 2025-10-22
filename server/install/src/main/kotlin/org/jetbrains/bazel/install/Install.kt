@@ -4,10 +4,9 @@ import org.jetbrains.bazel.install.cli.CliOptions
 import java.nio.file.Path
 
 object Install {
-  fun runInstall(cliOptions: CliOptions) {
-    InstallationContextProvider.generateAndSaveProjectViewFileIfNeeded(cliOptions)
+  fun runInstall(cliOptions: CliOptions, silent: Boolean = false) {
     createEnvironment(cliOptions)
-    printSuccess(cliOptions.workspaceDir)
+    if (!silent) printSuccess(cliOptions.workspaceDir)
   }
 
   private fun createEnvironment(cliOptions: CliOptions) {

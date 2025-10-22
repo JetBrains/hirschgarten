@@ -38,17 +38,18 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
-import com.intellij.util.io.delete
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.flow.sync.BazelBinPathService
+import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
+import java.io.BufferedReader
 import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
@@ -67,13 +68,14 @@ object FastBuildUtils {
 
   fun fastBuildFilesPromise(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
     val promise = AsyncPromise<ProjectTaskRunner.Result>()
+    val fastBuildService = FastBuildStatusService.getInstance(project)
     BazelCoroutineService.getInstance(project).start {
       try {
+        fastBuildService.startFastBuild()
         fastBuildFiles(project, files)
         promise.setResult(TaskRunnerResults.SUCCESS)
       } catch (e: Exception) {
         promise.setResult(TaskRunnerResults.FAILURE)
-
         NotificationGroupManager
           .getInstance()
           .getNotificationGroup("HotSwap Messages")
@@ -85,6 +87,14 @@ object FastBuildUtils {
           .notify(project)
       }
     }
+    promise
+      .onSuccess {
+        fastBuildService.finishFastBuild(
+          FastBuildStatus(workspaceRoot = project.rootDir.toNioPath(), status = FastBuildActionStatus.SUCCESS),
+        )
+      }.onError {
+        fastBuildService.finishFastBuild(FastBuildStatus(workspaceRoot = project.rootDir.toNioPath(), status = FastBuildActionStatus.ERROR))
+      }
     return promise
   }
 
@@ -92,6 +102,7 @@ object FastBuildUtils {
     val workspaceRoot = project.rootDir.toNioPath()
     val targetUtils = project.targetUtils
     val virtualFileManager = VirtualFileManager.getInstance()
+    val fastBuildService = FastBuildStatusService.getInstance(project)
     val buildInfos =
       files
         .mapNotNull { file ->
@@ -126,6 +137,9 @@ object FastBuildUtils {
           ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
       val targetJar = Path.of("$bazelBin/$relativePath/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
 
+      var fastBuildTargetStatus: FastBuildTargetStatus? = null
+      fastBuildService.startFastBuildTarget()
+
       val originalParamsFile = targetJar.parent.resolve(targetJar.fileName.name + "-0.params")
       val originalParamsFile1 = targetJar.parent.resolve(targetJar.fileName.name + "-1.params")
 
@@ -155,8 +169,8 @@ object FastBuildUtils {
           logger.debug("Using '$tempDir' for fast compile")
           val outputJar = tempDir.resolve("output.jar")
 
-          val paramsFile =
-            updateAndWriteCompileParams(
+          val paramsFile0 =
+            updateAndWriteCompile0Params(
               originalParamsFile,
               tempDir,
               outputJar,
@@ -164,21 +178,31 @@ object FastBuildUtils {
               Path.of(workspaceRoot.toCanonicalPath()),
               targetJar,
             )
+          val paramsFile1 =
+            updateAndWriteCompile1Params(
+              originalParamsFile1,
+              tempDir,
+            )
 
           indicator.checkCanceled()
 
           val toolchainInfo =
-            ToolchainInfoSyncHook.JvmToolchainInfoService.getInstance(project).jvmToolchainInfo
-              ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.jvm.toolchain"))
+            try {
+              ToolchainInfoSyncHook.JvmToolchainInfoService
+                .getInstance(project)
+                .getOrQueryJvmToolchainInfo(project, entry.value.id)
+            } catch (e: Exception) {
+              throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.jvm.toolchain"))
+            }
 
           val arguments =
             buildList {
-              add(toolchainInfo.java_home + "/bin/java")
+              add(toolchainInfo.java_home + File.separator + "bin" + File.separator + ExecUtils.calculateExecutableName("java"))
               toolchainInfo.jvm_opts.forEach { add(it) }
               add("-jar")
               add(toolchainInfo.toolchain_path)
-              add("@${paramsFile.pathString}")
-              add("@${originalParamsFile1.pathString}")
+              add("@${paramsFile0.pathString}")
+              add("@${paramsFile1.pathString}")
             }
 
           val command =
@@ -250,10 +274,22 @@ object FastBuildUtils {
           handler.startNotify()
           if (!handler.waitFor() || handler.exitCode != 0) {
             compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
-            tempDir.delete()
+            // tempDir.delete()
+            fastBuildTargetStatus =
+              FastBuildTargetStatus(
+                inputFile = inputFile,
+                targetJar = targetJar,
+                status = FastBuildActionStatus.ERROR,
+              )
             return@start
           }
           compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
+          fastBuildTargetStatus =
+            FastBuildTargetStatus(
+              inputFile = inputFile,
+              targetJar = targetJar,
+              status = FastBuildActionStatus.SUCCESS,
+            )
           processAndHotswapOutput(tempDir, outputJar, project)
         } catch (e: ExecutionException) {
           compileContext.addMessage(
@@ -263,8 +299,24 @@ object FastBuildUtils {
               e.message,
             ),
           )
+          fastBuildTargetStatus =
+            FastBuildTargetStatus(
+              inputFile = inputFile,
+              targetJar = targetJar,
+              status = FastBuildActionStatus.ERROR,
+            )
           compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
           return@start
+        } finally {
+          if (fastBuildTargetStatus == null) {
+            fastBuildTargetStatus =
+              FastBuildTargetStatus(
+                inputFile = inputFile,
+                targetJar = targetJar,
+                status = FastBuildActionStatus.UNKNOWN,
+              )
+          }
+          fastBuildService.finishFastBuildTarget(fastBuildTargetStatus)
         }
       }, null)
     }
@@ -274,95 +326,130 @@ object FastBuildUtils {
    * Copies the original params file updating certain fields to reduce compile time
    * and point to a different output
    */
-  fun updateAndWriteCompileParams(
+  fun updateAndWriteCompile0Params(
     originalParams: Path,
     tempDir: Path,
     outputJar: Path,
     inputFile: Path,
     workspaceRoot: Path,
     targetJar: Path,
+  ): Path =
+    updateAndWriteCompileParams("compile.jar-0.params", originalParams, tempDir) { ips: BufferedReader, os: OutputStreamWriter ->
+      var line = ips.readLine()
+      val sourceFile = inputFile.relativeTo(workspaceRoot)
+
+      fun OutputStreamWriter.writeLn(line: String) = write("$line\n")
+      while (line != null) {
+        when (line) {
+          "--output" -> {
+            os.writeLn(line)
+            os.writeLn(outputJar.pathString)
+            ips.readLine()
+          }
+
+          "--native_header_output" -> {
+            os.writeLn(line)
+            os.writeLn(tempDir.resolve("output-native-header.jar").pathString)
+            ips.readLine()
+          }
+
+          "--generated_sources_output" -> {
+            os.writeLn(line)
+            os.writeLn(tempDir.resolve("output-generated-sources.jar").pathString)
+            ips.readLine()
+          }
+
+          "--output_manifest_proto" -> {
+            os.writeLn(line)
+            os.writeLn(tempDir.resolve("output.jar_manifest_proto").pathString)
+            ips.readLine()
+          }
+
+          "--output_deps_proto" -> {
+            os.writeLn(line)
+            os.writeLn(tempDir.resolve("output.jdeps").pathString)
+            ips.readLine()
+          }
+
+          "--sources" -> {
+            os.writeLn(line)
+            line = ips.readLine()
+            os.writeLn(sourceFile.pathString)
+            while (line?.startsWith("--") == false) {
+              line = ips.readLine()
+            }
+            continue
+          }
+
+          "--source_jars" -> {
+            line = ips.readLine()
+            while (line?.startsWith("--") == false) {
+              line = ips.readLine()
+            }
+            continue
+          }
+
+          "--strict_java_deps" -> {
+            line = ips.readLine()
+            while (line?.startsWith("--") == false) {
+              line = ips.readLine()
+            }
+            continue
+          }
+
+          else -> {
+            line = processLine(line)
+            os.writeLn(line)
+          }
+        }
+        line = ips.readLine()
+      }
+
+      os.writeLn("--classpath")
+      // Add the modules jar to the dependencies
+      if (targetJar.notExists()) {
+        logger.error("Bazel module jar not found: $targetJar")
+      }
+      os.writeLn(targetJar.pathString)
+    }
+
+  fun updateAndWriteCompile1Params(originalParams: Path, tempDir: Path): Path =
+    updateAndWriteCompileParams("compile.jar-1.params", originalParams, tempDir) { ips: BufferedReader, os: OutputStreamWriter ->
+      var line = ips.readLine()
+
+      fun OutputStreamWriter.writeLn(line: String) = write("$line\n")
+      while (line != null) {
+        line = processLine(line)
+        os.writeLn(line)
+        line = ips.readLine()
+      }
+    }
+
+  fun updateAndWriteCompileParams(
+    paramFileName: String,
+    originalParams: Path,
+    tempDir: Path,
+    handleParamsFile: (ips: BufferedReader, os: OutputStreamWriter) -> Unit,
   ): Path {
-    val params = tempDir.resolve("compile.params")
+    val params = tempDir.resolve(paramFileName)
     originalParams.reader().buffered().use { ips ->
       params.writer().use { os ->
-        var line = ips.readLine()
-        val sourceFile = inputFile.relativeTo(workspaceRoot)
-
-        fun OutputStreamWriter.writeLn(line: String) = write("$line\n")
-        while (line != null) {
-          when (line) {
-            "--output" -> {
-              os.writeLn(line)
-              os.writeLn(outputJar.pathString)
-              ips.readLine()
-            }
-
-            "--native_header_output" -> {
-              os.writeLn(line)
-              os.writeLn(tempDir.resolve("output-native-header.jar").pathString)
-              ips.readLine()
-            }
-
-            "--generated_sources_output" -> {
-              os.writeLn(line)
-              os.writeLn(tempDir.resolve("output-generated-sources.jar").pathString)
-              ips.readLine()
-            }
-
-            "--output_manifest_proto" -> {
-              os.writeLn(line)
-              os.writeLn(tempDir.resolve("output.jar_manifest_proto").pathString)
-              ips.readLine()
-            }
-
-            "--output_deps_proto" -> {
-              os.writeLn(line)
-              os.writeLn(tempDir.resolve("output.jdeps").pathString)
-              ips.readLine()
-            }
-
-            "--sources" -> {
-              os.writeLn(line)
-              line = ips.readLine()
-              os.writeLn(sourceFile.pathString)
-              while (line?.startsWith("--") == false) {
-                line = ips.readLine()
-              }
-              continue
-            }
-
-            "--source_jars" -> {
-              line = ips.readLine()
-              while (line?.startsWith("--") == false) {
-                line = ips.readLine()
-              }
-              continue
-            }
-
-            "--strict_java_deps" -> {
-              line = ips.readLine()
-              while (line?.startsWith("--") == false) {
-                line = ips.readLine()
-              }
-              continue
-            }
-
-            else -> {
-              os.writeLn(line)
-            }
-          }
-          line = ips.readLine()
-        }
-
-        os.writeLn("--classpath")
-        // Add the modules jar to the dependencies
-        if (targetJar.notExists()) {
-          logger.error("Bazel module jar not found: $targetJar")
-        }
-        os.writeLn(targetJar.pathString)
+        handleParamsFile(ips, os)
       }
     }
     return params
+  }
+
+  private fun processLine(line: String): String {
+    var resultLine = line
+    val jarSuffix = ".jar"
+    val hjarSuffix = "-hjar" + jarSuffix
+    val expectedIndex = resultLine.length - hjarSuffix.length
+    val actualIndex = resultLine.indexOf(hjarSuffix, expectedIndex)
+    if (actualIndex >= 0 && actualIndex == expectedIndex) {
+      resultLine = resultLine.dropLast(resultLine.length - actualIndex) + jarSuffix
+    }
+    return resultLine
   }
 
   /**

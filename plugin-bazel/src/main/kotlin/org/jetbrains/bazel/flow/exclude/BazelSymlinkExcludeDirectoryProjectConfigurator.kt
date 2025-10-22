@@ -1,7 +1,8 @@
 package org.jetbrains.bazel.flow.open.exclude
 
 import com.intellij.ide.projectView.actions.MarkRootsManager
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.backgroundWriteAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
@@ -24,14 +25,14 @@ internal class BazelSymlinkExcludeDirectoryProjectConfigurator : DirectoryProjec
     moduleRef: Ref<Module>,
     isProjectCreatedWithWizard: Boolean,
   ) {
+    // Call BazelSymlinkExcludeService even if isBazelProject == true because it adds excludes to file watcher
+    val bazelWorkspace = findProjectFolderFromVFile(baseDir) ?: return
+    val symlinksToExclude = project.serviceAsync<BazelSymlinkExcludeService>().getBazelSymlinksToExclude(bazelWorkspace.toNioPath())
+    if (symlinksToExclude.isEmpty()) return
+
     // Fake Module is going to be removed by CounterPlatformProjectConfigurator anyway
     if (project.isBazelProject) return
     val module = moduleRef.get() ?: return
-
-    val bazelWorkspace = findProjectFolderFromVFile(baseDir) ?: return
-    val symlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude(bazelWorkspace.toNioPath())
-    if (symlinksToExclude.isEmpty()) return
-
     val model = ModuleRootManager.getInstance(module).modifiableModel
     val entry = MarkRootsManager.findContentEntry(model, baseDir)
     if (entry != null) {
@@ -39,8 +40,7 @@ internal class BazelSymlinkExcludeDirectoryProjectConfigurator : DirectoryProjec
       symlinksToExclude
         .mapNotNull { virtualFileManager.findFileByNioPath(it) }
         .forEach { exclude -> entry.addExcludeFolder(exclude) }
-      writeAction { model.commit() }
-      project.save()
+      backgroundWriteAction { model.commit() }
     } else {
       model.dispose()
     }

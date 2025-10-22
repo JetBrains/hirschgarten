@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import java.nio.file.Paths
@@ -26,7 +25,6 @@ enum class Language(
   ),
   Python("//aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"), true, true, listOf("PyInfo")),
   Scala("//aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala", "rules_scala"), listOf("extract_scala_info"), true, false),
-  Cpp("//aspects:rules/cpp/cpp_info.bzl", listOf("rules_cc"), listOf("extract_cpp_info", "extract_c_toolchain_info"), false, false),
   Kotlin("//aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"), true, false),
   Jvm(
     "//aspects:rules/jvm/jvm_info.bzl",
@@ -36,14 +34,8 @@ enum class Language(
     true,
     Java.autoloadHints + Scala.autoloadHints + Kotlin.autoloadHints,
   ),
-  Android(
-    "//aspects:rules/android/android_info.bzl",
-    listOf("rules_android", "build_bazel_rules_android"),
-    listOf("extract_android_info", "extract_android_aar_import_info"),
-    true,
-    false,
-  ),
   Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true, false),
+  Protobuf("//aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto", "protobuf"), listOf("extract_protobuf_info"), true, false),
   ;
 
   fun toLoadStatement(): String =
@@ -74,12 +66,12 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return props
   }
 
-  fun generateLanguageExtensions(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, Label?>) {
+  fun generateLanguageExtensions(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, String?>) {
     val fileContent = prepareFileContent(rulesetLanguages, toolchains)
     createNewExtensionsFile(fileContent)
   }
 
-  private fun prepareFileContent(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, Label?>) =
+  private fun prepareFileContent(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, String?>) =
     listOf(
       "# This is a generated file, do not edit it",
       createLoadStatementsString(rulesetLanguages.map { it.language }),
@@ -100,10 +92,10 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return functionNames.joinToString(prefix = "EXTENSIONS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
   }
 
-  private fun createToolchainListString(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, Label?>): String =
+  private fun createToolchainListString(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, String?>): String =
     rulesetLanguages
       .mapNotNull { toolchains[it] }
-      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t\"$it\"" }
+      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ")
 
   private fun createNewExtensionsFile(fileContent: String) {
     val file = aspectsPath.resolve(Constants.EXTENSIONS_BZL)

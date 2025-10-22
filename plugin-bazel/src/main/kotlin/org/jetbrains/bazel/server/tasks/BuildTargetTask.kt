@@ -19,6 +19,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
@@ -115,7 +116,8 @@ class BuildTargetTask(private val project: Project) {
       startBuildConsoleTask(targetsIds, bspBuildConsole, originId, this)
       val compileParams = CompileParams(targetsIds, originId = originId, arguments = arguments + listOf("--keep_going"))
       try {
-        val buildDeferred = async { server.buildTargetCompile(compileParams) }
+        val buildDeferred =
+          async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
         BazelTaskEventsService.getInstance(project).removeListener(originId)
@@ -156,7 +158,7 @@ suspend fun runBuildTargetTask(
   return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
     // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
     // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
-    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags.values } else listOf()
+    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags } else listOf()
     project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds, debugFlag) }
   }.also {
     VirtualFileManager.getInstance().asyncRefresh()

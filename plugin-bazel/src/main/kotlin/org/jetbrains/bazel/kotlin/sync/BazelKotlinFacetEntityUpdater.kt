@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerSettingsData
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
+import org.jetbrains.kotlin.idea.workspaceModel.ModifiableKotlinSettingsEntity
 import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import java.nio.file.Path
@@ -41,8 +42,12 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     kotlinAddendum: KotlinAddendum,
     projectBasePath: Path,
   ) = parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
-    languageVersion = kotlinAddendum.languageVersion
-    apiVersion = kotlinAddendum.apiVersion
+    kotlinAddendum.languageVersion.takeIf { it.isNotEmpty() }.let {
+      languageVersion = it
+    }
+    kotlinAddendum.apiVersion.takeIf { it.isNotEmpty() }.let {
+      apiVersion = it
+    }
     autoAdvanceLanguageVersion = false
     autoAdvanceApiVersion = false
     friendPaths = entityToAdd.toJpsFriendPaths(projectBasePath).toTypedArray()
@@ -105,12 +110,11 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
 
   private fun JavaModule.toAssociateModules(): Set<String> =
     this.genericModuleInfo.associates
-      .map { it.moduleName }
       .toSet()
 
   private fun MutableEntityStorage.addKotlinSettingsEntity(
     parentModuleEntity: ModuleEntity,
-    kotlinSettingsEntity: KotlinSettingsEntity.Builder,
+    kotlinSettingsEntity: ModifiableKotlinSettingsEntity,
   ): KotlinSettingsEntity {
     val updatedParentModuleEntity =
       modifyModuleEntity(parentModuleEntity) {

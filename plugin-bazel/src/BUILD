@@ -20,27 +20,6 @@ kt_jvm_library(
 )
 
 kt_jvm_library(
-    name = "test_fixtures",
-    testonly = 1,
-    srcs = glob([
-        "testFixtures/kotlin/**/*.kt",
-    ]),
-    visibility = ["//visibility:public"],
-    deps = [
-        ":plugin-bazel-lib",
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//rules_intellij/testing:lib",
-        "@maven//:io_kotest_kotest_assertions_api_jvm",
-        "@maven//:io_kotest_kotest_assertions_core_jvm",
-        "@maven//:io_kotest_kotest_assertions_shared_jvm",
-        "@maven//:io_kotest_kotest_common_jvm",
-        "@maven//:org_junit_jupiter_junit_jupiter",
-        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
-    ],
-)
-
-kt_jvm_library(
     name = "plugin-bazel-lib",
     resources = glob([
         "main/resources/**",
@@ -70,6 +49,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/modify/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/open",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/fus",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/resolve",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/startup",
@@ -90,20 +70,24 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/ui/notifications",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/junit",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/configuration",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/coverage",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/junit",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/run",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/startup",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/sync/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ui/gutters",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ui/notifications",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ui/starters",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelquery",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelversion",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelversion/sync",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel",
@@ -112,6 +96,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/nonmodule/sync/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/performanceImpl",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/protobuf",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/gutter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/resolve",
@@ -135,6 +120,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure/workspaceModel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status/unsynced",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target/sync",
@@ -155,6 +141,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/ideStarter",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/indexAdditionalFiles",
         "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
     ],
 )
@@ -165,28 +152,4 @@ kt_jvm_library(
         "main/resources/**",
     ]),
     visibility = ["//visibility:public"],
-)
-
-intellij_integration_test_suite(
-    name = "plugin_tests",
-    srcs = glob([
-        "test/kotlin/org/jetbrains/**/*.kt",
-    ]),
-    associates = [":plugin-bazel-lib"],
-    tags = ["exclusive"],
-    test_package_root = "org.jetbrains",
-    runtime_deps = [
-        ":plugin-bazel-lib",
-    ],
-    deps = [
-        "//plugin-bazel/src:test_fixtures",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extensionPoints/buildTargetClassifier",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
-        "//rules_intellij/intellij_platform_sdk:kotlin_for_tests",
-        "//sdkcompat",
-        "@maven//:io_kotest_kotest_assertions_api_jvm",
-        "@maven//:io_kotest_kotest_assertions_core_jvm",
-        "@maven//:io_kotest_kotest_assertions_shared_jvm",
-        "@maven//:io_kotest_kotest_common_jvm",
-    ],
 )

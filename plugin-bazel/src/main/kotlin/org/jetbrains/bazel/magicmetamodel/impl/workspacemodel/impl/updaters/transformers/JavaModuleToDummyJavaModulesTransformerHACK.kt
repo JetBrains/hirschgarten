@@ -34,7 +34,7 @@ private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
-internal class JavaModuleToDummyJavaModulesTransformerHACK(
+class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
   private val fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   private val project: Project,
@@ -209,10 +209,9 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
             ),
-          modulesDependencies = listOf(),
-          librariesDependencies =
+          dependencies =
             if (!BazelFeatureFlags.fbsrSupportedInPlatform) {
-              javaModule.genericModuleInfo.librariesDependencies
+              javaModule.genericModuleInfo.dependencies
             } else {
               emptyList()
             },
@@ -280,7 +279,7 @@ private fun Iterable<Pair<JavaSourceRoot, Int>>.sumUpVotes(): Map<JavaSourceRoot
 private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<JavaSourceRoot>, projectBasePath: Path): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it.sourcePath, projectBasePath) }
 
-internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
+fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
   val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()
   val absoluteProjectBasePath = projectBasePath.toAbsolutePath().toString()
   return absoluteSourceRoot
@@ -294,7 +293,7 @@ internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Pat
 
 private const val IJ_DUMMY_MODULE_PREFIX = "_aux.synthetic"
 
-internal fun String.addIntelliJDummyPrefix(): String =
+fun String.addIntelliJDummyPrefix(): String =
   if (isBlank()) {
     IJ_DUMMY_MODULE_PREFIX
   } else {

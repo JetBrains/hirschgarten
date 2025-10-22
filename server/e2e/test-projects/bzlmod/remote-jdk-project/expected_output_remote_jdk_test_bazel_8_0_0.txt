@@ -1,0 +1,166 @@
+RawAspectTarget(target=id: "@//.bazelbsp/aspects:aspects"
+kind: "filegroup"
+sources {
+  relative_path: ".bazelbsp/aspects/BUILD"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/core.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/core.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/extensions.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/go/go_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/go/go_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/java/java_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/java/java_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/jvm/jvm_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/jvm/jvm_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/kt/kt_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/kt/kt_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/python/python_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/python/python_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/scala/scala_info.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/rules/scala/scala_info.bzl.template"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/runtime_classpath_query.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/toolchain_query.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/utils/utils.bzl"
+  is_source: true
+}
+sources {
+  relative_path: ".bazelbsp/aspects/utils/utils.bzl.template"
+  is_source: true
+}
+workspace_name: "_main"
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@//example:example"
+kind: "java_binary"
+sources {
+  relative_path: "example/Example.java"
+  is_source: true
+}
+executable: true
+workspace_name: "_main"
+jvm_target_info {
+  jars {
+    binary_jars {
+      relative_path: "example/example.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+    source_jars {
+      relative_path: "example/example-src.jar"
+      root_execution_path_fragment: "bazel-out/fastbuild/bin"
+    }
+  }
+  javac_opts: "-source"
+  javac_opts: "11"
+  javac_opts: "-target"
+  javac_opts: "11"
+  javac_opts: "-XDskipDuplicateBridges=true"
+  javac_opts: "-XDcompilePolicy=simple"
+  javac_opts: "--should-stop=ifError=FLOW"
+  javac_opts: "-g"
+  javac_opts: "-parameters"
+  javac_opts: "-Xep:ReturnValueIgnored:OFF"
+  javac_opts: "-Xep:IgnoredPureGetter:OFF"
+  javac_opts: "-Xep:EmptyTopLevelDeclaration:OFF"
+  javac_opts: "-Xep:LenientFormatStringValidation:OFF"
+  javac_opts: "-Xep:ReturnMissingNullable:OFF"
+  javac_opts: "-Xep:UseCorrectAssertInTests:OFF"
+  jvm_flags: "-Xms2G -Xmx5G"
+  main_class: "example.Example"
+  args: "arg1"
+  args: "arg2"
+  jdeps {
+    relative_path: "example/example.jdeps"
+    root_execution_path_fragment: "bazel-out/fastbuild/bin"
+  }
+}
+java_toolchain_info {
+  source_version: "11"
+  target_version: "11"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+)
+RawAspectTarget(target=id: "@@rules_java+//toolchains:current_java_toolchain"
+kind: "java_toolchain_alias"
+workspace_name: "_main"
+java_toolchain_info {
+  source_version: "11"
+  target_version: "11"
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+java_runtime_info {
+  java_home {
+    is_external: true
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk"
+  }
+}
+)

@@ -1,55 +1,28 @@
 - name: lib/bazel-plugin.jar
   modules:
-    - name: intellij.bazel.plugin
-    - name: intellij.bazel.commons
-    - name: intellij.bazel.sdkcompat
-    - name: intellij.bazel.sdkcompat.k2
-    - name: intellij.bazel.protobuf
-    - name: intellij.bazel.server
-- name: lib/grpc-core.jar
-  library: grpc-core
-  files:
-    - name: $MAVEN_REPOSITORY$/io/grpc/grpc-core/1/grpc-core-1.jar
-    - name: $MAVEN_REPOSITORY$/io/grpc/grpc-api/1/grpc-api-1.jar
-    - name: $MAVEN_REPOSITORY$/com/google/android/annotations/4/annotations-4.jar
-    - name: $MAVEN_REPOSITORY$/org/codehaus/mojo/animal-sniffer-annotations/1/animal-sniffer-annotations-1.jar
-    - name: $MAVEN_REPOSITORY$/io/perfmark/perfmark-api/0/perfmark-api-0.jar
-    - name: $MAVEN_REPOSITORY$/io/grpc/grpc-context/1/grpc-context-1.jar
-  reason: <- intellij.bazel.protobuf
-- name: lib/grpc-protobuf.jar
-  library: grpc-protobuf
-  files:
-    - name: $MAVEN_REPOSITORY$/io/grpc/grpc-protobuf/1/grpc-protobuf-1.jar
-    - name: $MAVEN_REPOSITORY$/com/google/api/grpc/proto-google-common-protos/2/proto-google-common-protos-2.jar
-    - name: $MAVEN_REPOSITORY$/io/grpc/grpc-protobuf-lite/1/grpc-protobuf-lite-1.jar
-  reason: <- intellij.bazel.plugin
-- name: lib/grpc-stub.jar
-  library: grpc-stub
-  files:
-    - name: $MAVEN_REPOSITORY$/io/grpc/grpc-stub/1/grpc-stub-1.jar
-  reason: <- intellij.bazel.protobuf
+  - name: intellij.bazel.plugin
+  - name: intellij.bazel.commons
+  - name: intellij.bazel.sdkcompat
+  - name: intellij.bazel.sdkcompat.k2
+  - name: intellij.bazel.protobuf
+  - name: intellij.bazel.server
 - name: lib/jackson-dataformat-xml.jar
   library: jackson-dataformat-xml
   files:
-    - name: $MAVEN_REPOSITORY$/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2/jackson-dataformat-xml-2.jar
-  reason: <- intellij.bazel.server
+  - name: $MAVEN_REPOSITORY$/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2/jackson-dataformat-xml-2.jar
+  reason: <- intellij.bazel.plugin
 - name: lib/kotlin-tooling-core.jar
   library: kotlin-tooling-core
   files:
-    - name: $MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-tooling-core/1/kotlin-tooling-core-1.jar
+  - name: $MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-tooling-core/1/kotlin-tooling-core-1.jar
   reason: <- intellij.bazel.plugin
 - name: lib/kotlinx-coroutines-guava.jar
   library: kotlinx-coroutines-guava
   files:
-    - name: $MAVEN_REPOSITORY$/com/intellij/platform/kotlinx-coroutines-guava/1/kotlinx-coroutines-guava-1.jar
+  - name: $MAVEN_REPOSITORY$/com/intellij/platform/kotlinx-coroutines-guava/1/kotlinx-coroutines-guava-1.jar
   reason: <- intellij.bazel.plugin
 - name: lib/opentelemetry-exporter-otlp.jar
   library: opentelemetry-exporter-otlp
   files:
-    - name: $MAVEN_REPOSITORY$/io/opentelemetry/opentelemetry-exporter-otlp/1/opentelemetry-exporter-otlp-1.jar
+  - name: $MAVEN_REPOSITORY$/io/opentelemetry/opentelemetry-exporter-otlp/1/opentelemetry-exporter-otlp-1.jar
   reason: <- intellij.bazel.server
-- name: lib/protobuf4.jar
-  library: protobuf4
-  files:
-    - name: $MAVEN_REPOSITORY$/com/google/protobuf/protobuf-java/4/protobuf-java-4.jar
-  reason: <- intellij.bazel.plugin

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.run.config
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
@@ -11,12 +12,14 @@ import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.BazelTestFinder
 import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 class BazelRunConfiguration internal constructor(
@@ -47,6 +50,10 @@ class BazelRunConfiguration internal constructor(
 
   private fun updateHandlerIfDifferentProvider(newProvider: RunHandlerProvider) {
     if (newProvider == handlerProvider) return
+    updateHandler(newProvider)
+  }
+
+  private fun updateHandler(newProvider: RunHandlerProvider) {
     try {
       handler?.state?.writeExternal(bspElementState)
     } catch (e: WriteExternalException) {
@@ -60,6 +67,15 @@ class BazelRunConfiguration internal constructor(
     } catch (e: Exception) {
       logger.error("Failed to read BSP state", e)
     }
+  }
+
+  override fun clone(): RunConfiguration {
+    val result = super.clone() as BazelRunConfiguration
+    // Deep-clone the handler to allow changing handler.state without changing the original configuration
+    handlerProvider?.let {
+      result.updateHandler(it)
+    }
+    return result
   }
 
   override fun getConfigurationEditor(): BazelRunConfigurationEditor = BazelRunConfigurationEditor(this)
@@ -152,6 +168,12 @@ class BazelRunConfiguration internal constructor(
     private const val BSP_STATE_TAG = "bsp-state"
     private const val HANDLER_STATE_TAG = "handler-state"
     private const val HANDLER_PROVIDER_ATTR = "handler-provider-id"
+
+    // Used in BazelRerunFailedTestsAction
+    public val BAZEL_RUN_CONFIGURATION_KEY = Key.create<BazelRunConfiguration>("BAZEL_RUN_CONFIGURATION_KEY")
+
+    fun get(environment: ExecutionEnvironment): BazelRunConfiguration =
+      environment.getUserData(BAZEL_RUN_CONFIGURATION_KEY) ?: environment.runProfile as BazelRunConfiguration
   }
 }
 

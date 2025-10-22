@@ -8,33 +8,38 @@ import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
-import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.application.EDT
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.saveAllFiles
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.run.test.BazelRerunFailedTestsAction
+import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import java.util.UUID
 
-abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, protected val originId: OriginId) :
-  CommandLineState(environment) {
+abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : CommandLineState(environment) {
+  protected val originId: UUID = UUID.randomUUID()
+
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
-  protected abstract suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>)
+  protected abstract suspend fun startBsp(
+    server: JoinedBuildServer,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
+  )
 
   final override fun startProcess(): BazelProcessHandler = doStartProcess(false)
 
   private fun doStartProcess(runningTests: Boolean): BazelProcessHandler {
-    val configuration = environment.runProfile as BazelRunConfiguration
+    val configuration = BazelRunConfiguration.get(environment)
     val project = configuration.project
 
     val bazelCoroutineService = BazelCoroutineService.getInstance(project)
@@ -51,7 +56,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
-          startBsp(server, pid)
+          startBsp(server, pid, handler)
         }
       }
 
@@ -63,6 +68,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
     val runListener = createAndAddTaskListener(handler)
 
     with(BazelTaskEventsService.getInstance(project)) {
+      val originId = originId.toString()
       saveListener(originId, runListener)
       runDeferred.invokeOnCompletion {
         pid.complete(null)
@@ -76,21 +82,32 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
   }
 
   protected fun executeWithTestConsole(executor: Executor): ExecutionResult {
-    val configuration = environment.runProfile as BazelRunConfiguration
+    val configuration = BazelRunConfiguration.get(environment)
     val properties = configuration.createTestConsoleProperties(executor)
+    val useJetBrainsTestRunner = environment.project.useJetBrainsTestRunner()
+    if (useJetBrainsTestRunner) {
+      properties.isIdBasedTestTree = true
+    }
     val handler = doStartProcess(true)
 
-    val console: BaseTestsOutputConsoleView =
-      SMTestRunnerConnectionUtil.createAndAttachConsole(
-        BazelPluginBundle.message("console.tasks.test.framework.name"),
-        handler,
+    val console =
+      SMTestRunnerConnectionUtil.createConsole(
         properties,
       )
+    console.attachToProcess(handler)
 
-    handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString() + "\n", ProcessOutputType.STDOUT)
+    if (!useJetBrainsTestRunner) {
+      handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString() + "\n", ProcessOutputType.STDOUT)
+    }
 
     val actions = createActions(console, handler, executor)
 
-    return DefaultExecutionResult(console, handler, *actions)
+    val executionResult = DefaultExecutionResult(console, handler, *actions)
+    if (useJetBrainsTestRunner) {
+      val rerunFailedTestsAction = BazelRerunFailedTestsAction(console)
+      rerunFailedTestsAction.setModelProvider { console.resultsViewer }
+      executionResult.setRestartActions(rerunFailedTestsAction)
+    }
+    return executionResult
   }
 }

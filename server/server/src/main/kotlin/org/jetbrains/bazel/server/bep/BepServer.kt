@@ -9,13 +9,16 @@ import com.google.devtools.build.v1.PublishBuildToolEventStreamResponse
 import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileTask
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -126,6 +129,23 @@ class BepServer(
         )
       }
 
+      if (testResult.cachedLocally) {
+        val testLog =
+          testResult.testActionOutputList
+            .find { it.name == "test.log" }
+            ?.uri
+            ?.let { URI(it).toPath() }
+
+        if (testLog != null) {
+          bspClient.onCachedTestLog(
+            CachedTestLog(
+              originId,
+              testLog,
+            ),
+          )
+        }
+      }
+
       val testXmlUri = testResult.testActionOutputList.find { it.name == "test.xml" }?.uri
       if (testXmlUri != null) {
         // Test cases identified and sent to the client by TestXmlParser.
@@ -187,8 +207,21 @@ class BepServer(
 
   private fun processProgressEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasProgress()) {
-      // TODO https://youtrack.jetbrains.com/issue/BAZEL-622
-      // bepLogger.onProgress(event.getProgress());
+      val progress = event.progress
+      if (progress.stderr.isNotEmpty() && originId != null) {
+        val events =
+          diagnosticsService.extractDiagnostics(
+            progress.stderr,
+            SyntheticLabel(AllRuleTargets),
+            originId,
+            isCommandLineFormattedOutput = true,
+          )
+        events.forEach {
+          bspClient.onBuildPublishDiagnostics(
+            it,
+          )
+        }
+      }
     }
   }
 

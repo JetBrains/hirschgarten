@@ -12,18 +12,16 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Guava" level="project" />
-    <orderEntry type="library" name="Velocity" level="project" />
-    <orderEntry type="library" name="commons-cli" level="project" />
-    <orderEntry type="library" name="commons-io" level="project" />
-    <orderEntry type="library" name="grpc-core" level="project" />
-    <orderEntry type="library" name="grpc-protobuf" level="project" />
-    <orderEntry type="library" name="grpc-stub" level="project" />
-    <orderEntry type="library" name="gson" level="project" />
-    <orderEntry type="library" name="jackson" level="project" />
-    <orderEntry type="library" name="jackson-databind" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.guava" />
+    <orderEntry type="module" module-name="intellij.libraries.velocity" />
+    <orderEntry type="module" module-name="intellij.libraries.commons.cli" />
+    <orderEntry type="module" module-name="intellij.libraries.commons.io" />
+    <orderEntry type="module" module-name="intellij.libraries.grpc" />
+    <orderEntry type="module" module-name="intellij.libraries.gson" />
+    <orderEntry type="module" module-name="intellij.libraries.jackson" />
+    <orderEntry type="module" module-name="intellij.libraries.jackson.databind" />
     <orderEntry type="library" name="jackson-dataformat-xml" level="project" />
-    <orderEntry type="library" name="jackson-module-kotlin" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.jackson.module.kotlin" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="library" name="kotlinx-coroutines-core" level="project" />
     <orderEntry type="library" name="opentelemetry" level="project" />
@@ -35,8 +33,5 @@
     <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />
-    <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
-    <orderEntry type="module" module-name="intellij.platform.util" />
-    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" />
   </component>
 </module>

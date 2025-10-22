@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.jvm.sync
 
 import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.codeInsight.multiverse.CodeInsightContextManager
+import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
@@ -21,11 +21,10 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
@@ -38,13 +37,10 @@ import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
-import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.FullProjectSync
-import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
-import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureDiff
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
@@ -52,13 +48,7 @@ import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
@@ -73,7 +63,7 @@ class CollectProjectDetailsTask(
 ) {
   private var uniqueJavaHomes: Set<Path>? = null
 
-  private lateinit var javacOptions: Map<String, String>
+  private var javacOptions: Map<String, String>? = null
 
   private var scalaSdks: Set<ScalaSdk>? = null
 
@@ -243,7 +233,6 @@ class CollectProjectDetailsTask(
                 fileToTargetWithoutLowPrioritySharedSources = targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources,
                 projectBasePath = projectBasePath,
                 project = project,
-                isAndroidSupportEnabled = false,
               )
             targetIdToModuleEntityMap
           }
@@ -270,34 +259,20 @@ class CollectProjectDetailsTask(
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
-            WorkspaceModelUpdaterImpl(
+            WorkspaceModelUpdater(
               workspaceEntityStorageBuilder = diff,
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              isAndroidSupportEnabled = false,
-              importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
+              importIjars = projectDetails.workspaceContext?.importIjars ?: false,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
-          workspaceModelUpdater.loadLibraries(libraries)
+          workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
-          calculateAllJavacOptions(modulesToLoad)
+          javacOptions = calculateAllJavacOptions(modulesToLoad)
         }
       }
     }
-  }
-
-  private fun calculateAllJavacOptions(modulesToLoad: List<Module>) {
-    javacOptions =
-      modulesToLoad
-        .asSequence()
-        .filterIsInstance<JavaModule>()
-        .mapNotNull { module ->
-          module.javaAddendum?.javacOptions?.takeIf { it.isNotEmpty() }?.let { javacOptions ->
-            module.getModuleName() to javacOptions.joinToString(" ")
-          }
-        }.toMap()
   }
 
   suspend fun postprocessingSubtask(targetUtilsDiff: TargetUtilsProjectStructureDiff) {
@@ -305,9 +280,12 @@ class CollectProjectDetailsTask(
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
-    SdkUtils.cleanUpInvalidJdks(project.bazelProjectName)
+    SdkUtils.cleanUpInvalidJdks(project)
     addBspFetchedJdks()
-    addBspFetchedJavacOptions()
+    JavacConfiguration.getOptions(project, JavacConfiguration::class.java).ADDITIONAL_OPTIONS_OVERRIDE =
+      requireNotNull(this.javacOptions) {
+        "javacOptions is null but expected to be computed"
+      }
     addBspFetchedScalaSdks()
 
     VirtualFileManager.getInstance().asyncRefresh()
@@ -347,14 +325,8 @@ class CollectProjectDetailsTask(
     }
   }
 
-  private suspend fun addBspFetchedJavacOptions() =
-    writeAction {
-      val javacOptions = JavacConfiguration.getOptions(project, JavacConfiguration::class.java)
-      javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
-    }
-
   private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
-    if (CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled) return
+    if (isSharedSourceSupportEnabled(project)) return
     if (!BazelFeatureFlags.checkSharedSources) return
     for ((file, labels) in fileToTargetWithoutLowPrioritySharedSources) {
       if (labels.size <= 1) {
@@ -403,33 +375,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
 ): ProjectDetails =
   coroutineScope {
     try {
-      val bspBuildTargets = queryWorkspaceBuildTargets(server, syncScope, taskId)
-      val javaTargetIds = bspBuildTargets.targets.calculateJavaTargetIds()
-      val scalaTargetIds = bspBuildTargets.targets.calculateScalaTargetIds()
-      val libraries: WorkspaceLibrariesResult =
-        query("workspace/libraries") {
-          server.workspaceLibraries()
-        }
-
-      val jvmBinaryJarsResult =
-        queryIf(
-          javaTargetIds.isNotEmpty() &&
-            project.shouldImportJvmBinaryJars(),
-          "buildTarget/jvmBinaryJars",
-        ) {
-          server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
-        }
-
-      // We use javacOptions only to build the dependency tree based on the classpath.
-      // If the workspace/libraries endpoint is NOT available (like SBT), we need to retrieve it.
-      // If a server supports buildTarget/jvmCompileClasspath, then the classpath won't be passed via this endpoint
-      // (see https://build-server-protocol.github.io/docs/extensions/java#javacoptionsitem).
-      // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
-      // There's no capability for javacOptions.
-      val javacOptionsResult =
-        asyncQueryIf(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
-          server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-        }
+      val service = BazelWorkspaceResolveService.getInstance(project)
+      val workspace = service.getOrFetchResolvedWorkspace(syncScope, taskId)
+      val targets = workspace.targets
 
       val workspaceContext =
         query("workspace/context") {
@@ -437,11 +385,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       ProjectDetails(
-        targetIds = bspBuildTargets.targets.map { it.id },
-        targets = bspBuildTargets.targets.toSet(),
-        javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
-        libraries = libraries.libraries,
-        jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
+        targetIds = targets.getTargetIDs().toList(),
+        targets = targets.getTargets().toSet(),
+        libraries = workspace.libraries,
         workspaceContext = workspaceContext,
       )
     } catch (e: Exception) {
@@ -456,31 +402,19 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.kind.includesJava() }.map { it.id }
-
-private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.kind.includesScala() }.map { it.id }
-
-private suspend fun queryWorkspaceBuildTargets(
-  server: JoinedBuildServer,
-  syncScope: ProjectSyncScope,
-  taskId: String,
-): WorkspaceBuildTargetsResult =
-  coroutineScope {
-    when (syncScope) {
-      is PartialProjectSync -> {
-        query("workspace/buildTargetsPartial") {
-          server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+// TODO: fix imports -- my build has broken sdkcompat
+private fun calculateAllJavacOptions(modulesToLoad: List<Module>): HashMap<String, String> {
+  val javacOptions = HashMap<String, String>()
+  for (module in modulesToLoad) {
+    if (module is JavaModule) {
+      val options = module.javaAddendum?.javacOptions
+      if (options != null && options.isNotEmpty()) {
+        if (options.size == 1 && options[0] == "-proc:none") {
+          continue
         }
-      }
-
-      is FirstPhaseSync -> {
-        query("workspace/buildTargetsFirstPhase") {
-          server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
-        }
-      }
-
-      else -> {
-        query("workspace/buildTargets") { server.workspaceBuildTargets() }
+        javacOptions[module.getModuleName()] = options.joinToString(" ")
       }
     }
   }
+  return javacOptions
+}

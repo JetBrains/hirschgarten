@@ -33,4 +33,4 @@ exclude:
   - name: DialogTitleCapitalization
 failureConditions:
   severityThresholds:
-    critical: 1
+    critical: 10

@@ -32,16 +32,10 @@ enum class Language(
     ),
     hashSetOf(JAVA.id),
   ),
-  CPP("cpp", hashSetOf(".C", ".cc", ".cpp", ".CPP", ".c++", ".cp", "cxx", ".h", ".hpp")),
   PYTHON("python", hashSetOf(".py")),
   THRIFT("thrift", hashSetOf(".thrift")),
-  ANDROID(
-    "android",
-    emptySet(),
-    setOf("android_binary", "android_library", "android_local_test", "kt_android_library", "kt_android_local_test"),
-    hashSetOf(JAVA.id),
-  ),
   GO("go", hashSetOf(".go"), setOf("go_binary")),
+  PROTOBUF("protobuf", hashSetOf(".proto")),
   ;
 
   val allNames: Set<String> = dependentNames + id
@@ -51,10 +45,9 @@ enum class Language(
 
     fun all() = ALL
 
-    fun allOfKind(targetKind: String, transitiveCompileTimeJarsTargetKinds: Set<String> = emptySet()): Set<Language> =
+    fun allOfKind(targetKind: String): Set<Language> =
       all()
         .filterTo(mutableSetOf()) { it.targetKinds.contains(targetKind) }
-        .apply { if (targetKind in transitiveCompileTimeJarsTargetKinds) add(JAVA) }
 
     fun allOfSource(path: String): Set<Language> = all().filter { lang -> lang.extensions.any { path.endsWith(it) } }.toHashSet()
   }

@@ -5,62 +5,28 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
-import org.jetbrains.bsp.protocol.RawBuildTarget
 
-internal data class BspModuleDetails(
+data class BspModuleDetails(
   val target: BuildTarget,
-  val javacOptions: JavacOptionsItem?,
+  val javacOptions: List<String>,
   val type: ModuleTypeId,
   val associates: List<Label> = listOf(),
-  val moduleDependencies: List<Label>,
-  val libraryDependencies: List<Label>?,
+  val dependencies: List<Label>,
 )
 
-internal class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
+class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
   WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
     GenericModuleInfo(
       name = inputEntity.target.id.formatAsModuleName(project),
       type = inputEntity.type,
-      modulesDependencies =
-        inputEntity.moduleDependencies
-          .mapNotNull { targetsMap[it] }
-          .map { IntermediateModuleDependency(moduleName = it.id.formatAsModuleName(project)) },
-      librariesDependencies = calculateLibrariesDependencies(inputEntity),
+      dependencies = inputEntity.dependencies.map { it.formatAsModuleName(project) },
       kind = inputEntity.target.kind,
       associates =
         inputEntity.associates.mapNotNull {
-          targetsMap[it]?.toModuleDependency(project)
+          targetsMap[it]?.id?.formatAsModuleName(project)
         },
     )
-
-  private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<IntermediateLibraryDependency> =
-    inputEntity.libraryDependencies?.map { it.toLibraryDependency(project, true) } ?: emptyList()
 }
-
-internal class BuildTargetToModuleDependencyTransformer(
-  private val allTargetsIds: Set<Label>,
-  private val targetsMap: Map<Label, BuildTarget>,
-  private val project: Project,
-) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, IntermediateModuleDependency> {
-  override fun transform(inputEntity: RawBuildTarget): List<IntermediateModuleDependency> =
-    inputEntity
-      .dependencies
-      .filter { allTargetsIds.contains(it) }
-      .mapNotNull { targetsMap[it]?.toModuleDependency(project) }
-}
-
-internal fun BuildTarget.toModuleDependency(project: Project): IntermediateModuleDependency =
-  IntermediateModuleDependency(
-    moduleName = this.id.formatAsModuleName(project),
-  )
-
-internal fun Label.toLibraryDependency(project: Project, isProjectLevelLibrary: Boolean): IntermediateLibraryDependency =
-  IntermediateLibraryDependency(
-    libraryName = this.formatAsModuleName(project),
-    isProjectLevelLibrary = isProjectLevelLibrary,
-  )

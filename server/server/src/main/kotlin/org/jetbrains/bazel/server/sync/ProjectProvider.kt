@@ -4,11 +4,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.FirstPhaseProject
+import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.model.Project
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 
-class ProjectProvider(private val projectResolver: ProjectResolver, private val firstPhaseProjectResolver: FirstPhaseProjectResolver) {
+class ProjectProvider(val projectResolver: ProjectResolver, private val firstPhaseProjectResolver: FirstPhaseProjectResolver) {
   @Volatile
   private var project: Project? = null
   private val projectMutex = Mutex()
@@ -28,7 +28,7 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
       project ?: loadFromBazel(false, null).also { project = it }
     }
 
-  suspend fun bazelQueryRefreshAndGet(originId: String): FirstPhaseProject =
+  suspend fun bazelQueryRefreshAndGet(originId: String): PhasedSyncProject =
     projectMutex.withLock {
       firstPhaseProjectResolver.resolve(originId).also { project = it }
     }
@@ -41,7 +41,7 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
     targetsToSync: List<Label>?,
     originId: String? = null,
   ): AspectSyncProject =
-    projectResolver.resolve(build = build, targetsToSync, project as? FirstPhaseProject, originId).also {
+    projectResolver.resolve(build = build, targetsToSync, project as? PhasedSyncProject, originId).also {
       projectResolver.releaseMemory()
     }
 }

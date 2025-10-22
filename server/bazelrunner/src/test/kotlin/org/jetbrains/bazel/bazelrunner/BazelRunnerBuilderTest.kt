@@ -3,36 +3,18 @@ package org.jetbrains.bazel.bazelrunner
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.commons.FileUtil
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
-import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
-import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
-import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DebugFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
-import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
-import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
-import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
-import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
-import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
-import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
-import org.jetbrains.bazel.workspacecontext.ImportIjarsSpec
-import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
-import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
-import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
-import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
-import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
-import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
-import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
-import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
-import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
-import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
+import org.jetbrains.bazel.startup.FileUtilIntellij
+import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -42,31 +24,39 @@ fun String.label() = Label.parse(this)
 
 val mockContext =
   WorkspaceContext(
-    targets = TargetsSpec(listOf("in1".label(), "in2".label()), listOf("ex1".label(), "ex2".label())),
-    directories = DirectoriesSpec(listOf(Path("in1dir"), Path("in2dir")), listOf(Path("ex1dir"), Path("ex2dir"))),
-    buildFlags = BuildFlagsSpec(listOf("flag1", "flag2")),
-    syncFlags = SyncFlagsSpec(listOf("flag1", "flag2")),
-    bazelBinary = BazelBinarySpec(Path("bazel")),
-    allowManualTargetsSync = AllowManualTargetsSyncSpec(true),
-    dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
-    importDepth = ImportDepthSpec(2),
-    enabledRules = EnabledRulesSpec(listOf("rule1", "rule2")),
-    ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
-    experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(true),
-    experimentalTransitiveCompileTimeJarsTargetKinds = TransitiveCompileTimeJarsTargetKindsSpec(emptyList()),
-    experimentalNoPruneTransitiveCompileTimeJarsPatterns = NoPruneTransitiveCompileTimeJarsPatternsSpec(emptyList()),
-    experimentalPrioritizeLibrariesOverModulesTargetKinds = PrioritizeLibrariesOverModulesTargetKindsSpec(emptyList()),
-    enableNativeAndroidRules = EnableNativeAndroidRules(false),
-    androidMinSdkSpec = AndroidMinSdkSpec(null),
-    shardSync = ShardSyncSpec(false),
-    targetShardSize = TargetShardSizeSpec(1000),
-    shardingApproachSpec = ShardingApproachSpec(null),
-    importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
-    gazelleTarget = GazelleTargetSpec(null),
-    indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
-    pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
-    importIjarsSpec = ImportIjarsSpec(false),
-    debugFlags = DebugFlagsSpec(emptyList()),
+    targets =
+      listOf(
+        ExcludableValue.included("in1".label()),
+        ExcludableValue.included("in2".label()),
+        ExcludableValue.excluded("ex1".label()),
+        ExcludableValue.excluded("ex2".label()),
+      ),
+    directories =
+      listOf(
+        ExcludableValue.included(Path("in1dir")),
+        ExcludableValue.included(Path("in2dir")),
+        ExcludableValue.excluded(Path("ex1dir")),
+        ExcludableValue.excluded(Path("ex2dir")),
+      ),
+    buildFlags = listOf("flag1", "flag2"),
+    syncFlags = listOf("flag1", "flag2"),
+    debugFlags = emptyList(),
+    bazelBinary = Path("bazel"),
+    allowManualTargetsSync = true,
+    dotBazelBspDirPath = Path(".bazelbsp"),
+    importDepth = 2,
+    enabledRules = listOf("rule1", "rule2"),
+    ideJavaHomeOverride = Path("java_home"),
+    shardSync = false,
+    targetShardSize = 1000,
+    shardingApproach = null,
+    importRunConfigurations = emptyList(),
+    gazelleTarget = null,
+    indexAllFilesInDirectories = false,
+    pythonCodeGeneratorRuleNames = emptyList(),
+    importIjars = false,
+    deriveInstrumentationFilterFromTargets = false,
+    indexAdditionalFilesInDirectories = emptyList(),
   )
 
 val mockBazelInfo =
@@ -85,6 +75,13 @@ val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot)
 val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelInfo)
 
 class BazelRunnerBuilderTest {
+  @BeforeEach
+  fun beforeEach() {
+    // Initialize providers for tests
+    SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
+    FileUtil.provideFileUtil(FileUtilIntellij)
+  }
+
   @Test
   fun `most bare bones build without targets (even though it's not correct)`() {
     val command =
@@ -110,7 +107,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
         build {
-          addTargetsFromSpec(mockContext.targets)
+          addTargetsFromExcludableList(mockContext.targets)
         }
       }
 
@@ -138,7 +135,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunnerWithBazelInfo.buildBazelCommand(mockContext) {
         build {
-          addTargetsFromSpec(mockContext.targets)
+          addTargetsFromExcludableList(mockContext.targets)
         }
       }
     val executionDescriptor = command.buildExecutionDescriptor()
@@ -164,7 +161,7 @@ class BazelRunnerBuilderTest {
       in2
       -ex1
       -ex2
-      
+
       """.trimIndent()
     executionDescriptor.finishCallback()
     targetPatternFile.exists() shouldBe false

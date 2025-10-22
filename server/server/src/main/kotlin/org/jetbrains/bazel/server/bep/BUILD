@@ -6,7 +6,6 @@ kt_library(
         "*.java",
         "*.kt",
     ]),
-    resources = ["//server/log4j_config"],
     visibility = ["//server/server:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
@@ -14,8 +13,6 @@ kt_library(
         "//server/commons",
         "//server/logger",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
-        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/paths",
         "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "@googleapis//google/devtools/build/v1:build_java_grpc",
         "@googleapis//google/devtools/build/v1:build_java_proto",
