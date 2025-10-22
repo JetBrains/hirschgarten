@@ -4,6 +4,7 @@ package org.jetbrains.bazel.target
 
 import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.module.Module
@@ -46,7 +47,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -97,15 +97,9 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   val targetListUpdated: SharedFlow<Unit> = mutableTargetListUpdated.asSharedFlow()
 
   override suspend fun save() {
-    val exitInProgress = ApplicationManager.getApplication().isExitInProgress
-    if (!exitInProgress && (nowAsDuration() - lastSaved) < 5.minutes) {
-      return
-    }
-
-    withContext(Dispatchers.IO) {
-      db.save()
-      lastSaved = nowAsDuration()
-    }
+    // TODO: we may turn this back on when the performance issue is resolved
+    //  https://youtrack.jetbrains.com/issue/BAZEL-2058/Optimize-storage-of-imported-target-info
+    return
   }
 
   fun addFileToTargetIdEntry(file: Path, targets: List<Label>) {
