@@ -1,22 +1,21 @@
 package org.jetbrains.bazel.workspace.model.matchers.entries
 
 import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntityBuilder
 import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
-import com.intellij.java.workspace.entities.ModifiableJavaResourceRootPropertiesEntity
-import com.intellij.java.workspace.entities.ModifiableJavaSourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntityBuilder
 import com.intellij.java.workspace.entities.javaResourceRoots
 import com.intellij.java.workspace.entities.javaSourceRoots
-import com.intellij.platform.workspace.jps.entities.ContentRootEntity
-import com.intellij.platform.workspace.jps.entities.ModifiableContentRootEntity
-import com.intellij.platform.workspace.jps.entities.ModifiableSourceRootEntity
+import com.intellij.platform.workspace.jps.entities.ContentRootEntityBuilder
+import com.intellij.platform.workspace.jps.entities.SourceRootEntityBuilder
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
 public data class ExpectedSourceRootEntity(
-  val sourceRootEntity: ModifiableSourceRootEntity,
-  val contentRootEntity: ModifiableContentRootEntity,
+  val sourceRootEntity: SourceRootEntityBuilder,
+  val contentRootEntity: ContentRootEntityBuilder,
   val parentModuleEntity: ModuleEntity,
 )
 
@@ -44,12 +43,12 @@ private fun validateSourceRootEntity(actual: SourceRootEntity, expected: Expecte
   actual.contentRoot shouldBeEqual toExpectedContentRootEntity(expected)
 }
 
-private fun validateJavaSourceRootEntity(actual: JavaSourceRootPropertiesEntity, expected: ModifiableJavaSourceRootPropertiesEntity) {
+private fun validateJavaSourceRootEntity(actual: JavaSourceRootPropertiesEntity, expected: JavaSourceRootPropertiesEntityBuilder) {
   actual.generated shouldBe expected.generated
   actual.packagePrefix shouldBe expected.packagePrefix
 }
 
-private fun validateJavaResourceRootEntity(actual: JavaResourceRootPropertiesEntity, expected: ModifiableJavaResourceRootPropertiesEntity) {
+private fun validateJavaResourceRootEntity(actual: JavaResourceRootPropertiesEntity, expected: JavaResourceRootPropertiesEntityBuilder) {
   actual.generated shouldBe expected.generated
   actual.relativeOutputPath shouldBe expected.relativeOutputPath
 }

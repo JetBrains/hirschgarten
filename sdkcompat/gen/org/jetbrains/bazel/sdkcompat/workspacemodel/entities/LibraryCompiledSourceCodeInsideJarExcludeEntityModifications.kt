@@ -1,31 +1,29 @@
+@file:JvmName("LibraryCompiledSourceCodeInsideJarExcludeEntityModifications")
+
 package org.jetbrains.bazel.sdkcompat.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
-import com.intellij.platform.workspace.storage.ModifiableWorkspaceEntity
+import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.storage.SymbolicEntityId
-import com.intellij.platform.workspace.storage.WorkspaceEntity
-import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
-import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceSet
 
 @GeneratedCodeApiVersion(3)
-interface ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity : ModifiableWorkspaceEntity<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
+interface LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuilder<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
   override var entitySource: EntitySource
   var libraryId: LibraryId
   var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
 }
 
-internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType : EntityType<LibraryCompiledSourceCodeInsideJarExcludeEntity, ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity>() {
+internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType : EntityType<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder>() {
   override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity> get() = LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
   operator fun invoke(
     libraryId: LibraryId,
     compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId,
     entitySource: EntitySource,
-    init: (ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity.() -> Unit)? = null,
-  ): ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity {
+    init: (LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit)? = null,
+  ): LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder {
     val builder = builder()
     builder.libraryId = libraryId
     builder.compiledSourceCodeInsideJarExcludeId = compiledSourceCodeInsideJarExcludeId
@@ -37,9 +35,9 @@ internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType : EntityType
 
 fun MutableEntityStorage.modifyLibraryCompiledSourceCodeInsideJarExcludeEntity(
   entity: LibraryCompiledSourceCodeInsideJarExcludeEntity,
-  modification: ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity.() -> Unit,
+  modification: LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit,
 ): LibraryCompiledSourceCodeInsideJarExcludeEntity =
-  modifyEntity(ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity::class.java, entity, modification)
+  modifyEntity(LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder::class.java, entity, modification)
 
 @JvmOverloads
 @JvmName("createLibraryCompiledSourceCodeInsideJarExcludeEntity")
@@ -47,6 +45,6 @@ fun LibraryCompiledSourceCodeInsideJarExcludeEntity(
   libraryId: LibraryId,
   compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId,
   entitySource: EntitySource,
-  init: (ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity.() -> Unit)? = null,
-): ModifiableLibraryCompiledSourceCodeInsideJarExcludeEntity =
+  init: (LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit)? = null,
+): LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder =
   LibraryCompiledSourceCodeInsideJarExcludeEntityType(libraryId, compiledSourceCodeInsideJarExcludeId, entitySource, init)

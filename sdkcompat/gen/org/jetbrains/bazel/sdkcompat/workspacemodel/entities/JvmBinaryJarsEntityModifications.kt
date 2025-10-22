@@ -1,32 +1,31 @@
+@file:JvmName("JvmBinaryJarsEntityModifications")
+
 package org.jetbrains.bazel.sdkcompat.workspacemodel.entities
 
-import com.intellij.platform.workspace.jps.entities.ModifiableModuleEntity
-import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleEntityBuilder
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
-import com.intellij.platform.workspace.storage.ModifiableWorkspaceEntity
+import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
-import com.intellij.platform.workspace.storage.annotations.Parent
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.bazel.annotations.PublicApi
 
 @GeneratedCodeApiVersion(3)
-interface ModifiableJvmBinaryJarsEntity : ModifiableWorkspaceEntity<JvmBinaryJarsEntity> {
+interface JvmBinaryJarsEntityBuilder : WorkspaceEntityBuilder<JvmBinaryJarsEntity> {
   override var entitySource: EntitySource
   var jars: MutableList<VirtualFileUrl>
-  var module: ModifiableModuleEntity
+  var module: ModuleEntityBuilder
 }
 
-internal object JvmBinaryJarsEntityType : EntityType<JvmBinaryJarsEntity, ModifiableJvmBinaryJarsEntity>() {
+internal object JvmBinaryJarsEntityType : EntityType<JvmBinaryJarsEntity, JvmBinaryJarsEntityBuilder>() {
   override val entityClass: Class<JvmBinaryJarsEntity> get() = JvmBinaryJarsEntity::class.java
   operator fun invoke(
     jars: List<VirtualFileUrl>,
     entitySource: EntitySource,
-    init: (ModifiableJvmBinaryJarsEntity.() -> Unit)? = null,
-  ): ModifiableJvmBinaryJarsEntity {
+    init: (JvmBinaryJarsEntityBuilder.() -> Unit)? = null,
+  ): JvmBinaryJarsEntityBuilder {
     val builder = builder()
     builder.jars = jars.toMutableWorkspaceList()
     builder.entitySource = entitySource
@@ -37,10 +36,10 @@ internal object JvmBinaryJarsEntityType : EntityType<JvmBinaryJarsEntity, Modifi
 
 fun MutableEntityStorage.modifyJvmBinaryJarsEntity(
   entity: JvmBinaryJarsEntity,
-  modification: ModifiableJvmBinaryJarsEntity.() -> Unit,
-): JvmBinaryJarsEntity = modifyEntity(ModifiableJvmBinaryJarsEntity::class.java, entity, modification)
+  modification: JvmBinaryJarsEntityBuilder.() -> Unit,
+): JvmBinaryJarsEntity = modifyEntity(JvmBinaryJarsEntityBuilder::class.java, entity, modification)
 
-var ModifiableModuleEntity.jvmBinaryJarsEntity: ModifiableJvmBinaryJarsEntity?
+var ModuleEntityBuilder.jvmBinaryJarsEntity: JvmBinaryJarsEntityBuilder?
   by WorkspaceEntity.extensionBuilder(JvmBinaryJarsEntity::class.java)
 
 
@@ -49,5 +48,5 @@ var ModifiableModuleEntity.jvmBinaryJarsEntity: ModifiableJvmBinaryJarsEntity?
 fun JvmBinaryJarsEntity(
   jars: List<VirtualFileUrl>,
   entitySource: EntitySource,
-  init: (ModifiableJvmBinaryJarsEntity.() -> Unit)? = null,
-): ModifiableJvmBinaryJarsEntity = JvmBinaryJarsEntityType(jars, entitySource, init)
+  init: (JvmBinaryJarsEntityBuilder.() -> Unit)? = null,
+): JvmBinaryJarsEntityBuilder = JvmBinaryJarsEntityType(jars, entitySource, init)
