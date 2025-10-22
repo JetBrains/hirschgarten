@@ -52,7 +52,7 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
         .filter { it.firstChild?.text == "glob" }
         .forEach {
           getReferenceToGlobCallOrNull(it, file, StarlarkGlob.forPath(baseDir))
-            ?.let { ref -> processor.process(ref)}
+            ?.let { ref -> processor.process(ref) }
         }
     }
   }
