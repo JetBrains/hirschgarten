@@ -1,11 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -28,48 +25,43 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
+import java.io.IOException
 
 class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParameters>(true) {
   override fun processQuery(params: SearchParameters, processor: Processor<in PsiReference>) {
+    if (!params.project.isBazelProject) return
+
+    val psiManager = PsiManager.getInstance(params.project)
     val file = params.elementToSearch as? PsiFile ?: return
-    if (!file.project.isBazelProject) return
-
-    val project = file.project
-    val psiManager = PsiManager.getInstance(project)
-    val projectScope = GlobalSearchScope.projectScope(project)
-
-    val starlarkFiles =
-      ApplicationManager.getApplication().runReadAction(
-        Computable { FileTypeIndex.getFiles(StarlarkFileType, projectScope) },
-      )
+    val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.projectScope(params.project))
     if (starlarkFiles.isEmpty()) return
 
     starlarkFiles.forEach { virtualFile ->
-      ApplicationManager.getApplication().runReadAction {
-        val starlarkFile = psiManager.findFile(virtualFile) as? StarlarkFile ?: return@runReadAction
-        val baseDir = starlarkFile.virtualFile.parent ?: return@runReadAction
+      val starlarkFile = psiManager.findFile(virtualFile) as? StarlarkFile ?: return
+      val baseDir = starlarkFile.virtualFile.parent ?: return
 
-        // Find all text occurrences that refer to the file
-        PsiTreeUtil
-          .collectElementsOfType(starlarkFile, StarlarkStringLiteralExpression::class.java)
-          .filter { isReferringToFile(it, file, psiManager) }
-          .forEach { processTextOccurrence(it, file, processor, psiManager) }
+      // Find all text occurrences that refer to the file
+      PsiTreeUtil
+        .collectElementsOfType(starlarkFile, StarlarkStringLiteralExpression::class.java)
+        .filter { isReferringToFile(it, file, psiManager) }
+        .forEach { processor.process(getReferenceToTextOccurrence(it, file, psiManager)) }
 
-        // Find all glob() calls that refer to the file
-        PsiTreeUtil
-          .collectElementsOfType(starlarkFile, StarlarkCallExpression::class.java)
-          .filter { it.firstChild?.text == "glob" }
-          .forEach { processGlobCall(it, file, processor, baseDir) }
-      }
+      // Find all glob() calls that refer to the file
+      PsiTreeUtil
+        .collectElementsOfType(starlarkFile, StarlarkCallExpression::class.java)
+        .filter { it.firstChild?.text == "glob" }
+        .forEach {
+          getReferenceToGlobCallOrNull(it, file, StarlarkGlob.forPath(baseDir))
+            ?.let { ref -> processor.process(ref)}
+        }
     }
   }
 
-  private fun processTextOccurrence(
+  private fun getReferenceToTextOccurrence(
     literal: StarlarkStringLiteralExpression,
     file: PsiFile,
-    processor: Processor<in PsiReference>,
     psiManager: PsiManager,
-  ) {
+  ): PsiReferenceBase<StarlarkStringLiteralExpression> {
     val range = ElementManipulators.getValueTextRange(literal)
     val reference =
       object : PsiReferenceBase<StarlarkStringLiteralExpression>(literal, range) {
@@ -82,46 +74,40 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
           return ElementManipulators.getManipulator(element)?.handleContentChange(element, range, newContent) ?: element
         }
       }
-    processor.process(reference)
+    return reference
   }
 
-  private fun processGlobCall(
+  private fun getReferenceToGlobCallOrNull(
     call: StarlarkCallExpression,
     file: PsiFile,
-    processor: Processor<in PsiReference>,
-    baseDir: VirtualFile,
-  ) {
-    val arguments = call.getArgumentList()?.getArguments() ?: return
+    globBuilder: StarlarkGlob.Builder,
+  ): PsiReferenceBase<StarlarkCallExpression>? {
+    val arguments = call.getArgumentList()?.getArguments() ?: return null
 
-    val includeArgument = arguments.firstOrNull { it !is StarlarkNamedArgumentExpression || it.name == "include" }
-    val includePatterns = includeArgument?.let { extractPatterns(it) } ?: return
-    if (includePatterns.isEmpty()) return
+    val includeArgument = arguments.firstOrNull { it !is StarlarkNamedArgumentExpression || it.name == "include" } ?: return null
+    val includePatterns = extractPatterns(includeArgument)
+    if (includePatterns.isEmpty()) return null
 
     val excludeArgument = arguments.filterIsInstance<StarlarkNamedArgumentExpression>().firstOrNull { it.name == "exclude" }
     val excludePatterns = excludeArgument?.let { extractPatterns(it) } ?: emptyList()
 
     val isUsage =
       try {
-        val includedFiles = StarlarkGlob.forPath(baseDir).addPatterns(includePatterns).glob()
-        if (includedFiles.contains(file.virtualFile)) {
-          val excludedFiles =
-            if (excludePatterns.isNotEmpty()) {
-              StarlarkGlob.forPath(baseDir).addPatterns(excludePatterns).glob()
-            } else {
-              emptyList()
-            }
-          !excludedFiles.contains(file.virtualFile)
-        } else {
-          false
-        }
-      } catch (e: Exception) {
+        globBuilder
+          .addPatterns(includePatterns)
+          .addExcludes(excludePatterns)
+          .glob()
+          .contains(file.virtualFile)
+      } catch (e: IOException) {
         Logger.getInstance(StarlarkGlob::class.java).warn(e.message)
         false
+      } catch (_: InterruptedException) {
+        Thread.currentThread().interrupt()
+        false
       }
+    if (!isUsage) return null
 
-    if (isUsage) {
-      processor.process(PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file))
-    }
+    return PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file)
   }
 
   private fun buildNewLabelContent(oldContent: String, newFilename: String): String {

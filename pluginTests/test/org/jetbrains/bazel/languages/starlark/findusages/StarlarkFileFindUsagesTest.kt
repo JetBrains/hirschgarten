@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldHaveSize
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkFindUsagesTestCase
 import org.junit.Before
@@ -37,7 +37,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(javaFile).map { it.element?.text }
+    val usages = myFixture.findUsages(javaFile).mapNotNull { it.element?.text }
     usages.shouldContain("\"com/example/MyClass.java\"")
   }
 
@@ -62,7 +62,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(ktFile).map { it.element?.text }
+    val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.text }
     usages.shouldContain("\"com/example/MyClass.kt\"")
   }
 
@@ -88,7 +88,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(ktFile).map { it.element?.text }
+    val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.text }
     usages.shouldContain("glob([\"**/*.kt\"])")
   }
 
@@ -115,7 +115,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
     )
 
     val usages = myFixture.findUsages(ktFile)
-    usages.shouldHaveSize(0)
+    usages.shouldBeEmpty()
   }
 
   @Test
@@ -141,6 +141,6 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
     )
 
     val usages = myFixture.findUsages(ktFile)
-    usages.shouldHaveSize(0)
+    usages.shouldBeEmpty()
   }
 }
