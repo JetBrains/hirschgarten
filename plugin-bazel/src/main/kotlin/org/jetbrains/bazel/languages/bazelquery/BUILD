@@ -6,7 +6,7 @@ kt_jvm_library(
         "**/*.kt",
         "**/*.java",
     ]),
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc",

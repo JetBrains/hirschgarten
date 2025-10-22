@@ -21,7 +21,6 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
@@ -40,9 +39,7 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
-import org.jetbrains.bazel.sync.task.queryIf
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureDiff
 import org.jetbrains.bazel.target.targetUtils
@@ -66,7 +63,7 @@ class CollectProjectDetailsTask(
 ) {
   private var uniqueJavaHomes: Set<Path>? = null
 
-  private lateinit var javacOptions: Map<String, String>
+  private var javacOptions: Map<String, String>? = null
 
   private var scalaSdks: Set<ScalaSdk>? = null
 
@@ -267,28 +264,15 @@ class CollectProjectDetailsTask(
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              importIjars = projectDetails.workspaceContext?.importIjarsSpec?.value ?: false,
+              importIjars = projectDetails.workspaceContext?.importIjars ?: false,
             )
 
           workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
-          calculateAllJavacOptions(modulesToLoad)
+          javacOptions = calculateAllJavacOptions(modulesToLoad)
         }
       }
     }
-  }
-
-  // TODO: fix imports -- my build has broken sdkcompat
-  private fun calculateAllJavacOptions(modulesToLoad: List<Module>) {
-    javacOptions =
-      modulesToLoad
-        .asSequence()
-        .filterIsInstance<JavaModule>()
-        .mapNotNull { module ->
-          module.javaAddendum?.javacOptions?.takeIf { it.isNotEmpty() }?.let { javacOptions ->
-            module.getModuleName() to javacOptions.joinToString(" ")
-          }
-        }.toMap()
   }
 
   suspend fun postprocessingSubtask(targetUtilsDiff: TargetUtilsProjectStructureDiff) {
@@ -296,9 +280,12 @@ class CollectProjectDetailsTask(
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
-    SdkUtils.cleanUpInvalidJdks(project.bazelProjectName)
+    SdkUtils.cleanUpInvalidJdks(project)
     addBspFetchedJdks()
-    addBspFetchedJavacOptions()
+    JavacConfiguration.getOptions(project, JavacConfiguration::class.java).ADDITIONAL_OPTIONS_OVERRIDE =
+      requireNotNull(this.javacOptions) {
+        "javacOptions is null but expected to be computed"
+      }
     addBspFetchedScalaSdks()
 
     VirtualFileManager.getInstance().asyncRefresh()
@@ -337,12 +324,6 @@ class CollectProjectDetailsTask(
       }
     }
   }
-
-  private suspend fun addBspFetchedJavacOptions() =
-    writeAction {
-      val javacOptions = JavacConfiguration.getOptions(project, JavacConfiguration::class.java)
-      javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
-    }
 
   private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
     if (isSharedSourceSupportEnabled(project)) return
@@ -421,6 +402,19 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun Sequence<BuildTarget>.calculateJavaTargetIds(): Sequence<Label> = filter { it.kind.includesJava() }.map { it.id }
-
-private fun Sequence<BuildTarget>.calculateScalaTargetIds(): Sequence<Label> = filter { it.kind.includesScala() }.map { it.id }
+// TODO: fix imports -- my build has broken sdkcompat
+private fun calculateAllJavacOptions(modulesToLoad: List<Module>): HashMap<String, String> {
+  val javacOptions = HashMap<String, String>()
+  for (module in modulesToLoad) {
+    if (module is JavaModule) {
+      val options = module.javaAddendum?.javacOptions
+      if (options != null && options.isNotEmpty()) {
+        if (options.size == 1 && options[0] == "-proc:none") {
+          continue
+        }
+        javacOptions[module.getModuleName()] = options.joinToString(" ")
+      }
+    }
+  }
+  return javacOptions
+}

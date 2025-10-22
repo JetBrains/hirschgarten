@@ -3,15 +3,12 @@ package org.jetbrains.bazel.startup
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.UserDataHolderEx
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.commons.BidirectionalMap
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -20,6 +17,7 @@ import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.projectAware.BazelWorkspace
+import org.jetbrains.bazel.sdkcompat.configureRunConfigurationIgnoreProducers
 import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
@@ -28,13 +26,10 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
-import org.jetbrains.bazel.utils.configureRunConfigurationIgnoreProducers
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 
 private val log = logger<BazelStartupActivity>()
-
-private val EXECUTED_FOR_PROJECT = Key<Boolean>("bazel.startup.executed.for.project")
 
 /**
  * Runs actions after the project has started up and the index is up to date.
@@ -44,13 +39,8 @@ private val EXECUTED_FOR_PROJECT = Key<Boolean>("bazel.startup.executed.for.proj
  */
 class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
-    if (startupActivityExecutedAlready(project)) {
-      log.info("Bazel startup activity executed already for project: $project")
-      return
-    }
     ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
     TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
     BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
     SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
     FileUtil.provideFileUtil(FileUtilIntellij)
@@ -100,13 +90,6 @@ private fun executeOnSyncedProject(project: Project) {
     setFindInFilesNonIndexable(project)
   }
 }
-
-/**
- * Make sure calling [org.jetbrains.bazel.flow.open.performOpenBazelProject]
- * won't cause [BazelStartupActivity] to execute twice.
- */
-private fun startupActivityExecutedAlready(project: Project): Boolean =
-  !(project as UserDataHolderEx).replace(EXECUTED_FOR_PROJECT, null, true)
 
 /**
  * [workspaceModelLoadedFromCache] is always false with GoLand

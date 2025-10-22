@@ -24,6 +24,7 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync.TargetKindService
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
@@ -78,7 +79,7 @@ class AspectBazelProjectMapper(
   ): IntermediateTargetData? {
     val languages = inferLanguages(this)
     val languagePlugin = languagePluginsService.getLanguagePlugin(languages) ?: return null
-    val tags = targetTagsResolver.resolveTags(this, workspaceContext).toSet()
+    val tags = targetTagsResolver.resolveTags(this).toSet()
     val label = this.label().assumeResolved()
     return IntermediateTargetData(
       label = label,
@@ -91,34 +92,35 @@ class AspectBazelProjectMapper(
   }
 
   suspend fun createProject(
-    targets: Map<Label, TargetInfo>,
+    allTargets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
     workspaceContext: WorkspaceContext,
     featureFlags: FeatureFlags,
     repoMapping: RepoMapping,
     hasError: Boolean,
   ): BazelResolvedWorkspace {
-    languagePluginsService.all.forEach { it.prepareSync(targets.values.asSequence(), workspaceContext) }
+    languagePluginsService.all.forEach { it.prepareSync(allTargets.values.asSequence(), workspaceContext) }
     val dependencyGraph =
       measure("Build dependency tree") {
-        DependencyGraph(rootTargets, targets)
+        DependencyGraph(rootTargets, allTargets)
       }
     val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
         // the import depth mechanism does not apply for go targets sync
         // for now, go sync assumes to retrieve all transitive targets, which is equivalent to `import_depth: -1`
         // in fact, go sync should not even go through this highly overfitted JVM model: https://youtrack.jetbrains.com/issue/BAZEL-2210
-        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { targets[it]?.hasGoTargetInfo() == true }
+        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { allTargets[it]?.hasGoTargetInfo() == true }
         val nonGoTargetsAtDepth =
           dependencyGraph
             .allTargetsAtDepth(
-              workspaceContext.importDepth.value,
+              workspaceContext.importDepth,
               nonGoTargetLabels.toSet(),
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
-              targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
+              targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
-                targets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
+                allTargets[id]?.let { target ->
+                  (target.sourcesCount > 0 || targetTagsResolver.resolveTags(target).any { it == Tag.APPLICATION || it == Tag.TEST })
+                    && isWorkspaceTarget(target, repoMapping, featureFlags)
                 } == true
               },
             )
@@ -192,10 +194,10 @@ class AspectBazelProjectMapper(
       }
 
     val nonModuleTargetIds =
-      (removeDotBazelBspTarget(targets.keys) - librariesToImport.keys).toSet()
+      (removeDotBazelBspTarget(allTargets.keys) - librariesToImport.keys).toSet()
     val nonModuleTargets =
       createNonModuleTargets(
-        targets.filterKeys {
+        allTargets.filterKeys {
           nonModuleTargetIds.contains(it) &&
             isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
         },
@@ -207,6 +209,7 @@ class AspectBazelProjectMapper(
 
     val targets =
       measure("create intermediate targets") {
+        // Use targetsToImport here instead of allTargets here to respect import_depth
         targetsToImport.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }.toList()
       }
 
@@ -603,7 +606,7 @@ class AspectBazelProjectMapper(
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
-          tags = targetTagsResolver.resolveTags(targetInfo, workspaceContext),
+          tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
           kindString = targetInfo.kind,
         )
@@ -763,12 +766,15 @@ class AspectBazelProjectMapper(
             )
         )
     ) ||
-      featureFlags.isGoSupportEnabled &&
-      target.hasGoTargetInfo() &&
-      hasKnownGoSources(target) ||
-      featureFlags.isPythonSupportEnabled &&
-      target.hasPythonTargetInfo() &&
-      hasKnownPythonSources(target)
+      (
+        featureFlags.isGoSupportEnabled &&
+          target.hasGoTargetInfo() &&
+          hasKnownGoSources(target) ||
+          featureFlags.isPythonSupportEnabled &&
+          target.hasPythonTargetInfo() &&
+          hasKnownPythonSources(target)
+      ) ||
+      target.hasProtobufTargetInfo()
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
 
@@ -807,18 +813,18 @@ class AspectBazelProjectMapper(
     withContext(Dispatchers.Default) {
       val tasks =
         targets.map { target ->
-          async {
-            createRawBuildTarget(
-              target,
-              highPrioritySources,
-              repoMapping,
-              dependencyGraph,
-            )
-          }
+          // async {
+          createRawBuildTarget(
+            target,
+            highPrioritySources,
+            repoMapping,
+            dependencyGraph,
+          )
+          // }
         }
 
       return@withContext tasks
-        .awaitAll()
+        // .awaitAll()
         .filterNotNull()
         .filterNot { BuildTargetTag.NO_IDE in it.tags }
     }
@@ -847,7 +853,7 @@ class AspectBazelProjectMapper(
         targetData.sources to emptyList()
       }
 
-    val context = LanguagePluginContext(target, dependencyGraph, repoMapping)
+    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, bazelPathsResolver)
     val data = languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(
@@ -895,6 +901,9 @@ class AspectBazelProjectMapper(
 
   private fun inferLanguages(target: TargetInfo): Set<LanguageClass> =
     buildSet {
+      if (target.hasProtobufTargetInfo()) {
+        add(LanguageClass.PROTOBUF)
+      }
       // TODO It's a hack preserved from before TargetKind refactorking, to be removed
       if (target.hasJvmTargetInfo()) {
         add(LanguageClass.JAVA)

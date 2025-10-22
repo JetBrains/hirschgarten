@@ -1,5 +1,5 @@
 load("@${rulesetName}//go:def.bzl", "go_context")
-load("//aspects:utils/utils.bzl", "collect_targets_from_attrs", "create_struct", "file_location", "update_sync_output_groups")
+load("//aspects:utils/utils.bzl", "BspAspectInfo", "collect_targets_from_attrs", "create_struct", "file_location", "update_sync_output_groups")
 
 def is_go_rule_kind(ctx):
     rule_kind = ctx.rule.kind
@@ -50,9 +50,9 @@ def extract_go_info(target, ctx, output_groups, **kwargs):
             library_labels = [str(ctx.rule.attr.library.label)]
         elif getattr(ctx.rule.attr, "embed", None) != None:
             for library in ctx.rule.attr.embed:
-                library_kind = library.bsp_info.kind
+                library_kind = library[BspAspectInfo].bsp_info.kind
                 if library_kind == "go_source" or library_kind == "go_proto_library":
-                    sources += library.bsp_info.output_groups["bazel-sources-go-outputs"].to_list()
+                    sources += library[BspAspectInfo].bsp_info.output_groups["bazel-sources-go-outputs"].to_list()
                 else:
                     library_labels.append(str(library.label))
 

@@ -27,7 +27,7 @@ import org.jetbrains.bazel.target.addLibraryModulePrefix
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
 
-internal class ModuleEntityUpdater(
+class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
   private val libraries: Map<String, Library>,
@@ -45,7 +45,7 @@ internal class ModuleEntityUpdater(
           if (BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled && !entityToAdd.isLibraryModule) {
             toModuleDependencyItemModuleDependency(dependency.addLibraryModulePrefix(), exported)
           } else {
-            toLibraryDependency(dependency, exported)
+            toLibraryDependency(dependency, exported = exported || entityToAdd.isLibraryModule)
           }
         } else {
           toModuleDependencyItemModuleDependency(dependency)

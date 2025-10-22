@@ -52,7 +52,7 @@ object BazelFeatureFlags {
     get() = isEnabled(WRAP_LIBRARIES_INSIDE_MODULES) || isKotlinPluginK2Mode
 
   val isKotlinPluginK2Mode: Boolean
-    get() = System.getProperty("idea.kotlin.plugin.use.k2", "false").toBoolean()
+    get() = System.getProperty("idea.kotlin.plugin.use.k1", "false").toBoolean().not()
 
   val executeSecondPhaseOnSync: Boolean
     get() = isEnabled(EXECUTE_SECOND_PHASE_ON_SYNC)

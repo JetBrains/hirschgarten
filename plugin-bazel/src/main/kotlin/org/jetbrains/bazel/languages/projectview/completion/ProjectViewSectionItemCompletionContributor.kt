@@ -9,8 +9,8 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.languages.projectview.ProjectViewSections
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSections
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
@@ -34,20 +34,19 @@ internal class ProjectViewSectionItemCompletionContributor : CompletionContribut
     ): Result {
       if (file !is ProjectViewPsiFile || (!charTyped.isLetterOrDigit() && charTyped !in acceptedChars)) return Result.CONTINUE
 
-      AutoPopupController.getInstance(project).scheduleAutoPopup(editor, CompletionType.BASIC, null)
+      AutoPopupController.getInstance(project).scheduleAutoPopup(editor)
       return Result.CONTINUE
     }
   }
 
   init {
     for (section in ProjectViewSections.REGISTERED_SECTIONS) {
-      if (section.completionProvider != null) {
-        extend(
-          CompletionType.BASIC,
-          sectionItemElement(section.name),
-          section.completionProvider,
-        )
-      }
+      val provider = section.completionProvider ?: continue
+      extend(
+        CompletionType.BASIC,
+        sectionItemElement(section.name),
+        provider,
+      )
     }
 
     extend(

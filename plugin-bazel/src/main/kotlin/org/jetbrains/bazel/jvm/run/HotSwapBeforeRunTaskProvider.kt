@@ -17,7 +17,6 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.server.sync.DebugHelper
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bsp.protocol.DebugType
@@ -55,7 +54,7 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
     environment: ExecutionEnvironment,
     task: T,
   ): Boolean {
-    val runConfiguration = environment.runProfile as BazelRunConfiguration
+    val runConfiguration = BazelRunConfiguration.get(environment)
     // skipping this task for non-debugging run config
     if (environment.executor !is DefaultDebugExecutor) return true
     val scriptPath = createTempScriptFile()

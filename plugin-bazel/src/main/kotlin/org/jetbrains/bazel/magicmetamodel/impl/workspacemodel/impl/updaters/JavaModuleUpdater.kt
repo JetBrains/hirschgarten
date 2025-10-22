@@ -27,7 +27,7 @@ import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import java.nio.file.Path
 import kotlin.io.path.extension
 
-internal class JavaModuleWithSourcesUpdater(
+class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val projectBasePath: Path,
   moduleEntities: List<Module>,
@@ -138,7 +138,7 @@ internal class JavaModuleWithSourcesUpdater(
   }
 }
 
-internal class JavaModuleWithoutSourcesUpdater(
+class JavaModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val libraries: Map<String, Library> = emptyMap(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
@@ -156,21 +156,22 @@ internal class JavaModuleWithoutSourcesUpdater(
       } ?: listOf()
 }
 
-internal class JavaModuleUpdater(
+class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   projectBasePath: Path,
   moduleEntities: List<Module> = emptyList(),
-  libraries: Map<String, Library> = emptyMap(),
+  libraries: List<Library> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
+  private val librariesByName = libraries.associateBy { it.displayName }
   private val javaModuleWithSourcesUpdater =
     JavaModuleWithSourcesUpdater(
       workspaceModelEntityUpdaterConfig,
       projectBasePath,
       moduleEntities,
-      libraries,
+      librariesByName,
     )
   private val javaModuleWithoutSourcesUpdater =
-    JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig, libraries)
+    JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig, librariesByName)
 
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity? =
     if (entityToAdd.doesntContainSourcesAndResources() && entityToAdd.containsJavaKotlinLanguageIds()) {
