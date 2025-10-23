@@ -17,6 +17,7 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.action.getEditor
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
@@ -25,6 +26,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionS
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.utils.isBazelTargetSourceFile
 
 // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1158
 
@@ -85,9 +87,9 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
     return if (file is StarlarkFile) {
       shouldAddActionToStarlarkFile(file, e)
     } else {
-      file.virtualFile?.let { virtualFile ->
-        project.targetUtils.getTargetsForFile(virtualFile).isNotEmpty()
-      } ?: false
+      // Only show for Java, Python, Golang files in Bazel projects
+      val virtualFile = file.virtualFile ?: return false
+      project.isBazelProject && virtualFile.isBazelTargetSourceFile()
     }
   }
 
