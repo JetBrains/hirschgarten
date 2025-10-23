@@ -29,6 +29,13 @@ private val INDEX_ADDITIONAL_FILES_DEFAULT =
   Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES + Constants.MODULE_BAZEL_FILE_NAME +
     Constants.SUPPORTED_EXTENSIONS.map { extension -> "*.$extension" }
 
+/**
+ * This sync hook does two important things:
+ * 1. Supports [org.jetbrains.bazel.languages.projectview.language.sections.IndexAdditionalFilesInDirectoriesSection],
+ *    see documentation for that class.
+ * 2. Loads all non-indexable files that happen to be under `directories:` (and not excluded) into the VFS,
+ *    so that "Go to file by name" is quicker, see https://youtrack.jetbrains.com/issue/IJPL-207088
+ */
 private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
     environment.withSubtask("Collect additional files to index") {
@@ -63,7 +70,6 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
     if (workspaceContext.indexAllFilesInDirectories) {
       return emptyList()
     }
-    val acceptedNames = workspaceContext.indexAdditionalFilesInDirectories.toSet() + INDEX_ADDITIONAL_FILES_DEFAULT
     val indexAdditionalFilesGlob =
       ProjectViewGlobSet(workspaceContext.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT)
 
