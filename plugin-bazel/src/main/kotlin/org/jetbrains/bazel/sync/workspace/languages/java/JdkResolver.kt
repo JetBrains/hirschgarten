@@ -89,7 +89,7 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
         val javaRuntimeInfo = targetInfo.javaRuntimeInfo
         val javaHome = if (javaRuntimeInfo.hasJavaHome()) javaRuntimeInfo.javaHome else null
 
-        JdkCandidateData(
+        return JdkCandidateData(
           isRuntime = true,
           javaHome = javaHome?.let(bazelPathsResolver::resolve),
         )
@@ -98,15 +98,17 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
     }
 
     private fun javaToolchainInfoJdkCandidateProvider(targetInfo: TargetInfo, bazelPathsResolver: BazelPathsResolver): JdkCandidateData? {
-      val javaToolchainInfo = targetInfo.javaToolchainInfo
-      val javaHome = if (javaToolchainInfo.hasJavaHome()) javaToolchainInfo.javaHome else null
+      if (targetInfo.hasJavaToolchainInfo()) {
+        val javaToolchainInfo = targetInfo.javaToolchainInfo
+        val javaHome = if (javaToolchainInfo.hasJavaHome()) javaToolchainInfo.javaHome else null
 
-      JdkCandidateData(
-        isRuntime = false,
-        javaHome = javaHome?.let(bazelPathsResolver::resolve),
-        sourceVersion = javaToolchainInfo.sourceVersion,
-        targetVersion = javaToolchainInfo.targetVersion,
-      )
+        return JdkCandidateData(
+          isRuntime = false,
+          javaHome = javaHome?.let(bazelPathsResolver::resolve),
+          sourceVersion = javaToolchainInfo.sourceVersion,
+          targetVersion = javaToolchainInfo.targetVersion,
+        )
+      }
       return null
     }
   }
