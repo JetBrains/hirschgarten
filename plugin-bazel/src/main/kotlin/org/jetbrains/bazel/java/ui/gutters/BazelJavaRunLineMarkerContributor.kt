@@ -9,8 +9,10 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.util.parentOfType
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
+import org.jetbrains.bazel.testing.BazelTestLocationHintProvider
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
@@ -22,7 +24,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun PsiElement.shouldAddMarker(): Boolean =
     parentOfType<PsiNameIdentifierOwner>()
       ?.takeIf { it.nameIdentifier == this }
-      ?.takeIf { it.isClassOrMethod() } != null &&
+      ?.takeIf { it.isClass() || it.isMethod() } != null &&
       // todo replace with is in source root check
       containingFile.virtualFile?.fileSystem !is JarFileSystem
 
@@ -51,6 +53,27 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     }
   }
 
+  override fun guessTestLocationHints(psiElement: PsiElement): List<String> {
+    val psiIdentifier = psiElement.getStrictParentOfType<PsiNameIdentifierOwner>() ?: return emptyList()
+    val fullClassName = psiIdentifier.getFullyQualifiedClassName() ?: return emptyList()
+    val shortClassName = guessShortClassNames(fullClassName)
+    return if (psiIdentifier.isClass()) {
+      listOf(
+        BazelTestLocationHintProvider.testSuiteLocationHint("", classname = fullClassName),
+        BazelTestLocationHintProvider.testSuiteLocationHint("", parentSuites = shortClassName),
+        "java:suite://$fullClassName",
+      )
+    } else if (psiIdentifier.isMethod()) {
+      listOfNotNull(
+        psiIdentifier.name?.let { BazelTestLocationHintProvider.testCaseLocationHint(it, classname = fullClassName) },
+        psiIdentifier.name?.let { BazelTestLocationHintProvider.testCaseLocationHint(it, parentSuites = shortClassName) },
+        "java:test://$fullClassName/${psiIdentifier.name}",
+      )
+    } else {
+      emptyList()
+    }
+  }
+
   protected open fun PsiNameIdentifierOwner.getMethodName(): String? = if (isMethod()) name else null
 
   /**
@@ -66,6 +89,11 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
       }
     }.joinToString(separator = ",")
 
+  private fun guessShortClassNames(fullClassName: String): List<String> =
+    fullClassName // package.package.Class.NestedClass.NestedNested
+      .dropWhile { !it.isUpperCase() } // Class.NestedClass.NestedNested
+      .split('.') // [Class, NestedClass, NestedNested]
+
   protected open fun PsiNameIdentifierOwner.getPsiParameters(): Array<out PsiParameter>? =
     (this as? PsiMethod)?.parameterList?.parameters
 
@@ -76,7 +104,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     return JvmClassUtil.getJvmClassName(psiClass)
   }
 
-  protected open fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean = this is PsiClass || this is PsiMethod
+  protected open fun PsiNameIdentifierOwner.isClass(): Boolean = this is PsiClass
 
   protected open fun PsiNameIdentifierOwner.isMethod(): Boolean = this is PsiMethod
 }

@@ -20,7 +20,6 @@
     <bazelCoverageClassNodeDecoratorPsiElementClassifier
       implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
-    <testLocatorProvider implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider" />
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

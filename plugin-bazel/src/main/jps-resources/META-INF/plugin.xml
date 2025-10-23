@@ -192,10 +192,6 @@
                     interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
                     dynamic="true"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.testLocatorProvider"
-                    interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
-                    dynamic="true"
-    />
     <extensionPoint
       dynamic="true"
       interface="org.jetbrains.bazel.run.BazelTestFinder"
