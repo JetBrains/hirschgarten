@@ -1,19 +1,18 @@
+@file:JvmName("BazelProjectDirectoriesEntityModifications")
+
 package org.jetbrains.bazel.sdkcompat.workspacemodel.entities
 
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
-import com.intellij.platform.workspace.storage.ModifiableWorkspaceEntity
+import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.bazel.workspacemodel.entities.AbstractBazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.ModifiableAbstractBazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.AbstractBazelProjectDirectoriesEntityBuilder
 
 @GeneratedCodeApiVersion(3)
-interface ModifiableBazelProjectDirectoriesEntity : ModifiableWorkspaceEntity<BazelProjectDirectoriesEntity>,
-                                                    ModifiableAbstractBazelProjectDirectoriesEntity<BazelProjectDirectoriesEntity> {
+interface BazelProjectDirectoriesEntityBuilder : WorkspaceEntityBuilder<BazelProjectDirectoriesEntity>, AbstractBazelProjectDirectoriesEntityBuilder<BazelProjectDirectoriesEntity> {
   override var entitySource: EntitySource
   override var projectRoot: VirtualFileUrl
   var includedRoots: MutableList<VirtualFileUrl>
@@ -22,7 +21,7 @@ interface ModifiableBazelProjectDirectoriesEntity : ModifiableWorkspaceEntity<Ba
   var indexAdditionalFiles: MutableList<VirtualFileUrl>
 }
 
-internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirectoriesEntity, ModifiableBazelProjectDirectoriesEntity>() {
+internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityBuilder>() {
   override val entityClass: Class<BazelProjectDirectoriesEntity> get() = BazelProjectDirectoriesEntity::class.java
   operator fun invoke(
     projectRoot: VirtualFileUrl,
@@ -31,8 +30,8 @@ internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirec
     indexAllFilesInIncludedRoots: Boolean,
     indexAdditionalFiles: List<VirtualFileUrl>,
     entitySource: EntitySource,
-    init: (ModifiableBazelProjectDirectoriesEntity.() -> Unit)? = null,
-  ): ModifiableBazelProjectDirectoriesEntity {
+    init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
+  ): BazelProjectDirectoriesEntityBuilder {
     val builder = builder()
     builder.projectRoot = projectRoot
     builder.includedRoots = includedRoots.toMutableWorkspaceList()
@@ -47,8 +46,8 @@ internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirec
 
 fun MutableEntityStorage.modifyBazelProjectDirectoriesEntity(
   entity: BazelProjectDirectoriesEntity,
-  modification: ModifiableBazelProjectDirectoriesEntity.() -> Unit,
-): BazelProjectDirectoriesEntity = modifyEntity(ModifiableBazelProjectDirectoriesEntity::class.java, entity, modification)
+  modification: BazelProjectDirectoriesEntityBuilder.() -> Unit,
+): BazelProjectDirectoriesEntity = modifyEntity(BazelProjectDirectoriesEntityBuilder::class.java, entity, modification)
 
 @JvmOverloads
 @JvmName("createBazelProjectDirectoriesEntity")
@@ -59,7 +58,7 @@ fun BazelProjectDirectoriesEntity(
   indexAllFilesInIncludedRoots: Boolean,
   indexAdditionalFiles: List<VirtualFileUrl>,
   entitySource: EntitySource,
-  init: (ModifiableBazelProjectDirectoriesEntity.() -> Unit)? = null,
-): ModifiableBazelProjectDirectoriesEntity =
+  init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
+): BazelProjectDirectoriesEntityBuilder =
   BazelProjectDirectoriesEntityType(projectRoot, includedRoots, excludedRoots, indexAllFilesInIncludedRoots, indexAdditionalFiles,
                                     entitySource, init)
