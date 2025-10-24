@@ -6,10 +6,12 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
+import com.intellij.rt.execution.junit.MapSerializerUtil
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
+import org.jetbrains.bazel.testing.TestRunner
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.TestFinish
@@ -52,12 +54,14 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
               .testStarted(data.displayName)
               .addNodeId(taskId)
               .addAttribute("parentNodeId", parentId)
+              .addLocationHint(data)
               .toString()
           } else {
             ServiceMessageBuilder
               .testSuiteStarted(data.displayName)
               .addNodeId(taskId)
               .addAttribute("parentNodeId", "0")
+              .addLocationHint(data)
               .toString()
           }
         handler.notifyTextAvailable(serviceMessage.toStringWithNewline(), ProcessOutputType.STDOUT)
@@ -186,6 +190,40 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
       ?.inWholeMilliseconds
       ?.let { this.addAttribute("duration", it.toString()) }
       ?: this
+
+  private fun ServiceMessageBuilder.addLocationHint(testStart: TestStart): ServiceMessageBuilder {
+    when (testStart.testRunner) {
+      TestRunner.JUNIT -> {
+        val className: String
+        val methodName: String?
+        val testType: String
+        if (testStart.parentName != null) {
+          className = testStart.parentName.toString()
+          methodName = testStart.displayName
+          testType = "test"
+        } else {
+          className = testStart.displayName
+          methodName = null
+          testType = "suite"
+        }
+        this.addAttribute("locationHint", javaLocation(className, methodName, testType))
+      }
+      else -> {}
+    }
+    return this
+  }
+
+  private fun javaLocation(
+    className: String?,
+    maybeMethodName: String?,
+    testType: String,
+  ): String {
+    val methodName = if (maybeMethodName == null) "" else "/$maybeMethodName"
+    val location: String = escapeName(className + methodName)
+    return "java:$testType://$location"
+  }
+
+  private fun escapeName(str: String): String = MapSerializerUtil.escapeStr(str, MapSerializerUtil.STD_ESCAPER)
 
   private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish): Data? = testFinishData.data as? Data
 }

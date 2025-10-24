@@ -2,6 +2,7 @@ package org.jetbrains.bazel.logger
 
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.testing.TestRunner
 import org.jetbrains.bsp.protocol.BuildTaskHandler
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.TaskFinishParams
@@ -26,9 +27,15 @@ class BspClientTestNotifier(private val taskHandler: BuildTaskHandler, private v
    *
    * @param displayName display name of the started test / test suite
    * @param taskId      TaskId of the started test - when parentsId is not empty / test suite - otherwise
+   * @param testSuiteName parent name of started test. Test suite for test case. Empty otherwise
    */
-  fun startTest(displayName: String, taskId: TaskId) {
-    val testStart = TestStart(displayName)
+  fun startTest(
+    displayName: String,
+    taskId: TaskId,
+    parentName: String?,
+    testRunner: TestRunner = TestRunner.UNKNOWN,
+  ) {
+    val testStart = TestStart(displayName = displayName, parentName = parentName, testRunner = testRunner)
     val taskStartParams =
       TaskStartParams(
         taskId,

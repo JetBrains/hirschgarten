@@ -6,6 +6,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.testframework.JavaTestLocator
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
@@ -85,6 +86,14 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
     val configuration = environment.runProfile as BazelRunConfiguration
     val properties = configuration.createTestConsoleProperties(executor)
     val handler = doStartProcess(true)
+
+    if (configuration.handler!!
+        .name
+        .lowercase()
+        .startsWith("jvm")
+    ) {
+      properties.smTestLocator = JavaTestLocator.INSTANCE
+    }
 
     val console: BaseTestsOutputConsoleView =
       SMTestRunnerConnectionUtil.createAndAttachConsole(

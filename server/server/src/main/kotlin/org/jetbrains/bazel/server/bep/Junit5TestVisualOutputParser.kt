@@ -216,7 +216,7 @@ private class TestResultTreeNode(
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
     } else if (isLeafNode()) {
       val fullMessage = generateMessage()
-      bspClientTestNotifier.startTest(name, taskId)
+      bspClientTestNotifier.startTest(name, taskId, null)
 
       if (status == TestStatus.FAILED && parent?.isRootNode() == true && children.isEmpty()) {
         // BAZEL-2080: if an exception happens at the start of a test suit, there will be no test case run
@@ -224,7 +224,7 @@ private class TestResultTreeNode(
         // So in this case, we need to report a dummy test case with TestStatus.FAILED status.
         val displayName = "no tests found"
         val placeholderID = TaskId("empty-test-" + UUID.randomUUID().toString(), parents = listOfNotNull(taskId.id))
-        bspClientTestNotifier.startTest(displayName, placeholderID)
+        bspClientTestNotifier.startTest(displayName, placeholderID, null)
         bspClientTestNotifier.finishTest(
           displayName = displayName,
           taskId = placeholderID,
@@ -246,7 +246,7 @@ private class TestResultTreeNode(
         data = createTestCaseData(fullMessage, time),
       )
     } else {
-      bspClientTestNotifier.startTest(name, taskId)
+      bspClientTestNotifier.startTest(name, taskId, null)
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
       bspClientTestNotifier.finishTest(
         displayName = name,
