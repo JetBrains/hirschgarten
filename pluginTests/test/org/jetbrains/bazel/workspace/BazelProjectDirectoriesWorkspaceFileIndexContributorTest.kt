@@ -14,9 +14,9 @@ import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.io.path.createDirectories
