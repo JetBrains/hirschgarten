@@ -151,7 +151,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Map<Path, List<Label>> {
     val targetDependentsGraph = TargetDependentsGraph(targets, libraryItems)
-      val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
+    val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
     return fileToTarget.entries
       .mapNotNull { (path, targets) ->
         val dependents =

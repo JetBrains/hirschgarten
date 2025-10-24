@@ -107,15 +107,16 @@ class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val file = myFixture.configureByText(
-      "BUILD.bazel",
-      """
-      custom_rule(
-          name = "my_rule",
-          name_of_the_class = "com.example.My<caret>Class"
+    val file =
+      myFixture.configureByText(
+        "BUILD.bazel",
+        """
+        custom_rule(
+            name = "my_rule",
+            name_of_the_class = "com.example.My<caret>Class"
+        )
+        """.trimIndent(),
       )
-      """.trimIndent(),
-    )
 
     // when
     val element = myFixture.getReferenceAtCaretPosition()?.resolve()
