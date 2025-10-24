@@ -53,7 +53,7 @@ abstract class ProjectViewDirectoriesActionTestCase(
 
   protected fun useAndOpenProjectView(@Language("projectview") content: String) {
     val projectView = myFixture.createFile(".user.bazelproject", content)
-    project.bazelProjectSettings = BazelProjectSettings(projectViewPath = projectView)
+    project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectView)
     myFixture.openFileInEditor(projectView)
   }
 
