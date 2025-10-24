@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.bytecodeViewer
 
 import com.intellij.byteCodeViewer.BytecodeViewerClassFileFinder
+import com.intellij.ide.highlighter.JavaClassFileType
 import com.intellij.ide.util.JavaAnonymousClassesHelper
 import com.intellij.ide.util.JavaLocalClassesHelper
+import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.JarFileSystem
@@ -37,7 +39,7 @@ class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
         .asSequence()
         .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
         .firstNotNullOfOrNull { resolveCompiledClassesPathForJVMLanguage(project, it) }
-    return path?.toCompiledClassesVFSRoot(project)?.toFullClassPath(targetElement)
+    return path?.toCompiledClassesVFSRoot(project)?.toFullClassPath(targetElement, containing)
   }
 
   private fun resolveCompiledClassesPathForJVMLanguage(project: Project, target: BuildTarget): Path? {
@@ -58,7 +60,7 @@ class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
         }
       }
 
-      else -> return targetDir.resolve(target.id.targetName)
+      else -> targetDir.resolve(target.id.targetName)
     }
   }
 
@@ -72,8 +74,8 @@ class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
     }
   }
 
-  private fun VirtualFile.toFullClassPath(element: PsiClass): VirtualFile? {
-    val jvmClassName = getBinaryClassName(element) ?: return null
+  private fun VirtualFile.toFullClassPath(element: PsiClass, containing: PsiClass?): VirtualFile? {
+    val jvmClassName = getBinaryClassName(containing ?: element) ?: return null
     return this.findChild(StringUtil.getShortName(jvmClassName) + ".class")
   }
 
