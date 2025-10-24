@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label

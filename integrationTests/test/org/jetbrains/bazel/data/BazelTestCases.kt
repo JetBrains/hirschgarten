@@ -130,6 +130,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       )
     )
 
+    val BytecodeViewer = withBazelProject(
+      projectInfo = withDefaults(
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "c170099e3051be5f17df3848fbd719f208fd10d2",
+        branchName = "main",
+        relativePath = "simpleJavaTest",
+        configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+      )
+    )
+
     val ExternalRepoResolve = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
