@@ -20,7 +20,7 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
   @Test
   fun `test presentation template is correct`() {
     val presentation = action.templatePresentation
-    presentation.text shouldBe "Exclude from the Project View Directories"
+    presentation.text shouldBe "Exclude from the {0} Directories"
     presentation.description shouldBe "Exclude this directory from the project view file."
     presentation.icon shouldBe null
   }
@@ -44,6 +44,9 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
     openProjectViewInEditor("projectview/action/SingleDirDirectories.bazelproject")
     val presentation = testPresentationOn(createActionContext(myFixture.tempDirFixture.findOrCreateDir("foo")))
     presentation.isEnabledAndVisible shouldBe true
+    presentation.text shouldBe "Exclude from the SingleDirDirectories.bazelproject Directories"
+    presentation.description shouldBe null
+    presentation.icon shouldBe null
   }
 
   @Test

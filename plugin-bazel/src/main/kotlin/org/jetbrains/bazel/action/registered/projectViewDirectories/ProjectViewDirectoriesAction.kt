@@ -11,6 +11,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
+import org.jetbrains.annotations.PropertyKey
+import org.jetbrains.bazel.config.BUNDLE
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
@@ -18,8 +21,11 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.name
 
 data class ProjectViewDirectoriesAction(
+  @param:PropertyKey(resourceBundle = BUNDLE)
+  val titleKey: String,
   val itemExists: NotificationFactory,
   /** Shown when the user attempts to add or exclude a directory that is already in the opposite state in the Project View file. */
   val oppositeStateItemExists: NotificationFactory,
@@ -37,9 +43,14 @@ data class ProjectViewDirectoriesAction(
   }
 
   fun update(event: AnActionEvent) {
-    event.presentation.isEnabledAndVisible = event.project?.let { project ->
-      !DumbService.isDumb(project) && getProjectViewPath(project) != null && getSelectedDirectoryRelativePath(project, event) != null
-    } ?: false
+    val projectViewPath = getProjectViewPathIfActionApplicableTo(event)
+    if (projectViewPath == null) {
+      event.presentation.isEnabledAndVisible = false
+      return
+    }
+    val text = BazelPluginBundle.message(titleKey, projectViewPath.name)
+    event.presentation.isEnabledAndVisible = true
+    event.presentation.setText(text)
   }
 
   fun getSelectedDirectoryRelativePath(project: Project, event: AnActionEvent): Path? {
@@ -74,6 +85,14 @@ data class ProjectViewDirectoriesAction(
         projectViewPsi.addBefore(newSelectedDirectoryPsi, projectViewPsi.firstChild)
       }
     }
+  }
+
+  private fun getProjectViewPathIfActionApplicableTo(event: AnActionEvent): Path? {
+    val project = event.project ?: return null
+    if (DumbService.isDumb(project)) return null
+    val projectViewPath = getProjectViewPath(project) ?: return null
+    if (getSelectedDirectoryRelativePath(project, event) == null) return null
+    return projectViewPath
   }
 
   private fun getOppositeStateItem(item: String) = if (item[0] == '-') item.substring(1) else "-$item"

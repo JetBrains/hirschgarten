@@ -8,12 +8,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class ExcludeFromProjectViewDirectoriesAction : AnAction() {
   val action: ProjectViewDirectoriesAction =
     ProjectViewDirectoriesAction(
-      ProjectViewDirectoriesAction.NotificationFactory(
+      titleKey = "action.Bazel.ExcludeFromProjectViewDirectoriesAction.text",
+      itemExists = ProjectViewDirectoriesAction.NotificationFactory(
         "Directory already excluded",
         { "Directory \'$it\' is already excluded from the project view file directories section." },
         NotificationType.INFORMATION,
       ),
-      ProjectViewDirectoriesAction.NotificationFactory(
+      oppositeStateItemExists = ProjectViewDirectoriesAction.NotificationFactory(
         "Excluding included directory",
         { "Attempted to exclude directory \'$it\' which has been already included in the project view file directories section." },
         NotificationType.WARNING,

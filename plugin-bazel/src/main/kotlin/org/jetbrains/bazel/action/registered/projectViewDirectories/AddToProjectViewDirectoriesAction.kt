@@ -8,12 +8,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class AddToProjectViewDirectoriesAction : AnAction() {
   val action: ProjectViewDirectoriesAction =
     ProjectViewDirectoriesAction(
-      ProjectViewDirectoriesAction.NotificationFactory(
+      titleKey = "action.Bazel.AddToProjectViewDirectoriesAction.text",
+      itemExists = ProjectViewDirectoriesAction.NotificationFactory(
         "Directory already included",
         { "Directory \'$it\' is already included in the project view file directories section." },
         NotificationType.INFORMATION,
       ),
-      ProjectViewDirectoriesAction.NotificationFactory(
+      oppositeStateItemExists = ProjectViewDirectoriesAction.NotificationFactory(
         "Including excluded directory",
         { "Attempted to include directory \'$it\' which has been already excluded from the project view file directories section." },
         NotificationType.WARNING,
