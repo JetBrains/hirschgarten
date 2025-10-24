@@ -10,9 +10,8 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

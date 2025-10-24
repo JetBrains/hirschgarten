@@ -2,7 +2,6 @@ package org.jetbrains.bazel.workspace.indexAdditionalFiles
 
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
@@ -16,14 +15,14 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 
 private val INDEX_ADDITIONAL_FILES_DEFAULT =
   Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES + Constants.MODULE_BAZEL_FILE_NAME +

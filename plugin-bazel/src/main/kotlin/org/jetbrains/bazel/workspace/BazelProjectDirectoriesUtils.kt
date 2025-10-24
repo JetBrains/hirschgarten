@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.storage.CachedValue
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.platform.workspace.storage.entities
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 

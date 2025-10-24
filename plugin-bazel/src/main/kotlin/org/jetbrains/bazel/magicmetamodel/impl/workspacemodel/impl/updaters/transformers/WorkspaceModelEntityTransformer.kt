@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.WorkspaceModelEntity
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelEntity
 
 interface WorkspaceModelEntityBaseTransformer<in T, out R> {
   fun transform(inputEntity: T): R
