@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 import java.nio.file.Path
 
 fun Project.setProjectViewPath(newProjectViewFilePath: Path) {
-  val vfsUrlManager = this.service<WorkspaceModel>()
+  val vfsUrlManager = WorkspaceModel.getInstance(this)
     .getVirtualFileUrlManager()
   newProjectViewFilePath.toVirtualFileUrl(vfsUrlManager).virtualFile?.let {
     bazelProjectSettings = bazelProjectSettings.withNewProjectViewPath(it)
