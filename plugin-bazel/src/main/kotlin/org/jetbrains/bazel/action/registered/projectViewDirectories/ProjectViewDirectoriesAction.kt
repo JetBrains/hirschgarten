@@ -8,7 +8,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType
@@ -83,7 +83,7 @@ data class ProjectViewDirectoriesAction(
   private fun sectionContainsItem(item: String, section: ProjectViewPsiSection): Boolean =
     section.getItems().find { it.text == item } != null
 
-  private fun getProjectViewPath(project: Project): Path? = project.bazelProjectSettings.projectViewPath
+  private fun getProjectViewPath(project: Project): VirtualFile? = project.bazelProjectSettings.projectViewPath
 
   private fun notify(
     item: String,
@@ -104,8 +104,7 @@ data class ProjectViewDirectoriesAction(
   }
 
   private fun getProjectViewPsiFile(project: Project): ProjectViewPsiFile? {
-    val projectViewPath = getProjectViewPath(project) ?: return null
-    val vFile = LocalFileSystem.getInstance().findFileByNioFile(projectViewPath) ?: return null
+    val vFile = getProjectViewPath(project) ?: return null
     return PsiManager.getInstance(project).findFile(vFile) as? ProjectViewPsiFile
   }
 
