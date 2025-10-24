@@ -95,6 +95,7 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
     useAndOpenProjectView(
       """
       directories:
+      
     """.trimIndent(),
     )
     performActionOnProjectDir("foo")
