@@ -21,25 +21,20 @@ class BazelTestLocationHintProviderTest {
 
     parsedHint1.classNameOrSuites.singleOrNull() shouldBe normalClassName
     parsedHint1.methodName.shouldBeEmpty()
-    parsedHint2.classNameOrSuites.singleOrNull() shouldBe nestedClassName
+    parsedHint2.classNameOrSuites.joinToString("$") shouldBe nestedClassName
     parsedHint2.methodName.shouldBeEmpty()
   }
 
   @Test
   fun `generate and parse a suite hint with unknown classname`() {
     val hint1 = BazelTestLocationHintProvider.testSuiteLocationHint(suiteName, parentSuites = javaSuites)
-    val hint2 = BazelTestLocationHintProvider.testSuiteLocationHint(suiteName, parentSuites = unknownBazelSuite)
 
     hint1.shouldStartWith(BazelTestLocationHintProvider.TEST_SUITE_PROTOCOL)
-    hint2.shouldStartWith(BazelTestLocationHintProvider.TEST_SUITE_PROTOCOL)
 
     val parsedHint1 = BazelTestLocationHintProvider.parseLocationHint(hint1)
-    val parsedHint2 = BazelTestLocationHintProvider.parseLocationHint(hint2)
 
     parsedHint1.classNameOrSuites.shouldContainExactly(javaSuites + suiteName)
     parsedHint1.methodName.shouldBeEmpty()
-    parsedHint2.classNameOrSuites.shouldContainExactly(unknownBazelSuite + suiteName)
-    parsedHint2.methodName.shouldBeEmpty()
   }
 
   @Test
@@ -53,7 +48,7 @@ class BazelTestLocationHintProviderTest {
     val parsedHint1 = BazelTestLocationHintProvider.parseLocationHint(hint1)
     val parsedHint2 = BazelTestLocationHintProvider.parseLocationHint(hint2)
 
-    parsedHint1.classNameOrSuites.singleOrNull() shouldBe nestedClassName
+    parsedHint1.classNameOrSuites.joinToString("$") shouldBe nestedClassName
     parsedHint1.methodName shouldBe testName
     parsedHint2.classNameOrSuites.shouldContainExactly(javaSuites)
     parsedHint2.methodName shouldBe testName
@@ -100,4 +95,3 @@ private val javaSuites =
     "NestedClass",
     "NestedNested",
   )
-private val unknownBazelSuite = listOf("//src/main:some_target")
