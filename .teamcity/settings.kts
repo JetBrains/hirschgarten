@@ -1,12 +1,20 @@
 import configurations.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
+import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.finishBuildTrigger
+import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 
 version = "2024.12"
 
 object ProjectBranchFilters {
   val githubBranchFilter = "+:pull/*"
+  val spaceBranchFilter =
+    """
+    +:<default>
+    +:*
+    -:bazel-steward*
+    -:refs/merge/*
+    """.trimIndent()
 }
 
 object ProjectTriggerRules {
@@ -26,68 +34,114 @@ object ProjectTriggerRules {
 
 
 project {
+  // Expose VCS roots at the root project scope
   vcsRoot(VcsRootHirschgarten)
+  vcsRoot(VcsRootHirschgartenSpace)
   vcsRoot(VcsRootBazelQodana)
   vcsRoot(VcsRootBuildBuddyQodana)
 
-  // Aggregator and all other builds form a pipeline
-  val allSteps =
-    sequential {
-      // CheckFormating is standalone, triggered by PR
-      buildType(CheckFormating)
-      // Run everything in parallel
-      parallel(options = {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }) {
-        // Add all platform builds from factory
-        PluginBuildFactory.ForAllPlatforms.forEach { buildType(it) }
-        buildType(ProjectUnitTests)
-        // Add all benchmark tests from factory
-        PluginBenchmarkFactory.AllBenchmarkTests.forEach { buildType(it) }
-        // Add all IDE starter tests from factory
-        IdeStarterTestFactory.AllIdeStarterTests.forEach { buildType(it) }
-        // Add only enabled static analysis tests from factory
-        StaticAnalysisFactory.EnabledAnalysisTests.forEach { buildType(it) }
-      }
+  subProject(GitHub)
+  subProject(Space)
+}
 
-      buildType(
-        Aggregator, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
-      })
-    }.buildTypes()
+object GitHub : Project({
+  name = "GitHub"
 
-  // initialize all build steps for bazel-bsp
+
+  val ProjectUnitTestsGithub = ProjectUnitTests()
+
+  val allSteps = sequential {
+    buildType(FormatBuildFactory.GitHub)
+    parallel(options = {
+      onDependencyFailure = FailureAction.CANCEL
+      onDependencyCancel = FailureAction.CANCEL
+    }) {
+      PluginBuildFactory.ForAllPlatforms.forEach { buildType(it) }
+      buildType(ProjectUnitTestsGithub)
+      PluginBenchmarkFactory.AllBenchmarkTests.forEach { buildType(it) }
+      IdeStarterTestFactory.AllIdeStarterTests.forEach { buildType(it) }
+      StaticAnalysisFactory.EnabledAnalysisTestsGitHub.forEach { buildType(it) }
+    }
+    buildType(Aggregator, options = {
+      onDependencyFailure = FailureAction.ADD_PROBLEM
+      onDependencyCancel = FailureAction.ADD_PROBLEM
+    })
+  }.buildTypes()
+
   allSteps.forEach { buildType(it) }
 
-  // Configure formatter to trigger on PR
-  CheckFormating.triggers {
+  FormatBuildFactory.GitHub.triggers {
     vcs {
       branchFilter = ProjectBranchFilters.githubBranchFilter
       triggerRules = ProjectTriggerRules.triggerRules
     }
   }
-
-  // Configure Aggregator to trigger on successful CheckFormating build
   Aggregator.triggers {
     finishBuildTrigger {
-      buildType = "${CheckFormating.id}"
+      buildType = "${FormatBuildFactory.GitHub.id}"
       successfulOnly = true
       branchFilter = ProjectBranchFilters.githubBranchFilter
     }
   }
 
-  // setup display order for bazel-bsp pipeline
-  buildTypesOrderIds =
-    arrayListOf(
-      CheckFormating,
-      *PluginBuildFactory.ForAllPlatforms.toTypedArray(),
-      ProjectUnitTests,
-      *PluginBenchmarkFactory.AllBenchmarkTests.toTypedArray(),
-      *IdeStarterTestFactory.AllIdeStarterTests.toTypedArray(),
-      *StaticAnalysisFactory.EnabledAnalysisTests.toTypedArray(),
-      Aggregator
-    )
-}
+  buildTypesOrderIds = arrayListOf(
+    FormatBuildFactory.GitHub,
+    *PluginBuildFactory.ForAllPlatforms.toTypedArray(),
+    ProjectUnitTestsGithub,
+    *PluginBenchmarkFactory.AllBenchmarkTests.toTypedArray(),
+    *IdeStarterTestFactory.AllIdeStarterTests.toTypedArray(),
+    *StaticAnalysisFactory.EnabledAnalysisTestsGitHub.toTypedArray(),
+    Aggregator
+  )
+})
 
+object Space : Project({
+  name = "Space"
+
+
+  val ProjectUnitTestsSpace = ProjectUnitTests(customVcsRoot = VcsRootHirschgartenSpace)
+
+  val allSteps = sequential {
+    buildType(FormatBuildFactory.Space)
+    parallel(options = {
+      onDependencyFailure = FailureAction.CANCEL
+      onDependencyCancel = FailureAction.CANCEL
+    }) {
+      PluginBuildFactory.ForAllPlatformsSpace.forEach { buildType(it) }
+      buildType(ProjectUnitTestsSpace)
+      PluginBenchmarkFactory.AllBenchmarkTestsSpace.forEach { buildType(it) }
+      IdeStarterTestFactory.AllIdeStarterTestsSpace.forEach { buildType(it) }
+      StaticAnalysisFactory.EnabledAnalysisTestsSpace.forEach { buildType(it) }
+    }
+    buildType(AggregatorSpace, options = {
+      onDependencyFailure = FailureAction.ADD_PROBLEM
+      onDependencyCancel = FailureAction.ADD_PROBLEM
+    })
+  }.buildTypes()
+
+  allSteps.forEach { buildType(it) }
+
+  FormatBuildFactory.Space.triggers {
+    vcs {
+      branchFilter = ProjectBranchFilters.spaceBranchFilter
+      triggerRules = ProjectTriggerRules.triggerRules
+    }
+  }
+  AggregatorSpace.triggers {
+    finishBuildTrigger {
+      buildType = "${FormatBuildFactory.Space.id}"
+      successfulOnly = true
+      branchFilter = ProjectBranchFilters.spaceBranchFilter
+    }
+  }
+
+  buildTypesOrderIds = arrayListOf(
+    FormatBuildFactory.Space,
+    *PluginBuildFactory.ForAllPlatformsSpace.toTypedArray(),
+    ProjectUnitTestsSpace,
+    *PluginBenchmarkFactory.AllBenchmarkTestsSpace.toTypedArray(),
+    *IdeStarterTestFactory.AllIdeStarterTestsSpace.toTypedArray(),
+    *StaticAnalysisFactory.EnabledAnalysisTestsSpace.toTypedArray(),
+    AggregatorSpace
+  )
+})

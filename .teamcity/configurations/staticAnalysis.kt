@@ -30,7 +30,8 @@ data class AnalysisDef(
  * @param analysisDef The analysis definition containing test parameters
  */
 class StaticAnalysisTest(
-  private val analysisDef: AnalysisDef
+  private val analysisDef: AnalysisDef,
+  idNamespace: String? = null,
 ) : BaseBuildType(
   name = "[analysis] Qodana ${analysisDef.name}",
   requirements = {
@@ -38,10 +39,15 @@ class StaticAnalysisTest(
     equals("container.engine.osType", "linux")
   },
   customVcsRoot = analysisDef.vcsRoot,
+  idNamespace = idNamespace,
   artifactRules = "+:.teamcity/qodana/*.zip",
   dependencies = {
-    // Depend on the latest platform build (last in the list)
-    val latestPlatformBuild = PluginBuildFactory.ForAllPlatforms.last()
+    // Depend on the latest platform build (last in the list), matching the subproject namespace
+    val latestPlatformBuild = if (idNamespace == "Space") {
+      PluginBuildFactory.ForAllPlatformsSpace.last()
+    } else {
+      PluginBuildFactory.ForAllPlatforms.last()
+    }
     snapshot(latestPlatformBuild) {}
     artifacts(latestPlatformBuild) {
       artifactRules = CommonParams.QodanaArtifactRules
@@ -145,6 +151,15 @@ object StaticAnalysisFactory {
       qodanaBaseline = "tools/qodana/qodana.sarif.json"
     ),
     AnalysisDef(
+      name = "Hirschgarten",
+      vcsRoot = VcsRootHirschgartenSpace,
+      cloudTokenKey = "qodana.cloud.token.hirschgarten",
+      cloudTokenCredentials = "credentialsJSON:d57ead0e-b567-440d-817e-f92e084a1cc0",
+      enabled = true,
+      qodanaConfig = "tools/qodana/qodana.yaml",
+      qodanaBaseline = "tools/qodana/qodana.sarif.json"
+    ),
+    AnalysisDef(
       name = "Bazel",
       vcsRoot = VcsRootBazelQodana,
       cloudTokenKey = "qodana.cloud.token.bazel",
@@ -165,8 +180,24 @@ object StaticAnalysisFactory {
   val AllAnalysisTests: List<BaseBuildType> by lazy { createAnalysisTests() }
   
   /** Only enabled analysis tests for the pipeline. */
-  val EnabledAnalysisTests: List<BaseBuildType> by lazy {
-    createAnalysisTests(onlyEnabled = true) 
+  val EnabledAnalysisTests: List<BaseBuildType> by lazy { createAnalysisTests(onlyEnabled = true) }
+  val EnabledAnalysisTestsGitHub: List<BaseBuildType> by lazy {
+    // Include all enabled analyses that are not explicitly Space-only.
+    // This collects Hirschgarten (GitHub), Bazel and BuildBuddy analyses.
+    analysisTests
+      .filter { it.enabled && it.vcsRoot.id != VcsRootHirschgartenSpace.id }
+      .map { analysisDef -> StaticAnalysisTest(analysisDef, idNamespace = "GitHub") }
+  }
+  val EnabledAnalysisTestsSpace: List<BaseBuildType> by lazy {
+    analysisTests
+      .filter {
+        it.enabled && (
+          it.vcsRoot.id == VcsRootHirschgartenSpace.id ||
+          it.vcsRoot.id == VcsRootBazelQodana.id ||
+          it.vcsRoot.id == VcsRootBuildBuddyQodana.id
+        )
+      }
+      .map { analysisDef -> StaticAnalysisTest(analysisDef, idNamespace = "Space") }
   }
   
   private fun createAnalysisTests(onlyEnabled: Boolean = false): List<BaseBuildType> =

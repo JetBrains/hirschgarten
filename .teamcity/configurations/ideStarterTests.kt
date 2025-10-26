@@ -1,5 +1,6 @@
 package configurations
 
+import jetbrains.buildServer.configs.kotlin.v2019_2.VcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
@@ -14,7 +15,8 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 class IdeStarterTest(
   private val testName: String,
   private val targets: String,
-  private val testSpecificArgs: String = ""
+  private val testSpecificArgs: String = "",
+  customVcsRoot: VcsRoot? = VcsRootHirschgarten,
 ) : BaseBuildType(
   name = "[ide-starter] $testName",
   requirements = {
@@ -22,6 +24,7 @@ class IdeStarterTest(
     equals("container.engine.osType", "linux")
   },
   artifactRules = CommonParams.BazelTestlogsArtifactRules,
+  customVcsRoot = customVcsRoot,
   steps = {
     bazel {
       val reportErrors = "--jvmopt=\"-DDO_NOT_REPORT_ERRORS=true\""
@@ -72,10 +75,16 @@ data class TestDef(
 object IdeStarterTestFactory {
   /** All IDE-starter test build types. */
   val AllIdeStarterTests: List<BaseBuildType> by lazy { createIdeStarterTests() }
+  val AllIdeStarterTestsSpace: List<BaseBuildType> by lazy { createIdeStarterTestsSpace() }
 
   private fun createIdeStarterTests(): List<BaseBuildType> =
     ideStarterTests.map { testDef ->
       IdeStarterTest(testDef.name, testDef.target, testDef.testSpecificArgs)
+    }
+
+  private fun createIdeStarterTestsSpace(): List<BaseBuildType> =
+    ideStarterTests.map { testDef ->
+      IdeStarterTest(testDef.name, testDef.target, testDef.testSpecificArgs, customVcsRoot = VcsRootHirschgartenSpace)
     }
 
   // Define the available IDE-starter tests

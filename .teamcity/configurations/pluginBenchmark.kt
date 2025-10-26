@@ -1,5 +1,6 @@
 package configurations
 
+import jetbrains.buildServer.configs.kotlin.v2019_2.VcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
@@ -19,7 +20,8 @@ data class BenchmarkDef(
  * @param benchmarkDef The benchmark definition containing test parameters
  */
 class PluginBenchmarkTest(
-  private val benchmarkDef: BenchmarkDef
+  private val benchmarkDef: BenchmarkDef,
+  customVcsRoot: VcsRoot? = VcsRootHirschgarten,
 ) : BaseBuildType(
   name = "[benchmark] ${benchmarkDef.name}",
   requirements = {
@@ -27,6 +29,7 @@ class PluginBenchmarkTest(
     equals("container.engine.osType", "linux")
   },
   artifactRules = CommonParams.BazelTestlogsArtifactRules,
+  customVcsRoot = customVcsRoot,
   steps = {
     val dockerParams = if (benchmarkDef.useCurrentBazelVersion) {
       DockerParams.get().toMutableMap().apply {
@@ -102,9 +105,15 @@ object PluginBenchmarkFactory {
   
   /** All benchmark test build types. */
   val AllBenchmarkTests: List<BaseBuildType> by lazy { createBenchmarkTests() }
+  val AllBenchmarkTestsSpace: List<BaseBuildType> by lazy { createBenchmarkTestsSpace() }
   
   private fun createBenchmarkTests(): List<BaseBuildType> =
     benchmarkTests.map { benchmarkDef ->
       PluginBenchmarkTest(benchmarkDef)
+    }
+
+  private fun createBenchmarkTestsSpace(): List<BaseBuildType> =
+    benchmarkTests.map { benchmarkDef ->
+      PluginBenchmarkTest(benchmarkDef, customVcsRoot = VcsRootHirschgartenSpace)
     }
 }

@@ -22,7 +22,10 @@ open class BaseBuildType(
   dockerSupport: DockerSupportFeature.() -> Unit = {},
   dependencies: Dependencies.() -> Unit = {},
   customVcsRoot: VcsRoot? = VcsRootHirschgarten,
+  idNamespace: String? = null,
 ) : BuildType({
+    val isGitHub = (customVcsRoot?.id == VcsRootHirschgarten.id)
+    val isSpace = (customVcsRoot?.id == VcsRootHirschgartenSpace.id)
 
     this.name = name
     this.artifactRules = artifactRules
@@ -43,10 +46,25 @@ open class BaseBuildType(
       customVcsRoot?.let { root(it) }
     }
 
-    id("GitHub$name".toExtId())
+    if (idNamespace != null) {
+      id("${idNamespace}$name".toExtId())
+    } else {
+      if (isGitHub) {
+        id("GitHub$name".toExtId())
+      } else if (isSpace) {
+        id("Space$name".toExtId())
+      } else {
+        id(name.toExtId())
+      }
+    }
+
     if (requirements == null) {
       requirements {
-        endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
+        if (isGitHub) {
+          endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
+        } else {
+          endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
+        }
         equals("container.engine.osType", "linux")
       }
     } else {
@@ -56,29 +74,39 @@ open class BaseBuildType(
     this.features.dockerSupport(dockerSupport)
 
     features {
-      perfmon {
-      }
-      commitStatusPublisher {
-        publisher =
-          github {
-            githubUrl = "https://api.github.com"
-            authType =
-              personalToken {
-                token = CredentialsStore.GitHubPassword
-              }
-          }
-        param("github_oauth_user", "hb-man")
-      }
-      pullRequests {
-        vcsRootExtId = "${VcsRootHirschgarten.id}"
-        provider =
-          github {
-            authType =
-              token {
-                token = CredentialsStore.GitHubPassword
-              }
+      perfmon { }
+      // Determine feature set by VCS root type (GitHub-like vs Space), not by id namespace
+      val isGitHubLike = listOf(
+        VcsRootHirschgarten.id,
+        VcsRootBazelQodana.id,
+        VcsRootBuildBuddyQodana.id
+      ).contains(customVcsRoot?.id)
+      val isSpaceLike = (customVcsRoot?.id == VcsRootHirschgartenSpace.id)
+
+      if (isGitHubLike) {
+        commitStatusPublisher {
+          publisher =
+            github {
+              githubUrl = "https://api.github.com"
+              authType = personalToken { token = CredentialsStore.GitHubPassword }
+            }
+          param("github_oauth_user", "hb-man")
+        }
+        pullRequests {
+          vcsRootExtId = "${VcsRootHirschgarten.id}"
+          provider = github {
+            authType = token { token = CredentialsStore.GitHubPassword }
             filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
           }
+        }
+      } else if (isSpaceLike) {
+        commitStatusPublisher {
+          vcsRootExtId = "${VcsRootHirschgartenSpace.id}"
+          publisher = space {
+            authType = connection { connectionId = "PROJECT_EXT_12" }
+            displayName = "BazelTeamCityCloud"
+          }
+        }
       }
     }
     this.steps {
@@ -105,4 +133,3 @@ open class BaseBuildType(
       steps()
     }
   })
-
