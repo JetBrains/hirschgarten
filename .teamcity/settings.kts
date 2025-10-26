@@ -53,8 +53,8 @@ object GitHub : Project({
   val allSteps = sequential {
     buildType(FormatBuildFactory.GitHub)
     parallel(options = {
-      onDependencyFailure = FailureAction.ADD_PROBLEM
-      onDependencyCancel = FailureAction.ADD_PROBLEM
+      onDependencyFailure = FailureAction.IGNORE
+      onDependencyCancel = FailureAction.IGNORE
     }) {
       PluginBuildFactory.ForAllPlatforms.forEach { buildType(it) }
       buildType(ProjectUnitTestsGithub)
@@ -104,8 +104,8 @@ object Space : Project({
   val allSteps = sequential {
     buildType(FormatBuildFactory.Space)
     parallel(options = {
-      onDependencyFailure = FailureAction.ADD_PROBLEM
-      onDependencyCancel = FailureAction.ADD_PROBLEM
+      onDependencyFailure = FailureAction.IGNORE
+      onDependencyCancel = FailureAction.IGNORE
     }) {
       PluginBuildFactory.ForAllPlatformsSpace.forEach { buildType(it) }
       buildType(ProjectUnitTestsSpace)
