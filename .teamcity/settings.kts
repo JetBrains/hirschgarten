@@ -53,8 +53,8 @@ object GitHub : Project({
   val allSteps = sequential {
     buildType(FormatBuildFactory.GitHub)
     parallel(options = {
-      onDependencyFailure = FailureAction.CANCEL
-      onDependencyCancel = FailureAction.CANCEL
+      onDependencyFailure = FailureAction.ADD_PROBLEM
+      onDependencyCancel = FailureAction.ADD_PROBLEM
     }) {
       PluginBuildFactory.ForAllPlatforms.forEach { buildType(it) }
       buildType(ProjectUnitTestsGithub)
@@ -79,7 +79,7 @@ object GitHub : Project({
   Aggregator.triggers {
     finishBuildTrigger {
       buildType = "${FormatBuildFactory.GitHub.id}"
-      successfulOnly = true
+      successfulOnly = false
       branchFilter = ProjectBranchFilters.githubBranchFilter
     }
   }
@@ -104,8 +104,8 @@ object Space : Project({
   val allSteps = sequential {
     buildType(FormatBuildFactory.Space)
     parallel(options = {
-      onDependencyFailure = FailureAction.CANCEL
-      onDependencyCancel = FailureAction.CANCEL
+      onDependencyFailure = FailureAction.ADD_PROBLEM
+      onDependencyCancel = FailureAction.ADD_PROBLEM
     }) {
       PluginBuildFactory.ForAllPlatformsSpace.forEach { buildType(it) }
       buildType(ProjectUnitTestsSpace)
@@ -130,7 +130,7 @@ object Space : Project({
   AggregatorSpace.triggers {
     finishBuildTrigger {
       buildType = "${FormatBuildFactory.Space.id}"
-      successfulOnly = true
+      successfulOnly = false
       branchFilter = ProjectBranchFilters.spaceBranchFilter
     }
   }
