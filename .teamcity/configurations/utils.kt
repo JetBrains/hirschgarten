@@ -34,7 +34,7 @@ object CommonParams {
 
   val QodanaArtifactRules: String = "+:**/plugin-bazel.zip=>%system.teamcity.build.checkoutDir%/tc-artifacts"
 
-  val CrossBuildPlatforms: List<String> = listOf("251", "252")
+  val CrossBuildPlatforms: List<String> = listOf("252")
 
   val BazelVersion = "7.4.1"
 }
