@@ -17,8 +17,10 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
 import org.jetbrains.bazel.runnerAction.BazelRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
+import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
@@ -177,6 +179,12 @@ fun DefaultActionGroup.fillWithEligibleActions(
     )
   }
 
+  if (target.kind.ruleType == RuleType.LIBRARY) {
+    if (singleTestFilter != null) {
+      addSyntheticRunActions(project, target, callerPsiElement, singleTestFilter, includeTargetNameInText, canBeDebugged)
+    }
+  }
+
   if (project.bazelJVMProjectSettings.enableLocalJvmActions && target.kind.isJvmTarget()) {
     if (target.kind.ruleType == RuleType.BINARY) {
       addAction(RunWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
@@ -191,6 +199,44 @@ fun DefaultActionGroup.fillWithEligibleActions(
     }
   }
   return this
+}
+
+private fun DefaultActionGroup.addSyntheticRunActions(
+  project: Project,
+  target: BuildTarget,
+  element: PsiElement?,
+  testFilter: String,
+  includeTargetNameInText: Boolean,
+  canBeDebugged: Boolean,
+) {
+  if (element == null) {
+    return
+  }
+  val generator = SyntheticRunTargetTemplateGenerator.ep.extensionList
+    .find { it.isSupported(target) }
+  if (generator == null) {
+    return
+  }
+  val action = RunSyntheticTargetAction(
+    project = project,
+    target = target,
+    isDebugAction = false,
+    includeTargetNameInText = includeTargetNameInText,
+    templateGenerator = generator,
+    targetElement = element,
+  )
+  addAction(action)
+  if (canBeDebugged) {
+    val action = RunSyntheticTargetAction(
+      project = project,
+      target = target,
+      isDebugAction = true,
+      includeTargetNameInText = includeTargetNameInText,
+      templateGenerator = generator,
+      targetElement = element,
+    )
+    addAction(action)
+  }
 }
 
 private fun DefaultActionGroup.addLocalJvmTestActions(

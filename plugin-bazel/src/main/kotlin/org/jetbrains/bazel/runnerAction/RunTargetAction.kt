@@ -5,27 +5,21 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bsp.protocol.BuildTarget
 
-class RunTargetAction(
+open class RunTargetAction(
   project: Project,
   targetInfo: BuildTarget,
   isDebugAction: Boolean = false,
   includeTargetNameInText: Boolean = false,
 ) : BazelRunnerAction(
-    targetInfos = listOf(targetInfo),
-    text = { isRunConfigName ->
-      if (isDebugAction && !isRunConfigName && !includeTargetNameInText) {
-        BazelPluginBundle
-          .message(
-            "target.debug.run.action.text",
-            "",
-          ).trim()
-      } else {
-        BazelPluginBundle
-          .message(
-            "target.run.action.text",
-            if (isRunConfigName || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-          ).trim()
-      }
-    },
-    isDebugAction = isDebugAction,
-  )
+  targetInfos = listOf(targetInfo),
+  text = {
+    BazelRunnerActionNaming.getRunActionName(
+      isDebugAction = isDebugAction,
+      isRunConfigName = it,
+      includeTargetNameInText = includeTargetNameInText,
+      project = project,
+      target = targetInfo.id,
+    )
+  },
+  isDebugAction = isDebugAction,
+)

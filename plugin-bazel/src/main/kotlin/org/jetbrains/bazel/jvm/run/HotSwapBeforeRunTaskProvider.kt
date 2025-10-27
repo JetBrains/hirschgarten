@@ -85,6 +85,8 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
               RunParams(
                 target = target,
                 originId = "",
+                buildBeforeRun = true,
+                checkVisibility = true,
                 workingDirectory = executionParams.workingDirectory,
                 arguments = executionParams.arguments?.let { transformProgramArguments(it) }.orEmpty() + additionalProgramArguments,
                 environmentVariables = executionParams.environmentVariables,
