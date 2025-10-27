@@ -27,7 +27,7 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
   @Test
   fun `test presentation template is correct`() {
     val presentation = action.templatePresentation
-    presentation.text shouldBe "Add to {0} directories section"
+    presentation.text shouldBe "Add to {0} Directories Section"
     presentation.description shouldBe "Add this directory to the project view file."
     presentation.icon shouldBe null
   }
@@ -57,7 +57,7 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
     """.trimIndent())
     val presentation = testPresentationOn(createActionContext(myFixture.tempDirFixture.findOrCreateDir("foo")))
     presentation.isEnabledAndVisible shouldBe true
-    presentation.text shouldBe "Add to .user.bazelproject directories section"
+    presentation.text shouldBe "Add to .user.bazelproject Directories Section"
     presentation.description shouldBe null
     presentation.icon shouldBe null
   }
