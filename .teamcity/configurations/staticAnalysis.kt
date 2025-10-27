@@ -51,6 +51,7 @@ class StaticAnalysisTest(
     snapshot(latestPlatformBuild) {}
     artifacts(latestPlatformBuild) {
       artifactRules = CommonParams.QodanaArtifactRules
+      buildRule = sameChainOrLastFinished()
     }
   },
   steps = {

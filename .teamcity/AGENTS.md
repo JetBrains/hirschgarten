@@ -1,9 +1,9 @@
 Core insights for working with .teamcity (TeamCity Kotlin DSL)
 
 Overview
-- This project uses TeamCity Kotlin DSL (version "2024.12").
+- Uses TeamCity Kotlin DSL (version "2024.12").
 - CI is organized as two subprojects: GitHub and Space. Both reuse the same build definitions but run against different VCS roots.
-- Keep logic DRY via factories and a shared base build type.
+- Logic is kept DRY via factories and a shared base build type.
 
 Layout
 - Root entry: `.teamcity/settings.kts`
@@ -17,7 +17,7 @@ Layout
   - `projectUnitTests.kt` — unit tests build type (class; pass VCS root).
   - `pluginBenchmark.kt` — benchmark tests + factory (GitHub/Space variants).
   - `ideStarterTests.kt` — IDE-starter tests + factory (GitHub/Space variants).
-  - `staticAnalysis.kt` — Qodana analysis builds; GitHub/Space sets and VCS-aware deps on latest platform build.
+  - `staticAnalysis.kt` — Qodana analysis builds; GitHub/Space sets and VCS-aware deps on latest platform build. Bazel Qodana is currently non-blocking (allowFailure=true).
   - `resultsAggregator.kt` — composite aggregator builds per subproject.
   - `projectFormat.kt` — `FormatBuildFactory` produces the formatting build for GitHub/Space.
 
@@ -29,28 +29,34 @@ VCS Roots & Credentials
 Subprojects & Pipelines
 - `GitHub` subproject
   - Steps: `FormatBuildFactory.GitHub` → parallel (plugin builds, unit tests, benchmarks, IDE-starter, GH analyses) → `Aggregator`.
-  - PR checks and commit statuses configured for GitHub.
-- `Space` subproject
+  - Commit status + PR provider are enabled for GitHub-like VCS roots (including Bazel/BuildBuddy Qodana builds).
+  - `Space` subproject
   - Steps: `FormatBuildFactory.Space` → parallel (Space builds/tests/analyses) → `AggregatorSpace`.
-  - Commit status publisher uses Space connection; no PR provider.
+  - Commit status publisher uses Space connection.
 
 Build Types & Factories
 - Always try to derive new builds from `BaseBuildType`.
 - Target a VCS by passing `customVcsRoot`:
   - GitHub: default (or `customVcsRoot = VcsRootHirschgarten`).
   - Space: `customVcsRoot = VcsRootHirschgartenSpace`.
-- IDs are auto-prefixed (`GitHub…`/`Space…`) by `BaseBuildType`; avoid manual `id()` overrides.
+- IDs are auto-prefixed (`GitHub…`/`Space…`). Factories for analyses pass `idNamespace` explicitly to keep build IDs under the correct subproject even when `customVcsRoot` is a third-party GitHub repo (e.g., Bazel/BuildBuddy Qodana).
 - To add platform builds, extend factories rather than wiring items manually.
 
 Static Analysis (Qodana)
-- Add an `AnalysisDef` with target `vcsRoot`, cloud token key, and credentials.
-- `EnabledAnalysisTestsGitHub`/`EnabledAnalysisTestsSpace` control inclusion in pipelines.
-- Each analysis depends on the latest platform build matching its VCS and mounts built plugin artifacts.
+- Definitions live in `staticAnalysis.kt` as `AnalysisDef` entries.
+  - Required: `name`, `vcsRoot`, `cloudTokenKey`, `cloudTokenCredentials`.
+  - Optional: `allowFailure` (non-blocking), `unchanged`/`diff` (enables post-check with `scripts/evaluate_qodana.py`), `linterImage`, `qodanaConfig`, `qodanaBaseline`.
+- Inclusion in pipelines is controlled by `EnabledAnalysisTestsGitHub`/`EnabledAnalysisTestsSpace`. Selection is based on the `vcsRoot`:
+  - GitHub set: all enabled analyses except the Space VCS.
+  - Space set: Space, plus Bazel and BuildBuddy analyses.
+- Bazel Qodana is non-blocking: `allowFailure = true` disables failing on test failures and non-zero exit codes for that build, so it won’t break pipelines.
+- Plugin mounting: artifacts from the latest platform build are mounted into Qodana with `additionalDockerArguments` and a preparatory unzip step. Artifact rules come from `CommonParams.QodanaArtifactRules`.
+- Linter image: pulled from `CommonParams.DockerQodana*Image` and tagged as `20XY.Z-nightly`, where `XY.Z` is derived from the last entry of `CommonParams.CrossBuildPlatforms` (currently `252` → `2025.2-nightly`).
+- Hirschgarten analyses use repo-local config/baseline paths: `tools/qodana/qodana.yaml` and `tools/qodana/qodana.sarif.json`.
+- Optional anomaly check: when `analysisDef.unchanged` is set, a Python step runs `scripts/evaluate_qodana.py` to validate “UNCHANGED/NEW” problem counts from the build log.
 
 Triggers
-- GitHub formatting uses a PR-based VCS trigger with selective rules.
-- Space formatting uses a branch-based VCS trigger (`<default>`, all branches, excludes steward/merge refs).
-- Aggregators use `finishBuildTrigger` on the corresponding format build.
+- No VCS/dependency triggers are currently configured in DSL. Pipelines are defined and ordered; add VCS or finish-build triggers to `Format`/`Aggregator` if automation is needed.
 
 Adding A New Platform
 - Update `CommonParams.CrossBuildPlatforms` in `utils.kt`.
@@ -63,4 +69,9 @@ Validation
 Gotchas
 - Name collisions: identical display names are fine across subprojects; avoid placing both GH and Space builds in the same project.
 - Agent sizing: `BaseBuildType` sets defaults; heavy builds override to Large/XLarge as needed.
-- Commit status/PR provider: configured only for GitHub builds; Space uses the connection publisher.
+- Commit status/PR provider: enabled for GitHub-like VCS roots (including Bazel/BuildBuddy Qodana); Space uses the Space connection publisher.
+
+Notes
+- Docker registry login for Qodana images uses `PROJECT_EXT_3`.
+- `BaseBuildType` injects an initial step to set `env.CONTAINER_UID/GID` for Dockerized steps.
+- Cross-platform builds are controlled by `CommonParams.CrossBuildPlatforms` (currently `252`).
