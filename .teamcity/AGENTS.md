@@ -17,7 +17,7 @@ Layout
   - `projectUnitTests.kt` — unit tests build type (class; pass VCS root).
   - `pluginBenchmark.kt` — benchmark tests + factory (GitHub/Space variants).
   - `ideStarterTests.kt` — IDE-starter tests + factory (GitHub/Space variants).
-  - `staticAnalysis.kt` — Qodana analysis builds; GitHub/Space sets and VCS-aware deps on latest platform build. Bazel Qodana is currently non-blocking (allowFailure=true).
+- `staticAnalysis.kt` — Qodana analysis builds; GitHub/Space sets and VCS-aware deps on latest platform build. Bazel Qodana is currently non-blocking at the Results level (composite dependency ignores failures).
   - `resultsAggregator.kt` — composite aggregator builds per subproject.
   - `projectFormat.kt` — `FormatBuildFactory` produces the formatting build for GitHub/Space.
 
@@ -49,7 +49,7 @@ Static Analysis (Qodana)
 - Inclusion in pipelines is controlled by `EnabledAnalysisTestsGitHub`/`EnabledAnalysisTestsSpace`. Selection is based on the `vcsRoot`:
   - GitHub set: all enabled analyses except the Space VCS.
   - Space set: Space, plus Bazel and BuildBuddy analyses.
-- Bazel Qodana is non-blocking: `allowFailure = true` disables failing on test failures and non-zero exit codes for that build, so it won’t break pipelines.
+- Bazel Qodana is non-blocking via Results: the `Results` composite build depends on Bazel Qodana with failure action set to ignore, so its failures don’t break pipelines. (The analysis build also sets `allowFailure`, but the decisive behavior is in the composite dependency.)
 - Plugin mounting: artifacts from the latest platform build are mounted into Qodana with `additionalDockerArguments` and a preparatory unzip step. Artifact rules come from `CommonParams.QodanaArtifactRules`.
 - Linter image: pulled from `CommonParams.DockerQodana*Image` and tagged as `20XY.Z-nightly`, where `XY.Z` is derived from the last entry of `CommonParams.CrossBuildPlatforms` (currently `252` → `2025.2-nightly`).
 - Hirschgarten analyses use repo-local config/baseline paths: `tools/qodana/qodana.yaml` and `tools/qodana/qodana.sarif.json`.

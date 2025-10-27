@@ -18,24 +18,45 @@ project {
 object GitHub : Project({
   name = "GitHub"
 
-
+  // Register pipeline build types explicitly
   val ProjectUnitTestsGithub = ProjectUnitTests()
+  val buildsGithub = PluginBuildFactory.ForAllPlatforms
+  val benchmarksGithub = PluginBenchmarkFactory.AllBenchmarkTests
+  val ideStarterGithub = IdeStarterTestFactory.AllIdeStarterTests
+  val analysesGitHub = StaticAnalysisFactory.EnabledAnalysisTestsGitHub
 
-  val allSteps = sequential {
-    parallel() {
-      PluginBuildFactory.ForAllPlatforms.forEach { buildType(it) }
-      buildType(ProjectUnitTestsGithub)
-      PluginBenchmarkFactory.AllBenchmarkTests.forEach { buildType(it) }
-      IdeStarterTestFactory.AllIdeStarterTests.forEach { buildType(it) }
-      StaticAnalysisFactory.EnabledAnalysisTestsGitHub.forEach { buildType(it) }
+  // Activate builds in the project
+  buildsGithub.forEach { buildType(it) }
+  buildType(ProjectUnitTestsGithub)
+  benchmarksGithub.forEach { buildType(it) }
+  ideStarterGithub.forEach { buildType(it) }
+  analysesGitHub.forEach { buildType(it) }
+
+  // Assemble pipeline list separately for dependency wiring
+  val pipelineGithub: List<BuildType> =
+    buildsGithub + ProjectUnitTestsGithub + benchmarksGithub + ideStarterGithub + analysesGitHub
+  
+  // Add Aggregator and wire dependencies with per-dependency failure behavior
+  buildType(Aggregator)
+
+  val qodanaBazelGitHub = analysesGitHub.firstOrNull { it.name.contains("Qodana Bazel") }
+
+  Aggregator.apply {
+    dependencies {
+      pipelineGithub.forEach { dep ->
+        snapshot(dep) {
+          // Default: add problem on failure/failed-to-start
+          onDependencyFailure = FailureAction.ADD_PROBLEM
+          onDependencyCancel = FailureAction.ADD_PROBLEM
+          // Special-case: ignore Bazel Qodana failures in Results
+          if (qodanaBazelGitHub != null && dep.id == qodanaBazelGitHub.id) {
+            onDependencyFailure = FailureAction.IGNORE
+            onDependencyCancel = FailureAction.IGNORE
+          }
+        }
+      }
     }
-    buildType(Aggregator, options = {
-      onDependencyFailure = FailureAction.ADD_PROBLEM
-      onDependencyCancel = FailureAction.ADD_PROBLEM
-    })
-  }.buildTypes()
-
-  allSteps.forEach { buildType(it) }
+  }
 
   buildTypesOrderIds = arrayListOf(
     *PluginBuildFactory.ForAllPlatforms.toTypedArray(),
@@ -50,24 +71,43 @@ object GitHub : Project({
 object Space : Project({
   name = "Space"
 
-
+  // Register pipeline build types explicitly
   val ProjectUnitTestsSpace = ProjectUnitTests(customVcsRoot = VcsRootHirschgartenSpace)
+  val buildsSpace = PluginBuildFactory.ForAllPlatformsSpace
+  val benchmarksSpace = PluginBenchmarkFactory.AllBenchmarkTestsSpace
+  val ideStarterSpace = IdeStarterTestFactory.AllIdeStarterTestsSpace
+  val analysesSpace = StaticAnalysisFactory.EnabledAnalysisTestsSpace
 
-  val allSteps = sequential {
-    parallel() {
-      PluginBuildFactory.ForAllPlatformsSpace.forEach { buildType(it) }
-      buildType(ProjectUnitTestsSpace)
-      PluginBenchmarkFactory.AllBenchmarkTestsSpace.forEach { buildType(it) }
-      IdeStarterTestFactory.AllIdeStarterTestsSpace.forEach { buildType(it) }
-      StaticAnalysisFactory.EnabledAnalysisTestsSpace.forEach { buildType(it) }
+  // Activate builds in the project
+  buildsSpace.forEach { buildType(it) }
+  buildType(ProjectUnitTestsSpace)
+  benchmarksSpace.forEach { buildType(it) }
+  ideStarterSpace.forEach { buildType(it) }
+  analysesSpace.forEach { buildType(it) }
+
+  // Assemble pipeline list separately for dependency wiring
+  val pipelineSpace: List<BuildType> =
+    buildsSpace + ProjectUnitTestsSpace + benchmarksSpace + ideStarterSpace + analysesSpace
+
+  // Add AggregatorSpace and wire dependencies; ignore Bazel Qodana failures
+  buildType(AggregatorSpace)
+
+  val qodanaBazelSpace = analysesSpace.firstOrNull { it.name.contains("Qodana Bazel") }
+
+  AggregatorSpace.apply {
+    dependencies {
+      pipelineSpace.forEach { dep ->
+        snapshot(dep) {
+          onDependencyFailure = FailureAction.ADD_PROBLEM
+          onDependencyCancel = FailureAction.ADD_PROBLEM
+          if (qodanaBazelSpace != null && dep.id == qodanaBazelSpace.id) {
+            onDependencyFailure = FailureAction.IGNORE
+            onDependencyCancel = FailureAction.IGNORE
+          }
+        }
+      }
     }
-    buildType(AggregatorSpace, options = {
-      onDependencyFailure = FailureAction.ADD_PROBLEM
-      onDependencyCancel = FailureAction.ADD_PROBLEM
-    })
-  }.buildTypes()
-
-  allSteps.forEach { buildType(it) }
+  }
 
   buildTypesOrderIds = arrayListOf(
     *PluginBuildFactory.ForAllPlatformsSpace.toTypedArray(),
