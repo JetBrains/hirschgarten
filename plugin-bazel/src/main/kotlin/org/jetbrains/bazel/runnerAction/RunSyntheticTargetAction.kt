@@ -45,7 +45,7 @@ class RunSyntheticTargetAction(
   ): RunnerAndConfigurationSettings {
     val configurationType = runConfigurationType<BazelRunConfigurationType>()
     val factory = configurationType.configurationFactories.first()
-    val name = text(true);
+    val name = templateGenerator.getRunnerActionName(text(true), target, targetElement);
     val settings =
       RunManager.getInstance(project).createConfiguration(name, factory)
     val config = settings.configuration as BazelRunConfiguration
