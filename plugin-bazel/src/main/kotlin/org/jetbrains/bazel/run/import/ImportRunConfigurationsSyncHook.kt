@@ -84,7 +84,9 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     val googleHandlerId: String = checkNotNull(blazeSettings.getAttributeValue("handler-id"))
     val bazelCommand: String = checkNotNull(blazeSettings.getAttributeValue("blaze-command"))
     val target = Label.parse(checkNotNull(blazeSettings.getChild("blaze-target")).text)
-    val additionalBazelParams = blazeSettings.getChild("blaze-user-flag")?.text?.replaceProjectDir(project)
+    val additionalBazelParams = blazeSettings.getChildren("blaze-user-flag")
+      .mapNotNull { it.text?.replaceProjectDir(project) }
+      .joinToString(" ")
     val programArguments = blazeSettings.getChild("blaze-user-exe-flag")?.text?.replaceProjectDir(project)
 
     val envsMap =
@@ -109,6 +111,19 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     (state as? HasEnv)?.env?.set(EnvironmentVariablesData.create(envsMap, true))
 
     runManager.addConfiguration(settings)
+
+    // Parse before-run tasks from the method element after adding the configuration
+    val methodElement = runConfigurationXml.getChild("method")
+    if (methodElement != null) {
+      val runManagerImpl = RunManagerImpl.getInstanceImpl(project)
+      runManagerImpl.readBeforeRunTasks(methodElement, settings, configuration)
+
+      // Filter out Blaze.BeforeRunTask
+      configuration.beforeRunTasks = configuration.beforeRunTasks.filter { task ->
+        task.providerId.toString() != "Blaze.BeforeRunTask"
+      }
+    }
+
     return settings
   }
 
