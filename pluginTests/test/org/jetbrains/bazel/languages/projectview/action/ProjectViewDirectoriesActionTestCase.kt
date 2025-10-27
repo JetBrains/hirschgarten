@@ -19,10 +19,10 @@ import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.utils.io.createDirectory
+import org.intellij.lang.annotations.Language
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.settings.bazel.BazelProjectSettings
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.test.framework.BazelPathManager
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -51,12 +51,10 @@ abstract class ProjectViewDirectoriesActionTestCase(
     return event.presentation
   }
 
-  protected fun openProjectViewInEditor(path: String) {
-    val projectViewFile = BazelPathManager
-      .getTestFixturePath(path)
-      .toVirtualFile()
-    project.bazelProjectSettings = BazelProjectSettings(projectViewPath = projectViewFile.toNioPath())
-    myFixture.openFileInEditor(projectViewFile)
+  protected fun useAndOpenProjectView(@Language("projectview") content: String) {
+    val projectView = myFixture.createFile(".user.bazelproject", content)
+    project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectView)
+    myFixture.openFileInEditor(projectView)
   }
 
   protected fun performActionOnProjectDir(directory: String, actionId: String = this.actionId) {

@@ -33,12 +33,7 @@ internal suspend fun openProjectView(project: Project) {
   withContext(Dispatchers.EDT) {
     project.serviceAsync<ProjectView>().refresh()
     if (configFile != null) {
-      getPsiFile(configFile, project)?.navigate(true)
+      project.serviceAsync<PsiManager>().findFile(configFile)?.navigate(true)
     }
   }
-}
-
-private suspend fun getPsiFile(file: Path, project: Project): PsiFile? {
-  val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(file) ?: return null
-  return project.serviceAsync<PsiManager>().findFile(virtualFile)
 }
