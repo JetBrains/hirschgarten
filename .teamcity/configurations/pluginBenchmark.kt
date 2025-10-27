@@ -40,21 +40,6 @@ class PluginBenchmarkTest(
       DockerParams.get()
     }
 
-    script {
-      name = "add bazel version"
-      id = "add_bazelversion"
-      scriptContent =
-        """
-          #!/bin/bash
-          set -euxo
-          
-          echo "${CommonParams.BazelVersion}" > /home/hirschuser/project_10/.bazelversion
-        """.trimIndent()
-      dockerParams.forEach { (key, value) ->
-        param(key, value)
-      }
-    }
-
     bazel {
       val url = "--jvmopt=\"-Dbazel.ide.starter.test.teamcity.url=https://bazel.teamcity.com\""
       val projectNameArg = "--jvmopt=\"-Dbazel.ide.starter.test.project.name=benchmark_10_targets\""
