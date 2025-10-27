@@ -83,12 +83,12 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
   ) {
-    val checkVisibility = environment.getUserData(CHECK_VISIBILITY_KEY) ?: true
     val scriptPath = environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()
     if (scriptPath != null) {
       debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler, settings.env.envs)
     } else {
       val configuration = BazelRunConfiguration.get(environment)
+      val checkVisibility = configuration.getUserData(CHECK_VISIBILITY_KEY) ?: true
       val kotlinCoroutineLibParam = retrieveKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
       val additionalBazelParams = settings.additionalBazelParams ?: ""
       val runParams =
