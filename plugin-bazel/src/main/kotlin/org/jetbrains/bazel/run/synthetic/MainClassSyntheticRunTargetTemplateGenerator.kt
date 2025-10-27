@@ -12,6 +12,12 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
 
   override fun isSupported(target: BuildTarget): Boolean = extractJvmBuildTarget(target) != null
 
+  override fun getRunnerActionName(
+    original: String,
+    target: BuildTarget,
+    element: PsiElement,
+  ): String = "$original ${element.getMainClassInternal() ?: "unknown"}"
+
   override fun getSyntheticTargetLabel(original: BuildTarget, element: PsiElement): Label {
     // TODO: rethink fallback values
     val mainClass = element.getMainClassInternal() ?: error("failed to get main class")
