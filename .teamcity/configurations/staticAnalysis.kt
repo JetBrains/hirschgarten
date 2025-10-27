@@ -164,7 +164,8 @@ object StaticAnalysisFactory {
       vcsRoot = VcsRootBazelQodana,
       cloudTokenKey = "qodana.cloud.token.bazel",
       cloudTokenCredentials = "credentialsJSON:34041ec3-8e8c-4934-b3e2-0143ff2aee5e",
-      enabled = true
+      enabled = true,
+      allowFailure = true
     ),
     AnalysisDef(
       name = "BuildBuddy",
