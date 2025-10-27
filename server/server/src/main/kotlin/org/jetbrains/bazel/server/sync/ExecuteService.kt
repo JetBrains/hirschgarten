@@ -91,18 +91,16 @@ class ExecuteService(
     val requestedDebugType = params.debug
     val debugArguments = generateRunArguments(requestedDebugType)
     val debugOptions = generateRunOptions(requestedDebugType)
-    val buildBeforeRun = buildBeforeRun(requestedDebugType)
 
-    return runImpl(params.runParams, debugArguments, debugOptions, buildBeforeRun)
+    return runImpl(params.runParams, debugArguments, debugOptions)
   }
 
   private suspend fun runImpl(
     params: RunParams,
     additionalProgramArguments: List<String>? = null,
     additionalOptions: List<String>? = null,
-    buildBeforeRun: Boolean = true,
   ): RunResult {
-    if (buildBeforeRun) {
+    if (params.buildBeforeRun) {
       val targets = listOf(params.target)
       val result = build(targets, params.originId)
       if (result.isNotSuccess) {
@@ -113,6 +111,7 @@ class ExecuteService(
       bazelRunner.buildBazelCommand(workspaceContext) {
         run(params.target) {
           options.add(BazelFlag.color(true))
+          options.add(BazelFlag.checkVisibility(params.checkVisibility))
           additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }

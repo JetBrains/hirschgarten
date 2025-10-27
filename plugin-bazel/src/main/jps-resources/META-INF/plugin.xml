@@ -196,7 +196,15 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.syntheticRunTargetTemplateGenerator"
+                    interface="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"
+                    dynamic="true"/>
   </extensionPoints>
+
+  <projectListeners>
+    <listener topic="com.intellij.execution.ExecutionListener"
+              class="org.jetbrains.bazel.run.synthetic.SyntheticRunExecutionListener"/>
+  </projectListeners>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
@@ -208,6 +216,8 @@
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook" />
+
+    <syntheticRunTargetTemplateGenerator implementation="org.jetbrains.bazel.run.synthetic.JvmSyntheticRunTargetTemplateGenerator"/>
 
     <projectSyncHook
       id="DirectoriesSyncHook"
@@ -409,6 +419,8 @@
       key="bazel.find.in.files.non.indexable"
       restartRequired="true"
     />
+
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider" />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.sdkcompat.BazelRunConfigurationProducerSuppressor" />

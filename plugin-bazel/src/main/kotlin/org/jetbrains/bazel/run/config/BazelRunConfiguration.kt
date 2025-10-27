@@ -41,6 +41,11 @@ class BazelRunConfiguration internal constructor(
     updateHandlerIfDifferentProvider(runHandlerProvider ?: RunHandlerProvider.getRunHandlerProvider(project, newTargets))
   }
 
+  fun updateRunProvider(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider) {
+    targets = newTargets
+    updateHandler(runHandlerProvider)
+  }
+
   private var handlerProvider: RunHandlerProvider? = null
 
   var handler: BazelRunHandler? = null

@@ -4,6 +4,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -71,6 +72,8 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   }
 }
 
+val CHECK_VISIBILITY_KEY: Key<Boolean> = Key.create("bazel.visibility.check")
+
 class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val settings: JvmRunState) :
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
@@ -80,6 +83,7 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
   ) {
+    val checkVisibility = environment.getUserData(CHECK_VISIBILITY_KEY) ?: true
     val scriptPath = environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()
     if (scriptPath != null) {
       debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler, settings.env.envs)
@@ -91,6 +95,8 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
         RunParams(
           target = configuration.targets.single(),
           originId = originId.toString(),
+          buildBeforeRun = false,
+          checkVisibility = checkVisibility,
           arguments = transformProgramArguments(settings.programArguments),
           environmentVariables = settings.env.envs,
           workingDirectory = settings.workingDirectory,
