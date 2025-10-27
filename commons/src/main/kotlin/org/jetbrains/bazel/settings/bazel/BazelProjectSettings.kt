@@ -7,6 +7,8 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import java.net.URI
 import java.nio.file.Path
@@ -14,14 +16,14 @@ import java.nio.file.Paths
 import kotlin.io.path.exists
 
 data class BazelProjectSettings(
-  val projectViewPath: Path? = null,
+  val projectViewPath: VirtualFile? = null,
   val buildifierExecutablePath: Path? = null,
   val runBuildifierOnSave: Boolean = true,
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
   // experimental settings
 ) {
-  fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings =
-    copy(projectViewPath = newProjectViewFilePath.toAbsolutePath())
+  fun withNewProjectViewPath(newProjectViewFilePath: VirtualFile?): BazelProjectSettings =
+    copy(projectViewPath = newProjectViewFilePath)
 
   fun withNewBuildifierExecutablePath(newBuildifierExecutablePath: Path): BazelProjectSettings =
     copy(buildifierExecutablePath = newBuildifierExecutablePath)
@@ -46,24 +48,26 @@ data class BazelProjectSettingsState(
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-class BazelProjectSettingsService :
+class BazelProjectSettingsService(val project: Project) :
   DumbAware,
   PersistentStateComponent<BazelProjectSettingsState> {
   var settings: BazelProjectSettings = BazelProjectSettings()
 
-  override fun getState(): BazelProjectSettingsState =
-    BazelProjectSettingsState(
-      projectViewPathUri = settings.projectViewPath?.toUri()?.toString(),
+  override fun getState(): BazelProjectSettingsState {
+    return BazelProjectSettingsState(
+      projectViewPathUri = settings.projectViewPath?.url,
       buildifierExecutablePathUri = settings.buildifierExecutablePath?.toUri()?.toString(),
       runBuildifierOnSave = settings.runBuildifierOnSave,
       showExcludedDirectoriesAsSeparateNode = settings.showExcludedDirectoriesAsSeparateNode,
     )
+  }
 
   override fun loadState(settingsState: BazelProjectSettingsState) {
     if (!settingsState.isEmptyState()) {
       this.settings =
         BazelProjectSettings(
-          projectViewPath = settingsState.projectViewPathUri?.takeIf { it.isNotBlank() }?.let { Paths.get(URI(it)) },
+          projectViewPath = settingsState.projectViewPathUri?.takeIf { it.isNotBlank() }
+            ?.let { VirtualFileManager.getInstance().findFileByUrl(it) },
           buildifierExecutablePath = settingsState.buildifierExecutablePathUri?.takeIf { it.isNotBlank() }?.let { Paths.get(URI(it)) },
           runBuildifierOnSave = settingsState.runBuildifierOnSave,
           showExcludedDirectoriesAsSeparateNode = settingsState.showExcludedDirectoriesAsSeparateNode,

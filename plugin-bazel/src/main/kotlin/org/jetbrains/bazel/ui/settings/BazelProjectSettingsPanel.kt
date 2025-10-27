@@ -15,11 +15,13 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.OSAgnosticPathUtil
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
@@ -31,7 +33,6 @@ import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isExecutable
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.pathString
 
 class BazelProjectSettingsConfigurable(private val project: Project) :
   BoundCompositeSearchableConfigurable<UnnamedConfigurable>(
@@ -88,8 +89,8 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
       )
       whenTextChanged {
         if (text.isNotBlank()) {
-          val newPath = Path(text)
-          currentProjectSettings = currentProjectSettings.withNewProjectViewPath(newPath)
+          val vFile = VirtualFileManager.getInstance().findFileByNioPath(Path(text))
+          currentProjectSettings = currentProjectSettings.withNewProjectViewPath(vFile)
         }
       }
     }
@@ -170,8 +171,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
 
   private fun savedProjectViewPath() =
     project.bazelProjectSettings.projectViewPath
-      ?.pathString
-      .orEmpty()
+      ?.path.orEmpty()
 
   override fun getDisplayName(): String = BazelPluginBundle.message(DISPLAY_NAME_KEY)
 

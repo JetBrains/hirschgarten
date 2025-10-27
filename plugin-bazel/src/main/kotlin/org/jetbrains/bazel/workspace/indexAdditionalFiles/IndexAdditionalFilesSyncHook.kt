@@ -120,11 +120,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
   }
 
   private fun getProjectView(project: Project, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl? {
-    val projectView =
-      project.bazelProjectSettings.projectViewPath?.let {
-        LocalFileSystem.getInstance().findFileByNioFile(it)
-      }
-    return projectView?.toVirtualFileUrl(virtualFileUrlManager)
+    return project.bazelProjectSettings.projectViewPath?.toVirtualFileUrl(virtualFileUrlManager)
   }
 
   private fun getWorkspaceFiles(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
