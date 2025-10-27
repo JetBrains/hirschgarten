@@ -1,37 +1,8 @@
 import configurations.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
-import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.finishBuildTrigger
-import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 
 version = "2024.12"
-
-object ProjectBranchFilters {
-  val githubBranchFilter = "+:pull/*"
-  val spaceBranchFilter =
-    """
-    +:<default>
-    +:*
-    -:bazel-steward*
-    -:refs/merge/*
-    """.trimIndent()
-}
-
-object ProjectTriggerRules {
-  val triggerRules =
-    """
-    -:**.md
-    -:**.txt
-    -:**.yml
-    -:**.yaml
-    -:LICENSE
-    -:LICENCE
-    -:CODEOWNERS
-    -:/.teamcity/**
-    -:/tools/**
-    """.trimIndent()
-}
-
 
 project {
   // Expose VCS roots at the root project scope
@@ -51,11 +22,7 @@ object GitHub : Project({
   val ProjectUnitTestsGithub = ProjectUnitTests()
 
   val allSteps = sequential {
-    buildType(FormatBuildFactory.GitHub)
-    parallel(options = {
-      onDependencyFailure = FailureAction.IGNORE
-      onDependencyCancel = FailureAction.IGNORE
-    }) {
+    parallel() {
       PluginBuildFactory.ForAllPlatforms.forEach { buildType(it) }
       buildType(ProjectUnitTestsGithub)
       PluginBenchmarkFactory.AllBenchmarkTests.forEach { buildType(it) }
@@ -70,22 +37,7 @@ object GitHub : Project({
 
   allSteps.forEach { buildType(it) }
 
-  FormatBuildFactory.GitHub.triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.githubBranchFilter
-      triggerRules = ProjectTriggerRules.triggerRules
-    }
-  }
-  Aggregator.triggers {
-    finishBuildTrigger {
-      buildType = "${FormatBuildFactory.GitHub.id}"
-      successfulOnly = false
-      branchFilter = ProjectBranchFilters.githubBranchFilter
-    }
-  }
-
   buildTypesOrderIds = arrayListOf(
-    FormatBuildFactory.GitHub,
     *PluginBuildFactory.ForAllPlatforms.toTypedArray(),
     ProjectUnitTestsGithub,
     *PluginBenchmarkFactory.AllBenchmarkTests.toTypedArray(),
@@ -102,11 +54,7 @@ object Space : Project({
   val ProjectUnitTestsSpace = ProjectUnitTests(customVcsRoot = VcsRootHirschgartenSpace)
 
   val allSteps = sequential {
-    buildType(FormatBuildFactory.Space)
-    parallel(options = {
-      onDependencyFailure = FailureAction.IGNORE
-      onDependencyCancel = FailureAction.IGNORE
-    }) {
+    parallel() {
       PluginBuildFactory.ForAllPlatformsSpace.forEach { buildType(it) }
       buildType(ProjectUnitTestsSpace)
       PluginBenchmarkFactory.AllBenchmarkTestsSpace.forEach { buildType(it) }
@@ -121,22 +69,7 @@ object Space : Project({
 
   allSteps.forEach { buildType(it) }
 
-  FormatBuildFactory.Space.triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-      triggerRules = ProjectTriggerRules.triggerRules
-    }
-  }
-  AggregatorSpace.triggers {
-    finishBuildTrigger {
-      buildType = "${FormatBuildFactory.Space.id}"
-      successfulOnly = false
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-    }
-  }
-
   buildTypesOrderIds = arrayListOf(
-    FormatBuildFactory.Space,
     *PluginBuildFactory.ForAllPlatformsSpace.toTypedArray(),
     ProjectUnitTestsSpace,
     *PluginBenchmarkFactory.AllBenchmarkTestsSpace.toTypedArray(),
