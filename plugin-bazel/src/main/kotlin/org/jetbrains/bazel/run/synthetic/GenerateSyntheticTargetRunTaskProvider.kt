@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.findOrCreateDirectory
 import com.intellij.openapi.vfs.findOrCreateFile
 import com.intellij.openapi.vfs.writeText
 import com.intellij.util.xmlb.annotations.Attribute
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.jvm.run.CHECK_VISIBILITY_KEY
 import org.jetbrains.bazel.label.Label
@@ -56,9 +57,10 @@ class GenerateSyntheticTargetRunTaskProvider(
     }
     (configuration as BazelRunConfiguration).putUserData(SYNTHETIC_BUILD_FILE_KEY, vFile)
 
-    // TODO: add registry option for not turning off visibility check to avoid cache bazel invalidation
-    (configuration as BazelRunConfiguration).putUserData(CHECK_VISIBILITY_KEY, false)
-    environment.putUserData(CHECK_VISIBILITY_KEY, false)
+    if (BazelFeatureFlags.syntheticRunDisableVisibilityCheck) {
+      (configuration as BazelRunConfiguration).putUserData(CHECK_VISIBILITY_KEY, false)
+      environment.putUserData(CHECK_VISIBILITY_KEY, false)
+    }
 
     return true
   }
