@@ -217,8 +217,6 @@
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook" />
 
-    <syntheticRunTargetTemplateGenerator implementation="org.jetbrains.bazel.run.synthetic.JvmSyntheticRunTargetTemplateGenerator"/>
-
     <projectSyncHook
       id="DirectoriesSyncHook"
       implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"
