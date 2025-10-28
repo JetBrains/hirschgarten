@@ -4,6 +4,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
@@ -12,9 +13,8 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.references.getCanonicalRepoNameToBzlFiles
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToApparentName
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToPath
-import org.jetbrains.bazel.sdkcompat.indexingTestUtilForceSkipWaiting
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -33,7 +33,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     val newRepoNameToPathMap = mapOf("" to myRootPath)
     project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
     getCanonicalRepoNameToBzlFiles(project)
-    indexingTestUtilForceSkipWaiting()
+    IndexingTestUtil.forceSkipWaiting
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("d")
@@ -98,6 +98,6 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
       project.workspaceModel.updateProjectModel("add BazelProjectDirectoriesEntity") { it.addEntity(entity) }
     }
 
-    indexingTestUtilForceSkipWaiting()
+    IndexingTestUtil.forceSkipWaiting
   }
 }

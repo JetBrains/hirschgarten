@@ -3,9 +3,9 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendum
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.scalaAddendumEntity
+import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendum
+import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity
+import org.jetbrains.bazel.workspacemodel.entities.scalaAddendumEntity
 
 internal class ScalaAddendumEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithParentModuleUpdater<ScalaAddendum, ScalaAddendumEntity> {

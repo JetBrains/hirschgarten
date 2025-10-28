@@ -12,12 +12,12 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory

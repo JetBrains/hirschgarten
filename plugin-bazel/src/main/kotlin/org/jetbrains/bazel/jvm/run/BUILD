@@ -13,7 +13,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/taskEvents",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//sdkcompat",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
     ],
 )

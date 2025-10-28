@@ -2,7 +2,10 @@
 
 package org.jetbrains.bazel.target
 
+import com.dynatrace.hash4j.hashing.HashSink
+import com.dynatrace.hash4j.hashing.HashStream128
 import com.dynatrace.hash4j.hashing.HashValue128
+import com.dynatrace.hash4j.hashing.Hashing
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -26,9 +29,6 @@ import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.sdkcompat.HashAdapter
-import org.jetbrains.bazel.sdkcompat.createHashStream128
-import org.jetbrains.bazel.sdkcompat.hashBytesTo128Bits
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.PartialBuildTarget
@@ -70,11 +70,14 @@ internal class TargetInfoManager(
 
   private fun fileToKey(file: Path): HashValue128 {
     val path = file.invariantSeparatorsPathString
-    if (path.startsWith(filePathSuffix)) {
-      return hashBytesTo128Bits(path.substring(filePathSuffix.length).toByteArray())
+    val input = if (path.startsWith(filePathSuffix)) {
+      path.substring(filePathSuffix.length)
     } else {
-      return hashBytesTo128Bits(path.toByteArray())
+      path
     }
+
+    return Hashing.xxh3_128()
+      .hashBytesTo128Bits(input.toByteArray())
   }
 
   fun getAllTargetsAndLibrariesLabelsCache(project: Project): List<String> {
@@ -144,8 +147,11 @@ internal class TargetInfoManager(
   fun getTotalTargetCount() = labelToTargetInfo.size
 
   fun getBuildTargetForLabel(label: Label, project: Project): BuildTarget? =
-    label.toCanonicalLabelOrThis(project)?.let {
-      labelToTargetInfo.get(computeLabelHash(it, createHashStream128()))
+    label.toCanonicalLabelOrThis(project)?.let { label ->
+      val key = Hashing.xxh3_128()
+        .hashStream()
+        .computeLabelHash(label)
+      labelToTargetInfo.get(key)
     }
 
   fun getTargetsForPath(file: Path) = fileToTarget.get(fileToKey(file))
@@ -166,11 +172,12 @@ internal class TargetInfoManager(
 
   fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
     this.labelToTargetInfo.clear()
-    val hashStream = createHashStream128()
+    val hashStream = Hashing.xxh3_128()
+      .hashStream()
     for ((label, info) in labelToTargetInfo) {
       // must be canonical label
       this.labelToTargetInfo.put(
-        computeLabelHash(label as ResolvedLabel, hashStream),
+        hashStream.computeLabelHash(label as ResolvedLabel),
         PartialBuildTarget(
           id = info.id,
           tags = info.tags,
@@ -211,12 +218,13 @@ internal class TargetInfoManager(
 
     moduleIdToTarget.clear()
     this.labelToTargetInfo.clear()
-    val hashStream = createHashStream128()
+    val hashStream = Hashing.xxh3_128()
+      .hashStream()
     for (target in targets) {
       // must be canonical label
       val label = target.id as ResolvedLabel
       this.labelToTargetInfo.put(
-        computeLabelHash(label, hashStream),
+        hashStream.computeLabelHash(label),
         PartialBuildTarget(
           id = target.id,
           tags = target.tags,
@@ -299,50 +307,55 @@ private fun openIdToLabelListMap(
   return openOrResetMap(store = store, name = name, mapBuilder = mapBuilder, logSupplier = logSupplier)
 }
 
-private fun stringToHashId(s: String): HashValue128 = hashBytesTo128Bits(s.encodeToByteArray())
+private fun stringToHashId(s: String): HashValue128 =
+  Hashing.xxh3_128()
+    .hashBytesTo128Bits(s.encodeToByteArray())
 
-private fun computeLabelHash(label: ResolvedLabel, hash: HashAdapter): HashValue128 {
-  hashLabelRepo(label, hash)
-  hashLabelPackage(label, hash)
-  hashLabelTarget(label, hash)
-  return hash.getAndReset()
+private fun HashStream128.computeLabelHash(label: ResolvedLabel): HashValue128 {
+  hashLabelRepo(label)
+  hashLabelPackage(label)
+  hashLabelTarget(label)
+
+  val result = get()
+  reset()
+  return result
 }
 
-private fun hashLabelRepo(label: ResolvedLabel, hash: HashAdapter) {
+private fun HashSink.hashLabelRepo(label: ResolvedLabel) {
   when (val repo = label.repo) {
-    Main -> hash.putByte(0)
+    Main -> putByte(0)
     is Canonical -> {
-      hash.putByte(1)
-      hash.putByteArray(repo.repoName.toByteArray())
+      putByte(1)
+      putByteArray(repo.repoName.toByteArray())
     }
 
     is Apparent -> {
-      hash.putByte(2)
-      hash.putByteArray(repo.repoName.toByteArray())
+      putByte(2)
+      putByteArray(repo.repoName.toByteArray())
     }
   }
 }
 
-private fun hashLabelPackage(label: ResolvedLabel, hash: HashAdapter) {
+private fun HashSink.hashLabelPackage(label: ResolvedLabel) {
   val packagePath = label.packagePath
   when (packagePath) {
-    is AllPackagesBeneath -> hash.putByte(0)
-    is Package -> hash.putByte(1)
+    is AllPackagesBeneath -> putByte(0)
+    is Package -> putByte(1)
   }
   for (string in packagePath.pathSegments) {
-    hash.putByteArray(string.toByteArray())
+    putByteArray(string.toByteArray())
   }
-  hash.putInt(packagePath.pathSegments.size)
+  putInt(packagePath.pathSegments.size)
 }
 
-private fun hashLabelTarget(label: ResolvedLabel, hash: HashAdapter) {
+private fun HashSink.hashLabelTarget(label: ResolvedLabel) {
   when (val target = label.target) {
-    AmbiguousEmptyTarget -> hash.putByte(0)
-    AllRuleTargets -> hash.putByte(1)
-    AllRuleTargetsAndFiles -> hash.putByte(2)
+    AmbiguousEmptyTarget -> putByte(0)
+    AllRuleTargets -> putByte(1)
+    AllRuleTargetsAndFiles -> putByte(2)
     is SingleTarget -> {
-      hash.putByte(3)
-      hash.putByteArray(target.targetName.toByteArray())
+      putByte(3)
+      putByteArray(target.targetName.toByteArray())
     }
   }
 }

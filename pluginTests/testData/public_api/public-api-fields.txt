@@ -1,6 +1,6 @@
 public static final com.intellij.openapi.extensions.ExtensionPointName org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension.EP_NAME
 public static final com.intellij.openapi.extensions.ExtensionPointName org.jetbrains.bazel.sync.ProjectPostSyncHook.ep
 public static final org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension$Companion org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension.Companion
-public static final org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JvmBinaryJarsEntity$Companion org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JvmBinaryJarsEntity.Companion
-public static final org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity$Companion org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity.Companion
+public static final org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity$Companion org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity.Companion
+public static final org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity$Companion org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity.Companion
 public static final org.jetbrains.bazel.sync.ProjectPostSyncHook$Companion org.jetbrains.bazel.sync.ProjectPostSyncHook.Companion

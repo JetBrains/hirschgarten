@@ -13,8 +13,6 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.sdkcompat.createModule
-import org.jetbrains.bazel.sdkcompat.setProjectRootDir
 import org.jetbrains.bazel.settings.bazel.openProjectViewInEditor
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 import java.nio.file.Path
@@ -72,10 +70,10 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         runConfigurators = true
         isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
 
-        setProjectRootDir(projectRootDir.toNioPathOrNull())
+        this.projectRootDir = projectRootDir.toNioPathOrNull()
         this.forceOpenInNewFrame = forceOpenInNewFrame
         this.projectToClose = projectToClose
-        createModule(Registry.`is`("bazel.create.fake.module.on.project.import"))
+        this.createModule = Registry.`is`("bazel.create.fake.module.on.project.import")
 
         beforeOpen = { project ->
           project.initProperties(projectRootDir)

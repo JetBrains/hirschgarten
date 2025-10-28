@@ -3,11 +3,11 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.storage.entities
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
+import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
 class CompiledSourceCodeInsideJarExcludeEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<CompiledSourceCodeInsideJarExclude, CompiledSourceCodeInsideJarExcludeEntity> {

@@ -7,6 +7,5 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//sdkcompat",
     ],
 )

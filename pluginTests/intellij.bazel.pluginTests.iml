@@ -34,7 +34,6 @@
     <orderEntry type="module" module-name="intellij.android.jps.model" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.commons" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.sdkcompat" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.server" scope="TEST" />
     <orderEntry type="module" module-name="intellij.devkit.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.go.frontback" scope="TEST" />

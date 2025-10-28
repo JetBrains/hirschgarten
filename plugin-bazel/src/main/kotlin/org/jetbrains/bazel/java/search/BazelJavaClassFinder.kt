@@ -18,8 +18,8 @@ import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.UseScopeEnlarger
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelJavaSourceRootEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageNameId
+import org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity
+import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
 
 /**
  * Adding dummy modules for generated source files can make large parts of the build directory get indexed.

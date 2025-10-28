@@ -14,13 +14,14 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sdkcompat.COROUTINE_JVM_FLAGS_KEY
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.concurrent.atomic.AtomicReference
+
+internal val COROUTINE_JVM_FLAGS_KEY = Key.create<AtomicReference<List<String>>>("bazel.coroutine.jvm.flags")
 
 class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {

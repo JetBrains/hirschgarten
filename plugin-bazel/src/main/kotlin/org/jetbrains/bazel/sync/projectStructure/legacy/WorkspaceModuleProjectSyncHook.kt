@@ -14,10 +14,10 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
 class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
   /**

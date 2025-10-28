@@ -2,6 +2,7 @@ package org.jetbrains.bazel.settings
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -14,7 +15,6 @@ import org.jetbrains.bazel.action.registered.ResyncAction
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.sdkcompat.ActionUtilCompat
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 
@@ -34,7 +34,7 @@ internal class LoadProjectViewFileAction :
         ?: return
     project.setProjectViewPath(projectViewFile)
     withContext(Dispatchers.EDT) {
-      ActionUtilCompat.performAction(ResyncAction(), e)
+      ActionUtil.performAction(ResyncAction(), e)
     }
   }
 

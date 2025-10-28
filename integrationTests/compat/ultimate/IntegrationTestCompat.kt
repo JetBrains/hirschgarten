@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.test.compat
 
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.extended.engine.AdditionalModulesForDevBuildServer
+import com.intellij.ide.starter.runner.AdditionalModulesForDevBuildServer
 import com.intellij.ide.starter.extended.plugins.asExtended
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase

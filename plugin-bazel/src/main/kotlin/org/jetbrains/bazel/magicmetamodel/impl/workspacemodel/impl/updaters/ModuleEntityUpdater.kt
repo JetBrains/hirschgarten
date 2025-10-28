@@ -17,12 +17,12 @@ import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceF
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.addLibraryModulePrefix
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.Library
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()

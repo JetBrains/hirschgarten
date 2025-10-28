@@ -12,11 +12,10 @@ import com.intellij.workspaceModel.core.fileIndex.impl.JvmPackageRootDataInterna
 import com.intellij.workspaceModel.core.fileIndex.impl.ModuleRelatedRootData
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.sdkcompat.findFileSetWithCustomDataCompat
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.packageMarkerEntities
 import org.jetbrains.bazel.workspace.getRelatedProjects
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
+import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 
 private class PackageMarkerEntityListener : BulkFileListener {
   override fun after(events: List<VFileEvent>) {
@@ -63,14 +62,14 @@ private class PackageMarkerEntityListener : BulkFileListener {
   }
 
   private fun findModuleSourceRootData(workspaceModelIndex: WorkspaceFileIndex, file: VirtualFile): ModuleRelatedRootData? =
-    workspaceModelIndex
-      .findFileSetWithCustomDataCompat(
-        file = file,
-        honorExclusion = true,
-        includeContentSets = true,
-        includeExternalSets = false,
-        includeExternalSourceSets = false,
-        includeCustomKindSets = false,
-        customDataClass = ModuleRelatedRootData::class.java,
-      )?.data
+    workspaceModelIndex.findFileSetWithCustomData(
+      file = file,
+      honorExclusion = true,
+      includeContentSets = true,
+      includeContentNonIndexableSets = true,
+      includeExternalSets = false,
+      includeExternalSourceSets = false,
+      includeCustomKindSets = false,
+      customDataClass = ModuleRelatedRootData::class.java,
+    )?.data
 }

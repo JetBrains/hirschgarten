@@ -16,7 +16,7 @@ class ProjectViewFileNodeDecorator(private val project: Project) : ProjectViewNo
     if (!project.isBazelProject) return
     val vFile = node.virtualFile ?: return
     if (!vFile.isProjectViewFile()) return
-    if (project.bazelProjectSettings.projectViewPath != vFile.toNioPath().toAbsolutePath()) return
+    if (project.bazelProjectSettings.projectViewPath != vFile) return
     data.addText(vFile.name + "  ", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
     data.addText(BazelPluginBundle.message("project.view.tree.project.view.file.hint"), SimpleTextAttributes.GRAYED_ATTRIBUTES)
   }

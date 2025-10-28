@@ -7,8 +7,10 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.action.registered.projectViewDirectories.ProjectViewDirectoriesAction
 import org.jetbrains.bazel.commons.ExcludableValue.Companion.excluded
 import org.jetbrains.bazel.commons.ExcludableValue.Companion.included
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.languages.projectview.targets
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -17,38 +19,62 @@ import kotlin.io.path.Path
 @RunWith(JUnit4::class)
 class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCase("Bazel.ExcludeFromProjectViewDirectoriesAction") {
 
+  @Before
+  fun setup() {
+    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
+  }
+
   @Test
   fun `test presentation template is correct`() {
     val presentation = action.templatePresentation
-    presentation.text shouldBe "Exclude from the Project View Directories"
+    presentation.text shouldBe "Exclude from {0} Directories Section"
     presentation.description shouldBe "Exclude this directory from the project view file."
     presentation.icon shouldBe null
   }
 
   @Test
   fun `test presentation is disabled when no file in context`() {
-    openProjectViewInEditor("projectview/action/SingleDirDirectories.bazelproject")
+    useAndOpenProjectView(
+      """
+      directories: .
+    """.trimIndent(),
+    )
     val presentation = testPresentationOn(createActionContext())
     presentation.isEnabledAndVisible shouldBe false
   }
 
   @Test
   fun `test presentation is disabled when file is not a directory`() {
-    openProjectViewInEditor("projectview/action/SingleDirDirectories.bazelproject")
+    useAndOpenProjectView(
+      """
+      directories: .
+    """.trimIndent(),
+    )
     val presentation = testPresentationOn(createActionContext(myFixture.createFile("foo", "file")))
     presentation.isEnabledAndVisible shouldBe false
   }
 
   @Test
   fun `test presentation is enabled when file is a directory`() {
-    openProjectViewInEditor("projectview/action/SingleDirDirectories.bazelproject")
+    useAndOpenProjectView(
+      """
+      directories: .
+    """.trimIndent(),
+    )
     val presentation = testPresentationOn(createActionContext(myFixture.tempDirFixture.findOrCreateDir("foo")))
     presentation.isEnabledAndVisible shouldBe true
+    presentation.text shouldBe "Exclude from .user.bazelproject Directories Section"
+    presentation.description shouldBe null
+    presentation.icon shouldBe null
   }
 
   @Test
   fun `test excludes given directory when not excluded already and single other directory included`() {
-    openProjectViewInEditor("projectview/action/SingleDirDirectories.bazelproject")
+    useAndOpenProjectView(
+      """
+      directories: .
+    """.trimIndent(),
+    )
     performActionOnProjectDir("foo")
     bazelProjectView.directories shouldBe listOf(
       included(Path(".")),
@@ -59,7 +85,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test excludes directory when not excluded and multiple other directories included`() {
-    openProjectViewInEditor("projectview/action/MultipleDirsDirectories.bazelproject")
+    useAndOpenProjectView(
+      """
+      directories: .
+        bar
+    """.trimIndent(),
+    )
     performActionOnProjectDir("foo")
     bazelProjectView.directories shouldBe listOf(
       included(Path(".")),
@@ -71,7 +102,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test excludes directory when not excluded and directories section is empty`() {
-    openProjectViewInEditor("projectview/action/EmptyDirectories.bazelproject")
+    useAndOpenProjectView(
+      """
+      directories:
+      
+    """.trimIndent(),
+    )
     performActionOnProjectDir("foo")
     bazelProjectView.directories shouldBe listOf(excluded(Path("foo")))
     notifications shouldHaveSize 0
@@ -79,7 +115,13 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test excludes directory when not included and directories section not present`() {
-    openProjectViewInEditor("projectview/action/NoDirectories.bazelproject")
+    useAndOpenProjectView(
+      """
+      targets:
+        //foo
+        //bar
+    """.trimIndent(),
+    )
     performActionOnProjectDir("foo")
     bazelProjectView.directories shouldBe listOf(excluded(Path("foo")))
     bazelProjectView.targets shouldHaveSize 2
@@ -89,7 +131,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test does not change directories and shows information when given directory excluded`() {
-    openProjectViewInEditor("projectview/action/ExcludedDirDirectories.bazelproject")
+    useAndOpenProjectView(
+      """
+       directories: .
+        -bar     
+    """.trimIndent(),
+    )
     performActionOnProjectDir("bar")
     bazelProjectView.directories shouldBe listOf(
       included(Path(".")),
@@ -105,7 +152,10 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test does not change directories and shows warning when given directory is excluded`() {
-    openProjectViewInEditor("projectview/action/MultipleDirsDirectories.bazelproject")
+    useAndOpenProjectView("""
+      directories: .
+        bar
+    """.trimIndent())
     performActionOnProjectDir("bar")
     bazelProjectView.directories shouldBe listOf(
       included(Path(".")),

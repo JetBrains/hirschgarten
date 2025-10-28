@@ -34,7 +34,6 @@
     <orderEntry type="module" module-name="intellij.android.jps.model" />
     <orderEntry type="module" module-name="intellij.bazel.commons" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" exported="" />
-    <orderEntry type="module" module-name="intellij.bazel.sdkcompat" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.server" exported="" />
     <orderEntry type="module" module-name="intellij.devkit.core" />
     <orderEntry type="module" module-name="intellij.go.frontback" />

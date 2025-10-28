@@ -24,15 +24,19 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.isBrokenBazelProject
 
-internal class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
+class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
+  companion object {
+    // See https://youtrack.jetbrains.com/issue/BAZEL-1500. Broken projects are handled by OpenBrokenBazelProjectStartupActivity already.
+    val Project.isLinkedBazelProject: Boolean
+      get() = isBazelProject || isBrokenBazelProject
+  }
+
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
 
   override fun isBuildFile(project: Project, buildFile: VirtualFile): Boolean = buildFile.isBuildFile()
 
   override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean =
-    project.isBazelProject ||
-      // See https://youtrack.jetbrains.com/issue/BAZEL-1500. Broken projects are handled by OpenBrokenBazelProjectStartupActivity already.
-      project.isBrokenBazelProject
+    project.isLinkedBazelProject
 
   override suspend fun linkAndLoadProjectAsync(project: Project, externalProjectPath: String) {
     serviceAsync<ApplicationService>().launch {

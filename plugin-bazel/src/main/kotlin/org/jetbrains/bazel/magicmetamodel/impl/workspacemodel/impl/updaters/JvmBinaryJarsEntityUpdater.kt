@@ -3,9 +3,9 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JvmBinaryJarsEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.jvmBinaryJarsEntity
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity
+import org.jetbrains.bazel.workspacemodel.entities.jvmBinaryJarsEntity
 
 internal class JvmBinaryJarsEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithParentModuleUpdater<JavaModule, JvmBinaryJarsEntity> {
