@@ -64,7 +64,8 @@ object BazelFeatureFlags {
         !enableBazelJavaClassFinder
 
   // File-based source root problems fixed here: https://youtrack.jetbrains.com/issue/IDEA-371097
-  val fbsrSupportedInPlatform: Boolean = org.jetbrains.bazel.sdkcompat.fbsrSupportedInPlatform
+  val fbsrSupportedInPlatform: Boolean
+    get() = true
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)

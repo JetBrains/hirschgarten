@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.debug.utils
 
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunnerLayoutUi
@@ -8,6 +9,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
 import com.intellij.xdebugger.XDebugProcess
+import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebugSessionListener
 import com.intellij.xdebugger.XSourcePosition
 import com.intellij.xdebugger.breakpoints.XBreakpoint
@@ -17,17 +19,18 @@ import com.intellij.xdebugger.frame.XStackFrame
 import com.intellij.xdebugger.frame.XSuspendContext
 import com.intellij.xdebugger.stepping.XSmartStepIntoHandler
 import com.intellij.xdebugger.stepping.XSmartStepIntoVariant
-import org.jetbrains.bazel.sdkcompat.XDebugSessionCompat
 import javax.swing.Icon
 import javax.swing.event.HyperlinkListener
 
-class MockDebugSession : XDebugSessionCompat() {
+class MockDebugSession : XDebugSession {
   var ignoreBreakpoints: Boolean = false
   var breakpointReached: XBreakpoint<*>? = null
     private set
   var lastError: String? = null
 
-  override fun isMixedModeCompat(): Boolean = true
+  override fun getExecutionEnvironment(): ExecutionEnvironment? = null
+
+  override fun isMixedMode(): Boolean = true
 
   override fun isStopped(): Boolean {
     unavailableInMock()

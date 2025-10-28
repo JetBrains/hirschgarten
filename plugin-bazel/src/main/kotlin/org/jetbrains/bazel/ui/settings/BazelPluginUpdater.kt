@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.ui.settings
 
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl
+import com.intellij.ide.plugins.PluginMainDescriptor
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.updateSettings.impl.UpdateChecker
 import com.intellij.openapi.updateSettings.impl.UpdateSettings
-import org.jetbrains.bazel.sdkcompat.IdeaPluginDescriptorImplCompat
 
 const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
 
@@ -40,7 +40,16 @@ object BazelPluginUpdater {
    * This function is used to force-downgrade a plugin version
    */
   fun patchPluginVersion(newVersion: String, descriptor: IdeaPluginDescriptorImpl) {
-    IdeaPluginDescriptorImplCompat.patchPluginVersion(newVersion, descriptor)
+    if (descriptor !is PluginMainDescriptor) throw IllegalArgumentException("Unsupported descriptor type: ${descriptor.javaClass.name}")
+
+    val versionField = PluginMainDescriptor::class.java.getDeclaredField("version")
+    try {
+      versionField.setAccessible(true)
+      versionField.set(descriptor, newVersion)
+    }
+    finally {
+      versionField.setAccessible(false)
+    }
   }
 
   fun getPluginDescriptorForId(id: String): IdeaPluginDescriptorImpl? =

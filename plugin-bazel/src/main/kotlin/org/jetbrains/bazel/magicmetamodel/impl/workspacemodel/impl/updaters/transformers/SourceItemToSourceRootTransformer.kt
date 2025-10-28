@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.WorkspaceModelEntity
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelEntity
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
