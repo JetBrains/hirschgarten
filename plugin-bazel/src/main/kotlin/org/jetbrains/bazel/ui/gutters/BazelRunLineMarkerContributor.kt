@@ -40,14 +40,14 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
   private fun PsiElement.calculateLineMarkerInfo(): Info? =
     containingFile.virtualFile?.let { url ->
       val targetUtils = project.targetUtils
-      var targetInfos =
+      val executableTargets =
         targetUtils
           .getExecutableTargetsForFile(url)
           .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      if (targetInfos.isEmpty()) {
-        targetInfos = targetUtils.getTargetsForFile(url)
-          .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      }
+      val normalTargets = targetUtils.getTargetsForFile(url)
+        .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+      val targetInfos = (executableTargets + normalTargets)
+        .distinctBy { it.id }
       calculateLineMarkerInfo(
         project,
         targetInfos,
