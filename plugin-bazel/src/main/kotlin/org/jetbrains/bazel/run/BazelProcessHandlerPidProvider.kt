@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.run
 
+import com.intellij.execution.impl.ProcessHandlerPidProvider
 import com.intellij.execution.process.ProcessHandler
-import com.jetbrains.rd.platform.codeWithMe.portForwarding.ProcessHandlerPidProvider
 import kotlinx.coroutines.Deferred
 
 internal class BazelProcessHandlerPidProvider : ProcessHandlerPidProvider {
