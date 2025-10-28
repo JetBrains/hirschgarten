@@ -111,7 +111,9 @@ class ExecuteService(
       bazelRunner.buildBazelCommand(workspaceContext) {
         run(params.target) {
           options.add(BazelFlag.color(true))
-          options.add(BazelFlag.checkVisibility(params.checkVisibility))
+          if (!params.checkVisibility) {
+            options.add(BazelFlag.checkVisibility(false))
+          }
           additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }
