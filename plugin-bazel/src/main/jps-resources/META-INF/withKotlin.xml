@@ -8,6 +8,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syntheticRunTargetTemplateGenerator implementation="org.jetbrains.bazel.run.synthetic.KotlinSyntheticRunTargetTemplateGenerator"/>
     <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook" />
     <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider" />

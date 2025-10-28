@@ -1,5 +1,7 @@
 <idea-plugin>
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syntheticRunTargetTemplateGenerator implementation="org.jetbrains.bazel.run.synthetic.JavaSyntheticRunTargetTemplateGenerator"/>
+
     <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
     <!-- IndexAdditionalFilesSyncHook iterates over all added instances of ModuleEntity, so it has to come after JvmSyncHook -->
     <projectSyncHook

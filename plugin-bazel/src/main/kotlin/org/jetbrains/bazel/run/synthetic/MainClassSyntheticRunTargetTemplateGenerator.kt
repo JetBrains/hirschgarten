@@ -10,8 +10,6 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTargetTemplateGenerator {
   private val DEFAULT_TARGET_NAME = "synthetic_binary"
 
-  override fun isSupported(target: BuildTarget): Boolean = extractJvmBuildTarget(target) != null
-
   override fun getRunnerActionName(
     original: String,
     target: BuildTarget,
