@@ -872,7 +872,7 @@
       implementation="org.jetbrains.bazel.searchEverywhere.SeLabelProviderFactory"
     />
 
-    <portForwarding.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
+    <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
   </extensions>
 
   <actions>
