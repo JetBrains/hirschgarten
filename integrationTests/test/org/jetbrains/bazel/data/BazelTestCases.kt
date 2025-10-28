@@ -229,6 +229,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
     ),
   )
+
+  val SyntheticRunTarget = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
+      commitHash = "ef520dd2fb1c831641d651ab8997e1a6feda07d6",
+      branchName = "main",
+      relativePath = "syntheticRunTargetTest",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+    )
+  )
 }
 
 object GoLandBazelCases : BaseBazelCasesParametrized(BazelTestContext.GOLAND) {
