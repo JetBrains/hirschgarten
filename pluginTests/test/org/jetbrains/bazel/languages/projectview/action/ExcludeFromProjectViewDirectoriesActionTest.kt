@@ -7,8 +7,10 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.action.registered.projectViewDirectories.ProjectViewDirectoriesAction
 import org.jetbrains.bazel.commons.ExcludableValue.Companion.excluded
 import org.jetbrains.bazel.commons.ExcludableValue.Companion.included
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.languages.projectview.targets
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -16,6 +18,11 @@ import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
 class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCase("Bazel.ExcludeFromProjectViewDirectoriesAction") {
+
+  @Before
+  fun setup() {
+    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
+  }
 
   @Test
   fun `test presentation template is correct`() {

@@ -24,7 +24,7 @@ class AddToProjectViewDirectoriesAction : AnAction() {
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project ?: return
     val selectedDirectoryRelativePath = action.getSelectedDirectoryRelativePath(project, e) ?: return
-    action.addItemToProjectView(selectedDirectoryRelativePath.toString(), e)
+    action.addItemToProjectView(selectedDirectoryRelativePath, e)
   }
 
   override fun update(e: AnActionEvent) = action.update(e)
