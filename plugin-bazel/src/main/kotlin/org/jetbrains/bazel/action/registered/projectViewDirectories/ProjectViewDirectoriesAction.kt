@@ -8,19 +8,19 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import org.jetbrains.annotations.PropertyKey
 import org.jetbrains.bazel.config.BUNDLE
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
-import java.nio.file.Path
-import java.nio.file.Paths
 
 data class ProjectViewDirectoriesAction(
   @param:PropertyKey(resourceBundle = BUNDLE)
@@ -52,9 +52,9 @@ data class ProjectViewDirectoriesAction(
     event.presentation.setText(text)
   }
 
-  fun getSelectedDirectoryRelativePath(project: Project, event: AnActionEvent): Path? {
-    val selectedDirectoryPath = getSelectedDirectoryPath(event) ?: return null
-    return getPathRelativeToProjectRoot(project, selectedDirectoryPath)
+  fun getSelectedDirectoryRelativePath(project: Project, event: AnActionEvent): String? {
+    val selectedDirectory = getSelectedDirectory(event) ?: return null
+    return VfsUtil.getRelativePath(selectedDirectory, project.rootDir)
   }
 
   fun addItemToProjectView(item: String, event: AnActionEvent) {
@@ -111,15 +111,9 @@ data class ProjectViewDirectoriesAction(
     Notifications.Bus.notify(notificationFactory.create(getDirectory(item)), project)
   }
 
-  private fun getSelectedDirectoryPath(event: AnActionEvent): Path? =
-    event.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { it.isDirectory }?.path?.let { path ->
-      Paths.get(path)
-    }
-
-  private fun getPathRelativeToProjectRoot(project: Project, path: Path): Path? {
-    val basePath = project.basePath ?: return null
-    return Paths.get(basePath).relativize(path)
-  }
+  private fun getSelectedDirectory(event: AnActionEvent): VirtualFile? = event
+    .getData(CommonDataKeys.VIRTUAL_FILE)
+    ?.takeIf { it.isDirectory }
 
   private fun getProjectViewPsiFile(project: Project): ProjectViewPsiFile? {
     val vFile = getProjectViewPath(project) ?: return null
