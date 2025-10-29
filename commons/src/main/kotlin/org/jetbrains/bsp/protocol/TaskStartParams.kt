@@ -12,7 +12,7 @@ data class TaskStartParams(
 
 sealed interface TaskStartData
 
-data class TestStart(val displayName: String, val location: Location? = null) : TaskStartData
+data class TestStart(val displayName: String, val locationHint: String? = null) : TaskStartData
 
 data class TestTask(val target: Label) : TaskStartData
 
