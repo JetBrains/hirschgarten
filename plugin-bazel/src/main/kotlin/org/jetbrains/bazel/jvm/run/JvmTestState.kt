@@ -14,6 +14,7 @@ import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
+import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.run.state.addEnvironmentFragment
 import org.jetbrains.bazel.run.state.addTestFilterFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
