@@ -8,7 +8,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
-import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle.message
 import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.languages.projectview.psi.addDirectoriesInclude
 import org.jetbrains.bazel.languages.projectview.psi.getProjectViewPsiFileOrNull
@@ -21,7 +21,6 @@ import org.jetbrains.bazel.workspace.includedRoots
 
 class AddToProjectViewDirectoriesAction : AnAction() {
 
-  @Suppress("HardCodedStringLiteral")
   override fun actionPerformed(e: AnActionEvent) {
     val directory = e.selectedDirectory ?: return
     val project = e.project ?: return
@@ -32,7 +31,7 @@ class AddToProjectViewDirectoriesAction : AnAction() {
     val isNotIncluded = nearestParent !in includes
     val isExplicitlyExcluded = directory in excludes
     if (!isExplicitlyExcluded && !isNotIncluded) return
-    runWithModalProgressBlocking(project, "Including the Directory to Project View...") {
+    runWithModalProgressBlocking(project, message("action.Bazel.AddToProjectViewDirectoriesAction.progress.text")) {
       writeCommandAction(project, "EditProjectViewDirectories") {
         if (isExplicitlyExcluded) projectViewPsi.removeDirectoriesExclude(directory)
         if (isNotIncluded) projectViewPsi.addDirectoriesInclude(directory)
@@ -49,7 +48,7 @@ class AddToProjectViewDirectoriesAction : AnAction() {
       return
     }
     e.presentation.isEnabledAndVisible = true
-    e.presentation.text = BazelPluginBundle.message("action.Bazel.AddToProjectViewDirectoriesAction.text", projectViewFile.name)
+    e.presentation.text = message("action.Bazel.AddToProjectViewDirectoriesAction.text", projectViewFile.name)
   }
 
   override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

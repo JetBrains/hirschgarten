@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle.message
 import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.languages.projectview.psi.addDirectoriesExclude
 import org.jetbrains.bazel.languages.projectview.psi.getProjectViewPsiFileOrNull
@@ -22,7 +23,6 @@ import org.jetbrains.bazel.workspace.includedRoots
 
 class ExcludeFromProjectViewDirectoriesAction : AnAction() {
 
-  @Suppress("HardCodedStringLiteral")
   override fun actionPerformed(e: AnActionEvent) {
     val directory = e.selectedDirectory ?: return
     val project = e.project ?: return
@@ -34,7 +34,7 @@ class ExcludeFromProjectViewDirectoriesAction : AnAction() {
     val isExplicitlyIncluded = directory in includes
     val isIncluded = nearestParent in includes
     if (!isExplicitlyIncluded && !isIncluded) return
-    runWithModalProgressBlocking(project, "Excluding the Directory from Project View...") {
+    runWithModalProgressBlocking(project, message("action.Bazel.ExcludeFromProjectViewDirectoriesAction.progress.text")) {
       writeCommandAction(project, "EditProjectViewDirectories") {
         if (isExplicitlyIncluded) projectViewPsi.removeDirectoriesInclude(directory)
         if (isIncluded) projectViewPsi.addDirectoriesExclude(directory)
