@@ -22,7 +22,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun PsiElement.shouldAddMarker(): Boolean =
     parentOfType<PsiNameIdentifierOwner>()
       ?.takeIf { it.nameIdentifier == this }
-      ?.takeIf { it.isClassOrMethod() } != null &&
+      ?.takeIf { it.isClass() || it.isMethod() } != null &&
       // todo replace with is in source root check
       containingFile.virtualFile?.fileSystem !is JarFileSystem
 
@@ -73,7 +73,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     return JvmClassUtil.getJvmClassName(psiClass)
   }
 
-  protected open fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean = this is PsiClass || this is PsiMethod
+  protected open fun PsiNameIdentifierOwner.isClass(): Boolean = this is PsiClass
 
   protected open fun PsiNameIdentifierOwner.isMethod(): Boolean = this is PsiMethod
 }
