@@ -2,8 +2,6 @@
   modules:
   - name: intellij.bazel.plugin
   - name: intellij.bazel.commons
-  - name: intellij.bazel.sdkcompat
-  - name: intellij.bazel.sdkcompat.k2
   - name: intellij.bazel.protobuf
   - name: intellij.bazel.server
 - name: lib/jackson-dataformat-xml.jar
@@ -21,6 +19,9 @@
   files:
   - name: $MAVEN_REPOSITORY$/com/intellij/platform/kotlinx-coroutines-guava/1/kotlinx-coroutines-guava-1.jar
   reason: <- intellij.bazel.plugin
+- name: lib/modules/intellij.bazel.kotlin.k2.jar
+  contentModules:
+  - name: intellij.bazel.kotlin.k2
 - name: lib/opentelemetry-exporter-otlp.jar
   library: opentelemetry-exporter-otlp
   files:

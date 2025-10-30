@@ -9,6 +9,5 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
         "//rules_intellij/intellij_platform_sdk:kotlin",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//sdkcompat",
     ],
 )

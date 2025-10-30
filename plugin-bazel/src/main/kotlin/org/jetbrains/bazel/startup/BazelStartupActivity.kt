@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.startup
 
+import com.intellij.find.impl.FindInProjectUtil
+import com.intellij.ide.util.gotoByName.GOTO_FILE_SEARCH_IN_NON_INDEXABLE
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -17,8 +19,6 @@ import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.projectAware.BazelWorkspace
-import org.jetbrains.bazel.sdkcompat.configureRunConfigurationIgnoreProducers
-import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
@@ -65,7 +65,6 @@ class BazelStartupActivity : BazelProjectActivity() {
 private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   updateBazelFileTargetsWidget(project)
-  configureRunConfigurationIgnoreProducers(project)
   project.serviceAsync<BazelWorkspace>().initialize()
 }
 
@@ -86,9 +85,9 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
 
 private fun executeOnSyncedProject(project: Project) {
   // Only enable searching after all the excludes from the project view are applied
-  if (BazelFeatureFlags.findInFilesNonIndexable) {
-    setFindInFilesNonIndexable(project)
-  }
+  if (!BazelFeatureFlags.findInFilesNonIndexable) return
+  project.putUserData(FindInProjectUtil.FIND_IN_FILES_SEARCH_IN_NON_INDEXABLE, true)
+  project.putUserData(GOTO_FILE_SEARCH_IN_NON_INDEXABLE, true)
 }
 
 /**

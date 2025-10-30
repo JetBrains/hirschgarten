@@ -8,8 +8,7 @@ import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
-import kotlin.collections.contains
+import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
 /**
  * Don't index irrelevant files inside jars that are built from internal targets.
@@ -35,7 +34,7 @@ private val JVM_EXTENSIONS =
  *       resolve should use those local files (be it XML or HTML or whatever) anyway. By skipping those resources during indexing we index less and save time.
  *
  *       *Note:* for external libraries there exist valid cases where resources DO need to be indexed inside jars. E.g., pre-built IntelliJ plugins
- *       contain plugin.xml files that need to be indexed in order for the XML references to resolve properly.
+ *       contain xml files that need to be indexed in order for the XML references to resolve properly.
  *    2. In source jars. Source jars are supposed to contain, well, source code, e.g., `.java`/`.kt` files.
  *       Still, source jars can contain HTML/JS/other junk that slows down indexing for no good reason.
  * 2. We don't index `.class` and `.java`/`.kt`/`.scala` files inside jars if there's already a source file in the project with the same
