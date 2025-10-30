@@ -6,6 +6,5 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/config",
-        "//sdkcompat",
     ],
 )

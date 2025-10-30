@@ -17,6 +17,5 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/taskEvents",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//rules_intellij/third_party/devkit",
-        "//sdkcompat",
     ],
 )
