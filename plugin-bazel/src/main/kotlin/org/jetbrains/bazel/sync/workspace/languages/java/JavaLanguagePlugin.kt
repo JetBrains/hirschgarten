@@ -35,11 +35,12 @@ class JavaLanguagePlugin(
     val mainClass = getMainClass(jvmTarget)
 
     val jdk = jdk ?: return null
+    val javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: javaVersionFromToolchain(target) ?: jdk.version
     val javaHome = jdk.javaHome ?: return null
     val environmentVariables =
       context.target.envMap + context.target.envInheritList.associateWith { EnvironmentUtil.getValue(it) ?: "" }
     return JvmBuildTarget(
-      javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: jdk.version,
+      javaVersion = javaVersion,
       javaHome = javaHome,
       javacOpts = jvmTarget.javacOptsList,
       binaryOutputs = binaryOutputs,
@@ -55,6 +56,12 @@ class JavaLanguagePlugin(
   override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
+
+  private fun javaVersionFromToolchain(target: TargetInfo): String? = if (target.hasJavaToolchainInfo()) {
+    target.javaToolchainInfo.sourceVersion
+  } else {
+    null
+  }
 
   private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? =
     javacOpts.firstNotNullOfOrNull {
