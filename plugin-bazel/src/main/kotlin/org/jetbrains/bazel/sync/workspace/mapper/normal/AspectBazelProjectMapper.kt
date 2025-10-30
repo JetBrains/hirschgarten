@@ -277,6 +277,7 @@ class AspectBazelProjectMapper(
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
+          (targetInfo.sourcesList.isEmpty() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
           targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
       )
 
