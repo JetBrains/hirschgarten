@@ -7,8 +7,6 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
-import com.intellij.openapi.util.registry.Registry
-import com.intellij.openapi.util.registry.RegistryManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.DirectoryProjectConfigurator
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -17,7 +15,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import com.intellij.workspaceModel.ide.JpsProjectLoadingManager
 import org.jetbrains.bazel.config.BazelProjectProperties
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
 /**
  * Clean up any modules showing up due to the platform hack
