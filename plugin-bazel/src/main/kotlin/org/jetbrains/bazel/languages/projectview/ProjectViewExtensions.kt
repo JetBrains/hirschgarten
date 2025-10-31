@@ -40,16 +40,16 @@ val ProjectView.directories: List<ExcludableValue<Path>>
   get() = getSection(DirectoriesSection.KEY) ?: emptyList()
 
 val ProjectView.buildFlags: List<String>
-  get() = getSection(BuildFlagsSection.KEY)?.map { it.toString() } ?: emptyList()
+  get() = getSection(BuildFlagsSection.KEY) ?: emptyList()
 
 val ProjectView.syncFlags: List<String>
-  get() = getSection(SyncFlagsSection.KEY)?.map { it.toString() } ?: emptyList()
+  get() = getSection(SyncFlagsSection.KEY) ?: emptyList()
 
 val ProjectView.debugFlags: List<String>
-  get() = getSection(DebugFlagsSection.KEY)?.map { it.toString() } ?: emptyList()
+  get() = getSection(DebugFlagsSection.KEY) ?: emptyList()
 
 val ProjectView.testFlags: List<String>
-  get() = getSection(TestFlagsSection.KEY)?.map { it.toString() } ?: emptyList()
+  get() = getSection(TestFlagsSection.KEY) ?: emptyList()
 
 val ProjectView.bazelBinary: Path?
   get() = getSection(BazelBinarySection.KEY)
