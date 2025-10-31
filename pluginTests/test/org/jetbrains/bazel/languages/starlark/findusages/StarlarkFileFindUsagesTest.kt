@@ -38,7 +38,11 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
     )
 
     val usages = myFixture.findUsages(javaFile).mapNotNull { it.element?.text }
-    usages.shouldContain("\"com/example/MyClass.java\"")
+    usages.shouldContain(
+      """
+      "com/example/MyClass.java"
+      """.trimIndent()
+    )
   }
 
   @Test
@@ -63,7 +67,11 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
     )
 
     val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.text }
-    usages.shouldContain("\"com/example/MyClass.kt\"")
+    usages.shouldContain(
+      """
+      "com/example/MyClass.kt"
+      """.trimIndent()
+    )
   }
 
   @Test
@@ -89,7 +97,11 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
     )
 
     val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.text }
-    usages.shouldContain("glob([\"**/*.kt\"])")
+    usages.shouldContain(
+      """
+      glob(["**/*.kt"])
+      """.trimIndent()
+    )
   }
 
   @Test

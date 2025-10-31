@@ -49,11 +49,10 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
       // Find all glob() calls that refer to the file
       PsiTreeUtil
         .collectElementsOfType(starlarkFile, StarlarkCallExpression::class.java)
+        .asSequence()
         .filter { it.firstChild?.text == "glob" }
-        .forEach {
-          getReferenceToGlobCallOrNull(it, file, StarlarkGlob.forPath(baseDir))
-            ?.let { ref -> processor.process(ref) }
-        }
+        .mapNotNull { getReferenceToGlobCallOrNull(it, file, StarlarkGlob.forPath(baseDir)) }
+        .forEach { processor.process(it) }
     }
   }
 
@@ -91,23 +90,24 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
     val excludeArgument = arguments.filterIsInstance<StarlarkNamedArgumentExpression>().firstOrNull { it.name == "exclude" }
     val excludePatterns = excludeArgument?.let { extractPatterns(it) } ?: emptyList()
 
-    val isUsage =
-      try {
-        globBuilder
-          .addPatterns(includePatterns)
-          .addExcludes(excludePatterns)
-          .glob()
-          .contains(file.virtualFile)
-      } catch (e: IOException) {
-        Logger.getInstance(StarlarkGlob::class.java).warn(e.message)
-        false
-      } catch (_: InterruptedException) {
-        Thread.currentThread().interrupt()
-        false
+    return try {
+      if (globBuilder
+        .addPatterns(includePatterns)
+        .addExcludes(excludePatterns)
+        .glob()
+        .contains(file.virtualFile)
+      ) {
+        PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file)
+      } else {
+        null
       }
-    if (!isUsage) return null
-
-    return PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file)
+    } catch (e: IOException) {
+      Logger.getInstance(StarlarkGlob::class.java).warn(e.message)
+      null
+    } catch (_: InterruptedException) {
+      Thread.currentThread().interrupt()
+      null
+    }
   }
 
   private fun buildNewLabelContent(oldContent: String, newFilename: String): String {
