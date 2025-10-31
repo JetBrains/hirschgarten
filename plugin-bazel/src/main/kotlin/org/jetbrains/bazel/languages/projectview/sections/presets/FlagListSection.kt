@@ -8,10 +8,10 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection.Companion.COMMAND
 
-abstract class FlagListSection(private val command: String) : ListSection<List<Flag>>() {
+abstract class FlagListSection(private val command: String) : ListSection<List<String>>() {
   final override val completionProvider = FlagCompletionProvider(command)
 
-  final override fun fromRawValues(rawValues: List<String>): List<Flag> = rawValues.mapNotNull { Flag.byName(it) }
+  final override fun fromRawValues(rawValues: List<String>): List<String> = rawValues
 
   final override fun annotateValue(element: PsiElement, holder: AnnotationHolder) {
     val flag = Flag.byName(element.text)
