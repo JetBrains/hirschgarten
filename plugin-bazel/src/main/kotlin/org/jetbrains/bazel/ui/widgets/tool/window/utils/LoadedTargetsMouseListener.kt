@@ -28,6 +28,7 @@ import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
+import org.jetbrains.bazel.target.lang.BuildTargetLangInferenceContributor
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -212,30 +213,34 @@ private fun DefaultActionGroup.addSyntheticRunActions(
   if (element == null) {
     return
   }
-  val generator = SyntheticRunTargetTemplateGenerator.ep.extensionList
-    .find { it.isSupported(target) }
-  if (generator == null) {
-    return
-  }
-  val action = RunSyntheticTargetAction(
-    project = project,
-    target = target,
-    isDebugAction = false,
-    includeTargetNameInText = includeTargetNameInText,
-    templateGenerator = generator,
-    targetElement = element,
-  )
-  addAction(action)
-  if (canBeDebugged) {
-    val action = RunSyntheticTargetAction(
-      project = project,
-      target = target,
-      isDebugAction = true,
-      includeTargetNameInText = includeTargetNameInText,
-      templateGenerator = generator,
-      targetElement = element,
-    )
-    addAction(action)
+  for (language in BuildTargetLangInferenceContributor.getLanguagesInTarget(target)) {
+    for (generator in SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)) {
+      if (!generator.isSupported(target)) {
+        continue
+      }
+      val action = RunSyntheticTargetAction(
+        project = project,
+        target = target,
+        isDebugAction = false,
+        includeTargetNameInText = includeTargetNameInText,
+        templateGenerator = generator,
+        targetElement = element,
+        language = language,
+      )
+      addAction(action)
+      if (canBeDebugged) {
+        val action = RunSyntheticTargetAction(
+          project = project,
+          target = target,
+          isDebugAction = true,
+          includeTargetNameInText = includeTargetNameInText,
+          templateGenerator = generator,
+          targetElement = element,
+          language = language,
+        )
+        addAction(action)
+      }
+    }
   }
 }
 

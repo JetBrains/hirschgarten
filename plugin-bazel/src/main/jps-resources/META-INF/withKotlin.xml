@@ -8,7 +8,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <syntheticRunTargetTemplateGenerator implementation="org.jetbrains.bazel.run.synthetic.KotlinSyntheticRunTargetTemplateGenerator"/>
+    <syntheticRunTargetTemplateGenerator language="kotlin" implementationClass="org.jetbrains.bazel.run.synthetic.KotlinSyntheticRunTargetTemplateGenerator"/>
     <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook" />
     <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider" />
@@ -21,6 +21,7 @@
     <psiElementConfigurationLocator
       implementation="org.jetbrains.bazel.kotlin.junit.KotlinPsiElementConfigurationLocator"
     />
+    <buildTargetLanguageInferenceContributor implementation="org.jetbrains.bazel.kotlin.target.KotlinBuildTargetLangInferenceContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

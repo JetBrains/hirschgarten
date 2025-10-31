@@ -5,10 +5,11 @@ import com.intellij.psi.PsiElement
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 
 abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTargetTemplateGenerator {
   private val DEFAULT_TARGET_NAME = "synthetic_binary"
+
+  override fun isSupported(target: BuildTarget): Boolean = true
 
   override fun getRunnerActionName(
     original: String,
@@ -36,7 +37,7 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
     return SyntheticRunTargetTemplate(buildFileContent = build, buildFilePath = pkg.joinToString("/"))
   }
 
-  fun getTargetPath(original: BuildTarget, mainClass: String): Array<String>? {
+  fun getTargetPath(original: BuildTarget, mainClass: String): Array<String> {
     return arrayOf(
       SyntheticRunTargetUtils.escapeTargetLabel(original.id.toString()),
       SyntheticRunTargetUtils.escapeTargetLabel(mainClass),
