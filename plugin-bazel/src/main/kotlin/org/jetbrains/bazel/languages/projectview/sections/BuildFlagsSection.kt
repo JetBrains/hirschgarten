@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.projectview.sections.presets.FlagListSectio
 
 class BuildFlagsSection : FlagListSection(COMMAND) {
   override val name = NAME
-  override val default = emptyList<Flag>()
+  override val default = emptyList<String>()
   override val sectionKey = KEY
   override val doc =
     "A set of flags that get passed to all build command invocations as arguments. This" +
@@ -14,7 +14,7 @@ class BuildFlagsSection : FlagListSection(COMMAND) {
 
   companion object {
     const val NAME = "build_flags"
-    val KEY = SectionKey<List<Flag>>(NAME)
+    val KEY = SectionKey<List<String>>(NAME)
     const val COMMAND = "build"
   }
 }

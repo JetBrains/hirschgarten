@@ -2,15 +2,20 @@ package org.jetbrains.bazel.languages.projectview.language
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.ProjectViewSections
+import org.jetbrains.bazel.languages.projectview.buildFlags
+import org.jetbrains.bazel.languages.projectview.debugFlags
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
+import org.jetbrains.bazel.languages.projectview.syncFlags
+import org.jetbrains.bazel.languages.projectview.testFlags
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -85,5 +90,29 @@ class ProjectViewTest : BasePlatformTestCase() {
     val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error", "--dump_all", "build")
     myFixture.configureByText(".bazelproject", """build_flags: <warning descr="$message">--dump_all</warning>""")
     myFixture.checkHighlighting()
+  }
+
+  @Test
+  fun `test correct flag parsing`() {
+    myFixture.configureByText(
+      ".bazelproject",
+      """
+        sync_flags:
+          --announce_rc
+        build_flags: 
+          --define=ij_product=intellij-latest
+        debug_flags:
+          --debugger_port=5555
+        test_flags:
+          --test_suite=MyTestSuite
+        """.trimIndent(),
+    )
+
+    val pv = ProjectView.fromProjectViewPsiFile(myFixture.file as ProjectViewPsiFile)
+
+    pv.syncFlags shouldContain "--announce_rc"
+    pv.buildFlags shouldContain "--define=ij_product=intellij-latest"
+    pv.debugFlags shouldContain "--debugger_port=5555"
+    pv.testFlags shouldContain "--test_suite=MyTestSuite"
   }
 }
