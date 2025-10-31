@@ -1,9 +1,10 @@
-package org.jetbrains.bazel.run.synthetic
+package org.jetbrains.bazel.java.run
 
 import com.intellij.lang.jvm.util.JvmClassUtil
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
+import org.jetbrains.bazel.run.synthetic.MainClassSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType

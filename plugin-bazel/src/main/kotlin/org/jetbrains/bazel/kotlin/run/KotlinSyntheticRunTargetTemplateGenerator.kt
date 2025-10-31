@@ -1,8 +1,9 @@
-package org.jetbrains.bazel.run.synthetic
+package org.jetbrains.bazel.kotlin.run
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import org.intellij.lang.annotations.Language
+import org.jetbrains.bazel.run.synthetic.MainClassSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.kotlin.fileClasses.javaFileFacadeFqName
