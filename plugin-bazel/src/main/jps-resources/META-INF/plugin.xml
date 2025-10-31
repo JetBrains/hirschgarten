@@ -201,7 +201,12 @@
                     dynamic="true"
     />
     <extensionPoint qualifiedName="org.jetbrains.bazel.syntheticRunTargetTemplateGenerator"
-                    interface="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"
+                    dynamic="true"
+                    beanClass="com.intellij.lang.LanguageExtensionPoint">
+      <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
+    </extensionPoint>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.buildTargetLanguageInferenceContributor"
+                    interface="org.jetbrains.bazel.target.lang.BuildTargetLangInferenceContributor"
                     dynamic="true"/>
   </extensionPoints>
 
@@ -428,6 +433,7 @@
                  restartRequired="false"
     />
 
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider"/>
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />

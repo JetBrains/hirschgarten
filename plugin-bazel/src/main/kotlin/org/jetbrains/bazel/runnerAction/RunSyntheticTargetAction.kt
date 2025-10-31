@@ -4,6 +4,7 @@ import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.runConfigurationType
+import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -21,6 +22,7 @@ class RunSyntheticTargetAction(
   private val includeTargetNameInText: Boolean,
   private val templateGenerator: SyntheticRunTargetTemplateGenerator,
   private val targetElement: PsiElement,
+  private val language: Language,
   private val text: (isRunConfigName: Boolean) -> String = {
     BazelRunnerActionNaming.getRunActionName(
       isDebugAction = isDebugAction,
@@ -45,7 +47,7 @@ class RunSyntheticTargetAction(
   ): RunnerAndConfigurationSettings {
     val configurationType = runConfigurationType<BazelRunConfigurationType>()
     val factory = configurationType.configurationFactories.first()
-    val name = templateGenerator.getRunnerActionName(text(true), target, targetElement);
+    val name = templateGenerator.getRunnerActionName(text(true), target, targetElement)
     val settings =
       RunManager.getInstance(project).createConfiguration(name, factory)
     val config = settings.configuration as BazelRunConfiguration
@@ -63,7 +65,7 @@ class RunSyntheticTargetAction(
       val task = provider.createTask(config)
       val taskState = task.taskState
       taskState.target = target.id.toString()
-      taskState.templateGeneratorId = templateGenerator.id
+      taskState.language = language.id
       taskState.params = params
       settings.configuration.beforeRunTasks = listOf(task)
     }

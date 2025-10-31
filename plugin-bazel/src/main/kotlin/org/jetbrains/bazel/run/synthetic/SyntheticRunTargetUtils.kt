@@ -19,5 +19,5 @@ object SyntheticRunTargetUtils {
   
   fun escapeTargetLabel(input: String): String  {
     return input.replace(escapePattern, "_")
-  } 
+  }
 }

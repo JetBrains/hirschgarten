@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 
 class KotlinSyntheticRunTargetTemplateGenerator : MainClassSyntheticRunTargetTemplateGenerator() {
+
   override fun getMainClass(element: PsiElement): String? {
     return tryGetKotlinMainClassInClass(element)
       ?: tryGetKotlinMainClassInFile(element)
@@ -34,9 +35,6 @@ class KotlinSyntheticRunTargetTemplateGenerator : MainClassSyntheticRunTargetTem
     """.trimIndent()
     return build
   }
-
-  override val id: String
-    get() = "kotlin"
 
   override fun isSupported(target: BuildTarget): Boolean = target.data is KotlinBuildTarget
 

@@ -4,6 +4,7 @@ import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.PersistentStateComponent
@@ -40,13 +41,14 @@ class GenerateSyntheticTargetRunTaskProvider(
     task: Task,
   ): Boolean {
     val project = environment.project
-    val taskState = task.taskState ?: return false
-    val templateGenerator = SyntheticRunTargetTemplateGenerator.ep.extensionList
-      .find { it.id == taskState.templateGeneratorId } ?: return false
+    val taskState = task.taskState
     val targetLabel = Label.parse(taskState.target)
     val target = project.targetUtils.getBuildTargetForLabel(targetLabel)
       ?: return false
-    val template = templateGenerator.createSyntheticTemplate(target, taskState.params)
+    val language = Language.findLanguageByID(taskState.language) ?: return false
+    val generator = SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)
+      .find { it.isSupported(target) } ?: return false
+    val template = generator.createSyntheticTemplate(target, taskState.params)
     val vFile = WriteAction.computeAndWait<VirtualFile, RuntimeException> {
       val syntheticTargetDir = project.rootDir.findOrCreateDirectory(".bazelbsp")
         .findOrCreateDirectory("synthetic_targets")
@@ -68,7 +70,7 @@ class GenerateSyntheticTargetRunTaskProvider(
   class Task : BeforeRunTask<Task>(GENERATE_SYNTHETIC_PROVIDER_ID),
                PersistentStateComponent<TaskState> {
     var taskState: TaskState = TaskState()
-    override fun getState(): TaskState? {
+    override fun getState(): TaskState {
       return taskState
     }
 
@@ -81,8 +83,8 @@ class GenerateSyntheticTargetRunTaskProvider(
     @Attribute("target")
     var target: String = ""
 
-    @Attribute("templateGeneratorId")
-    var templateGeneratorId: String = ""
+    @Attribute("language")
+    var language: String = ""
 
     @Attribute("params")
     var params: String = ""
