@@ -6,11 +6,11 @@ import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.jetbrains.bazel.run.synthetic.MainClassSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 
 class JavaSyntheticRunTargetTemplateGenerator : MainClassSyntheticRunTargetTemplateGenerator() {
-  override fun isSupported(target: BuildTarget): Boolean = target.data is JvmBuildTarget
+  override fun isSupported(target: BuildTarget): Boolean = extractJvmBuildTarget(target) != null
 
   override fun getMainClass(element: PsiElement): String? {
     val psiClass = element.getNonStrictParentOfType<PsiClass>() ?: return null

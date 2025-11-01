@@ -20,11 +20,13 @@ import org.jetbrains.bazel.jvm.run.CHECK_VISIBILITY_KEY
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
+import java.nio.file.Files
+import java.nio.file.Path
 
 const val GENERATE_SYNTHETIC_PROVIDER_NAME: String = "BazelGenerateSyntheticTargetRunTaskProvider"
 val GENERATE_SYNTHETIC_PROVIDER_ID: Key<GenerateSyntheticTargetRunTaskProvider.Task> = Key.create(GENERATE_SYNTHETIC_PROVIDER_NAME)
 
-val SYNTHETIC_BUILD_FILE_KEY: Key<VirtualFile> = Key.create("bazel.run.synthetic.build_file.vfile")
+val SYNTHETIC_BUILD_FILE_KEY: Key<Path> = Key.create("bazel.run.synthetic.build_file.vfile")
 
 class GenerateSyntheticTargetRunTaskProvider(
 ) : BeforeRunTaskProvider<GenerateSyntheticTargetRunTaskProvider.Task>() {
@@ -49,18 +51,20 @@ class GenerateSyntheticTargetRunTaskProvider(
     val generator = SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)
       .find { it.isSupported(target) } ?: return false
     val template = generator.createSyntheticTemplate(target, taskState.params)
-    val vFile = WriteAction.computeAndWait<VirtualFile, RuntimeException> {
-      val syntheticTargetDir = project.rootDir.findOrCreateDirectory(".bazelbsp")
-        .findOrCreateDirectory("synthetic_targets")
-        .findOrCreateDirectory(template.buildFilePath)
-      val vFile = syntheticTargetDir.findOrCreateFile("BUILD")
-      vFile.writeText(template.buildFileContent)
-      vFile
-    }
-    (configuration as BazelRunConfiguration).putUserData(SYNTHETIC_BUILD_FILE_KEY, vFile)
+
+    val dir = project.rootDir.toNioPath()
+      .resolve(".bazelbsp")
+      .resolve("synthetic_targets")
+      .resolve(template.buildFilePath)
+    Files.createDirectories(dir)
+    val buildFile = dir.resolve("BUILD")
+    Files.writeString(buildFile, template.buildFileContent)
+
+    configuration as BazelRunConfiguration
+    configuration.putUserData(SYNTHETIC_BUILD_FILE_KEY, buildFile)
 
     if (BazelFeatureFlags.syntheticRunDisableVisibilityCheck) {
-      (configuration as BazelRunConfiguration).putUserData(CHECK_VISIBILITY_KEY, false)
+      configuration.putUserData(CHECK_VISIBILITY_KEY, false)
       environment.putUserData(CHECK_VISIBILITY_KEY, false)
     }
 
@@ -84,7 +88,7 @@ class GenerateSyntheticTargetRunTaskProvider(
     var target: String = ""
 
     @Attribute("language")
-    var language: String = ""
+    var language: String = Language.ANY.id
 
     @Attribute("params")
     var params: String = ""
