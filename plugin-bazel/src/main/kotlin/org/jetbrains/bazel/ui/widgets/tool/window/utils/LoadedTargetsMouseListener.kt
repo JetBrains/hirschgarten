@@ -17,7 +17,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
-import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
+import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetUtils
 import org.jetbrains.bazel.runnerAction.BazelRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
@@ -28,7 +28,6 @@ import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
-import org.jetbrains.bazel.target.lang.BuildTargetLangInferenceContributor
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -213,11 +212,8 @@ private fun DefaultActionGroup.addSyntheticRunActions(
   if (element == null) {
     return
   }
-  for (language in BuildTargetLangInferenceContributor.getLanguagesInTarget(target)) {
-    for (generator in SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)) {
-      if (!generator.isSupported(target)) {
-        continue
-      }
+  val language = element.language
+  for (generator in SyntheticRunTargetUtils.getTemplateGenerators(target, language)) {
       val action = RunSyntheticTargetAction(
         project = project,
         target = target,
@@ -241,7 +237,6 @@ private fun DefaultActionGroup.addSyntheticRunActions(
         addAction(action)
       }
     }
-  }
 }
 
 private fun DefaultActionGroup.addLocalJvmTestActions(

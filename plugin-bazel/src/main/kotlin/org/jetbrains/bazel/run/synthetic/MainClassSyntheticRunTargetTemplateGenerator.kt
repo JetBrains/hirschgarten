@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.run.synthetic
 
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.readAction
 import com.intellij.psi.PsiElement
 import kotlinx.coroutines.runBlocking
@@ -18,9 +19,8 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
   ): String = "$original ${element.getMainClassInternal() ?: "unknown"}"
 
   override fun getSyntheticTargetLabel(original: BuildTarget, element: PsiElement): Label {
-    // TODO: rethink fallback values
     val mainClass = element.getMainClassInternal() ?: error("failed to get main class")
-    val pkg = getTargetPath(original, mainClass) ?: error("failed to get target path")
+    val pkg = getTargetPath(original, mainClass)
     return SyntheticRunTargetUtils.getSyntheticTargetLabel(packageParts = pkg, targetName = DEFAULT_TARGET_NAME)
   }
 
@@ -44,10 +44,8 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
     )
   }
 
-  fun PsiElement.getMainClassInternal(): String? = runBlocking {
-    readAction {
-      return@readAction getMainClass(this@getMainClassInternal)
-    }
+  fun PsiElement.getMainClassInternal(): String? = ReadAction.compute<String?, Throwable> {
+    return@compute getMainClass(this@getMainClassInternal)
   }
 
   protected abstract fun getMainClass(element: PsiElement): String?

@@ -15,7 +15,7 @@ import org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.BuildTarget
 
-class RunSyntheticTargetAction(
+open class RunSyntheticTargetAction(
   private val project: Project,
   private val target: BuildTarget,
   private val isDebugAction: Boolean,
@@ -23,17 +23,16 @@ class RunSyntheticTargetAction(
   private val templateGenerator: SyntheticRunTargetTemplateGenerator,
   private val targetElement: PsiElement,
   private val language: Language,
-  private val text: (isRunConfigName: Boolean) -> String = {
+) : BaseRunnerAction(
+  text = {
     BazelRunnerActionNaming.getRunActionName(
       isDebugAction = isDebugAction,
-      isRunConfigName = it,
+      isRunConfigName = false,
       includeTargetNameInText = includeTargetNameInText,
       project = project,
       target = target.id,
     )
   },
-) : BaseRunnerAction(
-  text = { text(false) },
   icon = null,
   isDebugAction = isDebugAction,
   isCoverageAction = false,
@@ -47,7 +46,7 @@ class RunSyntheticTargetAction(
   ): RunnerAndConfigurationSettings {
     val configurationType = runConfigurationType<BazelRunConfigurationType>()
     val factory = configurationType.configurationFactories.first()
-    val name = templateGenerator.getRunnerActionName(text(true), target, targetElement)
+    val name = templateGenerator.getRunnerActionName(getRunConfigurationName(), target, targetElement)
     val settings =
       RunManager.getInstance(project).createConfiguration(name, factory)
     val config = settings.configuration as BazelRunConfiguration
@@ -74,4 +73,13 @@ class RunSyntheticTargetAction(
     settings.configuration.beforeRunTasks
     return settings
   }
+
+  protected open fun getRunConfigurationName(): String =
+    BazelRunnerActionNaming.getRunActionName(
+      isDebugAction = isDebugAction,
+      isRunConfigName = true,
+      includeTargetNameInText = includeTargetNameInText,
+      project = project,
+      target = target.id,
+    )
 }
