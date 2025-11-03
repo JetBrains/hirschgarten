@@ -24,8 +24,8 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() =
       GitProjectInfo(
-        repositoryUrl = "https://github.com/Krystian20857/simpleBazelProjectsForTesting.git",
-        commitHash = "148ddeddd07cfc678db20e50d9c955d4d9bbbafb",
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "ef520dd2fb1c831641d651ab8997e1a6feda07d6",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("protobufTest") },
         isReusable = true,
