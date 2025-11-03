@@ -8,6 +8,5 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src:plugin-bazel-resources",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//sdkcompat",
     ],
 )

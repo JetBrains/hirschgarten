@@ -3,9 +3,6 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.openapi.extensions.ExtensionPointName
-import com.intellij.openapi.vfs.JarFileSystem
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
-import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
@@ -14,18 +11,15 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
-import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.workspacemodel.entities.Module
 import java.nio.file.Path
-import kotlin.io.path.extension
 
 class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

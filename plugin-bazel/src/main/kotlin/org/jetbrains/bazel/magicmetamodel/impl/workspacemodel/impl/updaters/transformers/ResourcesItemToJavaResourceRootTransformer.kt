@@ -2,7 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
+import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path

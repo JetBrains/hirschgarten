@@ -24,7 +24,6 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.label.label
-import org.jetbrains.bazel.sync.TargetKindService
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
@@ -277,6 +276,7 @@ class AspectBazelProjectMapper(
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
+          (targetInfo.sourcesList.isEmpty() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
           targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
       )
 

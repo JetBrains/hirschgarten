@@ -34,7 +34,6 @@
     <orderEntry type="module" module-name="intellij.android.jps.model" />
     <orderEntry type="module" module-name="intellij.bazel.commons" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" exported="" />
-    <orderEntry type="module" module-name="intellij.bazel.sdkcompat" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.server" exported="" />
     <orderEntry type="module" module-name="intellij.devkit.core" />
     <orderEntry type="module" module-name="intellij.go.frontback" />
@@ -103,6 +102,7 @@
     <orderEntry type="module" module-name="intellij.kotlin.base.facet" />
     <orderEntry type="module" module-name="intellij.kotlin.base.projectStructure" />
     <orderEntry type="module" module-name="intellij.kotlin.base.psi" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.indices" />
     <orderEntry type="module" module-name="intellij.kotlin.base.resources" />
     <orderEntry type="module" module-name="intellij.kotlin.base.util" />
     <orderEntry type="module" module-name="intellij.kotlin.preferences" />

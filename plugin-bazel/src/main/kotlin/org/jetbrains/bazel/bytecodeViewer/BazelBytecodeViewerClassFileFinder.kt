@@ -1,10 +1,8 @@
 package org.jetbrains.bazel.bytecodeViewer
 
 import com.intellij.byteCodeViewer.BytecodeViewerClassFileFinder
-import com.intellij.ide.highlighter.JavaClassFileType
 import com.intellij.ide.util.JavaAnonymousClassesHelper
 import com.intellij.ide.util.JavaLocalClassesHelper
-import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.JarFileSystem
