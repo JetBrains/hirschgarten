@@ -17,7 +17,7 @@ class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() 
     return KotlinPsiHeuristics.getJvmName(classOrObject)
   }
 
-  override fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean = this is KtClassOrObject || this is KtNamedFunction
+  override fun PsiNameIdentifierOwner.isClass(): Boolean = this is KtClassOrObject
 
   override fun PsiNameIdentifierOwner.isMethod(): Boolean = this is KtNamedFunction
 

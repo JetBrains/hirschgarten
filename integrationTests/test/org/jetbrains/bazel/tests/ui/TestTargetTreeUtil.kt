@@ -9,6 +9,10 @@ import com.intellij.driver.sdk.ui.xQuery
 import org.junit.jupiter.api.Assertions
 import kotlin.time.Duration.Companion.minutes
 
+/**
+ * If we have too many test results, then part of the tree may be cut off because it doesn't fit into the screen
+ */
+private const val TREE_SIZE_THAT_FITS_INTO_SCREEN = 6
 private val expandedTreeForProject = mutableSetOf<String>()
 
 /**
@@ -28,6 +32,11 @@ fun IdeaFrameUI.verifyTestStatus(expectedStatus: List<String>, expectedTree: Col
     val treeComponent = testTreeView()
     treeComponent.expandAll()
     val actualTree = treeComponent.getAllTexts().filterRelevant()
+    val expectedTree = if (expectedTree.size > TREE_SIZE_THAT_FITS_INTO_SCREEN && actualTree.size >= TREE_SIZE_THAT_FITS_INTO_SCREEN) {
+      expectedTree.take(actualTree.size)
+    } else {
+      expectedTree
+    }
 
     when (expectedTree) {
       is Set -> Assertions.assertEquals(expectedTree, actualTree.toSet(), "Test result tree must match")

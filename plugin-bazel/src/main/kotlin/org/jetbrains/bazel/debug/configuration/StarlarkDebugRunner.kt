@@ -16,6 +16,7 @@ import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.util.net.NetUtils
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
+import com.intellij.xdebugger.impl.XDebugSessionImpl
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,7 +31,6 @@ import org.jetbrains.bazel.debug.connector.StarlarkSocketConnector
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -76,12 +76,10 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
       val connector = connectToDebugServer(project, port)
       val starter = starlarkManager.ProcessStarter(connector)
       starlarkManager.registerJobToCancel(debugJob)
-      promise.setResult(
-        XDebuggerManager
-          .getInstance(project)
-          .startSessionOnEDT(environment, starter)
-          .runContentDescriptor,
-      )
+      val session = XDebuggerManager
+        .getInstance(project)
+        .startSessionOnEDT(environment, starter)
+      promise.setResult((session as XDebugSessionImpl).getMockRunContentDescriptor())
     } catch (e: CancellationException) {
       // user cancelled the connection attempt before it was completed
       debugJob.cancel(e)

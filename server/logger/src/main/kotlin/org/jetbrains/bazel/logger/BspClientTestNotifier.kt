@@ -2,6 +2,7 @@ package org.jetbrains.bazel.logger
 
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.testing.BazelTestLocationHintProvider
 import org.jetbrains.bsp.protocol.BuildTaskHandler
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.TaskFinishParams
@@ -26,9 +27,18 @@ class BspClientTestNotifier(private val taskHandler: BuildTaskHandler, private v
    *
    * @param displayName display name of the started test / test suite
    * @param taskId      TaskId of the started test - when parentsId is not empty / test suite - otherwise
+   * @param parentSuites list of ancestor suites' names, starting from the top level
+   * @param classname `classname` value from test XML, if present
    */
-  fun startTest(displayName: String, taskId: TaskId) {
-    val testStart = TestStart(displayName)
+  fun startTest(
+    displayName: String,
+    taskId: TaskId,
+    parentSuites: List<String> = emptyList(),
+    classname: String? = null,
+  ) {
+    val locationHint =
+      BazelTestLocationHintProvider.testLocationHint(displayName, classname, parentSuites, isSuite = taskId.parents.isEmpty())
+    val testStart = TestStart(displayName, locationHint)
     val taskStartParams =
       TaskStartParams(
         taskId,
@@ -47,6 +57,7 @@ class BspClientTestNotifier(private val taskHandler: BuildTaskHandler, private v
    * @param taskId      TaskId of the finished test / test suite
    * @param status      status of the performed test (does not matter for test suites)
    * @param message     additional message concerning the test execution
+   * @param data
    */
   fun finishTest(
     displayName: String,
