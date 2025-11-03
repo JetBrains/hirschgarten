@@ -34,12 +34,11 @@ object CommonParams {
 
   val QodanaArtifactRules: String = "+:**/plugin-bazel.zip=>%system.teamcity.build.checkoutDir%/tc-artifacts"
 
-  val CrossBuildPlatforms: List<String> = listOf("251", "252")
-
-  val BazelVersion = "7.4.1"
+  val CrossBuildPlatforms: List<String> = listOf("252")
 }
 
 object CredentialsStore {
   val GitHubPassword = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+  val SpaceToken = "credentialsJSON:4efcb75d-2f9b-47fd-a63b-fc2969a334f5"
   val BazelTeamcityToken = "credentialsJSON:f47ac10b-58cc-4372-a567-0e02b2c3d479"
 }

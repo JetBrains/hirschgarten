@@ -2,15 +2,20 @@ package configurations
 
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
+import jetbrains.buildServer.configs.kotlin.v2019_2.VcsRoot
 
 /**
  * Build configuration for building the Bazel plugin for a specific platform.
  * 
  * @param platform The IntelliJ platform version (e.g., "251", "252")
  */
-class PluginBuild(private val platform: String) : BaseBuildType(
+class PluginBuild(
+    private val platform: String,
+    customVcsRoot: VcsRoot? = VcsRootHirschgarten,
+) : BaseBuildType(
     name = "[build] build project - $platform",
     artifactRules = "+:%system.agent.persistent.cache%/bazel/_bazel_hirschuser/*/execroot/_main/bazel-out/k8-fastbuild/bin/plugin-bazel/plugin-bazel.zip",
+    customVcsRoot = customVcsRoot,
     steps = {
         val platformDot = "${platform.take(2)}.${platform.last()}"
 
@@ -34,9 +39,15 @@ class PluginBuild(private val platform: String) : BaseBuildType(
 object PluginBuildFactory {
     /** All project build configurations for different platforms. */
     val ForAllPlatforms: List<BaseBuildType> by lazy { createBuildsForAllPlatforms() }
+    val ForAllPlatformsSpace: List<BaseBuildType> by lazy { createBuildsForAllPlatformsSpace() }
     
     private fun createBuildsForAllPlatforms(): List<BaseBuildType> =
         CommonParams.CrossBuildPlatforms.map { platform ->
           PluginBuild(platform)
+        }
+
+    private fun createBuildsForAllPlatformsSpace(): List<BaseBuildType> =
+        CommonParams.CrossBuildPlatforms.map { platform ->
+          PluginBuild(platform, customVcsRoot = VcsRootHirschgartenSpace)
         }
 }

@@ -1,5 +1,6 @@
 package configurations
 
+import jetbrains.buildServer.configs.kotlin.v2019_2.VcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
@@ -14,7 +15,8 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 class IdeStarterTest(
   private val testName: String,
   private val targets: String,
-  private val testSpecificArgs: String = ""
+  private val testSpecificArgs: String = "",
+  customVcsRoot: VcsRoot? = VcsRootHirschgarten,
 ) : BaseBuildType(
   name = "[ide-starter] $testName",
   requirements = {
@@ -22,6 +24,7 @@ class IdeStarterTest(
     equals("container.engine.osType", "linux")
   },
   artifactRules = CommonParams.BazelTestlogsArtifactRules,
+  customVcsRoot = customVcsRoot,
   steps = {
     bazel {
       val reportErrors = "--jvmopt=\"-DDO_NOT_REPORT_ERRORS=true\""
@@ -72,10 +75,16 @@ data class TestDef(
 object IdeStarterTestFactory {
   /** All IDE-starter test build types. */
   val AllIdeStarterTests: List<BaseBuildType> by lazy { createIdeStarterTests() }
+  val AllIdeStarterTestsSpace: List<BaseBuildType> by lazy { createIdeStarterTestsSpace() }
 
   private fun createIdeStarterTests(): List<BaseBuildType> =
     ideStarterTests.map { testDef ->
       IdeStarterTest(testDef.name, testDef.target, testDef.testSpecificArgs)
+    }
+
+  private fun createIdeStarterTestsSpace(): List<BaseBuildType> =
+    ideStarterTests.map { testDef ->
+      IdeStarterTest(testDef.name, testDef.target, testDef.testSpecificArgs, customVcsRoot = VcsRootHirschgartenSpace)
     }
 
   // Define the available IDE-starter tests
@@ -84,6 +93,7 @@ object IdeStarterTestFactory {
     TestDef("GoLand sync test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/resolve/golandSync"),
     TestDef("Coroutine debug test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/coroutineDebug"),
     TestDef("Reopen without Resync test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/reopen/noResync"),
+    TestDef("Protobuf resolve test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/protobuf:protobuf"),
     TestDef("External repo resolve test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/references:ExternalRepoResolveTest"),
     TestDef("Compiled source code inside jar exclude test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:CompiledSourceCodeInsideJarExcludeTest"),
     TestDef("Bazel Project Model Modifier test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/flow/modify:BazelProjectModelModifierTest"),
@@ -98,6 +108,7 @@ object IdeStarterTestFactory {
     TestDef("Check red code in PyCharm test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:SimplePythonTest"),
     TestDef("Fast build test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/fastbuild"),
     TestDef("Project view open test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/settings:project_view_open_test"),
+    TestDef("Project open starter test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/flow/starter:starter"),
     TestDef("Move Kotlin file test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/move:moveKotlinFileTest"),
     TestDef("Recover bazelbsp", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/sync/recoverDotBazelBsp"),
     TestDef("Update Bazel version test", "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/server/connection/bazelVersionUpdate")
