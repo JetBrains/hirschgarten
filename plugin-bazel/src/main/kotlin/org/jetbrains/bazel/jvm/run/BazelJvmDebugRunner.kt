@@ -48,12 +48,10 @@ class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
             .getInstanceEx(project)
             .attachVirtualMachine(debugEnvironment)
             ?: error("VM attachment failed")
-        result.set(
-          XDebuggerManager
-            .getInstance(project)
-            .startSession(environment, BspDebugProcessStarter(debuggerSession))
-            .runContentDescriptor,
-        )
+        val session = XDebuggerManager
+          .getInstance(project)
+          .startSession(environment, BspDebugProcessStarter(debuggerSession))
+        result.set((session as XDebugSessionImpl).getMockRunContentDescriptor())
       } catch (_: ProcessCanceledException) {
         // ignore
       } catch (e: ExecutionException) {
