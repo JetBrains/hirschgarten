@@ -78,7 +78,7 @@ class AspectBazelProjectMapper(
   ): IntermediateTargetData? {
     val languages = inferLanguages(this)
     val languagePlugin = languagePluginsService.getLanguagePlugin(languages) ?: return null
-    val tags = targetTagsResolver.resolveTags(this, workspaceContext).toSet()
+    val tags = targetTagsResolver.resolveTags(this).toSet()
     val label = this.label().assumeResolved()
     return IntermediateTargetData(
       label = label,
@@ -118,7 +118,8 @@ class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
+                  (target.sourcesCount > 0 || targetTagsResolver.resolveTags(target).any { it == Tag.APPLICATION || it == Tag.TEST })
+                    && isWorkspaceTarget(target, repoMapping, featureFlags)
                 } == true
               },
             )
@@ -605,7 +606,7 @@ class AspectBazelProjectMapper(
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
-          tags = targetTagsResolver.resolveTags(targetInfo, workspaceContext),
+          tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
           kindString = targetInfo.kind,
         )
