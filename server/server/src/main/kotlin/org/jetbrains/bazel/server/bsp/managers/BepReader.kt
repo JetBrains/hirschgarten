@@ -31,21 +31,15 @@ class BepReader(private val bepServer: BepServer) {
   }
 
   suspend fun start() =
-    withContext(Dispatchers.Default) {
+    withContext(Dispatchers.IO) {
       logger.info("Start listening to BEP events")
-      val inputStream =
-        withContext(Dispatchers.IO) {
-          eventFile.inputStream().buffered()
-        }
       try {
-        readBepEvents(inputStream)
+        eventFile.inputStream().buffered().use { inputStream ->
+          readBepEvents(inputStream)
+        }
         logger.info("BEP events listening finished")
       } finally {
-        try {
-          inputStream.close()
-        } finally {
-          eventFile.toPath().deleteExisting()
-        }
+        eventFile.toPath().deleteExisting()
       }
     }
 
