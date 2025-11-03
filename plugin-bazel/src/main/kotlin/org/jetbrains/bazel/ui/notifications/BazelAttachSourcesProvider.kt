@@ -19,27 +19,30 @@ import org.jetbrains.bazel.config.isBazelProject
 /**
  * See https://github.com/bazelbuild/bazel/issues/10692
  */
-internal class BazelAttachSourcesProvider : AttachSourcesProvider {
-  private class BazelAttachSourcesAction : AttachSourcesProvider.AttachSourcesAction {
+internal class BazelAttachSourcesProvider(private val cs: CoroutineScope) : AttachSourcesProvider {
+  private class BazelAttachSourcesAction(private val scope: CoroutineScope) : AttachSourcesProvider.AttachSourcesAction {
     override fun getName(): String = BazelPluginBundle.message("sources.attach.action.text")
 
     override fun getBusyText(): String = BazelPluginBundle.message("sources.pending.text")
 
     override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback {
       val callback = ActionCallback()
-      CoroutineScope(Dispatchers.Default).launch {
+      scope.launch {
         try {
           val libraries = orderEntries.mapNotNull { it.library }.distinct()
-          val modelsToCommit =
-            libraries.mapNotNull { library ->
-              val availableSources = library.getFiles(OrderRootType.SOURCES)
-              if (availableSources.isEmpty()) {
-                showError(library.name.orEmpty())
-                null
-              } else {
-                library.obtainModelWithAddedSources(availableSources)
-              }
+          val (libsWithEmptySources, libsWithSources) = libraries.partition { library ->
+            library.getFiles(OrderRootType.SOURCES).isEmpty()
+          }
+          libsWithEmptySources.forEach { library ->
+            showError(library.name.orEmpty())
+          }
+          val modelsToCommit = mutableListOf<Library.ModifiableModel>()
+          libsWithSources.forEach { library ->
+            val availableSources = library.getFiles(OrderRootType.SOURCES)
+            library.obtainModelWithAddedSources(availableSources)?.let {
+              modelsToCommit.add(it)
             }
+          }
           if (modelsToCommit.isNotEmpty()) {
             backgroundWriteAction {
               modelsToCommit.forEach {
@@ -48,10 +51,10 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
               callback.setDone()
             }
           } else {
-            callback.setRejected()
+            callback.setDone()
           }
-        } catch (_: Exception) {
-          callback.setRejected()
+        } catch (e: Exception) {
+          callback.reject(e.message)
         }
       }
       return callback
@@ -84,7 +87,7 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
   ): List<AttachSourcesProvider.AttachSourcesAction> {
     val project = orderEntries.firstNotNullOf { it.ownerModule.project }
     return if (project.isBazelProject && containsBazelSourcesForEntries(orderEntries)) {
-      listOf(BazelAttachSourcesAction())
+      listOf(BazelAttachSourcesAction(cs))
     } else {
       emptyList()
     }
