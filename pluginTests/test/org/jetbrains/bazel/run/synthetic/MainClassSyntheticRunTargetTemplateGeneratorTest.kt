@@ -4,8 +4,10 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.java.run.JavaSyntheticRunTargetTemplateGenerator
+import org.jetbrains.bazel.kotlin.run.KotlinSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
+import org.jetbrains.kotlin.psi.KtNamedFunction
 
 class MainClassSyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
 
@@ -71,5 +73,48 @@ class MainClassSyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() 
     path.size shouldBe 2
     path[0] shouldContain "_my_module_test_target"
     path[1] shouldContain "com_example_Main"
+  }
+
+  fun `test kotlin getSyntheticParams extracts top level main class name`() {
+    val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:target"))
+    val generator = KotlinSyntheticRunTargetTemplateGenerator()
+
+    myFixture.configureByText(
+      "main.kt",
+      """
+        package com.test
+
+        fun ma<caret>in() {
+            println("Hello from main1")
+        }
+      """.trimIndent()
+    )
+
+    val element = (myFixture.elementAtCaret as KtNamedFunction).nameIdentifier!!
+    val params = generator.getSyntheticParams(target, element)
+
+    params shouldBe "com.test.MainKt"
+  }
+
+  fun `test kotlin getSyntheticParams extracts object main class name`() {
+    val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:target"))
+    val generator = KotlinSyntheticRunTargetTemplateGenerator()
+
+    myFixture.configureByText(
+      "MyObject.kt",
+      """
+      package com.test;
+      
+      object MyObject {
+        @JvmStatic
+        fun m<caret>ain(args: Array<String>) {
+        }
+      }
+      """.trimIndent()
+    )
+
+    val params = generator.getSyntheticParams(target, myFixture.elementAtCaret)
+
+    params shouldBe "com.test.MyObject"
   }
 }
