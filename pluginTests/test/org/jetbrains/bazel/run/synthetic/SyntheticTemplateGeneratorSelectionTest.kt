@@ -18,7 +18,7 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
     val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("target"))
     val generators = SyntheticRunTargetUtils.getTemplateGenerators(target, JavaLanguage.INSTANCE)
 
-    generators.count() shouldBe 1
+    generators.count().shouldBe(1)
     generators.first().shouldBeInstanceOf<JavaSyntheticRunTargetTemplateGenerator>()
   }
 
@@ -26,7 +26,7 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
     val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("target"))
     val generators = SyntheticRunTargetUtils.getTemplateGenerators(target, KotlinLanguage.INSTANCE)
 
-    generators.count() shouldBe 1
+    generators.count().shouldBe(1)
     generators.first().shouldBeInstanceOf<KotlinSyntheticRunTargetTemplateGenerator>()
   }
 
@@ -34,7 +34,7 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
     val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("target"))
     val generators = SyntheticRunTargetUtils.getTemplateGenerators(target, JavaLanguage.INSTANCE)
 
-    generators.count() shouldBe 1
+    generators.count().shouldBe(1)
     generators.first().shouldBeInstanceOf<JavaSyntheticRunTargetTemplateGenerator>()
   }
 
@@ -42,14 +42,14 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
     val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:target"))
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
 
-    generator.isSupported(target) shouldBe true
+    generator.isSupported(target).shouldBe(true)
   }
 
   fun `test kotlin generator supports kotlin targets`() {
     val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//test:target"))
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(KotlinLanguage.INSTANCE)
 
-    generator.isSupported(target) shouldBe true
+    generator.isSupported(target).shouldBe(true)
   }
 
   fun `test java generator creates valid build content`() {
@@ -59,10 +59,10 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
 
     val template = generator.createSyntheticTemplate(target, mainClass)
 
-    template.buildFileContent shouldContain "java_binary"
-    template.buildFileContent shouldContain "main_class = \"$mainClass\""
-    template.buildFileContent shouldContain "runtime_deps = [\"${target.id}\"]"
-    template.buildFileContent shouldContain "@rules_java//java:defs.bzl"
+    template.buildFileContent.shouldContain("java_binary")
+    template.buildFileContent.shouldContain("main_class = \"$mainClass\"")
+    template.buildFileContent.shouldContain("runtime_deps = [\"${target.id}\"]")
+    template.buildFileContent.shouldContain("@rules_java//java:defs.bzl")
   }
 
   fun `test kotlin generator creates valid build content`() {
@@ -72,25 +72,25 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
 
     val template = generator.createSyntheticTemplate(target, mainClass)
 
-    template.buildFileContent shouldContain "kt_jvm_binary"
-    template.buildFileContent shouldContain "main_class = \"$mainClass\""
-    template.buildFileContent shouldContain "runtime_deps = [\"${target.id}\"]"
-    template.buildFileContent shouldContain "@rules_kotlin//kotlin:jvm.bzl"
+    template.buildFileContent.shouldContain("kt_jvm_binary")
+    template.buildFileContent.shouldContain("main_class = \"$mainClass\"")
+    template.buildFileContent.shouldContain("runtime_deps = [\"${target.id}\"]")
+    template.buildFileContent.shouldContain("@rules_kotlin//kotlin:jvm.bzl")
   }
 
   fun `test target label escaping`() {
     val input = "//my-module:test@target"
     val escaped = SyntheticRunTargetUtils.escapeTargetLabel(input)
 
-    escaped shouldBe "__my_module_test_target"
-    escaped shouldNotBe input
+    escaped.shouldBe("__my_module_test_target")
+    escaped.shouldNotBe(input)
   }
 
   fun `test target label escaping preserves alphanumeric and underscore`() {
     val input = "valid_Target123"
     val escaped = SyntheticRunTargetUtils.escapeTargetLabel(input)
 
-    escaped shouldBe input
+    escaped.shouldBe(input)
   }
 
   fun `test synthetic template has correct build file path`() {
@@ -100,9 +100,9 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
 
     val template = generator.createSyntheticTemplate(target, mainClass)
 
-    template.buildFilePath shouldNotBe ""
-    template.buildFilePath shouldContain "test_lib"
-    template.buildFilePath shouldContain "com_example_App"
+    template.buildFilePath.shouldNotBe("")
+    template.buildFilePath.shouldContain("test_lib")
+    template.buildFilePath.shouldContain("com_example_App")
   }
 
 }

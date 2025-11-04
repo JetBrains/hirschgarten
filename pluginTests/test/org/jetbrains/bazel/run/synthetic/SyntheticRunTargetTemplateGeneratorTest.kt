@@ -30,8 +30,8 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     val generator = getDefaultTemplateGenerator(target, JavaLanguage.INSTANCE)
     val label = generator.getSyntheticTargetLabel(target, myFixture.elementAtCaret)
 
-    label.toString() shouldContain ".bazelbsp/synthetic_targets"
-    label.toString() shouldContain "synthetic_binary"
+    label.toString().shouldContain(".bazelbsp/synthetic_targets")
+    label.toString().shouldContain("synthetic_binary")
   }
 
   fun `test getSyntheticParams extracts main class name`() {
@@ -51,7 +51,7 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     val generator = getDefaultTemplateGenerator(target, JavaLanguage.INSTANCE)
     val params = generator.getSyntheticParams(target, myFixture.elementAtCaret)
 
-    params shouldBe "com.test.TestClass"
+    params.shouldBe("com.test.TestClass")
   }
 
   fun `test kotlin getSyntheticParams extracts top level main class name`() {
@@ -72,7 +72,7 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     val generator = getDefaultTemplateGenerator(target, KotlinLanguage.INSTANCE)
     val params = generator.getSyntheticParams(target, element)
 
-    params shouldBe "com.test.MainKt"
+    params.shouldBe("com.test.MainKt")
   }
 
   fun `test kotlin getSyntheticParams extracts object main class name`() {
@@ -94,12 +94,12 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     val generator = getDefaultTemplateGenerator(target, KotlinLanguage.INSTANCE)
     val params = generator.getSyntheticParams(target, myFixture.elementAtCaret)
 
-    params shouldBe "com.test.MyObject"
+    params.shouldBe("com.test.MyObject")
   }
 
   private fun getDefaultTemplateGenerator(target: RawBuildTarget, language: Language): SyntheticRunTargetTemplateGenerator {
     val generator = SyntheticRunTargetUtils.getTemplateGenerators(target, language)
-    generator.size shouldBe 1
+    generator.size.shouldBe(1)
     return generator.first()
   }
 }
