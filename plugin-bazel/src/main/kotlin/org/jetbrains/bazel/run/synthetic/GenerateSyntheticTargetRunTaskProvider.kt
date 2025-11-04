@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.findOrCreateDirectory
 import com.intellij.openapi.vfs.findOrCreateFile
 import com.intellij.openapi.vfs.writeText
 import com.intellij.util.xmlb.annotations.Attribute
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.jvm.run.CHECK_VISIBILITY_KEY
@@ -53,7 +54,7 @@ class GenerateSyntheticTargetRunTaskProvider(
     val template = generator.createSyntheticTemplate(target, taskState.params)
 
     val dir = project.rootDir.toNioPath()
-      .resolve(".bazelbsp")
+      .resolve(Constants.DOT_BAZELBSP_DIR_NAME)
       .resolve("synthetic_targets")
       .resolve(template.buildFilePath)
     Files.createDirectories(dir)
