@@ -18,8 +18,8 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
       targetName = "test_binary"
     )
 
-    label.toString() shouldContain ".bazelbsp/synthetic_targets/simple"
-    label.toString() shouldContain "test_binary"
+    label.toString().shouldContain(".bazelbsp/synthetic_targets/simple")
+    label.toString().shouldContain("test_binary")
   }
 
   fun `test getSyntheticTargetLabel with multiple package parts`() {
@@ -29,11 +29,11 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
     )
 
     val labelStr = label.toString()
-    labelStr shouldContain ".bazelbsp/synthetic_targets"
-    labelStr shouldContain "part1"
-    labelStr shouldContain "part2"
-    labelStr shouldContain "part3"
-    labelStr shouldContain "my_target"
+    labelStr.shouldContain(".bazelbsp/synthetic_targets")
+    labelStr.shouldContain("part1")
+    labelStr.shouldContain("part2")
+    labelStr.shouldContain("part3")
+    labelStr.shouldContain("my_target")
   }
 
   fun `test getTemplateGenerators for java target`() {
@@ -42,7 +42,7 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
     val generators = SyntheticRunTargetUtils.getTemplateGenerators(target, JavaLanguage.INSTANCE)
 
     generators.shouldNotBeEmpty()
-    generators.all { it.isSupported(target) } shouldBe true
+    generators.all { it.isSupported(target) }.shouldBe(true)
   }
 
   fun `test getTemplateGenerators for kotlin target`() {
@@ -51,7 +51,7 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
     val generators = SyntheticRunTargetUtils.getTemplateGenerators(target, KotlinLanguage.INSTANCE)
 
     generators.shouldNotBeEmpty()
-    generators.all { it.isSupported(target) } shouldBe true
+    generators.all { it.isSupported(target) }.shouldBe(true)
   }
 
   fun `test escapeTargetLabel with special characters`() {
@@ -64,7 +64,7 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
     )
 
     testCases.forEach { (input, expected) ->
-      SyntheticRunTargetUtils.escapeTargetLabel(input) shouldBe expected
+      SyntheticRunTargetUtils.escapeTargetLabel(input).shouldBe(expected)
     }
   }
 
@@ -82,7 +82,7 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
     )
 
     val labelStr = label.toString()
-    labelStr shouldContain "//.bazelbsp/synthetic_targets"
-    labelStr shouldContain ":synthetic_binary"
+    labelStr.shouldContain("//.bazelbsp/synthetic_targets")
+    labelStr.shouldContain(":synthetic_binary")
   }
 }
