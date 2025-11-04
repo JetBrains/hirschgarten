@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
   override fun PsiNameIdentifierOwner.getClassName(): String? = this.getStrictParentOfType<KtClassOrObject>()?.name
 
-  override fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean = this is KtClassOrObject || this is KtNamedFunction
+  override fun PsiNameIdentifierOwner.isClass(): Boolean = this is KtClassOrObject
 
   override fun PsiNameIdentifierOwner.isMethod(): Boolean = this is KtNamedFunction
 }

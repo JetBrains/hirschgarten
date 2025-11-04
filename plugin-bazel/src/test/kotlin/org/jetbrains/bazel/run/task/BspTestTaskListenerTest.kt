@@ -60,13 +60,14 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   fun `task-start with test suite`() {
     // given
     val taskId = "task-id"
-    val data = TestStart("testSuite")
+    val data = TestStart("testSuite", "test://testSuite")
     val expectedText =
       ServiceMessageBuilder
         .testSuiteStarted(
           data.displayName,
         ).addAttribute("nodeId", taskId)
         .addAttribute("parentNodeId", "0")
+        .addAttribute("locationHint", data.locationHint)
         .toString() + "\n"
 
     // when
@@ -81,13 +82,14 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
     // given
     val taskId = "task-id"
     val parentId = "parent-id"
-    val data = TestStart("testCase")
+    val data = TestStart("testCase", "test://testCase")
     val expectedText =
       ServiceMessageBuilder
         .testStarted(
           data.displayName,
         ).addAttribute("nodeId", taskId)
         .addAttribute("parentNodeId", parentId)
+        .addAttribute("locationHint", data.locationHint)
         .toString() + "\n"
 
     // when

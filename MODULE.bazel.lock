@@ -836,7 +836,7 @@
     },
     "@@rules_apple+//apple:apple.bzl%provisioning_profile_repository_extension": {
       "general": {
-        "bzlTransitiveDigest": "OqnxQGborEbcWak9yoItfAqyNDynaNaP09nF159ZI4U=",
+        "bzlTransitiveDigest": "0vJr2d9y80KOd3qDBcAXb492igRSiRXOcYG7vPvZYaw=",
         "usagesDigest": "p3M7zCH+GPHgVjO+LP2VLwBkS3qDJfR7kf9jQ62ZZb4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
