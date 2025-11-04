@@ -55,17 +55,11 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
   }
 
   fun `test escapeTargetLabel with special characters`() {
-    val testCases = mapOf(
-      "//foo:bar" to "__foo_bar",
-      "@repo//pkg:target" to "_repo__pkg_target",
-      "my-target-123" to "my_target_123",
-      "Target.With.Dots" to "Target_With_Dots",
-      "normal_name_123" to "normal_name_123"
-    )
-
-    testCases.forEach { (input, expected) ->
-      SyntheticRunTargetUtils.escapeTargetLabel(input).shouldBe(expected)
-    }
+    SyntheticRunTargetUtils.escapeTargetLabel("//foo:bar").shouldBe("__foo_bar")
+    SyntheticRunTargetUtils.escapeTargetLabel("@repo//pkg:target").shouldBe("_repo__pkg_target")
+    SyntheticRunTargetUtils.escapeTargetLabel("my-target-123").shouldBe("my_target_123")
+    SyntheticRunTargetUtils.escapeTargetLabel("Target.With.Dots").shouldBe("Target_With_Dots")
+    SyntheticRunTargetUtils.escapeTargetLabel("normal_name_123").shouldBe("normal_name_123")
   }
 
   fun `test getTemplateGenerators filters unsupported generators`() {
