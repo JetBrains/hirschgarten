@@ -40,21 +40,21 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
 
   fun `test java generator supports jvm targets`() {
     val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:target"))
-    val generator = JavaSyntheticRunTargetTemplateGenerator()
+    val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
 
     generator.isSupported(target) shouldBe true
   }
 
   fun `test kotlin generator supports kotlin targets`() {
     val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//test:target"))
-    val generator = KotlinSyntheticRunTargetTemplateGenerator()
+    val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(KotlinLanguage.INSTANCE)
 
     generator.isSupported(target) shouldBe true
   }
 
   fun `test java generator creates valid build content`() {
     val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:target"))
-    val generator = JavaSyntheticRunTargetTemplateGenerator()
+    val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
     val mainClass = "com.example.Main"
 
     val template = generator.createSyntheticTemplate(target, mainClass)
@@ -67,7 +67,7 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
 
   fun `test kotlin generator creates valid build content`() {
     val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//test:target"))
-    val generator = KotlinSyntheticRunTargetTemplateGenerator()
+    val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(KotlinLanguage.INSTANCE)
     val mainClass = "com.example.MainKt"
 
     val template = generator.createSyntheticTemplate(target, mainClass)
@@ -95,7 +95,7 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
 
   fun `test synthetic template has correct build file path`() {
     val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:lib"))
-    val generator = JavaSyntheticRunTargetTemplateGenerator()
+    val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
     val mainClass = "com.example.App"
 
     val template = generator.createSyntheticTemplate(target, mainClass)
