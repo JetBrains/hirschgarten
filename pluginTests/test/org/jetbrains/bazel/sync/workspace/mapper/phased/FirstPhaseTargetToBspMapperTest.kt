@@ -11,6 +11,7 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.orLatestSupported
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
@@ -221,7 +222,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target1"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_library",
@@ -244,7 +245,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target2"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_binary",
@@ -263,7 +264,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target3"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_test",
@@ -282,7 +283,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target4"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_library",
@@ -297,7 +298,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target5"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_binary",
@@ -312,7 +313,7 @@ class FirstPhaseTargetToBspMapperTest {
           RawBuildTarget(
             id = Label.parse("//target6"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_test",
