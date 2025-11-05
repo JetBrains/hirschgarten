@@ -4,7 +4,6 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.jvm.run.CHECK_VISIBILITY_KEY
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -29,14 +28,12 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
 
-    val checkVisibility = configuration.getUserData(CHECK_VISIBILITY_KEY) ?: true
-
     val runParams =
       RunParams(
         target = configuration.targets.single(),
         originId = originId.toString(),
         buildBeforeRun = false,
-        checkVisibility = checkVisibility,
+        checkVisibility = configuration.doVisibilityCheck,
         arguments = transformProgramArguments(runState.programArguments),
         environmentVariables = runState.env.envs,
         workingDirectory = runState.workingDirectory,
