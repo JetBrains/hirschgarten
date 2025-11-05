@@ -4,11 +4,11 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
-import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -120,7 +120,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       RawBuildTarget(
         target1Id,
         emptyList(),
-        listOf(target2Id),
+        listOf(DependencyLabel(target2Id)),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
@@ -159,7 +159,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       RawBuildTarget(
         target3Id,
         emptyList(),
-        listOf(target2Id),
+        listOf(DependencyLabel(target2Id)),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
@@ -180,7 +180,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       RawBuildTarget(
         target4Id,
         emptyList(),
-        listOf(target1Id),
+        listOf(DependencyLabel(target1Id)),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
@@ -211,7 +211,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target1,
         javacOptions = target1JavacOptionsItem,
-        dependencies = listOf(target2Id),
+        dependencies = listOf(DependencyLabel(target2Id)),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -227,7 +227,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target3,
         javacOptions = target3JavacOptionsItem,
-        dependencies = listOf(target2Id),
+        dependencies = listOf(DependencyLabel(target2Id)),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -235,7 +235,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target4,
         javacOptions = listOf(),
-        dependencies = listOf(target1Id),
+        dependencies = listOf(DependencyLabel(target1Id)),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
