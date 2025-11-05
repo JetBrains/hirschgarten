@@ -54,6 +54,9 @@ class ProjectViewService(private val project: Project) {
     getProjectView()
   }
 
+  /**
+   * Get the cached project view which is reset on every project resync.
+   */
   fun getCachedProjectView(): ProjectView = SyncCache.getInstance(project).get(cachedProjectViewComputable)
 
   private fun findProjectViewPath(): VirtualFile? {
