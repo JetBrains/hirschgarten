@@ -31,9 +31,6 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
-import org.jetbrains.bazel.sync.workspace.languages.java.JavaSourceRootPackageInference
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
@@ -281,7 +278,7 @@ class AspectBazelProjectMapper(
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
           (targetInfo.sourcesList.isEmpty() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
           targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
-      )
+        )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -766,9 +763,9 @@ class AspectBazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-            )
-        )
-    ) ||
+              )
+          )
+      ) ||
       (
         featureFlags.isGoSupportEnabled &&
           target.hasGoTargetInfo() &&
@@ -776,7 +773,7 @@ class AspectBazelProjectMapper(
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target)
-      ) ||
+        ) ||
       target.hasProtobufTargetInfo()
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
@@ -816,18 +813,18 @@ class AspectBazelProjectMapper(
     withContext(Dispatchers.Default) {
       val tasks =
         targets.map { target ->
-          // async {
-          createRawBuildTarget(
-            target,
-            highPrioritySources,
-            repoMapping,
-            dependencyGraph,
-          )
-          // }
+          async {
+            createRawBuildTarget(
+              target,
+              highPrioritySources,
+              repoMapping,
+              dependencyGraph,
+            )
+          }
         }
 
       return@withContext tasks
-        // .awaitAll()
+        .awaitAll()
         .filterNotNull()
         .filterNot { BuildTargetTag.NO_IDE in it.tags }
     }
@@ -856,7 +853,7 @@ class AspectBazelProjectMapper(
         targetData.sources to emptyList()
       }
 
-    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, bazelPathsResolver)
+    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetData.sources, bazelPathsResolver)
     val data = languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(
