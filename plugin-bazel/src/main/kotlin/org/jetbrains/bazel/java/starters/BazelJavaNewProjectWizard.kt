@@ -100,13 +100,13 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
       package org.example;
       
       public class Main {
-        public static void main(String[] args) {
-          System.out.println("Hello World!");
-        }
+          public static void main(String[] args) {
+              System.out.println("Hello World!");
+          }
       
-        public static int constant4() {
-          return 4;
-        }
+          public static int constant4() {
+              return 4;
+          }
       }
       """.trimIndent()
 
@@ -129,6 +129,7 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
       package org.example;
       
       import org.junit.Test;
+      
       import static org.junit.Assert.*;
       
       public class MainTest {
