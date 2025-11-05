@@ -31,7 +31,7 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
     // but it's probably easier and safer to just update and test everything together once in a while
     val generatorAssets: List<GeneratorAsset> =
       listOf(
-        GeneratorFile(".gitignore", ".bazelbsp/\n.idea/"),
+        GeneratorFile(".gitignore", gitIgnore()),
         GeneratorFile(".bazelversion", BAZEL_VERSION),
         GeneratorFile(".bazelrc", bazelRc()),
         GeneratorFile(Constants.MODULE_BAZEL_FILE_NAME, moduleBazel(context)),
@@ -72,6 +72,16 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
         use_repo(maven, "maven")
         """.trimIndent()
     }
+
+    private fun gitIgnore() =
+      """
+      .bazelbsp/
+      .idea/
+      bazel-bin
+      bazel-genfiles
+      bazel-out
+      bazel-testlogs
+      """.trimIndent()
 
     private fun bazelRc() =
       """
