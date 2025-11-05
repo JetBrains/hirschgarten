@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.target.addLibraryModulePrefix
@@ -21,35 +22,35 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
   fun calculateAllDependencies(
     target: RawBuildTarget,
     includesTransitive: Boolean = !BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled,
-  ): List<Label> =
+  ): List<DependencyLabel> =
     if (includesTransitive) {
       calculateAllTransitiveDependencies(target)
     } else {
       calculateDirectDependencies(target)
     }
 
-  private fun calculateAllTransitiveDependencies(target: RawBuildTarget): List<Label> {
+  private fun calculateAllTransitiveDependencies(target: RawBuildTarget): List<DependencyLabel> {
     val toVisit = target.dependencies.toMutableSet()
     val visited = mutableSetOf(target.id)
-    val result = mutableListOf<Label>()
+    val result = mutableListOf<DependencyLabel>()
 
     while (toVisit.isNotEmpty()) {
       val currentNode = toVisit.first()
       toVisit -= currentNode
 
-      if (currentNode !in visited) {
+      if (currentNode.label !in visited) {
         // don't traverse further when hitting modules
-        if (currentNode.isCurrentNodeLibrary()) {
-          toVisit += graph[currentNode].orEmpty()
+        if (currentNode.label.isCurrentNodeLibrary()) {
+          toVisit += graph[currentNode.label].orEmpty()
         }
-        visited += currentNode
+        visited += currentNode.label
         result += currentNode
       }
     }
     return result
   }
 
-  private fun calculateDirectDependencies(target: RawBuildTarget): List<Label> = target.dependencies
+  private fun calculateDirectDependencies(target: RawBuildTarget): List<DependencyLabel> = target.dependencies
 
   private fun Label.isCurrentNodeLibrary() = this in graph
 
@@ -80,11 +81,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
               type = JAVA_MODULE_ENTITY_TYPE_ID,
               dependencies =
                 listOf(libraryName) +
-                  library.dependencies.map { targetId ->
-                    val rawId = targetId.formatAsModuleName(project)
-                    val id = if (targetId.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
-                    id
-                  },
+                  library.dependencies.map { dep -> dep.toDependencyId(project) },
               kind =
                 TargetKind(
                   kindString = "java_library",
@@ -97,9 +94,15 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
           baseDirContentRoot = null,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
+          runtimeDependencies = library.dependencies.filter { it.isRuntime }.map { it.toDependencyId(project) },
         )
       }
   }
 
   private fun Label.isLibraryId() = this in graph.keys
+
+  private fun DependencyLabel.toDependencyId(project: Project): String {
+    val rawId = label.formatAsModuleName(project)
+    return if (label.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
+  }
 }
