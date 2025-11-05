@@ -29,22 +29,9 @@
     <newProjectWizard.kotlin.buildSystem
       implementation="org.jetbrains.bazel.kotlin.ui.starters.BazelKotlinNewProjectWizard"
     />
-    <postStartupActivity implementation="org.jetbrains.bazel.kotlin.startup.SuggestEnableK2StartupActivity" />
-    <notificationGroup
-      displayType="BALLOON"
-      id="BazelEnableK2Compiler"
-      key="post.startup.activity.id.enable.k2.compiler"
-    />
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
       language="kotlin"
     />
   </extensions>
-
-  <projectListeners>
-    <listener
-      class="org.jetbrains.bazel.sdkcompat.k2.BazelK2MoveDeclarationsRefactoringListener"
-      topic="org.jetbrains.kotlin.idea.k2.refactoring.move.processor.K2MoveDeclarationsRefactoringListener"
-    />
-  </projectListeners>
 </idea-plugin>

@@ -4,6 +4,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -13,14 +14,14 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sdkcompat.COROUTINE_JVM_FLAGS_KEY
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.concurrent.atomic.AtomicReference
+
+internal val COROUTINE_JVM_FLAGS_KEY = Key.create<AtomicReference<List<String>>>("bazel.coroutine.jvm.flags")
 
 class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
@@ -83,9 +84,9 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
   ) {
     val scriptPath = environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()
     if (scriptPath != null) {
-      debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler)
+      debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler, settings.env.envs)
     } else {
-      val configuration = environment.runProfile as BazelRunConfiguration
+      val configuration = BazelRunConfiguration.get(environment)
       val kotlinCoroutineLibParam = retrieveKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
       val additionalBazelParams = settings.additionalBazelParams ?: ""
       val runParams =

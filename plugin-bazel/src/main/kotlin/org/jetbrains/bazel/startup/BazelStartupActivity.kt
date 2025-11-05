@@ -1,17 +1,17 @@
 package org.jetbrains.bazel.startup
 
+import com.intellij.find.impl.FindInProjectUtil
+import com.intellij.ide.util.gotoByName.GOTO_FILE_SEARCH_IN_NON_INDEXABLE
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.UserDataHolderEx
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.ui.EditorNotificationProvider
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.commons.BidirectionalMap
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.FileUtil
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -20,8 +20,6 @@ import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.projectAware.BazelWorkspace
-import org.jetbrains.bazel.sdkcompat.configureRunConfigurationIgnoreProducers
-import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
@@ -34,8 +32,6 @@ import kotlin.io.path.isDirectory
 
 private val log = logger<BazelStartupActivity>()
 
-private val EXECUTED_FOR_PROJECT = Key<Boolean>("bazel.startup.executed.for.project")
-
 /**
  * Runs actions after the project has started up and the index is up to date.
  *
@@ -44,13 +40,8 @@ private val EXECUTED_FOR_PROJECT = Key<Boolean>("bazel.startup.executed.for.proj
  */
 class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
-    if (startupActivityExecutedAlready(project)) {
-      log.info("Bazel startup activity executed already for project: $project")
-      return
-    }
     ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
     TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
     BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
     SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
     FileUtil.provideFileUtil(FileUtilIntellij)
@@ -75,8 +66,8 @@ class BazelStartupActivity : BazelProjectActivity() {
 private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   updateBazelFileTargetsWidget(project)
-  configureRunConfigurationIgnoreProducers(project)
   project.serviceAsync<BazelWorkspace>().initialize()
+  disableUnableToFindJdkNotification(project)
 }
 
 private suspend fun resyncProjectIfNeeded(project: Project) {
@@ -96,17 +87,10 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
 
 private fun executeOnSyncedProject(project: Project) {
   // Only enable searching after all the excludes from the project view are applied
-  if (BazelFeatureFlags.findInFilesNonIndexable) {
-    setFindInFilesNonIndexable(project)
-  }
+  if (!BazelFeatureFlags.findInFilesNonIndexable) return
+  project.putUserData(FindInProjectUtil.FIND_IN_FILES_SEARCH_IN_NON_INDEXABLE, true)
+  project.putUserData(GOTO_FILE_SEARCH_IN_NON_INDEXABLE, true)
 }
-
-/**
- * Make sure calling [org.jetbrains.bazel.flow.open.performOpenBazelProject]
- * won't cause [BazelStartupActivity] to execute twice.
- */
-private fun startupActivityExecutedAlready(project: Project): Boolean =
-  !(project as UserDataHolderEx).replace(EXECUTED_FOR_PROJECT, null, true)
 
 /**
  * [workspaceModelLoadedFromCache] is always false with GoLand
@@ -125,3 +109,18 @@ private suspend fun bazelExecPathExists(project: Project): Boolean =
     .bazelExecPath
     ?.let { Path.of(it) }
     ?.isDirectory() == true
+
+// https://youtrack.jetbrains.com/issue/BAZEL-2598
+// TODO: remove once a proper API/fix exists on Docker side
+private fun disableUnableToFindJdkNotification(project: Project) {
+  val notificationProvider = EditorNotificationProvider.EP_NAME.findFirstSafe(project) {
+    it.javaClass.name == "com.intellij.cwm.plugin.java.rdserver.unattendedHost.editor.UnattendedHostJdkConfigurationNotificationProvider"
+  } ?: return
+  val disableNotificationMethod = try {
+    notificationProvider.javaClass.getDeclaredMethod("disableNotification", Project::class.java)
+  } catch (_: NoSuchMethodException) {
+    return
+  }
+  disableNotificationMethod.isAccessible = true
+  disableNotificationMethod.invoke(notificationProvider, project)
+}

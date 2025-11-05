@@ -16,12 +16,12 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.workspacemodel.entities.Module
 import java.nio.file.Path
 
-internal class JavaModuleWithSourcesUpdater(
+class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val projectBasePath: Path,
   moduleEntities: List<Module>,
@@ -35,7 +35,12 @@ internal class JavaModuleWithSourcesUpdater(
 
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
-      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd), libraries)
+      ModuleEntityUpdater(
+        workspaceModelEntityUpdaterConfig,
+        calculateJavaModuleDependencies(entityToAdd),
+        libraries,
+        entityToAdd.runtimeDependencies,
+      )
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
 
@@ -132,13 +137,13 @@ internal class JavaModuleWithSourcesUpdater(
   }
 }
 
-internal class JavaModuleWithoutSourcesUpdater(
+class JavaModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val libraries: Map<String, Library> = emptyMap(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
-      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd), libraries)
+      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd), libraries, entityToAdd.runtimeDependencies)
 
     return moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
   }
@@ -150,7 +155,7 @@ internal class JavaModuleWithoutSourcesUpdater(
       } ?: listOf()
 }
 
-internal class JavaModuleUpdater(
+class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   projectBasePath: Path,
   moduleEntities: List<Module> = emptyList(),

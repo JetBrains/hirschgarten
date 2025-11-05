@@ -5,7 +5,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.WorkspaceModelEntity
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelEntity
 import java.nio.file.Path
 
 data class WorkspaceModelEntityUpdaterConfig(
@@ -15,9 +15,9 @@ data class WorkspaceModelEntityUpdaterConfig(
   val project: Project,
 )
 
-internal sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>
+sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>
 
-internal interface WorkspaceModelEntityWithParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
+interface WorkspaceModelEntityWithParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
   WorkspaceModelEntityUpdater<E, R> {
   suspend fun addEntities(entitiesToAdd: List<E>, parentModuleEntity: ModuleEntity): List<R> =
     entitiesToAdd.map { addEntity(it, parentModuleEntity) }
@@ -25,7 +25,7 @@ internal interface WorkspaceModelEntityWithParentModuleUpdater<in E : WorkspaceM
   suspend fun addEntity(entityToAdd: E, parentModuleEntity: ModuleEntity): R
 }
 
-internal interface WorkspaceModelEntityWithoutParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
+interface WorkspaceModelEntityWithoutParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
   WorkspaceModelEntityUpdater<E, R> {
   suspend fun addEntities(entitiesToAdd: List<E>): List<R> = entitiesToAdd.mapNotNull { addEntity(it) }
 

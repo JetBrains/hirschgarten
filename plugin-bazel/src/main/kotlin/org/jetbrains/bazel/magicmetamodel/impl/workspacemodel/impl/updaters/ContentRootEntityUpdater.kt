@@ -3,7 +3,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 
 class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithParentModuleUpdater<ContentRoot, ContentRootEntity> {

@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.util.PlatformUtils
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
 
@@ -29,6 +31,7 @@ object BazelFeatureFlags {
   @VisibleForTesting
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
   private const val CHECK_SHARED_SOURCES = "bazel.check.shared.sources"
+  private const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
   private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
   private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
   private const val FIND_IN_FILES_NON_INDEXABLE = "bazel.find.in.files.non.indexable"
@@ -49,7 +52,7 @@ object BazelFeatureFlags {
     get() = isEnabled(WRAP_LIBRARIES_INSIDE_MODULES) || isKotlinPluginK2Mode
 
   val isKotlinPluginK2Mode: Boolean
-    get() = System.getProperty("idea.kotlin.plugin.use.k2", "false").toBoolean()
+    get() = System.getProperty("idea.kotlin.plugin.use.k1", "false").toBoolean().not()
 
   val executeSecondPhaseOnSync: Boolean
     get() = isEnabled(EXECUTE_SECOND_PHASE_ON_SYNC)
@@ -60,7 +63,8 @@ object BazelFeatureFlags {
         !enableBazelJavaClassFinder
 
   // File-based source root problems fixed here: https://youtrack.jetbrains.com/issue/IDEA-371097
-  val fbsrSupportedInPlatform: Boolean = org.jetbrains.bazel.sdkcompat.fbsrSupportedInPlatform
+  val fbsrSupportedInPlatform: Boolean
+    get() = true
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
@@ -85,6 +89,12 @@ object BazelFeatureFlags {
 
   val checkSharedSources: Boolean
     get() = isEnabled(CHECK_SHARED_SOURCES)
+
+  val autoOpenProjectIfPresent: Boolean
+    get() =
+      isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) ||
+        ApplicationManager.getApplication().isHeadlessEnvironment &&
+        !PlatformUtils.isFleetBackend()
 
   val isQueryTerminalCompletionEnabled: Boolean
     get() = isEnabled(QUERY_TERMINAL_COMPLETION)

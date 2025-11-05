@@ -3,13 +3,21 @@ package org.jetbrains.bazel.server.diagnostics
 import org.jetbrains.bazel.label.Label
 
 interface DiagnosticsParser {
-  fun parse(bazelOutput: String, target: Label): List<Diagnostic>
+  fun parse(
+    bazelOutput: String,
+    target: Label,
+    isCommandLineFormattedOutput: Boolean = false,
+  ): List<Diagnostic>
 }
 
 class DiagnosticsParserImpl : DiagnosticsParser {
-  override fun parse(bazelOutput: String, target: Label): List<Diagnostic> {
+  override fun parse(
+    bazelOutput: String,
+    target: Label,
+    isCommandLineFormattedOutput: Boolean,
+  ): List<Diagnostic> {
     val output = prepareOutput(bazelOutput, target)
-    val diagnostics = collectDiagnostics(output)
+    val diagnostics = collectDiagnostics(output, isCommandLineFormattedOutput)
     return deduplicate(diagnostics)
   }
 
@@ -19,10 +27,11 @@ class DiagnosticsParserImpl : DiagnosticsParser {
     return Output(relevantLines, target)
   }
 
-  private fun collectDiagnostics(output: Output): List<Diagnostic> {
+  private fun collectDiagnostics(output: Output, isCommandLineFormattedOutput: Boolean): List<Diagnostic> {
     val diagnostics = mutableListOf<Diagnostic>()
     while (output.nonEmpty()) {
-      for (parser in Parsers) {
+      val parsers = if (isCommandLineFormattedOutput) CommandLineOutputParser else Parsers
+      for (parser in parsers) {
         val result = parser.tryParse(output)
         if (result.isNotEmpty()) {
           diagnostics.addAll(result)
@@ -31,7 +40,7 @@ class DiagnosticsParserImpl : DiagnosticsParser {
       }
     }
 
-    if (diagnostics.isEmpty()) {
+    if (diagnostics.isEmpty() && output.containsError()) {
       diagnostics.add(
         Diagnostic(
           position = Position(0, 0),
@@ -39,6 +48,7 @@ class DiagnosticsParserImpl : DiagnosticsParser {
           fileLocation = null,
           targetLabel = output.targetLabel,
         ),
+
       )
     }
 
@@ -51,6 +61,8 @@ class DiagnosticsParserImpl : DiagnosticsParser {
       .values
       .map { it.first() }
 
+  private fun Output.containsError(): Boolean = lines.any { line -> ErrorMessages.any { errorMessage -> errorMessage in line } }
+
   companion object {
     private val Parsers =
       listOf(
@@ -59,10 +71,15 @@ class DiagnosticsParserImpl : DiagnosticsParser {
         Scala3CompilerDiagnosticParser,
         AllCatchParser,
       )
+    private val CommandLineOutputParser =
+      listOf(
+        BazelOutputMessageParser,
+      )
     private val IgnoredLines =
       listOf(
         "^$".toRegex(),
         "Use --sandbox_debug to see verbose messages from the sandbox".toRegex(),
       )
+    private val ErrorMessages = listOf("error", "Error", "ERROR")
   }
 }

@@ -12,6 +12,8 @@ import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.BAZEL_VERSION
+import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JAVA_LANG_VERSION
+import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JAVA_RUNTIME_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JUNIT_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.RULES_JAVA_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.RULES_JVM_EXTERNAL_VERSION
@@ -31,6 +33,7 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
       listOf(
         GeneratorFile(".gitignore", ".bazelbsp/\n.idea/"),
         GeneratorFile(".bazelversion", BAZEL_VERSION),
+        GeneratorFile(".bazelrc", bazelRc()),
         GeneratorFile(Constants.MODULE_BAZEL_FILE_NAME, moduleBazel(context)),
         GeneratorFile("src/main/org/example/${Constants.defaultBuildFileName()}", buildBazelMain()),
         GeneratorFile("src/main/org/example/Main.java", mainJava()),
@@ -69,6 +72,15 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
         use_repo(maven, "maven")
         """.trimIndent()
     }
+
+    private fun bazelRc() =
+      """
+      build --java_language_version=$JAVA_LANG_VERSION
+      build --java_runtime_version=$JAVA_RUNTIME_VERSION
+      build --tool_java_language_version=$JAVA_LANG_VERSION
+      build --tool_java_runtime_version=$JAVA_RUNTIME_VERSION
+      """.trimIndent()
+
 
     private fun buildBazelMain() =
       """

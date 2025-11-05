@@ -1,19 +1,23 @@
 package org.jetbrains.bazel.jvm.run
 
+import com.intellij.debugger.engine.AsyncStacksUtils.addDebuggerAgent
+import com.intellij.debugger.impl.GenericDebuggerRunnerSettings
 import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
+import com.intellij.execution.JavaRunConfigurationExtensionManager
+import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.sdkcompat.COROUTINE_JVM_FLAGS_KEY
-import org.jetbrains.bazel.sdkcompat.calculateKotlinCoroutineParams
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.target.targetUtils
@@ -46,7 +50,7 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
     environment: ExecutionEnvironment,
     task: Task,
   ): Boolean {
-    val runConfiguration = environment.runProfile as BazelRunConfiguration
+    val runConfiguration = BazelRunConfiguration.get(environment)
     // skipping this task for non-debugging run config
     if (environment.executor !is DefaultDebugExecutor) return true
     val project = environment.project
@@ -56,10 +60,27 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
     val module = target.getModule(project) ?: return true
     runBlocking {
       withBackgroundProgress(project, BazelPluginBundle.message("background.task.description.preparing.for.debugging.kotlin", target)) {
-        calculateKotlinCoroutineParams(environment, module)
+        calculateKotlinCoroutineParams(environment)
       }
     }
     return true
+  }
+
+  private suspend fun calculateKotlinCoroutineParams(environment: ExecutionEnvironment) {
+    val configuration = environment.runProfile as RunConfigurationBase<*>
+    val parameters = JavaParameters()
+    val runnerSettings = environment.runnerSettings ?: GenericDebuggerRunnerSettings()
+    readAction {
+      JavaRunConfigurationExtensionManager.instance
+        .updateJavaParameters(configuration, parameters, runnerSettings, environment.executor)
+    }
+    addDebuggerAgent(parameters, environment.project, false)
+
+    val jvmFlags = parameters.vmParametersList
+      .parameters
+      .map { "--jvmopt=$it" }
+    environment.getCopyableUserData(COROUTINE_JVM_FLAGS_KEY)
+      ?.set(jvmFlags)
   }
 }
 

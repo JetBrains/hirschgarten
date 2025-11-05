@@ -1,6 +1,8 @@
 #if( $javaEnabled == "true" && $bazel8OrAbove == "true" && $rulesetName != "" )
+load("@${rulesetName}//java/common:java_common.bzl", "java_common")
 load("@${rulesetName}//java/common:java_info.bzl", "JavaInfo")
 load("@${rulesetName}//java/common:java_plugin_info.bzl", "JavaPluginInfo")
+load("@${rulesetName}//java:java_utils.bzl", java_utils = "utils")
 #end
 
 load("//aspects:utils/utils.bzl", "create_struct", "to_file_location", "BspAspectInfo")
@@ -22,6 +24,31 @@ def get_java_info(target):
 
     #else
     return None
+    #end
+
+def _get_javacopts_from_context(ctx):
+    javacopts = getattr(ctx.rule.attr, "javacopts", [])
+    if javacopts == None: # "javacopts" might exist in ctx.rule.attr as None
+        javacopts = []
+    add_exports = ["--add-exports=" + export + "=ALL-UNNAMED" for export in getattr(ctx.rule.attr, "add_exports", [])]
+    add_opens = ["--add-opens=" + open + "=ALL-UNNAMED" for open in getattr(ctx.rule.attr, "add_opens", [])]
+    return javacopts + add_exports + add_opens
+
+def get_javacopts(target, ctx):
+    #if( $javaEnabled == "true" && $bazel8OrAbove == "true" && $rulesetName != "" )
+    java_info = get_java_info(target)
+    if java_info != None:
+        compilation_info = getattr(java_info, "compilation_info", None)
+        module_flags_info = getattr(java_info, "module_flags_info", None)
+        if compilation_info != None and module_flags_info != None:
+            javacopts = java_utils.tokenize_javacopts(ctx, compilation_info.javac_options)
+            # javacopts here contain --add-export flags already (https://github.com/bazelbuild/rules_java/blob/faaab4062f81deefaeef76dd21b2a5212432f8e3/java/private/java_common_internal.bzl#L159)
+            add_opens = ["--add-opens=" + open + "=ALL-UNNAMED" for open in module_flags_info.add_opens.to_list()]
+            return javacopts + add_opens
+    return _get_javacopts_from_context(ctx)
+
+    #else
+    return _get_javacopts_from_context(ctx)
     #end
 
 def get_java_plugin_info(target):
@@ -73,7 +100,7 @@ JAVA_RUNTIME_TOOLCHAIN_TYPE = "@bazel_tools//tools/jdk:runtime_toolchain_type"
 def extract_java_runtime(target, ctx, dep_targets, **kwargs):
     runtime = None
 
-    if JAVA_RUNTIME_TOOLCHAIN_TYPE in ctx.toolchains:  # Bazel 6.0.0 way
+    if JAVA_RUNTIME_TOOLCHAIN_TYPE in ctx.toolchains:
         toolchain = ctx.toolchains[JAVA_RUNTIME_TOOLCHAIN_TYPE]
         if toolchain:
             runtime = toolchain.java_runtime

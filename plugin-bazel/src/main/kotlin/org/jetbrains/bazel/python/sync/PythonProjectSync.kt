@@ -9,9 +9,11 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ContentRootEntityBuilder
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryEntityBuilder
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
@@ -39,19 +41,15 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.python.resolve.PythonResolveIndexService
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.withSubtask
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.utils.StringUtils
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.DependencySourcesItem
-import org.jetbrains.bsp.protocol.DependencySourcesParams
-import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
@@ -118,22 +116,22 @@ class PythonProjectSync : ProjectSyncHook {
     }
 
   private suspend fun calculateAndAddSdks(targets: List<BuildTarget>, project: Project): Map<Label, Sdk?> {
-    val interpretersByTarget =
+    val pythonTargetsByLabel =
       targets
         .associateWith { extractPythonBuildTarget(it) }
         .mapKeys { it.key.id }
-    val sdksByInterpreter =
-      interpretersByTarget.values
+    val sdksByPythonTarget =
+      pythonTargetsByLabel.values
         .filterNotNull()
         .filter { it.interpreter != null }
         .distinct()
         .associateWith { findOrAddSdk(it, project) }
 
-    return interpretersByTarget.mapValues { sdksByInterpreter[it.value] }
+    return pythonTargetsByLabel.mapValues { sdksByPythonTarget[it.value] }
   }
 
-  private suspend fun findOrAddSdk(interpreter: PythonBuildTarget, project: Project): Sdk {
-    val sdkName = chooseSdkName(interpreter, project.name)
+  private suspend fun findOrAddSdk(pythonTarget: PythonBuildTarget, project: Project): Sdk {
+    val sdkName = chooseSdkName(pythonTarget, project.name)
     val sdkTable = ProjectJdkTable.getInstance()
 
     val existingSdk = sdkTable.findJdk(sdkName, PythonSdkType.getInstance().toString())
@@ -143,12 +141,16 @@ class PythonProjectSync : ProjectSyncHook {
       ProjectJdkImpl(
         sdkName,
         PythonSdkType.getInstance(),
-        interpreter.interpreter.toString(),
-        interpreter.version,
+        pythonTarget.interpreter.toString(),
+        pythonTarget.version,
       )
 
+    return sdk.also { addSdkToTable(it, project) }
+  }
+
+  private suspend fun addSdkToTable(sdk: Sdk, project: Project): Sdk {
     writeAction {
-      sdkTable.addJdk(sdk)
+      ProjectJdkTable.getInstance().addJdk(sdk)
       PythonSdkUpdater.scheduleUpdate(sdk, project)
     }
     return sdk
@@ -162,7 +164,7 @@ class PythonProjectSync : ProjectSyncHook {
     sourceDependencies: List<Path>,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): LibraryEntity.Builder? {
+  ): LibraryEntityBuilder? {
     val roots =
       sourceDependencies.distinct().map {
         LibraryRoot(
@@ -190,7 +192,7 @@ class PythonProjectSync : ProjectSyncHook {
     virtualFileUrlManager: VirtualFileUrlManager,
     project: Project,
     sdk: Sdk?,
-    sourceDependencyLibrary: LibraryEntity.Builder? = null,
+    sourceDependencyLibrary: LibraryEntityBuilder? = null,
   ): ModuleEntity {
     val contentRoots = getContentRootEntities(target, entitySource, virtualFileUrlManager)
 
@@ -203,9 +205,9 @@ class PythonProjectSync : ProjectSyncHook {
     val dependencies =
       target.dependencies.map {
         ModuleDependency(
-          module = ModuleId(it.formatAsModuleName(project)),
+          module = ModuleId(it.label.formatAsModuleName(project)),
           exported = true,
-          scope = DependencyScope.COMPILE,
+          scope = DependencyScope.COMPILE,  // Python does not have the runtime/compile scope separation
           productionOnTest = true,
         )
       }
@@ -230,7 +232,7 @@ class PythonProjectSync : ProjectSyncHook {
     target: BuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntity.Builder> {
+  ): List<ContentRootEntityBuilder> {
     val sourceContentRootEntities = getSourceContentRootEntities(target as RawBuildTarget, entitySource, virtualFileUrlManager)
     val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
 
@@ -241,7 +243,7 @@ class PythonProjectSync : ProjectSyncHook {
     target: RawBuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntity.Builder> =
+  ): List<ContentRootEntityBuilder> =
     target.sources.map { source ->
       val sourceUrl = source.path.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity =
@@ -264,7 +266,7 @@ class PythonProjectSync : ProjectSyncHook {
     target: RawBuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntity.Builder> =
+  ): List<ContentRootEntityBuilder> =
     target.resources.map { resource ->
       val resourceUrl = resource.toVirtualFileUrl(virtualFileUrlManager)
       val resourceRootEntity =
