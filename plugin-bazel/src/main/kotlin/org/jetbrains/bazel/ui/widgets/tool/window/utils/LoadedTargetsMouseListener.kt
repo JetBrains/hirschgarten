@@ -180,8 +180,8 @@ fun DefaultActionGroup.fillWithEligibleActions(
   }
 
   if (target.kind.ruleType == RuleType.LIBRARY) {
-    if (singleTestFilter != null && callerPsiElement != null) {
-      addSyntheticRunActions(project, target, callerPsiElement, singleTestFilter, includeTargetNameInText, canBeDebugged)
+    if (callerPsiElement != null) {
+      addSyntheticRunActions(target, callerPsiElement, includeTargetNameInText, canBeDebugged)
     }
   }
 
@@ -202,10 +202,8 @@ fun DefaultActionGroup.fillWithEligibleActions(
 }
 
 private fun DefaultActionGroup.addSyntheticRunActions(
-  project: Project,
   target: BuildTarget,
   element: PsiElement,
-  testFilter: String,
   includeTargetNameInText: Boolean,
   canBeDebugged: Boolean,
 ) {
