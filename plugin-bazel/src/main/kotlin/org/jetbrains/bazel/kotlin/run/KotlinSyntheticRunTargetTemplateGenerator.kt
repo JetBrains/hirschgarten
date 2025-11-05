@@ -39,13 +39,13 @@ class KotlinSyntheticRunTargetTemplateGenerator : MainClassSyntheticRunTargetTem
 
   override fun isSupported(target: BuildTarget): Boolean = target.data is KotlinBuildTarget
 
-  fun tryGetKotlinMainClassInClass(element: PsiElement): String? {
+  private fun tryGetKotlinMainClassInClass(element: PsiElement): String? {
     val parent = element.getStrictParentOfType<PsiNameIdentifierOwner>() ?: return null
     val ktClass = parent.getNonStrictParentOfType<KtClassOrObject>() ?: return null
     return KotlinPsiHeuristics.getJvmName(ktClass)
   }
 
-  fun tryGetKotlinMainClassInFile(element: PsiElement): String? {
+  private fun tryGetKotlinMainClassInFile(element: PsiElement): String? {
     val parent = element.getStrictParentOfType<PsiNameIdentifierOwner>() ?: return null
     val ktFile = parent.getNonStrictParentOfType<KtFile>() ?: return null
     return ktFile.javaFileFacadeFqName.asString()
