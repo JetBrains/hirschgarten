@@ -5,7 +5,7 @@ kt_jvm_library(
     srcs = glob([
         "*.kt",
     ]),
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
@@ -13,6 +13,5 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//sdkcompat",
     ],
 )

@@ -15,6 +15,7 @@ import org.jetbrains.bazel.commons.phased.kind
 import org.jetbrains.bazel.commons.phased.name
 import org.jetbrains.bazel.commons.phased.resources
 import org.jetbrains.bazel.commons.phased.srcs
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
@@ -31,7 +32,7 @@ import kotlin.io.path.isRegularFile
 
 class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) {
   fun resolveWorkspace(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): BazelResolvedWorkspace {
-    val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync.value
+    val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync
     val targets =
       project.targets
         .asSequence()
@@ -53,7 +54,7 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
     return RawBuildTarget(
       id = label,
       tags = inferTags(),
-      dependencies = interestingDeps.map { Label.parse(it) },
+      dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
       sources = calculateSources(project),
       resources = calculateResources(project),

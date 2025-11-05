@@ -11,6 +11,7 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.UnindexedFilesScannerExecutor
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -26,11 +27,9 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.performance.bspTracer
-import org.jetbrains.bazel.projectview.parser.ProjectViewParser
-import org.jetbrains.bazel.sdkcompat.suspendScanningAndIndexingThenExecute
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -99,13 +98,6 @@ class ProjectSyncTask(private val project: Project) {
             BazelPluginBundle.message("console.task.sync.fatalfailure"),
             FailureResultImpl(),
           )
-        } catch (e: ProjectViewParser.ImportNotFound) {
-          val projectViewFile = project.bazelProjectSettings.projectViewPath.toString()
-          project.syncConsole.finishTask(
-            PROJECT_SYNC_TASK_ID,
-            BazelPluginBundle.message("console.task.sync.failed"),
-            FailureResultImpl(BazelPluginBundle.message("console.task.sync.import.fail", e.file, projectViewFile)),
-          )
         } catch (e: Exception) {
           project.syncConsole.finishTask(
             PROJECT_SYNC_TASK_ID,
@@ -124,6 +116,7 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
     saveAllFiles()
+    project.serviceAsync<ProjectViewService>().forceReparseCurrentProjectViewFiles()
     project.serviceAsync<SyncStatusService>().startSync()
   }
 
@@ -133,21 +126,24 @@ class ProjectSyncTask(private val project: Project) {
         "console.task.sync.activity.name",
         BazelPluginConstants.BAZEL_DISPLAY_NAME,
       )
-    suspendScanningAndIndexingThenExecute(syncActivityName, project) {
-      withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
-        reportSequentialProgress {
-          executePreSyncHooks(it)
-          val syncResult = executeSyncHooks(it, syncScope, buildProject)
-          executePostSyncHooks(it)
-          when (syncResult) {
-            SyncResultStatus.FAILURE -> throw SyncFatalFailureException()
-            SyncResultStatus.PARTIAL_SUCCESS -> throw SyncPartialFailureException()
-            else -> Unit
+    val saveAndSyncHandler = serviceAsync<SaveAndSyncHandler>()
+    UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(syncActivityName) {
+      saveAndSyncHandler.disableAutoSave().use {
+        withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
+          reportSequentialProgress {
+            executePreSyncHooks(it)
+            val syncResult = executeSyncHooks(it, syncScope, buildProject)
+            executePostSyncHooks(it)
+            when (syncResult) {
+              SyncResultStatus.FAILURE -> throw SyncFatalFailureException()
+              SyncResultStatus.PARTIAL_SUCCESS -> throw SyncPartialFailureException()
+              else -> Unit
+            }
           }
         }
       }
     }
-    serviceAsync<SaveAndSyncHandler>().scheduleProjectSave(project = project)
+    saveAndSyncHandler.scheduleProjectSave(project = project)
   }
 
   private suspend fun executePreSyncHooks(progressReporter: SequentialProgressReporter) {

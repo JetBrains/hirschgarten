@@ -10,15 +10,15 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bazel.utils.commonAncestor
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.utils.isUnder
+import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -34,7 +34,7 @@ private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
-internal class JavaModuleToDummyJavaModulesTransformerHACK(
+class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
   private val fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   private val project: Project,
@@ -279,7 +279,7 @@ private fun Iterable<Pair<JavaSourceRoot, Int>>.sumUpVotes(): Map<JavaSourceRoot
 private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<JavaSourceRoot>, projectBasePath: Path): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it.sourcePath, projectBasePath) }
 
-internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
+fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
   val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()
   val absoluteProjectBasePath = projectBasePath.toAbsolutePath().toString()
   return absoluteSourceRoot
@@ -293,7 +293,7 @@ internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Pat
 
 private const val IJ_DUMMY_MODULE_PREFIX = "_aux.synthetic"
 
-internal fun String.addIntelliJDummyPrefix(): String =
+fun String.addIntelliJDummyPrefix(): String =
   if (isBlank()) {
     IJ_DUMMY_MODULE_PREFIX
   } else {

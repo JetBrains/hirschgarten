@@ -7,35 +7,33 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/gen" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/jps-resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/kotlin" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testFixtures/kotlin" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Guava" level="project" />
-    <orderEntry type="library" name="fastutil-min" level="project" />
-    <orderEntry type="library" name="grpc-protobuf" level="project" />
-    <orderEntry type="library" name="gson" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.guava" />
+    <orderEntry type="module" module-name="intellij.libraries.fastutil" />
+    <orderEntry type="module" module-name="intellij.libraries.grpc" />
+    <orderEntry type="module" module-name="intellij.libraries.gson" />
+    <orderEntry type="library" name="jetbrains-annotations" level="project" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="library" name="kotlin-tooling-core" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.analysis-api-platform-interface" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-compiler-common" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-jps-plugin-classpath" level="project" />
-    <orderEntry type="library" name="kotlinx-collections-immutable" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.kotlinx.collections.immutable" />
     <orderEntry type="library" name="kotlinx-coroutines-guava" level="project" />
-    <orderEntry type="library" name="kotlinx-datetime-jvm" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.kotlinx.datetime" />
     <orderEntry type="library" name="opentelemetry" level="project" />
     <orderEntry type="library" name="protobuf" level="project" />
-    <orderEntry type="library" name="StreamEx" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.stream" />
     <orderEntry type="library" scope="PROVIDED" name="studio-platform" level="project" />
     <orderEntry type="library" name="swingx" level="project" />
-    <orderEntry type="library" name="caffeine" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.caffeine" />
     <orderEntry type="module" module-name="intellij.android.common" />
     <orderEntry type="module" module-name="intellij.android.core" />
     <orderEntry type="module" module-name="intellij.android.jps.model" />
     <orderEntry type="module" module-name="intellij.bazel.commons" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" exported="" />
-    <orderEntry type="module" module-name="intellij.bazel.sdkcompat" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.server" exported="" />
     <orderEntry type="module" module-name="intellij.devkit.core" />
     <orderEntry type="module" module-name="intellij.go.frontback" />
@@ -77,7 +75,6 @@
     <orderEntry type="module" module-name="intellij.platform.ide.core.impl" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" />
     <orderEntry type="module" module-name="intellij.platform.ide.observable" />
-    <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
     <orderEntry type="module" module-name="intellij.platform.indexing" />
     <orderEntry type="module" module-name="intellij.platform.jps.model" />
     <orderEntry type="module" module-name="intellij.platform.lang.core" />
@@ -102,24 +99,26 @@
     <orderEntry type="module" module-name="intellij.python.community.impl" />
     <orderEntry type="module" module-name="intellij.python.sdk" />
     <orderEntry type="module" module-name="intellij.remoteDev.util" />
-    <orderEntry type="module" module-name="kotlin.base.facet" />
-    <orderEntry type="module" module-name="kotlin.base.project-structure" />
-    <orderEntry type="module" module-name="kotlin.base.psi" />
-    <orderEntry type="module" module-name="kotlin.base.resources" />
-    <orderEntry type="module" module-name="kotlin.base.util" />
-    <orderEntry type="module" module-name="kotlin.preferences" />
-    <orderEntry type="module" module-name="kotlin.project-configuration" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.facet" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.projectStructure" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.psi" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.indices" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.resources" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.util" />
+    <orderEntry type="module" module-name="intellij.kotlin.preferences" />
+    <orderEntry type="module" module-name="intellij.kotlin.projectConfiguration" />
     <orderEntry type="module" module-name="intellij.python.pydev" />
     <orderEntry type="module" module-name="intellij.platform.coverage" />
     <orderEntry type="module" module-name="intellij.platform.coverage.agent" />
     <orderEntry type="module" module-name="intellij.junit" />
     <orderEntry type="module" module-name="intellij.platform.util.coroutines" />
-    <orderEntry type="library" name="mvstore" level="project" />
-    <orderEntry type="library" name="hash4j" level="project" />
-    <orderEntry type="module" module-name="kotlin.project-wizard.idea" />
+    <orderEntry type="module" module-name="intellij.protoeditor.core" />
+    <orderEntry type="module" module-name="intellij.libraries.mvstore" />
+    <orderEntry type="module" module-name="intellij.libraries.hash4j" />
+    <orderEntry type="module" module-name="intellij.kotlin.projectWizard.idea" />
     <orderEntry type="module" module-name="intellij.platform.util.text.matching" />
     <orderEntry type="module" module-name="intellij.java.debugger.impl.shared" />
-    <orderEntry type="module" module-name="kotlin.jvm-debugger.coroutines" />
+    <orderEntry type="module" module-name="intellij.kotlin.jvm.debugger.coroutines" />
     <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />
     <orderEntry type="module" module-name="intellij.platform.searchEverywhere" />
     <orderEntry type="module" module-name="intellij.platform.ide.rpc" />
@@ -127,10 +126,10 @@
     <orderEntry type="module" module-name="intellij.terminal.completion" />
     <orderEntry type="module" module-name="intellij.driver.sdk" />
     <orderEntry type="module" module-name="intellij.platform.refactoring" />
-    <orderEntry type="library" name="jackson" level="project" />
-    <orderEntry type="library" name="jackson-databind" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.jackson" />
+    <orderEntry type="module" module-name="intellij.libraries.jackson.databind" />
     <orderEntry type="library" name="jackson-dataformat-xml" level="project" />
-    <orderEntry type="library" name="jackson-module-kotlin" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.jackson.module.kotlin" />
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
@@ -139,10 +138,8 @@
     <orderEntry type="module" module-name="intellij.platform.testFramework.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework.junit5" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.starter" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.starter.driver" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector.starter" scope="TEST" />
     <orderEntry type="module" module-name="intellij.driver.model" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.ide.updateChecker" />
+    <orderEntry type="module" module-name="intellij.java.byteCodeViewer" />
   </component>
 </module>

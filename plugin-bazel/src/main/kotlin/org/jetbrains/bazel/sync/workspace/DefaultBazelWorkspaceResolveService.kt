@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.workspace
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
@@ -129,7 +128,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
           val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
           val workspace =
             bazelMapper.createProject(
-              targets = synced.earlyProject.targets,
+              allTargets = synced.earlyProject.targets,
               rootTargets = buildTargets.rootTargets,
               workspaceContext = workspaceContext,
               featureFlags = featureFlags,

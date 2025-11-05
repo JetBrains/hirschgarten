@@ -272,7 +272,7 @@ abstract class TaskConsole(
           severity,
           null,
           prepareTextToPrint(message),
-          null,
+          prepareTextToPrint(message),
         )
       } else {
         FileMessageEventImpl(

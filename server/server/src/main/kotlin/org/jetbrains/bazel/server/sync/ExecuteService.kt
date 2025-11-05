@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.HasAdditionalBazelOptions
@@ -12,6 +13,7 @@ import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
@@ -20,8 +22,7 @@ import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.sync.DebugHelper.buildBeforeRun
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
-import org.jetbrains.bazel.workspacecontext.TargetsSpec
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
@@ -38,7 +39,7 @@ class ExecuteService(
   private val compilationManager: BazelBspCompilationManager,
   private val projectProvider: ProjectProvider,
   private val bazelRunner: BazelRunner,
-  private val workspaceContextProvider: WorkspaceContextProvider,
+  private val workspaceContext: WorkspaceContext,
   private val bazelPathsResolver: BazelPathsResolver,
 ) {
   private suspend fun <T> withBepServer(originId: String, body: suspend (BepReader) -> T): T {
@@ -109,7 +110,7 @@ class ExecuteService(
       }
     }
     val command =
-      bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         run(params.target) {
           options.add(BazelFlag.color(true))
           additionalOptions?.let { options.addAll(it) }
@@ -147,8 +148,8 @@ class ExecuteService(
   }
 
   private suspend fun testImpl(params: TestParams, additionalProgramArguments: List<String>?): TestResult {
-    val targetsSpec = TargetsSpec(params.targets, emptyList())
-    val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+    val targetsSpec = TargetCollection(params.targets, emptyList())
+    // Use the already available workspaceContext
     val command =
       when (val instrumentationFilter = params.coverageInstrumentationFilter) {
         null -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
@@ -156,7 +157,7 @@ class ExecuteService(
         else ->
           bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
             it.options.add(BazelFlag.combinedReportLcov())
-            if (workspaceContext.deriveInstrumentationFilterFromTargets.value) {
+            if (workspaceContext.deriveInstrumentationFilterFromTargets) {
               it.options.add(BazelFlag.instrumentationFilter(instrumentationFilter))
             }
           }
@@ -184,6 +185,11 @@ class ExecuteService(
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
+    if (params.useJetBrainsTestRunner) {
+      // Ensure streamed test output for live UI in IDE
+      ensureTestOutputStreamed(command)
+    }
+
     params.testFilter?.let { testFilter ->
       command.options.add(BazelFlag.testFilter(testFilter))
     }
@@ -193,7 +199,10 @@ class ExecuteService(
     additionalProgramArguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     command.options.add(BazelFlag.color(true))
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
-    (command as HasMultipleTargets).addTargetsFromSpec(targetsSpec)
+    with(command as HasMultipleTargets) {
+      targets.addAll(targetsSpec.values)
+      excludedTargets.addAll(targetsSpec.excludedValues)
+    }
 
     // TODO: handle multiple targets
     val result =
@@ -220,7 +229,7 @@ class ExecuteService(
     val allTargets = bspIds
     return withBepServer(originId) { bepReader ->
       val command =
-        bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
+        bazelRunner.buildBazelCommand(workspaceContext) {
           build {
             options.addAll(additionalArguments)
             targets.addAll(allTargets)
@@ -231,5 +240,10 @@ class ExecuteService(
         .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
         .waitAndGetResult(true)
     }
+  }
+
+  private fun ensureTestOutputStreamed(command: BazelCommand) {
+    // Add to the beginning to make overriding possible
+    command.options.addFirst(BazelFlag.testOutputStreamed())
   }
 }

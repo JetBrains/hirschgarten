@@ -27,6 +27,10 @@
     <module name="intellij.platform.searchEverywhere" />
   </dependencies>
 
+  <content namespace="jetbrains">
+    <module name="intellij.bazel.kotlin.k2"/>
+  </content>
+
   <depends
     config-file="withCodeWithMe.xml"
     optional="true"
@@ -67,6 +71,10 @@
     config-file="withTerminal.xml"
     optional="true"
   >org.jetbrains.plugins.terminal</depends>
+  <depends
+    config-file="withProtobuf.xml"
+    optional="true"
+  >idea.plugin.protoeditor</depends>
 
   <extensionPoints>
     <extensionPoint
@@ -185,7 +193,11 @@
                     dynamic="true"
     />
     <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
-                    interface="org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionProvider"
+                    interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.testLocatorProvider"
+                    interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
   </extensionPoints>
@@ -223,7 +235,7 @@
     />
     <projectSyncHook
       id="IndexAdditionalFilesSyncHook"
-      implementation="org.jetbrains.bazel.flow.sync.IndexAdditionalFilesSyncHook"
+      implementation="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesSyncHook"
       order="after DirectoriesSyncHook"
     />
 
@@ -270,7 +282,11 @@
 
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
 
-    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.language.DefaultProjectViewSectionProvider"/>
+    <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.DefaultProjectViewSectionProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="ByteCodeViewer">
+    <classFileFinder implementation="org.jetbrains.bazel.bytecodeViewer.BazelBytecodeViewerClassFileFinder"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -366,6 +382,11 @@
       key="bazel.check.shared.sources"
     />
     <registryKey
+      defaultValue="false"
+      description="Whether the Bazel plugin should import automatically even if .idea or another project model (e.g., Gradle) exists already"
+      key="bazel.project.auto.open.if.present"
+    />
+    <registryKey
       defaultValue="true"
       description="Whether the Bazel Query tab should be enabled in tool window (where target tree is)"
       key="bazel.query.tab.enabled"
@@ -394,7 +415,8 @@
     />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
-    <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.sdkcompat.BazelRunConfigurationProducerSuppressor" />
+    <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />
+    <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />
 
     <projectService
       serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
@@ -507,12 +529,16 @@
       serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"
       serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
     />
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.languages.projectview.ProjectViewWorkspaceContextProvider"
+      serviceInterface="org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider"
+    />
 
     <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider" />
 
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
-    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity" />
+    <projectPreInit implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectAndSyncStartupActivity"/>
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
     <notificationGroup
       displayType="BALLOON"
@@ -525,7 +551,7 @@
       implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"
     />
 
-    <projectStorePathCustomizer implementation="org.jetbrains.bazel.sdkcompat.BazelProjectStorePathCustomizer"/>
+    <projectStorePathCustomizer implementation="org.jetbrains.bazel.flow.open.BazelProjectStorePathCustomizer"/>
 
     <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
@@ -846,9 +872,7 @@
       implementation="org.jetbrains.bazel.searchEverywhere.SeLabelProviderFactory"
     />
 
-    <portForwarding.processHandlerPidProvider
-      implementation="org.jetbrains.bazel.sdkcompat.BazelProcessHandlerPidProvider"
-    />
+    <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
   </extensions>
 
   <actions>

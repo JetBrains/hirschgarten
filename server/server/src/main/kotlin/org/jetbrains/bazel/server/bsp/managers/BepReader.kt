@@ -8,16 +8,17 @@ import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.utils.DelimitedMessageReader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.BufferedInputStream
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.deleteExisting
 
 class BepReader(private val bepServer: BepServer) {
   val eventFile =
     Files.createTempFile("bazel-bep-output", null).toFile().also {
       it.setFilePermissions()
-      it.deleteOnExit()
     }
   val serverPid = CompletableFuture<Long>()
 
@@ -30,37 +31,43 @@ class BepReader(private val bepServer: BepServer) {
   }
 
   suspend fun start() =
-    withContext(Dispatchers.Default) {
+    withContext(Dispatchers.IO) {
       logger.info("Start listening to BEP events")
-      val inputStream =
-        withContext(Dispatchers.IO) {
-          eventFile.inputStream().buffered()
+      try {
+        eventFile.inputStream().buffered().use { inputStream ->
+          readBepEvents(inputStream)
         }
-      val reader =
-        DelimitedMessageReader(
-          inputStream,
-          BuildEventStreamProtos.BuildEvent.parser(),
-        )
-      var event: BuildEventStreamProtos.BuildEvent? = null
-
-      suspend fun readEvent(): BuildEventStreamProtos.BuildEvent? {
-        event = reader.nextMessage()
-        return event
+        logger.info("BEP events listening finished")
+      } finally {
+        eventFile.toPath().deleteExisting()
       }
-
-      // It's important not to use the short-circuited ||, so that the events are parsed
-      // every time the loop condition is checked
-      while (!bazelBuildFinished.get() or (readEvent() != null)) {
-        val event = event
-        if (event != null) {
-          bepServer.handleBuildEventStreamProtosEvent(event)
-          setServerPid(event)
-        } else {
-          delay(50)
-        }
-      }
-      logger.info("BEP events listening finished")
     }
+
+  private suspend fun readBepEvents(inputStream: BufferedInputStream) {
+    val reader =
+      DelimitedMessageReader(
+        inputStream,
+        BuildEventStreamProtos.BuildEvent.parser(),
+      )
+    var event: BuildEventStreamProtos.BuildEvent? = null
+
+    suspend fun readEvent(): BuildEventStreamProtos.BuildEvent? {
+      event = reader.nextMessage()
+      return event
+    }
+
+    // It's important not to use the short-circuited ||, so that the events are parsed
+    // every time the loop condition is checked
+    while (!bazelBuildFinished.get() or (readEvent() != null)) {
+      val event = event
+      if (event != null) {
+        bepServer.handleBuildEventStreamProtosEvent(event)
+        setServerPid(event)
+      } else {
+        delay(50)
+      }
+    }
+  }
 
   private fun setServerPid(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasStarted() && !serverPid.isDone) {

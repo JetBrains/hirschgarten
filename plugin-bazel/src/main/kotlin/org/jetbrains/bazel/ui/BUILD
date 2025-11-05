@@ -5,11 +5,10 @@ kt_jvm_library(
     srcs = glob([
         "**/*.kt",
     ]),
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//sdkcompat",
     ],
 )
