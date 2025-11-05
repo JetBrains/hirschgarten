@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.action
 
 import android.databinding.tool.ext.mapEach
-import com.intellij.notification.Notification
-import com.intellij.notification.NotificationsManager
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -12,6 +10,7 @@ import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findOrCreateDirectory
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -41,12 +40,6 @@ abstract class ProjectViewDirectoriesActionTestCase(
 
   protected val action: AnAction get() = ActionManager.getInstance().getAction(actionId)
 
-  protected val notifications: List<Notification>
-    get() = NotificationsManager
-      .getNotificationsManager()
-      .getNotificationsOfType(Notification::class.java, project)
-      .asList()
-
   override fun setUp() {
     super.setUp()
     project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
@@ -60,10 +53,11 @@ abstract class ProjectViewDirectoriesActionTestCase(
     return event.presentation
   }
 
-  protected fun useAndOpenProjectView(@Language("projectview") content: String) {
-    val projectView = myFixture.createFile(".user.bazelproject", content)
+  protected fun useProjectView(@Language("projectview") content: String) {
+    val projectView = myFixture.tempDirFixture.createFile(".user.bazelproject", content)
     project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectView)
-    myFixture.openFileInEditor(projectView)
+    // initializes editor with some file
+    myFixture.openFileInEditor(myFixture.createFile("Foo.kt", ""))
     val workspaceModel = WorkspaceModel.getInstance(project)
     val manager = workspaceModel.getVirtualFileUrlManager()
     val root = myFixture.tempDirFixture.findOrCreateDir(".")
@@ -97,4 +91,10 @@ abstract class ProjectViewDirectoriesActionTestCase(
     .let { if (file != null) it.add(CommonDataKeys.VIRTUAL_FILE, file) else it }
     .build()
 
+  protected fun isProjectViewOpenedInEditor(): Boolean {
+    val currentFile = FileEditorManager
+      .getInstance(project)
+      .currentFile
+    return checkNotNull(currentFile) == myFixture.tempDirFixture.getFile(".user.bazelproject")
+  }
 }
