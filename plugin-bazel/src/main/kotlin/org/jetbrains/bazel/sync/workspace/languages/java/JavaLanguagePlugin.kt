@@ -1,31 +1,55 @@
 package org.jetbrains.bazel.sync.workspace.languages.java
 
+import com.intellij.openapi.project.Project
 import com.intellij.util.EnvironmentUtil
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
+import org.jetbrains.bazel.sync.workspace.languages.java.source_root.JavaSourceRootPackageInference
+import org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.JavaSourceRootPatternContributor
+import org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.SourceRootPattern
+import org.jetbrains.bazel.sync.workspace.languages.java.source_root.projectview.javaSROEnable
+import org.jetbrains.bazel.sync.workspace.languages.java.source_root.projectview.javaSROExcludePatterns
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
+import kotlin.io.path.relativeTo
 
 class JavaLanguagePlugin(
   private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
   private val packageResolver: JvmPackageResolver,
 ) : LanguagePlugin<JvmBuildTarget>,
-  JVMPackagePrefixResolver {
-    private val packageInference = JavaSourceRootPackageInference(packageResolver)
+    JVMPackagePrefixResolver {
+  private val packageInference = JavaSourceRootPackageInference(packageResolver)
   private var jdk: Jdk? = null
 
-  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
+  private var cachedJavaSROEnable = false
+  private var cachedSROIncludeMatchers: List<SourceRootPattern> = listOf()
+  private var cachedSROExcludeMatchers: List<SourceRootPattern> = listOf()
+
+  override fun prepareSync(project: Project, targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
     jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
+
+    val projectView = ProjectViewService.getInstance(project)
+      .getCachedProjectView()
+    cachedJavaSROEnable = projectView.javaSROEnable
+    cachedSROIncludeMatchers = JavaSourceRootPatternContributor.ep
+      .extensionList
+      .flatMap { it.getIncludePatterns(project) }
+      .toList()
+    cachedSROExcludeMatchers = JavaSourceRootPatternContributor.ep
+      .extensionList
+      .flatMap { it.getExcludePatterns(project) }
+      .toList()
   }
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
@@ -54,7 +78,38 @@ class JavaLanguagePlugin(
   }
 
   override fun transformSources(sources: List<SourceItem>): List<SourceItem> {
-    packageInference.inferPackages(sources)
+    if (cachedJavaSROEnable) {
+      val root = bazelPathsResolver.workspaceRoot()
+      val hasExcluded = sources.any { item ->
+        val rel = item.path.relativeTo(root)
+        cachedSROExcludeMatchers.any { it(rel.toString()) }
+      }
+      if (hasExcluded) {
+        return sources
+      }
+
+      val matchedSources = mutableListOf<SourceItem>()
+      val unmatchedSources = mutableListOf<SourceItem>()
+      for (item in sources) {
+        val rel = item.path.relativeTo(root)
+        if (cachedSROIncludeMatchers.any { it(rel.toString()) }) {
+          matchedSources.add(item)
+        } else {
+          unmatchedSources.add(item)
+        }
+      }
+
+      if (matchedSources.isNotEmpty()) {
+        packageInference.inferPackages(matchedSources)
+      }
+      for (item in unmatchedSources) {
+        item.jvmPackagePrefix = packageResolver.calculateJvmPackagePrefix(item.path)
+      }
+    } else {
+      for (item in sources) {
+        item.jvmPackagePrefix = packageResolver.calculateJvmPackagePrefix(item.path)
+      }
+    }
     return sources
   }
 

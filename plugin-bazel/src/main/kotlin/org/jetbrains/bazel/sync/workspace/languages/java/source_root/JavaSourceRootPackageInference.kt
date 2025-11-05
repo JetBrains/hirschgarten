@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.languages.java
+package org.jetbrains.bazel.sync.workspace.languages.java.source_root
 
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bsp.protocol.SourceItem
@@ -6,7 +6,7 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 
-private val SUPPORTED_EXTENSIONS = listOf("java")
+private val SUPPORTED_EXTENSIONS = listOf("java", "kt", "scala")
 
 // this package resolves based inference mechanism is trying
 // to optimize amount of calls package resolver
