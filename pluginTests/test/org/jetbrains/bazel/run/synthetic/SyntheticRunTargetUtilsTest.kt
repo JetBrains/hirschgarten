@@ -5,8 +5,11 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.Main
+import org.jetbrains.bazel.label.Package
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.kotlin.idea.KotlinLanguage
 
@@ -18,22 +21,23 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
       targetName = "test_binary"
     )
 
-    label.toString().shouldContain(".bazelbsp/synthetic_targets/simple")
-    label.toString().shouldContain("test_binary")
+    label.shouldBeInstanceOf<ResolvedLabel>()
+    label.repo.shouldBe(Main)
+    label.packagePath.shouldBe(Package(listOf(".bazelbsp", "synthetic_targets", "simple")))
+    label.targetName.shouldBe("test_binary")
   }
 
   fun `test getSyntheticTargetLabel with multiple package parts`() {
+
     val label = SyntheticRunTargetUtils.getSyntheticTargetLabel(
       packageParts = arrayOf("part1", "part2", "part3"),
       targetName = "my_target"
     )
 
-    val labelStr = label.toString()
-    labelStr.shouldContain(".bazelbsp/synthetic_targets")
-    labelStr.shouldContain("part1")
-    labelStr.shouldContain("part2")
-    labelStr.shouldContain("part3")
-    labelStr.shouldContain("my_target")
+    label.shouldBeInstanceOf<ResolvedLabel>()
+    label.repo.shouldBe(Main)
+    label.packagePath.shouldBe(Package(listOf(".bazelbsp", "synthetic_targets", "part1", "part2", "part3")))
+    label.targetName.shouldBe("my_target")
   }
 
   fun `test getTemplateGenerators for java target`() {
@@ -75,8 +79,9 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
       targetName = "synthetic_binary"
     )
 
-    val labelStr = label.toString()
-    labelStr.shouldContain("//.bazelbsp/synthetic_targets")
-    labelStr.shouldContain(":synthetic_binary")
+    label.shouldBeInstanceOf<ResolvedLabel>()
+    label.repo.shouldBe(Main)
+    label.packagePath.shouldBe(Package(listOf(".bazelbsp", "synthetic_targets", "escaped_target", "escaped_main")))
+    label.targetName.shouldBe("synthetic_binary")
   }
 }
