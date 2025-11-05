@@ -69,13 +69,6 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
     )
   }
 
-  private val runnableTargets = project
-    .targetUtils
-    .allBuildTargets()
-    .filter { it.kind.isExecutable }
-    .map { it.id.toString() }
-    .toList()
-
   private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addBspTargetFragment() {
     this.addLabeledSettingsEditorFragment(
       object : LabeledSettingsFragmentInfo { // TODO: Use bundle
@@ -87,18 +80,25 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
         override val settingsActionHint: String = "Specify the targets to run."
       },
       {
+        val provider = TextFieldWithAutoCompletion.StringsCompletionProvider(
+          /* variants = */
+          project
+            .targetUtils
+            .allExecutableTargetLabels,
+          /* icon = */ BazelPluginIcons.bazel,
+        )
         TextFieldWithCompletion(
-          project,
-          TextFieldWithAutoCompletion.StringsCompletionProvider(runnableTargets, BazelPluginIcons.bazel),
-          "",
-          true,
-          true,
-          false,
-          true,
+          /* project = */ project,
+          /* provider = */ provider,
+          /* value = */ "",
+          /* oneLineMode = */ true,
+          /* autoPopup = */ true,
+          /* forceAutoPopup = */ false,
+          /* showHint = */ true,
         )
       },
-      { s, c ->
-        c.text = s.targets.joinToString(" ") { it.toString() }
+      { config, field ->
+        field.text = config.targets.joinToString(" ") { it.toString() }
       },
       { config, field ->
         if (field.text.isNotBlank()) {
