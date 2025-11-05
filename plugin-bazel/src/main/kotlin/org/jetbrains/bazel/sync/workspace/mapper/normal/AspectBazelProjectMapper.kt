@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -52,6 +53,7 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 class AspectBazelProjectMapper(
+  private val project: Project,
   private val languagePluginsService: LanguagePluginsService,
   private val featureFlags: FeatureFlags,
   private val bazelPathsResolver: BazelPathsResolver,
@@ -98,7 +100,7 @@ class AspectBazelProjectMapper(
     repoMapping: RepoMapping,
     hasError: Boolean,
   ): BazelResolvedWorkspace {
-    languagePluginsService.all.forEach { it.prepareSync(allTargets.values.asSequence(), workspaceContext) }
+    languagePluginsService.all.forEach { it.prepareSync(project, allTargets.values.asSequence(), workspaceContext) }
     val dependencyGraph =
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, allTargets)
@@ -209,7 +211,7 @@ class AspectBazelProjectMapper(
     val targets =
       measure("create intermediate targets") {
         // Use targetsToImport here instead of allTargets here to respect import_depth
-        targetsToImport.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }.toList()
+        createIntermediateTargetData(workspaceContext, targetsToImport, extraLibraries)
       }
 
     val highPrioritySources =
@@ -253,6 +255,24 @@ class AspectBazelProjectMapper(
       hasError = hasError,
     )
   }
+
+  private suspend fun AspectBazelProjectMapper.createIntermediateTargetData(
+    workspaceContext: WorkspaceContext,
+    targets: Sequence<TargetInfo>,
+    extraLibraries: Map<Label, List<Library>>,
+  ): List<IntermediateTargetData> =
+    withContext(Dispatchers.Default) {
+      val tasks = targets.map {
+        async {
+          it.toIntermediateData(workspaceContext, extraLibraries)
+        }
+      }
+
+      return@withContext tasks
+        .toList()
+        .awaitAll()
+        .filterNotNull()
+    }
 
   private fun <K, V> concatenateMaps(vararg maps: Map<K, List<V>>): Map<K, List<V>> =
     maps
@@ -855,6 +875,10 @@ class AspectBazelProjectMapper(
 
     val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetData.sources, bazelPathsResolver)
     val data = languagePlugin.createBuildTargetData(context, target)
+
+    if (targetData.label.toString().contains("plugin-bazel")) {
+      print("")
+    }
 
     return RawBuildTarget(
       id = label,

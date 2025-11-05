@@ -10,6 +10,6 @@ data class LanguagePluginContext(
   val target: BspTargetInfo.TargetInfo,
   val graph: DependencyGraph,
   val repoMapping: RepoMapping,
-  val sources: List<SourceItem>
+  val sources: List<SourceItem>,
   val pathsResolver: BazelPathsResolver,
 )
