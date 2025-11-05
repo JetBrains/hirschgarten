@@ -17,7 +17,6 @@ import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.jvm.run.CHECK_VISIBILITY_KEY
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
@@ -65,8 +64,7 @@ class GenerateSyntheticTargetRunTaskProvider(
     configuration.putUserData(SYNTHETIC_BUILD_FILE_KEY, buildFile)
 
     if (BazelFeatureFlags.syntheticRunDisableVisibilityCheck) {
-      configuration.putUserData(CHECK_VISIBILITY_KEY, false)
-      environment.putUserData(CHECK_VISIBILITY_KEY, false)
+      configuration.doVisibilityCheck = false
     }
 
     return true

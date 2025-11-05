@@ -73,8 +73,6 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   }
 }
 
-val CHECK_VISIBILITY_KEY: Key<Boolean> = Key.create("bazel.visibility.check")
-
 class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val settings: JvmRunState) :
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
@@ -89,7 +87,6 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
       debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler, settings.env.envs)
     } else {
       val configuration = BazelRunConfiguration.get(environment)
-      val checkVisibility = configuration.getUserData(CHECK_VISIBILITY_KEY) ?: true
       val kotlinCoroutineLibParam = retrieveKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
       val additionalBazelParams = settings.additionalBazelParams ?: ""
       val runParams =
@@ -97,7 +94,7 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
           target = configuration.targets.single(),
           originId = originId.toString(),
           buildBeforeRun = false,
-          checkVisibility = checkVisibility,
+          checkVisibility = configuration.doVisibilityCheck,
           arguments = transformProgramArguments(settings.programArguments),
           environmentVariables = settings.env.envs,
           workingDirectory = settings.workingDirectory,

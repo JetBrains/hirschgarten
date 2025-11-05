@@ -36,6 +36,8 @@ class BazelRunConfiguration internal constructor(
   var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
 
+  var doVisibilityCheck: Boolean = true
+
   fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
     targets = newTargets
     updateHandlerIfDifferentProvider(runHandlerProvider ?: RunHandlerProvider.getRunHandlerProvider(project, newTargets))
@@ -127,6 +129,8 @@ class BazelRunConfiguration internal constructor(
       val newProvider = RunHandlerProvider.getRunHandlerProvider(project, this.targets)
       updateHandlerIfDifferentProvider(newProvider)
     }
+
+    doVisibilityCheck = bspElement.getAttributeValue(CHECK_VISIBILITY_ATTR)?.toBoolean() ?: true
   }
 
   // TODO: ideally we'd use an existing serialization mechanism like https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html
@@ -160,6 +164,8 @@ class BazelRunConfiguration internal constructor(
     bspElementState.addContent(handlerState)
 
     element.addContent(bspElementState.clone())
+
+    element.setAttribute(CHECK_VISIBILITY_ATTR, doVisibilityCheck.toString())
   }
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
@@ -172,6 +178,7 @@ class BazelRunConfiguration internal constructor(
     private const val BSP_STATE_TAG = "bsp-state"
     private const val HANDLER_STATE_TAG = "handler-state"
     private const val HANDLER_PROVIDER_ATTR = "handler-provider-id"
+    private const val CHECK_VISIBILITY_ATTR = "check-visibility"
 
     // Used in BazelRerunFailedTestsAction
     public val BAZEL_RUN_CONFIGURATION_KEY = Key.create<BazelRunConfiguration>("BAZEL_RUN_CONFIGURATION_KEY")
