@@ -141,7 +141,7 @@ class AspectBazelProjectMapper(
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
-        calculateOutputJarsLibraries(targetsToImport)
+        calculateOutputJarsLibraries(workspaceContext, targetsToImport)
       }
     val annotationProcessorLibraries =
       measure("Create AP libraries") {
@@ -171,7 +171,7 @@ class AspectBazelProjectMapper(
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
-        createLibraries(targetsAsLibraries, repoMapping) +
+        createLibraries(workspaceContext, targetsAsLibraries, repoMapping) +
           librariesFromDeps.values
             .flatten()
             .distinct()
@@ -262,11 +262,11 @@ class AspectBazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
+  private fun calculateOutputJarsLibraries(workspaceContext: WorkspaceContext, targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
+        createLibrary(workspaceContext, Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -278,7 +278,7 @@ class AspectBazelProjectMapper(
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
           (targetInfo.sourcesList.isEmpty() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
           targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
-      )
+        )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -612,12 +612,17 @@ class AspectBazelProjectMapper(
         )
       }
 
-  private suspend fun createLibraries(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, Library> =
+  private suspend fun createLibraries(
+    workspaceContext: WorkspaceContext,
+    targets: Map<Label, TargetInfo>,
+    repoMapping: RepoMapping,
+  ): Map<Label, Library> =
     withContext(Dispatchers.Default) {
       targets
         .map { (targetId, targetInfo) ->
           async {
             createLibrary(
+              workspaceContext = workspaceContext,
               label = targetId,
               targetInfo = targetInfo,
               onlyOutputJars = false,
@@ -632,13 +637,20 @@ class AspectBazelProjectMapper(
     }
 
   private fun createLibrary(
+    workspaceContext: WorkspaceContext,
     label: Label,
     targetInfo: TargetInfo,
     onlyOutputJars: Boolean,
     isInternalTarget: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
-    val sources = getSourceJarPaths(targetInfo)
+    val rawSources = getSourceJarPaths(targetInfo);
+    val sources = if (workspaceContext.preferClassJarsOverSourcelessJars) {
+      rawSources - outputs
+    } else {
+      rawSources
+    }
+
     val interfaceJars = getTargetInterfaceJarsSet(targetInfo).toSet()
     val dependencies: List<BspTargetInfo.Dependency> = if (!onlyOutputJars) targetInfo.dependenciesList else emptyList()
     if (!shouldCreateLibrary(
@@ -763,9 +775,9 @@ class AspectBazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-            )
-        )
-    ) ||
+              )
+          )
+      ) ||
       (
         featureFlags.isGoSupportEnabled &&
           target.hasGoTargetInfo() &&
@@ -773,7 +785,7 @@ class AspectBazelProjectMapper(
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target)
-      ) ||
+        ) ||
       target.hasProtobufTargetInfo()
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds

@@ -64,6 +64,7 @@ data class WorkspaceContext(
   val importIjars: Boolean,
   val deriveInstrumentationFilterFromTargets: Boolean,
   val indexAdditionalFilesInDirectories: List<String>,
+  val preferClassJarsOverSourcelessJars: Boolean,
 )
 
 /**
