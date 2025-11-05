@@ -27,10 +27,6 @@
     <module name="intellij.platform.searchEverywhere" />
   </dependencies>
 
-  <content namespace="jetbrains">
-    <module name="intellij.bazel.kotlin.k2"/>
-  </content>
-
   <depends
     config-file="withCodeWithMe.xml"
     optional="true"
