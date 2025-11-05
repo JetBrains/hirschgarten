@@ -180,7 +180,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
   }
 
   if (target.kind.ruleType == RuleType.LIBRARY) {
-    if (singleTestFilter != null) {
+    if (singleTestFilter != null && callerPsiElement != null) {
       addSyntheticRunActions(project, target, callerPsiElement, singleTestFilter, includeTargetNameInText, canBeDebugged)
     }
   }
@@ -204,35 +204,28 @@ fun DefaultActionGroup.fillWithEligibleActions(
 private fun DefaultActionGroup.addSyntheticRunActions(
   project: Project,
   target: BuildTarget,
-  element: PsiElement?,
+  element: PsiElement,
   testFilter: String,
   includeTargetNameInText: Boolean,
   canBeDebugged: Boolean,
 ) {
-  if (element == null) {
-    return
-  }
   val language = element.language
   for (generator in SyntheticRunTargetUtils.getTemplateGenerators(target, language)) {
       val action = RunSyntheticTargetAction(
-        project = project,
         target = target,
         isDebugAction = false,
         includeTargetNameInText = includeTargetNameInText,
         templateGenerator = generator,
         targetElement = element,
-        language = language,
       )
       addAction(action)
       if (canBeDebugged) {
         val action = RunSyntheticTargetAction(
-          project = project,
           target = target,
           isDebugAction = true,
           includeTargetNameInText = includeTargetNameInText,
           templateGenerator = generator,
           targetElement = element,
-          language = language,
         )
         addAction(action)
       }

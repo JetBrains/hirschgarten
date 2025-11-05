@@ -4,7 +4,6 @@ import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.runConfigurationType
-import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -16,24 +15,21 @@ import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.BuildTarget
 
 open class RunSyntheticTargetAction(
-  private val project: Project,
   private val target: BuildTarget,
   private val isDebugAction: Boolean,
   private val includeTargetNameInText: Boolean,
   private val templateGenerator: SyntheticRunTargetTemplateGenerator,
   private val targetElement: PsiElement,
-  private val language: Language,
 ) : BaseRunnerAction(
   text = {
     BazelRunnerActionNaming.getRunActionName(
       isDebugAction = isDebugAction,
       isRunConfigName = false,
       includeTargetNameInText = includeTargetNameInText,
-      project = project,
+      project = targetElement.project,
       target = target.id,
     )
   },
-  icon = null,
   isDebugAction = isDebugAction,
   isCoverageAction = false,
 ) {
@@ -64,7 +60,7 @@ open class RunSyntheticTargetAction(
       val task = provider.createTask(config)
       val taskState = task.taskState
       taskState.target = target.id.toString()
-      taskState.language = language.id
+      taskState.language = targetElement.language.id
       taskState.params = params
       settings.configuration.beforeRunTasks = listOf(task)
     }
@@ -79,7 +75,7 @@ open class RunSyntheticTargetAction(
       isDebugAction = isDebugAction,
       isRunConfigName = true,
       includeTargetNameInText = includeTargetNameInText,
-      project = project,
+      project = targetElement.project,
       target = target.id,
     )
 }
