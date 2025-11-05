@@ -14,7 +14,7 @@ object SyntheticRunTargetUtils {
   fun getSyntheticTargetLabel(vararg packageParts: String, targetName: String): Label {
     return ResolvedLabel(
       repo = Main,
-      packagePath = Package(listOf(".bazelbsp/synthetic_targets") + packageParts),
+      packagePath = Package(listOf(".bazelbsp", "synthetic_targets") + packageParts),
       target = SingleTarget(targetName),
     )
   }
