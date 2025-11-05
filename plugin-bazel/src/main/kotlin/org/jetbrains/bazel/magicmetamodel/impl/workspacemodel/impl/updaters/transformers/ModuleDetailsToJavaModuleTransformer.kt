@@ -4,7 +4,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.utils.StringUtils
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
@@ -47,6 +49,7 @@ class ModuleDetailsToJavaModuleTransformer(
         kotlinAddendum = toKotlinAddendum(inputEntity),
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
+        runtimeDependencies = getRuntimeDependencies(inputEntity),
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
@@ -93,7 +96,7 @@ class ModuleDetailsToJavaModuleTransformer(
         type = type,
         javacOptions = inputEntity.javacOptions,
         associates = toAssociates(inputEntity),
-        dependencies = inputEntity.dependencies,
+        dependencies = inputEntity.dependencies.map { it.label },
       )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
@@ -150,6 +153,9 @@ class ModuleDetailsToJavaModuleTransformer(
       ?.distinct()
       ?: emptyList()
   }
+
+  private fun getRuntimeDependencies(inputEntity: ModuleDetails): List<String> =
+    inputEntity.dependencies.filter { it.isRuntime }.map { it.label.formatAsModuleName(project) }
 }
 
 fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"

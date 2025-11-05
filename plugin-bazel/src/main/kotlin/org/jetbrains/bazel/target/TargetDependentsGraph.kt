@@ -12,7 +12,7 @@ internal class TargetDependentsGraph(targets: List<RawBuildTarget>, libraryItems
       val dependencies = targetInfo.dependencies
       for (dependency in dependencies) {
         targetIdToDirectDependentIds
-          .computeIfAbsent(dependency) { hashSetOf<Label>() }
+          .computeIfAbsent(dependency.label) { hashSetOf<Label>() }
           .add(targetInfo.id)
       }
     }
@@ -20,7 +20,7 @@ internal class TargetDependentsGraph(targets: List<RawBuildTarget>, libraryItems
       for (libraryItem in libraryItems) {
         val dependencies = libraryItem.dependencies
         for (dependency in dependencies) {
-          val dependentIds = targetIdToDirectDependentIds.computeIfAbsent(dependency) { hashSetOf() }
+          val dependentIds = targetIdToDirectDependentIds.computeIfAbsent(dependency.label) { hashSetOf() }
           dependentIds.add(libraryItem.id)
         }
       }

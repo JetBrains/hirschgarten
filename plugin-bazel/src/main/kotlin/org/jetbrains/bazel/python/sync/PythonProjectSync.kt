@@ -205,9 +205,9 @@ class PythonProjectSync : ProjectSyncHook {
     val dependencies =
       target.dependencies.map {
         ModuleDependency(
-          module = ModuleId(it.formatAsModuleName(project)),
+          module = ModuleId(it.label.formatAsModuleName(project)),
           exported = true,
-          scope = DependencyScope.COMPILE,
+          scope = DependencyScope.COMPILE,  // Python does not have the runtime/compile scope separation
           productionOnTest = true,
         )
       }
