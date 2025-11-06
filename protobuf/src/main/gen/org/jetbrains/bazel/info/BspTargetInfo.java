@@ -5590,6 +5590,21 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.FileLocation java_home = 3;</code>
      */
     org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getJavaHomeOrBuilder();
+
+    /**
+     * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+     * @return Whether the bootClasspathJavaHome field is set.
+     */
+    boolean hasBootClasspathJavaHome();
+    /**
+     * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+     * @return The bootClasspathJavaHome.
+     */
+    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getBootClasspathJavaHome();
+    /**
+     * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+     */
+    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getBootClasspathJavaHomeOrBuilder();
   }
   /**
    * Protobuf type {@code bazelbsp.JavaToolchainInfo}
@@ -5733,6 +5748,32 @@ public final class BspTargetInfo {
       return javaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : javaHome_;
     }
 
+    public static final int BOOT_CLASSPATH_JAVA_HOME_FIELD_NUMBER = 4;
+    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation bootClasspathJavaHome_;
+    /**
+     * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+     * @return Whether the bootClasspathJavaHome field is set.
+     */
+    @java.lang.Override
+    public boolean hasBootClasspathJavaHome() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+     * @return The bootClasspathJavaHome.
+     */
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getBootClasspathJavaHome() {
+      return bootClasspathJavaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : bootClasspathJavaHome_;
+    }
+    /**
+     * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+     */
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getBootClasspathJavaHomeOrBuilder() {
+      return bootClasspathJavaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : bootClasspathJavaHome_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -5756,6 +5797,9 @@ public final class BspTargetInfo {
       if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(3, getJavaHome());
       }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeMessage(4, getBootClasspathJavaHome());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -5774,6 +5818,10 @@ public final class BspTargetInfo {
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, getJavaHome());
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, getBootClasspathJavaHome());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -5799,6 +5847,11 @@ public final class BspTargetInfo {
         if (!getJavaHome()
             .equals(other.getJavaHome())) return false;
       }
+      if (hasBootClasspathJavaHome() != other.hasBootClasspathJavaHome()) return false;
+      if (hasBootClasspathJavaHome()) {
+        if (!getBootClasspathJavaHome()
+            .equals(other.getBootClasspathJavaHome())) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -5817,6 +5870,10 @@ public final class BspTargetInfo {
       if (hasJavaHome()) {
         hash = (37 * hash) + JAVA_HOME_FIELD_NUMBER;
         hash = (53 * hash) + getJavaHome().hashCode();
+      }
+      if (hasBootClasspathJavaHome()) {
+        hash = (37 * hash) + BOOT_CLASSPATH_JAVA_HOME_FIELD_NUMBER;
+        hash = (53 * hash) + getBootClasspathJavaHome().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -5949,6 +6006,7 @@ public final class BspTargetInfo {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getJavaHomeFieldBuilder();
+          getBootClasspathJavaHomeFieldBuilder();
         }
       }
       @java.lang.Override
@@ -5961,6 +6019,11 @@ public final class BspTargetInfo {
         if (javaHomeBuilder_ != null) {
           javaHomeBuilder_.dispose();
           javaHomeBuilder_ = null;
+        }
+        bootClasspathJavaHome_ = null;
+        if (bootClasspathJavaHomeBuilder_ != null) {
+          bootClasspathJavaHomeBuilder_.dispose();
+          bootClasspathJavaHomeBuilder_ = null;
         }
         return this;
       }
@@ -6007,6 +6070,12 @@ public final class BspTargetInfo {
               ? javaHome_
               : javaHomeBuilder_.build();
           to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.bootClasspathJavaHome_ = bootClasspathJavaHomeBuilder_ == null
+              ? bootClasspathJavaHome_
+              : bootClasspathJavaHomeBuilder_.build();
+          to_bitField0_ |= 0x00000002;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -6068,6 +6137,9 @@ public final class BspTargetInfo {
         if (other.hasJavaHome()) {
           mergeJavaHome(other.getJavaHome());
         }
+        if (other.hasBootClasspathJavaHome()) {
+          mergeBootClasspathJavaHome(other.getBootClasspathJavaHome());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -6111,6 +6183,13 @@ public final class BspTargetInfo {
                 bitField0_ |= 0x00000004;
                 break;
               } // case 26
+              case 34: {
+                input.readMessage(
+                    getBootClasspathJavaHomeFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -6391,6 +6470,127 @@ public final class BspTargetInfo {
           javaHome_ = null;
         }
         return javaHomeBuilder_;
+      }
+
+      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation bootClasspathJavaHome_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> bootClasspathJavaHomeBuilder_;
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       * @return Whether the bootClasspathJavaHome field is set.
+       */
+      public boolean hasBootClasspathJavaHome() {
+        return ((bitField0_ & 0x00000008) != 0);
+      }
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       * @return The bootClasspathJavaHome.
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getBootClasspathJavaHome() {
+        if (bootClasspathJavaHomeBuilder_ == null) {
+          return bootClasspathJavaHome_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : bootClasspathJavaHome_;
+        } else {
+          return bootClasspathJavaHomeBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       */
+      public Builder setBootClasspathJavaHome(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+        if (bootClasspathJavaHomeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bootClasspathJavaHome_ = value;
+        } else {
+          bootClasspathJavaHomeBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       */
+      public Builder setBootClasspathJavaHome(
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+        if (bootClasspathJavaHomeBuilder_ == null) {
+          bootClasspathJavaHome_ = builderForValue.build();
+        } else {
+          bootClasspathJavaHomeBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       */
+      public Builder mergeBootClasspathJavaHome(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+        if (bootClasspathJavaHomeBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) != 0) &&
+            bootClasspathJavaHome_ != null &&
+            bootClasspathJavaHome_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            getBootClasspathJavaHomeBuilder().mergeFrom(value);
+          } else {
+            bootClasspathJavaHome_ = value;
+          }
+        } else {
+          bootClasspathJavaHomeBuilder_.mergeFrom(value);
+        }
+        if (bootClasspathJavaHome_ != null) {
+          bitField0_ |= 0x00000008;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       */
+      public Builder clearBootClasspathJavaHome() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        bootClasspathJavaHome_ = null;
+        if (bootClasspathJavaHomeBuilder_ != null) {
+          bootClasspathJavaHomeBuilder_.dispose();
+          bootClasspathJavaHomeBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getBootClasspathJavaHomeBuilder() {
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return getBootClasspathJavaHomeFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getBootClasspathJavaHomeOrBuilder() {
+        if (bootClasspathJavaHomeBuilder_ != null) {
+          return bootClasspathJavaHomeBuilder_.getMessageOrBuilder();
+        } else {
+          return bootClasspathJavaHome_ == null ?
+              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : bootClasspathJavaHome_;
+        }
+      }
+      /**
+       * <code>.bazelbsp.FileLocation boot_classpath_java_home = 4;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          getBootClasspathJavaHomeFieldBuilder() {
+        if (bootClasspathJavaHomeBuilder_ == null) {
+          bootClasspathJavaHomeBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+                  getBootClasspathJavaHome(),
+                  getParentForChildren(),
+                  isClean());
+          bootClasspathJavaHome_ = null;
+        }
+        return bootClasspathJavaHomeBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -21751,61 +21951,63 @@ java.lang.String defaultValue) {
       "puts\022\022\n\njavac_opts\030\006 \003(\t\022\021\n\tjvm_flags\030\007 " +
       "\003(\t\022\022\n\nmain_class\030\010 \001(\t\022\014\n\004args\030\t \003(\t\022%\n" +
       "\005jdeps\030\n \003(\0132\026.bazelbsp.FileLocation\022\"\n\032" +
-      "has_api_generating_plugins\030\014 \001(\010\"n\n\021Java" +
-      "ToolchainInfo\022\026\n\016source_version\030\001 \001(\t\022\026\n" +
-      "\016target_version\030\002 \001(\t\022)\n\tjava_home\030\003 \001(\013" +
-      "2\026.bazelbsp.FileLocation\"<\n\017JavaRuntimeI" +
-      "nfo\022)\n\tjava_home\030\001 \001(\0132\026.bazelbsp.FileLo" +
-      "cation\"\217\001\n\017ScalaTargetInfo\022\023\n\013scalac_opt" +
-      "s\030\001 \003(\t\0222\n\022compiler_classpath\030\002 \003(\0132\026.ba" +
-      "zelbsp.FileLocation\0223\n\023scalatest_classpa" +
-      "th\030\003 \003(\0132\026.bazelbsp.FileLocation\"?\n\023Kotl" +
-      "incPluginOption\022\021\n\tplugin_id\030d \001(\t\022\025\n\014op" +
-      "tion_value\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022" +
-      "+\n\013plugin_jars\030d \003(\0132\026.bazelbsp.FileLoca" +
-      "tion\022>\n\026kotlinc_plugin_options\030\310\001 \003(\0132\035." +
-      "bazelbsp.KotlincPluginOption\"\324\001\n\020KotlinT" +
-      "argetInfo\022\030\n\020language_version\030d \001(\t\022\024\n\013a" +
-      "pi_version\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025" +
-      "\n\014kotlinc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132" +
-      "\026.bazelbsp.FileLocation\022:\n\024kotlinc_plugi" +
-      "n_infos\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginI" +
-      "nfo\"\257\001\n\020PythonTargetInfo\022+\n\013interpreter\030" +
-      "\001 \001(\0132\026.bazelbsp.FileLocation\022\017\n\007version" +
-      "\030\002 \001(\t\022\017\n\007imports\030\003 \003(\t\022\031\n\021is_code_gener" +
-      "ator\030\004 \001(\010\0221\n\021generated_sources\030\005 \003(\0132\026." +
-      "bazelbsp.FileLocation\"\322\001\n\014GoTargetInfo\022\023" +
-      "\n\013import_path\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001" +
-      "(\0132\026.bazelbsp.FileLocation\0221\n\021generated_" +
-      "sources\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n" +
-      "\023generated_libraries\030\004 \003(\0132\026.bazelbsp.Fi" +
-      "leLocation\022\026\n\016library_labels\030\005 \003(\t\"N\n\022Pr" +
-      "otobufTargetInfo\0228\n\017source_mappings\030\003 \003(" +
-      "\0132\037.bazelbsp.ProtobufSourceMapping\"X\n\025Pr" +
-      "otobufSourceMapping\022\023\n\013import_path\030\001 \001(\t" +
-      "\022*\n\nproto_file\030\002 \001(\0132\026.bazelbsp.FileLoca" +
-      "tion\"\274\006\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030" +
-      "\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(" +
-      "\0132\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(\013" +
-      "2\026.bazelbsp.FileLocation\0221\n\021generated_so" +
-      "urces\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\tr" +
-      "esources\030< \003(\0132\026.bazelbsp.FileLocation\022*" +
-      "\n\003env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEnt" +
-      "ry\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z " +
-      "\001(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_targe" +
-      "t_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229" +
-      "\n\023java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp." +
-      "JavaToolchainInfo\0225\n\021java_runtime_info\030\270" +
-      "\027 \001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021scal" +
-      "a_target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTar" +
-      "getInfo\0227\n\022kotlin_target_info\030\3306 \001(\0132\032.b" +
-      "azelbsp.KotlinTargetInfo\0227\n\022python_targe" +
-      "t_info\030\300> \001(\0132\032.bazelbsp.PythonTargetInf" +
-      "o\022/\n\016go_target_info\030\340] \001(\0132\026.bazelbsp.Go" +
-      "TargetInfo\022;\n\024protobuf_target_info\030\260m \001(" +
-      "\0132\034.bazelbsp.ProtobufTargetInfo\032*\n\010EnvEn" +
-      "try\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030o" +
-      "rg.jetbrains.bazel.infob\006proto3"
+      "has_api_generating_plugins\030\014 \001(\010\"\250\001\n\021Jav" +
+      "aToolchainInfo\022\026\n\016source_version\030\001 \001(\t\022\026" +
+      "\n\016target_version\030\002 \001(\t\022)\n\tjava_home\030\003 \001(" +
+      "\0132\026.bazelbsp.FileLocation\0228\n\030boot_classp" +
+      "ath_java_home\030\004 \001(\0132\026.bazelbsp.FileLocat" +
+      "ion\"<\n\017JavaRuntimeInfo\022)\n\tjava_home\030\001 \001(" +
+      "\0132\026.bazelbsp.FileLocation\"\217\001\n\017ScalaTarge" +
+      "tInfo\022\023\n\013scalac_opts\030\001 \003(\t\0222\n\022compiler_c" +
+      "lasspath\030\002 \003(\0132\026.bazelbsp.FileLocation\0223" +
+      "\n\023scalatest_classpath\030\003 \003(\0132\026.bazelbsp.F" +
+      "ileLocation\"?\n\023KotlincPluginOption\022\021\n\tpl" +
+      "ugin_id\030d \001(\t\022\025\n\014option_value\030\310\001 \001(\t\"\200\001\n" +
+      "\021KotlincPluginInfo\022+\n\013plugin_jars\030d \003(\0132" +
+      "\026.bazelbsp.FileLocation\022>\n\026kotlinc_plugi" +
+      "n_options\030\310\001 \003(\0132\035.bazelbsp.KotlincPlugi" +
+      "nOption\"\324\001\n\020KotlinTargetInfo\022\030\n\020language" +
+      "_version\030d \001(\t\022\024\n\013api_version\030\310\001 \001(\t\022\023\n\n" +
+      "associates\030\254\002 \003(\t\022\025\n\014kotlinc_opts\030\220\003 \003(\t" +
+      "\022(\n\007stdlibs\030\364\003 \003(\0132\026.bazelbsp.FileLocati" +
+      "on\022:\n\024kotlinc_plugin_infos\030\330\004 \003(\0132\033.baze" +
+      "lbsp.KotlincPluginInfo\"\257\001\n\020PythonTargetI" +
+      "nfo\022+\n\013interpreter\030\001 \001(\0132\026.bazelbsp.File" +
+      "Location\022\017\n\007version\030\002 \001(\t\022\017\n\007imports\030\003 \003" +
+      "(\t\022\031\n\021is_code_generator\030\004 \001(\010\0221\n\021generat" +
+      "ed_sources\030\005 \003(\0132\026.bazelbsp.FileLocation" +
+      "\"\322\001\n\014GoTargetInfo\022\023\n\013import_path\030\001 \001(\t\022-" +
+      "\n\rsdk_home_path\030\002 \001(\0132\026.bazelbsp.FileLoc" +
+      "ation\0221\n\021generated_sources\030\003 \003(\0132\026.bazel" +
+      "bsp.FileLocation\0223\n\023generated_libraries\030" +
+      "\004 \003(\0132\026.bazelbsp.FileLocation\022\026\n\016library" +
+      "_labels\030\005 \003(\t\"N\n\022ProtobufTargetInfo\0228\n\017s" +
+      "ource_mappings\030\003 \003(\0132\037.bazelbsp.Protobuf" +
+      "SourceMapping\"X\n\025ProtobufSourceMapping\022\023" +
+      "\n\013import_path\030\001 \001(\t\022*\n\nproto_file\030\002 \001(\0132" +
+      "\026.bazelbsp.FileLocation\"\274\006\n\nTargetInfo\022\n" +
+      "\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*" +
+      "\n\014dependencies\030( \003(\0132\024.bazelbsp.Dependen" +
+      "cy\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.FileLocat" +
+      "ion\0221\n\021generated_sources\0303 \003(\0132\026.bazelbs" +
+      "p.FileLocation\022)\n\tresources\030< \003(\0132\026.baze" +
+      "lbsp.FileLocation\022*\n\003env\030F \003(\0132\035.bazelbs" +
+      "p.TargetInfo.EnvEntry\022\023\n\013env_inherit\030P \003" +
+      "(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspace_name" +
+      "\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132\027.bazel" +
+      "bsp.JvmTargetInfo\0229\n\023java_toolchain_info" +
+      "\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainInfo\0225\n\021" +
+      "java_runtime_info\030\270\027 \001(\0132\031.bazelbsp.Java" +
+      "RuntimeInfo\0225\n\021scala_target_info\030\240\037 \001(\0132" +
+      "\031.bazelbsp.ScalaTargetInfo\0227\n\022kotlin_tar" +
+      "get_info\030\3306 \001(\0132\032.bazelbsp.KotlinTargetI" +
+      "nfo\0227\n\022python_target_info\030\300> \001(\0132\032.bazel" +
+      "bsp.PythonTargetInfo\022/\n\016go_target_info\030\340" +
+      "] \001(\0132\026.bazelbsp.GoTargetInfo\022;\n\024protobu" +
+      "f_target_info\030\260m \001(\0132\034.bazelbsp.Protobuf" +
+      "TargetInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005v" +
+      "alue\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel.in" +
+      "fob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -21840,7 +22042,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_JavaToolchainInfo_descriptor,
-        new java.lang.String[] { "SourceVersion", "TargetVersion", "JavaHome", });
+        new java.lang.String[] { "SourceVersion", "TargetVersion", "JavaHome", "BootClasspathJavaHome", });
     internal_static_bazelbsp_JavaRuntimeInfo_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_bazelbsp_JavaRuntimeInfo_fieldAccessorTable = new
