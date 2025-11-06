@@ -876,10 +876,6 @@ class AspectBazelProjectMapper(
     val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetData.sources, bazelPathsResolver)
     val data = languagePlugin.createBuildTargetData(context, target)
 
-    if (targetData.label.toString().contains("plugin-bazel")) {
-      print("")
-    }
-
     return RawBuildTarget(
       id = label,
       tags = tags.mapNotNull(BspMappings::toBspTag),
