@@ -80,22 +80,23 @@ class JavaLanguagePlugin(
   override fun transformSources(sources: List<SourceItem>): List<SourceItem> {
     if (cachedJavaSROEnable) {
       val root = bazelPathsResolver.workspaceRoot()
-      val hasExcluded = sources.any { item ->
-        val rel = item.path.relativeTo(root)
-        cachedSROExcludeMatchers.any { it(rel.toString()) }
-      }
-      if (hasExcluded) {
-        return sources
-      }
-
       val matchedSources = mutableListOf<SourceItem>()
       val unmatchedSources = mutableListOf<SourceItem>()
       for (item in sources) {
         val rel = item.path.relativeTo(root)
-        if (cachedSROIncludeMatchers.any { it(rel.toString()) }) {
-          matchedSources.add(item)
+        val isExcluded = if (cachedSROExcludeMatchers.isEmpty()) {
+          false
         } else {
+          cachedSROExcludeMatchers.any { it(rel.toString()) }
+        }
+        if (isExcluded) {
           unmatchedSources.add(item)
+        } else {
+          if (cachedSROIncludeMatchers.any { it(rel.toString()) }) {
+            matchedSources.add(item)
+          } else {
+            unmatchedSources.add(item)
+          }
         }
       }
 
