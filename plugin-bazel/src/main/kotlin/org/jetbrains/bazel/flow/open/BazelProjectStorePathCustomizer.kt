@@ -5,6 +5,7 @@ import com.intellij.configurationStore.ProjectStorePathCustomizer
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.project.getProjectCacheFileName
 import com.intellij.openapi.project.projectsDataDir
+import com.intellij.openapi.vfs.LocalFileSystem
 import org.jetbrains.bazel.commons.constants.Constants
 import java.nio.file.Path
 
@@ -25,10 +26,17 @@ private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
         .resolve("workspace")
         .resolve("bazel")
         .resolve("$cacheDirectoryName.xml")
+
+    val historicalProjectBasePath = LocalFileSystem.getInstance()
+      .refreshAndFindFileByNioFile(projectRoot)
+      ?.let(::findProjectFolderFromVFile)
+      ?.toNioPath()
+      ?: projectRoot.parent
+
     return BazelProjectStoreDescriptor(
       projectIdentityFile = projectRoot,
       dotIdea = dotIdea,
-      historicalProjectBasePath = projectRoot.parent,
+      historicalProjectBasePath = historicalProjectBasePath,
       workspaceXml = workspaceXml,
     )
   }
