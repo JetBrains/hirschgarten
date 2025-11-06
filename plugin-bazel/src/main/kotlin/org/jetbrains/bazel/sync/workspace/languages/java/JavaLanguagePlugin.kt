@@ -23,7 +23,7 @@ class JavaLanguagePlugin(
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
-    jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
+    jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets)
   }
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
@@ -35,12 +35,12 @@ class JavaLanguagePlugin(
     val mainClass = getMainClass(jvmTarget)
 
     val jdk = jdk ?: return null
-    val javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: javaVersionFromToolchain(target) ?: jdk.version
-    val javaHome = jdk.javaHome ?: return null
+    val javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: javaVersionFromToolchain(target)
+    val javaHome = jdk.javaHome
     val environmentVariables =
       context.target.envMap + context.target.envInheritList.associateWith { EnvironmentUtil.getValue(it) ?: "" }
     return JvmBuildTarget(
-      javaVersion = javaVersion,
+      javaVersion = javaVersion.orEmpty(),
       javaHome = javaHome,
       javacOpts = jvmTarget.javacOptsList,
       binaryOutputs = binaryOutputs,
@@ -63,10 +63,16 @@ class JavaLanguagePlugin(
     null
   }
 
-  private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? =
-    javacOpts.firstNotNullOfOrNull {
-      val flagName = it.substringBefore(' ')
-      val argument = it.substringAfter(' ')
-      if (flagName == "-target" || flagName == "--target" || flagName == "--release") argument else null
+  private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? {
+    for (i in javacOpts.indices) {
+      val option = javacOpts[i]
+      val flagName = option.substringBefore(' ', missingDelimiterValue = option)
+      val argument = option.substringAfter(' ', missingDelimiterValue = "")
+      if (flagName == "-target" || flagName == "--target" || flagName == "--release") {
+        if (argument.isNotBlank()) return argument
+        return javacOpts.getOrNull(i + 1)
+      }
     }
+    return null
+  }
 }
