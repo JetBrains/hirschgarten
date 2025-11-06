@@ -1,6 +1,6 @@
 """Developer versions of plugins."""
 
-INTELLIJ_BAZEL_VERSION = "9999.9.9"
+INTELLIJ_BAZEL_VERSION = "2025.2.7"
 
 PLATFORM_VERSION = "252"
 
