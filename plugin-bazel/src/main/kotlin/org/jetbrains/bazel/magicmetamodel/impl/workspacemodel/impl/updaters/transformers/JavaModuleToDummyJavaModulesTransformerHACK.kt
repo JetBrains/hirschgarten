@@ -21,6 +21,7 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.extension
@@ -176,7 +177,12 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     relevantExtensions: List<String>? = null,
   ): Boolean {
     for (mergedRoot in mergedRoots) {
-      Files.walk(mergedRoot).use { children ->
+      val childrenStream = try {
+        Files.walk(mergedRoot)
+      } catch (_: NoSuchFileException) {
+        return true
+      }
+      childrenStream.use { children ->
         for (fileUnderRoot in children) {
           if (fileUnderRoot.isDirectory()) continue
           if (relevantExtensions != null) {
