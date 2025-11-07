@@ -4,18 +4,22 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsActions
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
+import org.jetbrains.bazel.config.BazelPluginBundle.message
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
+import org.jetbrains.bazel.target.targetUtils
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 class BazelRunConfiguration internal constructor(
@@ -33,6 +37,28 @@ class BazelRunConfiguration internal constructor(
 
   var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
+
+  override fun checkConfiguration() {
+    val utils = project.targetUtils
+    val selectedTargets = targets.map {
+      val target = utils.getBuildTargetForLabel(it)
+        ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.found", it))
+      if (!target.kind.isExecutable) throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.executable", it))
+      target
+    }
+    if (selectedTargets.isEmpty()) throw RuntimeConfigurationError(message("runconfig.bazel.errors.no.targets"))
+    val providers = selectedTargets
+      .mapTo(mutableSetOf()) { target ->
+        RunHandlerProvider
+          .getRunHandlerProvider(listOf(target))
+          ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.supported", target.id))
+      }
+    if (providers.size > 1) {
+      throw RuntimeConfigurationError(
+        message("runconfig.bazel.errors.multiple.platform.targets", providers.joinToString(", ") { it.id }),
+      )
+    }
+  }
 
   fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
     targets = newTargets
@@ -146,6 +172,8 @@ class BazelRunConfiguration internal constructor(
     BazelTestConsoleProperties(this, executor)
 
   override fun getAffectedTargets(): List<Label> = targets
+
+  override fun suggestedName(): @NlsActions.ActionText String = targets.joinToString(" ")
 
   companion object {
     private const val TARGET_TAG = "bsp-target"
