@@ -7,7 +7,6 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.JdkResolver
-import org.jetbrains.bazel.sync.workspace.languages.java.JdkVersionResolver
 import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.protobuf.ProtobufLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
@@ -38,7 +37,7 @@ class LanguagePluginsService {
 
   fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver) {
     val javaPlugin =
-      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver, JdkVersionResolver()), jvmPackageResolver)
+      JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver), jvmPackageResolver)
         .also(this::registerLangaugePlugin)
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)
