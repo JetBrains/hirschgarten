@@ -19,12 +19,12 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bazel.utils.findCanonicalVirtualFileThatExists
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileResult
@@ -97,12 +97,15 @@ class BuildTargetTask(private val project: Project) {
             message: String,
           ) {
             bspBuildConsole.addDiagnosticMessage(
-              originId,
-              textDocument,
-              line,
-              character,
-              message,
-              severity,
+              taskId = originId,
+              path = textDocument
+                ?.findCanonicalVirtualFileThatExists()
+                ?.toNioPath()
+                ?: textDocument,
+              line = line,
+              column = character,
+              message = message,
+              severity = severity,
             )
           }
 
