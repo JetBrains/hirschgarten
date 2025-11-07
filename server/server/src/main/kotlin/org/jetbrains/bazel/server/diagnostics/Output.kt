@@ -13,6 +13,8 @@ class Output(val lines: List<String>, val targetLabel: Label) {
 
   fun peek(limit: Int): List<String> = lines.subList(pointer, (pointer + limit).coerceAtMost(lines.size))
 
+  fun peekAll(): List<String> = lines.subList(pointer, lines.size)
+
   fun take(count: Int): List<String> = peek(count).also { pointer += count }
 
   fun tryTake(): String? = peek()?.also { take() }
