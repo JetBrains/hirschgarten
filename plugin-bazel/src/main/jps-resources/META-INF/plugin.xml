@@ -25,6 +25,7 @@
   <dependencies>
     <plugin id="com.intellij.modules.lang" />
     <module name="intellij.platform.searchEverywhere" />
+    <module name="intellij.libraries.grpc"/>
   </dependencies>
 
   <content namespace="jetbrains">
