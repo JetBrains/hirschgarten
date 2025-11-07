@@ -8,7 +8,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.source_root.projectview
 import java.nio.file.FileSystems
 import java.nio.file.Path
 
-class JavaProjectViewSourceRootPrefixContributor : JavaSourceRootPatternContributor {
+class JavaProjectViewSourceRootPatternContributor : JavaSourceRootPatternContributor {
   override fun getIncludePatterns(project: Project): List<SourceRootPattern> = getSourceRootPattern(project) { it.javaSROIncludePatterns }
 
   override fun getExcludePatterns(project: Project): List<SourceRootPattern> = getSourceRootPattern(project) { it.javaSROExcludePatterns }
