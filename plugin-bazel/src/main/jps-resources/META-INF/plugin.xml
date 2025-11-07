@@ -27,6 +27,10 @@
     <module name="intellij.platform.searchEverywhere" />
   </dependencies>
 
+  <content namespace="jetbrains">
+    <module name="intellij.bazel.kotlin.k2"/>
+  </content>
+
   <depends
     config-file="withCodeWithMe.xml"
     optional="true"
@@ -281,6 +285,10 @@
     <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.DefaultProjectViewSectionProvider"/>
   </extensions>
 
+  <extensions defaultExtensionNs="ByteCodeViewer">
+    <classFileFinder implementation="org.jetbrains.bazel.bytecodeViewer.BazelBytecodeViewerClassFileFinder"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <registryKey
       defaultValue="false"
@@ -407,7 +415,7 @@
     />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
-    <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.sdkcompat.BazelRunConfigurationProducerSuppressor" />
+    <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />
 
     <projectService
@@ -530,7 +538,7 @@
 
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
-    <projectPreInit implementation="org.jetbrains.bazel.sdkcompat.OpenBazelProjectAndSyncStartupActivity"/>
+    <projectPreInit implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectAndSyncStartupActivity"/>
     <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
     <notificationGroup
       displayType="BALLOON"
@@ -543,7 +551,7 @@
       implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"
     />
 
-    <projectStorePathCustomizer implementation="org.jetbrains.bazel.sdkcompat.BazelProjectStorePathCustomizer"/>
+    <projectStorePathCustomizer implementation="org.jetbrains.bazel.flow.open.BazelProjectStorePathCustomizer"/>
 
     <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
@@ -864,9 +872,7 @@
       implementation="org.jetbrains.bazel.searchEverywhere.SeLabelProviderFactory"
     />
 
-    <portForwarding.processHandlerPidProvider
-      implementation="org.jetbrains.bazel.sdkcompat.BazelProcessHandlerPidProvider"
-    />
+    <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
   </extensions>
 
   <actions>

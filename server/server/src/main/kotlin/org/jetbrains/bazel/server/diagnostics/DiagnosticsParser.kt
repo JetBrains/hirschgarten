@@ -40,7 +40,7 @@ class DiagnosticsParserImpl : DiagnosticsParser {
       }
     }
 
-    if (diagnostics.isEmpty()) {
+    if (diagnostics.isEmpty() && output.containsError()) {
       diagnostics.add(
         Diagnostic(
           position = Position(0, 0),
@@ -48,6 +48,7 @@ class DiagnosticsParserImpl : DiagnosticsParser {
           fileLocation = null,
           targetLabel = output.targetLabel,
         ),
+
       )
     }
 
@@ -60,11 +61,14 @@ class DiagnosticsParserImpl : DiagnosticsParser {
       .values
       .map { it.first() }
 
+  private fun Output.containsError(): Boolean = lines.any { line -> ErrorMessages.any { errorMessage -> errorMessage in line } }
+
   companion object {
     private val Parsers =
       listOf(
         BazelRootMessageParser,
         CompilerDiagnosticParser,
+        IntelliJRunnerOutputParser,
         Scala3CompilerDiagnosticParser,
         AllCatchParser,
       )
@@ -77,5 +81,6 @@ class DiagnosticsParserImpl : DiagnosticsParser {
         "^$".toRegex(),
         "Use --sandbox_debug to see verbose messages from the sandbox".toRegex(),
       )
+    private val ErrorMessages = listOf("error", "Error", "ERROR")
   }
 }

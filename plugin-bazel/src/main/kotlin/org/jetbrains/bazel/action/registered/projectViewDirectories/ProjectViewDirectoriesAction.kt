@@ -63,7 +63,11 @@ data class ProjectViewDirectoriesAction(
       }
       val colonPsi = newSelectedDirectoryPsi.getColon() ?: return
       WriteCommandAction.runWriteCommandAction(project) {
-        directoriesPsi.addRangeAfter(colonPsi.nextSibling, newSelectedDirectoryPsi.getItems().first(), directoriesPsi.getItems().last())
+        directoriesPsi.addRangeAfter(
+          colonPsi.nextSibling,
+          newSelectedDirectoryPsi.getItems().first(),
+          directoriesPsi.getItems().lastOrNull() ?: directoriesPsi.getColon(),
+        )
       }
     } else {
       WriteCommandAction.runWriteCommandAction(project) {

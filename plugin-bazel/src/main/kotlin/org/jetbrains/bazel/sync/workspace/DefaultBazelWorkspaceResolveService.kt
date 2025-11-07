@@ -128,7 +128,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
           val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
           val workspace =
             bazelMapper.createProject(
-              targets = synced.earlyProject.targets,
+              allTargets = synced.earlyProject.targets,
               rootTargets = buildTargets.rootTargets,
               workspaceContext = workspaceContext,
               featureFlags = featureFlags,

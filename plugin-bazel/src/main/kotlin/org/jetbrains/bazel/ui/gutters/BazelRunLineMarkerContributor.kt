@@ -5,7 +5,9 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
@@ -18,10 +20,9 @@ private class BazelRunLineMarkerInfo(text: String, actions: List<AnAction>) :
 
 @PublicApi
 abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
-  override fun getInfo(element: PsiElement): Info? = getSlowInfo(element)
-
-  override fun getSlowInfo(element: PsiElement): Info? =
-    if (element.project.isBazelProject && element.shouldAddMarker()) {
+  override fun getInfo(element: PsiElement): Info? =
+    // gutter icons are only allowed to be added to leaf elements
+    if (element is LeafPsiElement && element.project.isBazelProject && element.shouldAddMarker()) {
       element.calculateLineMarkerInfo()
     } else {
       null
@@ -44,10 +45,11 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
         targetUtils
           .getExecutableTargetsForFile(url)
           .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+      val hasTestTarget = targetInfos.any { it.kind.ruleType == RuleType.TEST }
       calculateLineMarkerInfo(
         project,
         targetInfos,
-        getSingleTestFilter(this),
+        hasTestTarget,
         getExtraProgramArguments(this),
         this,
       )
@@ -56,11 +58,13 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
   private fun calculateLineMarkerInfo(
     project: Project,
     targetInfos: List<BuildTarget>,
-    singleTestFilter: String?,
+    hasTestTarget: Boolean,
     testExecutableArguments: List<String>,
     psiElement: PsiElement,
-  ): Info? =
-    targetInfos
+  ): Info? {
+    val singleTestFilter =
+      if (hasTestTarget) getSingleTestFilter(psiElement) else null // no need to call the function if there are no tests among the targets
+    return targetInfos
       .flatMap { it.calculateEligibleActions(project, singleTestFilter, testExecutableArguments, targetInfos.size > 1, psiElement) }
       .takeIf { it.isNotEmpty() }
       ?.let {
@@ -69,6 +73,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
           actions = it,
         )
       }
+  }
 
   private fun BuildTarget?.calculateEligibleActions(
     project: Project,
