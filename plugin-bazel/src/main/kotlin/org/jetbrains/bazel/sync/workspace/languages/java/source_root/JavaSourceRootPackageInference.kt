@@ -28,7 +28,6 @@ class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver, va
 
     val supportedSources = sources.filter { !checkFileExistence || it.path.exists() }
       .filter { SUPPORTED_EXTENSIONS.contains(it.path.extension) }
-
     if (supportedSources.isEmpty()) {
       return
     }
@@ -60,7 +59,6 @@ class SourceItemPropagationPrefixTree {
   private var root = Node("", null)
 
   fun push(path: Sequence<String>, data: SourceItem) {
-
     var current = root
     for (segment in path) {
       var node: Node? = null
