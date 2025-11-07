@@ -15,8 +15,12 @@ import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragme
 import com.intellij.openapi.externalSystem.service.ui.util.SettingsFragmentInfo
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.components.JBTextField
+import com.intellij.ui.TextFieldWithAutoCompletion
+import com.intellij.util.textCompletion.TextFieldWithCompletion
+import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunConfigurationState
+import org.jetbrains.bazel.target.targetUtils
 
 /**
  * The base editor for a Bazel run configuration.
@@ -68,19 +72,44 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
   private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addBspTargetFragment() {
     this.addLabeledSettingsEditorFragment(
       object : LabeledSettingsFragmentInfo { // TODO: Use bundle
-        override val editorLabel: String = "Build target"
         override val settingsId: String = "bsp.target.fragment"
-        override val settingsName: String = "Build target"
-        override val settingsGroup: String = "BSP"
-        override val settingsHint: String = "Build target"
-        override val settingsActionHint: String = "Build target"
+        override val editorLabel: String = "Targets to run"
+        override val settingsName: String = "Targets to run"
+        override val settingsGroup: String = "Bazel"
+        override val settingsHint: String = "Specify all the targets to run separated by space. Each target must be executable!"
+        override val settingsActionHint: String = "Specify the targets to run."
       },
-      { JBTextField().apply { isEditable = false } },
-      { s, c ->
-        c.text = s.targets.joinToString(", ") { it.toString() }
+      {
+        val provider = TextFieldWithAutoCompletion.StringsCompletionProvider(
+          /* variants = */
+          project
+            .targetUtils
+            .allExecutableTargetLabels,
+          /* icon = */ BazelPluginIcons.bazel,
+        )
+        TextFieldWithCompletion(
+          /* project = */ project,
+          /* provider = */ provider,
+          /* value = */ "",
+          /* oneLineMode = */ true,
+          /* autoPopup = */ true,
+          /* forceAutoPopup = */ false,
+          /* showHint = */ true,
+        )
       },
-      { _, _ ->
-        {}
+      { config, field ->
+        field.text = config.targets.joinToString(" ") { it.toString() }
+      },
+      { config, field ->
+        if (field.text.isNotBlank()) {
+          val targets = field.text
+            .trim()
+            .split(" ")
+            .map(Label::parse)
+          config.updateTargets(targets)
+        } else {
+          config.updateTargets(emptyList())
+        }
       },
       { true },
     )
