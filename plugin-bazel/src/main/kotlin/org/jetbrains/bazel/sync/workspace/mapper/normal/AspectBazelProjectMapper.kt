@@ -304,12 +304,28 @@ class AspectBazelProjectMapper(
       }.map { Label.parse(it.key) to listOf(it.value) }
       .toMap()
 
+  private fun TargetInfo.isJavaTargetThatDependsOnKotlin(targetsToImport: Sequence<TargetInfo>): Boolean {
+    if (hasKotlinTargetInfo())
+      return false
+    val dependencies = dependenciesList.map { it.label().targetName }.toMutableSet()
+    val targets = targetsToImport.iterator()
+    while (dependencies.isNotEmpty() && targets.hasNext()) {
+      val checkedTarget = targets.next()
+      if (dependencies.remove(checkedTarget.label().targetName) && checkedTarget.hasKotlinTargetInfo()) {
+        return@isJavaTargetThatDependsOnKotlin true
+      }
+    }
+    return false
+  }
+
   private fun calculateKotlinStdlibsMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
     val projectLevelKotlinStdlibsLibrary = calculateProjectLevelKotlinStdlibsLibrary(targetsToImport)
-    val kotlinTargetsIds = targetsToImport.filter { it.hasKotlinTargetInfo() }.map { it.label() }
+    val kotlinDependentTargetsIds = targetsToImport.filter {
+      it.hasKotlinTargetInfo() || it.isJavaTargetThatDependsOnKotlin(targetsToImport)
+    }.map { it.label() }
 
     return projectLevelKotlinStdlibsLibrary
-      ?.let { stdlibsLibrary -> kotlinTargetsIds.associateWith { listOf(stdlibsLibrary) } }
+      ?.let { stdlibsLibrary -> kotlinDependentTargetsIds.associateWith { listOf(stdlibsLibrary) } }
       .orEmpty()
   }
 
