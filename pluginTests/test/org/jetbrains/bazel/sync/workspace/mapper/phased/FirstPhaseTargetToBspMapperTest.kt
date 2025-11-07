@@ -53,6 +53,7 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
     importIjars = false,
     deriveInstrumentationFilterFromTargets = true,
     indexAdditionalFilesInDirectories = emptyList(),
+    preferClassJarsOverSourcelessJars = true,
   )
 
 private fun createMockProject(lightweightModules: List<Build.Target>): PhasedBazelMappedProject =

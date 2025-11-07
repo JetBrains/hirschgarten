@@ -68,6 +68,7 @@ open class BuildServerMock(
       importIjars = false,
       deriveInstrumentationFilterFromTargets = true,
       indexAdditionalFilesInDirectories = emptyList(),
+      preferClassJarsOverSourcelessJars = true,
     ),
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val workspacePhasedBuildTargetsResult: WorkspacePhasedBuildTargetsResult? = null,
