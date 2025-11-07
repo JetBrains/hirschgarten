@@ -23,25 +23,29 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
 
   @Test
   fun `test presentation is disabled when no file in context`() {
-    useAndOpenProjectView("""
+    useProjectView(
+      """
       directories: .
-    """.trimIndent())
+    """.trimIndent(),
+    )
     val presentation = testPresentationOn(createActionContext())
     presentation.isEnabledAndVisible shouldBe false
   }
 
   @Test
   fun `test presentation is disabled when file is not a directory`() {
-    useAndOpenProjectView("""
+    useProjectView(
+      """
       directories: .
-    """.trimIndent())
+    """.trimIndent(),
+    )
     val presentation = testPresentationOn(createActionContext(myFixture.createFile("foo", "file")))
     presentation.isEnabledAndVisible shouldBe false
   }
 
   @Test
   fun `test presentation is disabled when file is a directory that is included directly`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories:
         foo
@@ -53,7 +57,7 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
 
   @Test
   fun `test presentation is disabled with when file is a directory that is included transitively`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories:
         .
@@ -65,7 +69,7 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
 
   @Test
   fun `test presentation is enabled with when file is a directory that is not included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories:
         bar
@@ -80,7 +84,7 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
 
   @Test
   fun `test presentation is enabled with when file is a directory that excluded directly`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories:
         -foo
@@ -95,7 +99,7 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
 
   @Test
   fun `test presentation is enabled with when file is a directory that excluded transitively`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories:
         -.
@@ -110,7 +114,7 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
 
   @Test
   fun `test includes given directory when not included and single other directory included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: 
         bar
@@ -121,12 +125,12 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
       included(Path("bar")),
       included(Path("foo")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test includes given directory when not included and multiple other directories included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: buzz
         bar
@@ -138,55 +142,63 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
       included(Path("bar")),
       included(Path("foo")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
-  fun `test includes given directory when not included and directories section is empty`() {
-    useAndOpenProjectView("""
+  fun `test includes given directory and root when directories section is empty`() {
+    useProjectView(
+      """
       directories:
       
-    """.trimIndent())
+    """.trimIndent(),
+    )
     performActionOnProjectDir("foo")
     bazelProjectView.directories shouldBe listOf(
+      included(Path(".")),
       included(Path("foo")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
-  fun `test includes given directory when not included and directories section not present`() {
-    useAndOpenProjectView("""
+  fun `test includes given directory and root when directories section not present`() {
+    useProjectView(
+      """
       targets:
         //foo
         //bar
-    """.trimIndent())
+    """.trimIndent(),
+    )
     performActionOnProjectDir("foo")
     bazelProjectView.directories shouldBe listOf(
+      included(Path(".")),
       included(Path("foo")),
     )
     bazelProjectView.targets shouldHaveSize 2
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
 
   @Test
   fun `test does not change directories when given directory directly included`() {
-    useAndOpenProjectView("""
+    useProjectView(
+      """
       directories: .
         bar
-    """.trimIndent())
+    """.trimIndent(),
+    )
     performActionOnProjectDir("bar")
     bazelProjectView.directories shouldBe listOf(
       included(Path(".")),
       included(Path("bar")),
     )
-    notifications shouldHaveSize 0
+    assertFalse(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test does not change directories when given directory transitively included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: .
     """.trimIndent(),
@@ -195,12 +207,12 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
     bazelProjectView.directories shouldBe listOf(
       included(Path(".")),
     )
-    notifications shouldHaveSize 0
+    assertFalse(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test removes excluded directory when transitively included and explicitly excluded`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: -bar
         .
@@ -210,12 +222,12 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
     bazelProjectView.directories shouldBe listOf(
       included(Path(".")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test removes excluded directory duplicates when transitively included and explicitly excluded`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: .
         -bar
@@ -226,12 +238,12 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
     bazelProjectView.directories shouldBe listOf(
       included(Path(".")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test removes excluded directory and adds included when explicitly excluded and not included in any way`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: buzz
         -bar
@@ -242,6 +254,6 @@ class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCa
       included(Path("buzz")),
       included(Path("bar")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 }
