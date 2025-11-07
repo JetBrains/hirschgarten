@@ -61,6 +61,7 @@ object ProjectViewToWorkspaceContextConverter {
       importIjars = projectView.importIjars,
       deriveInstrumentationFilterFromTargets = projectView.deriveInstrumentationFilterFromTargets,
       indexAdditionalFilesInDirectories = projectView.indexAdditionalFilesInDirectories,
+      preferClassJarsOverSourcelessJars = projectView.preferClassJarsOverSourcelessJars,
     )
   }
 

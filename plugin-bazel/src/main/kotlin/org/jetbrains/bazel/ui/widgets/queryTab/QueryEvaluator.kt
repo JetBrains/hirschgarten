@@ -80,6 +80,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
         importIjars = false,
         deriveInstrumentationFilterFromTargets = false,
         indexAdditionalFilesInDirectories = emptyList(),
+        preferClassJarsOverSourcelessJars = false,
       )
 
     return Pair(BazelRunner(null, workspaceRoot), emptyWorkspaceContext)

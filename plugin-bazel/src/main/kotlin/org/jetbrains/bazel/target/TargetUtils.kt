@@ -33,6 +33,7 @@ import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -66,9 +67,20 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       db.getAllTargetsAndLibrariesLabelsCache(project)
     }
 
+  private val allExecutableTargetsCache = SynchronizedClearableLazy {
+    db.getAllBuildTargets()
+      .filter { it.kind.isExecutable }
+      .map { it.id.toShortString(project) }
+      .toList()
+  }
+
   @InternalApi
   val allTargetsAndLibrariesLabels: List<String>
     get() = allTargetsAndLibrariesLabelsCache.value
+
+  @InternalApi
+  val allExecutableTargetLabels: List<String>
+    get() = allExecutableTargetsCache.value
 
   private val mutableTargetListUpdated = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_LATEST)
   val targetListUpdated: SharedFlow<Unit> = mutableTargetListUpdated.asSharedFlow()
@@ -201,6 +213,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   private fun notifyTargetListUpdated() {
     check(mutableTargetListUpdated.tryEmit(Unit))
     allTargetsAndLibrariesLabelsCache.drop()
+    allExecutableTargetsCache.drop()
   }
 
   @PublicApi
