@@ -2,7 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix
 
 import com.intellij.openapi.project.Project
 
-class JavaDefaultSourceRootPatternContributor : JavaSourceRootPatternContributor {
+private class JavaDefaultSourceRootPatternContributor : JavaSourceRootPatternContributor {
   private val prefixes = listOf(
     "src/main/java",
     "src/test/java",
