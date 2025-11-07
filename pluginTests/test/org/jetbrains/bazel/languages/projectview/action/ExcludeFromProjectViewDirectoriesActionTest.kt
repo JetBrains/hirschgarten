@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.projectview.action
 
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.ExcludableValue.Companion.excluded
 import org.jetbrains.bazel.commons.ExcludableValue.Companion.included
@@ -23,7 +22,7 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test presentation is disabled when no file in context`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: .
     """.trimIndent(),
@@ -34,7 +33,7 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test presentation is disabled when file is not a directory`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: .
     """.trimIndent(),
@@ -45,7 +44,7 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test presentation is disabled when file is a directory that is transitively excluded`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: 
         -foo
@@ -57,7 +56,7 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test presentation is disabled when file is a directory that is directly excluded`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: 
         -foo
@@ -69,14 +68,14 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test presentation is disabled when directories section is missing`() {
-    useAndOpenProjectView("")
+    useProjectView("")
     val presentation = testPresentationOn(createActionContext(myFixture.tempDirFixture.findOrCreateDir("foo")))
     presentation.isEnabledAndVisible shouldBe false
   }
 
   @Test
   fun `test presentation is enabled when file is a directory that is transitively included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: 
         .
@@ -91,7 +90,7 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test presentation is enabled when file is a directory that is directly included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: 
         foo
@@ -106,7 +105,7 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
 
   @Test
   fun `test excludes given directory when not excluded and transitively included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: .
     """.trimIndent(),
@@ -116,12 +115,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
       included(Path(".")),
       excluded(Path("foo")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test excludes directory when not excluded and transitively included and other dir included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
       directories: .
         foo
@@ -134,12 +133,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
       included(Path("bar")),
       excluded(Path("foo")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test removes directory if it's included and not transitively included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
        directories: bar
         foo
@@ -149,12 +148,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
     bazelProjectView.directories shouldBe listOf(
       included(Path("foo")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test removes directory duplicates if it's included and not transitively included`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
        directories: foo
         bar
@@ -165,12 +164,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
     bazelProjectView.directories shouldBe listOf(
       included(Path("foo")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test removes include and adds exclude if directory is included directly and transitively`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
        directories: foo
         foo/bar
@@ -181,12 +180,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
       included(Path("foo")),
       excluded(Path("foo/bar")),
     )
-    notifications shouldHaveSize 0
+    assertTrue(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test does not change directories when given directory already excluded directly`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
        directories: .
         -bar     
@@ -197,12 +196,12 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
       included(Path(".")),
       excluded(Path("bar")),
     )
-    notifications shouldHaveSize 0
+    assertFalse(isProjectViewOpenedInEditor())
   }
 
   @Test
   fun `test does not change directories when given directory already excluded transitively`() {
-    useAndOpenProjectView(
+    useProjectView(
       """
        directories: .
         -foo
@@ -213,6 +212,6 @@ class ExcludeFromProjectViewDirectoriesActionTest : ProjectViewDirectoriesAction
       included(Path(".")),
       excluded(Path("foo")),
     )
-    notifications shouldHaveSize 0
+    assertFalse(isProjectViewOpenedInEditor())
   }
 }

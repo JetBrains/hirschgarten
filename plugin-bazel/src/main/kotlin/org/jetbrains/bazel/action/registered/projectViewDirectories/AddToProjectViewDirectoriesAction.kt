@@ -3,15 +3,18 @@ package org.jetbrains.bazel.action.registered.projectViewDirectories
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.command.writeCommandAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import com.intellij.psi.PsiDocumentManager
 import org.jetbrains.bazel.config.BazelPluginBundle.message
 import org.jetbrains.bazel.config.bazelProjectProperties
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.psi.addDirectoriesInclude
+import org.jetbrains.bazel.languages.projectview.psi.directoriesContainsInclude
 import org.jetbrains.bazel.languages.projectview.psi.getProjectViewPsiFileOrNull
+import org.jetbrains.bazel.languages.projectview.psi.isDirectoriesNullOrEmpty
 import org.jetbrains.bazel.languages.projectview.psi.removeDirectoriesExclude
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.utils.findNearestParent
@@ -31,11 +34,21 @@ class AddToProjectViewDirectoriesAction : AnAction() {
     val isNotIncluded = nearestParent !in includes
     val isExplicitlyExcluded = directory in excludes
     if (!isExplicitlyExcluded && !isNotIncluded) return
-    runWithModalProgressBlocking(project, message("action.Bazel.AddToProjectViewDirectoriesAction.progress.text")) {
-      writeCommandAction(project, "EditProjectViewDirectories") {
-        if (isExplicitlyExcluded) projectViewPsi.removeDirectoriesExclude(directory)
-        if (isNotIncluded) projectViewPsi.addDirectoriesInclude(directory)
+    projectViewPsi.navigate(/* requestFocus = */ true)
+    if (projectViewPsi.directoriesContainsInclude(directory)) return
+    WriteCommandAction.writeCommandAction(project, projectViewPsi).compute<Unit, Throwable> {
+      if (projectViewPsi.isDirectoriesNullOrEmpty()) {
+        projectViewPsi.addDirectoriesInclude(project.rootDir)
       }
+      if (isExplicitlyExcluded) {
+        projectViewPsi.removeDirectoriesExclude(directory)
+      }
+      if (isNotIncluded) {
+        projectViewPsi.addDirectoriesInclude(directory)
+      }
+      PsiDocumentManager
+        .getInstance(project)
+        .reparseFiles(/* files = */ listOf(projectViewPsi.virtualFile), /* includeOpenFiles = */ false)
     }
   }
 
