@@ -7,17 +7,14 @@ import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.xQuery
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.openFile
-import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
-import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
@@ -35,7 +32,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
+          syncBazelProjectCloseDialog()
           waitForIndicators(10.minutes)
 
           step("Open file") {
@@ -55,7 +52,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
+          syncBazelProjectCloseDialog()
           waitForIndicators(10.minutes)
 
           step("Open test file") {
