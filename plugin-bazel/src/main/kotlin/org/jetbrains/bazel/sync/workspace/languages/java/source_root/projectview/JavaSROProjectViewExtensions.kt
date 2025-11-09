@@ -5,6 +5,9 @@ import org.jetbrains.bazel.languages.projectview.ProjectView
 val ProjectView.javaSROEnable: Boolean
   get() = getSection(JavaSROEnableSection.KEY) ?: false
 
+val ProjectView.javaSROIncludeMavenLayout: Boolean
+  get() = getSection(JavaSROIncludeMavenLayoutSection.KEY) ?: false
+
 val ProjectView.javaSROExcludePatterns: List<String>
   get() = getSection(JavaSROExcludePatternsSection.KEY) ?: emptyList()
 
