@@ -16,15 +16,16 @@ object SourcePatternEval {
     val matched = mutableListOf<T>()
     val unmatched = mutableListOf<T>()
     for (item in items) {
+      val transformed = transform(item)
       val excluded = if (includes.isEmpty()) {
         false
       } else {
-        excludes.any { it(transform(item)) }
+        excludes.any { it(transformed) }
       }
       if (excluded) {
         unmatched.add(item)
       } else {
-        if (includes.any { it(transform(item)) }) {
+        if (includes.any { it(transformed) }) {
           matched.add(item)
         } else {
           unmatched.add(item)
