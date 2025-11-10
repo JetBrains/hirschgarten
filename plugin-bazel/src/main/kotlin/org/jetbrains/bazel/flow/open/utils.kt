@@ -10,10 +10,10 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import java.io.IOException
+import java.nio.file.Files.isDirectory
+import java.nio.file.Files.isRegularFile
+import java.nio.file.Files.newDirectoryStream
 import java.nio.file.Path
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.listDirectoryEntries
 
 /**
  * this method can be used to set up additional project properties before opening the Bazel project
@@ -71,11 +71,11 @@ fun VirtualFile.isProjectViewFile(): Boolean =
 fun VirtualFile.isWorkspaceRoot(): Boolean = toNioPath().isWorkspaceRoot()
 
 private fun Path.isWorkspaceRoot(): Boolean =
-  isDirectory() &&
+  isDirectory(this) &&
     Constants.WORKSPACE_FILE_NAMES
       .asSequence()
       .map { resolve(it) }
-      .any { it.isRegularFile() }
+      .any { isRegularFile(it) }
 
 private fun VirtualFile.isWorkspaceFile() = isFile && name in Constants.WORKSPACE_FILE_NAMES
 
@@ -86,10 +86,9 @@ fun VirtualFile.getBuildFileForPackageDirectory(): VirtualFile? {
   try {
     if (!isDirectory) return null
     val path = toNioPath()
-    return path
-      .listDirectoryEntries(
-        glob = BUILD_FILE_GLOB,
-      ).firstOrNull { it.isRegularFile() }
+
+    return newDirectoryStream(path, BUILD_FILE_GLOB)
+      .firstOrNull { isRegularFile(it) }
       ?.refreshAndFindVirtualFile()
   } catch (e: IOException) {
     thisLogger().warn("Cannot retrieve Bazel BUILD file from directory $path", e)
