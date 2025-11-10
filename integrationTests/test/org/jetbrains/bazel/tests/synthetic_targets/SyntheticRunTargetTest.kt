@@ -23,6 +23,7 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
     createContext("runAllTestsAction", IdeaBazelCases.SyntheticRunTarget)
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
+        this.addSystemProperty("ide.registry.bazel.run.synthetic.enable", "true")
       }
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

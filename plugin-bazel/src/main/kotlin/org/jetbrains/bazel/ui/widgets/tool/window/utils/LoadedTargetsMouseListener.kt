@@ -13,6 +13,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
@@ -179,9 +180,11 @@ fun DefaultActionGroup.fillWithEligibleActions(
     )
   }
 
-  if (target.kind.ruleType == RuleType.LIBRARY) {
-    if (callerPsiElement != null) {
-      addSyntheticRunActions(target, callerPsiElement, includeTargetNameInText, canBeDebugged)
+  if (BazelFeatureFlags.syntheticRunEnable) {
+    if (target.kind.ruleType == RuleType.LIBRARY) {
+      if (callerPsiElement != null) {
+        addSyntheticRunActions(target, callerPsiElement, includeTargetNameInText, canBeDebugged)
+      }
     }
   }
 
