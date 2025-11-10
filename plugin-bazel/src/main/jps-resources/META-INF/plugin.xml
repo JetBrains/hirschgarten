@@ -428,6 +428,11 @@
     />
 
     <registryKey defaultValue="false"
+      description="Enable running non-binary bazel targets using synthetically generated targets"
+      key="bazel.run.synthetic.enable"
+      restartRequired="true"
+    />
+    <registryKey defaultValue="false"
                  description="Disable bazel visibility checks when running syhthetic binary targets"
                  key="bazel.run.synthetic.disable.visibility.check"
                  restartRequired="false"
