@@ -31,15 +31,15 @@ fun getProjectViewPath(
     ?: return null
 
   return when {
-    path.isProjectViewFile() -> path
+    path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> path
     // BUILD file at the root can be treated as a workspace file in this context
-    path.isBuildFile() -> {
+    path.hasNameOf(*Constants.BUILD_FILE_NAMES) -> {
       path.parent
         // ?.takeUnless { it.isWorkspaceRoot() }
         ?.let { calculateProjectViewFilePath(projectRootDir, it) }
     }
 
-    path.isWorkspaceFile() -> null
+    path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES) -> null
     path.isWorkspaceRoot() -> null
     else -> {
       path.getBuildFileForPackageDirectory()
@@ -72,18 +72,13 @@ tailrec fun findProjectFolderFromVFile(file: VirtualFile?): VirtualFile? {
     path.isWorkspaceRoot() -> file
     // this is to prevent opening a file that is not an acceptable Bazel config file, #BAZEL-1940
     // TODO(Son): figure out how to write a test for it to avoid regression later
-    isRegularFile(path) && !path.isEligibleFile() -> null
+    isRegularFile(path) &&
+      !path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES) &&
+      !path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> null
 
     else -> findProjectFolderFromVFile(file.parent)
   }
 }
-
-private fun Path.isEligibleFile(): Boolean =
-  isWorkspaceFile() || isBuildFile() || isProjectViewFile()
-
-private fun Path.isProjectViewFile(): Boolean =
-  isRegularFile(this) &&
-    extension == Constants.PROJECT_VIEW_FILE_EXTENSION
 
 private fun Path.isWorkspaceRoot(): Boolean =
   isDirectory(this) &&
@@ -92,14 +87,17 @@ private fun Path.isWorkspaceRoot(): Boolean =
       .map { resolve(it) }
       .any { isRegularFile(it) }
 
-private fun Path.isWorkspaceFile() =
+fun Path.hasNameOf(vararg names: String): Boolean =
   isRegularFile(this) &&
-    name in Constants.WORKSPACE_FILE_NAMES
+    name in names
 
-private fun Path.isBuildFile(): Boolean =
+fun Path.hasExtensionOf(vararg extensions: String): Boolean =
   isRegularFile(this) &&
-    name in Constants.BUILD_FILE_NAMES
+    extension in extensions
 
+/**
+ * @see [hasNameOf]
+ */
 fun VirtualFile.isBuildFile(): Boolean =
   isFile && name in Constants.BUILD_FILE_NAMES
 
