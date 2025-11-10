@@ -2,13 +2,10 @@ package org.jetbrains.bazel.run.config
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
-import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.testframework.JavaTestLocator
 import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
-import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -18,6 +15,7 @@ import org.jdom.Element
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 class BazelRunConfiguration internal constructor(
@@ -154,12 +152,5 @@ class BazelRunConfiguration internal constructor(
     private const val BSP_STATE_TAG = "bsp-state"
     private const val HANDLER_STATE_TAG = "handler-state"
     private const val HANDLER_PROVIDER_ATTR = "handler-provider-id"
-  }
-
-  private class BazelTestConsoleProperties(
-    config: RunConfiguration,
-    executor: Executor,
-  ) : SMTRunnerConsoleProperties(config, "Bazel", executor) {
-    override fun getTestLocator(): SMTestLocator = JavaTestLocator.INSTANCE
   }
 }
