@@ -14,7 +14,6 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.extension
 import kotlin.io.path.name
-import kotlin.io.path.relativeTo
 import kotlin.io.path.writeText
 
 private const val PROJECT_VIEW_FILE_SYSTEM_PROPERTY = "bazel.project.view.file.path"
@@ -38,7 +37,7 @@ object ProjectViewFileUtils {
     projectRootDir: VirtualFile,
     projectViewPath: Path?,
     overwrite: Boolean = false,
-    bazelPackageDir: VirtualFile? = null,
+    format: String? = null,
   ): Path {
     // todo should be the actual parameter
     val projectRootPath = projectRootDir.toNioPath()
@@ -49,15 +48,23 @@ object ProjectViewFileUtils {
         ?: (if (overwrite) null else calculateLegacyManagedProjectViewFile(projectRootPath))
         ?: calculateProjectViewFileInCurrentDirectory(projectRootPath.resolve(Constants.DOT_BAZELBSP_DIR_NAME))
 
-    val content = createProjectViewFileContent(projectRootDir, bazelPackageDir)
-    setProjectViewFileContent(projectViewFilePath, content, overwrite)
+    setProjectViewFileContent(
+      projectViewFilePath = projectViewFilePath,
+      content = projectViewTemplate(projectRootDir, format),
+      overwrite = overwrite,
+    )
 
     return projectViewFilePath
   }
 
-  fun projectViewTemplate(projectRootDir: VirtualFile): String {
-    val path = projectRootDir.resolveFromRootOrRelative(PROJECTVIEW_DEFAULT_TEMPLATE_PATH)
-    return path?.readText() ?: INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE
+  fun projectViewTemplate(
+    projectRootDir: VirtualFile,
+    format: String? = null,
+  ): String {
+    val rawText = projectRootDir.resolveFromRootOrRelative(PROJECTVIEW_DEFAULT_TEMPLATE_PATH)
+      ?.readText()
+      ?: INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE
+    return rawText.format(format.orEmpty().ifBlank { "." })
   }
 
   private fun calculateLegacyManagedProjectViewFile(projectRootDir: Path): Path? {
@@ -81,13 +88,6 @@ object ProjectViewFileUtils {
     else directory.resolve(Constants.DEFAULT_PROJECT_VIEW_FILE_NAME)
   }
 
-  private fun createProjectViewFileContent(rootDir: VirtualFile, bazelPackageDir: VirtualFile?): String {
-    val projectRoot = rootDir.toNioPath()
-    val realizedBazelPackageDir = bazelPackageDir?.toNioPath() ?: projectRoot
-    val relativePath = calculateRelativePathForInferredDirectory(projectRoot, realizedBazelPackageDir)
-    return projectViewTemplate(rootDir).format(relativePath)
-  }
-
   private fun setProjectViewFileContent(
     projectViewFilePath: Path,
     content: String,
@@ -103,9 +103,4 @@ object ProjectViewFileUtils {
     projectViewFilePath.writeText(content, options = OPEN_OPTIONS)
   }
 
-  private fun calculateRelativePathForInferredDirectory(projectRoot: Path, bazelPackageDir: Path): String {
-    val relativePath = bazelPackageDir.relativeTo(projectRoot).toString()
-    if (relativePath.isBlank()) return "."
-    return relativePath
-  }
 }
