@@ -4,7 +4,6 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
-import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import org.jetbrains.bazel.commons.constants.Constants
@@ -17,6 +16,7 @@ import java.nio.file.Files.newDirectoryStream
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.name
+import kotlin.io.path.relativeTo
 
 /**
  * this method can be used to set up additional project properties before opening the Bazel project
@@ -30,13 +30,21 @@ fun getProjectViewPath(
   val path = virtualFile.toNioPathOrNull()
     ?: return null
 
+  fun calculateProjectViewFilePath(directory: Path): Path =
+    ProjectViewFileUtils.calculateProjectViewFilePath(
+      projectRootDir = projectRootDir,
+      projectViewPath = null,
+      overwrite = true,
+      format = directory.relativeTo(projectRootDir.toNioPath()).toString(),
+    )
+
   return when {
     path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> path
     // BUILD file at the root can be treated as a workspace file in this context
     path.hasNameOf(*Constants.BUILD_FILE_NAMES) -> {
       path.parent
         // ?.takeUnless { it.isWorkspaceRoot() }
-        ?.let { calculateProjectViewFilePath(projectRootDir, it) }
+        ?.let { calculateProjectViewFilePath(it) }
     }
 
     path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES) -> null
@@ -44,20 +52,10 @@ fun getProjectViewPath(
     else -> {
       path.getBuildFileForPackageDirectory()
         ?.parent
-        ?.let { calculateProjectViewFilePath(projectRootDir, it) }
+        ?.let { calculateProjectViewFilePath(it) }
     }
   }
 }
-
-fun calculateProjectViewFilePath(
-  projectRootDir: VirtualFile,
-  bazelPackageDir: Path,
-): Path = ProjectViewFileUtils.calculateProjectViewFilePath(
-  projectRootDir = projectRootDir,
-  projectViewPath = null,
-  overwrite = true,
-  bazelPackageDir = bazelPackageDir.refreshAndFindVirtualFile(),
-)
 
 /**
  * when a file/subdirectory is selected for opening a Bazel project,
