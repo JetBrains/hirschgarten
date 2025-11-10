@@ -6,18 +6,13 @@ import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.project.getProjectCacheFileName
 import com.intellij.openapi.project.projectsDataDir
 import org.jetbrains.bazel.commons.constants.Constants
-import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.extension
-import kotlin.io.path.name
 
 private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
   override fun getStoreDirectoryPath(projectRoot: Path): ProjectStoreDescriptor? {
     // do not use isDirectory, as we also want to check that the file exists
-    if (!Files.isRegularFile(projectRoot)) return null
-
-    if (projectRoot.name !in Constants.SUPPORTED_CONFIG_FILE_NAMES &&
-      !Constants.SUPPORTED_EXTENSIONS.contains(projectRoot.extension)
+    if (!projectRoot.hasNameOf(*Constants.SUPPORTED_CONFIG_FILE_NAMES) &&
+      !projectRoot.hasExtensionOf(*Constants.SUPPORTED_EXTENSIONS)
     ) return null
 
     // we should use `getProjectCacheFileName` API,
