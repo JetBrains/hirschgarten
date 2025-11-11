@@ -100,27 +100,10 @@ class SourceItemPropagationPrefixTree {
   private fun propagateInSubtree(subtreeRoot: Node, slowPackageResolver: (item: Path) -> String?) {
     // find subtree package reference
     // it can be any file in specific directory
-    val rootSourceFile = findFirstSourceFileInSubtree(subtreeRoot) ?: return
+    val rootSourceFile = subtreeRoot.children.firstOrNull { it.item != null }?.item ?: return
     val resolvedPackage = slowPackageResolver(rootSourceFile.path) ?: return
     // propagate all files in subtree in relation to root source file
     propagateFromRootSourceFileInSubtree(subtreeRoot, rootSourceFile, resolvedPackage)
-  }
-
-  private fun findFirstSourceFileInSubtree(subtreeRoot: Node): SourceItem? {
-    val queue = ArrayDeque<Node>()
-    queue.add(subtreeRoot)
-
-    while (true) {
-      val node = queue.removeFirstOrNull()
-      if (node == null) {
-        break
-      }
-      if (node.item != null) {
-        return node.item
-      }
-      queue.addAll(node.children)
-    }
-    return null
   }
 
   private fun propagateFromRootSourceFileInSubtree(subtreeRoot: Node, rootSourceFile: SourceItem, resolvedPackage: String) {
