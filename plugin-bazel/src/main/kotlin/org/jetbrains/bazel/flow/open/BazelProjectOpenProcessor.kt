@@ -7,14 +7,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.projectImport.ProjectOpenProcessor
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.settings.bazel.openProjectViewInEditor
-import org.jetbrains.bazel.settings.bazel.setProjectViewPath
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.nio.file.Path
 import javax.swing.Icon
 
@@ -82,10 +82,13 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         beforeOpen = { project ->
           project.initProperties(projectRootDir)
 
-          if (projectViewPath != null) {
-            project.setProjectViewPath(projectViewPath)
-            openProjectViewInEditor(project, projectViewPath)
-          }
+          projectViewPath
+            ?.refreshAndFindVirtualFile()
+            ?.let { projectViewPath ->
+              project.bazelProjectSettings = project.bazelProjectSettings
+                .withNewProjectViewPath(projectViewPath)
+              openProjectViewInEditor(project, projectViewPath)
+            }
 
           true
         }
