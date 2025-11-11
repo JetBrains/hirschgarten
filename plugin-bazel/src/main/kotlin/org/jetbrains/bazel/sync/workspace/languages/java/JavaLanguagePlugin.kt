@@ -41,14 +41,12 @@ class JavaLanguagePlugin(
     val projectView = ProjectViewService.getInstance(project)
       .getCachedProjectView()
     cachedJavaSROEnable = projectView.javaSROEnable
-    cachedSROIncludeMatchers = JavaSourceRootPatternContributor.ep
+
+    val patterns = JavaSourceRootPatternContributor.ep
       .extensionList
-      .flatMap { it.getIncludePatterns(project) }
-      .toList()
-    cachedSROExcludeMatchers = JavaSourceRootPatternContributor.ep
-      .extensionList
-      .flatMap { it.getExcludePatterns(project) }
-      .toList()
+      .map { it.getPatterns(project) }
+    cachedSROIncludeMatchers = patterns.flatMap { it.includes }
+    cachedSROExcludeMatchers = patterns.flatMap { it.excludes }
   }
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {

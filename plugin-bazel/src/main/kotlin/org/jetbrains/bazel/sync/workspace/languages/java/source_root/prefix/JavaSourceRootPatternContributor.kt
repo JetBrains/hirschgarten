@@ -6,10 +6,11 @@ import com.intellij.openapi.project.Project
 typealias SourceRootPattern = (root: String) -> Boolean
 
 interface JavaSourceRootPatternContributor {
-  fun getIncludePatterns(project: Project): List<SourceRootPattern>
-  fun getExcludePatterns(project: Project): List<SourceRootPattern>
+  fun getPatterns(project: Project): JavaSourceRootPatterns
 
   companion object {
     val ep = ExtensionPointName<JavaSourceRootPatternContributor>("org.jetbrains.bazel.javaSourceRootPrefixContributor")
   }
 }
+
+data class JavaSourceRootPatterns(val includes: List<SourceRootPattern>, val excludes: List<SourceRootPattern>)
