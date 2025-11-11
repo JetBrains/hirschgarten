@@ -1,11 +1,16 @@
 package org.jetbrains.bazel.flow.open
 
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
+import com.intellij.openapi.fileEditor.impl.FileEditorOpenOptions
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
@@ -116,4 +121,21 @@ fun Project.initProperties(projectRootDir: VirtualFile) {
 
   this.isBazelProject = true
   this.rootDir = projectRootDir
+}
+
+internal suspend fun openProjectViewInEditor(
+  project: Project,
+  file: VirtualFile,
+) {
+  // README.md should still be the selected tab afterward
+  val fileEditorManager = FileEditorManagerEx.getInstanceEx(project)
+  withContext(Dispatchers.EDT) {
+    fileEditorManager.openFile(
+      file = file,
+      options = FileEditorOpenOptions(
+        selectAsCurrent = false,
+        requestFocus = false,
+      ),
+    )
+  }
 }
