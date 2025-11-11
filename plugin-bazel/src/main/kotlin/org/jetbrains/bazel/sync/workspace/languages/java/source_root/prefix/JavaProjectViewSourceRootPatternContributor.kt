@@ -25,6 +25,6 @@ private class JavaProjectViewSourceRootPatternContributor : JavaSourceRootPatter
 
 
   private fun ProjectViewGlobSet.toSourceRootPattern(): SourceRootPattern {
-    return { path -> this.matches(path) }
+    return SourceRootPattern { path -> this.matches(path) }
   }
 }
