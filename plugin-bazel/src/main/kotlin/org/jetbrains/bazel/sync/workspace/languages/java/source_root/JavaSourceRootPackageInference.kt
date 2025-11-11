@@ -19,15 +19,14 @@ private val SUPPORTED_EXTENSIONS = listOf("java", "kt", "scala")
 //
 // it is not perfect but still better than randomly accessing thousands of files
 //
-class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver, val checkFileExistence: Boolean = true) {
+class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver) {
 
   fun inferPackages(sources: List<SourceItem>) {
     if (sources.isEmpty()) {
       return
     }
 
-    val supportedSources = sources.filter { !checkFileExistence || it.path.exists() }
-      .filter { SUPPORTED_EXTENSIONS.contains(it.path.extension) }
+    val supportedSources = sources.filter { SUPPORTED_EXTENSIONS.contains(it.path.extension) }
     if (supportedSources.isEmpty()) {
       return
     }
