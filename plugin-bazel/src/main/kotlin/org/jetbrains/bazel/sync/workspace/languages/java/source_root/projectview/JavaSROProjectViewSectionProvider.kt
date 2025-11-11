@@ -6,8 +6,6 @@ import org.jetbrains.bazel.languages.projectview.Section
 class JavaSROProjectViewSectionProvider : ProjectViewSectionProvider {
   override val sections: List<Section<*>> = listOf(
     JavaSROEnableSection(),
-    JavaSROIncludeMavenLayoutSection(),
-    JavaSROExcludePatternsSection(),
-    JavaSROIncludePatternsSection(),
+    JavaSROPatternsSection(),
   )
 }

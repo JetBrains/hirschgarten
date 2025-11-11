@@ -11,7 +11,7 @@ class JavaSROEnableSection : BooleanScalarSection() {
   override val default: Boolean = false
 
   companion object {
-    const val NAME = "java_sro_enable"
+    const val NAME = "java_source_root_optimization_enable"
     val KEY: SectionKey<Boolean> = SectionKey(NAME)
   }
 }
