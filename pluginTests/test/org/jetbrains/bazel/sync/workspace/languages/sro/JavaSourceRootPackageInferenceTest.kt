@@ -21,7 +21,7 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/java/my/package/subpackage/subpkg/SubpackageClass.java" to "my.package.subpackage.subpkg",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe "my.package"
@@ -41,7 +41,7 @@ class JavaSourceRootPackageInferenceTest {
       "src/com/pkg/sub/Sub2.java" to "com.other_pkg",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe "com.pkg"
@@ -57,7 +57,7 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/java/com/company/project/module/feature/impl/sub/deep/DeepClass.java" to "com.company.project.module.feature.impl.sub.deep",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe "com.company.project.module.feature.impl"
@@ -72,7 +72,7 @@ class JavaSourceRootPackageInferenceTest {
       "AnotherRoot.java" to "",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe ""
@@ -87,7 +87,7 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/scala/com/pkg/ScalaClass.scala" to "com.pkg",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe "com.pkg"
@@ -104,7 +104,7 @@ class JavaSourceRootPackageInferenceTest {
       override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? = null
     }
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe null
@@ -118,7 +118,7 @@ class JavaSourceRootPackageInferenceTest {
       "src/com/pkg/Class3.java" to "com.different",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe "com.pkg"
@@ -135,7 +135,7 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/java/com/pkg2/sub/SubClass2.java" to "com.pkg2.sub",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe "com.pkg1"
@@ -151,7 +151,7 @@ class JavaSourceRootPackageInferenceTest {
       "src/subdir/Class2.java" to "subdir",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe ""
@@ -167,7 +167,7 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/java/com/example/feature2/impl/ImplClass2.java" to "com.example.feature2.impl",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver, checkFileExistence = false)
+    JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
     sources[0].jvmPackagePrefix shouldBe "com.example.feature1"
