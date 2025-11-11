@@ -24,10 +24,15 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
   """
   # This project view file may be overwritten by the Bazel plugin.
   # To use it as default, place it in the Bazel module or workspace root directory.
-  # For more options, see project view file documentation
+  # For more options, see project view file documentation: https://www.jetbrains.com/help/idea/bazel-project-view.html
   
   derive_targets_from_directories: true
   directories: %s
+  
+  # Uncomment these lines to make indexing quicker:
+  # import_depth: 0
+  # import_ijars: true
+  
   """.trimIndent()
 
 private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
