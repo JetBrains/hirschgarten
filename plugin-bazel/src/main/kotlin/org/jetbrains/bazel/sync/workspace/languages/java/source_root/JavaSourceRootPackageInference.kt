@@ -89,6 +89,10 @@ class SourceItemPropagationPrefixTree {
       // so if we find subtree whose child has existing file
       // we start propagation from it
       if (node.children.any { it.item != null }) {
+        // propagate in every subtree to handle
+        // having multiple root packages in single source root
+        //    src/com/jetbrains/...
+        //    src/org/jetbrains/...
         this.propagateInSubtree(node, slowPackageResolver)
       }
       for (child in node.children) {
