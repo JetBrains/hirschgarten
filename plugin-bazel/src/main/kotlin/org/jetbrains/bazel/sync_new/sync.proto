@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+option java_package = "com.jetbrains.bazel.sync_new.proto";
+option java_multiple_files = true;
+
+// common
+message BazelPath {
+  string path = 1;
+}
+
+// sync snapshot
+message BazelSyncSnapshot {
+  message TargetHash {
+    string canonical_label = 1;
+    uint64 hash_lo = 2;
+    uint64 hash_hi = 3;
+  }
+
+  message RepoMapping {
+    map<string, string> apparent_to_canonical = 1;
+    map<string, BazelPath> canonical_to_path = 2;
+  }
+
+  repeated TargetHash target_hashes = 1;
+  RepoMapping repo_mapping = 2;
+}
+
+
+// target graph
+message BazelTargetNode {
+  uint64 vertex_id = 1;
+  string canonical_label = 2;
+  BazelPath target_path = 3;
+
+  optional BazelTargetGenericData generic_data = 10;
+  optional BazelTargetJvmData jvm_data = 20;
+}
+
+message BazelTargetDependency {
+  uint64 from_id = 1;
+  uint64 to_id = 2;
+}
+
+// targets
+message BazelTargetGenericData {
+  message Dependency {
+    string canonical_label = 1;
+  }
+  message SourceFile {
+    BazelPath path = 1;
+    uint32 priority = 2;
+  }
+  message ResourceFile {
+    BazelPath path = 1;
+  }
+  enum Tags {
+    LIBRARY = 0;
+    EXECUTABLE = 1;
+    TEST = 2;
+  }
+
+  repeated Tags tags = 1;
+  repeated Dependency direct_dependencies = 2;
+  repeated SourceFile sources = 3;
+  repeated ResourceFile resources = 4;
+}
+
+message BazelTargetJvmData {
+  message LibraryData {
+    message MavenCoordinates {
+      string group_id = 1;
+      string artifact_id = 2;
+      string version = 3;
+    }
+
+    optional MavenCoordinates maven_coordinates = 1;
+  }
+
+  message BinaryData {
+    optional string main_class = 1;
+    map<string, string> env_vars = 2;
+    repeated string jvm_args = 3;
+    repeated string program_args = 4;
+  }
+
+  message SourceFile {
+    BazelPath path = 1;
+    uint32 priority = 2;
+    string jvm_package = 3;
+    bool is_generated = 4;
+  }
+
+  repeated BazelPath class_jars = 1;
+  repeated BazelPath source_jars = 2;
+  repeated BazelPath ijars_jars = 3;
+  repeated BazelPath output_jars = 4;
+  repeated SourceFile sources = 5;
+  optional LibraryData library_data = 6;
+  optional BinaryData binary_data = 7;
+}
