@@ -49,7 +49,7 @@ object SourcePatternEval {
   ): PatternEvalResult<SourceItem> = eval(
     items = sources,
     transform = { it.path.relativeTo(workspaceRoot).toString() },
-    includes = includes,
-    excludes = excludes,
+    includes = includes.map { { pattern: String -> it.matches(pattern)} },
+    excludes = excludes.map { { pattern: String -> it.matches(pattern)} },
   )
 }
