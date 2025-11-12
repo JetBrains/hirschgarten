@@ -40,7 +40,7 @@ fun getProjectViewPath(
       projectRootDir = projectRootDir,
       projectViewPath = null,
       overwrite = true,
-      format = directory.relativeTo(path).toString(),
+      format = directory.relativeTo(projectRootDir.toNioPath()).toString(),
     )
 
   return when {
