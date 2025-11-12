@@ -13,6 +13,7 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -21,11 +22,16 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
 
-  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> {
+  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<SourceItem> {
     if (!targetInfo.hasGoTargetInfo()) return emptySequence()
     return targetInfo.goTargetInfo.generatedSourcesList
       .asSequence()
-      .mapNotNull { bazelPathsResolver.resolve(it) }
+      .mapNotNull {
+        SourceItem(
+          path = bazelPathsResolver.resolve(it),
+          generated = true,
+        )
+      }
   }
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): GoBuildTarget? {

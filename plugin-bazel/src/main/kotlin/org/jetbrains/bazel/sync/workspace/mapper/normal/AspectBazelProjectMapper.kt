@@ -931,18 +931,28 @@ class AspectBazelProjectMapper(
         .map(bazelPathsResolver::resolve)
         .filter { it.extension != "srcjar" }
 
+    val sourceItems = sources.map {
+      SourceItem(
+        path = bazelPathsResolver.resolve(it),
+        generated = false,
+        jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
+      )
+    }
+
+    val generatedSourceItems = generatedSources.map {
+      SourceItem(
+        path = bazelPathsResolver.resolve(it),
+        generated = true,
+        jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
+      )
+    }
+
     val extraSources = languagePlugin.calculateAdditionalSources(target)
 
-    return (sources + extraSources + generatedSources)
-      .distinct()
-      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-      .map {
-        SourceItem(
-          path = it,
-          generated = false,
-          jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
-        )
-      }.toList()
+    return (sourceItems + generatedSourceItems + extraSources)
+      .distinctBy { it.path }
+      .onEach { if (it.path.notExists()) logNonExistingFile(it.path, target.id) }
+      .toList()
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {
