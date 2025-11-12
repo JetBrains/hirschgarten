@@ -21,7 +21,8 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
-internal abstract class BaseRunnerAction(
+public abstract class BaseRunnerAction(
+  private val buildTargets: List<BuildTarget>,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
@@ -32,16 +33,16 @@ internal abstract class BaseRunnerAction(
   ) {
   protected abstract suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings?
 
-  protected abstract fun getBuildTargets(project: Project): List<BuildTarget>
-
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     doPerformAction(project)
   }
 
   suspend fun doPerformAction(project: Project) {
     try {
-      val settings = getRunnerSettings(project, this.getBuildTargets(project)) ?: return
-      RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
+      val settings = getRunnerSettings(project, buildTargets) ?: return
+      val runManager = RunManagerEx.getInstanceEx(project)
+      runManager.setTemporaryConfiguration(settings)
+      runManager.selectedConfiguration = settings
       val executor = getExecutor()
       val runner = ProgramRunner.getRunner(executor.id, settings.configuration)
 
