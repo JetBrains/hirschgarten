@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.python
 
+import com.jetbrains.python.PyNames
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
@@ -79,7 +80,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   private tailrec fun findSitePackagesSubdirectory(path: Path?): Path? =
     when {
       path == null -> null
-      path.endsWith("site-packages") -> path
+      path.endsWith(PyNames.SITE_PACKAGES) -> path
       else -> findSitePackagesSubdirectory(path.parent)
     }
 }

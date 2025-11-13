@@ -9,16 +9,16 @@ import com.intellij.ide.starter.driver.execute
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.GoLandBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.navigateToFile
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
 import org.junit.jupiter.api.Test
 import kotlin.collections.forEach
 import kotlin.collections.listOf
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val FILES_TO_CHECK_FOR_RED_CODE =
@@ -42,9 +42,8 @@ class GolandSyncTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          step("Sync project") {
-            execute { it.waitForBazelSync().waitForSmartMode() }
-          }
+          syncBazelProject()
+          waitForIndicators(timeout = 10.minutes)
 
           step("Open a source file and navigate from a trivial code reference to another source file in the workspace") {
             execute { it.openFile("testa/testa.go") }
