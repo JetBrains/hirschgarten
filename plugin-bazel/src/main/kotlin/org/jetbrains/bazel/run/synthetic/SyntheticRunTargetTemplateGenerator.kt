@@ -8,6 +8,8 @@ import org.jetbrains.bsp.protocol.BuildTarget
 
 interface SyntheticRunTargetTemplateGenerator {
   fun isSupported(target: BuildTarget): Boolean
+
+  // TODO: remove this completely after action system refactor
   fun getRunnerActionName(original: String, target: BuildTarget, element: PsiElement): String
   fun getSyntheticTargetLabel(original: BuildTarget, element: PsiElement): Label
   fun getSyntheticParams(target: BuildTarget, element: PsiElement): SyntheticRunTargetParams
