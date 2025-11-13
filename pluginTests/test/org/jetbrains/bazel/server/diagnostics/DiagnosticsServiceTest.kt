@@ -872,6 +872,264 @@ class DiagnosticsServiceTest {
     diagnostics shouldContainExactlyInAnyOrder expected
   }
 
+  @Test
+  fun `should parse intellij kotlin errors`() {
+    // given
+    val output =
+      """
+      Invoking: '/Users/user/path/to/project/bazelisk' 'build' '--tool_tag=bazelbsp:3.2.0' '--keep_going' '--build_event_binary_file=/var/folders/4k/foo.tmp' '--bes_outerr_buffer_size=10' '--build_event_publish_all_actions' '--inject_repository=bazelbsp_aspect=/Users/user/path/to/project/.bazelbsp' '--curses=no' '--color=yes' '--noprogress_in_terminal_title' '--target_pattern_file=/Users/user/path/to/project/.bazelbsp/targets/targets-1'
+      AUTH: Skipping running of authorizer, it was already run today
+      AUTH: To forcefully re-run authorizer remove the following file: /Users/user/path/to/project/out/.private.packages.auth.last.run.txt
+      INFO: Invocation ID: de143285-266a-487f-99db-f3305c481600
+      Computing main repo mapping: 
+      Loading: 
+      Loading: 1 packages loaded
+      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (6 packages loaded, 6 targets configured)
+      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (134 packages loaded, 7089 targets configured)
+      INFO: Analyzed target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (1342 packages loaded, 104001 targets configured).
+      [1 / 1] no actions running
+      [675 / 676] [Sched] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}
+      [675 / 676] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}; 1s disk-cache, remote-cache, multiplex-worker
+      ERROR: /Users/user/path/to/project/BUILD.bazel:21:12: compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5} failed: (Exit -1): java failed: error executing JvmCompile command (from target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics) external/community++jbr_toolchains+remotejbr21_macos_aarch64/bin/java -Xms4g -Xmx20g '-XX:SoftRefLRUPolicyMSPerMB=50' '-XX:NonProfiledCodeHeapSize=512m' '-XX:ProfiledCodeHeapSize=512m' ... (remaining 21 arguments skipped)
+      Kotlinc Runner: Error: Unresolved reference 'foo'.
+        /Users/user/path/to/project/src/Foo.kt (25:90)
+      Kotlinc Runner: Error: Unresolved reference 'bar'.
+        /Users/user/path/to/project/src/Foo.kt (44:33)
+      Kotlinc Runner: Error: None of the following candidates is applicable:
+      fun <T> Array<out T>.toList(): List<T>
+      fun ByteArray.toList(): List<Byte>
+      fun ShortArray.toList(): List<Short>
+      fun <K, V> Map<out K, V>.toList(): List<Pair<K, V>>
+      	/Users/user/path/to/project/src/package/Zoo.kt (31:3)
+      INFO: Found 1 target...
+      Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
+      Use --verbose_failures to see the command lines of failed build steps.
+      INFO: Elapsed time: 7.501s, Critical Path: 3.29s
+      INFO: 2 processes: 675 action cache hit, 2 internal.
+      ERROR: Build did NOT complete successfully
+      FAILED: 
+      INFO: Build Event Protocol files produced successfully.
+      
+      Command completed in 7.6s (exit code 1)
+      """.trimIndent()
+
+    // when
+    val label = Label.parse("//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics")
+
+    val diagnostics =
+      extractDiagnostics(output, label)
+
+    // then
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/Users/user/path/to/project/src/Foo.kt")),
+          Label.parse(label.toString()),
+          errorDiagnostic(
+            Position(25, 90),
+            "Unresolved reference 'foo'.",
+          ),
+          errorDiagnostic(
+            Position(44, 33),
+            "Unresolved reference 'bar'.",
+          ),
+        ),
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/Users/user/path/to/project/src/package/Zoo.kt")),
+          Label.parse(label.toString()),
+          errorDiagnostic(
+            Position(31, 3),
+            """
+              None of the following candidates is applicable:
+              fun <T> Array<out T>.toList(): List<T>
+              fun ByteArray.toList(): List<Byte>
+              fun ShortArray.toList(): List<Short>
+              fun <K, V> Map<out K, V>.toList(): List<Pair<K, V>>
+            """.trimIndent(),
+          ),
+        ),
+      )
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
+  @Test
+  fun `should parse intellij java errors`() {
+    // given
+    val output =
+      """
+      Invoking: '/Users/user/path/to/project/bazelisk' 'build' '--tool_tag=bazelbsp:3.2.0' '--keep_going' '--build_event_binary_file=/var/folders/4k/foo.tmp' '--bes_outerr_buffer_size=10' '--build_event_publish_all_actions' '--inject_repository=bazelbsp_aspect=/Users/user/path/to/project/.bazelbsp' '--curses=no' '--color=yes' '--noprogress_in_terminal_title' '--target_pattern_file=/Users/user/path/to/project/.bazelbsp/targets/targets-1'
+      AUTH: Skipping running of authorizer, it was already run today
+      AUTH: To forcefully re-run authorizer remove the following file: /Users/user/path/to/project/out/.private.packages.auth.last.run.txt
+      INFO: Invocation ID: de143285-266a-487f-99db-f3305c481600
+      Computing main repo mapping: 
+      Loading: 
+      Loading: 1 packages loaded
+      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (6 packages loaded, 6 targets configured)
+      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (134 packages loaded, 7089 targets configured)
+      INFO: Analyzed target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (1342 packages loaded, 104001 targets configured).
+      [1 / 1] no actions running
+      [675 / 676] [Sched] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}
+      [675 / 676] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}; 1s disk-cache, remote-cache, multiplex-worker
+      ERROR: /Users/user/path/to/project/BUILD.bazel:21:12: compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5} failed: (Exit -1): java failed: error executing JvmCompile command (from target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics) external/community++jbr_toolchains+remotejbr21_macos_aarch64/bin/java -Xms4g -Xmx20g '-XX:SoftRefLRUPolicyMSPerMB=50' '-XX:NonProfiledCodeHeapSize=512m' '-XX:ProfiledCodeHeapSize=512m' ... (remaining 21 arguments skipped)
+      Javac Runner: Error: cannot find symbol
+        symbol:   variable bar
+        location: class Bar
+        /Users/user/path/to/project/src/Foo.java (106:26)
+        code: "bar"
+      Javac Runner: Error: reference to foo is ambiguous
+        both method foo(java.lang.Integer) in Foo and method foo(java.lang.Double) in Foo match
+        /Users/user/path/to/project/src/Foo.java (110:37)
+        code: "Foo.foo"
+      Javac Runner: Error: cannot find symbol
+        symbol:   variable zoo
+        location: class Zoo
+        /Users/user/path/to/project/src/package/Zoo.java (33:44)
+        code: "zoo"
+      INFO: Found 1 target...
+      Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
+      Use --verbose_failures to see the command lines of failed build steps.
+      INFO: Elapsed time: 7.501s, Critical Path: 3.29s
+      INFO: 2 processes: 675 action cache hit, 2 internal.
+      ERROR: Build did NOT complete successfully
+      FAILED: 
+      INFO: Build Event Protocol files produced successfully.
+      
+      Command completed in 7.6s (exit code 1)
+      """.trimIndent()
+
+    // when
+    val label = Label.parse("//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics")
+
+    val diagnostics =
+      extractDiagnostics(output, label)
+
+    // then
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/Users/user/path/to/project/src/Foo.java")),
+          Label.parse(label.toString()),
+          errorDiagnostic(
+            Position(106, 26),
+            """
+              cannot find symbol
+                symbol:   variable bar
+                location: class Bar
+            """.trimIndent(),
+          ),
+          errorDiagnostic(
+            Position(110, 37),
+            """
+              reference to foo is ambiguous
+                both method foo(java.lang.Integer) in Foo and method foo(java.lang.Double) in Foo match
+            """.trimIndent(),
+          ),
+        ),
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/Users/user/path/to/project/src/package/Zoo.java")),
+          Label.parse(label.toString()),
+          errorDiagnostic(
+            Position(33, 44),
+            """
+              cannot find symbol
+                symbol:   variable zoo
+                location: class Zoo
+            """.trimIndent(),
+          ),
+        ),
+      )
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
+  @Test
+  fun `should parse intellij errors with special characters in path`() {
+    // given
+    val specialCharsPathSegment = "path with #!@$%^&(){}[]+=-_"
+    val output =
+      """
+      Invoking: '/Users/user/path/to/project/bazelisk' 'build' '--tool_tag=bazelbsp:3.2.0' '--keep_going' '--build_event_binary_file=/var/folders/4k/foo.tmp' '--bes_outerr_buffer_size=10' '--build_event_publish_all_actions' '--inject_repository=bazelbsp_aspect=/Users/user/path/to/project/.bazelbsp' '--curses=no' '--color=yes' '--noprogress_in_terminal_title' '--target_pattern_file=/Users/user/path/to/project/.bazelbsp/targets/targets-1'
+      AUTH: Skipping running of authorizer, it was already run today
+      AUTH: To forcefully re-run authorizer remove the following file: /Users/user/path/to/project/out/.private.packages.auth.last.run.txt
+      INFO: Invocation ID: de143285-266a-487f-99db-f3305c481600
+      Computing main repo mapping: 
+      Loading: 
+      Loading: 1 packages loaded
+      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (6 packages loaded, 6 targets configured)
+      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (134 packages loaded, 7089 targets configured)
+      INFO: Analyzed target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (1342 packages loaded, 104001 targets configured).
+      [1 / 1] no actions running
+      [675 / 676] [Sched] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}
+      [675 / 676] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}; 1s disk-cache, remote-cache, multiplex-worker
+      ERROR: /Users/user/path/to/project/BUILD.bazel:21:12: compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5} failed: (Exit -1): java failed: error executing JvmCompile command (from target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics) external/community++jbr_toolchains+remotejbr21_macos_aarch64/bin/java -Xms4g -Xmx20g '-XX:SoftRefLRUPolicyMSPerMB=50' '-XX:NonProfiledCodeHeapSize=512m' '-XX:ProfiledCodeHeapSize=512m' ... (remaining 21 arguments skipped)
+      Javac Runner: Error: cannot find symbol
+        symbol:   variable bar
+        location: class Bar
+        /Users/user/$specialCharsPathSegment/to/project/src/Foo.java (106:26)
+        code: "bar"
+      Javac Runner: Error: cannot find symbol
+        symbol:   variable zoo
+        location: class Zoo
+        /Users/user/$specialCharsPathSegment/to/project/src/package/Zoo.java (33:44)
+        code: "zoo"  
+      Kotlinc Runner: Error: Unresolved reference 'foo'.
+        /Users/user/$specialCharsPathSegment/to/project/src/Foo.kt (25:90)
+      INFO: Found 1 target...
+      Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
+      Use --verbose_failures to see the command lines of failed build steps.
+      INFO: Elapsed time: 7.501s, Critical Path: 3.29s
+      INFO: 2 processes: 675 action cache hit, 2 internal.
+      ERROR: Build did NOT complete successfully
+      FAILED: 
+      INFO: Build Event Protocol files produced successfully.
+      
+      Command completed in 7.6s (exit code 1)
+      """.trimIndent()
+
+    // when
+    val label = Label.parse("//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics")
+
+    val diagnostics =
+      extractDiagnostics(output, label)
+
+    // then
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/Users/user/$specialCharsPathSegment/to/project/src/Foo.java")),
+          Label.parse(label.toString()),
+          errorDiagnostic(
+            Position(106, 26),
+            """
+              cannot find symbol
+                symbol:   variable bar
+                location: class Bar
+            """.trimIndent(),
+          ),
+        ),
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/Users/user/$specialCharsPathSegment/to/project/src/package/Zoo.java")),
+          Label.parse(label.toString()),
+          errorDiagnostic(
+            Position(33, 44),
+            """
+              cannot find symbol
+                symbol:   variable zoo
+                location: class Zoo
+            """.trimIndent(),
+          ),
+        ),
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/Users/user/$specialCharsPathSegment/to/project/src/Foo.kt")),
+          Label.parse(label.toString()),
+          errorDiagnostic(
+            position = Position(25, 90),
+            message = "Unresolved reference 'foo'.",
+          ),
+        ),
+      )
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
   private fun publishDiagnosticsParams(
     textDocument: TextDocumentIdentifier?,
     buildTarget: Label,

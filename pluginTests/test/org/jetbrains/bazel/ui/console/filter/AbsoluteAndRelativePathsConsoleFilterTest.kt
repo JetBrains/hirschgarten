@@ -39,7 +39,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 1
+    result.resultItems.size shouldBe 1
 
     val expectedStartOffset = TEST_LINE_PREFIX.length + 1
     result.resultItems[0].shouldHave(
@@ -61,7 +61,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 1
+    result.resultItems.size shouldBe 1
 
     val expectedStartOffset = TEST_LINE_PREFIX.length + 1
     result.resultItems[0].shouldHave(
@@ -82,7 +82,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 1
+    result.resultItems.size shouldBe 1
 
     val expectedStartOffset = TEST_LINE_PREFIX.length + 1
     val coordinatesLength = ":12:37".length
@@ -107,7 +107,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 1
+    result.resultItems.size shouldBe 1
 
     val expectedStartOffset = TEST_LINE_PREFIX.length + 1
     val coordinatesLength = ":12:37".length
@@ -132,7 +132,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 1
+    result.resultItems.size shouldBe 1
 
     val expectedStartOffset = TEST_LINE_PREFIX.length + 1
     val coordinatesLength = ":12:37".length
@@ -156,7 +156,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 0
+    result.resultItems.size shouldBe 0
   }
 
   @Test
@@ -170,7 +170,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 0
+    result.resultItems.size shouldBe 0
   }
 
   @Test
@@ -185,7 +185,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 0
+    result.resultItems.size shouldBe 0
   }
 
   @Test
@@ -198,7 +198,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 0
+    result.resultItems.size shouldBe 0
   }
 
   @Test
@@ -207,14 +207,15 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     val relativePath1 = "some/path/number/1/in/the/project"
     val path1 = createPathInProject(relativePath1)
     val path2 = createPathInProject("some/path/number/2/in/the/project")
+    val path3 = createPathInProject("some/path/number/3/in/the/project")
 
-    val line = "$TEST_LINE_PREFIX $path1:12:37: blah blah blah $path2 blaaaaah\n"
+    val line = "$TEST_LINE_PREFIX $path1:12:37: blah blah blah $path2 (37:12) blah blah $path3  blaaaaah\n"
 
     // when
     val result = filter.applyFilter(line, line.length)
 
     // then
-    result!!.resultItems.size shouldBe 2
+    result.resultItems.size shouldBe 3
 
     val expectedStartOffset1 = TEST_LINE_PREFIX.length + 1
     val coordinatesLength1 = ":12:37".length
@@ -228,10 +229,47 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     )
 
     val expectedStartOffset2 = expectedEndOffset1 + ": blah blah blah ".length
+    val coordinatesLength2 = " (37:12)".length
+    val expectedEndOffset2 = expectedStartOffset2 + path2.pathString.length + coordinatesLength2
     result.resultItems[1].shouldHave(
       expectedStartOffset = expectedStartOffset2,
-      expectedEndOffset = expectedStartOffset2 + path2.pathString.length,
+      expectedEndOffset = expectedEndOffset2,
       expectedPath = path2.pathString,
+      expectedLine = 36,
+      expectedColumn = 11,
+    )
+
+    val expectedStartOffset3 = expectedEndOffset2 + " blah blah ".length
+    result.resultItems[2].shouldHave(
+      expectedStartOffset = expectedStartOffset3,
+      expectedEndOffset = expectedStartOffset3 + path3.pathString.length,
+      expectedPath = path3.pathString,
+    )
+  }
+
+  @Test
+  fun `should match path with coordinates in intellij format`() {
+    // given
+    val relativePath1 = "some/path/number/1/in/the/project"
+    val path1 = createPathInProject(relativePath1)
+
+    val coordinates = "(12:37)"
+    val line = "$TEST_LINE_PREFIX $path1 $coordinates"
+
+    // when
+    val result = filter.applyFilter(line, line.length)
+
+    // then
+    result.resultItems.size shouldBe 1
+
+    val expectedStartOffset = TEST_LINE_PREFIX.length + 1
+    val expectedEndOffset = expectedStartOffset + path1.pathString.length + coordinates.length + 1
+    result.resultItems[0].shouldHave(
+      expectedStartOffset = expectedStartOffset,
+      expectedEndOffset = expectedEndOffset,
+      expectedPath = path1.pathString,
+      expectedLine = 11,
+      expectedColumn = 36,
     )
   }
 

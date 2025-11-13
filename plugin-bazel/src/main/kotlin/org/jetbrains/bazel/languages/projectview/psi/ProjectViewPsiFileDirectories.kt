@@ -10,6 +10,12 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSect
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
 import org.jetbrains.kotlin.psi.psiUtil.isAncestor
 
+fun ProjectViewPsiFile.isDirectoriesNullOrEmpty(): Boolean = directories?.getItems().isNullOrEmpty()
+
+fun ProjectViewPsiFile.directoriesContainsInclude(file: VirtualFile): Boolean = directoriesContainsItem(file, true)
+
+fun ProjectViewPsiFile.directoriesContainsExclude(file: VirtualFile): Boolean = directoriesContainsItem(file, false)
+
 fun ProjectViewPsiFile.addDirectoriesInclude(file: VirtualFile): Unit = addDirectoriesItem(file, true)
 
 fun ProjectViewPsiFile.addDirectoriesExclude(file: VirtualFile): Unit = addDirectoriesItem(file, false)
@@ -17,6 +23,14 @@ fun ProjectViewPsiFile.addDirectoriesExclude(file: VirtualFile): Unit = addDirec
 fun ProjectViewPsiFile.removeDirectoriesInclude(file: VirtualFile): Unit = removeDirectoriesItem(file, true)
 
 fun ProjectViewPsiFile.removeDirectoriesExclude(file: VirtualFile): Unit = removeDirectoriesItem(file, false)
+
+private fun ProjectViewPsiFile.directoriesContainsItem(file: VirtualFile, include: Boolean): Boolean {
+  val project = project
+  val directories = directories
+  val pathString = project.rootRelativePath(file) ?: return false
+  val item = if (include) pathString else "-$pathString"
+  return directories?.findItemByText(item) != null
+}
 
 private fun ProjectViewPsiFile.addDirectoriesItem(file: VirtualFile, include: Boolean) {
   val project = project
@@ -66,3 +80,5 @@ private fun Project.createDirectoriesSection(item: String) = PsiFileFactory
     "directories:\n  $item\n\n",
   ).getChildrenOfType<ProjectViewPsiSection>()
   .first()
+
+private fun ProjectViewPsiSection.findItemByText(text: String) = getItems().find { it.text == text }

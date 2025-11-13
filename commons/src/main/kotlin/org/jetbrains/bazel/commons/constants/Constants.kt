@@ -17,15 +17,15 @@ object Constants {
   const val MODULE_BAZEL_FILE_NAME = "MODULE.bazel"
   const val BAZELISK_VERSION_FILE_NAME = ".bazelversion"
   const val BAZELISK_RC_FILE_NAME = ".bazeliskrc"
-  val WORKSPACE_FILE_NAMES = listOf(MODULE_BAZEL_FILE_NAME, WORKSPACE_FILE_NAME, "WORKSPACE.bazel", "WORKSPACE.bzlmod")
-  val BUILD_FILE_NAMES = listOf("BUILD.bazel", "BUILD")
+  val WORKSPACE_FILE_NAMES: Array<String> = arrayOf(MODULE_BAZEL_FILE_NAME, WORKSPACE_FILE_NAME, "WORKSPACE.bazel", "WORKSPACE.bzlmod")
+  val BUILD_FILE_NAMES: Array<String> = arrayOf("BUILD.bazel", "BUILD")
   val BAZELISK_FILE_NAMES = listOf(BAZELISK_VERSION_FILE_NAME, BAZELISK_RC_FILE_NAME)
-  val SUPPORTED_EXTENSIONS = listOf("bazel", "bazelproject", "bzlmod", "bzl")
-  val SUPPORTED_CONFIG_FILE_NAMES = WORKSPACE_FILE_NAMES + BUILD_FILE_NAMES + BAZELISK_FILE_NAMES
+  val SUPPORTED_EXTENSIONS: Array<String> = arrayOf("bazel", "bazelproject", "bzlmod", "bzl")
+  val SUPPORTED_CONFIG_FILE_NAMES: Array<String> = WORKSPACE_FILE_NAMES + BUILD_FILE_NAMES + BAZELISK_FILE_NAMES
 
   fun defaultBuildFileName() = BUILD_FILE_NAMES.first()
 
-  const val PROJECT_VIEW_FILE_EXTENSION = "bazelproject"
+  const val PROJECT_VIEW_FILE_EXTENSION: String = "bazelproject"
   const val DEFAULT_PROJECT_VIEW_FILE_NAME = ".bazelproject"
   const val LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 }

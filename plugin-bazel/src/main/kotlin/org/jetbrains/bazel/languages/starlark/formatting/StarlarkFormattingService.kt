@@ -18,13 +18,14 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.readAndWriteAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileTypes.FileTypeRegistry
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiEditorUtil
 import com.intellij.ui.LightweightHint
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -85,6 +86,10 @@ class StarlarkFormattingService : AsyncDocumentFormattingService() {
 
   private fun createProcessHandler(request: AsyncFormattingRequest, buildifierPath: String): CapturingProcessHandler? {
     val ioFile = request.ioFile ?: return null
+    val project = request.context.project
+    // Formatter can be called for non-Bazel projects as well (if they contain some Starlark).
+    // Don't use project.rootDir as it will throw.
+    val rootDir = project.bazelProjectProperties.rootDir ?: project.guessProjectDir() ?: return null
     val commandLine =
       GeneralCommandLine()
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
@@ -96,10 +101,7 @@ class StarlarkFormattingService : AsyncDocumentFormattingService() {
           addParameter("--type=${fileTypeArgument(ioFile)}")
         }
         // Set the work directory to workspace root so that Buildifier can read .buildifier-tables.json
-        .withWorkingDirectory(
-          request.context.project.rootDir
-            .toNioPath(),
-        )
+        .withWorkingDirectory(rootDir.toNioPath())
 
     return CapturingProcessHandler(commandLine)
   }

@@ -12,6 +12,8 @@ import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.BAZEL_VERSION
+import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JAVA_LANG_VERSION
+import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JAVA_RUNTIME_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JUNIT_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.RULES_JAVA_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.RULES_JVM_EXTERNAL_VERSION
@@ -29,8 +31,9 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
     // but it's probably easier and safer to just update and test everything together once in a while
     val generatorAssets: List<GeneratorAsset> =
       listOf(
-        GeneratorFile(".gitignore", ".bazelbsp/\n.idea/"),
+        GeneratorFile(".gitignore", gitIgnore()),
         GeneratorFile(".bazelversion", BAZEL_VERSION),
+        GeneratorFile(".bazelrc", bazelRc()),
         GeneratorFile(Constants.MODULE_BAZEL_FILE_NAME, moduleBazel(context)),
         GeneratorFile("src/main/org/example/${Constants.defaultBuildFileName()}", buildBazelMain()),
         GeneratorFile("src/main/org/example/Main.java", mainJava()),
@@ -70,6 +73,25 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
         """.trimIndent()
     }
 
+    private fun gitIgnore() =
+      """
+      .bazelbsp/
+      .idea/
+      bazel-bin
+      bazel-genfiles
+      bazel-out
+      bazel-testlogs
+      """.trimIndent()
+
+    private fun bazelRc() =
+      """
+      build --java_language_version=$JAVA_LANG_VERSION
+      build --java_runtime_version=$JAVA_RUNTIME_VERSION
+      build --tool_java_language_version=$JAVA_LANG_VERSION
+      build --tool_java_runtime_version=$JAVA_RUNTIME_VERSION
+      """.trimIndent()
+
+
     private fun buildBazelMain() =
       """
       load("@rules_java//java:defs.bzl", "java_binary")
@@ -88,13 +110,13 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
       package org.example;
       
       public class Main {
-        public static void main(String[] args) {
-          System.out.println("Hello World!");
-        }
+          public static void main(String[] args) {
+              System.out.println("Hello World!");
+          }
       
-        public static int constant4() {
-          return 4;
-        }
+          public static int constant4() {
+              return 4;
+          }
       }
       """.trimIndent()
 
@@ -117,6 +139,7 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
       package org.example;
       
       import org.junit.Test;
+      
       import static org.junit.Assert.*;
       
       public class MainTest {

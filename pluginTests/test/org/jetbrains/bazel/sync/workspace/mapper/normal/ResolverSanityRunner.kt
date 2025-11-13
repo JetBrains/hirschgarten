@@ -126,6 +126,7 @@ private suspend fun processWithUnifiedSetup(rawTargetsMap: Map<Label, TargetInfo
       importIjars = false,
       deriveInstrumentationFilterFromTargets = true,
       indexAdditionalFilesInDirectories = emptyList(),
+      preferClassJarsOverSourcelessJars = true,
     )
 
   // Setup unified feature flags

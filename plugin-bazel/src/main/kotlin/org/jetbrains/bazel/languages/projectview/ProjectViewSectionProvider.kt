@@ -18,6 +18,7 @@ import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportIjarsSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.languages.projectview.sections.IndexAllFilesInDirectoriesSection
+import org.jetbrains.bazel.languages.projectview.sections.PreferClassJarsOverSourcelessJarsSection
 import org.jetbrains.bazel.languages.projectview.sections.PythonCodeGeneratorRuleNamesSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardingApproachSection
@@ -63,6 +64,7 @@ class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       TestFlagsSection(),
       IndexAdditionalFilesInDirectoriesSection(),
       UseJetBrainsTestRunnerSection(),
+      PreferClassJarsOverSourcelessJarsSection()
     )
 }
 

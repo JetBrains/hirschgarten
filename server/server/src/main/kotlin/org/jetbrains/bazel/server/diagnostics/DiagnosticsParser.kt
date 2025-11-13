@@ -68,6 +68,7 @@ class DiagnosticsParserImpl : DiagnosticsParser {
       listOf(
         BazelRootMessageParser,
         CompilerDiagnosticParser,
+        IntelliJRunnerOutputParser,
         Scala3CompilerDiagnosticParser,
         AllCatchParser,
       )

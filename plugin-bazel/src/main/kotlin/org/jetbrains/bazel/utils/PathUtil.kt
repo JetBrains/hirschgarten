@@ -62,3 +62,7 @@ fun Set<List<String>>.filterPathsThatDontContainEachOther2(): List<List<String>>
 fun Path.refreshAndFindVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(this)
 
 fun Path.findVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
+
+fun Path.findCanonicalVirtualFileThatExists(): VirtualFile? = findVirtualFile()
+  ?.canonicalFile
+  ?.takeIf(VirtualFile::exists)
