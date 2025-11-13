@@ -90,6 +90,6 @@ class GenerateSyntheticTargetRunTaskProvider(
     var language: String = Language.ANY.id
 
     @Attribute("params")
-    var params: String = ""
+    var params: SyntheticRunTargetParams = SyntheticRunTargetParams()
   }
 }
