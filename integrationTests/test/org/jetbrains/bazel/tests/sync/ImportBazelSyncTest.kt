@@ -46,7 +46,7 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject(buildAndSync = true)
+          syncBazelProject()
           waitForIndicators(10.minutes)
         }
       }
