@@ -24,6 +24,6 @@ class SyntheticRunTargetParams : BaseState() {
   var data: String? by string()
 
   companion object {
-    fun ofString(value: String) = SyntheticRunTargetParams().apply { data = value }
+    fun ofString(value: String): SyntheticRunTargetParams = SyntheticRunTargetParams().apply { data = value }
   }
 }
