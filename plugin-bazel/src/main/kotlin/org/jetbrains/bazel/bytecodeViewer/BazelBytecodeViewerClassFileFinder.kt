@@ -15,13 +15,8 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.util.ClassUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtil
-import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JvmBuildTarget
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
-import org.jetbrains.bsp.protocol.ScalaBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -31,35 +26,12 @@ class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
     val project = targetElement.project
     val vFile = targetElement.containingFile.virtualFile
     val targetUtils = project.targetUtils
-    val path =
-      targetUtils
-        .getTargetsForFile(vFile)
-        .asSequence()
-        .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-        .firstNotNullOfOrNull { resolveCompiledClassesPathForJVMLanguage(project, it) }
-    return path?.toCompiledClassesVFSRoot(project)?.toFullClassPath(targetElement, containing)
-  }
-
-  private fun resolveCompiledClassesPathForJVMLanguage(project: Project, target: BuildTarget): Path? {
-    val binPath =
-      BazelBinPathService
-        .getInstance(project)
-        .bazelBinPath ?: return null
-    val targetDir =
-      Path
-        .of(binPath)
-        .resolve(target.id.packagePath.toString())
-    return when (target.data) {
-      is JvmBuildTarget, is KotlinBuildTarget, is ScalaBuildTarget -> {
-        if (target.kind.ruleType == RuleType.LIBRARY) {
-          targetDir.resolve("lib${target.id.targetName}.jar")
-        } else {
-          targetDir.resolve("${target.id.targetName}.jar")
-        }
-      }
-
-      else -> targetDir.resolve(target.id.targetName)
-    }
+    return targetUtils.getTargetsForFile(vFile)
+      .asSequence()
+      .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+      .flatMap { extractJvmBuildTarget(it)?.binaryOutputs ?: listOf() }
+      .map { it.toCompiledClassesVFSRoot(project)?.toFullClassPath(targetElement, containing) }
+      .firstOrNull()
   }
 
   private fun Path.toCompiledClassesVFSRoot(project: Project): VirtualFile? {

@@ -4,22 +4,26 @@ import com.intellij.execution.filters.ConsoleFilterProvider
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.utils.findCanonicalVirtualFileThatExists
 
 private const val PATH_GROUP_ID = "path"
 private const val LINE_GROUP_ID = "line"
 private const val COLUMN_GROUP_ID = "column"
 
-private val BspPathRegex =
-  """
-        (^|\W)                             # start of line or non-word character
-        (?<$PATH_GROUP_ID>[0-9 a-z_A-Z-/.]+)   # match the path, even relative
-        (?::(?<$LINE_GROUP_ID>[0-9]+))?        # optional line number
-        (?::(?<$COLUMN_GROUP_ID>[0-9]+))?      # optional column number
-    """.toRegex(setOf(RegexOption.COMMENTS, RegexOption.MULTILINE))
+private val PathRegex = Regex(
+  pattern = """
+        (^|\W)                                  # start of line or non-word character
+        (?<$PATH_GROUP_ID>[0-9 a-z_A-Z-/.+]+)   # match the path, even relative
+    """,
+  options = setOf(RegexOption.COMMENTS, RegexOption.MULTILINE),
+)
+
+private val PositionRegex = Regex(":(?<$LINE_GROUP_ID>\\d+):(?<$COLUMN_GROUP_ID>\\d+)")
+private val IntellijPositionRegex = Regex(" \\((?<$LINE_GROUP_ID>\\d+):(?<$COLUMN_GROUP_ID>\\d+)\\)")
 
 /**
  * A better version of [com.intellij.execution.filters.RegexpFilter] which supports relative paths as well
@@ -36,7 +40,7 @@ private val BspPathRegex =
 class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filter {
   override fun applyFilter(line: String, entireLength: Int): Filter.Result {
     val resultItems =
-      BspPathRegex
+      PathRegex
         .findAll(line)
         .mapNotNull { it.toFilterResultOrNull(line, entireLength) }
         .toList()
@@ -46,31 +50,27 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
   private fun MatchResult.toFilterResultOrNull(line: String, entireLength: Int): Filter.Result? {
     val pathGroup = groups[PATH_GROUP_ID] ?: return null
     val virtualFile = pathGroup.value.toVirtualFileInTheProject() ?: return null
-
-    val info = calculateInfo(virtualFile)
+    val positionRegexResult = PositionRegex.matchAt(line, range.last + 1)
+      ?: IntellijPositionRegex.matchAt(line, range.last + 1)
+    val info = calculateInfo(virtualFile, positionRegexResult)
     val highlightStartOffset = calculateStartOffset(entireLength, line.length, pathGroup)
-    val highlightEndOffset = calculateEndOffset(highlightStartOffset, pathGroup.value.length)
-
+    val highlightEndOffset = calculateEndOffset(highlightStartOffset, pathGroup, positionRegexResult)
     return Filter.Result(highlightStartOffset, highlightEndOffset, info)
   }
 
   private fun String.toVirtualFileInTheProject(): VirtualFile? {
     if ('/' !in this) return null
     if (trim() == "/") return null
-
-    return LocalFileSystem
-      .getInstance()
-      .findFileByPath(toAbsolutePath())
-      ?.canonicalFile
-      ?.takeIf { it.exists() }
+    return toAbsolutePath()
+      .toNioPathOrNull()
+      ?.findCanonicalVirtualFileThatExists()
   }
 
-  private fun String.toAbsolutePath(): String = if (startsWith("/")) this else "${project.rootDir.path}/$this"
+  private fun String.toAbsolutePath() = if (startsWith("/")) this else "${project.rootDir.path}/$this"
 
-  private fun MatchResult.calculateInfo(virtualFile: VirtualFile): OpenFileHyperlinkInfo {
-    val lineNumber = groups[LINE_GROUP_ID]?.value?.toIntOrNull()?.dec() ?: 0
-    val columnNumber = groups[COLUMN_GROUP_ID]?.value?.toIntOrNull()?.dec() ?: 0
-
+  private fun calculateInfo(virtualFile: VirtualFile, positionRegexResult: MatchResult?): OpenFileHyperlinkInfo {
+    val lineNumber = positionRegexResult?.groups[LINE_GROUP_ID]?.value?.toIntOrNull()?.dec() ?: 0
+    val columnNumber = positionRegexResult?.groups[COLUMN_GROUP_ID]?.value?.toIntOrNull()?.dec() ?: 0
     return OpenFileHyperlinkInfo(project, virtualFile, lineNumber, columnNumber)
   }
 
@@ -80,12 +80,11 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
     pathGroup: MatchGroup,
   ): Int = entireLength - lineLength + pathGroup.range.first
 
-  private fun MatchResult.calculateEndOffset(highlightStartOffset: Int, rawPathLength: Int): Int {
-    val lineGroupLengthWithColon = groups[LINE_GROUP_ID]?.value?.length?.inc() ?: 0
-    val columnGroupLengthWithColon = groups[COLUMN_GROUP_ID]?.value?.length?.inc() ?: 0
-
-    return highlightStartOffset + rawPathLength + lineGroupLengthWithColon + columnGroupLengthWithColon
-  }
+  private fun calculateEndOffset(
+    highlightStartOffset: Int,
+    pathGroup: MatchGroup,
+    locationRegexResult: MatchResult?,
+  ): Int = highlightStartOffset + pathGroup.value.length + (locationRegexResult?.value?.length ?: 0)
 }
 
 class AbsoluteAndRelativePathsConsoleFilterProvider : ConsoleFilterProvider {

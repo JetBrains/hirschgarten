@@ -31,6 +31,7 @@ val mockWorkspaceContext =
     importIjars = false,
     deriveInstrumentationFilterFromTargets = true,
     indexAdditionalFilesInDirectories = emptyList(),
+    preferClassJarsOverSourcelessJars = true,
   )
 
 class MockBuildServerService(server: JoinedBuildServer) : BazelServerService {
