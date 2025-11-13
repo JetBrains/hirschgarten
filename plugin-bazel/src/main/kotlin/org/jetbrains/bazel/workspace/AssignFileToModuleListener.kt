@@ -164,6 +164,27 @@ class AssignFileToModuleListener : BulkFileListener {
       fun getInstance(project: Project): Controller = project.service()
     }
   }
+
+  companion object {
+    internal class ExternalFileCreateEvent(val createdFile: VirtualFile) : VFileEvent(createdFile.fileSystem) {
+      override fun getFile(): VirtualFile = createdFile
+      override fun getFileSystem() = createdFile.fileSystem
+      override fun getPath(): String = createdFile.path
+      override fun computePath(): String = createdFile.path
+      override fun isFromRefresh(): Boolean = true // treat as refresh-originated
+      override fun isValid(): Boolean = createdFile.isValid
+      override fun equals(other: Any?): Boolean = other is ExternalFileCreateEvent && other.createdFile == createdFile
+      override fun hashCode(): Int = createdFile.hashCode()
+    }
+
+    @JvmStatic
+    fun enqueueExternalFile(project: Project, file: VirtualFile) {
+      if (file.isDirectory || !file.isSourceFile()) return
+      // Reuse the existing single-file event path instead of duplicating queue logic.
+      // A fresh listener instance is stateless; queuing & concurrency are handled by Controller (per project service).
+      AssignFileToModuleListener().afterSingleFileEvent(ExternalFileCreateEvent(file))
+    }
+  }
 }
 
 private fun getNewFile(event: VFileEvent): VirtualFile? = if (event !is VFileDeleteEvent) getAffectedFile(event) else null
@@ -176,6 +197,7 @@ private fun getAffectedFile(event: VFileEvent): VirtualFile? {
       is VFileMoveEvent -> event.file
       is VFileCopyEvent -> event.findCreatedFile()
       is VFilePropertyChangeEvent -> if (event.propertyName == VirtualFile.PROP_NAME) event.file else null
+      is AssignFileToModuleListener.Companion.ExternalFileCreateEvent -> event.createdFile
       else -> null
     }
   return if (file?.isDirectory == false) file else null

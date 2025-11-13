@@ -118,5 +118,10 @@
                     interface="org.jetbrains.bazel.hotswap.HotSwapHook"
                     dynamic="true"
     />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.workspace.BazelFileEventSubmitter"
+      qualifiedName="org.jetbrains.bazel.fileEventSubmitter"
+    />
   </extensionPoints>
 </idea-plugin>
