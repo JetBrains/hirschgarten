@@ -6,13 +6,8 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findOrCreateDirectory
-import com.intellij.openapi.vfs.findOrCreateFile
-import com.intellij.openapi.vfs.writeText
 import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -20,13 +15,17 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
-import java.nio.file.Files
 import java.nio.file.Path
 
 const val GENERATE_SYNTHETIC_PROVIDER_NAME: String = "BazelGenerateSyntheticTargetRunTaskProvider"
 val GENERATE_SYNTHETIC_PROVIDER_ID: Key<GenerateSyntheticTargetRunTaskProvider.Task> = Key.create(GENERATE_SYNTHETIC_PROVIDER_NAME)
 
-val SYNTHETIC_BUILD_FILE_KEY: Key<Path> = Key.create("bazel.run.synthetic.build_file.vfile")
+val SYNTHETIC_BUILD_SESSION: Key<SyntheticRunTargetSession> = Key.create("bazel.run.synthetic.build_file.vfile")
+
+data class SyntheticRunTargetSession(
+  val buildFileContent: String,
+  val buildFilePath: Path
+)
 
 class GenerateSyntheticTargetRunTaskProvider(
 ) : BeforeRunTaskProvider<GenerateSyntheticTargetRunTaskProvider.Task>() {
@@ -51,17 +50,18 @@ class GenerateSyntheticTargetRunTaskProvider(
     val generator = SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)
       .find { it.isSupported(target) } ?: return false
     val template = generator.createSyntheticTemplate(target, taskState.params)
-
-    val dir = project.rootDir.toNioPath()
+    val buildFilePath = project.rootDir.toNioPath()
       .resolve(Constants.DOT_BAZELBSP_DIR_NAME)
       .resolve("synthetic_targets")
       .resolve(template.buildFilePath)
-    Files.createDirectories(dir)
-    val buildFile = dir.resolve("BUILD")
-    Files.writeString(buildFile, template.buildFileContent)
+      .resolve("BUILD")
+    val session = SyntheticRunTargetSession(
+      buildFileContent = template.buildFileContent,
+      buildFilePath = buildFilePath,
+    )
 
     configuration as BazelRunConfiguration
-    configuration.putUserData(SYNTHETIC_BUILD_FILE_KEY, buildFile)
+    configuration.putUserData(SYNTHETIC_BUILD_SESSION, session)
 
     if (BazelFeatureFlags.syntheticRunDisableVisibilityCheck) {
       configuration.doVisibilityCheck = false
