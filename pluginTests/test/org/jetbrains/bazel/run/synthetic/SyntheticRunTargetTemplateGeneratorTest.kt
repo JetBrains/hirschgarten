@@ -51,7 +51,7 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     val generator = getDefaultTemplateGenerator(target, JavaLanguage.INSTANCE)
     val params = generator.getSyntheticParams(target, myFixture.elementAtCaret)
 
-    params.shouldBe("com.test.TestClass")
+    params.data.shouldBe("com.test.TestClass")
   }
 
   fun `test kotlin getSyntheticParams extracts top level main class name`() {
@@ -72,7 +72,7 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     val generator = getDefaultTemplateGenerator(target, KotlinLanguage.INSTANCE)
     val params = generator.getSyntheticParams(target, element)
 
-    params.shouldBe("com.test.MainKt")
+    params.data.shouldBe("com.test.MainKt")
   }
 
   fun `test kotlin getSyntheticParams extracts object main class name`() {
@@ -94,7 +94,7 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     val generator = getDefaultTemplateGenerator(target, KotlinLanguage.INSTANCE)
     val params = generator.getSyntheticParams(target, myFixture.elementAtCaret)
 
-    params.shouldBe("com.test.MyObject")
+    params.data.shouldBe("com.test.MyObject")
   }
 
   private fun getDefaultTemplateGenerator(target: RawBuildTarget, language: Language): SyntheticRunTargetTemplateGenerator {

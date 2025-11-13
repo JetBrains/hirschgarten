@@ -1,9 +1,7 @@
 package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.readAction
 import com.intellij.psi.PsiElement
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 
@@ -24,8 +22,10 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
     return SyntheticRunTargetUtils.getSyntheticTargetLabel(packageParts = pkg, targetName = DEFAULT_TARGET_NAME)
   }
 
-  override fun getSyntheticParams(target: BuildTarget, element: PsiElement): String {
-    return element.getMainClassInternal() ?: error("failed to get main class")
+  override fun getSyntheticParams(target: BuildTarget, element: PsiElement): SyntheticRunTargetParams {
+    return SyntheticRunTargetParams(
+      data = element.getMainClassInternal() ?: error("failed to get main class"),
+    )
   }
 
   override fun createSyntheticTemplate(
