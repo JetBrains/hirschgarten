@@ -23,17 +23,17 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
   }
 
   override fun getSyntheticParams(target: BuildTarget, element: PsiElement): SyntheticRunTargetParams {
-    return SyntheticRunTargetParams(
-      data = element.getMainClassInternal() ?: error("failed to get main class"),
-    )
+    val mainClass = element.getMainClassInternal() ?: error("failed to get main class")
+    return SyntheticRunTargetParams.ofString(mainClass)
   }
 
   override fun createSyntheticTemplate(
     target: BuildTarget,
-    params: String,
+    params: SyntheticRunTargetParams,
   ): SyntheticRunTargetTemplate {
-    val build = getBuildContent(target, DEFAULT_TARGET_NAME, params)
-    val pkg = getTargetPath(target, params) ?: error("failed to get target path")
+    val mainClass = params.data ?: error("failed to get main class")
+    val build = getBuildContent(target, DEFAULT_TARGET_NAME, mainClass)
+    val pkg = getTargetPath(target, mainClass)
     return SyntheticRunTargetTemplate(buildFileContent = build, buildFilePath = pkg.joinToString("/"))
   }
 
