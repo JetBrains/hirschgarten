@@ -30,6 +30,8 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
+import org.jetbrains.bazel.workspace.containsTestlibSuffix
+import org.jetbrains.bazel.workspace.stripTestlibSuffix
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.await
@@ -89,7 +91,13 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
         .getTargetForModuleId(from.name)
         ?.assumeResolved() ?: return false
     val targetBuildFile = readAction { findBuildFile(from.project, targetRuleLabel) } ?: return false
-    val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
+    val ruleTarget = readAction {
+      targetBuildFile.findRuleTarget(targetRuleLabel.targetName)
+        ?: if (targetRuleLabel.targetName.containsTestlibSuffix()) {
+          val strippedTargetName = targetRuleLabel.targetName.stripTestlibSuffix()
+          targetBuildFile.findRuleTarget(strippedTargetName)
+        } else null
+    } ?: return false
     val argList = readAction { ruleTarget.getArgumentList() } ?: return false
     val depsArg = readAction { argList.getDepsArgument() }
     var updatedDepsArg = depsArg

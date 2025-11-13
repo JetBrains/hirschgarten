@@ -3,6 +3,8 @@ package org.jetbrains.bazel.target.sync
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
+import org.jetbrains.bazel.workspace.TESTLIB_SUFFIXES
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
@@ -38,13 +40,16 @@ internal class TargetUtilsSyncHook : ProjectSyncHook {
     for (target in targets) {
       target as RawBuildTarget
       if (target.kind.ruleType == org.jetbrains.bazel.commons.RuleType.TEST && target.sources.isEmpty()) {
-        val testlibLabel = try {
-          Label.parse("${target.id}.testlib")
-        } catch (_: Exception) {
-          null
-        }
-        if (testlibLabel != null && labelToTarget.containsKey(testlibLabel)) {
-          testlibToOwner[testlibLabel] = target.id
+        for (suffix in TESTLIB_SUFFIXES) {
+          val testlibLabel = try {
+            Label.parse("${target.id}$suffix")
+          } catch (_: Exception) {
+            null
+          }
+          if (testlibLabel != null && labelToTarget.containsKey(testlibLabel)) {
+            testlibToOwner[testlibLabel] = target.id
+            break
+          }
         }
       }
     }

@@ -308,20 +308,27 @@ private suspend fun processFileCreated(
       endFraction = PROGRESS_QUERY_STEP_SIZE,
       text = BazelPluginBundle.message("file.change.processing.step.query"),
     ) { queryTargetsForFile(project, url) } ?: return
-
+  val processedResult = processTargetsForTestlibStripping(targets)
   val modulesWithTestFlag =
-    targets
+    processedResult.allProcessedTargets
       .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, entityStorageDiff, project) }
 
+  // Precompute a map from module names to labels for efficient lookup
+  val moduleNameToLabel = processedResult.allProcessedTargets.associateBy { it.formatAsModuleName(project) }
   for ((module, isTestModule) in modulesWithTestFlag) {
+    val moduleLabel = moduleNameToLabel[module.name]
+    val isStripped = moduleLabel != null && processedResult.strippedLabels.contains(moduleLabel)
+
     // if we want a file to be both added and removed in the same module, neither of them will be done
     val moduleContainsContentRootForRemoval = mutableRemovalMap.remove(module) != null
     val alreadyAdded = existingModules.contains(module)
-    if (!moduleContainsContentRootForRemoval && !alreadyAdded) {
+    if (!moduleContainsContentRootForRemoval && !alreadyAdded && !isStripped) {
+      // Only add sources to original .testlib targets, not to stripped targets
       url.addToModule(entityStorageDiff, module, newFile.extension, isTestModule)
     }
   }
-  targetUtils.addFileToTargetIdEntry(path, targets)
+  // Store only stripped targets (not original .testlib) in target utils mapping
+  targetUtils.addFileToTargetIdEntry(path, processedResult.targetsForMapping)
 }
 
 suspend fun getModulesForFile(newFile: VirtualFile, project: Project): Set<Module> =
