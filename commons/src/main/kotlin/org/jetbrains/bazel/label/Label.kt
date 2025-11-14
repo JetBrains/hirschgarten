@@ -204,7 +204,7 @@ sealed interface Label : Comparable<Label> {
     fun parse(value: String): Label {
       if (value.endsWith(SYNTHETIC_TAG)) return synthetic(value)
       val normalized = value.trim().trimStart('@')
-      if (normalized.contains(" ")) throw IllegalArgumentException("Labels cannot have whitespaces")
+      if (normalized.contains(" ")) throw IllegalArgumentException("Label $normalized cannot have whitespaces")
       val repoName = normalized.substringBefore("//", "")
       val pathAndName = normalized.substringAfter("//")
       val packagePath = pathAndName.substringBefore(":")
