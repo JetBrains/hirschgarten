@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync_new.storage
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.codec.CodecBuilder
 import org.jetbrains.bazel.sync_new.codec.CodecConverter
+import kotlin.reflect.KProperty
 
 interface FlatStorage<V> {
   fun get(): V
@@ -15,3 +16,7 @@ interface FlatStoreBuilder<V> {
   fun withCodec(codec: CodecBuilder.() -> Codec<V>): FlatStoreBuilder<V>
   fun build(): FlatStorage<V>
 }
+
+operator fun <T> FlatStorage<T>.getValue(thisRef: Any?, property: KProperty<*>): T = get()
+operator fun <T> FlatStorage<T>.setValue(thisRef: Any?, property: KProperty<*>, value: T): Unit = set(value)
+
