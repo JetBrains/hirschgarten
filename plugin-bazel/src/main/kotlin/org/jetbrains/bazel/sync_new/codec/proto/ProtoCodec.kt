@@ -14,13 +14,13 @@ class ProtoCodec<T : Message>(private val defaultInstance: T) : Codec<T> {
     value: T,
   ) {
     val bytes = value.toByteArray()
-    buffer.writeInt32(bytes.size)
+    buffer.writeVarInt(bytes.size)
     buffer.writeBytes(bytes)
   }
 
   override fun decode(ctx: CodecContext, buffer: CodecBuffer): T {
     val parser = defaultInstance.parserForType
-    val length = buffer.readInt32()
+    val length = buffer.readVarInt()
     val array = ByteArray(length)
     buffer.readBytes(array)
 

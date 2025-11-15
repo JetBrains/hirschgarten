@@ -1,0 +1,83 @@
+package org.jetbrains.bazel.sync_new.storage.mvstore
+
+import org.h2.mvstore.MVMap
+import org.jetbrains.bazel.sync_new.storage.BaseSortedKVStoreBuilder
+import org.jetbrains.bazel.sync_new.storage.SortedKVStore
+
+open class MVStoreSortedKVStore<K, V>(
+  private val map: MVMap<K, V>,
+) : SortedKVStore<K, V> {
+  override fun getHighestKey(): K? = map.lastKey()
+  override fun get(key: K): V? = map[key]
+  override fun set(key: K, value: V) {
+    map[key] = value
+  }
+
+  override fun has(key: K): Boolean = map.containsKey(key)
+
+  override fun remove(key: K, useReturn: Boolean): V? = map.remove(key)
+
+  override fun clear() {
+    map.clear()
+  }
+
+  override fun keys(): Sequence<K> = sequence {
+    val cursor = map.cursor(null)
+    while (cursor.hasNext()) {
+      yield(cursor.next())
+    }
+  }
+
+  override fun values(): Sequence<V> = sequence {
+    val cursor = map.cursor(null)
+    while (cursor.hasNext()) {
+      cursor.next()
+      yield(cursor.value)
+    }
+  }
+
+  override fun computeIfAbsent(key: K, op: (k: K) -> V): V? {
+    var result: V? = null
+    map.operate(key, null, object : MVMap.DecisionMaker<V>() {
+      override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision? {
+        return if (existingValue == null) {
+          MVMap.Decision.PUT
+        } else {
+          MVMap.Decision.ABORT
+        }
+      }
+
+      override fun <T : V?> selectValue(existingValue: T?, providedValue: T?): T? {
+        @Suppress("UNCHECKED_CAST")
+        val newValue = op(key) as T
+        result = newValue
+        return newValue
+      }
+
+    })
+    return result
+  }
+}
+
+class MVStoreSortedKVStoreBuilder<K, V>(
+  private val storageContext: MVStoreStorageContext,
+  private val name: String,
+  private val keyType: Class<K>,
+  private val valueType: Class<V>,
+) : BaseSortedKVStoreBuilder<MVStoreSortedKVStoreBuilder<K, V>, K, V>() {
+  override fun build(): SortedKVStore<K, V> {
+    val comparator = keyComparator?.invoke() ?: error("Key comparator must be specified")
+    val builder = MVMap.Builder<K, V>()
+    builder.setKeyType(MVStoreOrderableDataType(
+      codec = keyCodec ?: error("Key codec must be specified"),
+      type = keyType,
+      comparator = comparator
+    ))
+    builder.setValueType(MVStoreDataType(
+      codec = valueCodec ?: error("Value codec must be specified"),
+      type = valueType,
+    ))
+    val map = storageContext.openOrResetMap(name) { builder }
+    return MVStoreSortedKVStore(map)
+  }
+}

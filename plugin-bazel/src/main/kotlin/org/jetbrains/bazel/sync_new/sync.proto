@@ -27,7 +27,7 @@ message BazelSyncSnapshot {
 
 
 // target graph
-message BazelTargetNode {
+message BazelTargetVertexProto {
   uint64 vertex_id = 1;
   string canonical_label = 2;
   BazelPath target_path = 3;
@@ -36,9 +36,16 @@ message BazelTargetNode {
   optional BazelTargetJvmData jvm_data = 20;
 }
 
-message BazelTargetDependency {
-  uint64 from_id = 1;
-  uint64 to_id = 2;
+message BazelTargetEdgeProto {
+  enum Kind {
+    REAL = 0;
+    SYNTHETIC = 1;
+  }
+
+  uint64 edge_id = 1;
+  uint64 from_vertex_id = 2;
+  uint64 to_vertex_id = 3;
+  Kind kind = 4;
 }
 
 // targets
