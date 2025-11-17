@@ -16,15 +16,19 @@ import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openProject() {
-    createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner).runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
+    createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
       ideFrame {
         syncBazelProject(buildAndSync = true)
+        waitForIndicators(10.minutes)
 
         step("open TestKotlin.kt and run TestKotlin.` interesting#test `") {
           execute { openFile("TestKotlin.kt") }

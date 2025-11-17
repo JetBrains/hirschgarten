@@ -106,15 +106,11 @@ class AspectBazelProjectMapper(
       }
     val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
-        // the import depth mechanism does not apply for go targets sync
-        // for now, go sync assumes to retrieve all transitive targets, which is equivalent to `import_depth: -1`
-        // in fact, go sync should not even go through this highly overfitted JVM model: https://youtrack.jetbrains.com/issue/BAZEL-2210
-        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { allTargets[it]?.hasGoTargetInfo() == true }
-        val nonGoTargetsAtDepth =
+        val targetsAtDepth =
           dependencyGraph
             .allTargetsAtDepth(
               workspaceContext.importDepth,
-              nonGoTargetLabels.toSet(),
+              rootTargets,
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
@@ -124,17 +120,13 @@ class AspectBazelProjectMapper(
                 } == true
               },
             )
-        val (nonGoTargetsToImport, nonWorkspaceTargets) =
-          nonGoTargetsAtDepth.targets.partition {
+        val (targetsToImport, nonWorkspaceTargets) =
+          targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, featureFlags)
           }
-        val goTargetsToImport =
-          dependencyGraph
-            .allTransitiveTargets(goTargetLabels.toSet())
-            .targets
-            .filter { isWorkspaceTarget(it, repoMapping, featureFlags) }
-        val libraries = (nonWorkspaceTargets + nonGoTargetsAtDepth.directDependencies).associateBy { it.label() }
-        (nonGoTargetsToImport + goTargetsToImport).asSequence() to libraries
+        val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.hasJvmTargetInfo() }
+        val jvmLibraries = (nonWorkspaceTargets + jvmDirectDependencies).associateBy { it.label() }
+        (targetsToImport + nonJvmDirectDependencies).asSequence() to jvmLibraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -953,18 +945,28 @@ class AspectBazelProjectMapper(
         .map(bazelPathsResolver::resolve)
         .filter { it.extension != "srcjar" }
 
+    val sourceItems = sources.map {
+      SourceItem(
+        path = bazelPathsResolver.resolve(it),
+        generated = false,
+        jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
+      )
+    }
+
+    val generatedSourceItems = generatedSources.map {
+      SourceItem(
+        path = bazelPathsResolver.resolve(it),
+        generated = true,
+        jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
+      )
+    }
+
     val extraSources = languagePlugin.calculateAdditionalSources(target)
 
-    return (sources + extraSources + generatedSources)
-      .distinct()
-      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-      .map {
-        SourceItem(
-          path = it,
-          generated = false,
-          jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
-        )
-      }.toList()
+    return (sourceItems + generatedSourceItems + extraSources)
+      .distinctBy { it.path }
+      .onEach { if (it.path.notExists()) logNonExistingFile(it.path, target.id) }
+      .toList()
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {
