@@ -49,13 +49,12 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
         .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
       val targets = (normalTargets + executableTargets)
         .distinctBy { it.id }
-      val hasTestTarget = targets.any { it.kind.ruleType == RuleType.TEST }
       calculateLineMarkerInfo(
-        project,
-        targets,
-        hasTestTarget,
-        getExtraProgramArguments(this),
-        this,
+        project = project,
+        targetInfos = targets,
+        hasTestTarget = targets.any { it.kind.ruleType == RuleType.TEST },
+        testExecutableArguments = getExtraProgramArguments(this),
+        psiElement = this,
       )
     }
 
