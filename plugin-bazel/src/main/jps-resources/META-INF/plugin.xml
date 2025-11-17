@@ -25,6 +25,7 @@
   <dependencies>
     <plugin id="com.intellij.modules.lang" />
     <module name="intellij.platform.searchEverywhere" />
+    <module name="intellij.libraries.grpc"/>
   </dependencies>
 
   <content namespace="jetbrains">
@@ -610,6 +611,10 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"
       language="Starlark"
     />
+    <lang.elementManipulator
+      forClass="org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression"
+      implementationClass="org.jetbrains.bazel.languages.starlark.rename.StarlarkStringLiteralManipulator"
+    />
     <lang.foldingBuilder
       implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"
       language="Starlark"
@@ -870,6 +875,7 @@
     <editorTabTitleProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabTitleProvider"/>
     <editorNotificationProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNotificationProvider"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher" />
+    <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUsageSearcher"/>
     <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider" />
     <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType" />
     <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner" />

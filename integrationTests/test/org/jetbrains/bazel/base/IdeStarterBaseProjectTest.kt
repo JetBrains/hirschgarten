@@ -161,20 +161,14 @@ fun Driver.syncBazelProject(buildAndSync: Boolean = false) {
 fun Driver.syncBazelProjectCloseDialog() {
   execute(CommandChain().takeScreenshot("startSync"))
   execute(CommandChain().openBspToolWindow())
-  // this is required for a weird bug when you run multiple tests, and a dialog for "add file to git" appears
+  // close only the Git confirmation dialog; other popups like "Loading file" are not closable via dispose()
   ideFrame {
-    val dialogFound =
-      try {
-        dialog().waitFound(timeout = 30.seconds)
-        true
-      } catch (e: Exception) {
-        false
-      }
+    val gitAddDialog = dialog(title = "Add File to Git")
+    val dialogFound = runCatching { gitAddDialog.waitFound(timeout = 30.seconds) }.isSuccess
 
     if (dialogFound) {
-      dialog {
-        closeDialog()
-      }
+      runCatching { gitAddDialog.closeDialog() }
+        .onFailure { System.err.println("Failed to close 'Add File to Git' dialog: ${it.message}") }
     }
   }
   execute(CommandChain().takeScreenshot("openBspToolWindow"))

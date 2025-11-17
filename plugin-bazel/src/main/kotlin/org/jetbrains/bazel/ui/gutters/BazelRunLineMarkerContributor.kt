@@ -28,6 +28,8 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
       null
     }
 
+  override fun getSlowInfo(element: PsiElement): Info? = getInfo(element)
+
   abstract fun PsiElement.shouldAddMarker(): Boolean
 
   open fun getSingleTestFilter(element: PsiElement): String? = null

@@ -15,7 +15,6 @@
     <orderEntry type="module" module-name="intellij.libraries.fastutil" />
     <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
-    <orderEntry type="library" name="kotlin-tooling-core" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.analysis-api-platform-interface" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-compiler-common" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-jps-plugin-classpath" level="project" />
@@ -163,7 +162,6 @@
     <orderEntry type="module" module-name="intellij.libraries.hash4j" />
     <orderEntry type="module" module-name="intellij.libraries.jackson" />
     <orderEntry type="library" scope="TEST" name="jackson-databind" level="project" />
-    <orderEntry type="library" scope="TEST" name="jackson-dataformat-xml" level="project" />
     <orderEntry type="library" scope="TEST" name="jackson-module-kotlin" level="project" />
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
