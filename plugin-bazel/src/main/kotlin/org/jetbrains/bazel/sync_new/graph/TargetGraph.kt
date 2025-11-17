@@ -19,9 +19,16 @@ interface TargetEdge {
   val to: ID
 }
 
-interface TargetGraph<V : TargetVertex, E : TargetEdge> : ReferenceDirectedGraph<V, E> {
+interface TargetCompact {
+  val id: ID
+  val label: Label
+  val isExecutable: Boolean
+}
+
+interface TargetGraph<V : TargetVertex, E : TargetEdge, C : TargetCompact> : ReferenceDirectedGraph<V, E> {
   fun getVertexByLabel(label: Label): V?
   fun getLabelByVertexId(id: ID): Label?
+  fun getTargetCompactById(id: ID): C?
 
   fun getNextVertexId(): ID
   fun getNextEdgeId(): ID

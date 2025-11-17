@@ -8,21 +8,21 @@ message BazelPath {
   string path = 1;
 }
 
-// sync snapshot
-message BazelSyncSnapshot {
-  message TargetHash {
-    string canonical_label = 1;
-    uint64 hash_lo = 2;
-    uint64 hash_hi = 3;
-  }
+// sync metadata
+message BazelSyncMetadata {
+//  message TargetHash {
+//    string canonical_label = 1;
+//    uint64 hash_lo = 2;
+//    uint64 hash_hi = 3;
+//  }
 
   message RepoMapping {
-    map<string, string> apparent_to_canonical = 1;
-    map<string, BazelPath> canonical_to_path = 2;
+    map<string, string> apparent_to_canonical = 2;
+    map<string, BazelPath> canonical_to_path = 3;
   }
 
-  repeated TargetHash target_hashes = 1;
-  RepoMapping repo_mapping = 2;
+//  repeated TargetHash target_hashes = 1;
+  optional RepoMapping repo_mapping = 2;
 }
 
 
@@ -34,6 +34,12 @@ message BazelTargetVertexProto {
 
   optional BazelTargetGenericData generic_data = 10;
   optional BazelTargetJvmData jvm_data = 20;
+}
+
+message BazelTargetCompactProto {
+  uint64 vertex_id = 1;
+  string canonical_label = 2;
+  bool is_executable = 3;
 }
 
 message BazelTargetEdgeProto {

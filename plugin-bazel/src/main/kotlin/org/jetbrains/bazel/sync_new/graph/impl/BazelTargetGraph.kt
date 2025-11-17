@@ -1,19 +1,19 @@
 package org.jetbrains.bazel.sync_new.graph.impl
 
 import com.dynatrace.hash4j.hashing.HashValue128
+import com.jetbrains.bazel.sync_new.proto.BazelTargetCompactProto
 import com.jetbrains.bazel.sync_new.proto.BazelTargetEdgeProto
+import com.jetbrains.bazel.sync_new.proto.BazelTargetGenericData
 import com.jetbrains.bazel.sync_new.proto.BazelTargetVertexProto
 import it.unimi.dsi.fastutil.longs.LongArrayList
 import it.unimi.dsi.fastutil.longs.LongList
 import it.unimi.dsi.fastutil.longs.LongLists
-import it.unimi.dsi.fastutil.longs.LongSet
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.sync_new.codec.ofLabel
-import org.jetbrains.bazel.sync_new.codec.ofPrimitiveLong
+import org.jetbrains.bazel.sync_new.codec.ofLong
 import org.jetbrains.bazel.sync_new.codec.proto.ofProtoMessage
 import org.jetbrains.bazel.sync_new.codec.withConverter
-import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.TargetGraph
 import org.jetbrains.bazel.sync_new.graph.collect.forEachFast
@@ -25,11 +25,11 @@ import org.jetbrains.bazel.sync_new.storage.getValue
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 
-class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVertex, BazelTargetEdge> {
+class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVertex, BazelTargetEdge, BazelTargetCompact> {
   private val id2Vertex =
     storage.createSortedKVStorage<ID, BazelTargetVertex>("bazel.target.graph.id2vertex", StorageHints.USE_PAGED_STORE)
       .withKeyComparator { compareBy { it } }
-      .withKeyCodec { ofPrimitiveLong() }
+      .withKeyCodec { ofLong() }
       .withValueCodec {
         ofProtoMessage<BazelTargetVertexProto>()
           .withConverter(BazelTargetVertex.converter)
@@ -39,18 +39,21 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
   private val id2Edge =
     storage.createSortedKVStorage<ID, BazelTargetEdge>("bazel.target.graph.id2edge", StorageHints.USE_PAGED_STORE)
       .withKeyComparator { compareBy { it } }
-      .withKeyCodec { ofPrimitiveLong() }
+      .withKeyCodec { ofLong() }
       .withValueCodec {
         ofProtoMessage<BazelTargetEdgeProto>()
           .withConverter(BazelTargetEdge.converter)
       }
       .build()
 
-  private val id2Label =
-    storage.createSortedKVStorage<ID, Label>("bazel.target.graph.id2label", StorageHints.USE_PAGED_STORE)
+  private val id2Compact =
+    storage.createSortedKVStorage<ID, BazelTargetCompact>("bazel.target.graph.id2label", StorageHints.USE_PAGED_STORE)
       .withKeyComparator { compareBy { it } }
-      .withKeyCodec { ofPrimitiveLong() }
-      .withValueCodec { ofLabel() }
+      .withKeyCodec { ofLong() }
+      .withValueCodec {
+        ofProtoMessage<BazelTargetCompactProto>()
+          .withConverter(BazelTargetCompact.converter)
+      }
       .build()
 
   private val labelHash2VertexId by storage.createFlatStorage<Hash2IdWire>(
@@ -91,7 +94,10 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     return id2Vertex.get(labelHash2VertexId.map.getLong(hash))
   }
 
-  override fun getLabelByVertexId(id: ID): Label? = id2Label.get(id)
+  override fun getLabelByVertexId(id: ID): Label? = id2Compact.get(id)?.label
+  override fun getTargetCompactById(id: ID): BazelTargetCompact? {
+    TODO("Not yet implemented")
+  }
 
   override fun getEdgeById(id: ID): BazelTargetEdge? = id2Edge.get(id)
 
@@ -124,7 +130,7 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
 
   override fun addVertex(vertex: BazelTargetVertex) {
     id2Vertex.set(vertex.id, vertex)
-    id2Label.set(vertex.id, vertex.label)
+    id2Compact.set(vertex.id, vertex.toTargetCompact())
 
     val labelHash = hash { putResolvedLabel(vertex.label as ResolvedLabel) }
     labelHash2VertexId.map.put(labelHash, vertex.id)
@@ -143,7 +149,7 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     id: ID,
   ): BazelTargetVertex? {
     val vertex = id2Vertex.remove(key = id, useReturn = true) ?: return null
-    id2Label.remove(id)
+    id2Compact.remove(id)
 
     val labelHash = hash { putResolvedLabel(vertex.label as ResolvedLabel) }
     labelHash2VertexId.map.removeLong(labelHash)
@@ -190,6 +196,20 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
   private fun removeLinksBetween(form: ID, to: ID): LongList {
     val linkHash = HashValue128(form, to)
     return edgeLink2EdgesId.map[linkHash] ?: LongLists.EMPTY_LIST
+  }
+
+  private fun BazelTargetVertex.toTargetCompact(): BazelTargetCompact {
+    val isExecutable = if (proto.hasGenericData()) {
+      proto.genericData.tagsList.contains(BazelTargetGenericData.Tags.EXECUTABLE)
+    } else {
+      false
+    }
+    val proto = BazelTargetCompactProto.newBuilder()
+      .setVertexId(id)
+      .setCanonicalLabel(proto.canonicalLabel)
+      .setIsExecutable(isExecutable)
+      .build()
+    return BazelTargetCompact(proto)
   }
 
 }

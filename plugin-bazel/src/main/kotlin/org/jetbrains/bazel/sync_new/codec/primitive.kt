@@ -3,14 +3,14 @@ package org.jetbrains.bazel.sync_new.codec
 import com.dynatrace.hash4j.hashing.HashValue128
 import org.jetbrains.bazel.label.Label
 
-fun CodecBuilder.ofPrimitiveLong(): Codec<Long> = codecOf(
+fun CodecBuilder.ofLong(): Codec<Long> = codecOf(
   encode = { _, buffer, value -> buffer.writeVarLong(value) },
   decode = { _, buffer -> buffer.readVarLong() },
   size = { _, _ -> Long.SIZE_BYTES }
 )
 
 // using varlong in this case is just waste of resources
-fun CodecBuilder.ofHashValue128(): Codec<HashValue128> = codecOf(
+fun CodecBuilder.ofHash128(): Codec<HashValue128> = codecOf(
   encode = { _, buffer, value ->
     buffer.writeInt64(value.mostSignificantBits)
     buffer.writeInt64(value.leastSignificantBits)
