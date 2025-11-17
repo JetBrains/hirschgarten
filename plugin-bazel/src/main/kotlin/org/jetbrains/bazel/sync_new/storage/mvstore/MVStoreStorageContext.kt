@@ -65,12 +65,10 @@ class MVStoreStorageContext(
         name = getInMemoryStoreName(name),
       )
 
-      StorageHints.USE_IN_MEMORY in hints -> InMemoryKVStoreBuilder(
+      else -> InMemoryKVStoreBuilder(
         owner = this,
         name = getInMemoryStoreName(name),
       )
-
-      else -> unsupportedHints(hints)
     }
 
   override fun <K, V> createSortedKVStorage(
@@ -87,12 +85,10 @@ class MVStoreStorageContext(
         valueType = valueType,
       )
 
-      StorageHints.USE_IN_MEMORY in hints -> InMemorySortedKVStoreBuilder(
+      else -> InMemorySortedKVStoreBuilder(
         owner = this,
         name = getInMemoryStoreName(name),
       )
-
-      else -> unsupportedHints(hints)
     }
 
   override fun <T> createFlatStorage(
@@ -129,9 +125,6 @@ class MVStoreStorageContext(
 
   internal fun getPageStoreName(name: String) = "PAGE_STORE.$name"
   internal fun getInMemoryStoreName(name: String) = "IN_MEMORY_STORE.$name"
-
-  private fun unsupportedHints(hints: Array<out StorageHints>): Nothing =
-    error("unsupported hints: ${hints.joinToString(", ")}")
 
   override fun register(store: FlatPersistentStore) {
     val handler = EmbeddedFlatStoreRWHandler(ownedStoresMap, store.name)

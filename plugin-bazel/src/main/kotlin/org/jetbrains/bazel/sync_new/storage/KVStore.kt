@@ -14,6 +14,8 @@ interface KVStore<K, V> {
   fun values(): Sequence<V>
 
   fun computeIfAbsent(key: K, op: (k: K) -> V): V?
+  fun compute(key: K, op: (k: K, v: V?) -> V?): V?
+
 }
 
 interface KVStoreBuilder<B, K, V>

@@ -10,6 +10,8 @@ class PersistentStoreOne2OneIndex<K, V>(
     storage.set(key, value)
   }
 
+  override fun get(key: K): V? = storage.get(key)
+
   override fun invalidate(key: K): V? = storage.remove(key)
 
   override fun invalidateAll() {

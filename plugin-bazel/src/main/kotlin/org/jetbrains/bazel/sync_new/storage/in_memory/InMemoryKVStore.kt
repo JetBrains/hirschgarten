@@ -59,6 +59,7 @@ open class InMemoryKVStore<K, V>(
 
   override fun values(): Sequence<V> = map.values.asSequence()
   override fun computeIfAbsent(key: K, op: (k: K) -> V): V? = map.computeIfAbsent(key, op)
+  override fun compute(key: K, op: (k: K, v: V?) -> V?): V? = map.compute(key, op)
 
   override fun write(ctx: CodecContext, buffer: CodecBuffer) {
     buffer.writeVarInt(CODEC_VERSION)

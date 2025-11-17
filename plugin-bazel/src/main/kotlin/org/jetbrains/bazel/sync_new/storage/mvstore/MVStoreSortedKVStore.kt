@@ -57,6 +57,22 @@ open class MVStoreSortedKVStore<K, V>(
     })
     return result
   }
+
+  override fun compute(key: K, op: (k: K, v: V?) -> V?): V? {
+    var result: V? = null
+    map.operate(key, null, object : MVMap.DecisionMaker<V>() {
+      override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision {
+        return MVMap.Decision.PUT
+      }
+      override fun <T : V?> selectValue(existingValue: T?, providedValue: T?): T? {
+        @Suppress("UNCHECKED_CAST")
+        val newValue = op(key, existingValue) as T
+        result = newValue
+        return newValue
+      }
+    })
+    return result
+  }
 }
 
 class MVStoreSortedKVStoreBuilder<K, V>(
