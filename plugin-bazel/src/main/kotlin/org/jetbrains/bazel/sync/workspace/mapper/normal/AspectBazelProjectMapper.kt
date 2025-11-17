@@ -983,7 +983,6 @@ class AspectBazelProjectMapper(
     return (sourceItems + generatedSourceItems + extraSources)
       .distinctBy { it.path }
       .onEach { if (it.path.notExists()) logNonExistingFile(it.path, target.id) }
-      .toList()
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {
