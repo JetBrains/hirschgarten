@@ -201,7 +201,7 @@
                     dynamic="true"
     />
     <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
-                    interface="org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.JavaSourceRootPatternContributor"
+                    interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
                     dynamic="true"
     />
   </extensionPoints>
@@ -215,10 +215,10 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.JavaDefaultSourceRootPatternContributor"/>
-    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.JavaProjectViewSourceRootPatternContributor"/>
+    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaDefaultSourceRootPatternContributor"/>
+    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
     <projectViewSectionProvider
-      implementation="org.jetbrains.bazel.sync.workspace.languages.java.source_root.projectview.JavaSROProjectViewSectionProvider"/>
+      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
 
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook" />
 

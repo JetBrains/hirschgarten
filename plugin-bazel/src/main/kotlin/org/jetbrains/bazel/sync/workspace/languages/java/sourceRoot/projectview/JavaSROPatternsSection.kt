@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.languages.java.source_root.projectview
+package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview
 
 import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.SectionKey

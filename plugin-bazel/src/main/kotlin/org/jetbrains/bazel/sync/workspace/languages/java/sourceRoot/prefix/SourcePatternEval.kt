@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix
+package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix
 
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path

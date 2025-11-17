@@ -2,7 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages.sro
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
-import org.jetbrains.bazel.sync.workspace.languages.java.source_root.JavaSourceRootPackageInference
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JavaSourceRootPackageInference
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.Test
 import java.nio.file.Path

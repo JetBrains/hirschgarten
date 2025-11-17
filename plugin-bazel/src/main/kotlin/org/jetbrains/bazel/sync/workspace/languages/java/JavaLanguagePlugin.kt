@@ -10,11 +10,11 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
-import org.jetbrains.bazel.sync.workspace.languages.java.source_root.JavaSourceRootPackageInference
-import org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.SourcePatternEval
-import org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.JavaSourceRootPatternContributor
-import org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.SourceRootPattern
-import org.jetbrains.bazel.sync.workspace.languages.java.source_root.projectview.javaSROEnable
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JavaSourceRootPackageInference
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourcePatternEval
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourceRootPattern
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROEnable
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
