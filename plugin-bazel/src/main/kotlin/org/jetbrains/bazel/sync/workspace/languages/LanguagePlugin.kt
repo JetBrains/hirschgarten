@@ -11,7 +11,7 @@ import java.nio.file.Path
 interface LanguagePlugin<BuildTarget : BuildTargetData> {
   fun getSupportedLanguages(): Set<LanguageClass>
 
-  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
+  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<SourceItem> = emptySequence()
 
   fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
 

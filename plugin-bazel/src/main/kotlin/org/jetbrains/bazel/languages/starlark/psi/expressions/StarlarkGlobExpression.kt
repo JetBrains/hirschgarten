@@ -2,6 +2,8 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.bazelversion.psi.toSemVer
+import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.starlark.StarlarkConstants.ALLOW_EMPTY_KEYWORD
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.globbing.StarlarkGlob
@@ -15,6 +17,10 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
 import kotlin.concurrent.Volatile
 
 class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
+
+  val bazelVersion: Int?
+    get() = node.psi.project.getService(BazelVersionCheckerService::class.java).currentBazelVersion?.toSemVer()?.major
+
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitGlobExpression(this)
 
   fun getArgList(): StarlarkArgumentList? =
@@ -103,7 +109,8 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
   }
 
   private fun isAllowedEmpty(): Boolean {
+    val defaultAllowEmptyTrue =  bazelVersion?.let { it < 8 } ?: false
     val allowEmpty: String? = getArgValue(getKeywordArgument(ALLOW_EMPTY_KEYWORD))?.text
-    return allowEmpty?.lowercase()?.toBooleanStrictOrNull() ?: false
+    return allowEmpty?.lowercase()?.toBooleanStrictOrNull() ?: defaultAllowEmptyTrue
   }
 }
