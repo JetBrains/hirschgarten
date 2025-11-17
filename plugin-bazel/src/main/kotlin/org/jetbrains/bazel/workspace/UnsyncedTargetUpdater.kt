@@ -2,11 +2,10 @@ package org.jetbrains.bazel.workspace
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.DependencyScope
+import com.intellij.platform.workspace.jps.entities.InheritedSdkDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleId
-import com.intellij.platform.workspace.jps.entities.SdkDependency
-import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.util.containers.Interner
@@ -65,9 +64,13 @@ class UnsyncedTargetUpdater {
           }
 
           // Add SDK Dependency
+          // Use InheritedSdkDependency when matching project default for true SDK inheritance
           val languages = inferLanguages(targetInfo)
           if (languages.contains(LanguageClass.JAVA)) {
-            dependencies.add(SdkDependency(SdkId(project.defaultJdkName!!, "JavaSDK")))
+            val defaultJdk = project.defaultJdkName
+            if (defaultJdk != null) {
+              dependencies.add(InheritedSdkDependency)
+            }
           }
 
           // Transform the TargetInfo to RawBuildTarget and save to TargetUtils

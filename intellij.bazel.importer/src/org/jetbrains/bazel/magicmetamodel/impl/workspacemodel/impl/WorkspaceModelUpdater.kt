@@ -13,7 +13,6 @@ import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
-import org.jetbrains.bazel.workspacemodel.entities.Module
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -23,6 +22,7 @@ class WorkspaceModelUpdater(
   private val projectBasePath: Path,
   project: Project,
   private val importIjars: Boolean,
+  private val defaultJdkName: String? = null,
 ) {
   private val workspaceModelEntityUpdaterConfig =
     WorkspaceModelEntityUpdaterConfig(
@@ -50,7 +50,8 @@ class WorkspaceModelUpdater(
         projectBasePath,
         moduleEntities,
         libraries,
-      )
+        defaultJdkName,
+        )
     javaModuleUpdater.addEntities(moduleEntities.filterIsInstance<JavaModule>() + libraryModules)
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig, importIjars)
     libraryEntityUpdater.addEntities(libraries)

@@ -61,6 +61,20 @@ internal object SdkUtils {
     ProjectRootManager.getInstance(project).projectSdk?.takeIf { it.sdkType == javaSdkInstance }
       ?: getMostRecentJdk()
 
+  suspend fun setProjectSdk(project: Project, jdkName: String?) {
+    if (jdkName == null) return
+
+    val sdkTable = ProjectJdkTable.getInstance()
+    val sdk = sdkTable.findJdk(jdkName, javaSdkInstance.name) ?: return
+
+    val projectRootManager = ProjectRootManager.getInstance(project)
+    if (projectRootManager.projectSdk?.name != jdkName) {
+      writeAction {
+        projectRootManager.projectSdk = sdk
+      }
+    }
+  }
+
   private fun getMostRecentJdk(): Sdk? = getAllAvailableJdks().maxWithOrNull(javaSdkInstance.comparator)
 
   private fun getAllAvailableJdks(): List<Sdk> = ProjectJdkTable.getInstance().getSdksOfType(javaSdkInstance)
