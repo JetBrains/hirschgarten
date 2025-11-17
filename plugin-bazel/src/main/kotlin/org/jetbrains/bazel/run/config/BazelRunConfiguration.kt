@@ -37,6 +37,7 @@ class BazelRunConfiguration internal constructor(
     private set // private because we need to set the targets directly when running readExternal
 
   var doVisibilityCheck: Boolean = true
+    private set
 
   override fun checkConfiguration() {
     val utils = project.targetUtils
@@ -68,6 +69,10 @@ class BazelRunConfiguration internal constructor(
   fun updateRunProvider(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider) {
     targets = newTargets
     updateHandler(runHandlerProvider)
+  }
+
+  fun disableVisibilityCheck() {
+    doVisibilityCheck = false
   }
 
   private var handlerProvider: RunHandlerProvider? = null
