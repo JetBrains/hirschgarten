@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.lang.Language
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
@@ -14,7 +15,7 @@ object SyntheticRunTargetUtils {
   fun getSyntheticTargetLabel(vararg packageParts: String, targetName: String): Label {
     return ResolvedLabel(
       repo = Main,
-      packagePath = Package(listOf(".bazelbsp", "synthetic_targets") + packageParts),
+      packagePath = Package(listOf(Constants.DOT_BAZELBSP_DIR_NAME, Constants.SYNTHETIC_TARGETS_DIR_NAME) + packageParts),
       target = SingleTarget(targetName),
     )
   }

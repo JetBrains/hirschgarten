@@ -12,6 +12,7 @@ object Constants {
   const val EXTENSIONS_BZL: String = "extensions.bzl"
   const val TEMPLATE_EXTENSION: String = ".template"
   const val DOT_BAZELBSP_DIR_NAME: String = ".bazelbsp"
+  const val SYNTHETIC_TARGETS_DIR_NAME: String = "synthetic_targets"
 
   const val WORKSPACE_FILE_NAME: String = "WORKSPACE"
   const val MODULE_BAZEL_FILE_NAME = "MODULE.bazel"

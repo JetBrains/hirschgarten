@@ -5,6 +5,7 @@ import com.intellij.lang.java.JavaLanguage
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -30,7 +31,7 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     val generator = getDefaultTemplateGenerator(target, JavaLanguage.INSTANCE)
     val label = generator.getSyntheticTargetLabel(target, myFixture.elementAtCaret)
 
-    label.toString().shouldContain(".bazelbsp/synthetic_targets")
+    label.toString().shouldContain("${Constants.DOT_BAZELBSP_DIR_NAME}/${Constants.SYNTHETIC_TARGETS_DIR_NAME}")
     label.toString().shouldContain("synthetic_binary")
   }
 
