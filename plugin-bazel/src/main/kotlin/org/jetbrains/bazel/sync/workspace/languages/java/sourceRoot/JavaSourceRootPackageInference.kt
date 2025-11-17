@@ -1,10 +1,9 @@
-package org.jetbrains.bazel.sync.workspace.languages.java.source_root
+package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot
 
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
-import kotlin.io.path.exists
 import kotlin.io.path.extension
 
 // this package based inference mechanism is trying

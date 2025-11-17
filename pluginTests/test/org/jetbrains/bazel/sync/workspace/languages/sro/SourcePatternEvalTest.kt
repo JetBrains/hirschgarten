@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.sro
 
 import io.kotest.matchers.collections.shouldContainExactly
-import org.jetbrains.bazel.sync.workspace.languages.java.source_root.prefix.SourcePatternEval
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourcePatternEval
 import org.junit.jupiter.api.Test
 
 class SourcePatternEvalTest {
