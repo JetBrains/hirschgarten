@@ -1,14 +1,13 @@
 package org.jetbrains.bazel.sync.workspace.languages.java.source_root
 
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 
-private val SUPPORTED_EXTENSIONS = listOf("java", "kt", "scala")
-
-// this package resolves based inference mechanism is trying
+// this package based inference mechanism is trying
 // to optimize amount of calls package resolver
 //
 // for large monorepos randomly accessing over 100_000 files can be inefficient
@@ -26,7 +25,7 @@ class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver) {
       return
     }
 
-    val supportedSources = sources.filter { SUPPORTED_EXTENSIONS.contains(it.path.extension) }
+    val supportedSources = sources.filter { Constants.JVM_LANGUAGES_EXTENSIONS.contains(it.path.extension) }
     if (supportedSources.isEmpty()) {
       return
     }
