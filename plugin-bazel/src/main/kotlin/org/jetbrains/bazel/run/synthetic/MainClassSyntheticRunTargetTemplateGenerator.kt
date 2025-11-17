@@ -22,14 +22,14 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
     return SyntheticRunTargetUtils.getSyntheticTargetLabel(packageParts = pkg, targetName = DEFAULT_TARGET_NAME)
   }
 
-  override fun getSyntheticParams(target: BuildTarget, element: PsiElement): SyntheticRunTargetParams {
+  override fun getSyntheticParams(target: BuildTarget, element: PsiElement): SyntheticRunTargetTemplateGenerator.Params {
     val mainClass = element.getMainClassInternal() ?: error("failed to get main class")
-    return SyntheticRunTargetParams.ofString(mainClass)
+    return SyntheticRunTargetTemplateGenerator.Params(mainClass)
   }
 
   override fun createSyntheticTemplate(
     target: BuildTarget,
-    params: SyntheticRunTargetParams,
+    params: SyntheticRunTargetTemplateGenerator.Params,
   ): SyntheticRunTargetTemplate {
     val mainClass = params.data ?: error("failed to get main class")
     val build = getBuildContent(target, DEFAULT_TARGET_NAME, mainClass)

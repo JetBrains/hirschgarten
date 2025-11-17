@@ -62,7 +62,7 @@ open class RunSyntheticTargetAction(
       val taskState = task.taskState
       taskState.target = target.id.toString()
       taskState.language = targetElement.language.id
-      taskState.params = params
+      taskState.params = params.data
       settings.configuration.beforeRunTasks = listOf(task)
     }
 
