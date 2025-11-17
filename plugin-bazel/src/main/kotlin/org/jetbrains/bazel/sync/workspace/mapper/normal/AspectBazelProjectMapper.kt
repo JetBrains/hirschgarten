@@ -254,14 +254,25 @@ class AspectBazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
-    targetsToImport
+  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
+    val targetsToImportSet = targetsToImport.map { it.label() }.toSet()
+
+    return targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
-          target.label() to listOf(library)
+        val outputJarsLabel = Label.parse(target.id + "_output_jars")
+
+        // Don't create dependency to synthetic output_jars library if real target already exists
+        // This prevents cyclic dependencies like proto -> proto_output_jars -> proto -> proto_output_jars
+        if (outputJarsLabel in targetsToImportSet) {
+          null
+        } else {
+          createLibrary(outputJarsLabel, target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
+            target.label() to listOf(library)
+          }
         }
       }.toMap()
+  }
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
     !targetInfo.kind.endsWith("_resources") && targetInfo.hasJvmTargetInfo() &&
