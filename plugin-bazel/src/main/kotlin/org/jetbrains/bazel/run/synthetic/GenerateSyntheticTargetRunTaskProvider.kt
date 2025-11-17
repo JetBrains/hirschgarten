@@ -64,7 +64,7 @@ class GenerateSyntheticTargetRunTaskProvider(
     configuration.putUserData(SYNTHETIC_BUILD_SESSION, session)
 
     if (BazelFeatureFlags.syntheticRunDisableVisibilityCheck) {
-      configuration.doVisibilityCheck = false
+      configuration.disableVisibilityCheck()
     }
 
     return true
