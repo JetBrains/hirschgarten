@@ -6,6 +6,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
@@ -18,12 +19,12 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
   fun `test getSyntheticTargetLabel with single package part`() {
     val label = SyntheticRunTargetUtils.getSyntheticTargetLabel(
       packageParts = arrayOf("simple"),
-      targetName = "test_binary"
+      targetName = "test_binary",
     )
 
     label.shouldBeInstanceOf<ResolvedLabel>()
     label.repo.shouldBe(Main)
-    label.packagePath.shouldBe(Package(listOf(".bazelbsp", "synthetic_targets", "simple")))
+    label.packagePath.shouldBe(Package(listOf(Constants.DOT_BAZELBSP_DIR_NAME, Constants.SYNTHETIC_TARGETS_DIR_NAME, "simple")))
     label.targetName.shouldBe("test_binary")
   }
 
@@ -31,12 +32,22 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
 
     val label = SyntheticRunTargetUtils.getSyntheticTargetLabel(
       packageParts = arrayOf("part1", "part2", "part3"),
-      targetName = "my_target"
+      targetName = "my_target",
     )
 
     label.shouldBeInstanceOf<ResolvedLabel>()
     label.repo.shouldBe(Main)
-    label.packagePath.shouldBe(Package(listOf(".bazelbsp", "synthetic_targets", "part1", "part2", "part3")))
+    label.packagePath.shouldBe(
+      Package(
+        listOf(
+          Constants.DOT_BAZELBSP_DIR_NAME,
+          Constants.SYNTHETIC_TARGETS_DIR_NAME,
+          "part1",
+          "part2",
+          "part3",
+        ),
+      ),
+    )
     label.targetName.shouldBe("my_target")
   }
 
@@ -76,12 +87,21 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
   fun `test synthetic target label structure`() {
     val label = SyntheticRunTargetUtils.getSyntheticTargetLabel(
       packageParts = arrayOf("escaped_target", "escaped_main"),
-      targetName = "synthetic_binary"
+      targetName = "synthetic_binary",
     )
 
     label.shouldBeInstanceOf<ResolvedLabel>()
     label.repo.shouldBe(Main)
-    label.packagePath.shouldBe(Package(listOf(".bazelbsp", "synthetic_targets", "escaped_target", "escaped_main")))
+    label.packagePath.shouldBe(
+      Package(
+        listOf(
+          Constants.DOT_BAZELBSP_DIR_NAME,
+          Constants.SYNTHETIC_TARGETS_DIR_NAME,
+          "escaped_target",
+          "escaped_main",
+        ),
+      ),
+    )
     label.targetName.shouldBe("synthetic_binary")
   }
 }
