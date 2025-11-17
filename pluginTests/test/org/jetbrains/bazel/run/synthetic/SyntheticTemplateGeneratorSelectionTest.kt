@@ -57,7 +57,7 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
     val mainClass = "com.example.Main"
 
-    val template = generator.createSyntheticTemplate(target, SyntheticRunTargetParams.ofString(mainClass))
+    val template = generator.createSyntheticTemplate(target, SyntheticRunTargetTemplateGenerator.Params(mainClass))
 
     template.buildFileContent.shouldContain("java_binary")
     template.buildFileContent.shouldContain("main_class = \"$mainClass\"")
@@ -70,7 +70,7 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(KotlinLanguage.INSTANCE)
     val mainClass = "com.example.MainKt"
 
-    val template = generator.createSyntheticTemplate(target, SyntheticRunTargetParams.ofString(mainClass))
+    val template = generator.createSyntheticTemplate(target, SyntheticRunTargetTemplateGenerator.Params(mainClass))
 
     template.buildFileContent.shouldContain("kt_jvm_binary")
     template.buildFileContent.shouldContain("main_class = \"$mainClass\"")
@@ -98,7 +98,7 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
     val mainClass = "com.example.App"
 
-    val template = generator.createSyntheticTemplate(target, SyntheticRunTargetParams.ofString(mainClass))
+    val template = generator.createSyntheticTemplate(target, SyntheticRunTargetTemplateGenerator.Params(mainClass))
 
     template.buildFilePath.shouldNotBe("")
     template.buildFilePath.shouldContain("test_lib")

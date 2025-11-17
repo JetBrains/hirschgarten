@@ -24,7 +24,7 @@ val SYNTHETIC_BUILD_SESSION: Key<SyntheticRunTargetSession> = Key.create("bazel.
 
 data class SyntheticRunTargetSession(
   val buildFileContent: String,
-  val buildFilePath: Path
+  val buildFilePath: Path,
 )
 
 class GenerateSyntheticTargetRunTaskProvider(
@@ -49,7 +49,7 @@ class GenerateSyntheticTargetRunTaskProvider(
     val language = Language.findLanguageByID(taskState.language) ?: return false
     val generator = SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)
       .find { it.isSupported(target) } ?: return false
-    val template = generator.createSyntheticTemplate(target, taskState.params)
+    val template = generator.createSyntheticTemplate(target, SyntheticRunTargetTemplateGenerator.Params(taskState.params))
     val buildFilePath = project.rootDir.toNioPath()
       .resolve(Constants.DOT_BAZELBSP_DIR_NAME)
       .resolve("synthetic_targets")
@@ -90,6 +90,6 @@ class GenerateSyntheticTargetRunTaskProvider(
     var language: String = Language.ANY.id
 
     @Attribute("params")
-    var params: SyntheticRunTargetParams = SyntheticRunTargetParams()
+    var params: String? = ""
   }
 }

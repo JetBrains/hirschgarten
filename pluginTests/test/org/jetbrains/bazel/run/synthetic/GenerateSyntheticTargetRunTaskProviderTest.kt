@@ -26,7 +26,7 @@ class GenerateSyntheticTargetRunTaskProviderTest : BasePlatformTestCase() {
     val taskState = task.taskState
     taskState.shouldNotBeNull()
     taskState.target.shouldBeEmpty()
-    taskState.params.data.shouldBeEmpty()
+    taskState.params.shouldBeEmpty()
     taskState.language.shouldBe(Language.ANY.id)
   }
 }
