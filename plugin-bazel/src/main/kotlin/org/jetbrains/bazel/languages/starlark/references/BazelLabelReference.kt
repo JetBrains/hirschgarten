@@ -12,10 +12,13 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
@@ -39,6 +42,8 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     if (isFileCompletionLocation()) return fileCompletion()
     if (isTargetCompletionLocation()) return targetCompletion()
     if (isLoadFilenameCompletionLocation()) return loadFilenameCompletion()
+    if (isUseExtensionArgument()) return loadFilenameCompletion()
+
     return emptyArray()
   }
 
@@ -131,6 +136,10 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     }
     return lookupElements.toTypedArray()
   }
+
+  private fun isUseExtensionArgument(): Boolean =
+    (((element.parent as? StarlarkArgumentExpression)?.parent as? StarlarkArgumentList)?.parent as? StarlarkCallExpression)
+      ?.getNamePsi()?.text == "use_extension"
 
   companion object {
   }
