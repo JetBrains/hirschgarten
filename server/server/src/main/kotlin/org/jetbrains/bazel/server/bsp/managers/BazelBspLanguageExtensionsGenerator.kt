@@ -16,26 +16,26 @@ enum class Language(
   val autoloadHints: List<String> = emptyList(),
 ) {
   Java(
-    "//aspects:rules/java/java_info.bzl",
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/java/java_info.bzl",
     listOf("rules_java"),
     listOf("extract_java_toolchain", "extract_java_runtime"),
     true,
     true,
     listOf("JavaInfo", "java_common", "JavaPluginInfo", "java_binary", "java_library"),
   ),
-  Python("//aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"), true, true, listOf("PyInfo")),
-  Scala("//aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala", "rules_scala"), listOf("extract_scala_info"), true, false),
-  Kotlin("//aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"), true, false),
+  Python("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"), true, true, listOf("PyInfo")),
+  Scala("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala", "rules_scala"), listOf("extract_scala_info"), true, false),
+  Kotlin("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"), true, false),
   Jvm(
-    "//aspects:rules/jvm/jvm_info.bzl",
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/jvm/jvm_info.bzl",
     Java.rulesetNames + Scala.rulesetNames + Kotlin.rulesetNames,
     listOf("extract_jvm_info"),
     true,
     true,
     Java.autoloadHints + Scala.autoloadHints + Kotlin.autoloadHints,
   ),
-  Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true, false),
-  Protobuf("//aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto", "protobuf"), listOf("extract_protobuf_info"), true, false),
+  Go("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true, false),
+  Protobuf("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto", "protobuf"), listOf("extract_protobuf_info"), true, false),
   ;
 
   fun toLoadStatement(): String =

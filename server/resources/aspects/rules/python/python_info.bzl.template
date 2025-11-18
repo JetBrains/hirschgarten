@@ -1,6 +1,6 @@
 # Copyright 2019-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
-load("//aspects:utils/utils.bzl", "create_struct", "file_location", "to_file_location","update_sync_output_groups")
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "file_location", "to_file_location","update_sync_output_groups")
 
 # Ruleset Name: $rulesetName
 
