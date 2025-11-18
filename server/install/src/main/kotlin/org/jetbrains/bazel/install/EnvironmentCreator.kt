@@ -42,9 +42,7 @@ class EnvironmentCreator(private val projectRootDir: Path) {
 
   private fun createEmptyBuildFile(dotBazelBspDir: Path) {
     val destinationBuildFilePath = dotBazelBspDir.resolve(Constants.defaultBuildFileName())
-    val destinationWorkspaceFilePath = dotBazelBspDir.resolve(Constants.WORKSPACE_FILE_NAME)
     destinationBuildFilePath.toFile().createNewFile()
-    destinationWorkspaceFilePath.toFile().createNewFile()
   }
 
   fun createGitIgnoreFile(dotBazelBspDir: Path) {
@@ -76,6 +74,18 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     Files.walk(destination).use { destinationFiles ->
       destinationFiles.forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
     }
+
+    destination.resolve(Constants.BUILD_FILE_NAMES.last())
+      .writeIfDifferent(
+        """
+        package(default_visibility = ["//visibility:public"])
+
+        filegroup(
+            name = "aspects",
+            srcs = glob(["**/*"]),
+        )
+      """.trimIndent(),
+      )
   }
 
   private fun copyUsingRelativePath(
