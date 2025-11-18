@@ -150,7 +150,7 @@ class AspectBazelProjectMapper(
       }
     val kotlinStdlibsMapper =
       measure("Create kotlin stdlibs") {
-        calculateKotlinStdlibsMapper(targetsToImport)
+        calculateKotlinStdlibsMapper(targetsToImport, dependencyGraph)
       }
     val kotlincPluginLibrariesMapper =
       measure("Create kotlinc plugin libraries") {
@@ -263,11 +263,20 @@ class AspectBazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(workspaceContext: WorkspaceContext, targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
+  private fun calculateOutputJarsLibraries(
+    workspaceContext: WorkspaceContext,
+    targetsToImport: Sequence<TargetInfo>,
+  ): Map<Label, List<Library>> =
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(workspaceContext, Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
+        createLibrary(
+          workspaceContext,
+          Label.parse(target.id + "_output_jars"),
+          target,
+          onlyOutputJars = true,
+          isInternalTarget = true,
+        )?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -304,25 +313,27 @@ class AspectBazelProjectMapper(
       }.map { Label.parse(it.key) to listOf(it.value) }
       .toMap()
 
-  private fun TargetInfo.isJavaTargetThatDependsOnKotlin(targetsToImport: Sequence<TargetInfo>): Boolean {
-    if (hasKotlinTargetInfo())
-      return false
-    val dependencies = dependenciesList.map { it.label().targetName }.toMutableSet()
-    val targets = targetsToImport.iterator()
-    while (dependencies.isNotEmpty() && targets.hasNext()) {
-      val checkedTarget = targets.next()
-      if (dependencies.remove(checkedTarget.label().targetName) && checkedTarget.hasKotlinTargetInfo()) {
-        return@isJavaTargetThatDependsOnKotlin true
+  private fun javaTargetsDependingOnKotlin(targetsToImport: Sequence<TargetInfo>, dependencyGraph: DependencyGraph): Set<Label> {
+    val javaTargets = mutableSetOf<Label>()
+    for (info in targetsToImport) {
+      info.kotlinTargetInfo?.let {
+        javaTargets.addAll(
+          dependencyGraph.getReverseDependenciesInfo(info.label()).mapNotNull {
+            if (it.hasJvmTargetInfo() && it.kotlinTargetInfo == null) it.label()
+            else null
+          },
+        )
       }
     }
-    return false
+    return javaTargets
   }
 
-  private fun calculateKotlinStdlibsMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
+  private fun calculateKotlinStdlibsMapper(
+    targetsToImport: Sequence<TargetInfo>,
+    dependencyGraph: DependencyGraph,
+  ): Map<Label, List<Library>> {
     val projectLevelKotlinStdlibsLibrary = calculateProjectLevelKotlinStdlibsLibrary(targetsToImport)
-    val kotlinDependentTargetsIds = targetsToImport.filter {
-      it.hasKotlinTargetInfo() || it.isJavaTargetThatDependsOnKotlin(targetsToImport)
-    }.map { it.label() }
+    val kotlinDependentTargetsIds = javaTargetsDependingOnKotlin(targetsToImport, dependencyGraph)
 
     return projectLevelKotlinStdlibsLibrary
       ?.let { stdlibsLibrary -> kotlinDependentTargetsIds.associateWith { listOf(stdlibsLibrary) } }
