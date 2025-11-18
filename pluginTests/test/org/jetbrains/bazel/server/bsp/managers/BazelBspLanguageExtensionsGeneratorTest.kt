@@ -23,27 +23,27 @@ class BazelBspLanguageExtensionsGeneratorTest {
   }
 
   private val defaultFileContent =
-    """ load("//aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
-            load("//aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
-            load("//aspects:rules/python/python_info.bzl","extract_python_info")
+    """ load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
+            load("//.bazelbsp/aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
+            load("//.bazelbsp/aspects:rules/python/python_info.bzl","extract_python_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info]
             TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False)]
         """.replace(" ", "").replace("\n", "")
   private val goFileContent =
-    """ load("//aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
-            load("//aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
-            load("//aspects:rules/python/python_info.bzl","extract_python_info")
-            load("//aspects:rules/go/go_info.bzl","extract_go_info")
+    """ load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
+            load("//.bazelbsp/aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
+            load("//.bazelbsp/aspects:rules/python/python_info.bzl","extract_python_info")
+            load("//.bazelbsp/aspects:rules/go/go_info.bzl","extract_go_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info,extract_go_info]
             TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False),"@io_bazel_rules_go//go:toolchain"]
         """.replace(" ", "").replace("\n", "")
   private val allExtensionsFileContent =
-    """ load("//aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
-            load("//aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
-            load("//aspects:rules/python/python_info.bzl","extract_python_info")
-            load("//aspects:rules/kt/kt_info.bzl","extract_kotlin_info")
-            load("//aspects:rules/scala/scala_info.bzl","extract_scala_info")
-            load("//aspects:rules/go/go_info.bzl","extract_go_info")
+    """ load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
+            load("//.bazelbsp/aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
+            load("//.bazelbsp/aspects:rules/python/python_info.bzl","extract_python_info")
+            load("//.bazelbsp/aspects:rules/kt/kt_info.bzl","extract_kotlin_info")
+            load("//.bazelbsp/aspects:rules/scala/scala_info.bzl","extract_scala_info")
+            load("//.bazelbsp/aspects:rules/go/go_info.bzl","extract_go_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info,extract_kotlin_info,extract_scala_info,extract_go_info]
             TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False),"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type","@io_bazel_rules_scala//scala:toolchain_type","@io_bazel_rules_go//go:toolchain"]
         """.replace(" ", "").replace("\n", "")
@@ -83,7 +83,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
     val dotBazelBspPath = EnvironmentCreator(tempRoot).create()
 
     dotBazelBspAspectsPath = dotBazelBspPath.resolve("aspects")
-    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot), bazelRelease, false)
+    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot), bazelRelease)
   }
 
   @Test

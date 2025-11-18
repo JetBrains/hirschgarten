@@ -125,7 +125,8 @@ class BazelBspAspectsManager(
           "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
           "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.toStarlarkString(),
           "protobufRepoName" to protobufRepoName.orEmpty(),
-        )
+          "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
+      )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
 
@@ -135,6 +136,7 @@ class BazelBspAspectsManager(
       mapOf(
         "isPropagateExportsFromDepsEnabled" to
           featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
+        "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
       ),
     )
 

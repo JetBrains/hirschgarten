@@ -41,8 +41,6 @@ class EnvironmentCreator(private val projectRootDir: Path) {
   private fun createEmptyBuildFile(dotBazelBspDir: Path) {
     dotBazelBspDir.resolve(Constants.defaultBuildFileName())
       .writeIfDifferent("")
-    dotBazelBspDir.resolve(Constants.WORKSPACE_FILE_NAME)
-      .writeIfDifferent("")
   }
 
   fun createGitIgnoreFile(dotBazelBspDir: Path) {
@@ -78,10 +76,11 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     destination.resolve(Constants.BUILD_FILE_NAMES.last())
       .writeIfDifferent(
         """
+        package(default_visibility = ["//visibility:public"])
+
         filegroup(
             name = "aspects",
             srcs = glob(["**/*"]),
-            visibility = ["//visibility:public"],
         )
       """.trimIndent(),
       )
