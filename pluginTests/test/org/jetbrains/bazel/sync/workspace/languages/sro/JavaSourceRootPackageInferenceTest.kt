@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.sro
 
+import com.intellij.platform.util.progress.reportProgressScope
+import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JavaSourceRootPackageInference
@@ -176,13 +178,61 @@ class JavaSourceRootPackageInferenceTest {
     sources[3].jvmPackagePrefix shouldBe "com.example.feature2.impl"
   }
 
+  @Test
+  fun `test file read decreased`() {
+    var callCount: Int = 0
+    val (sources, resolver) = setupSources(
+      paths = arrayOf(
+        "src/main/java/com/example/level1/Class1.java" to "com.example.level1",
+        "src/main/java/com/example/level1/Class2.java" to "com.example.level1",
+        "src/main/java/com/example/level1/Class3.java" to "com.example.level1",
+        "src/main/java/com/example/level1/Class4.java" to "com.example.level1",
+        "src/main/java/com/example/level1/level2/Class5.java" to "com.example.level1.level2",
+        "src/main/java/com/example/level1/level2/Class6.java" to "com.example.level1.level2",
+        "src/main/java/com/example/level1/level2/Class7.java" to "com.example.level1.level2",
+        "src/main/java/com/example/level1/level2/level3/Class8.java" to "com.example.level1.level2.level3",
+        "src/main/java/com/example/level1/level2/level3/Class9.java" to "com.example.level1.level2.level3",
+        "src/main/java/com/example/level1/level2/level3/Class10.java" to "com.example.level1.level2.level3",
+        "src/main/java/com/example/level1/level2/level3/Class11.java" to "com.example.level1.level2.level3",
+        "src/main/java/com/example/level1/level2/level3/level4/Class12.java" to "com.example.level1.level2.level3.level4",
+        "src/main/java/com/example/level1/level2/level3/level4/Class13.java" to "com.example.level1.level2.level3.level4",
+        "src/main/java/com/example/level1/level2/level3/level4/Class14.java" to "com.example.level1.level2.level3.level4",
+        "src/main/java/com/example/level1/level2/level3/level4/level5/Class15.java" to "com.example.level1.level2.level3.level4.level5",
+        "src/main/java/com/example/level1/level2/level3/level4/level5/Class16.java" to "com.example.level1.level2.level3.level4.level5",
+        "src/main/java/com/example/level1/level2/level3/level4/level5/Class17.java" to "com.example.level1.level2.level3.level4.level5",
+        "src/main/java/com/example/level1/level2/level3/level4/level5/Class18.java" to "com.example.level1.level2.level3.level4.level5",
+        "src/main/java/com/example/level1/level2/level3/level4/level5/Class19.java" to "com.example.level1.level2.level3.level4.level5",
+        "src/main/java/com/example/level1/level2/level3/level4/level5/Class20.java" to "com.example.level1.level2.level3.level4.level5",
+      ),
+      resolver = { pkgs ->
+        object : MockJvmPackageResolver(pkgs) {
+          override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? {
+            callCount++
+            return super.calculateJvmPackagePrefix(source, multipleLines)
+          }
+        }
+      },
+    )
 
-  private fun setupSources(vararg paths: Pair<String, String>): Pair<List<SourceItem>, JvmPackageResolver> {
+    JavaSourceRootPackageInference(packageResolver = resolver)
+      .inferPackages(sources)
+
+    callCount.shouldBeLessThan(sources.size)
+  }
+
+
+  private fun setupSources(
+    vararg paths: Pair<String, String>,
+    resolver: (pkgs: Map<Path, String>) -> JvmPackageResolver = { MockJvmPackageResolver(it) },
+  ): Pair<List<SourceItem>, JvmPackageResolver> {
     val sources = paths.map { (path, _) -> SourceItem(path = Path.of(path), generated = false) }
     val pkgs = paths.associate { (path, pkg) -> Path.of(path) to pkg }
-    val resolver = object : JvmPackageResolver {
-      override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? = pkgs[source]
-    }
-    return sources to resolver
+    return sources to resolver(pkgs)
+  }
+
+  open class MockJvmPackageResolver(
+    private val pkgs: Map<Path, String>,
+  ) : JvmPackageResolver {
+    override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? = pkgs[source]
   }
 }
