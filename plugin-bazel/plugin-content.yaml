@@ -12,8 +12,3 @@
 - name: lib/modules/intellij.bazel.kotlin.k2.jar
   contentModules:
   - name: intellij.bazel.kotlin.k2
-- name: lib/opentelemetry-exporter-otlp.jar
-  library: opentelemetry-exporter-otlp
-  files:
-  - name: $MAVEN_REPOSITORY$/io/opentelemetry/opentelemetry-exporter-otlp/1/opentelemetry-exporter-otlp-1.jar
-  reason: <- intellij.bazel.server
