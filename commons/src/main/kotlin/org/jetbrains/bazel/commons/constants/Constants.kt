@@ -6,7 +6,6 @@ object Constants {
   const val BAZEL_BUILD_COMMAND: String = "build"
   const val BAZEL_TEST_COMMAND: String = "test"
   const val BAZEL_COVERAGE_COMMAND: String = "coverage"
-  const val ASPECT_REPOSITORY: String = "bazelbsp_aspect"
   const val ASPECTS_ROOT: String = "aspects"
   const val CORE_BZL: String = "core.bzl"
   const val EXTENSIONS_BZL: String = "extensions.bzl"
