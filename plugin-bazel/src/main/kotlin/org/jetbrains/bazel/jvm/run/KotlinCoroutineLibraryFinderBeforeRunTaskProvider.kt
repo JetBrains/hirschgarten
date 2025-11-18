@@ -1,22 +1,18 @@
 package org.jetbrains.bazel.jvm.run
 
 import com.intellij.debugger.engine.AsyncStacksUtils.addDebuggerAgent
-import com.intellij.debugger.impl.GenericDebuggerRunnerSettings
 import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
-import com.intellij.execution.JavaRunConfigurationExtensionManager
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.application.readAction
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.util.Key
-import com.intellij.platform.ide.progress.withBackgroundProgress
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.BazelPluginBundle
+import com.intellij.util.text.SemVer
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.getModule
@@ -58,28 +54,20 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
     val targetInfo = project.targetUtils.getBuildTargetForLabel(target) ?: return true
     if (!targetInfo.kind.includesKotlin() || !targetInfo.kind.isExecutable) return true
     val module = target.getModule(project) ?: return true
-    runBlocking {
-      withBackgroundProgress(project, BazelPluginBundle.message("background.task.description.preparing.for.debugging.kotlin", target)) {
-        calculateKotlinCoroutineParams(environment)
-      }
-    }
+    val coroutinesJarPath = module.findLatestCoroutinesJar() ?: return true
+    calculateKotlinCoroutineParams(environment, coroutinesJarPath)
     return true
   }
 
-  private suspend fun calculateKotlinCoroutineParams(environment: ExecutionEnvironment) {
-    val configuration = environment.runProfile as RunConfigurationBase<*>
+  private fun calculateKotlinCoroutineParams(environment: ExecutionEnvironment, coroutinesJarPath: String) {
     val parameters = JavaParameters()
-    val runnerSettings = environment.runnerSettings ?: GenericDebuggerRunnerSettings()
-    readAction {
-      JavaRunConfigurationExtensionManager.instance
-        .updateJavaParameters(configuration, parameters, runnerSettings, environment.executor)
-    }
     addDebuggerAgent(parameters, environment.project, false)
-
+    parameters.vmParametersList.add("-javaagent:${coroutinesJarPath}")
     val jvmFlags = parameters.vmParametersList
       .parameters
       .map { "--jvmopt=$it" }
-    environment.getCopyableUserData(COROUTINE_JVM_FLAGS_KEY)
+    environment
+      .getCopyableUserData(COROUTINE_JVM_FLAGS_KEY)
       ?.set(jvmFlags)
   }
 }
@@ -87,4 +75,31 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
 internal fun retrieveKotlinCoroutineParams(environment: ExecutionEnvironment, project: Project): List<String> {
   if (!project.bazelJVMProjectSettings.enableKotlinCoroutineDebug) return emptyList()
   return environment.getCopyableUserData(COROUTINE_JVM_FLAGS_KEY).get() ?: emptyList()
+}
+
+private val MIN_COROUTINES_VERSION = SemVer.parseFromText("1.3.8")
+
+private fun Module.findLatestCoroutinesJar(): String? {
+  val (path, version) = findLatestJarRecursively("kotlinx-coroutines-core-jvm")
+    ?: findLatestJarRecursively("kotlin-coroutines-core")
+    ?: return null
+  if (version < MIN_COROUTINES_VERSION) return null
+  return path
+}
+
+private fun Module.findLatestJarRecursively(name: String) = ModuleRootManager
+  .getInstance(this)
+  .orderEntries()
+  .recursively()
+  .classes()
+  .pathsList
+  .pathList
+  .mapNotNull { it.extractPathWithVersionBy(name) }
+  .maxByOrNull { (_, version) -> version }
+
+private fun String.extractPathWithVersionBy(name: String): Pair<String, SemVer>? {
+  if (!this.contains(name)) return null
+  val rawVersion = this.substringAfterLast("$name-").substringBefore(".jar")
+  val version = SemVer.parseFromText(rawVersion) ?: return null
+  return this to version
 }
