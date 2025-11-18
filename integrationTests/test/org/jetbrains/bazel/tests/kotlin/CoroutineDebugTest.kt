@@ -7,7 +7,6 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.verticalScrollBar
 import com.intellij.driver.sdk.wait
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.driver.execute
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
@@ -19,7 +18,6 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import kotlin.time.Duration.Companion.minutes
@@ -29,7 +27,7 @@ import kotlin.time.Duration.Companion.seconds
  * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/kotlin/coroutineDebug --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
  */
 class CoroutineDebugTest : IdeStarterBaseProjectTest() {
-  @Disabled("async stack trace in intellij dev builds is mising")
+
   @Test
   fun testCoroutineDebug() {
     createContext("coroutineDebug", IdeaBazelCases.CoroutineDebug)
