@@ -80,7 +80,9 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
       try {
         // Ugly hardcoding, but good enough for now because we don't support ijwb anyway
         // Proper solution would be to get the jar locations in the aspects
-        val targetDirectory = if (pluginJar.name == "plugin-bazel.jar") {
+        val targetDirectory = if (pluginJars.size == 1) {
+          pluginSandbox
+        } else if (pluginJar.name == "plugin-bazel.jar") {
           pluginSandbox.resolve("plugin-bazel").resolve("lib")
         } else {
           pluginSandbox.resolve("plugin-bazel").resolve("lib").resolve("modules")
