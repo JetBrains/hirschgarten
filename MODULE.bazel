@@ -336,17 +336,17 @@ java_import(
 
 SDK_253_BASE_VERSION = "253.28294"
 
-SDK_253_INTELLIJ_VERSION = SDK_253_BASE_VERSION + ".162-EAP-CANDIDATE"
+SDK_253_INTELLIJ_VERSION = SDK_253_BASE_VERSION + ".169-EAP"
 
-SDK_253_INTELLIJ_REPOSITORY_VERSION = SDK_253_BASE_VERSION + ".162"
+SDK_253_INTELLIJ_REPOSITORY_VERSION = SDK_253_BASE_VERSION + ".169"
 
 SDK_253_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
 
-SDK_253_PLUGIN_REPOSITORY_VERSION = SDK_253_BASE_VERSION + ".51"
+SDK_253_PLUGIN_REPOSITORY_VERSION = SDK_253_BASE_VERSION + ".169"
 
 IC_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
 
-IC_253_SHA = "ee470b69775ebef6e56a420793e9e4ed04ceb5552767b7aa81bb9dc380fc14b7"
+IC_253_SHA = "3d3735b5cac46973ba2ddd542ad28ba0679d976fded3a75cbc1cf248d35470f9"
 
 http_archive(
     name = "intellij_ce_2025_3",
@@ -357,7 +357,7 @@ http_archive(
 
 IC_253_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
 
-IC_253_SOURCES_SHA = "7e56ae7c2b2f744c5df86664a19ccd4edbd2f41f646f7334497635e8b60e5f63"
+IC_253_SOURCES_SHA = "32712d5d2b2707d36a2f8a50320abe13369ad0b240abddabfd82f4f6820be2fc"
 
 http_jar(
     name = "intellij_ce_2025_3_sources",
@@ -367,7 +367,7 @@ http_jar(
 
 DEVKIT_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_253_SHA = "8a1ad684b06e557b401a4054bd6c3951deed47ad744b7b5584ab259a30630616"
+DEVKIT_253_SHA = "1eabcf7230deb3d019eff0fc46c8045af78bc796eec8abee5c73bad1c708995f"
 
 http_archive(
     name = "devkit_2025_3",
@@ -378,7 +378,7 @@ http_archive(
 
 PYTHON_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_253_SHA = "fdfce5c09a61b3d30aaee51f3184bd3c3522f6914995ac048e15c0efb8ce7c94"
+PYTHON_PLUGIN_253_SHA = "fa3dc8a5038736e8c4aef5a8da42ab933d32ac9b416a6f5f900697aefe799487"
 
 http_archive(
     name = "python_2025_3",
@@ -389,7 +389,7 @@ http_archive(
 
 GO_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_253_SHA = "300ba8cd51940f304be448f766a961c43d646f9abb98342f9d81f9dffbc01745"
+GO_PLUGIN_253_SHA = "d0432b03d958baad3cf408a9f60f104bc237e4452e1d85a756b23135c270c314"
 
 http_archive(
     name = "go_2025_3",
