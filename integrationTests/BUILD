@@ -1,3 +1,4 @@
+"""
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("//rules/testing:commons.bzl", "INTELLIJ_DEPS", "INTELLIJ_RUNTIME_DEPS", "JUNIT_DEPS", "KOTEST_DEPS", "kt_test_suite")
 load("//rules/testing:ide_starter.bzl", "kt_integration_test_suite")
@@ -21,3 +22,4 @@ kt_integration_test_suite(
         "//pluginTests:test_fixtures",
     ] + INTELLIJ_DEPS,
 )
+"""

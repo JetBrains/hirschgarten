@@ -1,3 +1,4 @@
+"""
 load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 
@@ -21,3 +22,4 @@ java_proto_library(
         "@stardoc//stardoc/proto:stardoc_output_proto",
     ],
 )
+"""
