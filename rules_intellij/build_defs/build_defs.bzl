@@ -9,12 +9,14 @@
 load(
     ":intellij_plugin.bzl",
     _intellij_plugin = "intellij_plugin",
+    _intellij_module = "intellij_module",
     _intellij_plugin_library = "intellij_plugin_library",
     _optional_plugin_dep = "optional_plugin_dep",
 )
 
 # Re-export these symbols
 intellij_plugin = _intellij_plugin
+intellij_module = _intellij_module
 intellij_plugin_library = _intellij_plugin_library
 optional_plugin_dep = _optional_plugin_dep
 
