@@ -1,5 +1,16 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("//protobuf:check_in_protobuf.bzl", "check_in_protobuf")
+
+kt_jvm_library(
+  name = "protobuf",
+  module_name = "intellij.bazel.protobuf",
+  visibility = ["//visibility:public"],
+  srcs = glob(["src/main/gen/**/*.kt", "src/main/gen/**/*.java"], allow_empty = True),
+  deps = [
+    "//rules_intellij/intellij_platform_sdk:plugin_api",
+  ]
+)
 
 sh_binary(
     name = "extract_bin",
@@ -66,8 +77,8 @@ check_in_protobuf(
             "path": "third_party/bazel/src/main/java/com/google/devtools/build/lib/starlarkdebug/proto/starlark_debugging_proto-speed-src.jar",
         },
         {
-            "label": "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij:intellij_plugin_deploy_target_info",
-            "path": "plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij/intellij_plugin_deploy_target_info_lib-speed-src.jar",
+            "label": "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij/proto:intellij_plugin_deploy_target_info",
+            "path": "plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij/proto/intellij_plugin_deploy_target_info_lib-speed-src.jar",
         },
         {
             "label": "//third_party/bazel/src/main/protobuf:stardoc_output_java_proto",

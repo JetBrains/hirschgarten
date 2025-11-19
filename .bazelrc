@@ -1,10 +1,9 @@
 try-import %workspace%/.ci.bazelrc
 try-import %workspace%/.user.bazelrc
 
-build --define=ij_product=intellij-2025.2
-# Has to be set to 21 instead of 17 for IntelliJ IDEA 2025.3
-build --java_language_version=17 --java_runtime_version=17
-build --tool_java_language_version=17 --tool_java_runtime_version=17
+build --define=ij_product=intellij-2025.3
+build --java_language_version=21 --java_runtime_version=21
+build --tool_java_language_version=21 --tool_java_runtime_version=21
 
 # Note: Use `common` for options to be applied to all applicable commands
 
