@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.components.service
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.bazelversion.psi.toSemVer
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
@@ -17,9 +18,6 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
 import kotlin.concurrent.Volatile
 
 class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
-
-  val bazelVersion: Int?
-    get() = node.psi.project.getService(BazelVersionCheckerService::class.java).currentBazelVersion?.toSemVer()?.major
 
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitGlobExpression(this)
 
@@ -109,8 +107,10 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
   }
 
   private fun isAllowedEmpty(): Boolean {
-    val defaultAllowEmptyTrue =  bazelVersion?.let { it < 8 } ?: false
+    val bazelVersion = project.service<BazelVersionCheckerService>().currentBazelVersion?.toSemVer()
     val allowEmpty: String? = getArgValue(getKeywordArgument(ALLOW_EMPTY_KEYWORD))?.text
-    return allowEmpty?.lowercase()?.toBooleanStrictOrNull() ?: defaultAllowEmptyTrue
+    return allowEmpty?.lowercase()?.toBooleanStrictOrNull()
+      ?: bazelVersion?.let { it.major < 8 }
+      ?: false
   }
 }

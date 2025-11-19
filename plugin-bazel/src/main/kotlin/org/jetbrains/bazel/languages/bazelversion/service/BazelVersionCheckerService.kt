@@ -7,6 +7,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
@@ -68,5 +69,10 @@ class BazelVersionCheckerService(private val project: Project) : PersistentState
     } else {
       false
     }
+  }
+
+  @TestOnly
+  fun overrideBazelVersion(version: BazelVersionLiteral?) {
+    currentBazelVersion = version
   }
 }

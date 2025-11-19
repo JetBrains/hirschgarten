@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
+import com.intellij.openapi.components.service
+import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
@@ -12,17 +14,16 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
   private val globMsg = StarlarkBundle.message("annotator.glob.empty")
   private val patternMsg = StarlarkBundle.message("annotator.glob.empty.pattern")
 
-  private fun runWithBazel7VersionSet(action: () -> Unit) {
-    fun setBazelVersion(version: String) {
-      myFixture.project.getService(BazelVersionCheckerService::class.java).loadState(
-        BazelVersionCheckerService.State().apply {
-          currentBazelVersion = version
-        }
-      )
+  private fun runWithBazelVersion(version: String, action: () -> Unit) {
+    val bazelVersionCheckerService = myFixture.project.service<BazelVersionCheckerService>()
+    val baseVersion = bazelVersionCheckerService.currentBazelVersion
+    try {
+      bazelVersionCheckerService.overrideBazelVersion(version.toBazelVersionLiteral())
+      action()
     }
-    setBazelVersion("7.7.0")
-    action()
-    setBazelVersion("8.0.0")
+    finally {
+      bazelVersionCheckerService.overrideBazelVersion(baseVersion)
+    }
   }
 
   @Test
@@ -41,7 +42,7 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
 
   @Test
   fun testNoArgsGlobAnnotatorForBazel7() {
-    runWithBazel7VersionSet {
+    runWithBazelVersion("7.0.0") {
       myFixture.configureByText(
         "BUILD",
         """
@@ -73,7 +74,7 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
 
   @Test
   fun testEmptyIncludesGlobAnnotatorForBazel7() {
-    runWithBazel7VersionSet {
+    runWithBazelVersion("7.0.0") {
       myFixture.configureByText(
         "BUILD",
         """
@@ -102,7 +103,7 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
 
   @Test
   fun testEmptyUnnamedIncludesGlobAnnotatorForBazel7() {
-    runWithBazel7VersionSet {
+    runWithBazelVersion("7.0.0") {
       myFixture.configureByText(
         "BUILD",
         """
@@ -134,7 +135,7 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
 
   @Test
   fun testEmptyGlobAnnotatorForBazel7() {
-    runWithBazel7VersionSet {
+    runWithBazelVersion("7.0.0") {
       myFixture.addFileToProject("example1.java", "")
       myFixture.addFileToProject("example2.java", "")
       myFixture.configureByText(
@@ -166,7 +167,7 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
 
   @Test
   fun testUnresolvedGlobPatternsAnnotatorForBazel7() {
-    runWithBazel7VersionSet {
+    runWithBazelVersion("7.0.0") {
       myFixture.configureByText(
         "BUILD",
         """
@@ -226,7 +227,7 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
 
   @Test
   fun testEmptyGlobNotAllowedAnnotatorForBazel7() {
-    runWithBazel7VersionSet {
+    runWithBazelVersion("7.0.0") {
       myFixture.configureByText(
         "BUILD",
         """
@@ -242,7 +243,7 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
 
   @Test
   fun testUnresolvedGlobPatternsNotAllowedAnnotatorForBazel7() {
-    runWithBazel7VersionSet {
+    runWithBazelVersion("7.0.0") {
       myFixture.configureByText(
         "BUILD",
         """
