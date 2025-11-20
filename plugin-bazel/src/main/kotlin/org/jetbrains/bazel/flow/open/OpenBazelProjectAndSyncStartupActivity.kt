@@ -7,7 +7,6 @@ import com.intellij.openapi.startup.InitProjectActivity
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.project.ProjectStoreOwner
 import org.jetbrains.bazel.config.BazelProjectProperties
-import org.jetbrains.bazel.settings.bazel.openProjectViewInEditor
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 
 private class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
@@ -39,10 +38,5 @@ private class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
     }
 
     project.initProperties(projectRootDir)
-
-    // todo open as the last thing
-    if (projectViewPath != null) {
-      openProjectViewInEditor(project, projectViewPath)
-    }
   }
 }
