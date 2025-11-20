@@ -1,3 +1,4 @@
+
 package org.jetbrains.bazel.golang.sync
 
 import com.goide.sdk.GoSdk
@@ -6,10 +7,13 @@ import com.goide.sdk.GoSdkUtil
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.util.progress.SequentialProgressReporter
+import com.intellij.util.FileContentUtilCore
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
+import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.GoBuildTarget
@@ -32,6 +36,27 @@ class GoSdkSyncHook : ProjectPostSyncHook {
     val project = environment.project
     calculateAndAddGoSdk(environment.progressReporter, project, environment.taskId)
     PropertiesComponent.getInstance().setValue(DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH, true)
+
+    refreshGeneratedSources(project)
+  }
+
+  private suspend fun refreshGeneratedSources(project: Project) {
+    val generatedSources = project.targetUtils
+      .allBuildTargets()
+      .mapNotNull { extractGoBuildTarget(it) }
+      .flatMap { it.generatedSources }
+      .toSet()
+
+    SyncCache.getInstance(project).clear()
+
+    val virtualFileManager = VirtualFileManager.getInstance()
+    val filesToReparse = generatedSources.mapNotNull { virtualFileManager.findFileByNioPath(it) }
+    if (filesToReparse.isNotEmpty()) {
+      writeAction {
+        filesToReparse.forEach { it.refresh(false, false) }
+      }
+      FileContentUtilCore.reparseFiles(filesToReparse)
+    }
   }
 
   private suspend fun calculateAndAddGoSdk(
