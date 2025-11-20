@@ -40,8 +40,5 @@ private class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
 
     project.bazelProjectSettings = project.bazelProjectSettings
       .withNewProjectViewPath(projectViewPath)
-
-    // todo open as the last thing
-    openProjectViewInEditor(project, projectViewPath)
   }
 }
