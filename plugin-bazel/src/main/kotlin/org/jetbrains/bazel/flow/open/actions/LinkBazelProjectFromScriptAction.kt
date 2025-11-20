@@ -3,7 +3,6 @@ package org.jetbrains.bazel.flow.open.actions
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.progress.currentThreadCoroutineScope
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.launch
@@ -24,7 +23,7 @@ internal class LinkBazelProjectFromScriptAction :
     val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
     val projectFile = findProjectFolderFromVFile(virtualFile) ?: return
 
-    currentThreadCoroutineScope().launch {
+    e.coroutineScope.launch {
       BazelOpenProjectProvider().linkToExistingProjectAsync(projectFile, project)
     }
   }
