@@ -201,6 +201,14 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesSyncHook"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesSyncHook"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
