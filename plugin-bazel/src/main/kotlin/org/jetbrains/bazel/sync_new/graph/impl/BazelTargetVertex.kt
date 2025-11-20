@@ -1,20 +1,41 @@
 package org.jetbrains.bazel.sync_new.graph.impl
 
-import com.jetbrains.bazel.sync_new.proto.BazelTargetVertexProto
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync_new.codec.converterOf
+import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.TargetVertex
-import org.jetbrains.bazel.sync_new.graph.VertexId
+import java.nio.file.Path
+import java.util.EnumSet
 
-class BazelTargetVertex(val proto: BazelTargetVertexProto) : TargetVertex {
-  companion object {
-    internal val converter = converterOf<BazelTargetVertexProto, BazelTargetVertex>(
-      to = { BazelTargetVertex(it) },
-      from = { it.proto}
-    )
-  }
+// TODO: use not-absolute paths
+data class BazelTargetVertex(
+  override val vertexId: ID,
+  override val label: Label,
+  val targetPath: Path,
+  val genericData: BazelGenericTargetData,
+) : TargetVertex
 
-  override val id: VertexId
-    get() = proto.vertexId
-  override val label: Label by lazy { Label.parse(proto.canonicalLabel) }
+data class BazelGenericTargetData(
+  val tags: EnumSet<BazelTargetTag>,
+  val directDependencies: List<BazelTargetDependency>,
+  val sources: List<BazelTargetSourceFile>,
+  val resource: List<BazelTargetResourceFile>
+)
+
+enum class BazelTargetTag {
+  LIBRARY,
+  EXECUTABLE,
+  TEST
 }
+
+data class BazelTargetDependency(
+  val label: Label,
+)
+
+data class BazelTargetSourceFile(
+  val path: Path,
+  val priority: Int
+)
+
+data class BazelTargetResourceFile(
+  val path: Path,
+)

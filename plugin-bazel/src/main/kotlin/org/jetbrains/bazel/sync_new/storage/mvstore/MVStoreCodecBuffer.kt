@@ -3,13 +3,14 @@ package org.jetbrains.bazel.sync_new.storage.mvstore
 import org.h2.mvstore.DataUtils
 import org.h2.mvstore.WriteBuffer
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
+import org.jetbrains.bazel.sync_new.codec.HasByteBuffer
 import java.lang.invoke.MethodHandles
 import java.nio.ByteBuffer
 
 @JvmInline
 value class MVStoreWriteCodecBuffer(
-  private val buffer: WriteBuffer,
-) : CodecBuffer {
+  private val writeBuffer: WriteBuffer,
+) : CodecBuffer, HasByteBuffer {
   companion object {
     private val WRITE_BUFFER_GROW_HANDLE = MethodHandles.lookup()
       .unreflect(WriteBuffer::class.java.getDeclaredMethod("grow", Int::class.java))
@@ -20,36 +21,36 @@ value class MVStoreWriteCodecBuffer(
   override val readable: Boolean
     get() = false
   override val position: Int
-    get() = buffer.position()
+    get() = writeBuffer.position()
   override val size: Int
-    get() = buffer.capacity()
+    get() = writeBuffer.capacity()
 
   override fun reserve(size: Int) {
-    WRITE_BUFFER_GROW_HANDLE.invokeExact(buffer, size)
+    WRITE_BUFFER_GROW_HANDLE.invokeExact(writeBuffer, size)
   }
 
   override fun writeVarInt(value: Int) {
-    buffer.putVarInt(value)
+    writeBuffer.putVarInt(value)
   }
 
   override fun writeVarLong(value: Long) {
-    buffer.putVarLong(value)
+    writeBuffer.putVarLong(value)
   }
 
   override fun writeInt32(value: Int) {
-    buffer.putInt(value)
+    writeBuffer.putInt(value)
   }
 
   override fun writeInt64(value: Long) {
-    buffer.putLong(value)
+    writeBuffer.putLong(value)
   }
 
   override fun writeBytes(bytes: ByteArray) {
-    buffer.put(bytes)
+    writeBuffer.put(bytes)
   }
 
   override fun writeBuffer(buffer: ByteBuffer) {
-    this.buffer.put(buffer)
+    this.writeBuffer.put(buffer)
   }
 
   override fun readVarInt(): Int = error("not supported")
@@ -58,12 +59,14 @@ value class MVStoreWriteCodecBuffer(
   override fun readInt64(): Long = error("not supported")
   override fun readBytes(bytes: ByteArray) = error("not supported")
   override fun readBuffer(size: Int): ByteBuffer = error("not supported")
+  override val buffer: ByteBuffer
+    get() = writeBuffer.buffer
 }
 
 @JvmInline
 value class MVStoreReadCodecBuffer(
-  private val buffer: ByteBuffer,
-) : CodecBuffer {
+  override val buffer: ByteBuffer,
+) : CodecBuffer, HasByteBuffer {
   override val writable: Boolean
     get() = false
   override val readable: Boolean
@@ -94,9 +97,6 @@ value class MVStoreReadCodecBuffer(
   }
 
   override fun readBuffer(size: Int): ByteBuffer {
-    val result = ByteBuffer.allocate(size)
-    buffer.get(result.array())
-    result.position(0)
-    return result
+    return buffer.slice(buffer.position(), size)
   }
 }

@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.bazel.sync_new.proto.BazelSyncMetadata
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
 import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.codec.ofLabel
 import org.jetbrains.bazel.sync_new.codec.proto.ofProtoMessage
@@ -28,10 +29,7 @@ class SyncStoreService(
 
   val syncMetadata = project.storageContext.createFlatStorage<SyncMetadata>("bazel.sync.syncMetadata", StorageHints.USE_IN_MEMORY)
     .withCreator { SyncMetadata() }
-    .withCodec {
-      ofProtoMessage<BazelSyncMetadata>()
-        .withConverter(SyncMetadata.converter)
-    }
+    .withCodec { ofKryo() }
     .build()
 
 }

@@ -11,8 +11,10 @@ import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreWithModificationMarker
 import org.jetbrains.bazel.sync_new.storage.SortedKVStore
+import java.util.NavigableMap
 import java.util.SortedMap
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.ConcurrentSkipListMap
 
 open class InMemoryKVStore<K, V>(
@@ -29,9 +31,9 @@ open class InMemoryKVStore<K, V>(
     owner.register(this)
   }
 
-  protected val map = createInternalMap()
+  protected val map: ConcurrentMap<K, V> = createInternalMap()
 
-  protected open fun createInternalMap(): MutableMap<K, V> = ConcurrentHashMap()
+  protected open fun createInternalMap(): ConcurrentMap<K, V> = ConcurrentHashMap()
 
   override fun get(key: K): V? = map[key]
 
@@ -113,9 +115,9 @@ open class InMemorySortedKVStore<K, V>(
   private val comparator: Comparator<K>,
 ) : InMemoryKVStore<K, V>(owner, name, keyCodec, valueCodec), SortedKVStore<K, V> {
   protected val sortedMap: SortedMap<K, V>
-    get() = map as SortedMap<K, V>
+    get() = map as NavigableMap<K, V>
 
-  override fun createInternalMap(): MutableMap<K, V> = ConcurrentSkipListMap(comparator)
+  override fun createInternalMap(): ConcurrentMap<K, V> = ConcurrentSkipListMap(comparator)
 
   override fun getHighestKey(): K? = sortedMap.lastKey()
 }

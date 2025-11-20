@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.sync_new.connector
 
 interface BazelConnector {
-  fun query(startup: StartupOptions.() -> Unit = {}, args: QueryArgs.() -> Unit = {}): BazelResult<QueryResult>
+  suspend fun query(startup: StartupOptions.() -> Unit = {}, args: QueryArgs.() -> Unit = {}): BazelResult<QueryResult>
 }
 
 sealed interface BazelResult<T> {

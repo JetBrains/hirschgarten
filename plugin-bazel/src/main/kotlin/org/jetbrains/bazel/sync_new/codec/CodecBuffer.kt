@@ -26,6 +26,10 @@ interface CodecBuffer {
   fun readBuffer(size: Int): ByteBuffer
 }
 
+interface HasByteBuffer : CodecBuffer {
+  val buffer: ByteBuffer
+}
+
 fun CodecBuffer.writeString(value: String, charset: Charset = Charsets.UTF_8) {
   val bytes = value.toByteArray(charset)
   writeVarInt(bytes.size)

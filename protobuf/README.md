@@ -10,3 +10,5 @@ To generate the libraries, run the following command:
 ```bash
 bazel run //protobuf:check_in_protobuf
 ```
+
+# PORT THIS TO SINGLE SCRIPT

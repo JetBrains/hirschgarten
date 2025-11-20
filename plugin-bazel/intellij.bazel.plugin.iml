@@ -140,5 +140,6 @@
     <orderEntry type="module" module-name="intellij.driver.model" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ide.updateChecker" />
     <orderEntry type="module" module-name="intellij.java.byteCodeViewer" />
+    <orderEntry type="library" name="Kryo5" level="project" />
   </component>
 </module>
