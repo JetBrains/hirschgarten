@@ -4,5 +4,8 @@ import com.intellij.openapi.components.Service
 
 @Service(Service.Level.PROJECT)
 class BazelConnectorService {
-  val connector: BazelConnector
+
+  fun ofLegacyTask(taskId: String): BazelConnector {
+
+  }
 }

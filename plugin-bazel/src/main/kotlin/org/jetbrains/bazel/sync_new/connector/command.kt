@@ -6,12 +6,12 @@ import java.nio.file.Path
 
 // TODO: add required options on-demand
 sealed interface QueryResult {
-  class Proto(result: Build.QueryResult)
+  class Proto(result: Build.QueryResult) : QueryResult
   class StreamedProto(flow: Flow<Build.Target>) : QueryResult
 }
 
 interface QueryArgs : Args
-fun QueryArgs.output(output: String): Unit = add("output", valueOf(output))
-fun QueryArgs.queryFile(file: Path): Unit = add("query_file", valueOf(file))
-fun QueryArgs.keepGoing(): Unit = add("keep_going", valueOf(true))
+fun QueryArgs.output(output: String): Unit = add("output", argValueOf(output))
+fun QueryArgs.query(query: Path): Unit = add("query", argValueOf(query))
+fun QueryArgs.keepGoing(): Unit = add("keep_going", argValueOf(true))
 
