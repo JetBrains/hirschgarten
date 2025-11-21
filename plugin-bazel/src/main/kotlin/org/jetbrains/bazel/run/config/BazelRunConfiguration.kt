@@ -5,6 +5,7 @@ import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RuntimeConfigurationError
+import com.intellij.execution.configurations.RuntimeConfigurationWarning
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
@@ -41,8 +42,7 @@ class BazelRunConfiguration internal constructor(
   override fun checkConfiguration() {
     val utils = project.targetUtils
     val selectedTargets = targets.map {
-      val target = utils.getBuildTargetForLabel(it)
-        ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.found", it))
+      val target = utils.getBuildTargetForLabel(it) ?: throw RuntimeConfigurationWarning(message("runconfig.bazel.errors.target.not.found", it))
       if (!target.kind.isExecutable) throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.executable", it))
       target
     }
@@ -61,8 +61,14 @@ class BazelRunConfiguration internal constructor(
   }
 
   fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
+    if (newTargets == targets) return
     targets = newTargets
-    updateHandlerIfDifferentProvider(runHandlerProvider ?: RunHandlerProvider.getRunHandlerProvider(project, newTargets))
+    if (newTargets.isEmpty()) return
+    // `updateTargets` is called by the editor on each change. It must not fail, because it will spam with errors while editing
+    // `RunHandlerProvider.getRunHandlerProviderOrNull` is used as a workaround
+    val provider = runHandlerProvider ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, newTargets)
+    if (provider == null) return
+    updateHandlerIfDifferentProvider(provider)
   }
 
   private var handlerProvider: RunHandlerProvider? = null
