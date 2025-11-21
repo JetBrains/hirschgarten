@@ -276,6 +276,8 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     val skipped: TestResultDetail? = null,
     @JacksonXmlProperty(localName = "time")
     val time: Double? = null,
+    @JacksonXmlProperty(localName = "system-out")
+    val systemOut: String? = null,
   )
 
   fun processIncompleteInfoSuite(suite: IncompleteTestSuite) {
@@ -302,7 +304,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     bspClientTestNotifier.startTest(suite.name, suiteTaskId)
     val fallbackMessage = suite.systemOut.takeIf { suite.testcase.size == 1 }
     suite.testcase.forEach { testCase ->
-      processIncompleteInfoCase(testCase, suiteTaskId.id, suite.name, fallbackMessage)
+      processIncompleteInfoCase(testCase, suiteTaskId.id, suite.name, testCase.systemOut ?: fallbackMessage)
     }
     bspClientTestNotifier.finishTest(
       suite.name,
@@ -320,7 +322,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     testCase: IncompleteTestCase,
     parentId: String,
     parentSuiteName: String,
-    fallbackMessage: String?,
+    systemOut: String?,
   ) {
     val testCaseTaskId = TaskId(UUID.randomUUID().toString(), listOf(parentId))
 
@@ -344,7 +346,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
         testCase.error != null -> testCase.error.content
         testCase.failure != null -> testCase.failure.content
         testCase.skipped != null -> testCase.skipped.content
-        else -> null
+        else -> systemOut
       }
     val errorType =
       when {
@@ -352,7 +354,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
         testCase.failure != null -> testCase.failure.type
         else -> null
       }
-    val message = listOfNotNull(outcomeMessage, fallbackMessage).joinToString("\n")
+    val message = listOfNotNull(outcomeMessage, systemOut).joinToString("\n")
 
     val testCaseData = JUnitStyleTestCaseData(testCase.time, testCase.name, message, fullOutput, errorType)
 
