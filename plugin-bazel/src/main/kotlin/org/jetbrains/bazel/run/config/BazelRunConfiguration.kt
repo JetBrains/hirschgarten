@@ -39,8 +39,7 @@ class BazelRunConfiguration internal constructor(
   override fun checkConfiguration() {
     val utils = project.targetUtils
     val selectedTargets = targets.map {
-      val target = utils.getBuildTargetForLabel(it)
-        ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.found", it))
+      val target = utils.getBuildTargetForLabel(it) ?: return // skip validations when any target is missing
       if (!target.kind.isExecutable) throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.executable", it))
       target
     }
@@ -59,8 +58,14 @@ class BazelRunConfiguration internal constructor(
   }
 
   fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
+    if (newTargets == targets) return
     targets = newTargets
-    updateHandlerIfDifferentProvider(runHandlerProvider ?: RunHandlerProvider.getRunHandlerProvider(project, newTargets))
+    if (newTargets.isEmpty()) return
+    // `updateTargets` is called by the editor on each change. It must not fail, because it will spam with errors while editing
+    // `RunHandlerProvider.getRunHandlerProviderOrNull` is used as a workaround
+    val provider = runHandlerProvider ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, newTargets)
+    if (provider == null) return
+    updateHandlerIfDifferentProvider(provider)
   }
 
   private var handlerProvider: RunHandlerProvider? = null
