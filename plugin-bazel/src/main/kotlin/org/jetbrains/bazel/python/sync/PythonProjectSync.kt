@@ -44,6 +44,8 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.resolve.PythonResolveIndexService
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.withSubtask
@@ -91,6 +93,15 @@ class PythonProjectSync : ProjectSyncHook {
           sourceDependencyLibrary = sourceDependencyLibrary,
         )
       }
+
+      // Create a fallback module for non-target Python files in included directories
+      createFallbackPythonModuleIfNeeded(
+        environment = environment,
+        pythonTargets = pythonTargets,
+        defaultSdk = defaultSdk,
+        virtualFileUrlManager = virtualFileUrlManager,
+      )
+
       environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(targets.toList())
     }
   }
@@ -282,6 +293,86 @@ class PythonProjectSync : ProjectSyncHook {
         this.sourceRoots = listOf(resourceRootEntity)
       }
     }
+
+  /**
+   * Creates a fallback Python module for files in included directories that are not part of any Python target.
+   * This ensures that Python files outside of targets still get a Python SDK instead of falling back to the
+   * project-level Java SDK.
+   */
+  private suspend fun createFallbackPythonModuleIfNeeded(
+    environment: ProjectSyncHookEnvironment,
+    pythonTargets: List<BuildTarget>,
+    defaultSdk: Sdk?,
+    virtualFileUrlManager: VirtualFileUrlManager,
+  ) {
+    if (defaultSdk == null) {
+      // No Python SDK available, cannot create fallback module
+      return
+    }
+
+    val builder = environment.diff.workspaceModelDiff.mutableEntityStorage
+
+    // Get the BazelProjectDirectoriesEntity to know which directories are included
+    // Query from the mutableEntityStorage being built, not the current snapshot
+    val directoriesEntity = builder.entities(BazelProjectDirectoriesEntity::class.java).firstOrNull()
+    if (directoriesEntity == null || directoriesEntity.includedRoots.isEmpty()) {
+      // No included directories, nothing to do
+      return
+    }
+
+    // Collect all directories that are already covered by Python targets
+    val targetCoveredUrls = pythonTargets.flatMap { target ->
+      (target as RawBuildTarget).sources.map { it.path.toVirtualFileUrl(virtualFileUrlManager) }
+    }.toSet()
+
+    // Find included roots that are not covered by any Python target
+    val uncoveredRoots = directoriesEntity.includedRoots.filterNot { includedRoot ->
+      // Check if this included root is already covered by a target
+      targetCoveredUrls.any { targetUrl ->
+        targetUrl.url.startsWith(includedRoot.url) || includedRoot.url.startsWith(targetUrl.url)
+      }
+    }
+
+    if (uncoveredRoots.isEmpty()) {
+      // All included directories are covered by targets
+      return
+    }
+
+    // Create a fallback module for non-target Python files
+    val fallbackModuleName = "${environment.project.name}.python.non-targets"
+    val fallbackEntitySource = BazelModuleEntitySource(fallbackModuleName)
+
+    // Create content roots for each uncovered directory
+    val contentRoots = uncoveredRoots.map { rootUrl ->
+      val sourceRootEntity = SourceRootEntity(
+        url = rootUrl,
+        rootTypeId = SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE),
+        entitySource = fallbackEntitySource,
+      )
+      ContentRootEntity(
+        url = rootUrl,
+        excludedPatterns = emptyList(),
+        entitySource = fallbackEntitySource,
+      ) {
+        this.excludedUrls = emptyList()
+        this.sourceRoots = listOf(sourceRootEntity)
+      }
+    }
+
+    // Create the fallback module with Python SDK
+    val dependencies = listOfNotNull(defaultSdk.toModuleDependencyItem())
+
+    builder.addEntity(
+      ModuleEntity(
+        name = fallbackModuleName,
+        dependencies = dependencies,
+        entitySource = fallbackEntitySource,
+      ) {
+        this.type = PYTHON_MODULE_TYPE
+        this.contentRoots = contentRoots
+      },
+    )
+  }
 }
 
 private fun getSystemSdk(): PyDetectedSdk? =

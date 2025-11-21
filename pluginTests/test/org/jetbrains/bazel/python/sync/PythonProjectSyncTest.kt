@@ -18,6 +18,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.LanguageClass
@@ -155,6 +156,235 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         .toList()
 
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedSourceRootEntities
+  }
+
+  @Test
+  fun `should create fallback Python module for non-target files in included directories`() {
+    // given
+    val pythonLibrary =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@//src:lib"),
+        type = "library",
+      )
+    val target = generateTarget(
+      pythonLibrary,
+      listOf(SourceItem(Path("/workspace/src/lib.py"), true)),
+      emptyList(),
+    )
+
+    val server = BuildServerMock()
+    val endpointProxy =
+      BazelEndpointProxyMock(
+        dependencySourcesResult = DependencySourcesResult(listOf()),
+      )
+    val resolver =
+      BazelWorkspaceResolverMock(
+        resolvedWorkspace =
+          BazelResolvedWorkspace(
+            targets = BuildTargetCollection.ofBuildTargets(listOf(target)),
+          ),
+        endpointProxy = endpointProxy,
+      )
+    val diff = AllProjectStructuresProvider(project).newDiff()
+
+    // Add BazelProjectDirectoriesEntity with included directories
+    val includedDir1 = Path("/workspace/scripts").toVirtualFileUrl(virtualFileUrlManager)
+    val includedDir2 = Path("/workspace/tools").toVirtualFileUrl(virtualFileUrlManager)
+    val projectRoot = Path("/workspace").toVirtualFileUrl(virtualFileUrlManager)
+
+    val directoriesEntity = org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity(
+      projectRoot = projectRoot,
+      includedRoots = listOf(includedDir1, includedDir2),
+      excludedRoots = emptyList(),
+      buildFiles = emptyList(),
+      indexAllFilesInIncludedRoots = true,
+      entitySource = BazelProjectEntitySource,
+    )
+    diff.workspaceModelDiff.mutableEntityStorage.addEntity(directoriesEntity)
+
+    // when
+    runBlocking {
+      reportSequentialProgress { reporter ->
+        val environment =
+          ProjectSyncHook.ProjectSyncHookEnvironment(
+            project = project,
+            syncScope = SecondPhaseSync,
+            server = server,
+            resolver = resolver,
+            diff = diff,
+            taskId = "test",
+            progressReporter = reporter,
+            buildTargets = emptyMap(),
+          )
+        hook.onSync(environment)
+      }
+    }
+
+    // then
+    val allModules =
+      diff.workspaceModelDiff.mutableEntityStorage
+        .entities(ModuleEntity::class.java)
+        .toList()
+        .filter { it.type == ModuleTypeId("PYTHON_MODULE") }
+
+    // Should have the target module plus the fallback module
+    allModules.size shouldBe 2
+
+    // Find the fallback module
+    val fallbackModule = allModules.find { it.name == "${project.name}.python.non-targets" }
+    fallbackModule.shouldNotBeNull()
+
+    // Verify fallback module has Python SDK
+    val sdkDependency = fallbackModule.dependencies.firstNotNullOfOrNull { it as? SdkDependency }
+    sdkDependency.shouldNotBeNull()
+    sdkDependency.sdk.type shouldBe "PythonSDK"
+
+    // Verify fallback module has content roots for the uncovered directories
+    val contentRoots = fallbackModule.contentRoots
+    contentRoots.size shouldBe 2
+    val contentRootUrls = contentRoots.map { it.url.url }.toSet()
+    contentRootUrls shouldBe setOf(includedDir1.url, includedDir2.url)
+
+    // Verify all content roots have Python source root type
+    contentRoots.forEach { contentRoot ->
+      val sourceRoots = contentRoot.sourceRoots
+      sourceRoots.size shouldBe 1
+      sourceRoots.first().rootTypeId shouldBe SourceRootTypeId("python-source")
+    }
+  }
+
+  @Test
+  fun `should not create fallback module when all directories are covered by targets`() {
+    // given
+    val pythonLibrary =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@//scripts:lib"),
+        type = "library",
+      )
+    val target = generateTarget(
+      pythonLibrary,
+      listOf(SourceItem(Path("/workspace/scripts/lib.py"), true)),
+      emptyList(),
+    )
+
+    val server = BuildServerMock()
+    val endpointProxy =
+      BazelEndpointProxyMock(
+        dependencySourcesResult = DependencySourcesResult(listOf()),
+      )
+    val resolver =
+      BazelWorkspaceResolverMock(
+        resolvedWorkspace =
+          BazelResolvedWorkspace(
+            targets = BuildTargetCollection.ofBuildTargets(listOf(target)),
+          ),
+        endpointProxy = endpointProxy,
+      )
+    val diff = AllProjectStructuresProvider(project).newDiff()
+
+    // Add BazelProjectDirectoriesEntity where included directory overlaps with target
+    val includedDir = Path("/workspace/scripts").toVirtualFileUrl(virtualFileUrlManager)
+    val projectRoot = Path("/workspace").toVirtualFileUrl(virtualFileUrlManager)
+
+    val directoriesEntity = org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity(
+      projectRoot = projectRoot,
+      includedRoots = listOf(includedDir),
+      excludedRoots = emptyList(),
+      buildFiles = emptyList(),
+      indexAllFilesInIncludedRoots = true,
+      entitySource = BazelProjectEntitySource,
+    )
+    diff.workspaceModelDiff.mutableEntityStorage.addEntity(directoriesEntity)
+
+    // when
+    runBlocking {
+      reportSequentialProgress { reporter ->
+        val environment =
+          ProjectSyncHook.ProjectSyncHookEnvironment(
+            project = project,
+            syncScope = SecondPhaseSync,
+            server = server,
+            resolver = resolver,
+            diff = diff,
+            taskId = "test",
+            progressReporter = reporter,
+            buildTargets = emptyMap(),
+          )
+        hook.onSync(environment)
+      }
+    }
+
+    // then
+    val allModules =
+      diff.workspaceModelDiff.mutableEntityStorage
+        .entities(ModuleEntity::class.java)
+        .toList()
+        .filter { it.type == ModuleTypeId("PYTHON_MODULE") }
+
+    // Should only have the target module, no fallback module
+    allModules.size shouldBe 1
+    allModules.first().name shouldBe pythonLibrary.targetId.formatAsModuleName(project)
+  }
+
+  @Test
+  fun `should not create fallback module when no included directories exist`() {
+    // given
+    val pythonLibrary =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@//src:lib"),
+        type = "library",
+      )
+    val target = generateTarget(
+      pythonLibrary,
+      listOf(SourceItem(Path("/workspace/src/lib.py"), true)),
+      emptyList(),
+    )
+
+    val server = BuildServerMock()
+    val endpointProxy =
+      BazelEndpointProxyMock(
+        dependencySourcesResult = DependencySourcesResult(listOf()),
+      )
+    val resolver =
+      BazelWorkspaceResolverMock(
+        resolvedWorkspace =
+          BazelResolvedWorkspace(
+            targets = BuildTargetCollection.ofBuildTargets(listOf(target)),
+          ),
+        endpointProxy = endpointProxy,
+      )
+    val diff = AllProjectStructuresProvider(project).newDiff()
+
+    // No BazelProjectDirectoriesEntity added
+
+    // when
+    runBlocking {
+      reportSequentialProgress { reporter ->
+        val environment =
+          ProjectSyncHook.ProjectSyncHookEnvironment(
+            project = project,
+            syncScope = SecondPhaseSync,
+            server = server,
+            resolver = resolver,
+            diff = diff,
+            taskId = "test",
+            progressReporter = reporter,
+            buildTargets = emptyMap(),
+          )
+        hook.onSync(environment)
+      }
+    }
+
+    // then
+    val allModules =
+      diff.workspaceModelDiff.mutableEntityStorage
+        .entities(ModuleEntity::class.java)
+        .toList()
+        .filter { it.type == ModuleTypeId("PYTHON_MODULE") }
+
+    // Should only have the target module
+    allModules.size shouldBe 1
+    allModules.first().name shouldBe pythonLibrary.targetId.formatAsModuleName(project)
   }
 
   private fun generateTestSet(): PythonTestSet {
