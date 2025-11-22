@@ -19,19 +19,46 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.logger.BspClientLogger
 import java.io.InputStream
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.collections.joinToString
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.inputStream
 
 // legacy - using bsp client for logging output to console
 class LegacyBazelConnectorImpl(
   private val project: Project,
   private val executable: String,
   private val bspClient: BspClientLogger,
-  private val originId: String? = null,
   private val coroutineScope: CoroutineScope,
 ) : BazelConnector {
   companion object {
     private val logger = logger<LegacyBazelConnectorImpl>()
+  }
+
+  override suspend fun build(
+    startup: StartupOptions.() -> Unit,
+    args: BuildArgs.() -> Unit,
+  ): BazelResult<Unit> {
+    val builder = object : CmdBuilder(), BuildArgs {}
+
+    builder.add(argValueOf(executable))
+    startup(builder)
+    builder.add(argValueOf("build"))
+    args(builder)
+
+    var targetPatternFile: Path? = null
+    builder.popValue("target_patterns")?.require<Value.VText>()?.let {
+      targetPatternFile = withContext(Dispatchers.IO) { Files.createTempFile("bazel", "target_pattern") }
+      withContext(Dispatchers.IO) { Files.writeString(targetPatternFile, it.text) }
+      builder.add("target_pattern_file", argValueOf(targetPatternFile))
+    }
+
+    // TODO: handle bazel failure
+    spawn(builder = builder)
+
+    targetPatternFile?.let { withContext(Dispatchers.IO) { Files.deleteIfExists(it) } }
+
+    return BazelResult.Success(Unit)
   }
 
   override suspend fun query(
@@ -50,22 +77,37 @@ class LegacyBazelConnectorImpl(
     withContext(Dispatchers.IO) { Files.writeString(queryFile, query.text) }
     builder.add("query_file", argValueOf(queryFile))
 
+    val outputFile = withContext(Dispatchers.IO) { Files.createTempFile("bazel", "out") }
+    builder.add("output_file", argValueOf(outputFile))
+
     val output = builder.getValue("output")?.require<Value.VText>() ?: error("output must be specified")
     return when (output.text) {
       "proto" -> {
-        val (process, _) = spawn(builder = builder, capture = false)
-        val result = Build.QueryResult.parseFrom(process.inputStream)
-        BazelResult.Success(QueryResult.Proto(result))
+        // TODO: handle bazel failure
+        val (_, exitCode) = spawn(builder = builder, capture = true)
+        withContext(Dispatchers.IO) { Files.deleteIfExists(queryFile) }
+        outputFile.inputStream().buffered().use { stream ->
+          val result = Build.QueryResult.parseFrom(stream)
+          Files.deleteIfExists(outputFile)
+          BazelResult.Success(QueryResult.Proto(result))
+        }
       }
 
       "streamed_proto" -> {
-        val outputFile = withContext(Dispatchers.IO) { Files.createTempFile("bazel", "out") }
-        val outputFileStream = withContext(Dispatchers.IO) { Files.newInputStream(outputFile) }
-        builder.add("--output_file", argValueOf(outputFile))
-        val (process, _) = spawn(builder = builder, capture = false)
-        val flow = flow { emit(Build.Target.parseDelimitedFrom(outputFileStream)) }
+        val outputFileStream = withContext(Dispatchers.IO) { outputFile.inputStream().buffered() }
+        // TODO: handle bazel failure
+        val (_, exitCode) = spawn(builder = builder, capture = true)
+        withContext(Dispatchers.IO) { Files.deleteIfExists(queryFile) }
+        val flow = flow {
+          while (true) {
+            emit(Build.Target.parseDelimitedFrom(outputFileStream))
+          }
+        }
           .takeWhile { it != null }
-          .onCompletion { outputFileStream.close() }
+          .onCompletion {
+            outputFileStream.close()
+            withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
+          }
           .flowOn(Dispatchers.IO)
         BazelResult.Success(QueryResult.StreamedProto(flow))
       }
@@ -88,39 +130,29 @@ class LegacyBazelConnectorImpl(
       .createProcess()
 
     val exitChannel = Channel<Unit>()
-    val outChannel = Channel<String?>()
 
     if (capture) {
-      coroutineScope.launch { capture(process.inputStream, outChannel, exitChannel) }
-      coroutineScope.launch { capture(process.errorStream, outChannel, exitChannel) }
-      coroutineScope.launch { consume(outChannel) }
+      coroutineScope.launch { capture(process.inputStream, exitChannel) }
+      coroutineScope.launch { capture(process.errorStream, exitChannel) }
     }
 
     val code = process.awaitExit()
-    exitChannel.send(Unit)
+    exitChannel.trySend(Unit)
 
     return Pair(process, code)
   }
 
-  private suspend fun CoroutineScope.capture(stream: InputStream, out: Channel<String?>, exit: Channel<Unit>) {
+  private suspend fun CoroutineScope.capture(stream: InputStream, exit: Channel<Unit>) {
     val reader = stream.reader(charset = Charsets.UTF_8).buffered()
     reader.use { reader ->
       while (isActive) {
         val line = reader.readLine() ?: break
         if (exit.tryReceive().isSuccess) {
-          out.send(null)
           break
         }
-        out.send(line)
+        bspClient.message(line)
+        logger.info(line)
       }
-    }
-  }
-
-  private suspend fun CoroutineScope.consume(out: Channel<String?>) {
-    while (isActive) {
-      val line = out.receive() ?: return
-      bspClient.message(line)
-      logger.info(line)
     }
   }
 
@@ -167,7 +199,7 @@ private open class CmdBuilder : StartupOptions, Args {
         }
 
       is Value.VFile -> {
-        "--$arg=\"${this.path.absolutePathString()}\""
+        "--$arg=${this.path.absolutePathString()}"
       }
 
       is Value.VFloat -> {
@@ -179,7 +211,7 @@ private open class CmdBuilder : StartupOptions, Args {
       }
 
       is Value.VText -> {
-        "--$arg=\"${this.text}\""
+        "--$arg=${this.text}"
       }
     }
   }

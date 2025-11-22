@@ -21,6 +21,8 @@ import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -39,6 +41,9 @@ class BspServerApi(
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildTargets(params)
+
+  override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildPartialTargetsParams): WorkspaceBuildPartialTargetsResult =
+    projectSyncService.workspaceBuildTargetsPartial(params)
 
   override suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): WorkspacePhasedBuildTargetsResult =
     projectSyncService.workspaceBuildPhasedTargets(params)
@@ -59,6 +64,8 @@ class BspServerApi(
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = projectSyncService.workspaceDirectories()
 
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
+  override suspend fun workspaceComputeBazelRepoMapping(): WorkspaceBazelRepoMappingResult =
+    projectSyncService.workspaceComputeBazelRepoMapping()
 
   override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult = projectSyncService.workspaceBazelPaths()
 

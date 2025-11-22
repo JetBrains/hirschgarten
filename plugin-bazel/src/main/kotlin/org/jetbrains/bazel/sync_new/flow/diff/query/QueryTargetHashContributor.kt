@@ -1,0 +1,84 @@
+package org.jetbrains.bazel.sync_new.flow.diff.query
+
+import com.google.devtools.build.lib.query2.proto.proto2api.Build
+import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.project.Project
+import kotlinx.coroutines.flow.toList
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
+import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
+import org.jetbrains.bazel.sync_new.connector.QueryResult
+import org.jetbrains.bazel.sync_new.connector.defaults
+import org.jetbrains.bazel.sync_new.connector.getOrThrow
+import org.jetbrains.bazel.sync_new.connector.injectRepository
+import org.jetbrains.bazel.sync_new.connector.keepGoing
+import org.jetbrains.bazel.sync_new.connector.output
+import org.jetbrains.bazel.sync_new.connector.query
+import org.jetbrains.bazel.sync_new.flow.diff.TargetHash
+import org.jetbrains.bazel.sync_new.flow.diff.TargetHashContributor
+import org.jetbrains.bazel.sync_new.flow.diff.TargetPattern
+import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
+import kotlin.io.path.absolutePathString
+
+class QueryTargetHashContributor : TargetHashContributor {
+  override suspend fun computeHashes(project: Project, patterns: List<TargetPattern>): Sequence<TargetHash> {
+    val connector = project.serviceAsync<BazelConnectorService>()
+      .ofLegacyTask(taskId = PROJECT_SYNC_TASK_ID)
+
+    val workspaceContext = LegacyBazelFrontendBridge.fetchWorkspaceContext(project)
+    val result = connector.query {
+      defaults()
+      keepGoing()
+      output("streamed_proto")
+      injectRepository("bazelbsp_aspect=${workspaceContext.dotBazelBspDirPath.absolutePathString()}")
+      query(createQuery(patterns))
+    }
+
+    val queryResult = result.getOrThrow()
+    val list = when (queryResult) {
+      is QueryResult.Proto -> {
+        queryResult.result.targetList
+      }
+
+      is QueryResult.StreamedProto -> {
+        queryResult.flow
+          .toList()
+      }
+    }
+    return list.mapNotNull { it.getRuleOrNull() }
+      .map {
+        TargetHash(
+          target = Label.parse(it.name),
+          hash = BuildRuleProtoHasher.hash(it),
+        )
+      }
+      .toList()
+      .asSequence()
+  }
+
+  private fun Build.Target.getRuleOrNull() = when (type) {
+    Build.Target.Discriminator.RULE -> rule
+    else -> null
+  }
+
+  private fun createQuery(patterns: List<TargetPattern>): String {
+    val expr = buildString {
+      val includes = patterns.filterIsInstance<TargetPattern.Include>()
+        .joinToString(separator = " + ") { it.label.toString() }
+      val excludes = patterns.filterIsInstance<TargetPattern.Exclude>()
+        .joinToString(separator = " + ") { it.label.toString() }
+      if (includes.isEmpty()) {
+        append("//...:all")
+      } else {
+        append(includes)
+      }
+      if (excludes.isNotEmpty()) {
+        append(" - ")
+        append("(")
+        append(excludes)
+        append(")")
+      }
+    }
+    return "deps($expr)"
+  }
+}

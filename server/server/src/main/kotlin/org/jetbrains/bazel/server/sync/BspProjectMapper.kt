@@ -13,6 +13,7 @@ import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RawAspectTarget
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path

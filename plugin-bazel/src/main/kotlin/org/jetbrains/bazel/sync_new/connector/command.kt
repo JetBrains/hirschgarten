@@ -4,14 +4,19 @@ import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import kotlinx.coroutines.flow.Flow
 import java.nio.file.Path
 
-// TODO: add required options on-demand
+interface BuildArgs : Args
+
+fun BuildArgs.nobuild(): Unit = add("nobuild", argValueOf(true))
+fun BuildArgs.aspects(aspects: List<String>): Unit = add("aspects", argValueOf(aspects.joinToString(separator = ",")))
+fun BuildArgs.targetPatterns(patterns: List<String>): Unit = add("target_patterns", argValueOf(patterns.joinToString(separator = "\n")))
+
 sealed interface QueryResult {
-  class Proto(result: Build.QueryResult) : QueryResult
-  class StreamedProto(flow: Flow<Build.Target>) : QueryResult
+  data class Proto(val result: Build.QueryResult) : QueryResult
+  data class StreamedProto(val flow: Flow<Build.Target>) : QueryResult
 }
 
 interface QueryArgs : Args
+
 fun QueryArgs.output(output: String): Unit = add("output", argValueOf(output))
-fun QueryArgs.query(query: Path): Unit = add("query", argValueOf(query))
-fun QueryArgs.keepGoing(): Unit = add("keep_going", argValueOf(true))
+fun QueryArgs.query(query: String): Unit = add("query", argValueOf(query))
 

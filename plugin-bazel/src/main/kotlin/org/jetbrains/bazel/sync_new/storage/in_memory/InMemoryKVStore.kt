@@ -27,13 +27,13 @@ open class InMemoryKVStore<K, V>(
     const val CODEC_VERSION: Int = 1
   }
 
+  protected val map: ConcurrentMap<K, V> by lazy { createInternalMap() }
+
+  protected open fun createInternalMap(): ConcurrentMap<K, V> = ConcurrentHashMap()
+
   init {
     owner.register(this)
   }
-
-  protected val map: ConcurrentMap<K, V> = createInternalMap()
-
-  protected open fun createInternalMap(): ConcurrentMap<K, V> = ConcurrentHashMap()
 
   override fun get(key: K): V? = map[key]
 

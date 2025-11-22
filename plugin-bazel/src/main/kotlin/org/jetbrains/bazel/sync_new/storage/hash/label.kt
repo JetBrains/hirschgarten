@@ -14,14 +14,10 @@ import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 
-internal fun HashStream128.putResolvedLabel(label: ResolvedLabel): HashValue128 {
+internal fun HashStream128.putResolvedLabel(label: ResolvedLabel) {
   hashLabelRepo(label)
   hashLabelPackage(label)
   hashLabelTarget(label)
-
-  val result = get()
-  reset()
-  return result
 }
 
 private fun HashSink.hashLabelRepo(label: ResolvedLabel) {

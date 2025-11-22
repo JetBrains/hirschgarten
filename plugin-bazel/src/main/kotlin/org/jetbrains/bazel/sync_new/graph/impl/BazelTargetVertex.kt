@@ -10,7 +10,6 @@ import java.util.EnumSet
 data class BazelTargetVertex(
   override val vertexId: ID,
   override val label: Label,
-  val targetPath: Path,
   val genericData: BazelGenericTargetData,
 ) : TargetVertex
 
@@ -18,13 +17,17 @@ data class BazelGenericTargetData(
   val tags: EnumSet<BazelTargetTag>,
   val directDependencies: List<BazelTargetDependency>,
   val sources: List<BazelTargetSourceFile>,
-  val resource: List<BazelTargetResourceFile>
+  val resources: List<BazelTargetResourceFile>
 )
 
 enum class BazelTargetTag {
   LIBRARY,
   EXECUTABLE,
-  TEST
+  TEST,
+  INTELLIJ_PLUGIN,
+  NO_IDE,
+  NO_BUILD,
+  MANUAL,
 }
 
 data class BazelTargetDependency(
@@ -32,10 +35,10 @@ data class BazelTargetDependency(
 )
 
 data class BazelTargetSourceFile(
-  val path: Path,
+  val path: BazelPath,
   val priority: Int
 )
 
 data class BazelTargetResourceFile(
-  val path: Path,
+  val path: BazelPath,
 )

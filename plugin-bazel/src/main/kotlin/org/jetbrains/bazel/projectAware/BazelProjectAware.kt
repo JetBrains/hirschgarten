@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.projectAware
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectAware
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectId
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectListener
@@ -13,6 +14,9 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
+import org.jetbrains.bazel.sync_new.flow.SyncScope
 
 abstract class BazelProjectAware(private val workspace: BazelWorkspace) : ExternalSystemProjectAware {
   override val settingsFiles: Set<String>
@@ -21,7 +25,12 @@ abstract class BazelProjectAware(private val workspace: BazelWorkspace) : Extern
   override fun reloadProject(context: ExternalSystemProjectReloadContext) {
     if (context.isExplicitReload) {
       BazelCoroutineService.getInstance(workspace.project).start {
-        ProjectSyncTask(workspace.project).sync(syncScope = SecondPhaseSync, buildProject = false)
+        if (BazelSyncV2.isEnabled) {
+          workspace.project.service<SyncBridgeService>()
+            .sync(scope = SyncScope.Incremental)
+        } else {
+          ProjectSyncTask(workspace.project).sync(syncScope = SecondPhaseSync, buildProject = false)
+        }
       }
     }
   }

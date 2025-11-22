@@ -10,8 +10,8 @@ import it.unimi.dsi.fastutil.longs.LongArrayList
 import it.unimi.dsi.fastutil.longs.LongList
 
 fun Kryo.registerFastUtilSerializers() {
-  register(LongList::class.java, KryoLongListSerializer)
-  register(Long2ObjectMap::class.java, Long2ObjectMapSerializer)
+  addDefaultSerializer(LongList::class.java, KryoLongListSerializer)
+  addDefaultSerializer(Long2ObjectMap::class.java, Long2ObjectMapSerializer)
 }
 
 object KryoLongListSerializer : Serializer<LongList>() {

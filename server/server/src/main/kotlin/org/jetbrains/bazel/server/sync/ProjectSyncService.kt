@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -13,6 +14,8 @@ import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
@@ -101,5 +104,23 @@ class ProjectSyncService(
   suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath {
     val project = projectProvider.get() as? AspectSyncProject ?: return BspJvmClasspath(emptyList(), emptyList())
     return bspMapper.classpathQuery(project, params.target)
+  }
+
+  suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildPartialTargetsParams): WorkspaceBuildPartialTargetsResult {
+    val result = projectProvider.projectResolver.buildTargetsWithAspect(
+      repoMapping = params.repoMapping,
+      targetLabels = params.targets,
+      originId = null,
+      build = false,
+    )
+    return WorkspaceBuildPartialTargetsResult(
+      rootTargets = result.rootTargets,
+      targets = result.targets,
+    )
+  }
+
+  suspend fun workspaceComputeBazelRepoMapping(): WorkspaceBazelRepoMappingResult {
+    val repoMapping = projectProvider.projectResolver.computeRepoMapping()
+    return WorkspaceBazelRepoMappingResult(repoMapping)
   }
 }

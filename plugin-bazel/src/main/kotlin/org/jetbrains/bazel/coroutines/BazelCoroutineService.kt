@@ -13,7 +13,7 @@ import org.jetbrains.bazel.annotations.InternalApi
 
 @Service(Service.Level.PROJECT)
 @InternalApi
-class BazelCoroutineService(private val coroutineScope: CoroutineScope) {
+class BazelCoroutineService(val coroutineScope: CoroutineScope) {
   fun start(block: suspend CoroutineScope.() -> Unit): Job = coroutineScope.launch(block = block)
 
   fun <T> startAsync(lazy: Boolean = false, callable: suspend () -> T): Deferred<T> =
