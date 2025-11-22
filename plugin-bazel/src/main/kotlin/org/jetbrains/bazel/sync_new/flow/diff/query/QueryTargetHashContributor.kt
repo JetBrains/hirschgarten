@@ -3,6 +3,9 @@ package org.jetbrains.bazel.sync_new.flow.diff.query
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
@@ -38,11 +41,11 @@ class QueryTargetHashContributor : TargetHashContributor {
     val list = when (queryResult) {
       is QueryResult.Proto -> {
         queryResult.result.targetList
+          .asFlow()
       }
 
       is QueryResult.StreamedProto -> {
         queryResult.flow
-          .toList()
       }
     }
     return list.mapNotNull { it.getRuleOrNull() }

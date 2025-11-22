@@ -1,22 +1,49 @@
 package org.jetbrains.bazel.sync_new.graph.impl
 
+import com.esotericsoftware.kryo.kryo5.serializers.FieldSerializer.Bind
+import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap
+import it.unimi.dsi.fastutil.longs.LongSet
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
+import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.TargetVertex
-import java.nio.file.Path
+import org.jetbrains.bazel.sync_new.lang.SyncTargetData
+import org.jetbrains.bazel.sync_new.lang.kryo.SyncTargetDataSerializer
 import java.util.EnumSet
 
-// TODO: use not-absolute paths
+@Tagged
 data class BazelTargetVertex(
-  override val vertexId: ID,
+  @field:Tag(1)
+  override var vertexId: ID = EMPTY_ID,
+
+  @field:Tag(2)
   override val label: Label,
+
+  @field:Tag(5)
   val genericData: BazelGenericTargetData,
+
+  @field:Tag(6)
+  val languageTags: LongSet,
+
+  @field:Bind(serializer = SyncTargetDataSerializer::class)
+  @field:Tag(10)
+  val targetData: Long2ObjectMap<SyncTargetData>
 ) : TargetVertex
 
+@Tagged
 data class BazelGenericTargetData(
+  @field:Tag(1)
   val tags: EnumSet<BazelTargetTag>,
+
+  @field:Tag(2)
   val directDependencies: List<BazelTargetDependency>,
+
+  @field:Tag(3)
   val sources: List<BazelTargetSourceFile>,
+
+  @field:Tag(4)
   val resources: List<BazelTargetResourceFile>
 )
 
@@ -30,15 +57,23 @@ enum class BazelTargetTag {
   MANUAL,
 }
 
+@Tagged
 data class BazelTargetDependency(
+  @field:Tag(1)
   val label: Label,
 )
 
+@Tagged
 data class BazelTargetSourceFile(
+  @field:Tag(1)
   val path: BazelPath,
+
+  @field:Tag(2)
   val priority: Int
 )
 
+@Tagged
 data class BazelTargetResourceFile(
+  @field:Tag(1)
   val path: BazelPath,
 )

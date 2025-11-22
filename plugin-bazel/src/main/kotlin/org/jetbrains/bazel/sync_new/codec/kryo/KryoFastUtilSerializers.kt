@@ -8,10 +8,18 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
 import it.unimi.dsi.fastutil.longs.LongList
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet
+import it.unimi.dsi.fastutil.longs.LongSet
+import it.unimi.dsi.fastutil.objects.Object2LongMap
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 
+// TODO: invent more generic way of serializing fastutil collections
 fun Kryo.registerFastUtilSerializers() {
   addDefaultSerializer(LongList::class.java, KryoLongListSerializer)
+  addDefaultSerializer(LongSet::class.java, KryoLongSetSerializer)
+
   addDefaultSerializer(Long2ObjectMap::class.java, Long2ObjectMapSerializer)
+  addDefaultSerializer(Object2LongMap::class.java, Object2LongMapSerializer)
 }
 
 object KryoLongListSerializer : Serializer<LongList>() {
@@ -37,6 +45,33 @@ object KryoLongListSerializer : Serializer<LongList>() {
   ): LongList {
     val length = input.readVarInt(true)
     return LongArrayList(input.readLongs(length))
+  }
+}
+
+object KryoLongSetSerializer : Serializer<LongSet>() {
+  override fun write(
+    kryo: Kryo,
+    output: Output,
+    obj: LongSet,
+  ) {
+    output.writeVarInt(obj.size, true)
+    val iterator = obj.iterator()
+    while (iterator.hasNext()) {
+      output.writeLong(iterator.nextLong())
+    }
+  }
+
+  override fun read(
+    kryo: Kryo,
+    input: Input,
+    type: Class<out LongSet>,
+  ): LongSet {
+    val length = input.readVarInt(true)
+    val set = LongOpenHashSet(length)
+    for (n in 0 until length) {
+      set.add(input.readLong())
+    }
+    return set
   }
 }
 
@@ -96,4 +131,61 @@ object Long2ObjectMapSerializer : Serializer<Long2ObjectMap<*>>() {
     return map
   }
 
+}
+
+object Object2LongMapSerializer : Serializer<Object2LongMap<*>>() {
+  override fun write(
+    kryo: Kryo,
+    output: Output,
+    obj: Object2LongMap<*>,
+  ) {
+    val keyType = kryo.generics.nextGenericClass()
+    val isPolymorphic = keyType == null || !kryo.isFinal(keyType)
+    val serializer = if (isPolymorphic) {
+      null
+    } else {
+      kryo.getSerializer(keyType)
+    }
+
+    output.writeVarInt(obj.size, true)
+    for ((key, value) in obj.object2LongEntrySet()) {
+      if (isPolymorphic) {
+        kryo.writeClassAndObject(output, key)
+      } else {
+        kryo.writeObjectOrNull(output, key, serializer)
+      }
+      output.writeVarLong(value, true)
+    }
+
+    kryo.generics.popGenericType()
+  }
+
+  override fun read(
+    kryo: Kryo,
+    input: Input,
+    type: Class<out Object2LongMap<*>>,
+  ): Object2LongMap<*> {
+    val keyType = kryo.generics.nextGenericClass()
+    val isPolymorphic = keyType == null || !kryo.isFinal(keyType)
+    val serializer = if (isPolymorphic) {
+      null
+    } else {
+      kryo.getSerializer(keyType)
+    }
+
+    val map = Object2LongOpenHashMap<Any?>()
+    val length = input.readVarInt(true)
+    for (n in 0 until length) {
+      val key = if (isPolymorphic) {
+        kryo.readClassAndObject(input)
+      } else {
+        kryo.readObject(input, keyType, serializer)
+      }
+      val value = input.readVarLong(true)
+      map.put(key, value)
+    }
+
+    kryo.generics.popGenericType()
+    return map
+  }
 }

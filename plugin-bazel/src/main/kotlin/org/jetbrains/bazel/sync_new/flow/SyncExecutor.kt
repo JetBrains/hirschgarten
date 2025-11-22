@@ -5,30 +5,34 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.ThreadingAssertions
-import org.jetbrains.bazel.commons.BazelPathsResolver
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.flow.diff.TargetDiffService
 import org.jetbrains.bazel.sync_new.flow.diff.TargetPattern
 import org.jetbrains.bazel.sync_new.flow.diff.query.QueryTargetHashContributor
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
+import org.jetbrains.bazel.sync_new.graph.TargetReference
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetGraph
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetVertex
+import org.jetbrains.bazel.sync_new.lang.SyncLanguageService
+import org.jetbrains.bazel.sync_new.storage.storageContext
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.RawAspectTarget
 
 class SyncExecutor(
-  val project: Project
+  val project: Project,
 ) {
 
   private val logger = logger<SyncExecutor>()
 
-  suspend fun execute(scope: SyncScope) : SyncStatus {
+  suspend fun execute(scope: SyncScope): SyncStatus {
     // compute changed targets
     // check for repo mapping changes
     // update graph with new targets
@@ -43,6 +47,7 @@ class SyncExecutor(
       scope = scope,
       graph = syncStore.targetGraph,
       syncExecutor = this,
+      languageService = service<SyncLanguageService>(),
     )
 
     if (scope is SyncScope.Full) {
@@ -56,7 +61,7 @@ class SyncExecutor(
     }
 
     withTask("repo_mapping", "Updating repo mapping") {
-      updateRepoMapping(diff)
+      updateRepoMapping(ctx, diff)
     }
 
     withTask("target_graph", "Updating target graph") {
@@ -91,10 +96,10 @@ class SyncExecutor(
     }
   }
 
-  private suspend fun updateRepoMapping(diff: SyncDiff) {
+  private suspend fun updateRepoMapping(ctx: SyncContext, diff: SyncDiff) {
     val syncStore = project.service<SyncStoreService>()
 
-    var needUpdate = false
+    var needUpdate = ctx.scope is SyncScope.Full
     for (target in diff.added) {
       val resolvedLabel = target.label as? ResolvedLabel ?: continue
       val apparentRepo = resolvedLabel.repo as? Apparent ?: continue
@@ -131,18 +136,25 @@ class SyncExecutor(
       }
     }
 
-    val targetsToFetch = (diff.added + diff.changed)
-      .map { it.label }
-      .toList()
-    val rawTargets = fetchRawAspects(targetsToFetch)
-      .filter { it.target.label() in targetsToFetch }
     val builder = SyncTargetBuilder(
       project = project,
       pathsResolver = LegacyBazelFrontendBridge.fetchBazelPathsResolver(project),
     )
-    val toRecompute = mutableListOf<BazelTargetVertex>()
-    for (target in rawTargets) {
-      val existingVertexId = graph.getVertexIdByLabel(label = target.target.label())
+    val targetsToFetch = (diff.added + diff.changed)
+      .map { it.label }
+      .toList()
+    val vertices = coroutineScope {
+      fetchRawAspects(ctx, targetsToFetch)
+        .map {
+          async {
+            builder.buildTargetVertex(ctx, it)
+          }
+        }
+        .awaitAll()
+    }
+    val toConnect = mutableListOf<BazelTargetVertex>()
+    for (vertex in vertices) {
+      val existingVertexId = graph.getVertexIdByLabel(label = vertex.label)
 
       // if target is already in the graph, remove it first
       if (existingVertexId != EMPTY_ID) {
@@ -150,12 +162,12 @@ class SyncExecutor(
       }
 
       // add target
-      val vertex = builder.buildTargetVertex(ctx, target)
+      vertex.vertexId = graph.getNextVertexId()
       graph.addVertex(vertex)
-      toRecompute.add(vertex)
+      toConnect.add(vertex)
     }
 
-    for (vertex in toRecompute) {
+    for (vertex in toConnect) {
       for (directDependency in vertex.genericData.directDependencies) {
         val toVertexId = graph.getVertexIdByLabel(directDependency.label)
         if (toVertexId == EMPTY_ID) {
@@ -168,14 +180,14 @@ class SyncExecutor(
     }
   }
 
-  private suspend fun fetchRawAspects(targets: List<Label>): List<RawAspectTarget> {
+  private suspend fun fetchRawAspects(ctx: SyncContext, targets: List<Label>): List<RawAspectTarget> {
     if (targets.isEmpty()) {
       return listOf()
     }
-    return withTask("fetch_raw_aspects", "Fetching aspect targets") {
+    return withTask("fetch_partial_aspects", "Fetching partial targets") {
       val syncStore = project.service<SyncStoreService>()
       val repoMapping = LegacyBazelFrontendBridge.toLegacyRepoMapping(syncStore.repoMapping)
-      LegacyBazelFrontendBridge.fetchRawAspectTargets(project = project, repoMapping = repoMapping, targets = targets)
+      LegacyBazelFrontendBridge.fetchPartialTargets(project = project, repoMapping = repoMapping, targets = targets)
     }
   }
 
