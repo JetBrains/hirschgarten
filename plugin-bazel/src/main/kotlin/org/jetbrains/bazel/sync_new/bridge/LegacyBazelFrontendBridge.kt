@@ -15,6 +15,8 @@ import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawAspectTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 
 object LegacyBazelFrontendBridge {
   suspend fun fetchRepoMapping(project: Project): SyncRepoMapping {
@@ -34,7 +36,15 @@ object LegacyBazelFrontendBridge {
     return project.connection.runWithServer { server -> server.workspaceContext() }
   }
 
-  suspend fun fetchRawAspectTargets(project: Project, repoMapping: RepoMapping, targets: List<Label>): List<RawAspectTarget> {
+  suspend fun fetchAllTargets(project: Project, repoMapping: RepoMapping): List<RawAspectTarget> {
+    val params = WorkspaceBuildTargetParams(
+      selector = WorkspaceBuildTargetSelector.AllTargets
+    )
+    val result = project.connection.runWithServer { server -> server.workspaceBuildTargets(params) }
+    return result.targets.values.toList()
+  }
+
+  suspend fun fetchPartialTargets(project: Project, repoMapping: RepoMapping, targets: List<Label>): List<RawAspectTarget> {
     val params = WorkspaceBuildPartialTargetsParams(
       targets = targets,
       repoMapping = repoMapping,

@@ -5,9 +5,10 @@ import com.esotericsoftware.kryo.kryo5.Serializer
 import com.esotericsoftware.kryo.kryo5.io.Input
 import com.esotericsoftware.kryo.kryo5.io.Output
 import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
 
 fun Kryo.registerGuavaSerializers() {
-  register(BiMap::class.java, BiMapSerializer)
+  addDefaultSerializer(BiMap::class.java, BiMapSerializer)
 }
 
 object BiMapSerializer : Serializer<BiMap<Any?, Any?>>() {
@@ -29,7 +30,7 @@ object BiMapSerializer : Serializer<BiMap<Any?, Any?>>() {
     type: Class<out BiMap<Any?, Any?>>,
   ): BiMap<Any?, Any?>? {
     val size = input.readVarInt(true)
-    val result = kryo.newInstance(type)
+    val result = HashBiMap.create<Any?, Any?>()
     for (n in 0 until size) {
       val key = kryo.readClassAndObject(input)
       val value = kryo.readClassAndObject(input)

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync_new.storage.in_memory
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
 import org.jetbrains.bazel.sync_new.codec.CodecBuilder
@@ -76,7 +77,11 @@ class InMemoryFlatStore<T>(
 
   override fun read(ctx: CodecContext, buffer: CodecBuffer) {
     check(buffer.readVarInt() == CODEC_VERSION) { "unsupported version version" }
-    set(codec.decode(ctx, buffer))
+    try {
+      set(codec.decode(ctx, buffer))
+    } catch (ex: Throwable) {
+      logger<InMemoryFlatStore<T>>().warn("failed to read $name, ignoring", ex)
+    }
   }
 
   @field:Volatile

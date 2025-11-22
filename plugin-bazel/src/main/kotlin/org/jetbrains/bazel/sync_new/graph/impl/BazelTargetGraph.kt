@@ -8,11 +8,11 @@ import it.unimi.dsi.fastutil.longs.LongList
 import it.unimi.dsi.fastutil.longs.LongLists
 import it.unimi.dsi.fastutil.objects.Object2LongMap
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
+import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.codec.ofLong
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.ID
@@ -24,6 +24,7 @@ import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.createSortedKVStore
 import org.jetbrains.bazel.sync_new.storage.getValue
 import org.jetbrains.bazel.sync_new.storage.hash.hash
+import org.jetbrains.bazel.sync_new.storage.hash.hash128Comparator
 import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 
 class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVertex, BazelTargetEdge, BazelTargetCompact> {
@@ -56,12 +57,13 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     .withCodec { ofKryo() }
     .build()
 
-  private val edgeLink2EdgesId by storage.createFlatStore<Object2ObjectMap<HashValue128, LongList>>(
+  private val edgeLink2EdgesId = storage.createSortedKVStore<HashValue128, LongList>(
     "bazel.target.graph.edgeLink2EdgesId",
-    StorageHints.USE_IN_MEMORY,
+    StorageHints.USE_PAGED_STORE,
   )
-    .withCreator { Object2ObjectOpenHashMap() }
-    .withCodec { ofKryo() }
+    .withKeyComparator { hash128Comparator() }
+    .withKeyCodec { ofHash128() }
+    .withValueCodec { ofKryo() }
     .build()
 
   private val id2Successors by storage.createFlatStore<Long2ObjectMap<LongList>>(
@@ -125,7 +127,7 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     from: ID,
     to: ID,
   ): LongList {
-    val edges = edgeLink2EdgesId[HashValue128(from, to)]
+    val edges = edgeLink2EdgesId.get(HashValue128(from, to))
     if (edges.isNullOrEmpty()) {
       return LongLists.EMPTY_LIST
     }
@@ -146,8 +148,7 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     id2Predecessors.computeIfAbsent(edge.to) { LongArrayList() }.add(edge.from)
 
     val linkHashValue = HashValue128(edge.from, edge.to)
-    edgeLink2EdgesId.computeIfAbsent(linkHashValue) { LongArrayList() }
-      .add(edge.edgeId)
+    edgeLink2EdgesId.computeIfAbsent(linkHashValue) { LongArrayList() }?.add(edge.edgeId)
   }
 
   override fun removeVertexById(
@@ -188,7 +189,10 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     id2Predecessors.remove(edge.to, edge.from)
 
     val linkHash = HashValue128(edge.from, edge.to)
-    edgeLink2EdgesId[linkHash]?.removeIf { it == edge.edgeId }
+    edgeLink2EdgesId.compute(linkHash) { _, v ->
+      v?.removeIf { it == edge.edgeId }
+      v
+    }
     return edge
   }
 
@@ -214,14 +218,14 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
 
   private fun removeLinksBetween(form: ID, to: ID): LongList {
     val linkHash = HashValue128(form, to)
-    return edgeLink2EdgesId[linkHash] ?: LongLists.EMPTY_LIST
+    return edgeLink2EdgesId.get(linkHash) ?: LongLists.EMPTY_LIST
   }
 
   private fun BazelTargetVertex.toTargetCompact(): BazelTargetCompact {
     return BazelTargetCompact(
       label = label,
       vertexId = vertexId,
-      isExecutable = BazelTargetTag.EXECUTABLE in genericData.tags
+      isExecutable = BazelTargetTag.EXECUTABLE in genericData.tags,
     )
   }
 

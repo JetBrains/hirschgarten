@@ -212,6 +212,9 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.syncLanguagePlugin"
+                    interface="org.jetbrains.bazel.sync_new.lang.SyncLanguagePlugin"
+                    dynamic="false"/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->

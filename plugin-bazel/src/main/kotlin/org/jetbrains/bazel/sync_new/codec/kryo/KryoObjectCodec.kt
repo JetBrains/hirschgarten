@@ -1,14 +1,13 @@
 package org.jetbrains.bazel.sync_new.codec.kryo
 
 import com.esotericsoftware.kryo.kryo5.Kryo
+import com.esotericsoftware.kryo.kryo5.SerializerFactory.TaggedFieldSerializerFactory
 import com.esotericsoftware.kryo.kryo5.io.ByteBufferInput
 import com.esotericsoftware.kryo.kryo5.io.ByteBufferOutput
 import com.esotericsoftware.kryo.kryo5.io.Input
 import com.esotericsoftware.kryo.kryo5.io.Output
 import com.esotericsoftware.kryo.kryo5.objenesis.strategy.StdInstantiatorStrategy
 import com.esotericsoftware.kryo.kryo5.serializers.DefaultSerializers
-import com.esotericsoftware.kryo.kryo5.serializers.FieldSerializer
-import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer
 import com.esotericsoftware.kryo.kryo5.unsafe.UnsafeByteBufferInput
 import com.esotericsoftware.kryo.kryo5.unsafe.UnsafeByteBufferOutput
 import com.esotericsoftware.kryo.kryo5.util.DefaultInstantiatorStrategy
@@ -20,6 +19,7 @@ import org.jetbrains.bazel.sync_new.codec.HasByteBuffer
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetTag
 import java.util.EnumSet
 
+
 private val kryoThreadLocal = ThreadLocal.withInitial {
   val kryo = Kryo()
   kryo.classLoader = KryoObjectCodec::class.java.classLoader
@@ -27,13 +27,13 @@ private val kryoThreadLocal = ThreadLocal.withInitial {
   kryo.setAutoReset(false)
   kryo.references = false
   //kryo.setCopyReferences(true)
-  kryo.instantiatorStrategy = StdInstantiatorStrategy()
+  kryo.instantiatorStrategy = DefaultInstantiatorStrategy(StdInstantiatorStrategy())
+
+  kryo.setDefaultSerializer(KryoObjectSerializerFactory())
 
   kryo.registerFastUtilSerializers()
   kryo.registerPrimitiveSerializers()
   kryo.registerGuavaSerializers()
-
-  val d: FieldSerializer
 
   kryo.addDefaultSerializer(EnumSet::class.java, DefaultSerializers.EnumSetSerializer())
   kryo.register(BazelTargetTag::class.java)
@@ -57,7 +57,7 @@ class KryoObjectCodec<T>(
     value: T,
   ) {
     try {
-      if (buffer is HasByteBuffer) {
+      if (buffer is HasByteBuffer && false) {
         val output = if (buffer.buffer.isDirect) {
           UnsafeByteBufferOutput(BUFFER_SIZE, Int.MAX_VALUE)
         } else {
@@ -87,7 +87,7 @@ class KryoObjectCodec<T>(
   override fun decode(ctx: CodecContext, buffer: CodecBuffer): T {
     try {
       val length = buffer.readVarInt()
-      if (buffer is HasByteBuffer) {
+      if (buffer is HasByteBuffer && false) {
         val byteBuffer = buffer.readBuffer(length)
         val input = if (byteBuffer.isDirect) {
           UnsafeByteBufferInput(byteBuffer)

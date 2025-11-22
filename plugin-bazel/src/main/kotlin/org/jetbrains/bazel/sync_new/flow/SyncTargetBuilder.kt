@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.sync_new.flow
 
 import com.intellij.openapi.project.Project
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.graph.ID
@@ -11,6 +13,7 @@ import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetResourceFile
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetSourceFile
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetVertex
 import org.jetbrains.bazel.sync_new.graph.impl.toBazelPath
+import org.jetbrains.bazel.sync_new.lang.SyncTargetData
 import org.jetbrains.bsp.protocol.RawAspectTarget
 
 class SyncTargetBuilder(
@@ -18,16 +21,33 @@ class SyncTargetBuilder(
   private val pathsResolver: BazelPathsResolver,
   private val tagsBuilder: SyncTagsBuilder = SyncTagsBuilder(),
 ) {
-  fun buildTargetVertex(ctx: SyncContext, raw: RawAspectTarget): BazelTargetVertex {
-    val vertexId = ctx.graph.getNextVertexId()
+  suspend fun buildTargetVertex(ctx: SyncContext, raw: RawAspectTarget): BazelTargetVertex {
+    val genericData = buildGeneralTargetData(raw)
+    val targetData = Long2ObjectOpenHashMap<SyncTargetData>()
+    val languageTags = LongOpenHashSet()
+    for (detector in ctx.languageService.languageDetectors) {
+      for (language in detector.detect(ctx, raw)) {
+        languageTags.add(language.serialId)
+
+        for (plugin in ctx.languageService.getPluginsByLanguage(language)) {
+          val languageData = plugin.createTargetData(ctx, raw)
+          val tag = ctx.languageService.getTagByType(languageData.javaClass)
+          if (tag == 0L) {
+            error("Tag is not found for ${languageData.javaClass}")
+          }
+          targetData[tag] = languageData
+        }
+      }
+    }
     return BazelTargetVertex(
-      vertexId = vertexId,
       label = raw.target.label(),
-      genericData = buildGeneralTargetData(raw),
+      genericData = genericData,
+      languageTags = languageTags,
+      targetData = targetData,
     )
   }
 
-  fun buildTargetEdge(ctx: SyncContext, from: ID, to: ID): BazelTargetEdge  {
+  fun buildTargetEdge(ctx: SyncContext, from: ID, to: ID): BazelTargetEdge {
     val edgeId = ctx.graph.getNextEdgeId()
     return BazelTargetEdge(
       edgeId = edgeId,
