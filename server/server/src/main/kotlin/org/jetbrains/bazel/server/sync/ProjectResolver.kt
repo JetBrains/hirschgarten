@@ -41,6 +41,8 @@ fun TargetCollection.halve(): List<TargetCollection> {
   )
 }
 
+data class PartialBuildResult(val rootTargets: Set<Label>, val targets: Map<Label, TargetInfo>)
+
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
@@ -63,9 +65,12 @@ class ProjectResolver(
     originId: String?,
   ): AspectSyncProject =
     bspTracer.spanBuilder("Resolve project").useWithScope {
-      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, originId)
-      val repoMapping = buildAspectResult.first
-      val aspectResult = buildAspectResult.second
+      val repoMapping =
+        measured("Calculating external repository mapping") {
+          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+        }
+
+      val aspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, originId, repoMapping)
 
       val aspectOutputs = extractAspectOutputPaths(aspectResult)
       val targets =
@@ -92,18 +97,40 @@ class ProjectResolver(
       )
     }
 
+  suspend fun buildTargetsWithAspect(
+    repoMapping: RepoMapping,
+    targetLabels: List<Label>,
+    originId: String?,
+    build: Boolean = false,
+  ): PartialBuildResult {
+    val aspectResult = buildProjectWithAspectAndSetup(build, targetLabels, null, originId, repoMapping)
+    val aspectOutputs = extractAspectOutputPaths(aspectResult)
+    val targets =
+      measured(
+        "Parsing aspect outputs",
+      ) {
+        val rawTargetsMap =
+          targetInfoReader
+            .readTargetMapFromAspectOutputs(aspectOutputs)
+        processTargetMap(rawTargetsMap, repoMapping)
+      }
+    val rootTargets = aspectResult.bepOutput.rootTargets()
+    return PartialBuildResult(
+      rootTargets = rootTargets,
+      targets = targets,
+    )
+  }
+
+  suspend fun computeRepoMapping(): RepoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+
   private suspend fun buildProjectWithAspectAndSetup(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
     phasedSyncProject: PhasedSyncProject?,
     originId: String?,
-  ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
+    repoMapping: RepoMapping,
+  ): BazelBspAspectsManagerResult {
     // Use the already available workspaceContext and featureFlags
-
-    val repoMapping =
-      measured("Calculating external repository mapping") {
-        calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
-      }
 
     val bazelExternalRulesetsQuery =
       BazelExternalRulesetsQueryImpl(
@@ -169,7 +196,7 @@ class ProjectResolver(
         "Building project with aspect",
       ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, phasedSyncProject, originId) }
 
-    return Pair(repoMapping, buildAspectResult)
+    return buildAspectResult
   }
 
   private suspend fun buildProjectWithAspect(
@@ -323,18 +350,6 @@ class ProjectResolver(
     measured(
       "Reading aspect output paths",
     ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
-
-  suspend fun getAspectOutputPaths(
-    build: Boolean = false,
-    requestedTargetsToSync: List<Label>? = null,
-    phasedSyncProject: PhasedSyncProject? = null,
-    originId: String? = null,
-  ): Set<Path> =
-    bspTracer.spanBuilder("Get aspect output paths").useWithScope {
-      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, originId)
-      val aspectResult = buildAspectResult.second
-      return@useWithScope extractAspectOutputPaths(aspectResult)
-    }
 
   companion object {
     private const val ASPECT_NAME = "bsp_target_info_aspect"

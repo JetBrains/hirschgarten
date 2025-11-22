@@ -11,6 +11,8 @@ interface JoinedBuildServer {
 
   suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult
 
+  suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildPartialTargetsParams): WorkspaceBuildPartialTargetsResult
+
   suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): WorkspacePhasedBuildTargetsResult
 
   // TODO: should be replaced with some query that can be crafted on the client side
@@ -29,6 +31,8 @@ interface JoinedBuildServer {
   suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
 
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
+
+  suspend fun workspaceComputeBazelRepoMapping(): WorkspaceBazelRepoMappingResult
 
   suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult
 

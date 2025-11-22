@@ -14,40 +14,41 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
 import org.jetbrains.bazel.sync_new.codec.ofLong
+import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.TargetGraph
 import org.jetbrains.bazel.sync_new.graph.collect.forEachFast
 import org.jetbrains.bazel.sync_new.storage.StorageContext
 import org.jetbrains.bazel.sync_new.storage.StorageHints
-import org.jetbrains.bazel.sync_new.storage.createFlatStorage
-import org.jetbrains.bazel.sync_new.storage.createSortedKVStorage
+import org.jetbrains.bazel.sync_new.storage.createFlatStore
+import org.jetbrains.bazel.sync_new.storage.createSortedKVStore
 import org.jetbrains.bazel.sync_new.storage.getValue
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 
 class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVertex, BazelTargetEdge, BazelTargetCompact> {
   private val id2Vertex =
-    storage.createSortedKVStorage<ID, BazelTargetVertex>("bazel.target.graph.id2vertex", StorageHints.USE_PAGED_STORE)
+    storage.createSortedKVStore<ID, BazelTargetVertex>("bazel.target.graph.id2vertex", StorageHints.USE_PAGED_STORE)
       .withKeyComparator { compareBy { it } }
       .withKeyCodec { ofLong() }
       .withValueCodec { ofKryo() }
       .build()
 
   private val id2Edge =
-    storage.createSortedKVStorage<ID, BazelTargetEdge>("bazel.target.graph.id2edge", StorageHints.USE_PAGED_STORE)
+    storage.createSortedKVStore<ID, BazelTargetEdge>("bazel.target.graph.id2edge", StorageHints.USE_PAGED_STORE)
       .withKeyComparator { compareBy { it } }
       .withKeyCodec { ofLong() }
       .withValueCodec { ofKryo() }
       .build()
 
   private val id2Compact =
-    storage.createSortedKVStorage<ID, BazelTargetCompact>("bazel.target.graph.id2label", StorageHints.USE_PAGED_STORE)
+    storage.createSortedKVStore<ID, BazelTargetCompact>("bazel.target.graph.id2label", StorageHints.USE_PAGED_STORE)
       .withKeyComparator { compareBy { it } }
       .withKeyCodec { ofLong() }
       .withValueCodec { ofKryo() }
       .build()
 
-  private val labelHash2VertexId by storage.createFlatStorage<Object2LongMap<HashValue128>>(
+  private val labelHash2VertexId by storage.createFlatStore<Object2LongMap<HashValue128>>(
     "bazel.target.graph.labelHash2vertexId",
     StorageHints.USE_IN_MEMORY,
   )
@@ -55,7 +56,7 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     .withCodec { ofKryo() }
     .build()
 
-  private val edgeLink2EdgesId by storage.createFlatStorage<Object2ObjectMap<HashValue128, LongList>>(
+  private val edgeLink2EdgesId by storage.createFlatStore<Object2ObjectMap<HashValue128, LongList>>(
     "bazel.target.graph.edgeLink2EdgesId",
     StorageHints.USE_IN_MEMORY,
   )
@@ -63,7 +64,7 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     .withCodec { ofKryo() }
     .build()
 
-  private val id2Successors by storage.createFlatStorage<Long2ObjectMap<LongList>>(
+  private val id2Successors by storage.createFlatStore<Long2ObjectMap<LongList>>(
     "bazel.target.graph.id2Successors",
     StorageHints.USE_IN_MEMORY,
   )
@@ -71,7 +72,7 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     .withCodec { ofKryo() }
     .build()
 
-  private val id2Predecessors by storage.createFlatStorage<Long2ObjectMap<LongList>>(
+  private val id2Predecessors by storage.createFlatStore<Long2ObjectMap<LongList>>(
     "bazel.target.graph.id2Predecessors",
     StorageHints.USE_IN_MEMORY,
   )
@@ -87,8 +88,16 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
   override fun getVertexById(id: ID): BazelTargetVertex? = id2Vertex.get(id)
 
   override fun getVertexByLabel(label: Label): BazelTargetVertex? {
+    val vertexId = getVertexIdByLabel(label)
+    if (vertexId == EMPTY_ID) {
+      return null
+    }
+    return getVertexById(vertexId)
+  }
+
+  override fun getVertexIdByLabel(label: Label): ID {
     val hash = hash { putResolvedLabel(label as ResolvedLabel) }
-    return id2Vertex.get(labelHash2VertexId.getLong(hash))
+    return labelHash2VertexId.getLong(hash)
   }
 
   override fun getLabelByVertexId(id: ID): Label? = id2Compact.get(id)?.label
@@ -151,17 +160,21 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
     labelHash2VertexId.removeLong(labelHash)
 
     val successorIds = id2Successors.remove(vertex.vertexId)
-    for (n in successorIds.indices) {
-      val successor = successorIds.getLong(n)
-      id2Predecessors.remove(successor, vertex.vertexId)
-      removeLinksBetween(vertex.vertexId, successor).forEachFast { id2Edge.remove(it) }
+    if (successorIds != null) {
+      for (n in successorIds.indices) {
+        val successor = successorIds.getLong(n)
+        id2Predecessors.remove(successor, vertex.vertexId)
+        removeLinksBetween(vertex.vertexId, successor).forEachFast { id2Edge.remove(it) }
+      }
     }
 
     val predecessorIds = id2Predecessors.remove(vertex.vertexId)
-    for (n in predecessorIds.indices) {
-      val predecessor = predecessorIds.getLong(n)
-      id2Successors.remove(predecessor, vertex.vertexId)
-      removeLinksBetween(predecessor, vertex.vertexId).forEachFast { id2Edge.remove(it) }
+    if (predecessorIds != null) {
+      for (n in predecessorIds.indices) {
+        val predecessor = predecessorIds.getLong(n)
+        id2Successors.remove(predecessor, vertex.vertexId)
+        removeLinksBetween(predecessor, vertex.vertexId).forEachFast { id2Edge.remove(it) }
+      }
     }
 
     return vertex
@@ -182,6 +195,16 @@ class BazelTargetGraph(val storage: StorageContext) : TargetGraph<BazelTargetVer
   override fun getNextVertexId(): ID = getUsableId { id2Vertex.getHighestKey() }
 
   override fun getNextEdgeId(): ID = getUsableId { id2Edge.getHighestKey() }
+
+  override fun clear() {
+    id2Vertex.clear()
+    id2Edge.clear()
+    id2Compact.clear()
+    labelHash2VertexId.clear()
+    edgeLink2EdgesId.clear()
+    id2Successors.clear()
+    id2Predecessors.clear()
+  }
 
   // id `0` is reserved as an invalid state or absence of value
   private fun getUsableId(getter: () -> Long?): Long {

@@ -25,6 +25,8 @@ import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -71,6 +73,7 @@ open class BuildServerMock(
       preferClassJarsOverSourcelessJars = true,
     ),
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
+  private val workspaceBuildPartialTargetsResult: WorkspaceBuildPartialTargetsResult? = null,
   private val workspacePhasedBuildTargetsResult: WorkspacePhasedBuildTargetsResult? = null,
   private val jvmClasspathResult: BspJvmClasspath? = null,
 ) : JoinedBuildServer {
@@ -78,6 +81,9 @@ open class BuildServerMock(
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsResult)
+
+  override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildPartialTargetsParams): WorkspaceBuildPartialTargetsResult =
+    wrapInFuture(workspaceBuildPartialTargetsResult)
 
   override suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): WorkspacePhasedBuildTargetsResult =
     wrapInFuture(workspacePhasedBuildTargetsResult)
@@ -98,6 +104,7 @@ open class BuildServerMock(
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = wrapInFuture(runResultWithDebug)
 
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
+  override suspend fun workspaceComputeBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
   override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult {
     val bazelInfo =

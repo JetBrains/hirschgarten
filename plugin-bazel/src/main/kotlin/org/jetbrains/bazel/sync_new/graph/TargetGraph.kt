@@ -21,9 +21,12 @@ interface TargetCompact {
 
 interface TargetGraph<V : TargetVertex, E : TargetEdge, C : TargetCompact> : ReferenceDirectedGraph<V, E> {
   fun getVertexByLabel(label: Label): V?
+  fun getVertexIdByLabel(label: Label): ID?
   fun getLabelByVertexId(id: ID): Label?
   fun getTargetCompactById(id: ID): C?
 
   fun getNextVertexId(): ID
   fun getNextEdgeId(): ID
+
+  fun clear()
 }
