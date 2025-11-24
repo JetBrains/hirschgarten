@@ -5,6 +5,7 @@ import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
@@ -23,6 +24,7 @@ import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
+import org.jetbrains.kotlin.idea.debugger.coroutine.DebuggerConnection
 import java.nio.file.Path
 import kotlin.io.path.pathString
 
@@ -87,6 +89,16 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
 internal fun retrieveKotlinCoroutineParams(environment: ExecutionEnvironment, project: Project): List<String> {
   if (!project.bazelJVMProjectSettings.enableKotlinCoroutineDebug) return emptyList()
   return environment.getCopyableUserData(COROUTINE_JVM_FLAGS_KEY).get() ?: emptyList()
+}
+
+internal fun attachCoroutinesDebuggerConnection(runConfiguration: RunConfigurationBase<*>) {
+  DebuggerConnection(
+    project = runConfiguration.project,
+    configuration = runConfiguration,
+    params = JavaParameters(),
+    shouldAttachCoroutineAgent = false,
+    alwaysShowPanel = true,
+  )
 }
 
 private val MIN_COROUTINES_VERSION = SemVer.parseFromText("1.3.8")

@@ -99,6 +99,9 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
           additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
           pidDeferred = pidDeferred,
         )
+      if (kotlinCoroutineLibParam.isNotEmpty()) {
+        attachCoroutinesDebuggerConnection(configuration)
+      }
       val runWithDebugParams =
         RunWithDebugParams(
           originId = originId.toString(),

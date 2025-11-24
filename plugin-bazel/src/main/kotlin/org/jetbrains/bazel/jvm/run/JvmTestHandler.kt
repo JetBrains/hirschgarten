@@ -104,7 +104,9 @@ class JvmTestWithDebugCommandLineState(environment: ExecutionEnvironment, val se
           additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
           useJetBrainsTestRunner = environment.project.useJetBrainsTestRunner(),
         )
-
+      if (kotlinCoroutineLibParam.isNotEmpty()) {
+        attachCoroutinesDebuggerConnection(configuration)
+      }
       server.buildTargetTest(testParams)
     }
   }
