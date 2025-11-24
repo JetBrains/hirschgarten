@@ -23,7 +23,7 @@ interface StorageContext {
 }
 
 interface LifecycleStoreContext {
-  fun onSave()
+  fun save(force: Boolean = false)
 }
 
 inline fun <reified K, reified V> StorageContext.createKVStore(name: String, vararg hints: StorageHints): KVStoreBuilder<*, K, V> =

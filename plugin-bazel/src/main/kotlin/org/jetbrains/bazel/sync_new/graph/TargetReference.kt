@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync_new.graph
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetGraph
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetVertex
-import kotlin.reflect.KProperty
 
 interface TargetReference {
   val label: Label
@@ -11,13 +10,23 @@ interface TargetReference {
   fun getBuildTarget(): BazelTargetVertex?
 
   companion object {
-    fun ofGraph(label: Label, targetGraph: () -> BazelTargetGraph): TargetReference = object : TargetReference {
+    fun ofGraphLazy(label: Label, targetGraph: BazelTargetGraph): TargetReference = object : TargetReference {
+      private val target by lazy { targetGraph.getVertexByLabel(label) }
+
       override val label: Label
         get() = label
 
-      override fun getBuildTarget(): BazelTargetVertex? = targetGraph().getVertexByLabel(label)
+      override fun getBuildTarget(): BazelTargetVertex? = target
+    }
+
+    fun ofGraphNow(label: Label, targetGraph: BazelTargetGraph): TargetReference = object : TargetReference {
+      val target = targetGraph.getVertexByLabel(label)
+
+      override val label: Label
+        get() = label
+
+      // if target is not available now, try again
+      override fun getBuildTarget(): BazelTargetVertex? = target ?: targetGraph.getVertexByLabel(label)
     }
   }
 }
-
-operator fun TargetReference.getValue(thisRef: Any?, property: KProperty<*>): BazelTargetVertex? = getBuildTarget()

@@ -4,6 +4,7 @@ import org.jetbrains.bazel.sync_new.index.One2OneIndex
 import org.jetbrains.bazel.sync_new.storage.KVStore
 
 class PersistentStoreOne2OneIndex<K, V>(
+  override val name: String,
   val storage: KVStore<K, V>,
 ) : One2OneIndex<K, V> {
   override fun set(key: K, value: V) {
