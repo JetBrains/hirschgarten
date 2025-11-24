@@ -42,7 +42,15 @@ class SyncExecutor(
     // run sync pipelines
     ThreadingAssertions.assertBackgroundThread()
 
-    val syncStore = project.service<SyncStoreService>()
+    val syncStore = withTask(project, "sync_store_init", "Initializing sync store") {
+      val store = project.service<SyncStoreService>()
+      if (scope is SyncScope.Full) {
+        store.syncMetadata.set(SyncMetadata())
+        store.targetGraph.clear()
+        project.serviceAsync<SyncIndexService>().invalidateAll()
+      }
+      store
+    }
     val ctx = SyncContext(
       project = project,
       scope = scope,
@@ -51,11 +59,6 @@ class SyncExecutor(
       languageService = service<SyncLanguageService>(),
     )
 
-    if (scope is SyncScope.Full) {
-      syncStore.syncMetadata.set(SyncMetadata())
-      ctx.graph.clear()
-      project.serviceAsync<SyncIndexService>().invalidateAll()
-    }
 
     val diff = withTask(project, "target_diff", "Computing target diff") {
       computeSyncDiff(scope, ctx.graph)
