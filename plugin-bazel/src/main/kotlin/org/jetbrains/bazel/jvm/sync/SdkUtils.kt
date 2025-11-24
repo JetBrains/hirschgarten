@@ -46,9 +46,7 @@ internal object SdkUtils {
         }
       }
 
-    // We don't need the project SDK anyway. If the user sets it manually, it can cause red code, so remove it upon sync.
-    val rootManager = ProjectRootManager.getInstance(project)
-    writeAction { rootManager.projectSdk = null }
+    // Removed the project SDK cleanup logic, as we actually rely on it for SDK inheritance to avoid repetitive SDK import & indexing
   }
 
   private fun isValidJdk(sdk: Sdk): Boolean {
