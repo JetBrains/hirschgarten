@@ -216,7 +216,6 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaDefaultSourceRootPatternContributor"/>
     <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
     <projectViewSectionProvider
       implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
