@@ -42,7 +42,7 @@ class BazelRunConfiguration internal constructor(
   override fun checkConfiguration() {
     val utils = project.targetUtils
     val selectedTargets = targets.map {
-      val target = utils.getBuildTargetForLabel(it) ?: throw RuntimeConfigurationWarning(message("runconfig.bazel.errors.target.not.found", it))
+      val target = utils.getBuildTargetForLabel(it) ?: return // skip validations when any target is missing
       if (!target.kind.isExecutable) throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.executable", it))
       target
     }
