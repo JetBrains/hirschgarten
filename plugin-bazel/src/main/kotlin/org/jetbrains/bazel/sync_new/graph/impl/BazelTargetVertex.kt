@@ -5,7 +5,9 @@ import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap
 import it.unimi.dsi.fastutil.longs.LongSet
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync_new.codec.kryo.EnumTag
 import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
+import org.jetbrains.bazel.sync_new.codec.kryo.EnumTagged
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.TargetVertex
@@ -29,7 +31,7 @@ data class BazelTargetVertex(
 
   @field:Bind(serializer = SyncTargetDataSerializer::class)
   @field:Tag(10)
-  val targetData: Long2ObjectMap<SyncTargetData>
+  val targetData: Long2ObjectMap<SyncTargetData>,
 ) : TargetVertex
 
 @Tagged
@@ -44,16 +46,30 @@ data class BazelGenericTargetData(
   val sources: List<BazelTargetSourceFile>,
 
   @field:Tag(4)
-  val resources: List<BazelTargetResourceFile>
+  val resources: List<BazelTargetResourceFile>,
 )
 
+@EnumTagged
 enum class BazelTargetTag {
+  @field:EnumTag(1)
   LIBRARY,
+
+  @field:EnumTag(2)
   EXECUTABLE,
+
+  @field:EnumTag(3)
   TEST,
+
+  @field:EnumTag(4)
   INTELLIJ_PLUGIN,
+
+  @field:EnumTag(5)
   NO_IDE,
+
+  @field:EnumTag(6)
   NO_BUILD,
+
+  @field:EnumTag(7)
   MANUAL,
 }
 
@@ -69,7 +85,7 @@ data class BazelTargetSourceFile(
   val path: BazelPath,
 
   @field:Tag(2)
-  val priority: Int
+  val priority: Int,
 )
 
 @Tagged

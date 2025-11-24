@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.sync_new.codec
 
-inline fun <T> CodecBuilder.setCodecOf(
+inline fun <T> CodecBuilder.ofSet(
   elementCodec: Codec<T>,
   crossinline setFactory: () -> MutableSet<T> = { mutableSetOf() },
 ) : Codec<Set<T>> = codecOf(

@@ -8,6 +8,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.codec.ofLabel
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
+import org.jetbrains.bazel.sync_new.flow.ChangedTarget
 import org.jetbrains.bazel.sync_new.flow.SyncDiff
 import org.jetbrains.bazel.sync_new.graph.TargetReference
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetGraph
@@ -44,8 +45,8 @@ class TargetDiffService(
     val removed = hashSetOf<Label>()
     val changed = hashSetOf<Label>()
 
-    val allTargets = targetHashes.keys().filter { it in newHashes.keys } + newHashes.keys.asSequence()
-    for (target in allTargets) {
+    val allTargets = targetHashes.keys() + newHashes.keys.asSequence()
+    for (target in allTargets.toSet()) {
       val oldHash = targetHashes.get(target)
       val newHash = newHashes[target]
 
@@ -69,9 +70,15 @@ class TargetDiffService(
       .forEach { (target, hash) -> targetHashes.set(target, hash) }
 
     return SyncDiff(
-      added = added.toTargetRefs(graph),
-      removed = removed.toTargetRefs(graph),
-      changed = changed.toTargetRefs(graph),
+      added = added.map { TargetReference.ofGraphLazy(it, graph) }.toSet(),
+      removed = removed.map { TargetReference.ofGraphNow(it, graph) }.toSet(),
+      changed = changed.map {
+        ChangedTarget(
+          label = it,
+          old = TargetReference.ofGraphNow(it, graph),
+          new = TargetReference.ofGraphLazy(it, graph)
+        )
+      }.toSet(),
     )
   }
 
@@ -85,9 +92,7 @@ class TargetDiffService(
     }
 
     return SyncDiff(
-      added = newHashes.map { it.target }
-        .toList()
-        .toTargetRefs(graph),
+      added = newHashes.map { TargetReference.ofGraphLazy(it.target, graph) }.toSet(),
       removed = emptySet(),
       changed = emptySet(),
     )
@@ -96,9 +101,6 @@ class TargetDiffService(
   fun clear() {
     targetHashes.clear()
   }
-
-  private fun Iterable<Label>.toTargetRefs(graph: BazelTargetGraph) =
-    map { TargetReference.ofGraph(it, { graph }) }.toSet()
 
   private suspend fun computeProjectTargetPatterns(project: Project): List<TargetPattern> {
     val workspaceContext = LegacyBazelFrontendBridge.fetchWorkspaceContext(project)

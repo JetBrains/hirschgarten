@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.index
 
-interface Index {
+interface SyncIndex {
+  val name: String
   fun invalidateAll();
 }

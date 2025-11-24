@@ -19,25 +19,23 @@ class SyncLanguageService {
 
   init {
     for (plugin in SyncLanguagePlugin.ep.extensionList) {
-      for (language in plugin.languages) {
-        tag2Lang[language.serialId] = language
-        lang2Plugins.compute(language) { _, v ->
-          if (v == null) {
-            listOf(plugin)
-          } else {
-            v + plugin
-          }
+      val language = plugin.language
+      tag2Lang[language.serialId] = language
+      lang2Plugins.compute(language) { _, v ->
+        if (v == null) {
+          listOf(plugin)
+        } else {
+          v + plugin
         }
       }
 
-      for (klass in plugin.dataClasses) {
-        val annotation = klass.getAnnotation(SyncClassTag::class.java)
-          ?: error("SyncClassTag annotation is not found for ${klass.name}")
-        tag2Type[annotation.serialId] = klass
-        type2Tag[klass] = annotation.serialId
-      }
+      val dataType = plugin.dataType
+      val annotation = dataType.getAnnotation(SyncClassTag::class.java)
+        ?: error("SyncClassTag annotation is not found for ${dataType.name}")
+      tag2Type[annotation.serialId] = dataType
+      type2Tag[dataType] = annotation.serialId
 
-      _languageDetectors.addAll(plugin.languageDetectors)
+      _languageDetectors.add(plugin.languageDetector)
     }
   }
 

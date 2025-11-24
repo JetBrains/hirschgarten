@@ -28,7 +28,7 @@ object BiMapSerializer : Serializer<BiMap<Any?, Any?>>() {
     kryo: Kryo,
     input: Input,
     type: Class<out BiMap<Any?, Any?>>,
-  ): BiMap<Any?, Any?>? {
+  ): BiMap<Any?, Any?> {
     val size = input.readVarInt(true)
     val result = HashBiMap.create<Any?, Any?>()
     for (n in 0 until size) {

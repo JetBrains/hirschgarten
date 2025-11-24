@@ -100,7 +100,7 @@ class MVStoreStorageContext(
     name = name,
   )
 
-  fun save(force: Boolean = false) {
+  override fun save(force: Boolean) {
     synchronized(ownedStores) {
       // write all modified flat stores
       for ((store, handler) in ownedStores) {
@@ -114,10 +114,6 @@ class MVStoreStorageContext(
     if (store.hasUnsavedChanges()) {
       store.tryCommit()
     }
-  }
-
-  override fun onSave() {
-    save(force = false)
   }
 
   internal fun <K, V> openOrResetMap(name: String, builder: () -> MVMap.Builder<K, V>) =

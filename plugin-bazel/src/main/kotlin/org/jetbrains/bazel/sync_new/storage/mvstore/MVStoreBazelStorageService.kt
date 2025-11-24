@@ -40,7 +40,7 @@ class MVStoreBazelStorageService(
     }
 
     withContext(Dispatchers.IO) {
-      context.onSave()
+      context.save(force = false)
       lastSaved = now()
     }
   }

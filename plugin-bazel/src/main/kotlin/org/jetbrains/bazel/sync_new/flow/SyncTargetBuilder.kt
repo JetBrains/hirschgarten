@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.impl.BazelGenericTargetData
@@ -12,6 +13,7 @@ import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetEdge
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetResourceFile
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetSourceFile
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetVertex
+import org.jetbrains.bazel.sync_new.graph.impl.DependencyType
 import org.jetbrains.bazel.sync_new.graph.impl.toBazelPath
 import org.jetbrains.bazel.sync_new.lang.SyncTargetData
 import org.jetbrains.bsp.protocol.RawAspectTarget
@@ -47,12 +49,17 @@ class SyncTargetBuilder(
     )
   }
 
-  fun buildTargetEdge(ctx: SyncContext, from: ID, to: ID): BazelTargetEdge {
+  fun buildTargetEdge(ctx: SyncContext, from: ID, to: ID, dependency: BspTargetInfo.Dependency): BazelTargetEdge {
     val edgeId = ctx.graph.getNextEdgeId()
+    val type = when (dependency.dependencyType) {
+      BspTargetInfo.Dependency.DependencyType.RUNTIME -> DependencyType.RUNTIME
+      else -> DependencyType.COMPILE
+    }
     return BazelTargetEdge(
       edgeId = edgeId,
       from = from,
       to = to,
+      type = type,
     )
   }
 

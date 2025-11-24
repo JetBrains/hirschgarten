@@ -215,6 +215,9 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.syncLanguagePlugin"
                     interface="org.jetbrains.bazel.sync_new.lang.SyncLanguagePlugin"
                     dynamic="false"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.syncIndexUpdaterProvider"
+                    interface="org.jetbrains.bazel.sync_new.index.SyncIndexUpdaterProvider"
+                    dynamic="true"/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -226,6 +229,8 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syncIndexUpdaterProvider implementation="org.jetbrains.bazel.sync_new.flow.index.GenericSyncIndexUpdaterProvider"/>
+
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
     <projectSyncHook

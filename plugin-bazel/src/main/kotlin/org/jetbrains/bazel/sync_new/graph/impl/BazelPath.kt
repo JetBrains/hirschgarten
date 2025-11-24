@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.sync_new.graph.impl
 
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
+import java.nio.file.Path
 
 sealed interface BazelPath {
   data class Absolute(val path: String) : BazelPath
@@ -57,3 +59,6 @@ fun BazelPath.toFileLocation(): FileLocation = when (this) {
 }
 
 fun FileLocation.toBazelPath(): BazelPath = BazelPath.fromFileLocation(this)
+
+// TODO: implement more optimal approach
+fun BazelPathsResolver.resolve(path: BazelPath): Path = resolve(path.toFileLocation())

@@ -22,14 +22,11 @@ open class InMemoryKVStore<K, V>(
   override val name: String,
   private val keyCodec: Codec<K>,
   private val valueCodec: Codec<V>,
+  protected val map: ConcurrentMap<K, V> = ConcurrentHashMap(),
 ) : KVStore<K, V>, FlatPersistentStore, PersistentStoreWithModificationMarker, Disposable {
   companion object {
     const val CODEC_VERSION: Int = 1
   }
-
-  protected val map: ConcurrentMap<K, V> by lazy { createInternalMap() }
-
-  protected open fun createInternalMap(): ConcurrentMap<K, V> = ConcurrentHashMap()
 
   init {
     owner.register(this)
@@ -113,13 +110,23 @@ open class InMemorySortedKVStore<K, V>(
   keyCodec: Codec<K>,
   valueCodec: Codec<V>,
   private val comparator: Comparator<K>,
-) : InMemoryKVStore<K, V>(owner, name, keyCodec, valueCodec), SortedKVStore<K, V> {
+) : InMemoryKVStore<K, V>(
+  owner = owner,
+  name = name,
+  keyCodec = keyCodec,
+  valueCodec = valueCodec,
+  map = ConcurrentSkipListMap(comparator),
+), SortedKVStore<K, V> {
   protected val sortedMap: SortedMap<K, V>
     get() = map as NavigableMap<K, V>
 
-  override fun createInternalMap(): ConcurrentMap<K, V> = ConcurrentSkipListMap(comparator)
-
-  override fun getHighestKey(): K? = sortedMap.lastKey()
+  override fun getHighestKey(): K? {
+    return if (sortedMap.isEmpty()) {
+      null
+    } else {
+      sortedMap.lastKey()
+    }
+  }
 }
 
 class InMemorySortedKVStoreBuilder<K, V>(

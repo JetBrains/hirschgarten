@@ -25,11 +25,18 @@ private val kryoThreadLocal = ThreadLocal.withInitial {
   kryo.classLoader = KryoObjectCodec::class.java.classLoader
   kryo.isRegistrationRequired = false
   kryo.setAutoReset(false)
-  kryo.references = false
+  kryo.references = true
   //kryo.setCopyReferences(true)
   kryo.instantiatorStrategy = DefaultInstantiatorStrategy(StdInstantiatorStrategy())
 
-  kryo.setDefaultSerializer(KryoObjectSerializerFactory())
+  kryo.setDefaultSerializer(KryoCompositeSerializeFactory(
+    factories = listOf(
+      KryoSealedInterfaceSerializerFactory(),
+      KryoEnumSerializerFactory(),
+      KryoTaggedCompositeSerializeFactory()
+    ),
+    fallback = FieldSerializerFactory()
+  ))
 
   kryo.registerFastUtilSerializers()
   kryo.registerPrimitiveSerializers()
@@ -44,6 +51,7 @@ private val kryoThreadLocal = ThreadLocal.withInitial {
 val kryo: Kryo
   get() = kryoThreadLocal.get()
 
+// TODO: fix direct byte buffer writes
 class KryoObjectCodec<T>(
   private val type: Class<T>,
 ) : Codec<T> {
