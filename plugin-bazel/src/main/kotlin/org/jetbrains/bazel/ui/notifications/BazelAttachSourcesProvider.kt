@@ -1,7 +1,8 @@
 package org.jetbrains.bazel.ui.notifications
 
 import com.intellij.codeInsight.AttachSourcesProvider
-import com.intellij.openapi.application.backgroundWriteAction
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.roots.LibraryOrderEntry
 import com.intellij.openapi.roots.OrderRootType
@@ -10,52 +11,59 @@ import com.intellij.openapi.roots.ui.configuration.LibrarySourceRootDetectorUtil
 import com.intellij.openapi.util.ActionCallback
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.intellij.util.ThrowableRunnable
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 
 /**
  * See https://github.com/bazelbuild/bazel/issues/10692
  */
-internal class BazelAttachSourcesProvider : AttachSourcesProvider {
-  private class BazelAttachSourcesAction : AttachSourcesProvider.AttachSourcesAction {
+internal class BazelAttachSourcesProvider() : AttachSourcesProvider {
+  private class BazelAttachSourcesAction() : AttachSourcesProvider.AttachSourcesAction {
     override fun getName(): String = BazelPluginBundle.message("sources.attach.action.text")
 
     override fun getBusyText(): String = BazelPluginBundle.message("sources.pending.text")
 
-    override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback {
-      val callback = ActionCallback()
-      CoroutineScope(Dispatchers.Default).launch {
-        try {
-          val libraries = orderEntries.mapNotNull { it.library }.distinct()
-          val modelsToCommit =
-            libraries.mapNotNull { library ->
+    override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback =
+      ActionCallback().apply {
+        ApplicationManager.getApplication().executeOnPooledThread {
+          try {
+            val libraries = orderEntries.mapNotNull { it.library }.distinct()
+            val (libsWithEmptySources, libsWithSources) = libraries.partition { library ->
+              library.getFiles(OrderRootType.SOURCES).isEmpty()
+            }
+            if (libsWithEmptySources.isNotEmpty()) {
+              val missingSources = libsWithEmptySources.joinToString(",\n") { it.name.orEmpty() }
+              showError(missingSources)
+            }
+            val modelsToCommit = mutableListOf<Pair<Library.ModifiableModel, Array<out VirtualFile>>>()
+            libsWithSources.forEach { library ->
               val availableSources = library.getFiles(OrderRootType.SOURCES)
-              if (availableSources.isEmpty()) {
-                showError(library.name.orEmpty())
-                null
-              } else {
-                library.obtainModelWithAddedSources(availableSources)
+              library.obtainModelWithAddedSources(availableSources)?.let {
+                modelsToCommit.add(it)
               }
             }
-          if (modelsToCommit.isNotEmpty()) {
-            backgroundWriteAction {
-              modelsToCommit.forEach {
-                it.commit()
-              }
-              callback.setDone()
+            if (modelsToCommit.isNotEmpty()) {
+              WriteAction.run(
+                ThrowableRunnable {
+                  modelsToCommit.forEach { (model, roots) ->
+                    roots.forEach {
+                      model.addRoot(it.url, OrderRootType.SOURCES)
+                    }
+                    model.commit()
+                  }
+                  setDone()
+                },
+              )
+            } else {
+              setDone()
             }
-          } else {
-            callback.setRejected()
+          } catch (e: Exception) {
+            reject(e.message)
           }
-        } catch (_: Exception) {
-          callback.setRejected()
         }
       }
-      return callback
-    }
+
 
     private fun showError(target: String) {
       BazelBalloonNotifier.error(
@@ -64,17 +72,13 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
       )
     }
 
-    private fun Library.obtainModelWithAddedSources(availableSources: Array<VirtualFile>): Library.ModifiableModel? {
+    private fun Library.obtainModelWithAddedSources(availableSources: Array<VirtualFile>): Pair<Library.ModifiableModel, Array<out VirtualFile>>? {
       val sourceRoots =
         invokeAndWaitIfNeeded {
           LibrarySourceRootDetectorUtil.scanAndSelectDetectedJavaSourceRoots(null, availableSources)
         }
       if (sourceRoots.isEmpty()) return null
-      val modifiableModel = this.modifiableModel
-      sourceRoots.forEach { source ->
-        modifiableModel.addRoot(source.url, OrderRootType.SOURCES)
-      }
-      return modifiableModel
+      return Pair(modifiableModel, sourceRoots)
     }
   }
 
