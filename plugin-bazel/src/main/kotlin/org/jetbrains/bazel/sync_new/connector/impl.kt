@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync_new.connector
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.awaitExit
@@ -15,12 +16,14 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.logger.BspClientLogger
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.collections.joinToString
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.inputStream
 
@@ -48,7 +51,7 @@ class LegacyBazelConnectorImpl(
 
     var targetPatternFile: Path? = null
     builder.popValue("target_patterns")?.require<Value.VText>()?.let {
-      targetPatternFile = withContext(Dispatchers.IO) { Files.createTempFile("bazel", "target_pattern") }
+      targetPatternFile = createTmpFile()
       withContext(Dispatchers.IO) { Files.writeString(targetPatternFile, it.text) }
       builder.add("target_pattern_file", argValueOf(targetPatternFile))
     }
@@ -72,18 +75,19 @@ class LegacyBazelConnectorImpl(
     builder.add(argValueOf("query"))
     args(builder)
 
-    val queryFile = withContext(Dispatchers.IO) { Files.createTempFile("bazel", "query") }
+    val queryFile = createTmpFile()
     val query = builder.popValue("query")?.require<Value.VText>() ?: error("query must be specified")
     withContext(Dispatchers.IO) { Files.writeString(queryFile, query.text) }
     builder.add("query_file", argValueOf(queryFile))
 
-    val outputFile = withContext(Dispatchers.IO) { Files.createTempFile("bazel", "out") }
+    val outputFile = createTmpFile()
     builder.add("output_file", argValueOf(outputFile))
 
-    val output = builder.getValue("output")?.require<Value.VText>() ?: error("output must be specified")
-    return when (output.text) {
-      "proto" -> {
+    val output = builder.popValue("output")?.require<Value.VUnsafe>() ?: error("output must be specified")
+    return when (output.obj as QueryOutput) {
+      QueryOutput.PROTO -> {
         // TODO: handle bazel failure
+        builder.add("output", argValueOf("proto"))
         val (_, exitCode) = spawn(builder = builder, capture = true)
         withContext(Dispatchers.IO) { Files.deleteIfExists(queryFile) }
         outputFile.inputStream().buffered().use { stream ->
@@ -93,7 +97,8 @@ class LegacyBazelConnectorImpl(
         }
       }
 
-      "streamed_proto" -> {
+      QueryOutput.STREAMED_PROTO -> {
+        builder.add("output", argValueOf("streamed_proto"))
         val outputFileStream = withContext(Dispatchers.IO) { outputFile.inputStream().buffered() }
         // TODO: handle bazel failure
         val (_, exitCode) = spawn(builder = builder, capture = true)
@@ -111,8 +116,6 @@ class LegacyBazelConnectorImpl(
           .flowOn(Dispatchers.IO)
         BazelResult.Success(QueryResult.StreamedProto(flow))
       }
-
-      else -> error("unsupported output type")
     }
   }
 
@@ -136,8 +139,15 @@ class LegacyBazelConnectorImpl(
       coroutineScope.launch { capture(process.errorStream, exitChannel) }
     }
 
-    val code = process.awaitExit()
-    exitChannel.trySend(Unit)
+    val code = try {
+      val code = process.awaitExit()
+      exitChannel.trySend(Unit)
+      code
+    } catch (e: CancellationException) {
+      OSProcessUtil.killProcessTree(process)
+      OSProcessUtil.killProcess(process)
+      throw e
+    }
 
     return Pair(process, code)
   }
@@ -213,6 +223,8 @@ private open class CmdBuilder : StartupOptions, Args {
       is Value.VText -> {
         "--$arg=${this.text}"
       }
+
+      else -> error("unsafe value leaked")
     }
   }
 
@@ -223,6 +235,7 @@ private open class CmdBuilder : StartupOptions, Args {
       is Value.VFloat -> this.number.toString()
       is Value.VInt -> this.number.toString()
       is Value.VText -> this.text
+      else -> error("unsafe value leaked")
     }
   }
 
@@ -234,3 +247,5 @@ private open class CmdBuilder : StartupOptions, Args {
   }
 
 }
+
+private suspend fun createTmpFile(): Path = withContext(Dispatchers.IO) { Files.createTempFile("bazel", "tmp") }

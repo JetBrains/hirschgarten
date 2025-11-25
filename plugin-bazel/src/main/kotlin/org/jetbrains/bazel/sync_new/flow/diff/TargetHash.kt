@@ -5,5 +5,6 @@ import org.jetbrains.bazel.label.Label
 
 data class TargetHash(
   val target: Label,
-  val hash: HashValue128
+  val hash: HashValue128,
+  val path: String?
 )
