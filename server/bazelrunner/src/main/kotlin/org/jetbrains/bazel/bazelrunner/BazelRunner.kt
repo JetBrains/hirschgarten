@@ -3,7 +3,6 @@ package org.jetbrains.bazel.bazelrunner
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.bazelrunner.outputs.spawnProcessBlocking
-import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.overrideRepository
 import org.jetbrains.bazel.commons.BazelInfo
@@ -28,7 +27,7 @@ import kotlin.io.path.pathString
  */
 class BazelRunner(
   private val bspClientLogger: BspClientLogger?,
-  val workspaceRoot: Path?,
+  val workspaceRoot: Path,
   var bazelInfo: BazelInfo? = null,
 ) {
   companion object {
@@ -161,13 +160,11 @@ class BazelRunner(
 
     val processSpawner = ProcessSpawner.getInstance()
     var environment = emptyMap<String, String>()
-    var workDir = workspaceRoot
 
     // Run needs to be handled separately because the resulting process is not run in the sandbox
     if (command is BazelCommand.Run) {
-      command.workingDirectory?.also { workDir = it }
       environment = command.environment
-      logInvocation(processArgs, command.environment, command.workingDirectory, originId, shouldLogInvocation = shouldLogInvocation)
+      logInvocation(processArgs, command.environment, workspaceRoot, originId, shouldLogInvocation = shouldLogInvocation)
     } else {
       logInvocation(processArgs, null, null, originId, shouldLogInvocation = shouldLogInvocation)
     }
@@ -178,7 +175,7 @@ class BazelRunner(
           command = processArgs,
           environment = environment,
           redirectErrorStream = false,
-          workDirectory = workDir?.toString(),
+          workDirectory = workspaceRoot.toString(),
         )
     createdProcessIdDeferred?.complete(process.pid)
 

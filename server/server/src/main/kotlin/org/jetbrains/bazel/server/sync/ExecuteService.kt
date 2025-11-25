@@ -33,7 +33,6 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import kotlin.io.path.Path
 
 class ExecuteService(
   private val compilationManager: BazelBspCompilationManager,
@@ -116,7 +115,6 @@ class ExecuteService(
           additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }
-          params.workingDirectory?.let { workingDirectory = Path(it) }
           params.arguments?.let { programArguments.addAll(it) }
           params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.trim().split(" ")) }
         }
