@@ -12,7 +12,6 @@ import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.state.addEnvironmentFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
-import org.jetbrains.bazel.run.state.workingDirectoryFragment
 
 class JvmRunState :
   AbstractGenericRunState<JvmRunState>(),
@@ -32,7 +31,6 @@ class JvmRunStateEditor(private val config: BazelRunConfiguration) :
       addDebugPortFragment()
       add(bazelParamsFragment())
       add(programArgumentsFragment())
-      add(workingDirectoryFragment(config))
       addEnvironmentFragment()
     }
 }
