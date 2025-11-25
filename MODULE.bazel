@@ -79,6 +79,50 @@ bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "33.5")
 bazel_dep(name = "rules_cc", version = "0.2.14")
 bazel_dep(name = "rules_python", version = "1.8.3")
+bazel_dep(name = "protobuf", version = "29.5")
+bazel_dep(name = "rules_cc", version = "0.2.0")
+bazel_dep(name = "rules_python", version = "1.5.3")
+bazel_dep(name = "platforms", version = "1.0.0")
+
+# Needed for codecanvas
+python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
+python.toolchain(
+    ignore_root_user_error = True,
+    is_default = True,
+    python_version = "3.12",
+)
+
+http_jar(
+    name = "ktlint",
+    integrity = "sha256-tZagXwk2ThmXtkQVJoOvEv71iUTzrPq994Bx9aSQ65g=",
+    url = "https://github.com/pinterest/ktlint/releases/download/1.7.1/ktlint",
+)
+
+http_jar(
+    name = "google_java_format",
+    integrity = "sha256-MjQufBtGAPgN80cdpGrugBLT4URdXqG+H7cSibB8xzU=",
+    url = "https://github.com/google/google-java-format/releases/download/v1.28.0/google-java-format-1.28.0-all-deps.jar",
+)
+
+bazel_dep(
+    name = "buildifier_prebuilt",
+    version = "8.2.0.2",
+    dev_dependency = True,
+)
+bazel_dep(
+    name = "rules_buf",
+    version = "0.4.0",
+    dev_dependency = True,
+)
+
+bazel_dep(
+    name = "stardoc",
+    version = "0.8.0",
+)
+
+buf = use_extension("@rules_buf//buf:extensions.bzl", "buf")
+use_repo(buf, "rules_buf_toolchains")
+
 bazel_dep(
     name = "rules_bazel_integration_test",
     version = "0.37.1",
