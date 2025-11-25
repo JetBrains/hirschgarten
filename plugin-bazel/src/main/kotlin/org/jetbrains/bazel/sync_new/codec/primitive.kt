@@ -42,6 +42,16 @@ fun CodecBuilder.ofHash128(): Codec<HashValue128> = codecOf(
   size = { _, _ -> 2 * Long.SIZE_BYTES },
 )
 
+fun CodecBuilder.ofString(): Codec<String> = codecOf(
+  encode = { _, buffer, value -> buffer.writeString(value) },
+  decode = { _, buffer -> buffer.readString() }
+)
+
+fun CodecBuilder.ofPath(): Codec<Path> = codecOf(
+  encode = { _, buffer, value -> buffer.writeString(value.absolutePathString()) },
+  decode = { _, buffer -> Path.of(buffer.readString()) }
+)
+
 // TODO: check if it is actually correct, or should it be serialized differently
 //  that's why this codec is versioned
 fun CodecBuilder.ofLabel(): Codec<Label> = LabelCodec

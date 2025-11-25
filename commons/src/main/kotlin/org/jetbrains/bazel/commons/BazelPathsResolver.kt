@@ -101,6 +101,12 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     return repoPath.resolve(label.packagePath.toString())
   }
 
+  fun toFilePath(label: ResolvedLabel, repoMapping: RepoMapping): Path {
+    val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { label.toRepoPath(repoMapping) } ?: label.toRepoPathForBazel7()
+    return repoPath.resolve(label.packagePath.toString())
+      .resolve(label.targetName)
+  }
+
   private fun ResolvedLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
     val canonicalName =
       if (repo is Canonical || repo is Main) {

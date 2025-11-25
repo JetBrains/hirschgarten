@@ -442,6 +442,8 @@
       restartRequired="true"
     />
 
+    <postStartupActivity implementation="org.jetbrains.bazel.sync_new.flow.diff.vfs.SyncVFSInitActivity"/>
+
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor"/>
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer"/>

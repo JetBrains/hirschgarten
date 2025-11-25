@@ -8,8 +8,6 @@ import com.intellij.util.concurrency.ThreadingAssertions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Label
@@ -17,8 +15,9 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.flow.diff.TargetDiffService
-import org.jetbrains.bazel.sync_new.flow.diff.TargetPattern
+import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseTargetPattern
 import org.jetbrains.bazel.sync_new.flow.diff.query.QueryTargetHashContributor
+import org.jetbrains.bazel.sync_new.flow.diff.vfs.SyncVFSService
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetGraph
 import org.jetbrains.bazel.sync_new.index.SyncIndexService
@@ -48,6 +47,7 @@ class SyncExecutor(
         store.syncMetadata.set(SyncMetadata())
         store.targetGraph.clear()
         project.serviceAsync<SyncIndexService>().invalidateAll()
+        project.service<SyncVFSService>().resetAll()
       }
       store
     }
@@ -58,6 +58,8 @@ class SyncExecutor(
       syncExecutor = this,
       languageService = service<SyncLanguageService>(),
     )
+
+    val coldDiff = project.service<SyncVFSService>().computeColdDiff()
 
 
     val diff = withTask(project, "target_diff", "Computing target diff") {
@@ -115,7 +117,7 @@ class SyncExecutor(
       }
 
       is SyncScope.Partial -> {
-        val patterns = scope.targets.map { TargetPattern.Include(it) }
+        val patterns = scope.targets.map { SyncUniverseTargetPattern.Include(it) }
         diffService.computeIncrementalDiff(hashContributor, patterns, graph)
       }
     }
