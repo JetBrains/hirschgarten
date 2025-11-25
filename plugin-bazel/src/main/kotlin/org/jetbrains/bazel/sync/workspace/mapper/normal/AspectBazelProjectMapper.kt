@@ -143,7 +143,7 @@ class AspectBazelProjectMapper(
       }
     val kotlinStdlibsMapper =
       measure("Create kotlin stdlibs") {
-        calculateKotlinStdlibsMapper(targetsToImport)
+        calculateKotlinStdlibsMapper(targetsToImport, dependencyGraph)
       }
     val kotlincPluginLibrariesMapper =
       measure("Create kotlinc plugin libraries") {
@@ -274,11 +274,20 @@ class AspectBazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(workspaceContext: WorkspaceContext, targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
+  private fun calculateOutputJarsLibraries(
+    workspaceContext: WorkspaceContext,
+    targetsToImport: Sequence<TargetInfo>,
+  ): Map<Label, List<Library>> =
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(workspaceContext, Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
+        createLibrary(
+          workspaceContext,
+          Label.parse(target.id + "_output_jars"),
+          target,
+          onlyOutputJars = true,
+          isInternalTarget = true,
+        )?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -315,12 +324,31 @@ class AspectBazelProjectMapper(
       }.map { Label.parse(it.key) to listOf(it.value) }
       .toMap()
 
-  private fun calculateKotlinStdlibsMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
+  private fun targetsDependingOnKotlinStdlib(targetsToImport: Sequence<TargetInfo>, dependencyGraph: DependencyGraph): Set<Label> {
+    val toProcess = ArrayDeque(targetsToImport.filter { it.kotlinTargetInfo != null }.map { it.label() }.toList())
+    val visited = toProcess.toMutableSet()
+    while (toProcess.isNotEmpty()) {
+      val info = toProcess.removeFirst()
+      for (reverseDep in dependencyGraph.getReverseDependenciesInfo(info)) {
+        val reverseDepLabel = reverseDep.label()
+        if (reverseDepLabel in visited) continue
+        if (!reverseDep.hasJvmTargetInfo()) continue
+        toProcess.add(reverseDepLabel)
+        visited.add(reverseDepLabel)
+      }
+    }
+    return visited
+  }
+
+  private fun calculateKotlinStdlibsMapper(
+    targetsToImport: Sequence<TargetInfo>,
+    dependencyGraph: DependencyGraph,
+  ): Map<Label, List<Library>> {
     val projectLevelKotlinStdlibsLibrary = calculateProjectLevelKotlinStdlibsLibrary(targetsToImport)
-    val kotlinTargetsIds = targetsToImport.filter { it.hasKotlinTargetInfo() }.map { it.label() }
+    val kotlinDependentTargetsIds = targetsDependingOnKotlinStdlib(targetsToImport, dependencyGraph)
 
     return projectLevelKotlinStdlibsLibrary
-      ?.let { stdlibsLibrary -> kotlinTargetsIds.associateWith { listOf(stdlibsLibrary) } }
+      ?.let { stdlibsLibrary -> kotlinDependentTargetsIds.associateWith { listOf(stdlibsLibrary) } }
       .orEmpty()
   }
 
