@@ -84,7 +84,7 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
   ) {
     val scriptPath = environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()
     if (scriptPath != null) {
-      debugWithScriptPath(settings.workingDirectory, scriptPath.toString(), pidDeferred, handler, settings.env.envs)
+      debugWithScriptPath(scriptPath.toString(), pidDeferred, handler, settings.env.envs)
     } else {
       val configuration = BazelRunConfiguration.get(environment)
       val kotlinCoroutineLibParam = retrieveKotlinCoroutineParams(environment, configuration.project).joinToString(" ")
@@ -95,7 +95,6 @@ class JvmRunWithDebugCommandLineState(environment: ExecutionEnvironment, val set
           originId = originId.toString(),
           arguments = transformProgramArguments(settings.programArguments),
           environmentVariables = settings.env.envs,
-          workingDirectory = settings.workingDirectory,
           additionalBazelParams = (additionalBazelParams + kotlinCoroutineLibParam).trim().ifEmpty { null },
           pidDeferred = pidDeferred,
         )
