@@ -30,10 +30,11 @@ import java.util.concurrent.atomic.AtomicReference
 internal val SCRIPT_PATH_KEY: Key<AtomicReference<Path>> = Key.create("bazel.hotswap.jvm.script.path")
 
 internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTaskProvider<T>() {
+  /**
+   * Environment variables are not written into the generated run script by Bazel, so they are handled by [JvmDebuggableCommandLineState].
+   */
   data class ExecutionParams(
     val arguments: String? = null,
-    val environmentVariables: Map<String, String>? = null,
-    val workingDirectory: String? = null,
     val additionalBazelParams: String? = null,
     val debugPort: Int = 5005,
   )
@@ -86,9 +87,7 @@ internal sealed class HotSwapBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
               RunParams(
                 target = target,
                 originId = "",
-                workingDirectory = executionParams.workingDirectory,
                 arguments = executionParams.arguments?.let { transformProgramArguments(it) }.orEmpty() + additionalProgramArguments,
-                environmentVariables = executionParams.environmentVariables,
                 additionalBazelParams = (scriptPathParam + coroutineDebugParams + additionalBazelParams).joinToString(" "),
               )
             BazelServerService
@@ -125,8 +124,6 @@ internal class HotSwapTestBeforeRunTaskProvider : HotSwapBeforeRunTaskProvider<H
     return with(state) {
       ExecutionParams(
         arguments = programArguments,
-        environmentVariables = env.envs,
-        workingDirectory = workingDirectory,
         additionalBazelParams = additionalBazelParams,
         debugPort = debugPort,
       )
@@ -152,8 +149,6 @@ internal class HotSwapRunBeforeRunTaskProvider : HotSwapBeforeRunTaskProvider<Ho
     return with(state) {
       ExecutionParams(
         arguments = programArguments,
-        environmentVariables = env.envs,
-        workingDirectory = workingDirectory,
         additionalBazelParams = additionalBazelParams,
         debugPort = debugPort,
       )

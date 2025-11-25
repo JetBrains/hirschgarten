@@ -51,19 +51,22 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
   val debugType: DebugType
     get() = DebugType.JDWP(port)
 
+  /**
+   * See [HotSwapBeforeRunTaskProvider.ExecutionParams], we have to pass [env] to the process manually
+   */
   suspend fun debugWithScriptPath(
-    workingDirectory: String?,
     scriptPath: String,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
+    env: Map<String, String>,
     testFilter: String? = null,
   ) {
     val commandLine =
       GeneralCommandLine()
-        .withWorkingDirectory(workingDirectory?.let { Path.of(it) })
         .withExePath(scriptPath)
         // don't inherit IntelliJ's environment variables as the script should be self-contained
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
+        .withEnvironment(env)
     if (testFilter != null) {
       commandLine.environment[BAZEL_TEST_FILTER_ENV] = testFilter
     }
