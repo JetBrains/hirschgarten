@@ -48,6 +48,16 @@ def extract_scalatest_classpath(rule_attr):
         extract_from_attr("_scalatest_reporter")
     )
 
+def get_plugins(rule_attr):
+    result = []
+    plugins = getattr(rule_attr, "plugins", [])
+    for plugin in plugins:
+        if JavaInfo in plugin:
+            jars = getattr(plugin[JavaInfo], "full_compile_jars", depset()).to_list()
+            for f in map(file_location, jars):
+                result.append("-Xplugin:%s/%s" % (f.root_execution_path_fragment, f.relative_path))
+    return result
+
 def extract_scala_info(target, ctx, output_groups, **kwargs):
     kind = ctx.rule.kind
     if not kind.startswith("scala_") and not kind.startswith("thrift_"):
@@ -71,7 +81,8 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
                     update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(compiler_classpath))
     else:
         common_scalac_opts = []
-    scala_info["scalac_opts"] = common_scalac_opts + getattr(ctx.rule.attr, "scalacopts", [])
+
+    scala_info["scalac_opts"] = common_scalac_opts + getattr(ctx.rule.attr, "scalacopts", []) + get_plugins(rule_attr)
 
     scala_info["scalatest_classpath"] = extract_scalatest_classpath(rule_attr)
 
