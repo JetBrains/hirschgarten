@@ -16,6 +16,8 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.text.removePrefix
 
 class ScalaLanguagePlugin(
   private val javaLanguagePlugin: JavaLanguagePlugin,
@@ -57,9 +59,17 @@ class ScalaLanguagePlugin(
       scalaVersion = sdk.version,
       sdkJars = sdk.compilerJars,
       jvmBuildTarget = javaLanguagePlugin.createBuildTargetData(context, target),
-      scalacOptions = target.scalaTargetInfo.scalacOptsList,
+      scalacOptions = target.scalaTargetInfo.scalacOptsList.map(::transformPluginPath),
     )
   }
+
+  private fun transformPluginPath(option: String): String =
+    if (option.startsWith(SCALAC_PLUGIN_PREFIX)) {
+      val pluginPath = Paths.get(option.removePrefix(SCALAC_PLUGIN_PREFIX))
+      "$SCALAC_PLUGIN_PREFIX${bazelPathsResolver.resolveOutput(pluginPath)}"
+    } else {
+      option
+    }
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
 
@@ -67,4 +77,7 @@ class ScalaLanguagePlugin(
 
   override fun transformSources(sources: List<SourceItem>): List<SourceItem> = javaLanguagePlugin.transformSources(sources)
 
+  companion object {
+    private val SCALAC_PLUGIN_PREFIX = "-Xplugin:"
+  }
 }
