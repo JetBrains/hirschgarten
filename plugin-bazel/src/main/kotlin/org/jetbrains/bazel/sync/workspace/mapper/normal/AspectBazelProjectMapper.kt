@@ -258,7 +258,7 @@ class AspectBazelProjectMapper(
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
+        createLibrary(Label.parse(target.id + "_internal_ij_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
