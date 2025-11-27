@@ -197,6 +197,7 @@ class BepServer(
             SyntheticLabel(AllRuleTargets),
             originId,
             isCommandLineFormattedOutput = true,
+            onlyFromParsedOutput = true,
           )
         events.forEach {
           bspClient.onBuildPublishDiagnostics(
