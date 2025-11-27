@@ -201,12 +201,12 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
-                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+    <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
+                    interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
                     dynamic="true"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesSyncHook"
-                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesSyncHook"
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
                     dynamic="true"
     />
   </extensionPoints>
@@ -220,6 +220,10 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
+    <projectViewSectionProvider
+      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
+
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook" />
 
     <projectSyncHook

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.scala
 
+import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
@@ -10,10 +11,10 @@ import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
 class ScalaLanguagePlugin(
@@ -25,7 +26,7 @@ class ScalaLanguagePlugin(
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
-  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(project: Project, targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
     scalaSdks =
       targets
         .associateBy(
@@ -63,4 +64,7 @@ class ScalaLanguagePlugin(
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
 
   override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source, true)
+
+  override fun transformSources(sources: List<SourceItem>): List<SourceItem> = javaLanguagePlugin.transformSources(sources)
+
 }

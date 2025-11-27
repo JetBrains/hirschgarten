@@ -18,7 +18,6 @@ import org.jetbrains.bazel.run.state.addEnvironmentFragment
 import org.jetbrains.bazel.run.state.addTestFilterFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
-import org.jetbrains.bazel.run.state.workingDirectoryFragment
 
 class JvmTestState :
   AbstractGenericTestState<JvmTestState>(),
@@ -39,7 +38,6 @@ class JvmTestStateEditor(private val config: BazelRunConfiguration) :
       add(bazelParamsFragment())
       addTestFilterFragment()
       add(programArgumentsFragment())
-      add(workingDirectoryFragment(config))
       addEnvironmentFragment()
     }
 }

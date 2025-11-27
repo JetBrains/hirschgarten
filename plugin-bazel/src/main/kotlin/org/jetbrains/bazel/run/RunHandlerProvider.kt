@@ -62,6 +62,13 @@ interface RunHandlerProvider {
         ?: throw IllegalArgumentException("No BspRunHandlerProvider found for targets: $targets")
     }
 
+    fun getRunHandlerProviderOrNull(project: Project, targets: List<Label>): RunHandlerProvider? {
+      val targetUtils = project.targetUtils
+      val targetInfos = targets.mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+      if (targetInfos.isEmpty()) return null
+      return getRunHandlerProvider(targetInfos)
+    }
+
     /** Finds a BspRunHandlerProvider by its unique ID */
     fun findRunHandlerProvider(id: String): RunHandlerProvider? = ep.extensionList.firstOrNull { it.id == id }
   }
