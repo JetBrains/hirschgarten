@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.install
 
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -49,8 +49,8 @@ class EnvironmentCreatorTest {
 
       // then
       dotBazelBsp shouldNotBe null
-      aspectFolders.forEach { dotBazelBsp.resolve(it).isDirectory() shouldBeEqual true }
-      aspectFiles.forEach { dotBazelBsp.resolve(it).isRegularFile() shouldBeEqual true }
+      aspectFolders.forEach { dotBazelBsp.resolve(it).isDirectory() shouldBe true }
+      aspectFiles.forEach { dotBazelBsp.resolve(it).isRegularFile() shouldBe true }
     }
 
     @Test

@@ -14,7 +14,6 @@ import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -57,6 +56,7 @@ val mockContext =
     importIjars = false,
     deriveInstrumentationFilterFromTargets = false,
     indexAdditionalFilesInDirectories = emptyList(),
+    preferClassJarsOverSourcelessJars = true,
   )
 
 val mockBazelInfo =
@@ -94,7 +94,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "build",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -116,7 +115,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "build",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -145,7 +143,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "build",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -179,7 +176,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "run",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -203,7 +199,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "run",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -230,7 +225,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "run",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -255,7 +249,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "build",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -282,7 +275,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "test",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -309,7 +301,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "test",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -338,7 +329,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "coverage",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -366,7 +356,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "query",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -391,7 +380,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "query",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -413,7 +401,6 @@ class BazelRunnerBuilderTest {
         "bazel",
         "cquery",
         BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
@@ -442,7 +429,6 @@ class BazelRunnerBuilderTest {
         "--build_event_binary_file=/dev/null",
         "--bes_outerr_buffer_size=10",
         "--build_event_publish_all_actions",
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
