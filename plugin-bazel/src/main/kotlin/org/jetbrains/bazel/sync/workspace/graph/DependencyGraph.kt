@@ -34,6 +34,8 @@ class DependencyGraph(
 
   fun getReverseDependencies(id: Label): Set<Label> = idToReverseDependenciesIds[id].orEmpty()
 
+  fun getReverseDependenciesInfo(id: Label): Set<BspTargetInfo.TargetInfo> = idsToTargetInfo(idToReverseDependenciesIds[id].orEmpty())
+
   private fun createIdToLazyTransitiveDependenciesMap(
     idToTargetInfo: Map<Label, BspTargetInfo.TargetInfo>,
   ): Map<Label, Lazy<Set<BspTargetInfo.TargetInfo>>> =
