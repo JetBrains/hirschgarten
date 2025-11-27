@@ -21,7 +21,4 @@ class SyncStoreService(
       .build()
 
   val targetGraph: BazelTargetGraph = BazelTargetGraph(project.storageContext)
-
-  val repoMapping: SyncRepoMapping
-    get() = syncMetadata.get().repoMapping
 }

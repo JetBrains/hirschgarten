@@ -4,7 +4,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 
 sealed interface Arg {
   data class Named(val name: String, val value: Value) : Arg
-  data class Positional(val value: Value) : Arg
+  data class Positional(val value: Value, val last: Boolean) : Arg
 }
 
 interface Args {
@@ -22,7 +22,7 @@ fun Args.defaults() {
 }
 
 fun Args.add(name: String, value: Value): Unit = add(Arg.Named(name, value))
-fun Args.add(value: Value): Unit = add(Arg.Positional(value))
+fun Args.add(value: Value, last: Boolean = false): Unit = add(Arg.Positional(value, last))
 
 fun Args.keepGoing(): Unit = add("keep_going", argValueOf(true))
 fun Args.injectRepository(repo: String): Unit = add("inject_repository", argValueOf(repo))

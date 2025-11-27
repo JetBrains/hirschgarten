@@ -60,10 +60,10 @@ class MVStoreStorageContext(
     vararg hints: StorageHints,
   ): KVStoreBuilder<*, K, V> =
     when {
-      StorageHints.USE_PAGED_STORE in hints -> InMemoryKVStoreBuilder(
-        owner = this,
-        name = getInMemoryStoreName(name),
-      )
+      //StorageHints.USE_PAGED_STORE in hints -> InMemoryKVStoreBuilder(
+      //  owner = this,
+      //  name = getInMemoryStoreName(name),
+      //)
 
       else -> InMemoryKVStoreBuilder(
         owner = this,
@@ -78,12 +78,12 @@ class MVStoreStorageContext(
     vararg hints: StorageHints,
   ): SortedKVStoreBuilder<*, K, V> =
     when {
-      StorageHints.USE_PAGED_STORE in hints -> MVStoreSortedKVStoreBuilder(
-        storageContext = this,
-        name = getPageStoreName(name),
-        keyType = keyType,
-        valueType = valueType,
-      )
+      //StorageHints.USE_PAGED_STORE in hints -> MVStoreSortedKVStoreBuilder(
+      //  storageContext = this,
+      //  name = getPageStoreName(name),
+      //  keyType = keyType,
+      //  valueType = valueType,
+      //)
 
       else -> InMemorySortedKVStoreBuilder(
         owner = this,
