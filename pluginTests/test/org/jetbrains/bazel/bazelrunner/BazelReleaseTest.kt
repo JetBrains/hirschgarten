@@ -78,11 +78,9 @@ class BazelReleaseTest {
   }
 
   private fun copyBazelVersionToTmp(): Path {
-    val inputStream = BazelReleaseTest::class.java.getResourceAsStream("/.bazelversion")
-    val content = inputStream?.bufferedReader()?.readText()
     val tempDir = createTempDirectory("workspace").createDirectories()
     val tempFile = tempDir.resolve(".bazelversion")
-    content?.let { tempFile.writeText(it) }
+    tempFile.writeText("6.3.0")
     return tempFile
   }
 }

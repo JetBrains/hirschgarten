@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-import com.intellij.util.io.awaitExit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
