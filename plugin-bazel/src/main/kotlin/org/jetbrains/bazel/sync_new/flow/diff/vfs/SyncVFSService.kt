@@ -13,11 +13,11 @@ import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.defaults
-import org.jetbrains.bazel.sync_new.connector.getOrThrow
+import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
-import org.jetbrains.bazel.sync_new.connector.toProtoTargets
+import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.diff.query.QueryTargetPattern
 import org.jetbrains.bazel.sync_new.flow.diff.vfs.processor.SyncVFSChangeProcessor
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
@@ -99,7 +99,7 @@ class SyncVFSService(
       .toSet()
     // TODO: filter only internal repositories
     val legacyRepoMapping = LegacyBazelFrontendBridge.toLegacyRepoMapping(ctx.repoMapping)
-    val targets = result.getOrThrow().toProtoTargets()
+    val targets = result.unwrap().unwrapProtos()
     val addedFiles = targets.asSequence()
       .filter { it.hasSourceFile() }
       .mapNotNull { it.sourceFile }

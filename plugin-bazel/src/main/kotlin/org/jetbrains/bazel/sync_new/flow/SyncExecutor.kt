@@ -14,10 +14,18 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
+import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
+import org.jetbrains.bazel.sync_new.connector.QueryOutput
+import org.jetbrains.bazel.sync_new.connector.defaults
+import org.jetbrains.bazel.sync_new.connector.keepGoing
+import org.jetbrains.bazel.sync_new.connector.output
+import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.flow.diff.TargetDiffService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseTargetPattern
 import org.jetbrains.bazel.sync_new.flow.diff.query.QueryTargetHashContributor
 import org.jetbrains.bazel.sync_new.flow.diff.vfs.SyncVFSService
+import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
+import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetGraph
 import org.jetbrains.bazel.sync_new.index.SyncIndexService
@@ -41,6 +49,13 @@ class SyncExecutor(
     // run sync pipelines
     ThreadingAssertions.assertBackgroundThread()
 
+    val d = project.service<SyncUniverseService>()
+      .computeUniverseDiff(scope)
+
+    println(d)
+
+    return SyncStatus.Success
+
     val syncStore = withTask(project, "sync_store_init", "Initializing sync store") {
       val store = project.service<SyncStoreService>()
       if (scope is SyncScope.Full) {
@@ -59,16 +74,13 @@ class SyncExecutor(
       languageService = service<SyncLanguageService>(),
     )
 
-    val coldDiff = project.service<SyncVFSService>().computeColdDiff()
-
-
     val diff = withTask(project, "target_diff", "Computing target diff") {
       computeSyncDiff(scope, ctx.graph)
     }
 
-    withTask(project, "repo_mapping", "Updating repo mapping") {
-      updateRepoMapping(ctx, diff)
-    }
+    //withTask(project, "repo_mapping", "Updating repo mapping") {
+    //  updateRepoMapping(ctx, diff)
+    //}
 
     withTask(project, "target_graph", "Updating target graph") {
       updateTargetGraph(ctx, diff)
@@ -123,34 +135,34 @@ class SyncExecutor(
     }
   }
 
-  private suspend fun updateRepoMapping(ctx: SyncContext, diff: SyncDiff) {
-    val syncStore = project.service<SyncStoreService>()
-
-    var needUpdate = ctx.scope is SyncScope.Full
-    for (target in diff.added) {
-      val resolvedLabel = target.label as? ResolvedLabel ?: continue
-      val apparentRepo = resolvedLabel.repo as? Apparent ?: continue
-      val repoMapping = syncStore.repoMapping
-      when (repoMapping) {
-        is BzlmodSyncRepoMapping -> {
-          if (apparentRepo.repoName !in repoMapping.apparentToCanonical) {
-            needUpdate = true
-            break
-          }
-        }
-
-        DisabledSyncRepoMapping -> {
-          needUpdate = true
-          break
-        }
-      }
-    }
-
-    if (needUpdate) {
-      val newRepoMapping = LegacyBazelFrontendBridge.fetchRepoMapping(project)
-      syncStore.syncMetadata.modify { it.copy(repoMapping = newRepoMapping) }
-    }
-  }
+  //private suspend fun updateRepoMapping(ctx: SyncContext, diff: SyncDiff) {
+  //  val syncStore = project.service<SyncStoreService>()
+  //
+  //  var needUpdate = ctx.scope is SyncScope.Full
+  //  for (target in diff.added) {
+  //    val resolvedLabel = target.label as? ResolvedLabel ?: continue
+  //    val apparentRepo = resolvedLabel.repo as? Apparent ?: continue
+  //    val repoMapping = syncStore.repoMapping
+  //    when (repoMapping) {
+  //      is BzlmodSyncRepoMapping -> {
+  //        if (apparentRepo.repoName !in repoMapping.apparentToCanonical) {
+  //          needUpdate = true
+  //          break
+  //        }
+  //      }
+  //
+  //      DisabledSyncRepoMapping -> {
+  //        needUpdate = true
+  //        break
+  //      }
+  //    }
+  //  }
+  //
+  //  if (needUpdate) {
+  //    val newRepoMapping = LegacyBazelFrontendBridge.fetchRepoMapping(project)
+  //    syncStore.syncMetadata.modify { it.copy(repoMapping = newRepoMapping) }
+  //  }
+  //}
 
   private suspend fun SyncConsoleTask.updateTargetGraph(ctx: SyncContext, diff: SyncDiff) {
     val graph = ctx.graph
@@ -212,9 +224,11 @@ class SyncExecutor(
       return listOf()
     }
     return withTask("fetch_partial_aspects", "Fetching partial targets") {
-      val syncStore = project.service<SyncStoreService>()
-      val repoMapping = LegacyBazelFrontendBridge.toLegacyRepoMapping(syncStore.repoMapping)
-      LegacyBazelFrontendBridge.fetchPartialTargets(project = project, repoMapping = repoMapping, targets = targets)
+      LegacyBazelFrontendBridge.fetchPartialTargets(
+        project = project,
+        repoMapping = project.syncRepoMapping,
+        targets = targets,
+      )
     }
   }
 

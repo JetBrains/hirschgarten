@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.connector
 
+import com.android.tools.idea.util.buffered
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessUtil
@@ -8,21 +9,26 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.io.awaitExit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
+import org.jetbrains.bazel.sync_new.connector.BazelResult.Failure
+import org.jetbrains.bazel.sync_new.connector.BazelResult.Success
+import org.jetbrains.bazel.sync_new.connector.QueryResult.Labels
+import org.jetbrains.bazel.sync_new.connector.QueryResult.Proto
+import org.jetbrains.bazel.sync_new.connector.QueryResult.StreamedProto
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.collections.joinToString
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.inputStream
@@ -44,7 +50,7 @@ class LegacyBazelConnectorImpl(
   ): BazelResult<Unit> {
     val builder = object : CmdBuilder(), BuildArgs {}
 
-    builder.add(argValueOf(executable))
+    builder.executable = executable
     startup(builder)
     builder.add(argValueOf("build"))
     args(builder)
@@ -61,7 +67,7 @@ class LegacyBazelConnectorImpl(
 
     targetPatternFile?.let { withContext(Dispatchers.IO) { Files.deleteIfExists(it) } }
 
-    return BazelResult.Success(Unit)
+    return Success(Unit)
   }
 
   override suspend fun query(
@@ -70,51 +76,82 @@ class LegacyBazelConnectorImpl(
   ): BazelResult<QueryResult> {
     val builder = object : CmdBuilder(), QueryArgs {}
 
-    builder.add(argValueOf(executable))
+    builder.executable = executable
     startup(builder)
     builder.add(argValueOf("query"))
     args(builder)
 
-    val queryFile = createTmpFile()
     val query = builder.popValue("query")?.require<Value.VText>() ?: error("query must be specified")
-    withContext(Dispatchers.IO) { Files.writeString(queryFile, query.text) }
-    builder.add("query_file", argValueOf(queryFile))
-
-    val outputFile = createTmpFile()
-    builder.add("output_file", argValueOf(outputFile))
+    if (query.text.length > 10000) {
+      val queryFile = createTmpFile()
+      withContext(Dispatchers.IO) { Files.writeString(queryFile, query.text) }
+      builder.add("query_file", argValueOf(queryFile))
+      builder.onExit { withContext(Dispatchers.IO) { Files.deleteIfExists(queryFile) } }
+    } else {
+      builder.add(Arg.Positional(value = argValueOf(query.text), last = true))
+    }
 
     val output = builder.popValue("output")?.require<Value.VUnsafe>() ?: error("output must be specified")
     return when (output.obj as QueryOutput) {
       QueryOutput.PROTO -> {
-        // TODO: handle bazel failure
+        val outputFile = createTmpFile()
+        builder.add("output_file", argValueOf(outputFile))
         builder.add("output", argValueOf("proto"))
-        val (_, exitCode) = spawn(builder = builder, capture = true)
-        withContext(Dispatchers.IO) { Files.deleteIfExists(queryFile) }
-        outputFile.inputStream().buffered().use { stream ->
-          val result = Build.QueryResult.parseFrom(stream)
-          Files.deleteIfExists(outputFile)
-          BazelResult.Success(QueryResult.Proto(result))
+        val (_, failure) = spawn(builder = builder, capture = true)
+        if (!failure.isRecoverable) {
+          withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
+          Failure(failure)
+        } else {
+          val result = outputFile.inputStream()
+            .buffered()
+            .use { stream -> Build.QueryResult.parseFrom(stream) }
+          withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
+          Success(Proto(result))
         }
       }
 
       QueryOutput.STREAMED_PROTO -> {
+        val outputFile = createTmpFile()
+        builder.add("output_file", argValueOf(outputFile))
         builder.add("output", argValueOf("streamed_proto"))
         val outputFileStream = withContext(Dispatchers.IO) { outputFile.inputStream().buffered() }
-        // TODO: handle bazel failure
-        val (_, exitCode) = spawn(builder = builder, capture = true)
-        withContext(Dispatchers.IO) { Files.deleteIfExists(queryFile) }
-        val flow = flow {
-          while (true) {
-            emit(Build.Target.parseDelimitedFrom(outputFileStream))
+        val (_, failure) = spawn(builder = builder, capture = true)
+        if (!failure.isRecoverable) {
+          withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
+          Failure(failure)
+        } else {
+          val flow = flow {
+            while (true) {
+              emit(Build.Target.parseDelimitedFrom(outputFileStream))
+            }
           }
+            .takeWhile { it != null }
+            .onCompletion {
+              outputFileStream.close()
+              withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
+            }
+            .flowOn(Dispatchers.IO)
+          Success(StreamedProto(flow))
         }
-          .takeWhile { it != null }
-          .onCompletion {
-            outputFileStream.close()
-            withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
-          }
-          .flowOn(Dispatchers.IO)
-        BazelResult.Success(QueryResult.StreamedProto(flow))
+      }
+
+      QueryOutput.LABEL -> {
+        val outputFile = createTmpFile()
+        builder.add("output_file", argValueOf(outputFile))
+        builder.add("output", argValueOf("label"))
+        val (process, failure) = spawn(builder = builder, capture = true)
+        if (!failure.isRecoverable) {
+          withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
+          Failure(failure)
+        } else {
+          val labels = withContext(Dispatchers.IO) { Files.readAllLines(outputFile) }
+            .map { Label.parse(it) }
+          withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
+          //val labels = process.inputStream.reader()
+          //  .buffered()
+          //  .use { it.readLines().map { Label.parse(it) } }
+          Success(Labels(labels))
+        }
       }
     }
   }
@@ -123,7 +160,7 @@ class LegacyBazelConnectorImpl(
     builder: CmdBuilder,
     capture: Boolean = true,
     logInvocation: Boolean = true,
-  ): Pair<Process, Int> {
+  ): Pair<Process, BazelFailureReason> {
     val cmd = builder.build()
     if (logInvocation) {
       logInvocation(cmd)
@@ -132,42 +169,43 @@ class LegacyBazelConnectorImpl(
       .withWorkingDirectory(project.rootDir.toNioPath())
       .createProcess()
 
-    val exitChannel = Channel<Unit>()
-
+    val jobs = mutableListOf<Job>()
     if (capture) {
-      coroutineScope.launch { capture(process.inputStream, exitChannel) }
-      coroutineScope.launch { capture(process.errorStream, exitChannel) }
+      jobs += coroutineScope.launch { capture(process.inputStream) }
+      jobs += coroutineScope.launch { capture(process.errorStream) }
     }
 
     val code = try {
-      val code = process.awaitExit()
-      exitChannel.trySend(Unit)
-      code
+      process.awaitExit()
     } catch (e: CancellationException) {
       OSProcessUtil.killProcessTree(process)
       OSProcessUtil.killProcess(process)
       throw e
     }
 
-    return Pair(process, code)
+    builder.onExit.forEach { it() }
+
+    jobs.joinAll()
+
+    return Pair(process, BazelFailureReason.fromExitCode(code))
   }
 
-  private suspend fun CoroutineScope.capture(stream: InputStream, exit: Channel<Unit>) {
-    val reader = stream.reader(charset = Charsets.UTF_8).buffered()
-    reader.use { reader ->
-      while (isActive) {
-        val line = reader.readLine() ?: break
-        if (exit.tryReceive().isSuccess) {
-          break
+  private suspend fun capture(stream: InputStream) {
+    withContext(Dispatchers.IO) {
+      stream.reader(charset = Charsets.UTF_8)
+        .buffered()
+        .use { reader ->
+          while (coroutineScope.isActive) {
+            val line = reader.readLine() ?: break
+            bspClient.message(line)
+            logger.info(line)
+          }
         }
-        bspClient.message(line)
-        logger.info(line)
-      }
     }
   }
 
   private fun logInvocation(cmd: List<String>) {
-    val invokeCommand = cmd.joinToString("' '", "'", "'")
+    val invokeCommand = cmd.joinToString(" ", "'", "'")
     bspClient.message("Invoking: $invokeCommand")
     logger.info("Invoking: $invokeCommand")
   }
@@ -175,10 +213,16 @@ class LegacyBazelConnectorImpl(
 }
 
 private open class CmdBuilder : StartupOptions, Args {
+  lateinit var executable: String
   val args: MutableList<Arg> = mutableListOf()
+  val onExit: MutableList<suspend () -> Unit> = mutableListOf()
 
   override fun add(arg: Arg) {
     args.add(arg)
+  }
+
+  fun onExit(callback: suspend () -> Unit) {
+    onExit.add(callback)
   }
 
   fun getValue(name: String): Value? = args.firstNotNullOfOrNull {
@@ -239,11 +283,21 @@ private open class CmdBuilder : StartupOptions, Args {
     }
   }
 
-  fun build(): List<String> = args.map {
-    when (it) {
-      is Arg.Named -> it.value.toArgValue(it.name)
-      is Arg.Positional -> it.value.toStringValue()
+  fun build(): List<String> {
+    val args1 = args.mapNotNull {
+      when (it) {
+        is Arg.Named -> it.value.toArgValue(it.name)
+        is Arg.Positional if !it. last -> it.value.toStringValue()
+        else -> null
+      }
     }
+    val lastArgs = args.mapNotNull {
+      when (it) {
+        is Arg.Positional if it.last -> it.value.toStringValue()
+        else -> null
+      }
+    }
+    return listOf(executable) + args1 + lastArgs
   }
 
 }

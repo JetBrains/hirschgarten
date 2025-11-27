@@ -13,19 +13,16 @@ object QueryTargetPattern {
   fun createUniverseQuery(patterns: List<SyncUniverseTargetPattern>, includeDeps: Boolean = true): String {
     val expr = buildString {
       val includes = patterns.filterIsInstance<SyncUniverseTargetPattern.Include>()
-        .joinToString(separator = " + ") { it.label.toString() }
+        .joinToString(separator = " ") { it.label.toString() }
       val excludes = patterns.filterIsInstance<SyncUniverseTargetPattern.Exclude>()
-        .joinToString(separator = " + ") { it.label.toString() }
+        .joinToString(separator = " ") { it.label.toString() }
       if (includes.isEmpty()) {
-        append("//...:all")
+        append("set(//...)")
       } else {
-        append(includes)
+        append("set($includes)")
       }
       if (excludes.isNotEmpty()) {
-        append(" - ")
-        append("(")
-        append(excludes)
-        append(")")
+        append(" - set($excludes)")
       }
     }
     return if (includeDeps) {

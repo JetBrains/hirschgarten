@@ -6,11 +6,11 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.defaults
-import org.jetbrains.bazel.sync_new.connector.getOrThrow
+import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
-import org.jetbrains.bazel.sync_new.connector.toProtoTargets
+import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.diff.vfs.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.diff.vfs.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.diff.vfs.SyncVFSFile
@@ -44,7 +44,7 @@ class SyncVFSBuildFileProcessor {
       output(QueryOutput.PROTO)
       query(query)
     }
-    val targets = result.getOrThrow().toProtoTargets()
+    val targets = result.unwrap().unwrapProtos()
 
     val removedTargets = mutableSetOf<Label>()
     for (file in diff.removed) {

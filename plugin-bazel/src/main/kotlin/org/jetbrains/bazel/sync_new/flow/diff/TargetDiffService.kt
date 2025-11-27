@@ -23,21 +23,15 @@ import org.jetbrains.bazel.sync_new.storage.storageContext
 class TargetDiffService(
   private val project: Project,
 ) {
-  internal val target2Hash: KVStore<Label, TargetData> =
-    project.storageContext.createKVStore<Label, TargetData>("bazel.sync.target2Hash", StorageHints.USE_IN_MEMORY)
+  internal val target2Hash: KVStore<Label, HashValue128> =
+    project.storageContext.createKVStore<Label, HashValue128>("bazel.sync.target2Hash", StorageHints.USE_IN_MEMORY)
       .withKeyCodec { ofLabel() }
-      .withValueCodec { TargetData.codec }
-      .build()
-
-  internal val path2Targets: KVStore<HashValue128, Set<Label>> =
-    project.storageContext.createKVStore<HashValue128, Set<Label>>("bazel.sync.path2targets", StorageHints.USE_IN_MEMORY)
-      .withKeyCodec { ofHash128() }
-      .withValueCodec { ofSet(ofLabel()) }
+      .withValueCodec { ofHash128() }
       .build()
 
   suspend fun computeIncrementalDiff(contributor: TargetHashContributor, graph: BazelTargetGraph): SyncDiff {
     val patterns = QueryTargetPattern.getProjectTargetUniverse(project)
-    return computeIncrementalDiff(contributor, patterns, graph, clearHashes = true)
+    return computeIncrementalDiff(contributor, patterns, graph, clearHashes = false)
   }
 
   suspend fun computeIncrementalDiff(
@@ -67,14 +61,14 @@ class TargetDiffService(
     }
 
     if (clearHashes) {
-      clearTargets()
+      target2Hash.clear()
     } else {
-      removed.forEach { target2Hash.get(it)?.let { data -> removeTarget(it, data.path) } }
+      removed.forEach { target2Hash.remove(it) }
     }
 
     newHashes
       .filter { (target, _) -> target !in removed }
-      .forEach { (_, hash) -> addTarget(hash) }
+      .forEach { (target, hash) -> target2Hash.set(target, hash.hash) }
 
     return SyncDiff(
       added = added.map { TargetReference.ofGraphLazy(it, graph) }.toSet(),
@@ -93,8 +87,8 @@ class TargetDiffService(
     val patterns = QueryTargetPattern.getProjectTargetUniverse(project)
     val newHashes = contributor.computeHashes(project, patterns)
 
-    clearTargets()
-    newHashes.forEach { addTarget(it) }
+    target2Hash.clear()
+    newHashes.forEach { target2Hash.set(it.target, it.hash) }
 
     return SyncDiff(
       added = newHashes.map { TargetReference.ofGraphLazy(it.target, graph) }.toSet(),
@@ -105,36 +99,5 @@ class TargetDiffService(
 
   fun clear() {
     target2Hash.clear()
-  }
-
-  private fun addTarget(target: TargetHash) {
-    target2Hash.set(target.target, TargetData.ofTargetHash(target))
-    if (target.path != null) {
-      path2Targets.compute(hash { putString(target.path) }) { _, v ->
-        if (v == null) {
-          setOf(target.target)
-        } else {
-          v + target.target
-        }
-      }
-    }
-  }
-
-  private fun removeTarget(label: Label, path: String?) {
-    target2Hash.remove(label)
-    if (path != null) {
-      path2Targets.compute(hash { putString(path) }) { _, v ->
-        if (v == null) {
-          null
-        } else {
-          v - label
-        }
-      }
-    }
-  }
-
-  private fun clearTargets() {
-    target2Hash.clear()
-    path2Targets.clear()
   }
 }

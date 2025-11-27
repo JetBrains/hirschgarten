@@ -12,7 +12,7 @@ import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.QueryResult
 import org.jetbrains.bazel.sync_new.connector.defaults
-import org.jetbrains.bazel.sync_new.connector.getOrThrow
+import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.injectRepository
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
@@ -37,7 +37,7 @@ class QueryTargetHashContributor : TargetHashContributor {
       query(QueryTargetPattern.createUniverseQuery(patterns))
     }
 
-    val queryResult = result.getOrThrow()
+    val queryResult = result.unwrap()
     val list = when (queryResult) {
       is QueryResult.Proto -> {
         queryResult.result.targetList
@@ -47,14 +47,15 @@ class QueryTargetHashContributor : TargetHashContributor {
       is QueryResult.StreamedProto -> {
         queryResult.flow
       }
+
+      else -> error("unsupported")
     }
     return list
       .mapNotNull {
         val rule = it.getRuleOrNull() ?: return@mapNotNull null
         TargetHash(
           target = Label.parse(rule.name),
-          hash = BuildRuleProtoHasher.hash(rule),
-          path = rule.getFilesystemLocation(),
+          hash = BuildRuleProtoHasher.hash(rule)
         )
       }
       .toList()
@@ -65,15 +66,5 @@ class QueryTargetHashContributor : TargetHashContributor {
     Build.Target.Discriminator.RULE -> rule
     else -> null
   }
-
-  private fun Build.Rule.getFilesystemLocation(): String? {
-    // format: <absolute path>:<line>:<column>
-    val splits = this.location.split(':')
-    if (splits.size != 3) {
-      return null
-    }
-    return splits[0]
-  }
-
 
 }

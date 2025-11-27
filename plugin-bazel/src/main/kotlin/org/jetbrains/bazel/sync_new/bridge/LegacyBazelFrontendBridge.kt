@@ -36,18 +36,18 @@ object LegacyBazelFrontendBridge {
     return project.connection.runWithServer { server -> server.workspaceContext() }
   }
 
-  suspend fun fetchAllTargets(project: Project, repoMapping: RepoMapping): List<RawAspectTarget> {
-    val params = WorkspaceBuildTargetParams(
-      selector = WorkspaceBuildTargetSelector.AllTargets
-    )
-    val result = project.connection.runWithServer { server -> server.workspaceBuildTargets(params) }
-    return result.targets.values.toList()
-  }
+  //suspend fun fetchAllTargets(project: Project, repoMapping: RepoMapping): List<RawAspectTarget> {
+  //  val params = WorkspaceBuildTargetParams(
+  //    selector = WorkspaceBuildTargetSelector.AllTargets
+  //  )
+  //  val result = project.connection.runWithServer { server -> server.workspaceBuildTargets(params) }
+  //  return result.targets.values.toList()
+  //}
 
-  suspend fun fetchPartialTargets(project: Project, repoMapping: RepoMapping, targets: List<Label>): List<RawAspectTarget> {
+  suspend fun fetchPartialTargets(project: Project, repoMapping: SyncRepoMapping, targets: List<Label>): List<RawAspectTarget> {
     val params = WorkspaceBuildPartialTargetsParams(
       targets = targets,
-      repoMapping = repoMapping,
+      repoMapping = toLegacyRepoMapping(repoMapping),
     )
     val result = project.connection.runWithServer { server -> server.workspaceBuildTargetsPartial(params) }
     return result.targets.values

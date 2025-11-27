@@ -6,4 +6,7 @@ sealed interface SyncScope {
   data class Full(val build: Boolean = false) : SyncScope
   object Incremental : SyncScope
   data class Partial(val targets: List<Label>) : SyncScope
+
+  val isFullSync: Boolean
+    get() = this is Full
 }
