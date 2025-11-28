@@ -12,14 +12,6 @@ INDIRECT_IJ_PRODUCTS = {
 (CHANNEL_STABLE, CHANNEL_BETA, CHANNEL_CANARY, CHANNEL_FREEFORM) = ("stable", "beta", "canary", "freeform")
 
 DIRECT_IJ_PRODUCTS = {
-    "intellij-2025.1": struct(
-        ide = "intellij",
-        directory = "intellij_ce_2025_1",
-    ),
-    "intellij-2025.2": struct(
-        ide = "intellij",
-        directory = "intellij_ce_2025_2",
-    ),
     "intellij-2025.3": struct(
         ide = "intellij",
         directory = "intellij_ce_2025_3",

@@ -229,6 +229,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
     ),
   )
+
+  val LabelAllTabSESplit = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
+      commitHash = "dafe4cdad22db8e3f51a28f0dbfd3ddd07240830",
+      branchName = "main",
+      relativePath = "simpleMultiLanguageTest",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+    )
+  )
 }
 
 object GoLandBazelCases : BaseBazelCasesParametrized(BazelTestContext.GOLAND) {

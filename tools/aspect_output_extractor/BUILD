@@ -1,3 +1,4 @@
+"""
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 
 kt_jvm_binary(
@@ -15,3 +16,4 @@ kt_jvm_binary(
         "@maven//:org_slf4j_slf4j_api",
     ],
 )
+"""

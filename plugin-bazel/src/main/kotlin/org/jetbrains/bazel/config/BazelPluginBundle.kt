@@ -10,11 +10,12 @@ const val BUNDLE: String = "messages.BazelPluginBundle"
 
 object BazelPluginBundle : DynamicBundle(BUNDLE) {
   @JvmStatic
+  @Nls
   fun message(
     @PropertyKey(resourceBundle = BUNDLE) key: String,
     vararg params: Any,
     trimMultipleSpaces: Boolean = true,
-  ): @Nls String {
+  ): String {
     val originalMessage = getMessage(key, *params)
     return if (trimMultipleSpaces) {
       @Suppress("HardCodedStringLiteral")
