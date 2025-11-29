@@ -171,7 +171,7 @@ class BazelBspAspectsManager(
         is BzlmodRepoMapping -> {
           repoMapping.canonicalRepoNameToLocalPath
             .map { (key, value) ->
-              "\"${key.dropWhile { it == '@' }}\": \"$value\""
+              "\"${key.dropWhile { it == '@' }}\": \"${value.toString().replace("\\", "/")}\""
             }.joinToString(",\n", "{\n", "\n}")
         }
 
