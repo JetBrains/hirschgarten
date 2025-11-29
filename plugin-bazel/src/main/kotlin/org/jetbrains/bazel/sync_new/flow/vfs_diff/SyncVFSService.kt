@@ -1,0 +1,78 @@
+package org.jetbrains.bazel.sync_new.flow.vfs_diff
+
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
+import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
+import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
+import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
+import org.jetbrains.bazel.sync_new.flow.vfs_diff.processor.SyncVFSChangeProcessor
+import org.jetbrains.bazel.sync_new.storage.FlatStorage
+import org.jetbrains.bazel.sync_new.storage.createFlatStore
+import org.jetbrains.bazel.sync_new.storage.storageContext
+
+// TODO: separate target discovery
+@Service(Service.Level.PROJECT)
+class SyncVFSService(
+  private val project: Project,
+) : Disposable {
+
+  private val disposable = Disposer.newDisposable()
+
+  internal val vfsState: FlatStorage<SyncVFSState> = project.storageContext.createFlatStore<SyncVFSState>("bazel.sync.diff.vfsState")
+    .withCreator {
+      SyncVFSState(
+        listenState = SyncVFSListenState.WAITING_FOR_FIRST_SYNC,
+      )
+    }
+    .withCodec { ofKryo() }
+    .build()
+
+  internal val vfsListener: SyncVFSListener = SyncVFSListener(project, disposable)
+
+  suspend fun resetAll() {
+    project.service<SyncVFSStoreService>().invalidateAll()
+    vfsState.modify { state -> state.copy(listenState = SyncVFSListenState.WAITING_FOR_FIRST_SYNC) }
+    vfsListener.ensureDisconnected()
+    vfsListener.file2State.clear()
+  }
+
+  suspend fun computeColdDiff(scope: SyncScope): SyncColdDiff {
+    val ctx = SyncVFSContext(
+      project = project,
+      storage = project.service<SyncVFSStoreService>(),
+      repoMapping = project.syncRepoMapping,
+      pathsResolver = LegacyBazelFrontendBridge.fetchBazelPathsResolver(project),
+      scope = scope
+    )
+    val isPreFirstSync = vfsState.get().listenState == SyncVFSListenState.WAITING_FOR_FIRST_SYNC
+    if (isPreFirstSync) {
+      vfsState.modify { state -> state.copy(listenState = SyncVFSListenState.LISTENING_VFS) }
+      vfsListener.ensureAttached()
+    }
+    val watcherChanges = consumeWatcherFileChanges()
+    val watcherDiff = SyncFileDiff(
+      removed = watcherChanges[SyncFileState.REMOVED] ?: emptyList(),
+      changed = watcherChanges[SyncFileState.CHANGED] ?: emptyList(),
+      added = watcherChanges[SyncFileState.ADDED] ?: emptyList(),
+    )
+    return SyncVFSChangeProcessor().processBulk(ctx, watcherDiff, isPreFirstSync)
+  }
+
+  private fun consumeWatcherFileChanges(): Map<SyncFileState, List<SyncVFSFile>> {
+    val changes = vfsListener.file2State.asSequence()
+      .map { (k, v) -> v to SyncFileClassifier.classify(k) }
+      .groupBy({ (k, _) -> k }, { (_, v) -> v })
+      .toMap()
+    vfsListener.file2State.clear()
+    return changes
+  }
+
+  override fun dispose() {
+    Disposer.dispose(disposable)
+  }
+
+}

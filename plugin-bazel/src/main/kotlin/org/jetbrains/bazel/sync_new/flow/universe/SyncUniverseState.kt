@@ -14,7 +14,9 @@ import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 data class SyncUniverseState(
   @field:Tag(1)
   val phase: SyncUniversePhase,
+  @field:Tag(2)
   val importState: SyncUniverseImportState = SyncUniverseImportState(),
+  @field:Tag(3)
   val repoMapping: SyncRepoMapping = DisabledSyncRepoMapping,
 )
 
@@ -33,7 +35,7 @@ data class SyncUniverseImportState(
   val patterns: Set<SyncUniverseTargetPattern> = setOf(),
 
   @field:Tag(2)
-  val internalRepos: Set<String> = setOf()
+  val internalRepos: Set<String> = setOf(),
 )
 
 @SealedTagged

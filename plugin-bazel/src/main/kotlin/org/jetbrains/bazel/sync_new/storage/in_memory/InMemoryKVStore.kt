@@ -34,12 +34,12 @@ open class InMemoryKVStore<K, V>(
 
   override fun get(key: K): V? = map[key]
 
-  override fun set(key: K, value: V) {
+  override fun put(key: K, value: V) {
     map[key] = value
     wasModified = true
   }
 
-  override fun has(key: K): Boolean = map.containsKey(key)
+  override fun contains(key: K): Boolean = map.containsKey(key)
 
   override fun remove(key: K, useReturn: Boolean): V? {
     val value = map.remove(key)
@@ -57,6 +57,8 @@ open class InMemoryKVStore<K, V>(
   override fun keys(): Sequence<K> = map.keys.asSequence()
 
   override fun values(): Sequence<V> = map.values.asSequence()
+  override fun asSequence(): Sequence<Pair<K, V>> = map.asSequence().map { it.key to it.value }
+
   override fun computeIfAbsent(key: K, op: (k: K) -> V): V? = map.computeIfAbsent(key, op)
   override fun compute(key: K, op: (k: K, v: V?) -> V?): V? = map.compute(key, op)
 

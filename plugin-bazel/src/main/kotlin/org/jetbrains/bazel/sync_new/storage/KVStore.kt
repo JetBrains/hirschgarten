@@ -5,13 +5,14 @@ import org.jetbrains.bazel.sync_new.codec.CodecBuilder
 import org.jetbrains.bazel.sync_new.codec.codecBuilderOf
 
 interface KVStore<K, V> {
-  fun get(key: K): V?
-  fun set(key: K, value: V)
-  fun has(key: K): Boolean
+  operator fun get(key: K): V?
+  fun put(key: K, value: V)
+  fun contains(key: K): Boolean
   fun remove(key: K, useReturn: Boolean = false): V?
   fun clear()
   fun keys(): Sequence<K>
   fun values(): Sequence<V>
+  fun asSequence(): Sequence<Pair<K, V>>
 
   fun computeIfAbsent(key: K, op: (k: K) -> V): V?
   fun compute(key: K, op: (k: K, v: V?) -> V?): V?

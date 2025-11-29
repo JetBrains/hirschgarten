@@ -8,7 +8,7 @@ class PersistentStoreOne2OneIndex<K, V>(
   val storage: KVStore<K, V>,
 ) : One2OneIndex<K, V> {
   override fun set(key: K, value: V) {
-    storage.set(key, value)
+    storage.put(key, value)
   }
 
   override fun get(key: K): V? = storage.get(key)
