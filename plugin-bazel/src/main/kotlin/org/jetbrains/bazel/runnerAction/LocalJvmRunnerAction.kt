@@ -46,8 +46,8 @@ abstract class LocalJvmRunnerAction(
   }
 
   private suspend fun preBuild(project: Project): Boolean {
-    val buildResult = runBuildTargetTask(listOf(targetInfo.id), project, isDebugMode)
-    return buildResult?.statusCode == BazelStatus.SUCCESS
+    val statusCode = runBuildTargetTask(listOf(targetInfo.id), project, isDebugMode)
+    return statusCode == BazelStatus.SUCCESS
   }
 
   private fun calculateConfigurationSettings(

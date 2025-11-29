@@ -26,6 +26,4 @@ object DebugHelper {
         )
       else -> emptyList()
     }
-
-  fun buildBeforeRun(debugType: DebugType?): Boolean = debugType !is DebugType.GoDlv
 }
