@@ -6,7 +6,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.util.Key
-import java.util.concurrent.atomic.AtomicReference
+import com.intellij.openapi.util.Ref
 
 // Minimum coroutines library version (1.3.7-255) parsed to be used for comparison. Coroutines
 // debugging is not available in earlier versions of the coroutines library.
@@ -17,7 +17,7 @@ private fun createJvmFlag(flag: String) = "--jvmopt=$flag"
 
 private fun createJavaAgentFlag(jarPath: String) = createJvmFlag("-javaagent:$jarPath")
 
-val COROUTINE_JVM_FLAGS_KEY = Key.create<AtomicReference<List<String>>>("bazel.coroutine.jvm.flags")
+val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
 
 fun calculateKotlinCoroutineParams(environment: ExecutionEnvironment, module: Module) {
   val kotlinxCoroutinePath =

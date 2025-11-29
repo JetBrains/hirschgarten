@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.run.config
 
+import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
@@ -172,6 +173,19 @@ class BazelRunConfiguration internal constructor(
     bspElementState.addContent(handlerState)
 
     element.addContent(bspElementState.clone())
+  }
+
+  /**
+   * HACK
+   * This method is called during deserialization of run tasks which happens AFTER the [BazelRunHandler]s are deserialized.
+   * So if the Bazel plugin uses a new logic for creating before run tasks in a newer version inside one of the handlers,
+   * it will be overruled by this deserialization unless we forcefully disable this.
+   * @see setBeforeRunTasksFromHandler
+   */
+  override fun setBeforeRunTasks(value: List<BeforeRunTask<*>>) {}
+
+  fun setBeforeRunTasksFromHandler(value: List<BeforeRunTask<*>>) {
+    super.setBeforeRunTasks(value)
   }
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
