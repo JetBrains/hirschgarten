@@ -2,9 +2,8 @@ package org.jetbrains.bazel.sync_new.flow
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
-import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetGraph
+import org.jetbrains.bazel.sync_new.graph.impl.BazelFastTargetGraph
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
@@ -20,5 +19,5 @@ class SyncStoreService(
       .withCodec { ofKryo() }
       .build()
 
-  val targetGraph: BazelTargetGraph = BazelTargetGraph(project.storageContext)
+  val targetGraph: BazelFastTargetGraph = BazelFastTargetGraph(project.storageContext)
 }

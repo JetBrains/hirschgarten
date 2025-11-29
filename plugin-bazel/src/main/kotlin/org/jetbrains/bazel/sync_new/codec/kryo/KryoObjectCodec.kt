@@ -29,14 +29,16 @@ private val kryoThreadLocal = ThreadLocal.withInitial {
   //kryo.setCopyReferences(true)
   kryo.instantiatorStrategy = DefaultInstantiatorStrategy(StdInstantiatorStrategy())
 
-  kryo.setDefaultSerializer(KryoCompositeSerializeFactory(
-    factories = listOf(
-      KryoSealedInterfaceSerializerFactory(),
-      KryoEnumSerializerFactory(),
-      KryoTaggedCompositeSerializeFactory()
+  kryo.setDefaultSerializer(
+    KryoCompositeSerializeFactory(
+      factories = listOf(
+        KryoSealedInterfaceSerializerFactory(),
+        KryoEnumSerializerFactory(),
+        KryoTaggedCompositeSerializeFactory(),
+      ),
+      fallback = FieldSerializerFactory(),
     ),
-    fallback = FieldSerializerFactory()
-  ))
+  )
 
   kryo.registerFastUtilSerializers()
   kryo.registerPrimitiveSerializers()
@@ -54,11 +56,8 @@ val kryo: Kryo
 // TODO: fix direct byte buffer writes
 class KryoObjectCodec<T>(
   private val type: Class<T>,
+  private val initialBufferSize: Int,
 ) : Codec<T> {
-  companion object {
-    private const val BUFFER_SIZE = 512
-  }
-
   override fun encode(
     ctx: CodecContext,
     buffer: CodecBuffer,
@@ -67,9 +66,9 @@ class KryoObjectCodec<T>(
     try {
       if (buffer is HasByteBuffer && false) {
         val output = if (buffer.buffer.isDirect) {
-          UnsafeByteBufferOutput(BUFFER_SIZE, Int.MAX_VALUE)
+          UnsafeByteBufferOutput(initialBufferSize, Int.MAX_VALUE)
         } else {
-          ByteBufferOutput(BUFFER_SIZE, Int.MAX_VALUE)
+          ByteBufferOutput(initialBufferSize, Int.MAX_VALUE)
         }
         kryo.writeObject(output, value)
         output.flush()
@@ -80,7 +79,7 @@ class KryoObjectCodec<T>(
         buffer.writeBuffer(byteBuffer)
         output.close()
       } else {
-        val output = Output(BUFFER_SIZE, Int.MAX_VALUE)
+        val output = Output(initialBufferSize, Int.MAX_VALUE)
         kryo.writeObject(output, value)
         output.flush()
         buffer.writeVarInt(output.position())
@@ -115,5 +114,5 @@ class KryoObjectCodec<T>(
   }
 }
 
-inline fun <reified T> CodecBuilder.ofKryo(): Codec<T> = KryoObjectCodec(T::class.java)
+inline fun <reified T> CodecBuilder.ofKryo(initialBufferSize: Int = 256): Codec<T> = KryoObjectCodec(T::class.java, initialBufferSize)
 

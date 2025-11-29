@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sync_new.connector
 
-import com.android.tools.idea.util.buffered
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessUtil

@@ -23,7 +23,7 @@ private class PersistentStoreOne2ManyIndex<K, V>(
   }
 
   override fun set(key: K, value: Iterable<V>) {
-    storage.set(key, value.toSet())
+    storage.put(key, value.toSet())
   }
 
   override fun get(key: K): Sequence<V> = storage.get(key)?.asSequence() ?: emptySequence()
@@ -34,13 +34,15 @@ private class PersistentStoreOne2ManyIndex<K, V>(
   }
 
   override fun invalidate(key: K, value: V) {
-    // TODO: remove value when empty
-    //  use decision maker for mvstore
     storage.compute(key) { _, set ->
       if (set == null) {
+        return@compute null
+      }
+      val result = set - value
+      if (result.isEmpty()) {
         null
       } else {
-        set - value
+        result
       }
     }
   }

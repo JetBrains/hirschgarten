@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.sync_new.graph
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetGraph
+import org.jetbrains.bazel.sync_new.graph.impl.BazelFastTargetGraph
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetVertex
 
 interface TargetReference {
@@ -10,7 +10,7 @@ interface TargetReference {
   fun getBuildTarget(): BazelTargetVertex?
 
   companion object {
-    fun ofGraphLazy(label: Label, targetGraph: BazelTargetGraph): TargetReference = object : TargetReference {
+    fun ofGraphLazy(label: Label, targetGraph: BazelFastTargetGraph): TargetReference = object : TargetReference {
       private val target by lazy { targetGraph.getVertexByLabel(label) }
 
       override val label: Label
@@ -19,7 +19,7 @@ interface TargetReference {
       override fun getBuildTarget(): BazelTargetVertex? = target
     }
 
-    fun ofGraphNow(label: Label, targetGraph: BazelTargetGraph): TargetReference = object : TargetReference {
+    fun ofGraphNow(label: Label, targetGraph: BazelFastTargetGraph): TargetReference = object : TargetReference {
       val target = targetGraph.getVertexByLabel(label)
 
       override val label: Label

@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync_new.flow.universe
 
+import com.intellij.openapi.project.Project
+
 object SyncUniverseQuery {
   // TODO: use QueryBuilder dsl
   fun createUniverseQuery(pattern: Iterable<SyncUniverseTargetPattern>): String = buildString {
@@ -16,4 +18,6 @@ object SyncUniverseQuery {
       append(" - set($excludes)")
     }
   }
+
+  fun createUniverseQuery(state: SyncUniverseState): String = createUniverseQuery(state.importState.patterns)
 }

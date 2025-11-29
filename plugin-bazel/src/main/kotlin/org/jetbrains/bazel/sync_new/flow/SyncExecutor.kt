@@ -9,25 +9,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
-import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
-import org.jetbrains.bazel.sync_new.connector.QueryOutput
-import org.jetbrains.bazel.sync_new.connector.defaults
-import org.jetbrains.bazel.sync_new.connector.keepGoing
-import org.jetbrains.bazel.sync_new.connector.output
-import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.flow.diff.TargetDiffService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseTargetPattern
 import org.jetbrains.bazel.sync_new.flow.diff.query.QueryTargetHashContributor
-import org.jetbrains.bazel.sync_new.flow.diff.vfs.SyncVFSService
+import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
-import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetGraph
+import org.jetbrains.bazel.sync_new.graph.impl.BazelFastTargetGraph
 import org.jetbrains.bazel.sync_new.index.SyncIndexService
 import org.jetbrains.bazel.sync_new.index.SyncIndexUpdaterProvider
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageService
@@ -49,10 +41,14 @@ class SyncExecutor(
     // run sync pipelines
     ThreadingAssertions.assertBackgroundThread()
 
-    val d = project.service<SyncUniverseService>()
+    val universeDiff = project.service<SyncUniverseService>()
       .computeUniverseDiff(scope)
 
-    println(d)
+    val vfsDiff = project.service<SyncVFSService>()
+      .computeColdDiff(scope)
+
+    println(universeDiff)
+    println(vfsDiff)
 
     return SyncStatus.Success
 
@@ -110,7 +106,7 @@ class SyncExecutor(
     }
   }
 
-  private suspend fun SyncConsoleTask.computeSyncDiff(scope: SyncScope, graph: BazelTargetGraph): SyncDiff {
+  private suspend fun SyncConsoleTask.computeSyncDiff(scope: SyncScope, graph: BazelFastTargetGraph): SyncDiff {
     val diffService = project.serviceAsync<TargetDiffService>()
     if (scope is SyncScope.Full) {
       diffService.clear()

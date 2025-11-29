@@ -38,6 +38,9 @@ class SyncUniverseService(
       .withCodec { ofKryo() }
       .build()
 
+  val universe: SyncUniverseState
+    get() = universeState.get()
+
   suspend fun computeUniverseDiff(scope: SyncScope): SyncUniverseDiff {
     val connector = project.service<BazelConnectorService>().ofLegacyTask()
     if (scope.isFullSync) {

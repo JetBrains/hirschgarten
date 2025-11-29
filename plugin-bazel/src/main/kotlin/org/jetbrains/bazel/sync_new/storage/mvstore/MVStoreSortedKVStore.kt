@@ -9,11 +9,11 @@ open class MVStoreSortedKVStore<K, V>(
 ) : SortedKVStore<K, V> {
   override fun getHighestKey(): K? = map.lastKey()
   override fun get(key: K): V? = map[key]
-  override fun set(key: K, value: V) {
+  override fun put(key: K, value: V) {
     map[key] = value
   }
 
-  override fun has(key: K): Boolean = map.containsKey(key)
+  override fun contains(key: K): Boolean = map.containsKey(key)
 
   override fun remove(key: K, useReturn: Boolean): V? = map.remove(key)
 
@@ -36,41 +36,59 @@ open class MVStoreSortedKVStore<K, V>(
     }
   }
 
+  override fun asSequence(): Sequence<Pair<K, V>> = sequence {
+    val cursor = map.cursor(null)
+    while (cursor.hasNext()) {
+      cursor.next()
+      yield(cursor.key to cursor.value)
+    }
+  }
+
   override fun computeIfAbsent(key: K, op: (k: K) -> V): V? {
     var result: V? = null
-    map.operate(key, null, object : MVMap.DecisionMaker<V>() {
-      override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision? {
-        return if (existingValue == null) {
-          MVMap.Decision.PUT
-        } else {
-          MVMap.Decision.ABORT
+    map.operate(
+      key, null,
+      object : MVMap.DecisionMaker<V>() {
+        override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision? {
+          return if (existingValue == null) {
+            MVMap.Decision.PUT
+          } else {
+            MVMap.Decision.ABORT
+          }
         }
-      }
 
-      override fun <T : V?> selectValue(existingValue: T?, providedValue: T?): T? {
-        @Suppress("UNCHECKED_CAST")
-        val newValue = op(key) as T
-        result = newValue
-        return newValue
-      }
+        override fun <T : V?> selectValue(existingValue: T?, providedValue: T?): T? {
+          @Suppress("UNCHECKED_CAST")
+          val newValue = op(key) as T
+          result = newValue
+          return newValue
+        }
 
-    })
+      },
+    )
     return result
   }
 
   override fun compute(key: K, op: (k: K, v: V?) -> V?): V? {
     var result: V? = null
-    map.operate(key, null, object : MVMap.DecisionMaker<V>() {
-      override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision {
-        return MVMap.Decision.PUT
-      }
-      override fun <T : V?> selectValue(existingValue: T?, providedValue: T?): T? {
-        @Suppress("UNCHECKED_CAST")
-        val newValue = op(key, existingValue) as T
-        result = newValue
-        return newValue
-      }
-    })
+    map.operate(
+      key, null,
+      object : MVMap.DecisionMaker<V>() {
+        override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision {
+          if (providedValue == null) {
+            return MVMap.Decision.REMOVE
+          }
+          return MVMap.Decision.PUT
+        }
+
+        override fun <T : V?> selectValue(existingValue: T?, providedValue: T?): T? {
+          @Suppress("UNCHECKED_CAST")
+          val newValue = op(key, existingValue) as T
+          result = newValue
+          return newValue
+        }
+      },
+    )
     return result
   }
 }
@@ -84,15 +102,19 @@ class MVStoreSortedKVStoreBuilder<K, V>(
   override fun build(): SortedKVStore<K, V> {
     val comparator = keyComparator?.invoke() ?: error("Key comparator must be specified")
     val builder = MVMap.Builder<K, V>()
-    builder.setKeyType(MVStoreOrderableDataType(
-      codec = keyCodec ?: error("Key codec must be specified"),
-      type = keyType,
-      comparator = comparator
-    ))
-    builder.setValueType(MVStoreDataType(
-      codec = valueCodec ?: error("Value codec must be specified"),
-      type = valueType,
-    ))
+    builder.setKeyType(
+      MVStoreOrderableDataType(
+        codec = keyCodec ?: error("Key codec must be specified"),
+        type = keyType,
+        comparator = comparator,
+      ),
+    )
+    builder.setValueType(
+      MVStoreDataType(
+        codec = valueCodec ?: error("Value codec must be specified"),
+        type = valueType,
+      ),
+    )
     val map = storageContext.openOrResetMap(name) { builder }
     return MVStoreSortedKVStore(map)
   }

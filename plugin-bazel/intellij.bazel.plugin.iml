@@ -141,5 +141,16 @@
     <orderEntry type="module" module-name="intellij.platform.ide.updateChecker" />
     <orderEntry type="module" module-name="intellij.java.byteCodeViewer" />
     <orderEntry type="library" name="Kryo5" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/bazel_internals_v8_4_2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/bazel_internals_v8_4_2.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>
