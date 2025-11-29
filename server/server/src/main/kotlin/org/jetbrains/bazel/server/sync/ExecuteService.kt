@@ -19,7 +19,6 @@ import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.bsp.managers.BepReader
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.server.sync.DebugHelper.buildBeforeRun
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -90,24 +89,14 @@ class ExecuteService(
     val requestedDebugType = params.debug
     val debugArguments = generateRunArguments(requestedDebugType)
     val debugOptions = generateRunOptions(requestedDebugType)
-    val buildBeforeRun = buildBeforeRun(requestedDebugType)
-
-    return runImpl(params.runParams, debugArguments, debugOptions, buildBeforeRun)
+    return runImpl(params.runParams, debugArguments, debugOptions)
   }
 
   private suspend fun runImpl(
     params: RunParams,
     additionalProgramArguments: List<String>? = null,
     additionalOptions: List<String>? = null,
-    buildBeforeRun: Boolean = true,
   ): RunResult {
-    if (buildBeforeRun) {
-      val targets = listOf(params.target)
-      val result = build(targets, params.originId)
-      if (result.isNotSuccess) {
-        return RunResult(statusCode = result.bazelStatus, originId = params.originId)
-      }
-    }
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         run(params.target) {
@@ -120,13 +109,16 @@ class ExecuteService(
         }
       }
     val bazelProcessResult =
-      bazelRunner
-        .runBazelCommand(
+      withBepServer(params.originId) { bepReader ->
+        command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
+
+        bazelRunner.runBazelCommand(
           command,
           originId = params.originId,
-          serverPidFuture = null,
+          serverPidFuture = bepReader.serverPid,
           createdProcessIdDeferred = params.pidDeferred,
         ).waitAndGetResult()
+      }
     return RunResult(statusCode = bazelProcessResult.bazelStatus, originId = params.originId)
   }
 
