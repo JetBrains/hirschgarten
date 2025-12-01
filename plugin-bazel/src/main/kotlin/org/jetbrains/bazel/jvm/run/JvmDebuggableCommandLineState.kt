@@ -2,6 +2,7 @@ package org.jetbrains.bazel.jvm.run
 
 import com.intellij.debugger.DefaultDebugEnvironment
 import com.intellij.execution.configurations.RemoteConnection
+import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 
@@ -19,7 +20,10 @@ abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, 
         port.toString(), // this is the port used
         false,
       )
-
+    environment
+      .runProfile
+      .let { it as? RunConfigurationBase<*> }
+      ?.let(::attachCoroutinesDebuggerConnection)
     return DefaultDebugEnvironment(
       environment,
       this,
