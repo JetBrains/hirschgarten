@@ -123,7 +123,7 @@ class SyncUniverseService(
     val result = connector.query {
       defaults()
       keepGoing()
-      consistentLabels()
+      //consistentLabels()
       output(QueryOutput.LABEL)
       query(SyncUniverseQuery.createUniverseQuery(state.patterns))
     }

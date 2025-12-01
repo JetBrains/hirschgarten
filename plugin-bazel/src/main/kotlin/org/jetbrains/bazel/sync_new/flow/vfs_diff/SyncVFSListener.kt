@@ -39,6 +39,7 @@ class SyncVFSListener(
 
   private var attached: Boolean = false
   private var connection: MessageBusConnection? = null
+  private val filter = SyncVFSFileFilter(project)
 
   internal fun ensureAttached() {
     synchronized(this) {
@@ -73,6 +74,9 @@ class SyncVFSListener(
   // TODO: better filtering
   private fun processVFSEvent(event: VFileEvent) {
     val file = event.file ?: return
+    if (!filter.isWatchableFile(file)) {
+      return
+    }
     when (event) {
       is VFileCreateEvent -> {
         file.toNioPathOrNull()?.let { file2State[it] = SyncFileState.ADDED }

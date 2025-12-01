@@ -41,15 +41,16 @@ class SyncVFSService(
   }
 
   suspend fun computeColdDiff(scope: SyncScope): SyncColdDiff {
+    val isFirstSync = vfsState.get().listenState == SyncVFSListenState.WAITING_FOR_FIRST_SYNC
     val ctx = SyncVFSContext(
       project = project,
       storage = project.service<SyncVFSStoreService>(),
       repoMapping = project.syncRepoMapping,
       pathsResolver = LegacyBazelFrontendBridge.fetchBazelPathsResolver(project),
-      scope = scope
+      scope = scope,
+      isFirstSync = isFirstSync
     )
-    val isPreFirstSync = vfsState.get().listenState == SyncVFSListenState.WAITING_FOR_FIRST_SYNC
-    if (isPreFirstSync) {
+    if (isFirstSync) {
       vfsState.modify { state -> state.copy(listenState = SyncVFSListenState.LISTENING_VFS) }
       vfsListener.ensureAttached()
     }
@@ -59,7 +60,7 @@ class SyncVFSService(
       changed = watcherChanges[SyncFileState.CHANGED] ?: emptyList(),
       added = watcherChanges[SyncFileState.ADDED] ?: emptyList(),
     )
-    return SyncVFSChangeProcessor().processBulk(ctx, watcherDiff, isPreFirstSync)
+    return SyncVFSChangeProcessor().processBulk(ctx, watcherDiff)
   }
 
   private fun consumeWatcherFileChanges(): Map<SyncFileState, List<SyncVFSFile>> {

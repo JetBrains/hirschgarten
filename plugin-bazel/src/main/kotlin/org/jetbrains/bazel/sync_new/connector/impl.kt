@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.connector
 
+import com.google.common.base.Stopwatch
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessUtil
@@ -17,6 +18,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -160,12 +162,13 @@ class LegacyBazelConnectorImpl(
     capture: Boolean = true,
     logInvocation: Boolean = true,
   ): Pair<Process, BazelFailureReason> {
-    val cmd = builder.build()
+    val execution = builder.build()
     if (logInvocation) {
-      logInvocation(cmd)
+      log("Invoking ${execution.command.joinToString(" ", "'", "'")}")
     }
-    val process = GeneralCommandLine(cmd)
-      .withWorkingDirectory(project.rootDir.toNioPath())
+    val stopwatch = Stopwatch.createStarted()
+    val process = GeneralCommandLine(execution.command)
+      .withWorkingDirectory(execution.workspaceOverride ?: project.rootDir.toNioPath())
       .createProcess()
 
     val jobs = mutableListOf<Job>()
@@ -181,6 +184,8 @@ class LegacyBazelConnectorImpl(
       OSProcessUtil.killProcess(process)
       throw e
     }
+
+    log("Command completed in ${Format.duration(stopwatch.elapsed())}")
 
     builder.onExit.forEach { it() }
 
@@ -203,10 +208,9 @@ class LegacyBazelConnectorImpl(
     }
   }
 
-  private fun logInvocation(cmd: List<String>) {
-    val invokeCommand = cmd.joinToString(" ", "'", "'")
-    bspClient.message("Invoking: $invokeCommand")
-    logger.info("Invoking: $invokeCommand")
+  private fun log(content: String) {
+    bspClient.message(content)
+    logger.info(content)
   }
 
 }
@@ -282,11 +286,12 @@ private open class CmdBuilder : StartupOptions, Args {
     }
   }
 
-  fun build(): List<String> {
-    val args1 = args.mapNotNull {
+  fun build(): BazelExecutionCommand {
+    val workspaceOverride = popValue("workspace_override")?.require<Value.VFile>()?.path
+    val firstArgs = args.mapNotNull {
       when (it) {
         is Arg.Named -> it.value.toArgValue(it.name)
-        is Arg.Positional if !it. last -> it.value.toStringValue()
+        is Arg.Positional if !it.last -> it.value.toStringValue()
         else -> null
       }
     }
@@ -296,9 +301,17 @@ private open class CmdBuilder : StartupOptions, Args {
         else -> null
       }
     }
-    return listOf(executable) + args1 + lastArgs
+    return BazelExecutionCommand(
+      workspaceOverride = workspaceOverride,
+      command = listOf(executable) + firstArgs + lastArgs,
+    )
   }
 
 }
+
+data class BazelExecutionCommand(
+  val workspaceOverride: Path?,
+  val command: List<String>,
+)
 
 private suspend fun createTmpFile(): Path = withContext(Dispatchers.IO) { Files.createTempFile("bazel", "tmp") }

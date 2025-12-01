@@ -218,6 +218,9 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.syncIndexUpdaterProvider"
                     interface="org.jetbrains.bazel.sync_new.index.SyncIndexUpdaterProvider"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.syncVFSFileContributor"
+                    interface="org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFileContributor"
+                    dynamic="true"/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -452,9 +455,6 @@
       serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
       serviceInterface="org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService"
     />
-
-    <projectService serviceImplementation="org.jetbrains.bazel.sync_new.storage.mvstore.MVStoreBazelStorageService"
-                    serviceInterface="org.jetbrains.bazel.sync_new.storage.BazelStorageService"/>"
 
     <projectService
       overrides="true"

@@ -2,7 +2,9 @@ package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.openapi.components.service
+import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.defaults
@@ -21,18 +23,24 @@ import java.nio.file.Path
 class SyncVFSBuildFileProcessor {
   suspend fun process(ctx: SyncVFSContext, diff: WildcardFileDiff<SyncVFSFile.BuildFile>): SyncColdDiff {
     // TODO: optimize query by finding relatively shallow dominators
-    val addedBuildFiles = mutableSetOf<Path>()
-    val changedBuildFiles = mutableSetOf<Path>()
 
-    val buildLabels = mutableSetOf<Label>()
-    for (added in diff.added) {
-      addedBuildFiles.add(added.path)
-      buildLabels += SyncVFSLabelResolver.resolveFullLabel(ctx, added.path) ?: continue
-    }
-    for (changed in diff.changed) {
-      changedBuildFiles.add(changed.path)
-      buildLabels += SyncVFSLabelResolver.resolveFullLabel(ctx, changed.path) ?: continue
-    }
+    val addedBuildFiles = diff.added.map { it.path }
+    val changedBuildFiles = diff.changed.map { it.path }
+    val buildLabels = SyncVFSLabelResolver.resolveSourceFileLabels(
+      ctx = ctx,
+      sources = addedBuildFiles + changedBuildFiles,
+    ).flatMap { it.value }
+
+    //val buildLabels = mutableSetOf<Label>()
+    //for (added in diff.added) {
+    //  addedBuildFiles.add(added.path)
+    //  SyncVFSLabelResolver.resolveSourceFileLabels()
+    //  //buildLabels += SyncVFSLabelResolver.resolveFullLabel(ctx, added.path) ?: continue
+    //}
+    //for (changed in diff.changed) {
+    //  changedBuildFiles.add(changed.path)
+    //  //buildLabels += SyncVFSLabelResolver.resolveFullLabel(ctx, changed.path) ?: continue
+    //}
 
     val connector = ctx.project.service<BazelConnectorService>()
       .ofLegacyTask()
@@ -41,7 +49,11 @@ class SyncVFSBuildFileProcessor {
       emptyList()
     } else {
       // TODO: replace with QueryBuilder
-      val query = buildLabels.joinToString(separator = " union ") { it.toString() }
+      // TODO: consistent labels
+      // transform //pkg:BUILD.bazel -> //pkg:*
+      val query = buildLabels
+        .map { it.assumeResolved().copy(target = AllRuleTargets) }
+        .joinToString(separator = " union ") { it.toString() }
       val result = connector.query {
         defaults()
         keepGoing()

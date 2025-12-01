@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync_new.connector
 
 import org.jetbrains.bazel.commons.constants.Constants
+import java.nio.file.Path
 
 sealed interface Arg {
   data class Named(val name: String, val value: Value) : Arg
@@ -13,6 +14,8 @@ interface Args {
 
 interface StartupOptions : Args {
 }
+
+fun StartupOptions.overrideWorkspace(path: Path): Unit = add("workspace_override", argValueOf(path))
 
 fun Args.defaults() {
   add(Arg.Named("tool_tag", argValueOf("${Constants.NAME}:${Constants.VERSION}")))

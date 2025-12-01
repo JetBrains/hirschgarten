@@ -32,7 +32,7 @@ object MVStoreCodecContext : CodecContext
 // TODO: add option to override store hints - we can have registry flag for forcing all stores to be in memory ones
 class MVStoreStorageContext(
   internal val project: Project,
-  val disposable: Disposable,
+  private val disposable: Disposable,
 ) : StorageContext, LifecycleStoreContext, PersistentStoreOwner, Disposable {
 
   internal val store = createOrResetMvStore(
