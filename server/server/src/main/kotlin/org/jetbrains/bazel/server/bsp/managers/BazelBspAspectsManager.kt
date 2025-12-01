@@ -107,7 +107,7 @@ class BazelBspAspectsManager(
     }
     if (!lines.contains(Constants.DOT_BAZELBSP_DIR_NAME)) return
 
-    throw IllegalStateException("${bazelIgnore} mentions ${Constants.DOT_BAZELBSP_DIR_NAME} which is needed for sync by IntelliJ.")
+    throw IllegalStateException("${bazelIgnore} mentions ${Constants.DOT_BAZELBSP_DIR_NAME} which is needed for sync by the bazel plugin.")
   }
 
   fun generateAspectsFromTemplates(
