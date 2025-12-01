@@ -11,8 +11,8 @@ class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackCommandCor
     val project = context.project
     val targetUtils = project.targetUtils
     val loadedTargets = targetUtils.allTargets()
-    check(loadedTargets.toSet() == setOf(Label.parse("//:bin"), Label.parse("//:test"))) {
-      "Expected targets: //:bin, //:test, actual: $loadedTargets"
+    check(loadedTargets.toSet() == setOf(Label.parse("//:bin"), Label.parse("//:test"), Label.parse("//:lib"))) {
+      "Expected targets: //:bin, //:test //:lib, actual: ${loadedTargets.toSet()}"
     }
 
     val binInfo = checkNotNull(targetUtils.getBuildTargetForLabel(Label.parse("//:bin"))) { "No info for //:bin" }
