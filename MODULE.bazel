@@ -505,15 +505,15 @@ http_archive(
 
 # SDK 252
 
-SDK_252_PLUGIN_REPOSITORY_VERSION = "252.25557.77"
+SDK_252_PLUGIN_REPOSITORY_VERSION = "252.26199.169"
 
-SDK_252_INTELLIJ_REPOSITORY_VERSION = "252.25557.77-EAP-SNAPSHOT"
+SDK_252_INTELLIJ_REPOSITORY_VERSION = "252.26199.169"
 
-SDK_252_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
+SDK_252_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
 IC_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-IC_252_SHA = "363ef5c9342156ea57492dc1be82c539a637e690bdcdbb2bc53bb2fd11d76b3e"
+IC_252_SHA = "78e2cba0afdd96301f504cff92fe6a35ba3352f20709f80f368e4c39071a4ada"
 
 http_archive(
     name = "intellij_ce_2025_2",
@@ -524,7 +524,7 @@ http_archive(
 
 IC_252_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-IC_252_SOURCES_SHA = "25e71bef552411f2e9b77d7e03bf504b66b698e9548653afba9c59098a77c500"
+IC_252_SOURCES_SHA = "a63195045c0fb79315b40fc5cb3e741a73a3d4c8b2986b66d1de2d5e05b6e5ab"
 
 http_jar(
     name = "intellij_ce_2025_2_sources",
@@ -560,7 +560,7 @@ http_archive(
 
 GO_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_252_SHA = "f0990da5d858954d33e1058a30a04eef77c3e9c8ff2035c52dd636bc1d8016e1"
+GO_PLUGIN_252_SHA = "ba9a8c25fc3c6e87d604d45d00344446f4376871eeb8137cb77145dbbc01e9c8"
 
 http_archive(
     name = "go_2025_2",
@@ -581,7 +581,7 @@ http_jar(
 
 CODE_WITH_ME_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_252_SHA = "321a0bd455e28876f7b18dc3d298f304cd7e5ebaa382ef7d72aa3f7b0f3ca10c"
+CODE_WITH_ME_252_SHA = "345822fe0054af78d29cd3d4848e5dbe3cd7d8b87ac4401c0792383c40e83921"
 
 http_jar(
     name = "code_with_me_2025_2",
@@ -591,7 +591,7 @@ http_jar(
 
 CODE_WITH_ME_SPLIT_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_SPLIT_252_SHA = "e9e5104ebb03fe61eea932a78c1639db50dc7c744b47eb705993599689da241e"
+CODE_WITH_ME_SPLIT_252_SHA = "a788193ce6a4000b304df7f014f46e9823dc926f53b70918d8114680ef9b6a44"
 
 http_jar(
     name = "code_with_me_split_2025_2",
