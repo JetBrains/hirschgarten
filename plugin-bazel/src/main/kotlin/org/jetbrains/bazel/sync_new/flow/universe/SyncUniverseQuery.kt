@@ -1,13 +1,11 @@
 package org.jetbrains.bazel.sync_new.flow.universe
 
-import com.intellij.openapi.project.Project
-
 object SyncUniverseQuery {
   // TODO: use QueryBuilder dsl
-  fun createUniverseQuery(pattern: Iterable<SyncUniverseTargetPattern>): String = buildString {
-    val includes = pattern.filterIsInstance<SyncUniverseTargetPattern.Include>()
+  fun createUniverseQuery(patterns: Iterable<SyncUniverseTargetPattern>): String = buildString {
+    val includes = patterns.filterIsInstance<SyncUniverseTargetPattern.Include>()
       .joinToString(separator = " ") { it.label.toString() }
-    val excludes = pattern.filterIsInstance<SyncUniverseTargetPattern.Exclude>()
+    val excludes = patterns.filterIsInstance<SyncUniverseTargetPattern.Exclude>()
       .joinToString(separator = " ") { it.label.toString() }
     if (includes.isEmpty()) {
       append("set(//...)")
@@ -20,4 +18,12 @@ object SyncUniverseQuery {
   }
 
   fun createUniverseQuery(state: SyncUniverseState): String = createUniverseQuery(state.importState.patterns)
+
+  fun createSkyQueryUniverseScope(patterns: Iterable<SyncUniverseTargetPattern>): List<String> =
+    patterns.map {
+      when (it) {
+        is SyncUniverseTargetPattern.Include -> it.label.toString()
+        is SyncUniverseTargetPattern.Exclude -> "-${it.label}"
+      }
+    }
 }

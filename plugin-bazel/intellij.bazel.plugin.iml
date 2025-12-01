@@ -152,5 +152,6 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="library" name="rocksdb.rocksdbjni" level="project" />
   </component>
 </module>

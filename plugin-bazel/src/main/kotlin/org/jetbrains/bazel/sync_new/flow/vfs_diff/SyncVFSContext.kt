@@ -11,5 +11,6 @@ class SyncVFSContext(
   val storage: SyncVFSStoreService,
   val repoMapping: SyncRepoMapping,
   val pathsResolver: BazelPathsResolver,
-  val scope: SyncScope
+  val scope: SyncScope,
+  val isFirstSync: Boolean
 )

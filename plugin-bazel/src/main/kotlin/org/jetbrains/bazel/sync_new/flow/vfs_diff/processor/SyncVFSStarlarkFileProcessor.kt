@@ -39,12 +39,11 @@ class SyncVFSStarlarkFileProcessor {
     )
 
     val changed = mutableSetOf<SyncVFSFile.BuildFile>()
-    for (removed in diff.removed) {
-      if (removed is SyncVFSFile.BuildFile) {
-        continue
+    for (file in diff.removed) {
+      if (file is SyncVFSFile.StarlarkFile) {
+        changed += loadGraph.getBuildPredecessors(file.path)
+          .map { SyncVFSFile.BuildFile(it.workspacePath) }
       }
-      changed += loadGraph.getBuildPredecessors(removed.path)
-        .map { SyncVFSFile.BuildFile(it.workspacePath) }
     }
 
     for (removed in diff.removed) {
@@ -52,12 +51,11 @@ class SyncVFSStarlarkFileProcessor {
       loadGraph.graph.removeVertex(node)
     }
 
-    for (removed in diff.added + diff.changed) {
-      if (removed is SyncVFSFile.BuildFile) {
-        continue
+    for (file in diff.added + diff.changed) {
+      if (file is SyncVFSFile.StarlarkFile) {
+        changed += loadGraph.getBuildPredecessors(file.path)
+          .map { SyncVFSFile.BuildFile(it.workspacePath) }
       }
-      changed += loadGraph.getBuildPredecessors(removed.path)
-        .map { SyncVFSFile.BuildFile(it.workspacePath) }
     }
 
     return WildcardFileDiff(changed = changed)

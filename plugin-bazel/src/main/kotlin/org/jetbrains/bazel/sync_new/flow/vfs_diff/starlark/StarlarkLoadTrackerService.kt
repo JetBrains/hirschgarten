@@ -41,7 +41,7 @@ class StarlarkLoadTrackerService(
       defaults()
       keepGoing()
       output(QueryOutput.PROTO)
-      consistentLabels()
+      //consistentLabels()
       query("buildfiles($universeExpr) union loadfiles($universeExpr)")
     }
     val files = result.unwrap().unwrapProtos()

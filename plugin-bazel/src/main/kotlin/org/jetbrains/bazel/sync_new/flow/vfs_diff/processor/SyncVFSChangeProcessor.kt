@@ -10,13 +10,14 @@ import org.jetbrains.bazel.sync_new.flow.vfs_diff.plus
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.starlark.StarlarkLoadTrackerService
 
 class SyncVFSChangeProcessor {
-  suspend fun processBulk(ctx: SyncVFSContext, diff: SyncFileDiff, isPreFirstSync: Boolean): SyncColdDiff {
-    val fullSyncDiff = if (ctx.scope.isFullSync || isPreFirstSync) {
+  suspend fun processBulk(ctx: SyncVFSContext, diff: SyncFileDiff): SyncColdDiff {
+    val fullSyncDiff = if (ctx.scope.isFullSync || ctx.isFirstSync) {
       val starlarkDiff = ctx.project.service<StarlarkLoadTrackerService>()
         .computeFullStarlarkDiff(ctx)
-      val sourceDiff = SyncVFSSourceProcessor()
-        .computeFullSourceDiff(ctx)
-      sourceDiff + starlarkDiff
+      //val sourceDiff = SyncVFSSourceProcessor()
+      //  .computeFullSourceDiff(ctx)
+      //sourceDiff + starlarkDiff
+      starlarkDiff
     } else {
       SyncFileDiff()
     }
@@ -26,7 +27,10 @@ class SyncVFSChangeProcessor {
     val buildFiles = filterDiff<SyncVFSFile.BuildFile>(diff) + starlarkFileDiff
     val buildFilesDiff = SyncVFSBuildFileProcessor().process(ctx, buildFiles)
 
-    return buildFilesDiff
+    val sourceFiles = filterDiff<SyncVFSFile.SourceFile>(diff)
+    val sourceFilesDiff = SyncVFSSourceProcessor().process(ctx, sourceFiles)
+
+    return buildFilesDiff + sourceFilesDiff
   }
 
   private inline fun <reified T : SyncVFSFile> filterDiff(diff: SyncFileDiff): WildcardFileDiff<T> {

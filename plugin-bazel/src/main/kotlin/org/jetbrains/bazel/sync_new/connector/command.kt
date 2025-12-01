@@ -38,4 +38,5 @@ fun QueryArgs.consistentLabels(): Unit = add("consistent_labels", argValueOf(tru
 
 // TODO: use query expr instead of string
 fun QueryArgs.universeScope(scope: List<String>) = add("universe_scope", argValueOf(scope.joinToString(separator = ",")))
+fun QueryArgs.noOrderOutput(): Unit = add("order_output", argValueOf("no"))
 
