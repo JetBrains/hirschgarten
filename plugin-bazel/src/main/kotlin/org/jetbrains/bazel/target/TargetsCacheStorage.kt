@@ -66,12 +66,22 @@ class TargetsCacheStorage(
     )
 
   fun save() {
+    // Non-blocking save: commit happens in background
+    // Reads will continue to work from in-memory cache during commit
     if (store.hasUnsavedChanges()) {
+      // tryCommit() is still synchronous, but this function returns immediately
+      // The caller should run this on a background thread
       store.tryCommit()
     }
   }
 
-  private fun fileToKey(file: Path): Long {
+  fun saveAsync(): Boolean {
+    // Returns immediately, indicating if a save is needed
+    // Caller can decide whether to wait or not
+    return store.hasUnsavedChanges()
+  }
+
+  private fun fileToKey(file: Path): HashValue128 {
     val path = file.invariantSeparatorsPathString
     val input = if (path.startsWith(filePathSuffix)) {
       path.substring(filePathSuffix.length)

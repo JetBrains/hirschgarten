@@ -7,6 +7,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
@@ -54,6 +55,16 @@ private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit.MILLISECONDS)
 
+private fun getStorageFilename(): String {
+  // version for 243 cannot use `Hashing.xxh3_128()`
+  // (not available in 243, and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
+  val suffix = if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "-243" else ""
+  return "bazel-targets-v2$suffix.db"
+}
+
+private val LOG = logger<TargetUtils>()
+
+@PublicApi
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
 class TargetUtils(private val project: Project, private val coroutineScope: CoroutineScope) : SettingsSavingComponent {
@@ -71,9 +82,64 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   private val db: TargetsCacheStorage
     get() = runBlocking { dbAsync.await() }
+  // ...existing code...
+
+  private fun logThreadPoolDiagnostics(phase: String) {
+    try {
+      // Get the default IO dispatcher thread pool
+      val ioDispatcher = Dispatchers.IO as? kotlinx.coroutines.internal.LimitedDispatcher
+        ?: (Dispatchers.IO as? kotlinx.coroutines.CoroutineDispatcher)
+
+      // Use Java ThreadMXBean to get thread statistics
+      val threadMXBean = java.lang.management.ManagementFactory.getThreadMXBean()
+      val allThreads = threadMXBean.allThreadIds
+      val threadInfos = threadMXBean.getThreadInfo(allThreads, 0)
+
+      // Count threads by state and name pattern
+      var ioThreadsRunning = 0
+      var ioThreadsWaiting = 0
+      var ioThreadsBlocked = 0
+      var totalIOThreads = 0
+
+      for (info in threadInfos) {
+        if (info != null && info.threadName.contains("DefaultDispatcher-worker", ignoreCase = true)) {
+          totalIOThreads++
+          when (info.threadState) {
+            Thread.State.RUNNABLE -> ioThreadsRunning++
+            Thread.State.WAITING, Thread.State.TIMED_WAITING -> ioThreadsWaiting++
+            Thread.State.BLOCKED -> ioThreadsBlocked++
+            else -> {}
+          }
+        }
+      }
+
+      LOG.info(
+        "Thread pool diagnostics ($phase): " +
+        "IO threads total=$totalIOThreads, running=$ioThreadsRunning, waiting=$ioThreadsWaiting, blocked=$ioThreadsBlocked, " +
+        "current thread=${Thread.currentThread().name}"
+      )
+
+      // Also log total system thread count for context
+      LOG.info("System total threads: ${threadMXBean.threadCount}, daemon threads: ${threadMXBean.daemonThreadCount}")
+
+    } catch (e: Exception) {
+      LOG.warn("Failed to collect thread pool diagnostics", e)
+    }
+  }
+
+  // ...existing code...
+  private val db = openStore(storeFile = project.getProjectDataPath(getStorageFilename()), filePathSuffix = project.basePath!! + "/")
 
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()
+
+  // Throttle saves to avoid freezing - save at most once per minute
+  private val saveThrottleMillis = 60_000L
+  private var pendingSave: kotlinx.coroutines.Job? = null
+
+  // Dedicated single-thread dispatcher for non-blocking commits
+  // This ensures commits happen sequentially and don't block the IO pool
+  private val commitDispatcher = Dispatchers.IO.limitedParallelism(1)
 
   private val allTargetsAndLibrariesLabelsCache =
     SynchronizedClearableLazy {
@@ -97,9 +163,13 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   val targetListUpdated: SharedFlow<Unit> = mutableTargetListUpdated.asSharedFlow()
 
   override suspend fun save() {
-    // TODO: we may turn this back on when the performance issue is resolved
-    //  https://youtrack.jetbrains.com/issue/BAZEL-2058/Optimize-storage-of-imported-target-info
-    return
+    // Throttle saves to prevent excessive disk I/O
+    val now = nowAsDuration()
+    if ((now - lastSaved).inWholeMilliseconds < saveThrottleMillis) {
+      return
+    }
+    db.save()
+    lastSaved = now
   }
 
   fun addFileToTargetIdEntry(file: Path, targets: List<Label>) {
@@ -148,11 +218,39 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
     notifyTargetListUpdated()
 
-    // Explicitly schedule a save since auto-commit is disabled — new data will otherwise remain in memory beyond the configured cache size.
-    // This also ensures faster persistence of imported data.
-    coroutineScope.launch(Dispatchers.IO + NonCancellable) {
-      db.save()
-      lastSaved = nowAsDuration()
+    // Fire-and-forget async save on dedicated single-thread dispatcher
+    // This ensures commits don't block the shared IO pool or reads
+    // The commitDispatcher has parallelism=1 so saves happen sequentially
+    pendingSave?.cancel()
+    pendingSave = coroutineScope.launch(commitDispatcher + NonCancellable) {
+      val now = nowAsDuration()
+      if ((now - lastSaved).inWholeMilliseconds >= saveThrottleMillis) {
+        val startTime = System.currentTimeMillis()
+
+        // Diagnostic: Log thread pool info before save
+        logThreadPoolDiagnostics("before save")
+
+        try {
+          // This blocks only the dedicated commit thread, not the main IO pool
+          // Reads can continue during the commit using in-memory cached data
+          db.save()
+          lastSaved = now
+
+          val duration = System.currentTimeMillis() - startTime
+
+          // Diagnostic: Log thread pool info after save
+          logThreadPoolDiagnostics("after save")
+
+          // Log performance metrics
+          LOG.info("TargetUtils database save completed in ${duration}ms (targets: ${targets.size}, files: ${fileToTarget.size})")
+
+          if (duration > 1000) {
+            LOG.warn("TargetUtils database save took ${duration}ms - this may indicate I/O bottleneck")
+          }
+        } catch (e: Exception) {
+          LOG.error("Failed to save TargetUtils database", e)
+        }
+      }
     }
   }
 
