@@ -25,6 +25,7 @@ class BazelStorageService(
   private val disposable = Disposer.newDisposable()
   private var lastSaved = now()
 
+  // TODO: finish rocksdb
   val context: StorageContext = MVStoreStorageContext(
     project = project,
     disposable = disposable,

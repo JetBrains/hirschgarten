@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync_new.flow.diff
+package org.jetbrains.bazel.sync_new.flow.hash_diff._old
 
 import com.dynatrace.hash4j.hashing.HashValue128
 import org.jetbrains.bazel.label.Label

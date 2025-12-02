@@ -1,7 +1,8 @@
 package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 
 import com.intellij.openapi.components.service
-import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.diff.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.diff.plus
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncFileDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
@@ -11,18 +12,10 @@ import org.jetbrains.bazel.sync_new.flow.vfs_diff.starlark.StarlarkLoadTrackerSe
 
 class SyncVFSChangeProcessor {
   suspend fun processBulk(ctx: SyncVFSContext, diff: SyncFileDiff): SyncColdDiff {
-    val fullSyncDiff = if (ctx.scope.isFullSync || ctx.isFirstSync) {
-      val starlarkDiff = ctx.project.service<StarlarkLoadTrackerService>()
-        .computeFullStarlarkDiff(ctx)
-      //val sourceDiff = SyncVFSSourceProcessor()
-      //  .computeFullSourceDiff(ctx)
-      //sourceDiff + starlarkDiff
-      starlarkDiff
-    } else {
-      SyncFileDiff()
-    }
+    val universeDiff = ctx.project.service<StarlarkLoadTrackerService>()
+      .computeStarlarkDiffFromUniverseDiff(ctx)
 
-    val starlarkFileDiff = SyncVFSStarlarkFileProcessor().process(ctx, diff + fullSyncDiff)
+    val starlarkFileDiff = SyncVFSStarlarkFileProcessor().process(ctx, diff + universeDiff)
 
     val buildFiles = filterDiff<SyncVFSFile.BuildFile>(diff) + starlarkFileDiff
     val buildFilesDiff = SyncVFSBuildFileProcessor().process(ctx, buildFiles)

@@ -9,15 +9,12 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
-import org.jetbrains.bazel.sync_new.connector.consistentLabels
 import org.jetbrains.bazel.sync_new.connector.defaults
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
-import org.jetbrains.bazel.sync_new.flow.SyncScope
-import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseQuery
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseState
 import org.jetbrains.bazel.sync_new.flow.universe.isInsideUniverse
@@ -32,11 +29,18 @@ class StarlarkLoadTrackerService(
   val starlarkLoadGraph: StarlarkLoadGraph = StarlarkLoadGraph(project)
   val starlarkParser: StarlarkFileParser = StarlarkFileParser(project)
 
-  suspend fun computeFullStarlarkDiff(ctx: SyncVFSContext): SyncFileDiff {
-    starlarkLoadGraph.graph.clear()
+  // TODO: correctly handle removed BUILD files
+  suspend fun computeStarlarkDiffFromUniverseDiff(ctx: SyncVFSContext): SyncFileDiff {
+    if (ctx.scope.isFullSync || ctx.isFirstSync) {
+      starlarkLoadGraph.graph.clear()
+    }
+    if (!ctx.universeDiff.hasChanged) {
+      return SyncFileDiff()
+    }
     val connector = project.service<BazelConnectorService>().ofLegacyTask()
     val universeState = project.service<SyncUniverseService>().universe
-    val universeExpr = SyncUniverseQuery.createUniverseQuery(universeState)
+    val universeExpr = (ctx.universeDiff.added + ctx.universeDiff.removed)
+      .joinToString(separator = " + ") { it.toString() }
     val result = connector.query {
       defaults()
       keepGoing()

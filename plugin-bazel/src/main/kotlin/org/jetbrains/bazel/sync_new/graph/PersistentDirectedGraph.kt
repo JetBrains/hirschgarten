@@ -6,6 +6,8 @@ import org.jetbrains.bazel.sync_new.storage.remove
 import org.jetbrains.bazel.sync_new.storage.set
 import kotlin.sequences.mapNotNull
 
+// TODO: make hashed version of it
+// TODO: make version od this with generic edge type
 abstract class PersistentDirectedGraph<ID, V> : SimpleDirectedGraph<V> {
   protected abstract val id2Vertex: KVStore<ID, V>
   protected abstract val id2Successors: KVStore<ID, Set<ID>>

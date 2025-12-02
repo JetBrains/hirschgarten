@@ -12,12 +12,13 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
-import org.jetbrains.bazel.sync_new.flow.diff.TargetDiffService
+import org.jetbrains.bazel.sync_new.flow.hash_diff._old.TargetDiffService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseTargetPattern
-import org.jetbrains.bazel.sync_new.flow.diff.query.QueryTargetHashContributor
+import org.jetbrains.bazel.sync_new.flow.hash_diff._old.query.QueryTargetHashContributor
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
+import org.jetbrains.bazel.sync_new.flow.universe_expand.SyncExpandService
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.impl.BazelFastTargetGraph
 import org.jetbrains.bazel.sync_new.index.SyncIndexService
@@ -45,10 +46,23 @@ class SyncExecutor(
       .computeUniverseDiff(scope)
 
     val vfsDiff = project.service<SyncVFSService>()
-      .computeColdDiff(scope)
+      .computeColdDiff(scope, universeDiff)
+    //
+    //val connector = project.service<BazelConnectorService>()
+    //  .ofLegacyTask()
+    //val result = connector.query {
+    //  defaults()
+    //  keepGoing()
+    //  output(QueryOutput.PROTO)
+    //  query("deps(${(vfsDiff.changed + vfsDiff.added).joinToString(separator = " + ") { it.toString() }})")
+    //}
+
+    val expandedDiff = project.service<SyncExpandService>()
+      .expandDependencyDiff(vfsDiff)
 
     println(universeDiff)
     println(vfsDiff)
+    println(expandedDiff)
 
     return SyncStatus.Success
 
