@@ -15,7 +15,6 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
@@ -25,6 +24,7 @@ import org.jetbrains.bazel.workspace.askForInverseSources
 import org.jetbrains.bazel.workspace.getModulesForFile
 import org.jetbrains.bazel.workspace.processTargetsForTestlibStripping
 import org.jetbrains.bazel.workspace.toModuleEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 
 class AddFileToModuleAction :
   SuspendableAction({ BazelPluginBundle.message("add.file.to.module.action.text") }, BazelPluginIcons.bazel) {

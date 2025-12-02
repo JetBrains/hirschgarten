@@ -197,11 +197,12 @@ class TargetsCacheStorage(
   }
 
   fun addTargets(labelToTargetInfo: Map<Label, BuildTarget>, project: Project) {
-    val hashStream = createHashStream128()
+    val hashStream = Hashing.xxh3_128()
+      .hashStream()
     for ((label, info) in labelToTargetInfo) {
       // must be canonical label
       this.labelToTargetInfo.put(
-        computeLabelHash(label as ResolvedLabel, hashStream),
+        hashStream.computeLabelHash(label as ResolvedLabel),
         PartialBuildTarget(
           id = info.id,
           tags = info.tags,

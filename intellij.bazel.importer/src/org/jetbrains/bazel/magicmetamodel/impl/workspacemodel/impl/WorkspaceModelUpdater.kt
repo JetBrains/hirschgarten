@@ -13,6 +13,8 @@ import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.workspacemodel.entities.Module
+
 import java.nio.file.Path
 
 @ApiStatus.Internal
