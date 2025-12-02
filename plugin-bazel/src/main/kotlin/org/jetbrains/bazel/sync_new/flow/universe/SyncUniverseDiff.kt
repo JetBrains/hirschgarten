@@ -10,5 +10,5 @@ class SyncUniverseDiff(
   // then every target in the universe will appear here
   val changed: Set<Label> = emptySet(),
 ) {
-  val hasChanged: Boolean = added.isNotEmpty() || removed.isNotEmpty() || changed.isNotEmpty()
+
 }

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.openapi.components.service
+import com.intellij.ui.components.Label
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
@@ -13,11 +14,14 @@ import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
-import org.jetbrains.bazel.sync_new.flow.diff.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.WildcardFileDiff
+import org.jetbrains.bazel.sync_new.storage.get
 import org.jetbrains.bazel.sync_new.storage.put
+import org.jetbrains.bazel.sync_new.storage.remove
+import org.jetbrains.bazel.sync_new.storage.set
 import java.nio.file.Path
 
 class SyncVFSBuildFileProcessor {
@@ -29,29 +33,19 @@ class SyncVFSBuildFileProcessor {
     val buildLabels = SyncVFSLabelResolver.resolveSourceFileLabels(
       ctx = ctx,
       sources = addedBuildFiles + changedBuildFiles,
-    ).flatMap { it.value }
-
-    //val buildLabels = mutableSetOf<Label>()
-    //for (added in diff.added) {
-    //  addedBuildFiles.add(added.path)
-    //  SyncVFSLabelResolver.resolveSourceFileLabels()
-    //  //buildLabels += SyncVFSLabelResolver.resolveFullLabel(ctx, added.path) ?: continue
-    //}
-    //for (changed in diff.changed) {
-    //  changedBuildFiles.add(changed.path)
-    //  //buildLabels += SyncVFSLabelResolver.resolveFullLabel(ctx, changed.path) ?: continue
-    //}
+    )
 
     val connector = ctx.project.service<BazelConnectorService>()
       .ofLegacyTask()
 
     val targets = if (buildLabels.isEmpty()) {
-      emptyList()
+      emptyMap()
     } else {
       // TODO: replace with QueryBuilder
       // TODO: consistent labels
       // transform //pkg:BUILD.bazel -> //pkg:*
       val query = buildLabels
+        .flatMap { it.value }
         .map { it.assumeResolved().copy(target = AllRuleTargets) }
         .joinToString(separator = " union ") { it.toString() }
       val result = connector.query {
@@ -61,26 +55,56 @@ class SyncVFSBuildFileProcessor {
         query(query)
       }
       result.unwrap().unwrapProtos()
-    }
-
-    val removedTargets = mutableSetOf<Label>()
-    for (file in diff.removed) {
-      removedTargets += ctx.storage.build2Targets.remove(file.path) ?: continue
+        .filter { it.hasRule() }
+        .map { it.rule }
+        .groupBy { it.getBuildLocation() }
     }
 
     val addedTargets = mutableSetOf<Label>()
     val changedTargets = mutableSetOf<Label>()
+    val removedTargets = mutableSetOf<Label>()
 
-    for (target in targets) {
-      val rule = target.rule ?: continue
-      val location = rule.getBuildLocation() ?: continue
-      val label = Label.parse(rule.name)
-      when {
-        location in addedBuildFiles || !ctx.storage.target2Build.contains(label) -> addedTargets.add(label)
-        location in changedBuildFiles -> changedTargets.add(label)
+    // remove all targets belonging to specific BUILD file
+    for (file in diff.removed) {
+      val removed = ctx.storage.build2Targets.remove(file.path) ?: continue
+      for (label in removed) {
+        ctx.storage.target2Build.remove(label)
       }
-      ctx.storage.target2Build.put(label, location)
-      ctx.storage.build2Targets.put(location, label)
+      removedTargets += removed
+    }
+
+    // check for changed between previous state
+    for (changed in diff.changed) {
+      val newTargets = targets[changed.path]
+        ?.map { Label.parse(it.name) }
+        ?.toSet() ?: emptySet()
+      val oldTargets = ctx.storage.build2Targets[changed.path]
+        ?.toSet() ?: emptySet()
+
+      for (target in newTargets + oldTargets) {
+        when {
+          target in oldTargets && target !in newTargets -> {
+            removedTargets.add(target)
+            ctx.storage.target2Build.remove(target)
+            ctx.storage.build2Targets.remove(changed.path, target)
+          }
+          target !in oldTargets && target in newTargets -> {
+            addedTargets.add(target)
+            ctx.storage.target2Build.put(target, changed.path)
+            ctx.storage.build2Targets.put(changed.path, target)
+          }
+          else -> changedTargets.add(target)
+        }
+      }
+    }
+
+    for (added in diff.added) {
+      val newTargets = targets[added.path]?.map { Label.parse(it.name) } ?: continue
+      for (target in newTargets) {
+        ctx.storage.target2Build[target] = added.path
+        ctx.storage.build2Targets.put(added.path, target)
+        addedTargets += target
+      }
     }
 
     return SyncColdDiff(

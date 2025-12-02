@@ -8,7 +8,7 @@ import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
 import org.jetbrains.bazel.sync_new.flow.SyncScope
-import org.jetbrains.bazel.sync_new.flow.diff.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseDiff
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.processor.SyncVFSChangeProcessor
@@ -42,7 +42,7 @@ class SyncVFSService(
     vfsListener.file2State.clear()
   }
 
-  suspend fun computeColdDiff(scope: SyncScope, universeDiff: SyncUniverseDiff): SyncColdDiff {
+  suspend fun computeVFSDiff(scope: SyncScope, universeDiff: SyncColdDiff): SyncColdDiff {
     val isFirstSync = vfsState.get().listenState == SyncVFSListenState.WAITING_FOR_FIRST_SYNC
     val ctx = SyncVFSContext(
       project = project,

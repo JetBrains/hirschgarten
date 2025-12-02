@@ -10,12 +10,11 @@ import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
-import org.jetbrains.bazel.sync_new.flow.diff.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 
 class SyncExpandProcessor {
   suspend fun process(ctx: SyncExpandContext, diff: SyncColdDiff): SyncColdDiff {
-    val service = ctx.project.service<SyncExpandService>()
-    val graph = service.graph.get()
+    val graph = ctx.service.graph.get()
 
     val added = mutableSetOf<Label>()
     val removed = mutableSetOf<Label>()
@@ -80,6 +79,8 @@ class SyncExpandProcessor {
     added -= unreachableLabels
     removed += (unreachableLabels - orphans)
     graph.removeAllVertices(unreachable)
+
+    ctx.service.graph.mark()
 
     return SyncColdDiff(
       added = added,

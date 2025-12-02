@@ -73,6 +73,10 @@ class InMemoryFlatStore<T>(
     set(creator())
   }
 
+  override fun mark() {
+    wasModified = true
+  }
+
   override fun write(ctx: CodecContext, buffer: CodecBuffer) {
     buffer.writeVarInt(CODEC_VERSION)
     codec.encode(ctx, buffer, get())

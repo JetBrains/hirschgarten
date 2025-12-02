@@ -8,4 +8,6 @@ object BazelSyncV2 {
 
   // TODO: add settings/feature flag
   val useOptimizedInverseSourceQuery: Boolean = true
+
+  val useFastSource2Label: Boolean = true
 }
