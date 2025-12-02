@@ -35,6 +35,7 @@ object SimpleGraphTraverser {
     direction: SimpleGraphTraversalDirection = SimpleGraphTraversalDirection.DOWNWARD,
   ) {
     val queue = ArrayDeque(roots)
+    val visited = hashSetOf<V>()
     while (queue.isNotEmpty()) {
       val vertex = queue.removeFirst()
       val result = visitor.onVisit(vertex)
@@ -45,6 +46,9 @@ object SimpleGraphTraverser {
             SimpleGraphTraversalDirection.UPWARD -> graph.getPredecessors(vertex)
           }
           for (v in vertices) {
+            if (v in visited) {
+              continue
+            }
             queue.addLast(v)
           }
         }

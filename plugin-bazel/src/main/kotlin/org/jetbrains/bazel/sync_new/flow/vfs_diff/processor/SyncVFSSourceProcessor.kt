@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 import com.intellij.openapi.components.service
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.BazelSyncV2
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
@@ -20,7 +19,7 @@ import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseQuery
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
-import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.diff.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.WildcardFileDiff

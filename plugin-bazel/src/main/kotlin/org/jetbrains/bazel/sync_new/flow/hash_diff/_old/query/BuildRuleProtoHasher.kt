@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync_new.flow.diff.query
+package org.jetbrains.bazel.sync_new.flow.hash_diff._old.query
 
 import com.dynatrace.hash4j.hashing.HashValue128
 import com.dynatrace.hash4j.hashing.Hashing
@@ -11,7 +11,7 @@ object BuildRuleProtoHasher {
     hasher.putString(rule.ruleClass)
     hasher.putBytes(rule.skylarkEnvironmentHashCodeBytes.toByteArray())
     for (attribute in rule.attributeList) {
-      // TODO: ignored args
+      // TODO: ignored some args
       hasher.putBytes(attribute.toByteArray())
     }
 

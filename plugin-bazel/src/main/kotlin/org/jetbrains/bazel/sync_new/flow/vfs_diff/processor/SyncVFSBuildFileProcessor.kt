@@ -13,7 +13,7 @@ import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
-import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.diff.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.WildcardFileDiff
@@ -75,12 +75,12 @@ class SyncVFSBuildFileProcessor {
       val rule = target.rule ?: continue
       val location = rule.getBuildLocation() ?: continue
       val label = Label.parse(rule.name)
-      ctx.storage.target2Build.put(label, location)
-      ctx.storage.build2Targets.put(location, label)
       when {
-        location in addedBuildFiles -> addedTargets.add(label)
+        location in addedBuildFiles || !ctx.storage.target2Build.contains(label) -> addedTargets.add(label)
         location in changedBuildFiles -> changedTargets.add(label)
       }
+      ctx.storage.target2Build.put(label, location)
+      ctx.storage.build2Targets.put(location, label)
     }
 
     return SyncColdDiff(

@@ -28,4 +28,3 @@ fun Args.add(name: String, value: Value): Unit = add(Arg.Named(name, value))
 fun Args.add(value: Value, last: Boolean = false): Unit = add(Arg.Positional(value, last))
 
 fun Args.keepGoing(): Unit = add("keep_going", argValueOf(true))
-fun Args.injectRepository(repo: String): Unit = add("inject_repository", argValueOf(repo))

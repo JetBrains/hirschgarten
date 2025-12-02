@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync_new.flow.diff
+package org.jetbrains.bazel.sync_new.flow.hash_diff._old
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseTargetPattern

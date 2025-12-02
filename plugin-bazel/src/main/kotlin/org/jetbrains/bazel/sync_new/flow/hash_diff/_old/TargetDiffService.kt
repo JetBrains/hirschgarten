@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync_new.flow.diff
+package org.jetbrains.bazel.sync_new.flow.hash_diff._old
 
 import com.dynatrace.hash4j.hashing.HashValue128
 import com.intellij.openapi.components.Service
@@ -8,7 +8,7 @@ import org.jetbrains.bazel.sync_new.codec.ofLabel
 import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.flow.ChangedTarget
 import org.jetbrains.bazel.sync_new.flow.SyncDiff
-import org.jetbrains.bazel.sync_new.flow.diff.query.QueryTargetPattern
+import org.jetbrains.bazel.sync_new.flow.hash_diff._old.query.QueryTargetPattern
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseTargetPattern
 import org.jetbrains.bazel.sync_new.graph.TargetReference
 import org.jetbrains.bazel.sync_new.graph.impl.BazelFastTargetGraph

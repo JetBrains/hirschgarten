@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync_new.flow.diff.query
+package org.jetbrains.bazel.sync_new.flow.hash_diff._old.query
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.ExcludableValue

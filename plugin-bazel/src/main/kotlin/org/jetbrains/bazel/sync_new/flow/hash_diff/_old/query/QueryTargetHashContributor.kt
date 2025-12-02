@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync_new.flow.diff.query
+package org.jetbrains.bazel.sync_new.flow.hash_diff._old.query
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.openapi.components.serviceAsync
@@ -13,15 +13,13 @@ import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.QueryResult
 import org.jetbrains.bazel.sync_new.connector.defaults
 import org.jetbrains.bazel.sync_new.connector.unwrap
-import org.jetbrains.bazel.sync_new.connector.injectRepository
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
-import org.jetbrains.bazel.sync_new.flow.diff.TargetHash
-import org.jetbrains.bazel.sync_new.flow.diff.TargetHashContributor
+import org.jetbrains.bazel.sync_new.flow.hash_diff._old.TargetHash
+import org.jetbrains.bazel.sync_new.flow.hash_diff._old.TargetHashContributor
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseTargetPattern
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
-import kotlin.io.path.absolutePathString
 
 class QueryTargetHashContributor : TargetHashContributor {
   override suspend fun computeHashes(project: Project, patterns: List<SyncUniverseTargetPattern>): Sequence<TargetHash> {
@@ -33,7 +31,6 @@ class QueryTargetHashContributor : TargetHashContributor {
       defaults()
       keepGoing()
       output(QueryOutput.STREAMED_PROTO)
-      injectRepository("bazelbsp_aspect=${workspaceContext.dotBazelBspDirPath.absolutePathString()}")
       query(QueryTargetPattern.createUniverseQuery(patterns))
     }
 
