@@ -70,8 +70,8 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
 
     val ProtobufResolve = withBazelProject(
       projectInfo = withDefaults(
-        repositoryUrl = "https://github.com/Krystian20857/simpleBazelProjectsForTesting.git",
-        commitHash = "148ddeddd07cfc678db20e50d9c955d4d9bbbafb",
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "ef520dd2fb1c831641d651ab8997e1a6feda07d6",
         branchName = "main",
         relativePath = "protobufTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
@@ -228,6 +228,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       relativePath = "jetbrainsTestRunner",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
     ),
+  )
+
+  val LabelAllTabSESplit = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
+      commitHash = "dafe4cdad22db8e3f51a28f0dbfd3ddd07240830",
+      branchName = "main",
+      relativePath = "simpleMultiLanguageTest",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+    )
   )
 }
 

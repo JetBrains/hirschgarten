@@ -32,6 +32,9 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.AfterEach
+import com.intellij.ide.starter.process.ProcessKiller.killProcesses
+import com.intellij.ide.starter.process.getProcessList
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
@@ -80,6 +83,31 @@ abstract class IdeStarterBaseProjectTest {
           }
         }
       }
+  }
+
+  @AfterEach
+  fun tearDown() {
+    try {
+      // Kill Bazel server Java processes started for the test workspace
+      println("Killing Bazel server processes...")
+      val processesToKill = getProcessList { p ->
+        val hasServerJar = p.arguments.any { arg ->
+          arg.contains("A-server.jar") || arg.endsWith("/server.jar") || arg.endsWith("\\server.jar") || arg.endsWith("-server.jar")
+        }
+        val fromIdeTestsWorkspace = p.arguments.any { arg ->
+          arg.startsWith("--workspace_directory=") && (arg.contains("/ide-tests/") || arg.contains("\\ide-tests\\"))
+        }
+        hasServerJar && fromIdeTestsWorkspace
+      }
+      if (processesToKill.isNotEmpty()) {
+        println("Killing Bazel server processes: [${processesToKill.joinToString(", ")}]")
+        killProcesses(processesToKill)
+      } else {
+        println("No Bazel server processes found to kill")
+      }
+    } catch (t: Throwable) {
+      System.err.println("Failed to find/kill Bazel server processes: ${t.message}")
+    }
   }
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
@@ -138,20 +166,14 @@ fun Driver.syncBazelProject(buildAndSync: Boolean = false) {
 fun Driver.syncBazelProjectCloseDialog() {
   execute(CommandChain().takeScreenshot("startSync"))
   execute(CommandChain().openBspToolWindow())
-  // this is required for a weird bug when you run multiple tests, and a dialog for "add file to git" appears
+  // close only the Git confirmation dialog; other popups like "Loading file" are not closable via dispose()
   ideFrame {
-    val dialogFound =
-      try {
-        dialog().waitFound(timeout = 30.seconds)
-        true
-      } catch (e: Exception) {
-        false
-      }
+    val gitAddDialog = dialog(title = "Add File to Git")
+    val dialogFound = runCatching { gitAddDialog.waitFound(timeout = 30.seconds) }.isSuccess
 
     if (dialogFound) {
-      dialog {
-        closeDialog()
-      }
+      runCatching { gitAddDialog.closeDialog() }
+        .onFailure { System.err.println("Failed to close 'Add File to Git' dialog: ${it.message}") }
     }
   }
   execute(CommandChain().takeScreenshot("openBspToolWindow"))
