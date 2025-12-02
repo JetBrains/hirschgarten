@@ -1,4 +1,4 @@
-load("//aspects:utils/utils.bzl", "file_location", "is_external", "map", "update_sync_output_groups")
+load("//${bspPath}/aspects:utils/utils.bzl", "file_location", "is_external", "map", "update_sync_output_groups")
 
 SCALA_COMPILER_NAMES = [
     "scala3-compiler",

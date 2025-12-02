@@ -111,7 +111,6 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
               RunParams(
                 target = runConfiguration.targets.single(),
                 originId = "",
-                workingDirectory = project.rootDir.path,
                 arguments = emptyList(),
                 environmentVariables = emptyMap(),
                 additionalBazelParams = bazelParams.joinToString(" "),

@@ -1,5 +1,5 @@
 load("@${rulesetName}//go:def.bzl", "go_context")
-load("//aspects:utils/utils.bzl", "BspAspectInfo", "collect_targets_from_attrs", "create_struct", "file_location", "update_sync_output_groups")
+load("//${bspPath}/aspects:utils/utils.bzl", "BspAspectInfo", "collect_targets_from_attrs", "create_struct", "file_location", "update_sync_output_groups")
 
 def is_go_rule_kind(ctx):
     rule_kind = ctx.rule.kind

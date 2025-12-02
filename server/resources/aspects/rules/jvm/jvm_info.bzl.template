@@ -1,8 +1,8 @@
-load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion")
-load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info", "get_java_plugin_info", "get_javacopts")
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion")
+load("//${bspPath}/aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info", "get_java_plugin_info", "get_javacopts")
 
 #if( $kotlinEnabled == "true" )
-load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_additional_javac_options", "get_kotlin_plugins")
+load("//${bspPath}/aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_additional_javac_options", "get_kotlin_plugins")
 #else
 def get_kt_jvm_provider(target):
     return None

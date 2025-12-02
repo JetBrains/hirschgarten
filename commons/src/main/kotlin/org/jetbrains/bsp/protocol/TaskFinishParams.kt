@@ -36,7 +36,7 @@ public data class JUnitStyleTestCaseData(
   val time: Double?,
   val className: String?,
   val errorMessage: String?,
-  val errorContent: String?,
+  val output: String?,
   val errorType: String?,
 ) : TestFinishData
 

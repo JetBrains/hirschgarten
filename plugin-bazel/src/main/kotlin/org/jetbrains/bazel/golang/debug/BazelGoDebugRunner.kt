@@ -50,10 +50,10 @@ class BazelGoDebugRunner : GoBuildingRunner() {
       false,
       project,
     )
-    val session = XDebuggerManager
-      .getInstance(project)
-      .startSession(executionEnvironment, BazelDebugProcessStarter(state.execute(executionEnvironment.executor, this), state))
-    return (session as XDebugSessionImpl).getMockRunContentDescriptor()
+    val starter = BazelDebugProcessStarter(state.execute(executionEnvironment.executor, this), state)
+    return XDebuggerManager.getInstance(project).newSessionBuilder(starter)
+      .environment(executionEnvironment)
+      .startSession().runContentDescriptor!!
   }
 }
 

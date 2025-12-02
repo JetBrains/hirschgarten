@@ -1,3 +1,4 @@
+"""
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("//rules/testing:commons.bzl", "INTELLIJ_DEPS", "INTELLIJ_RUNTIME_DEPS", "JUNIT_DEPS", "KOTEST_DEPS", "kt_test_suite")
 
@@ -36,3 +37,4 @@ kt_test_suite(
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     ] + INTELLIJ_DEPS,
 )
+"""

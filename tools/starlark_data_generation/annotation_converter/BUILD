@@ -1,3 +1,4 @@
+"""
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 
 kt_jvm_binary(
@@ -18,3 +19,4 @@ java_proto_library(
     visibility = ["//visibility:public"],
     deps = [],
 )
+"""

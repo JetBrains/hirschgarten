@@ -60,6 +60,11 @@ java_import(
 )
 
 java_import(
+    name = "bytecode_viewer",
+    jars = glob(["plugins/java-byteCodeViewer/lib/*.jar"]),
+)
+
+java_import(
     name = "bundled_plugins",
     jars = glob([
         "plugins/java-i18n/lib/*.jar",

@@ -16,15 +16,10 @@ open class AbstractGenericRunState<T : AbstractGenericRunState<T>> :
   BazelRunConfigurationState<T>(),
   HasEnv,
   HasProgramArguments,
-  HasWorkingDirectory,
   HasBazelParams {
   @com.intellij.configurationStore.Property(description = "Arguments")
   @get:Attribute("programArguments")
   override var programArguments: String? by string()
-
-  @com.intellij.configurationStore.Property(description = "Working directory")
-  @get:Attribute("workingDirectory")
-  override var workingDirectory: String? by string()
 
   @com.intellij.configurationStore.Property(description = "Bazel parameters")
   override var additionalBazelParams: String? by string()
@@ -44,7 +39,6 @@ class GenericRunStateEditor<T : AbstractGenericRunState<T>>(private val config: 
 
       add(bazelParamsFragment())
       add(programArgumentsFragment())
-      add(workingDirectoryFragment(config))
       addEnvironmentFragment()
     }
 }

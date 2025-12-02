@@ -3,9 +3,6 @@ package org.jetbrains.bazel.run.state
 import com.intellij.configurationStore.Property
 import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.configuration.EnvironmentVariablesData
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RuntimeConfigurationException
-import com.intellij.execution.configurations.RuntimeConfigurationWarning
 import com.intellij.execution.ui.CommandLinePanel
 import com.intellij.execution.ui.CommonParameterFragments
 import com.intellij.execution.ui.SettingsEditorFragment
@@ -14,19 +11,11 @@ import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.externalSystem.service.execution.configuration.addEnvironmentFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
-import com.intellij.openapi.ui.LabeledComponent
-import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.components.TextComponentEmptyText
-import com.intellij.ui.components.fields.ExtendableTextField
-import com.intellij.util.ThrowableRunnable
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XMap
 import org.jetbrains.bazel.config.BazelPluginBundle
-import java.nio.file.Files
-import java.nio.file.InvalidPathException
-import java.nio.file.Paths
 
 interface HasEnv {
   var env: EnvironmentVariablesDataOptions
@@ -70,79 +59,6 @@ fun <C : HasEnv> SettingsEditorFragmentContainer<C>.addEnvironmentFragment() =
     { env.isPassParentEnvs = it },
     hideWhenEmpty = false,
   )
-
-interface HasWorkingDirectory {
-  var workingDirectory: String?
-}
-
-fun <T : HasWorkingDirectory> workingDirectoryFragment(
-  configuration: RunConfiguration,
-): SettingsEditorFragment<T, LabeledComponent<TextFieldWithBrowseButton>> {
-  val textField = ExtendableTextField(10)
-  MacrosDialog.addMacroSupport(
-    textField,
-    MacrosDialog.Filters.DIRECTORY_PATH,
-  ) { false }
-  val workingDirectoryField = TextFieldWithBrowseButton(textField)
-  workingDirectoryField.addBrowseFolderListener(
-    configuration.project,
-    FileChooserDescriptorFactory
-      .createSingleFileDescriptor()
-      .withTitle(
-        ExecutionBundle.message(
-          "select.working.directory.message",
-        ),
-      ),
-  )
-  val field =
-    LabeledComponent.create(
-      workingDirectoryField,
-      ExecutionBundle.message("run.configuration.working.directory.label"),
-      "West",
-    )
-  val workingDirectorySettings: SettingsEditorFragment<T, LabeledComponent<TextFieldWithBrowseButton>> =
-    SettingsEditorFragment(
-      "workingDirectory",
-      ExecutionBundle.message("run.configuration.working.directory.name"),
-      null,
-      field,
-      { settings, component ->
-        (component.component as TextFieldWithBrowseButton).setText(settings.workingDirectory)
-      },
-      { settings, component ->
-        settings.workingDirectory = component.component.text
-      },
-      { true },
-    )
-  workingDirectorySettings.isRemovable = false
-  workingDirectorySettings.setValidation { settings ->
-    val runnable =
-      ThrowableRunnable<RuntimeConfigurationWarning> {
-        val workingDir = settings.workingDirectory ?: return@ThrowableRunnable
-        val exists =
-          try {
-            Files.exists(Paths.get(workingDir))
-          } catch (e: InvalidPathException) {
-            false
-          }
-        if (!exists) {
-          throw RuntimeConfigurationWarning(
-            ExecutionBundle.message(
-              "dialog.message.working.directory.doesn.t.exist",
-              workingDir,
-            ),
-          )
-        }
-      }
-    val validationInfo =
-      RuntimeConfigurationException.validate(
-        textField,
-        runnable,
-      )
-    listOf(validationInfo)
-  }
-  return workingDirectorySettings
-}
 
 interface HasProgramArguments {
   var programArguments: String?

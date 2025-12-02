@@ -31,7 +31,7 @@ import javax.swing.JComponent
 class BazelApplicationSettingsService : PersistentStateComponent<BazelApplicationSettings> {
   var settings: BazelApplicationSettings = BazelApplicationSettings()
 
-  override fun getState(): BazelApplicationSettings? = settings
+  override fun getState(): BazelApplicationSettings = settings
 
   override fun loadState(state: BazelApplicationSettings) {
     settings = state
@@ -75,20 +75,21 @@ class BazelApplicationSettingsConfigurable : SearchableConfigurable {
 
   override fun getId(): String = ID
 
-  override fun getDisplayName(): String? = BazelPluginBundle.message(DISPLAY_NAME_KEY)
+  override fun getDisplayName(): String = BazelPluginBundle.message(DISPLAY_NAME_KEY)
 
-  override fun createComponent(): JComponent? =
+  override fun createComponent(): JComponent =
     panel {
-      group(BazelPluginBundle.message("application.settings.updates.title"), false) {
+      group(BazelPluginBundle.message("application.settings.updates.title")) {
         row(BazelPluginBundle.message("application.settings.update.channel.dropdown.title")) {
-          cell(updateChannelComboBox).align(Align.FILL).resizableColumn()
-          contextHelp(BazelPluginBundle.message("application.settings.update.channel.dropdown.help.description")).align(AlignX.RIGHT)
+          cell(updateChannelComboBox)
+            .align(Align.FILL)
+            .contextHelp(BazelPluginBundle.message("application.settings.update.channel.dropdown.help.description"))
         }
       }
-      group(BazelPluginBundle.message("application.settings.plugin.experimental.settings"), indent = false) {
+      group(BazelPluginBundle.message("application.settings.plugin.experimental.settings")) {
         row {
-          cell(enablePhasedSyncCheckBox).align(Align.FILL)
-          contextHelp(BazelPluginBundle.message("application.settings.plugin.enable.phased.sync.help.text"))
+          cell(enablePhasedSyncCheckBox)
+            .contextHelp(BazelPluginBundle.message("application.settings.plugin.enable.phased.sync.help.text"))
         }
       }
     }

@@ -8,7 +8,6 @@ kt_kotlinc_options(
     name = "kotlinc_options",
     include_stdlibs = "none",
     jvm_target = select_for_plugin_api({
-        "intellij-2025.2": "17",
         "intellij-2025.3": "21",
     }),
 )
@@ -16,17 +15,14 @@ kt_kotlinc_options(
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = select_for_plugin_api({
-        "intellij-2025.2": "2.0",
         "intellij-2025.3": "2.3",
     }),
     experimental_multiplex_workers = True,
     jvm_target = select_for_plugin_api({
-        "intellij-2025.2": "17",
         "intellij-2025.3": "21",
     }),
     kotlinc_options = ":kotlinc_options",
     language_version = select_for_plugin_api({
-        "intellij-2025.2": "2.0",
         "intellij-2025.3": "2.3",
     }),
 )

@@ -8,7 +8,6 @@ data class RunParams(
   val originId: String,
   val arguments: List<String>? = null,
   val environmentVariables: Map<String, String>? = null,
-  val workingDirectory: String? = null,
   val additionalBazelParams: String? = null,
   val pidDeferred: CompletableDeferred<Long?>? = null,
 )

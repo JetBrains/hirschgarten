@@ -5,6 +5,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
@@ -28,8 +29,6 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.pathString
-
-private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally
@@ -86,7 +85,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     )
   }
 
-  private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in RELEVANT_EXTENSIONS || this.sourcePath.isDirectory()
+  private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in Constants.JVM_LANGUAGES_EXTENSIONS || this.sourcePath.isDirectory()
 
   private fun tryMergeSources(
     sourceRoots: List<JavaSourceRoot>,
@@ -133,7 +132,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     if (mergedRootsCoverNewFiles(
         mergedRoots = mergedSourceRootPaths,
         originalRoots = originalSourceRoots,
-        relevantExtensions = RELEVANT_EXTENSIONS,
+        relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
       )
     ) {
       return null

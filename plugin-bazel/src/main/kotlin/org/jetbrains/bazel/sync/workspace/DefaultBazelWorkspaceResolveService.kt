@@ -54,6 +54,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
       .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver())
     bazelMapper =
       AspectBazelProjectMapper(
+        project = project,
         languagePluginsService = project.service<LanguagePluginsService>(),
         featureFlags = featureFlags,
         bazelPathsResolver = paths.bazelPathsResolver,

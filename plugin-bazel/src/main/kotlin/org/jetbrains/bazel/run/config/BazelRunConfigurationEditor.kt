@@ -50,7 +50,7 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
     Disposer.register(this@BazelRunConfigurationEditor, stateEditor)
 
     this.addSettingsEditorFragment(
-      object : SettingsFragmentInfo {
+      settingsFragmentInfo = object : SettingsFragmentInfo {
         override val settingsId: String = "bsp.state.editor"
         override val settingsName: String = "Handler settings"
         override val settingsGroup: String = "BSP"
@@ -59,12 +59,14 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
         override val settingsHint: String? = null
         override val settingsActionHint: String? = null
       },
-      { stateEditor.component },
-      { _, _ ->
-        stateEditor.resetFrom(handler.state)
+      createComponent = { stateEditor.component },
+      reset = { config, _ ->
+        val state = config.handler?.state ?: return@addSettingsEditorFragment
+        stateEditor.resetFrom(state)
       },
-      { _, _ ->
-        stateEditor.applyTo(handler.state)
+      apply = { config, _ ->
+        val state = config.handler?.state ?: return@addSettingsEditorFragment
+        stateEditor.applyTo(state)
       },
     )
   }

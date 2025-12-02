@@ -14,10 +14,10 @@ class BazelProjectAwareExtension : ProjectAwareExtension {
     ExternalSystemProjectId(BazelPluginConstants.SYSTEM_ID, projectPath.path)
 
   override val eligibleConfigFileNames: List<String> =
-    Constants.SUPPORTED_CONFIG_FILE_NAMES
+    Constants.SUPPORTED_CONFIG_FILE_NAMES.toList()
 
   override val eligibleConfigFileExtensions: List<String> =
-    Constants.SUPPORTED_EXTENSIONS
+    Constants.SUPPORTED_EXTENSIONS.toList()
 }
 
 class BazelExternalSystemIconProvider : ExternalSystemIconProvider {

@@ -390,6 +390,7 @@ def intellij_plugin(name, deps, plugin_xml, plugin_deps = [], optional_plugin_de
         DELETE_ENTRIES = [
             # TODO(b/255334320) Remove these 2 (and hopefully the entire zip -d invocation)
             "com/google/common/util/concurrent/ListenableFuture.class",
+            "kotlin/*",
         ]
         deploy_jar = binary_name + "_cleaned.jar"
         native.genrule(
@@ -426,4 +427,22 @@ def intellij_plugin(name, deps, plugin_xml, plugin_deps = [], optional_plugin_de
         jars = [jar_target_name],
         tags = ["intellij-plugin"] + kwargs.pop("tags", []),
         **kwargs
+    )
+
+def intellij_module(name, deps, deploy_env = [], **kwargs):
+    binary_name = name + "_binary"
+
+    java_binary(
+        name = binary_name,
+        runtime_deps = deps,
+        deploy_env = deploy_env,
+        create_executable = 0,
+    )
+
+    native.genrule(
+       name = name,
+       srcs = [binary_name + "_deploy.jar"],
+       outs = [name + ".jar"],
+       cmd = "cp $< $@",
+       **kwargs
     )

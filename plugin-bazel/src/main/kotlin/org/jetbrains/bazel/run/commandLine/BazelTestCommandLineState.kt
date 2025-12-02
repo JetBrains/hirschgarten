@@ -54,13 +54,11 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
         null
       }
 
-    val targets = configuration.targets
     // TODO: add pidDeferred to TestParams
     val params =
       TestParams(
         targets = configuration.targets,
         originId = originId.toString(),
-        workingDirectory = state.workingDirectory,
         arguments = transformProgramArguments(state.programArguments),
         environmentVariables = state.env.envs,
         coverageInstrumentationFilter = coverageInstrumentationFilter,

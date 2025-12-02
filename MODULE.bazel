@@ -306,7 +306,7 @@ java_import(
 _PYTHON_CE_BUILD_FILE = """
 java_import(
     name = "python",
-    jars = glob(["python-ce/lib/*.jar"]),
+    jars = glob(["python-ce/lib/*.jar", "python-ce/lib/modules/*.jar"]),
     visibility = ["//visibility:public"],
 )
 filegroup(
@@ -332,181 +332,21 @@ java_import(
 )
 """
 
-# SDK 252
-
-SDK_252_PLUGIN_REPOSITORY_VERSION = "252.25557.77"
-
-SDK_252_INTELLIJ_REPOSITORY_VERSION = "252.25557.77-EAP-SNAPSHOT"
-
-SDK_252_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
-
-IC_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-IC_252_SHA = "363ef5c9342156ea57492dc1be82c539a637e690bdcdbb2bc53bb2fd11d76b3e"
-
-http_archive(
-    name = "intellij_ce_2025_2",
-    build_file = "//rules_intellij/intellij_platform_sdk:BUILD.idea252",
-    sha256 = IC_252_SHA,
-    url = IC_252_URL,
-)
-
-IC_252_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-IC_252_SOURCES_SHA = "25e71bef552411f2e9b77d7e03bf504b66b698e9548653afba9c59098a77c500"
-
-http_jar(
-    name = "intellij_ce_2025_2_sources",
-    sha256 = IC_252_SOURCES_SHA,
-    url = IC_252_SOURCES_URL,
-)
-
-DEVKIT_252_VERSION = "252.25557.23"
-
-DEVKIT_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (DEVKIT_252_VERSION, DEVKIT_252_VERSION)
-
-DEVKIT_252_SHA = "4f22dd75aa675b25008653079310b3fc32160130227b697dd69b6c5e32c13aa2"
-
-http_archive(
-    name = "devkit_2025_2",
-    build_file_content = DEVKIT_BUILD_FILE,
-    sha256 = DEVKIT_252_SHA,
-    url = DEVKIT_252_URL,
-)
-
-SDK_252_PYTHON_VERSION = "252.23892.409"
-
-PYTHON_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_252_PYTHON_VERSION, SDK_252_PYTHON_VERSION)
-
-PYTHON_PLUGIN_252_SHA = "601bb32a9f7a78f1e801b870c5922e6c154e753c7735fd2ae50bc0f4587aa4d5"
-
-http_archive(
-    name = "python_2025_2",
-    build_file_content = _PYTHON_CE_BUILD_FILE,
-    sha256 = PYTHON_PLUGIN_252_SHA,
-    url = PYTHON_PLUGIN_252_URL,
-)
-
-GO_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
-
-GO_PLUGIN_252_SHA = "f0990da5d858954d33e1058a30a04eef77c3e9c8ff2035c52dd636bc1d8016e1"
-
-http_archive(
-    name = "go_2025_2",
-    build_file_content = _GO_BUILD_FILE,
-    sha256 = GO_PLUGIN_252_SHA,
-    url = GO_PLUGIN_252_URL,
-)
-
-PERFORMANCE_PLUGIN_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-PERFORMANCE_PLUGIN_252_SHA = "b736e55c294a3a9b703e414d6a4ec5311a53219fac37213ba3946180fc4aad66"
-
-http_jar(
-    name = "performance_2025_2",
-    sha256 = PERFORMANCE_PLUGIN_252_SHA,
-    url = PERFORMANCE_PLUGIN_252_URL,
-)
-
-CODE_WITH_ME_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-CODE_WITH_ME_252_SHA = "321a0bd455e28876f7b18dc3d298f304cd7e5ebaa382ef7d72aa3f7b0f3ca10c"
-
-http_jar(
-    name = "code_with_me_2025_2",
-    sha256 = CODE_WITH_ME_252_SHA,
-    url = CODE_WITH_ME_252_URL,
-)
-
-CODE_WITH_ME_SPLIT_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-CODE_WITH_ME_SPLIT_252_SHA = "e9e5104ebb03fe61eea932a78c1639db50dc7c744b47eb705993599689da241e"
-
-http_jar(
-    name = "code_with_me_split_2025_2",
-    sha256 = CODE_WITH_ME_SPLIT_252_SHA,
-    url = CODE_WITH_ME_SPLIT_252_URL,
-)
-
-JSON_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/json/json/%s/json-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-JSON_252_SHA = "ae08c35e9faa3fd020959ee243be632a2bf375526a0ac6fb63b17424124f860a"
-
-http_jar(
-    name = "json_2025_2",
-    sha256 = JSON_252_SHA,
-    url = JSON_252_URL,
-)
-
-JSON_SPLIT_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/json/json-split/%s/json-split-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-JSON_SPLIT_252_SHA = "4946586e8166d18581fb885683d97bc11cdde76c1ba01468bcaea0107a9062bf"
-
-http_jar(
-    name = "json_split_2025_2",
-    sha256 = JSON_SPLIT_252_SHA,
-    url = JSON_SPLIT_252_URL,
-)
-
-# From 252 python plugin requires toml plugin to be loaded
-TOML_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.toml.lang/%s/org.toml.lang-%s.zip" % (SDK_252_PYTHON_VERSION, SDK_252_PYTHON_VERSION)
-
-TOML_PLUGIN_252_SHA = "32d9bfff88947bc1a7b630368ddc7a7f099462815bd69dafc58722e8ada3cdf2"
-
-_TOML_BUILD_FILE = """
-java_import(
-    name = "toml",
-    jars = glob(["toml/lib/toml.jar", "toml/lib/modules/*.jar"]),
-    visibility = ["//visibility:public"],
-)
-"""
-
-http_archive(
-    name = "toml_plugin_2025_2",
-    build_file_content = _TOML_BUILD_FILE,
-    sha256 = TOML_PLUGIN_252_SHA,
-    url = TOML_PLUGIN_252_URL,
-)
-
-TERMINAL_PLUGIN_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-http_jar(
-    name = "terminal_2025_2",
-    url = TERMINAL_PLUGIN_252_URL,
-)
-
-TERMINAL_COMPLETION_PLUGIN_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal-completion/%s/terminal-completion-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-http_jar(
-    name = "terminal_completion_2025_2",
-    url = TERMINAL_COMPLETION_PLUGIN_252_URL,
-)
-
-# protobuf plugin
-PROTOEDIT_PLUGIN_252_VERSION = "252.23892.201"
-
-PROTOEDIT_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_252_VERSION, PROTOEDIT_PLUGIN_252_VERSION)
-
-PROTOEDIT_PLUGIN_252_SHA = "0deea649899098a7b12e37aeba826a5d7658684dbc130634e0ca9bd3c94e0478"
-
-http_archive(
-    name = "protoedit_2025_2",
-    build_file_content = _PROTOEDIT_BUILD_FILE,
-    sha256 = PROTOEDIT_PLUGIN_252_SHA,
-    url = PROTOEDIT_PLUGIN_252_URL,
-)
-
 # SDK 253
 
-SDK_253_PLUGIN_REPOSITORY_VERSION = "253.22441.33"
+SDK_253_BASE_VERSION = "253.28294"
 
-SDK_253_INTELLIJ_REPOSITORY_VERSION = "253.22441.33-EAP-SNAPSHOT"
+SDK_253_INTELLIJ_VERSION = SDK_253_BASE_VERSION + ".169-EAP"
+
+SDK_253_INTELLIJ_REPOSITORY_VERSION = SDK_253_BASE_VERSION + ".169"
 
 SDK_253_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
 
-IC_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+SDK_253_PLUGIN_REPOSITORY_VERSION = SDK_253_BASE_VERSION + ".169"
 
-IC_253_SHA = "0f81c61837be81623fd039459fa1cc00a18d57bead5d74102125b2a66b435a50"
+IC_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+
+IC_253_SHA = "3d3735b5cac46973ba2ddd542ad28ba0679d976fded3a75cbc1cf248d35470f9"
 
 http_archive(
     name = "intellij_ce_2025_3",
@@ -515,9 +355,9 @@ http_archive(
     url = IC_253_URL,
 )
 
-IC_253_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
+IC_253_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
 
-IC_253_SOURCES_SHA = "ad44bb6010d8da72e5c04cf27847d9d266929a14d044e3139d57f0a2003474ae"
+IC_253_SOURCES_SHA = "32712d5d2b2707d36a2f8a50320abe13369ad0b240abddabfd82f4f6820be2fc"
 
 http_jar(
     name = "intellij_ce_2025_3_sources",
@@ -527,7 +367,7 @@ http_jar(
 
 DEVKIT_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_253_SHA = "02c8a8044adc9c2e1de86a563c8402b84c2bfd9a0444649e10fabc008f0d61db"
+DEVKIT_253_SHA = "1eabcf7230deb3d019eff0fc46c8045af78bc796eec8abee5c73bad1c708995f"
 
 http_archive(
     name = "devkit_2025_3",
@@ -538,7 +378,7 @@ http_archive(
 
 PYTHON_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_253_SHA = "d9f744dc392605981fc9d014b388942edaac7dd2788badd8eb76fab8133b7c72"
+PYTHON_PLUGIN_253_SHA = "fa3dc8a5038736e8c4aef5a8da42ab933d32ac9b416a6f5f900697aefe799487"
 
 http_archive(
     name = "python_2025_3",
@@ -549,7 +389,7 @@ http_archive(
 
 GO_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_253_SHA = "2383926f357eb19f23ea89ead0766a7ced2d8b0dad02d49433d0f19c15e3dd4c"
+GO_PLUGIN_253_SHA = "d0432b03d958baad3cf408a9f60f104bc237e4452e1d85a756b23135c270c314"
 
 http_archive(
     name = "go_2025_3",
@@ -560,7 +400,7 @@ http_archive(
 
 PERFORMANCE_PLUGIN_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
 
-PERFORMANCE_PLUGIN_253_SHA = "c1018d31474cf181c6dd696b72615ec5cb1384f3fda468dd4b35b09462c339fd"
+PERFORMANCE_PLUGIN_253_SHA = "de83c973e35968ff36577d3b759fc6dcbdb7c0c1391cf75da26c8bf965eab349"
 
 http_jar(
     name = "performance_2025_3",
@@ -570,7 +410,7 @@ http_jar(
 
 CODE_WITH_ME_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_253_SHA = "9dfb2603682c3f008f74c5b83b2750dc4a020ee7ed27e7b39672841fc4aba17c"
+CODE_WITH_ME_253_SHA = "05f2a169f9a1ec32c3f2e1282c88d2c0682c88f9cfff707f61900acc2604efa1"
 
 http_jar(
     name = "code_with_me_2025_3",
@@ -580,34 +420,12 @@ http_jar(
 
 CODE_WITH_ME_SPLIT_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_SPLIT_253_SHA = "d02e1eb46814ac61f571b57ac9bb4412fe80ced382b2561ba30bc93d03abbe13"
+CODE_WITH_ME_SPLIT_253_SHA = "2e3ee978054093906cf9ab1a6ef9f626a91cc2c47ad57a942e33cdb0a225ab0e"
 
 http_jar(
     name = "code_with_me_split_2025_3",
     sha256 = CODE_WITH_ME_SPLIT_253_SHA,
     url = CODE_WITH_ME_SPLIT_253_URL,
-)
-
-JSON_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/json/json/%s/json-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
-
-JSON_253_SHA = "ef6eed20e334fca2b910e769c85e9a3a418ddc0bad00acd9f719cbffcfbd9a40"
-
-http_jar(
-    name = "json_2025_3",
-    sha256 = JSON_253_SHA,
-    url = JSON_253_URL,
-)
-
-# From 252 python plugin requires toml plugin to be loaded
-TOML_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.toml.lang/%s/org.toml.lang-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
-
-TOML_PLUGIN_253_SHA = "af37c7b309d2dc63d8ae22a127c96e8c5a69433c0b1eddd2817f8fa3e06051ab"
-
-http_archive(
-    name = "toml_plugin_2025_3",
-    build_file_content = _TOML_BUILD_FILE,
-    sha256 = TOML_PLUGIN_253_SHA,
-    url = TOML_PLUGIN_253_URL,
 )
 
 TERMINAL_PLUGIN_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
@@ -624,11 +442,11 @@ http_jar(
     url = TERMINAL_COMPLETION_PLUGIN_253_URL,
 )
 
-PROTOEDIT_PLUGIN_253_VERSION = "253.22441.25"
+PROTOEDIT_PLUGIN_253_VERSION = SDK_253_BASE_VERSION + ".86"
 
 PROTOEDIT_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_253_VERSION, PROTOEDIT_PLUGIN_253_VERSION)
 
-PROTOEDIT_PLUGIN_253_SHA = "b34af2595b4f2a87dc93712c494bca93dd6e94c2dbaa076518fb473dd131e358"
+PROTOEDIT_PLUGIN_253_SHA = "4240d288b7a7034982d2e5d0dd03455eeac986f9efe924460f4537eb78a6713f"
 
 http_archive(
     name = "protoedit_2025_3",

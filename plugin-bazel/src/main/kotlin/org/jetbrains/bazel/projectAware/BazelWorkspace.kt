@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.ui.tree.TreeVisitor
+import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import com.intellij.util.ui.tree.TreeUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -58,7 +59,7 @@ class BspExternalServicesSubscriber(private val project: Project) {
           if (shouldRefreshProjectView(events)) {
             BazelCoroutineService.getInstance(project).start {
               withContext(Dispatchers.EDT) {
-                ProjectView.getInstance(project).refresh()
+                ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
               }
             }
           }

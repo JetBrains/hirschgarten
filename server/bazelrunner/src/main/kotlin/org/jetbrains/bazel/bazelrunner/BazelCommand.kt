@@ -36,10 +36,6 @@ interface HasEnvironment {
   val inheritedEnvironment: List<String>
 }
 
-interface HasWorkingDirectory {
-  var workingDirectory: Path?
-}
-
 interface HasMultipleTargets {
   // Will be added as `bazel <command> -- target1 target2 ...`
   val targets: MutableList<Label>
@@ -97,12 +93,10 @@ abstract class BazelCommand(val bazelBinary: String) {
     HasProgramArguments,
     HasEnvironment,
     HasSingleTarget,
-    HasWorkingDirectory,
     HasAdditionalBazelOptions {
     override val programArguments: MutableList<String> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
-    override var workingDirectory: Path? = null
     override val additionalBazelOptions: MutableList<String> = mutableListOf()
 
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {

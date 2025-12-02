@@ -7,7 +7,6 @@ data class TestParams(
   val originId: String,
   val arguments: List<String>? = null,
   val environmentVariables: Map<String, String>? = null,
-  val workingDirectory: String? = null,
   val debug: DebugType? = null,
   val coverageInstrumentationFilter: String? = null,
   val testFilter: String? = null,

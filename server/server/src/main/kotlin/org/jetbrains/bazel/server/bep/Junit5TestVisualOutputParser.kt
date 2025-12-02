@@ -190,7 +190,7 @@ private fun createTestCaseData(message: String, time: Long?): JUnitStyleTestCase
     time = time?.let { it / 1000.0 },
     className = null,
     errorMessage = message,
-    errorContent = null,
+    output = null,
     errorType = null,
   )
 

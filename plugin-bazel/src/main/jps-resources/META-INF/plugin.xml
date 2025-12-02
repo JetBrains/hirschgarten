@@ -221,6 +221,10 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.syncVFSFileContributor"
                     interface="org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFileContributor"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
+                    interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -235,6 +239,11 @@
     <syncIndexUpdaterProvider implementation="org.jetbrains.bazel.sync_new.flow.index.GenericSyncIndexUpdaterProvider"/>
 
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
+    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
+    <projectViewSectionProvider
+      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
+
+    <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook" />
 
     <projectSyncHook
       id="DirectoriesSyncHook"
@@ -634,6 +643,10 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"
       language="Starlark"
     />
+    <lang.elementManipulator
+      forClass="org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression"
+      implementationClass="org.jetbrains.bazel.languages.starlark.rename.StarlarkStringLiteralManipulator"
+    />
     <lang.foldingBuilder
       implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"
       language="Starlark"
@@ -893,7 +906,8 @@
     <editorTabColorProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabColorProvider"/>
     <editorTabTitleProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabTitleProvider"/>
     <editorNotificationProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNotificationProvider"/>
-    <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher"/>
+    <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher" />
+    <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUsageSearcher"/>
     <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>
     <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
     <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>

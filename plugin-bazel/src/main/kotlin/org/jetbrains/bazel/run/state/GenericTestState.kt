@@ -16,7 +16,6 @@ open class AbstractGenericTestState<T : AbstractGenericTestState<T>> :
   BazelRunConfigurationState<T>(),
   HasEnv,
   HasProgramArguments,
-  HasWorkingDirectory,
   HasTestFilter,
   HasBazelParams {
   @com.intellij.configurationStore.Property(description = "Test filter")
@@ -26,10 +25,6 @@ open class AbstractGenericTestState<T : AbstractGenericTestState<T>> :
   @com.intellij.configurationStore.Property(description = "Arguments")
   @get:Attribute("programArguments")
   override var programArguments: String? by string()
-
-  @com.intellij.configurationStore.Property(description = "Working directory")
-  @get:Attribute("workingDirectory")
-  override var workingDirectory: String? by string()
 
   // TODO: this field will be duplicated in the xml, figure out what's causing it
   //  (probably related to the fact
@@ -52,7 +47,6 @@ class GenericTestStateEditor<T : AbstractGenericTestState<T>>(private val config
       add(bazelParamsFragment())
       addTestFilterFragment()
       add(programArgumentsFragment())
-      add(workingDirectoryFragment(config))
       addEnvironmentFragment()
     }
 }

@@ -149,7 +149,9 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
         .let { if (details?.errorType == null) it else it.addAttribute("type", details.errorType) }
         .toString()
       handler.notifyTextAvailable(failureMessageBuilder.toStringWithNewline(), ProcessOutputType.STDOUT)
-      details?.errorContent?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
+      details?.output?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
+    } else {
+      details?.output?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDOUT) }
     }
   }
 

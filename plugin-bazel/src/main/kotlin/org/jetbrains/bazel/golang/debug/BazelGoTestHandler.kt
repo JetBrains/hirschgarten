@@ -28,10 +28,11 @@ internal val EXECUTABLE_KEY: Key<AtomicReference<ExecutableInfo>> = Key.create("
 
 class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
-    configuration.beforeRunTasks =
+    configuration.setBeforeRunTasksFromHandler(
       listOfNotNull(
         BazelGoTestBeforeRunTaskProvider().createTask(configuration),
-      )
+      ),
+    )
   }
 
   override val name: String

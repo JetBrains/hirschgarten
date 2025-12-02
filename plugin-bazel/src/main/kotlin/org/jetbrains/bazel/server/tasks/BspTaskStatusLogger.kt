@@ -8,23 +8,22 @@ import org.jetbrains.bazel.ui.console.TaskConsole
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeoutException
 
-public class BspTaskStatusLogger<T>(
-  private val taskDeferred: Deferred<T>,
+public class BspTaskStatusLogger(
+  private val taskDeferred: Deferred<BazelStatus>,
   private val bspBuildConsole: TaskConsole,
   private val originId: String,
-  private val statusCode: T.() -> BazelStatus,
 ) {
-  public suspend fun getResult(): T =
+  public suspend fun getStatus(): BazelStatus =
     taskDeferred
       .also { it.invokeOnCompletion { throwable -> catchBuildErrors(throwable) } }
       .await()
       .also { finishBuildConsoleTaskWithProperResult(it, bspBuildConsole, originId) }
 
   private fun finishBuildConsoleTaskWithProperResult(
-    result: T,
+    status: BazelStatus,
     bspBuildConsole: TaskConsole,
     uuid: String,
-  ) = when (result.statusCode()) {
+  ) = when (status) {
     BazelStatus.SUCCESS -> bspBuildConsole.finishTask(uuid, BazelPluginBundle.message("console.task.status.ok"))
     BazelStatus.CANCEL -> bspBuildConsole.finishTask(uuid, BazelPluginBundle.message("console.task.status.cancelled"))
     else ->

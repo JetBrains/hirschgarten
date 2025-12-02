@@ -78,8 +78,17 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
         return false
       }
       try {
-        pluginSandbox.createDirectories()
-        pluginJar.copyTo(pluginSandbox.resolve(pluginJar.name), overwrite = true)
+        // Ugly hardcoding, but good enough for now because we don't support ijwb anyway
+        // Proper solution would be to get the jar locations in the aspects
+        val targetDirectory = if (pluginJars.size == 1) {
+          pluginSandbox
+        } else if (pluginJar.name == "plugin-bazel.jar") {
+          pluginSandbox.resolve("plugin-bazel").resolve("lib")
+        } else {
+          pluginSandbox.resolve("plugin-bazel").resolve("lib").resolve("modules")
+        }
+        targetDirectory.createDirectories()
+        pluginJar.copyTo(targetDirectory.resolve(pluginJar.name), overwrite = true)
       } catch (e: IOException) {
         val errorMessage =
           BazelPluginBundle.message(

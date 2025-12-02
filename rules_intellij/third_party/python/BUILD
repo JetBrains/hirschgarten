@@ -14,8 +14,6 @@ java_library(
     name = "python_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2025.1": ["@python_2025_1//:python"],
-        "intellij-2025.2": ["@python_2025_2//:python"],
         "intellij-2025.3": ["@python_2025_3//:python"],
     }),
 )
@@ -23,8 +21,6 @@ java_library(
 filegroup(
     name = "python_helpers",
     srcs = select_for_plugin_api({
-        "intellij-2025.1": ["@python_2025_1//:python_helpers"],
-        "intellij-2025.2": ["@python_2025_2//:python_helpers"],
         "intellij-2025.3": ["@python_2025_3//:python_helpers"],
     }),
     visibility = ["//visibility:private"],
@@ -36,9 +32,6 @@ java_library(
     data = [":python_helpers"],
     exports = [
         ":python_internal",
-        # Python plugin has several non-optional plugin dependencies
-        "//rules_intellij/third_party/json:json_for_tests",
-        "//rules_intellij/third_party/toml:toml_for_tests",
     ],
 )
 

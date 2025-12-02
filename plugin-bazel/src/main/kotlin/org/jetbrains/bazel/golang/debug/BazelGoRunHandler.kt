@@ -23,10 +23,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
-    configuration.beforeRunTasks =
+    configuration.setBeforeRunTasksFromHandler(
       listOfNotNull(
         BazelGoBinaryBeforeRunTaskProvider().createTask(configuration),
-      )
+      ),
+    )
   }
 
   override val name: String

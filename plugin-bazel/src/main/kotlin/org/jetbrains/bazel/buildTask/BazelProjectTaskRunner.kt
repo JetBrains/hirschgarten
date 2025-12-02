@@ -17,7 +17,6 @@ import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 
@@ -73,8 +72,8 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
       .then { it?.toTaskRunnerResult() ?: TaskRunnerResults.FAILURE }
   }
 
-  private fun CompileResult.toTaskRunnerResult() =
-    when (statusCode) {
+  private fun BazelStatus.toTaskRunnerResult() =
+    when (this) {
       BazelStatus.SUCCESS -> TaskRunnerResults.SUCCESS
       BazelStatus.CANCEL -> TaskRunnerResults.ABORTED
       else -> TaskRunnerResults.FAILURE

@@ -185,6 +185,7 @@ class MockDebugSession : XDebugSession {
     unavailableInMock()
   }
 
+  @Deprecated("Deprecated in Java")
   override fun getRunContentDescriptor(): RunContentDescriptor {
     unavailableInMock()
   }

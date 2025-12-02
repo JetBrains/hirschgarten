@@ -14,11 +14,6 @@ java_library(
     name = "terminal_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2025.1": ["@terminal_2025_1//:terminal"],
-        "intellij-2025.2": [
-            "@terminal_2025_2//jar",
-            "@terminal_completion_2025_2//jar",
-        ],
         "intellij-2025.3": [
             "@terminal_2025_3//jar",
             "@terminal_completion_2025_3//jar",

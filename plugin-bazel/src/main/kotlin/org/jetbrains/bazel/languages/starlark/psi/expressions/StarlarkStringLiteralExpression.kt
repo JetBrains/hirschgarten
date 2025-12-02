@@ -10,7 +10,9 @@ import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
+import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadValue
@@ -71,6 +73,15 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
     if (isClassnameValue()) return StarlarkClassnameReference(this)
     if (isInVisibilityList()) return StarlarkVisibilityReference(this)
     if (isLoadFilenameValue()) return BazelLabelReference(this, true)
+    if (isUseExtensionArgument()) {
+      val loadedFileNamePsi = useExtensionLoadedFileName() ?: return null
+      val loadedFileReference = BazelLabelReference(loadedFileNamePsi, true)
+      val reference = when (loadedFileNamePsi) {
+        this -> loadedFileReference
+        else -> StarlarkLoadReference(this, loadedFileReference)
+      }
+      return reference
+    }
     val loadAncestor = findLoadStatement() ?: return BazelLabelReference(this, true)
     val loadedFileNamePsi = loadAncestor.getLoadedFileNamePsi() ?: return null
     val loadedFileReference = BazelLabelReference(loadedFileNamePsi, true)
@@ -100,4 +111,15 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   }
 
   fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name in classParametersList
+
+  fun argumentListContext(): StarlarkArgumentList? = (parent as? StarlarkArgumentExpression)?.parent as? StarlarkArgumentList
+
+  fun isUseExtensionArgument(): Boolean = (argumentListContext()?.parent as? StarlarkCallExpression)?.getNamePsi()?.text == "use_extension"
+
+  fun useExtensionLoadedFileName(): StarlarkStringLiteralExpression? {
+    val arguments = argumentListContext()?.getArguments() ?: return null
+    if (arguments.isEmpty()) return null
+    return arguments[0].firstChild as? StarlarkStringLiteralExpression
+  }
+
 }

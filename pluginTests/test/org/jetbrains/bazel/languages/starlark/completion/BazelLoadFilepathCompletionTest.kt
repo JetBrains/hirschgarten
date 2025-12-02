@@ -73,6 +73,33 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
       )
   }
 
+  @Test
+  fun `should complete for use_extension`() {
+    val rulesDir = tempFolder.newFolder("rules_jvm_external")
+    tempFolder.newFile("rules_jvm_external/MODULE.bazel")
+    tempFolder.newFile("rules_jvm_external/BUILD.bazel")
+    tempFolder.newFile("rules_jvm_external/defs.bzl")
+    tempFolder.newFile("rules_jvm_external/extensions.bzl")
+
+    val newRepoNameToPathMap = mapOf("rules_jvm_external" to rulesDir.path.toNioPathOrNull()!!)
+    val newCanonicalRepoNameToApparentName = mapOf("rules_jvm_external" to "rules_jvm_external")
+    project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
+    project.injectCanonicalRepoNameToApparentName(newCanonicalRepoNameToApparentName)
+    getCanonicalRepoNameToBzlFiles(project)
+
+    myFixture.configureByText("MODULE.bazel", """maven = use_extension("<caret>)""")
+    myFixture.type("@ru")
+
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    lookups shouldContainAll
+      listOf(
+        "\"@rules_jvm_external//:extensions.bzl\"",
+        "\"@rules_jvm_external//:defs.bzl\"",
+      )
+  }
+
+
   override fun setUp() {
     super.setUp()
     prepareProject()
