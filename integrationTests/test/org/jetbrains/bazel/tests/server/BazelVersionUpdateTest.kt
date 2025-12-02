@@ -14,8 +14,9 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Test that the server is reset properly after a bazel version update.
@@ -25,34 +26,27 @@ class BazelVersionUpdateTest : IdeStarterBaseProjectTest() {
   @Test
   fun `update bazel version should not cause server to break`() {
     createContext("bazelVersionUpdate", IdeaBazelCases.BazelVersionUpdate).runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
-      step("Import Bazel project") {
-        execute {
-          it
-            .waitForBazelSync()
-            .waitForSmartMode()
-            .takeScreenshot("afterImport")
+      ideFrame {
+        syncBazelProject()
+        waitForIndicators(10.minutes)
+        step("Update bazel version") {
+          openFile(".bazelversion")
+          execute {
+            it
+              .gotoLine(1)
+              .replaceText(0, 5, "8.3.1")
+              .saveDocumentsAndSettings()
+              .takeScreenshot("afterUpdateBazelVersion")
+          }
         }
-      }
 
-      step("Update bazel version") {
-        openFile(".bazelversion")
-        execute {
-          it
-            .gotoLine(1)
-            .replaceText(0, 5, "8.3.1")
-            .saveDocumentsAndSettings()
-            .takeScreenshot("afterUpdateBazelVersion")
-        }
-      }
-
-      step("Resync project and check if the sync is successful") {
-        execute {
-          it
-            .buildAndSync()
-            .waitForSmartMode()
-            .takeScreenshot("afterResync")
-        }
-        ideFrame {
+        step("Resync project and check if the sync is successful") {
+          execute {
+            it
+              .buildAndSync()
+              .waitForSmartMode()
+              .takeScreenshot("afterResync")
+          }
           val buildView = x { byType("com.intellij.build.BuildView") }
           assert(
             buildView.getAllTexts().any {

@@ -174,6 +174,7 @@ class ProjectResolver(
         bazelInfo.release,
         repoMapping,
         featureFlags,
+        bazelInfo,
       )
     }
 

@@ -5,10 +5,10 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.InitProjectActivity
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.project.ProjectStoreOwner
 import org.jetbrains.bazel.config.BazelProjectProperties
-import org.jetbrains.bazel.settings.bazel.openProjectViewInEditor
-import org.jetbrains.bazel.settings.bazel.setProjectViewPath
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
 private class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
   override suspend fun run(project: Project) {
@@ -32,17 +32,13 @@ private class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
     val projectRootDir = project.serviceAsync<BazelProjectProperties>()
       .rootDir
       ?: findProjectFolderFromVFile(virtualFile)!!
-
-    val projectViewPath = getProjectViewPath(projectRootDir, virtualFile)
-    if (projectViewPath != null) {
-      project.setProjectViewPath(projectViewPath)
-    }
-
     project.initProperties(projectRootDir)
 
-    // todo open as the last thing
-    if (projectViewPath != null) {
-      openProjectViewInEditor(project, projectViewPath)
-    }
+    val projectViewPath = getProjectViewPath(projectRootDir, virtualFile)
+      ?.refreshAndFindVirtualFile()
+      ?: return
+
+    project.bazelProjectSettings = project.bazelProjectSettings
+      .withNewProjectViewPath(projectViewPath)
   }
 }

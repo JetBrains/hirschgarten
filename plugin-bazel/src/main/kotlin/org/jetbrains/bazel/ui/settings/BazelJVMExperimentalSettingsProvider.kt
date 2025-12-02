@@ -3,7 +3,6 @@ package org.jetbrains.bazel.ui.settings
 import com.intellij.openapi.options.UnnamedConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -44,19 +43,19 @@ class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedCo
   override fun createComponent(): JComponent =
     panel {
       row {
-        cell(hotswapEnabledCheckBox).align(Align.FILL)
-        contextHelp(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.help.text"))
+        cell(hotswapEnabledCheckBox)
+          .contextHelp(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.help.text"))
       }
-      row { cell(enableKotlinCoroutineDebugCheckBox).align(Align.FILL) }
+      row { cell(enableKotlinCoroutineDebugCheckBox) }
       group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
-        row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+        row { cell(enableLocalJvmActionsCheckBox) }
         row {
-          cell(useIntellijTestRunnerCheckBox).align(Align.FILL)
-          contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
+          cell(useIntellijTestRunnerCheckBox)
+            .contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
         }
       }
 
-      row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
+      row { cell(enableBuildWithJpsCheckBox) }
     }
 
   override fun isModified(): Boolean = currentJVMProjectSettings != project.bazelJVMProjectSettings

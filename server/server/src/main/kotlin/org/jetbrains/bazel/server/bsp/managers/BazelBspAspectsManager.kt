@@ -6,6 +6,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
@@ -13,11 +14,15 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
+import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.io.path.exists
 
 data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
   val isFailure: Boolean
@@ -89,6 +94,22 @@ class BazelBspAspectsManager(
     return this.filterNot { it.language == Language.Python } + RulesetLanguage(pythonRulesetName, Language.Python)
   }
 
+  fun detectBazelIgnoreAndErrorOut(
+    bazelInfo: BazelInfo,
+  ) {
+    val bazelIgnore = bazelInfo.workspaceRoot.resolve(Constants.BAZEL_IGNORE_FILE_NAME)
+    if (!bazelIgnore.exists()) return
+
+    val lines = try {
+      Files.lines(bazelIgnore).map { it.trim() }.toList()
+    } catch (_: IOException) {
+      return
+    }
+    if (!lines.contains(Constants.DOT_BAZELBSP_DIR_NAME)) return
+
+    throw IllegalStateException("${bazelIgnore} mentions ${Constants.DOT_BAZELBSP_DIR_NAME} which is needed for sync by the bazel plugin.")
+  }
+
   fun generateAspectsFromTemplates(
     rulesetLanguages: List<RulesetLanguage>,
     externalRulesetNames: List<String>,
@@ -97,7 +118,10 @@ class BazelBspAspectsManager(
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
     featureFlags: FeatureFlags,
+    bazelInfo: BazelInfo,
   ) {
+    detectBazelIgnoreAndErrorOut(bazelInfo)
+
     val languageRuleMap = rulesetLanguages.associateBy { it.language }
     val activeLanguages = rulesetLanguages.map { it.language }.toSet()
     val kotlinEnabled = Language.Kotlin in activeLanguages
@@ -125,7 +149,8 @@ class BazelBspAspectsManager(
           "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
           "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.toStarlarkString(),
           "protobufRepoName" to protobufRepoName.orEmpty(),
-        )
+          "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
+      )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
 
@@ -135,6 +160,7 @@ class BazelBspAspectsManager(
       mapOf(
         "isPropagateExportsFromDepsEnabled" to
           featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
+        "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
       ),
     )
 
@@ -145,7 +171,7 @@ class BazelBspAspectsManager(
         is BzlmodRepoMapping -> {
           repoMapping.canonicalRepoNameToLocalPath
             .map { (key, value) ->
-              "\"${key.dropWhile { it == '@' }}\": \"$value\""
+              "\"${key.dropWhile { it == '@' }}\": \"${value.toString().replace("\\", "/")}\""
             }.joinToString(",\n", "{\n", "\n}")
         }
 

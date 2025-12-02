@@ -19,7 +19,6 @@ import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.bsp.managers.BepReader
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.server.sync.DebugHelper.buildBeforeRun
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -33,7 +32,6 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import kotlin.io.path.Path
 
 class ExecuteService(
   private val compilationManager: BazelBspCompilationManager,
@@ -91,24 +89,14 @@ class ExecuteService(
     val requestedDebugType = params.debug
     val debugArguments = generateRunArguments(requestedDebugType)
     val debugOptions = generateRunOptions(requestedDebugType)
-    val buildBeforeRun = buildBeforeRun(requestedDebugType)
-
-    return runImpl(params.runParams, debugArguments, debugOptions, buildBeforeRun)
+    return runImpl(params.runParams, debugArguments, debugOptions)
   }
 
   private suspend fun runImpl(
     params: RunParams,
     additionalProgramArguments: List<String>? = null,
     additionalOptions: List<String>? = null,
-    buildBeforeRun: Boolean = true,
   ): RunResult {
-    if (buildBeforeRun) {
-      val targets = listOf(params.target)
-      val result = build(targets, params.originId)
-      if (result.isNotSuccess) {
-        return RunResult(statusCode = result.bazelStatus, originId = params.originId)
-      }
-    }
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         run(params.target) {
@@ -116,19 +104,21 @@ class ExecuteService(
           additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }
-          params.workingDirectory?.let { workingDirectory = Path(it) }
           params.arguments?.let { programArguments.addAll(it) }
           params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.trim().split(" ")) }
         }
       }
     val bazelProcessResult =
-      bazelRunner
-        .runBazelCommand(
+      withBepServer(params.originId) { bepReader ->
+        command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
+
+        bazelRunner.runBazelCommand(
           command,
           originId = params.originId,
-          serverPidFuture = null,
+          serverPidFuture = bepReader.serverPid,
           createdProcessIdDeferred = params.pidDeferred,
         ).waitAndGetResult()
+      }
     return RunResult(statusCode = bazelProcessResult.bazelStatus, originId = params.originId)
   }
 

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.run.config
 
+import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfiguration
@@ -14,7 +15,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsActions
-import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.bazel.config.BazelPluginBundle.message
 import org.jetbrains.bazel.label.Label
@@ -34,17 +34,13 @@ class BazelRunConfiguration internal constructor(
   HotswappableRunConfiguration {
   private val logger: Logger = logger<BazelRunConfiguration>()
 
-  /** The BSP-specific parts of the last serialized state of this run configuration. */
-  private var bspElementState = Element(BSP_STATE_TAG)
-
   var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
 
   override fun checkConfiguration() {
     val utils = project.targetUtils
     val selectedTargets = targets.map {
-      val target = utils.getBuildTargetForLabel(it)
-        ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.found", it))
+      val target = utils.getBuildTargetForLabel(it) ?: return // skip validations when any target is missing
       if (!target.kind.isExecutable) throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.executable", it))
       target
     }
@@ -63,8 +59,14 @@ class BazelRunConfiguration internal constructor(
   }
 
   fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
+    if (newTargets == targets) return
     targets = newTargets
-    updateHandlerIfDifferentProvider(runHandlerProvider ?: RunHandlerProvider.getRunHandlerProvider(project, newTargets))
+    if (newTargets.isEmpty()) return
+    // `updateTargets` is called by the editor on each change. It must not fail, because it will spam with errors while editing
+    // `RunHandlerProvider.getRunHandlerProviderOrNull` is used as a workaround
+    val provider = runHandlerProvider ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, newTargets)
+    if (provider == null) return
+    updateHandlerIfDifferentProvider(provider)
   }
 
   private var handlerProvider: RunHandlerProvider? = null
@@ -78,16 +80,13 @@ class BazelRunConfiguration internal constructor(
   }
 
   private fun updateHandler(newProvider: RunHandlerProvider) {
-    try {
-      handler?.state?.writeExternal(bspElementState)
-    } catch (e: WriteExternalException) {
-      logger.error("Failed to write BSP state", e)
-    }
+    val bspBeforeChange = createBspElement()
     handlerProvider = newProvider
     handler = newProvider.createRunHandler(this)
-
+    bspBeforeChange ?: return
+    val oldHandlerState = bspBeforeChange.getChild(HANDLER_STATE_TAG) ?: return
     try {
-      handler?.state?.readExternal(bspElementState)
+      handler?.state?.readExternal(oldHandlerState)
     } catch (e: Exception) {
       logger.error("Failed to read BSP state", e)
     }
@@ -129,8 +128,6 @@ class BazelRunConfiguration internal constructor(
       return
     }
 
-    bspElementState = bspElement
-
     val provider = RunHandlerProvider.findRunHandlerProvider(providerId)
     if (provider != null) {
       updateHandlerIfDifferentProvider(provider)
@@ -155,32 +152,22 @@ class BazelRunConfiguration internal constructor(
   //  inspired by Google's plugin (which probably predates modern IJ state serialization)
   override fun writeExternal(element: Element) {
     super.writeExternal(element)
+    val bspState = createBspElement() ?: return
+    element.removeChildren(BSP_STATE_TAG)
+    element.addContent(bspState)
+  }
 
-    val provider = handlerProvider
-    val handler = handler
+  /**
+   * HACK
+   * This method is called during deserialization of run tasks which happens AFTER the [BazelRunHandler]s are deserialized.
+   * So if the Bazel plugin uses a new logic for creating before run tasks in a newer version inside one of the handlers,
+   * it will be overruled by this deserialization unless we forcefully disable this.
+   * @see setBeforeRunTasksFromHandler
+   */
+  override fun setBeforeRunTasks(value: List<BeforeRunTask<*>>) {}
 
-    if (provider == null || handler == null) {
-      return
-    }
-
-    bspElementState.removeChildren(TARGET_TAG)
-
-    for (target in targets) {
-      val targetElement = Element(TARGET_TAG)
-      targetElement.text = target.toString()
-      bspElementState.addContent(targetElement)
-    }
-
-    bspElementState.setAttribute(HANDLER_PROVIDER_ATTR, provider.id)
-
-    val handlerState = Element(HANDLER_STATE_TAG)
-
-    handler.state.writeExternal(handlerState)
-
-    bspElementState.removeChildren(HANDLER_STATE_TAG)
-    bspElementState.addContent(handlerState)
-
-    element.addContent(bspElementState.clone())
+  fun setBeforeRunTasksFromHandler(value: List<BeforeRunTask<*>>) {
+    super.setBeforeRunTasks(value)
   }
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
@@ -189,6 +176,22 @@ class BazelRunConfiguration internal constructor(
   override fun getAffectedTargets(): List<Label> = targets
 
   override fun suggestedName(): @NlsActions.ActionText String = targets.joinToString(" ")
+
+  private fun createBspElement(): Element? {
+    val provider = handlerProvider ?: return null
+    val handler = handler ?: return null
+    return Element(BSP_STATE_TAG).apply {
+      for (target in targets) {
+        val targetElement = Element(TARGET_TAG)
+        targetElement.text = target.toString()
+        addContent(targetElement)
+      }
+      setAttribute(HANDLER_PROVIDER_ATTR, provider.id)
+      val handlerState = Element(HANDLER_STATE_TAG)
+      handler.state.writeExternal(handlerState)
+      addContent(handlerState)
+    }
+  }
 
   companion object {
     private const val TARGET_TAG = "bsp-target"

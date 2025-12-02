@@ -82,7 +82,7 @@ class ProjectViewService(private val project: Project) {
   }
 
   private fun getDefaultProjectView(): ProjectView {
-    val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir).format(".")
+    val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir)
     val psiFile = PsiFileFactory.getInstance(project)
       .createFileFromText(".bazelproject", ProjectViewLanguage, content) as ProjectViewPsiFile
     return ProjectView.fromProjectViewPsiFile(psiFile)

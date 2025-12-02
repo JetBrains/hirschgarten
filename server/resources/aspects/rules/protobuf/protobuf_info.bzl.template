@@ -1,4 +1,4 @@
-load("//aspects:utils/utils.bzl", "create_struct","file_location")
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct","file_location")
 
 #if( $bazel8OrAbove == "true" && $rulesetNameApparent == "rules_proto" )
 # Bazel 8+: Use only the rules_proto providers.
