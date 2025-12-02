@@ -10,6 +10,7 @@ interface FlatStorage<V> {
   fun set(value: V)
   fun modify(op: (value: V) -> V)
   fun reset()
+  fun mark()
 }
 
 interface FlatStoreBuilder<V> {

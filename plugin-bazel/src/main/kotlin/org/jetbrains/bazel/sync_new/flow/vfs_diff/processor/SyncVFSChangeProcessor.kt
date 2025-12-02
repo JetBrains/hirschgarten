@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 
 import com.intellij.openapi.components.service
-import org.jetbrains.bazel.sync_new.flow.diff.SyncColdDiff
-import org.jetbrains.bazel.sync_new.flow.diff.plus
+import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.plus
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncFileDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile

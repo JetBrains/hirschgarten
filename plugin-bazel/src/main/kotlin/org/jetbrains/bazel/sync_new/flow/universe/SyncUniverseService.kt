@@ -17,6 +17,7 @@ import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
+import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.SyncScope
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
@@ -41,7 +42,7 @@ class SyncUniverseService(
   val universe: SyncUniverseState
     get() = universeState.get()
 
-  suspend fun computeUniverseDiff(scope: SyncScope): SyncUniverseDiff {
+  suspend fun computeUniverseDiff(scope: SyncScope): SyncColdDiff {
     val connector = project.service<BazelConnectorService>().ofLegacyTask()
     if (scope.isFullSync) {
       universeState.reset()
@@ -62,7 +63,7 @@ class SyncUniverseService(
       }
 
       val targets = computeTargets(connector, universe)
-      return SyncUniverseDiff(added = targets)
+      return SyncColdDiff(added = targets)
     }
 
     val oldImportState = state.importState
@@ -73,7 +74,7 @@ class SyncUniverseService(
     val diff = if (oldImportState.patterns != newImportState.patterns) {
       computeUniverseDiff(connector, oldImportState, newImportState)
     } else {
-      SyncUniverseDiff()
+      SyncColdDiff()
     }
 
     // internal repos changed
@@ -98,7 +99,7 @@ class SyncUniverseService(
     connector: BazelConnector,
     oldState: SyncUniverseImportState,
     newState: SyncUniverseImportState,
-  ): SyncUniverseDiff {
+  ): SyncColdDiff {
     // TODO: maybe we could avoid doing queries over entire universe
     //  and somehow optimize them, maybe using some symbolic optimizer
     val oldTargets = computeTargets(connector, oldState)
@@ -113,7 +114,7 @@ class SyncUniverseService(
       }
     }
 
-    return SyncUniverseDiff(
+    return SyncColdDiff(
       added = added,
       removed = removed,
     )

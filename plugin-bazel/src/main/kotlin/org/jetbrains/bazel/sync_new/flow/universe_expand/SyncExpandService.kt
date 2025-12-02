@@ -2,7 +2,7 @@ package org.jetbrains.bazel.sync_new.flow.universe_expand
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.sync_new.flow.diff.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
@@ -19,7 +19,10 @@ class SyncExpandService(
       .build()
 
   suspend fun expandDependencyDiff(diff: SyncColdDiff): SyncColdDiff {
-    val ctx = SyncExpandContext(project)
+    val ctx = SyncExpandContext(
+      project = project,
+      service = this,
+    )
     return SyncExpandProcessor().process(ctx, diff)
   }
 }
