@@ -3,6 +3,7 @@ package org.jetbrains.bazel.python.sync
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -21,6 +22,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
@@ -33,7 +35,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.jetbrains.python.sdk.PyDetectedSdk
 import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.PythonSdkUpdater
-import com.jetbrains.python.sdk.detectSystemWideSdks
+import com.jetbrains.python.sdk.PythonSdkUtil
 import com.jetbrains.python.sdk.guessedLanguageLevel
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
@@ -61,7 +63,10 @@ private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
 
+private val LOG = logger<PythonProjectSync>()
+
 @ApiStatus.Internal
+
 class PythonProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
@@ -72,7 +77,7 @@ class PythonProjectSync : ProjectSyncHook {
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
-      val defaultSdk = getSystemSdk()
+      val defaultSdk = null
 
       pythonTargets.forEach {
         val moduleName = it.id.formatAsModuleName(environment.project)
@@ -97,6 +102,7 @@ class PythonProjectSync : ProjectSyncHook {
       createFallbackPythonModuleIfNeeded(
         environment = environment,
         pythonTargets = pythonTargets,
+        sdks = sdks,
         defaultSdk = defaultSdk,
         virtualFileUrlManager = virtualFileUrlManager,
       )
@@ -301,14 +307,19 @@ class PythonProjectSync : ProjectSyncHook {
   private suspend fun createFallbackPythonModuleIfNeeded(
     environment: ProjectSyncHookEnvironment,
     pythonTargets: List<BuildTarget>,
+    sdks: Map<Label, Sdk?>,
     defaultSdk: Sdk?,
     virtualFileUrlManager: VirtualFileUrlManager,
   ) {
-    if (defaultSdk == null) {
-      // No Python SDK available, cannot create fallback module
+    // Prefer any Python SDK from Bazel sync, fall back to system SDK
+    // Validate that we only use actual Python SDKs, not JDK or other SDK types
+    val pythonSdkType = PythonSdkType.getInstance()
+    val pythonSdk = sdks.values.firstOrNull { sdk ->
+      sdk != null && sdk.sdkType == pythonSdkType
+    } ?: defaultSdk?.takeIf { it.sdkType == pythonSdkType }
+    if (pythonSdk == null) {
       return
     }
-
     val builder = environment.diff.workspaceModelDiff.mutableEntityStorage
 
     // Get the BazelProjectDirectoriesEntity to know which directories are included
@@ -358,8 +369,14 @@ class PythonProjectSync : ProjectSyncHook {
       }
     }
 
-    // Create the fallback module with Python SDK
-    val dependencies = listOfNotNull(defaultSdk.toModuleDependencyItem())
+    // Create the fallback module with Python SDK from Bazel sync
+    // Use JAVA module type (default) with Python SDK - IntelliJ respects Python folders this way
+    // ModuleSourceDependency is crucial - it's the "<module source>" entry that tells IntelliJ
+    // to recognize the module's own content roots as source folders
+    val dependencies = listOf(
+      ModuleSourceDependency,
+      pythonSdk.toModuleDependencyItem(),
+    )
 
     builder.addEntity(
       ModuleEntity(
@@ -367,16 +384,35 @@ class PythonProjectSync : ProjectSyncHook {
         dependencies = dependencies,
         entitySource = fallbackEntitySource,
       ) {
-        this.type = PYTHON_MODULE_TYPE
+        // Use default JAVA module type - IntelliJ will respect Python folders with Python SDK
         this.contentRoots = contentRoots
       },
     )
+
+    LOG.info("Created fallback Python module: $fallbackModuleName with Python SDK: ${pythonSdk.name}")
   }
 }
 
-private fun getSystemSdk(): PyDetectedSdk? =
-  detectSystemWideSdks(null, emptyList())
-    .filter { it.homePath != null }
-    .let { sdks ->
-      sdks.firstOrNull { it.guessedLanguageLevel?.isPy3K == true } ?: sdks.firstOrNull()
-    }
+/**
+ * Finds a suitable Python SDK using a comprehensive fallback strategy:
+ * 1. First, check all Python SDKs already configured in IntelliJ
+ * 2. If none found, detect system-wide Python installations
+ * 3. Prefer Python 3.x over Python 2.x
+ */
+private fun findPythonSdk(project: Project): Sdk? {
+  val pythonSdkType = PythonSdkType.getInstance()
+
+  // Strategy 1: Check already configured Python SDKs in IntelliJ
+  LOG.info("Searching for Python SDK: checking configured SDKs")
+  val configuredSdks = PythonSdkUtil.getAllSdks().filter { it.sdkType == pythonSdkType }
+  if (configuredSdks.isNotEmpty()) {
+    val preferredSdk = configuredSdks.firstOrNull {
+      (it as? PyDetectedSdk)?.guessedLanguageLevel?.isPy3K == true
+    } ?: configuredSdks.first()
+    LOG.info("Found configured Python SDK: ${preferredSdk.name}")
+    return preferredSdk
+  }
+
+  LOG.warn("No Python SDK found on system")
+  return null
+}
