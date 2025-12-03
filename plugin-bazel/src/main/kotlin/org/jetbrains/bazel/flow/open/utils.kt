@@ -6,6 +6,8 @@ import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.fileEditor.impl.FileEditorOpenOptions
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
+import com.intellij.openapi.vfs.refreshAndFindVirtualFileOrDirectory
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import kotlinx.coroutines.Dispatchers
@@ -24,22 +26,19 @@ import kotlin.io.path.relativeTo
 
 /**
  * this method can be used to set up additional project properties before opening the Bazel project
- * @param virtualFile the virtual file passed to the project open processor
+ * @param path the file passed to the project open processor
  */
 @RequiresBackgroundThread
 fun getProjectViewPath(
-  projectRootDir: VirtualFile,
-  virtualFile: VirtualFile,
+  projectRootDir: Path,
+  path: Path,
 ): Path? {
-  val path = virtualFile.toNioPathOrNull()
-    ?: return null
-
   fun calculateProjectViewFilePath(directory: Path): Path =
     ProjectViewFileUtils.calculateProjectViewFilePath(
-      projectRootDir = projectRootDir,
+      projectRootDir = projectRootDir.refreshAndFindVirtualDirectory()!!,
       projectViewPath = null,
       overwrite = true,
-      format = directory.relativeTo(projectRootDir.toNioPath()).toString(),
+      format = directory.relativeTo(projectRootDir).toString(),
     )
 
   return when {
@@ -47,12 +46,12 @@ fun getProjectViewPath(
     // BUILD file at the root can be treated as a workspace file in this context
     path.hasNameOf(*Constants.BUILD_FILE_NAMES) -> {
       path.parent
-        // ?.takeUnless { it.isWorkspaceRoot() }
+        //?.takeUnless { it.workspaceFile != null }
         ?.let { calculateProjectViewFilePath(it) }
     }
 
     path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES) -> null
-    path.isWorkspaceRoot() -> null
+    path.workspaceFile != null -> null
     else -> {
       path.getBuildFileForPackageDirectory()
         ?.parent
@@ -66,28 +65,35 @@ fun getProjectViewPath(
  * this method provides information about the real project directory to open
  */
 @RequiresBackgroundThread
-tailrec fun findProjectFolderFromVFile(file: VirtualFile?): VirtualFile? {
-  val path = file?.toNioPathOrNull()
-    ?: return null
+tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
+  path == null -> null
+  path.workspaceFile != null -> path
+  // this is to prevent opening a file that is not an acceptable Bazel config file, #BAZEL-1940
+  // TODO(Son): figure out how to write a test for it to avoid regression later
+  isRegularFile(path) &&
+  !path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES) &&
+  !path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> null
 
-  return when {
-    path.isWorkspaceRoot() -> file
-    // this is to prevent opening a file that is not an acceptable Bazel config file, #BAZEL-1940
-    // TODO(Son): figure out how to write a test for it to avoid regression later
-    isRegularFile(path) &&
-      !path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES) &&
-      !path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> null
-
-    else -> findProjectFolderFromVFile(file.parent)
-  }
+  else -> findProjectFolderFromFile(path.parent)
 }
 
-private fun Path.isWorkspaceRoot(): Boolean =
-  isDirectory(this) &&
-    Constants.WORKSPACE_FILE_NAMES
+@RequiresBackgroundThread
+fun findProjectFolderFromVFile(projectIdentityFile: VirtualFile?): VirtualFile? =
+  projectIdentityFile
+    ?.toNioPathOrNull()
+    ?.let { findProjectFolderFromFile(it) }
+    ?.refreshAndFindVirtualFileOrDirectory()
+
+internal val Path.workspaceFile: Path?
+  get() {
+    if (!isDirectory(this))
+      return null
+
+    return Constants.WORKSPACE_FILE_NAMES
       .asSequence()
       .map { resolve(it) }
-      .any { isRegularFile(it) }
+      .firstOrNull { isRegularFile(it) }
+  }
 
 fun Path.hasNameOf(vararg names: String): Boolean =
   isRegularFile(this) &&
@@ -107,6 +113,10 @@ private fun Path.getBuildFileForPackageDirectory(): Path? {
     thisLogger().warn("Cannot retrieve Bazel BUILD file from directory: $this", e)
     null
   }
+}
+
+fun Project.initProperties(projectRootDir: Path) {
+  initProperties(projectRootDir.refreshAndFindVirtualDirectory()!!)
 }
 
 fun Project.initProperties(projectRootDir: VirtualFile) {
