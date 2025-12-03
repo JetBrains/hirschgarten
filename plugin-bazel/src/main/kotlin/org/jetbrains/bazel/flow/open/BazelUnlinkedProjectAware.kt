@@ -33,7 +33,8 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
 
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
 
-  override fun isBuildFile(project: Project, buildFile: VirtualFile): Boolean = buildFile.isBuildFile()
+  override fun isBuildFile(project: Project, buildFile: VirtualFile): Boolean =
+    BazelOpenProjectProvider().isProjectFile(buildFile)
 
   override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean =
     project.isLinkedBazelProject

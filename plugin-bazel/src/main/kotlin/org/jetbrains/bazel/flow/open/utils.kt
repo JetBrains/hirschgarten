@@ -6,7 +6,6 @@ import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.fileEditor.impl.FileEditorOpenOptions
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import kotlinx.coroutines.Dispatchers
@@ -97,12 +96,6 @@ fun Path.hasNameOf(vararg names: String): Boolean =
 fun Path.hasExtensionOf(vararg extensions: String): Boolean =
   isRegularFile(this) &&
     extension in extensions
-
-/**
- * @see [hasNameOf]
- */
-fun VirtualFile.isBuildFile(): Boolean =
-  isFile && name in Constants.BUILD_FILE_NAMES
 
 private fun Path.getBuildFileForPackageDirectory(): Path? {
   if (!isDirectory(this)) return null
