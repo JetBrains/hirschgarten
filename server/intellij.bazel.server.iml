@@ -26,7 +26,7 @@
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" />
     <orderEntry type="library" scope="PROVIDED" name="opentelemetry" level="project" />
     <orderEntry type="library" name="slf4j-api" level="project" />
-    <orderEntry type="library" name="protobuf" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.protobuf" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />
   </component>
