@@ -1,16 +1,15 @@
 package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.components.serviceAsync
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.InitProjectActivity
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.project.ProjectStoreOwner
 import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
-private class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
+// todo rename to ImportBazelProjectAndSyncStartupActivity
+internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
   override suspend fun run(project: Project) {
     if (project !is ProjectStoreOwner) return
 
@@ -18,25 +17,18 @@ private class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
       .storeDescriptor
     if (storeDescriptor !is BazelProjectStoreDescriptor) return
 
-    val virtualFile = storeDescriptor
-      .projectIdentityFile
-      .let(LocalFileSystem.getInstance()::refreshAndFindFileByNioFile)
-
-    if (virtualFile == null) {
-      logger<OpenBazelProjectAndSyncStartupActivity>().error("Project identity file not found")
-      return
-    }
-
     // todo remove rootDir!
     // todo check workspace model emptiness
-    val projectRootDir = project.serviceAsync<BazelProjectProperties>()
-      .rootDir
-      ?: findProjectFolderFromVFile(virtualFile)!!
+    if (project.serviceAsync<BazelProjectProperties>().rootDir != null) return
+
+    // todo duplicates org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor.calculateOpenProjectTask
+    val path = storeDescriptor.projectIdentityFile
+    val projectRootDir = findProjectFolderFromFile(path)!!
     project.initProperties(projectRootDir)
 
-    val projectViewPath = getProjectViewPath(projectRootDir, virtualFile)
-      ?.refreshAndFindVirtualFile()
-      ?: return
+    val projectViewPath = getProjectViewPath(projectRootDir, path)
+                            ?.refreshAndFindVirtualFile()
+                          ?: return
 
     project.bazelProjectSettings = project.bazelProjectSettings
       .withNewProjectViewPath(projectViewPath)
