@@ -2,23 +2,21 @@ package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.openapi.components.service
-import com.intellij.ui.components.Label
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.defaults
-import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
+import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.WildcardFileDiff
-import org.jetbrains.bazel.sync_new.storage.get
 import org.jetbrains.bazel.sync_new.storage.put
 import org.jetbrains.bazel.sync_new.storage.remove
 import org.jetbrains.bazel.sync_new.storage.set
@@ -47,7 +45,7 @@ class SyncVFSBuildFileProcessor {
       val query = buildLabels
         .flatMap { it.value }
         .map { it.assumeResolved().copy(target = AllRuleTargets) }
-        .joinToString(separator = " union ") { it.toString() }
+        .joinToString(separator = " + ") { it.toString() }
       val result = connector.query {
         defaults()
         keepGoing()
@@ -57,7 +55,7 @@ class SyncVFSBuildFileProcessor {
       result.unwrap().unwrapProtos()
         .filter { it.hasRule() }
         .map { it.rule }
-        .groupBy { it.getBuildLocation() }
+        .groupBy { it.getBuildLocation(ctx) }
     }
 
     val addedTargets = mutableSetOf<Label>()
@@ -114,12 +112,14 @@ class SyncVFSBuildFileProcessor {
     )
   }
 
-  private fun Build.Rule.getBuildLocation(): Path? =
-    if (location.contains(':')) {
+  private fun Build.Rule.getBuildLocation(ctx: SyncVFSContext): Path {
+    val path = if (location.contains(':')) {
       Path.of(location.substringBefore(':'))
     } else {
       Path.of(location)
     }
+    return WorkspacePathUtils.resolveExternalRepoPath(ctx, path)
+  }
 
 
 }
