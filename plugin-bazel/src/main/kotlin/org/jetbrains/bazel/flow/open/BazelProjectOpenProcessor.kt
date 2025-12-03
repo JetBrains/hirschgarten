@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.projectImport.ProjectOpenProcessor
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
@@ -65,21 +64,29 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
   ): Pair<Path, OpenProjectTask> {
     // todo why do we even need to calculate the project root dir?
     // todo refactor
-    val projectRootDir = findProjectFolderFromVFile(virtualFile)!!
-    val projectViewPath = getProjectViewPath(projectRootDir, virtualFile)
-    val projectStoreBaseDir = projectViewPath ?: virtualFile.toNioPath()
 
-    return projectStoreBaseDir to
+    val path = virtualFile.toNioPath()
+    val (projectRootDir, projectViewPath) = if (path.workspaceFile != null) {
+      Pair(path, null)
+    }
+    else {
+      val projectRootDir = findProjectFolderFromFile(path)!!
+      val projectViewPath = getProjectViewPath(projectRootDir, path)
+      Pair(projectRootDir, projectViewPath)
+    }
+
+    return (projectViewPath ?: projectRootDir.workspaceFile!!) to
       OpenProjectTask {
         runConfigurators = true
         isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
 
-        this.projectRootDir = projectRootDir.toNioPathOrNull()
+        this.projectRootDir = projectRootDir
         this.forceOpenInNewFrame = forceOpenInNewFrame
         this.projectToClose = projectToClose
         this.createModule = Registry.`is`("bazel.create.fake.module.on.project.import")
 
         beforeOpen = { project ->
+          // todo gets invoked twice
           project.initProperties(projectRootDir)
 
           if (projectViewPath != null) {
