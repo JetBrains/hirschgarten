@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bazel Plugin 2025.2.9</title>
+</head>
+<body>
+<h1>2025.2.9</h1>
+<p>RELEASE NOTES</p>
+<p>Please consider switching to Nightly channel in <code>Settings -> Build, Execution, Deployment -> Build Tools -> Bazel -> Advanced Settings</code><br>
+Switching to nightly you'll get newest features and fixes faster!</p>
+<p>Please file any issue on our <a href="https://youtrack.jetbrains.com/issues/BAZEL">YouTrack</a> or reach us directly on slack <a href="https://bazelbuild.slack.com/archives/C025SBYFC4E">#intellij @ slack.bazel.build</a></p>
+<h2>Changelog:</h2>
+<h3>Features</h3>
+<ul>
+    <li>[fix] Corrected aspect label reference in the Bazel plugin&#x27;s Scala aspect, resolving sync failures on Scala projects. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2716">BAZEL-2716</a></li>
+    <li>[fix] Properly escape Windows paths in generated utils.bzl to prevent import failures due to invalid escape sequences. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2710">BAZEL-2710</a></li>
+    <li>[fix] Enable --script_path for all JVM debug configurations to avoid timeout, display build progress in console, and parse build errors for &#x27;bazel run&#x27; targets. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2575">BAZEL-2575</a></li>
+    <li>[fix] Improved --script_path handling to properly manage environment variables and removed working directory configuration, enabling script path support for all debug configurations to avoid timeout issues. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2575">BAZEL-2575</a></li>
+    <li>[fix] Error out if `.bazelbsp` directory is added to `.bazelignore`, preventing issues with the bazel aspect repository injection that could invalidate analysis. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2677">BAZEL-2677</a></li>
+    <li>[fix] Address the aspect repository directly instead of using --inject_repository to prevent analysis invalidation when switching between plugin and command-line builds. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2677">BAZEL-2677</a></li>
+    <li>[fix] Add kotlin-stdlib dependency to Java modules that depend on Kotlin targets, resolving missing search scope access to Kotlin standard library elements like `kotlin.Unit` or `Enum.entries` from Java code. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2642">BAZEL-2642</a></li>
+    <li>[fix] Removed duplicated error diagnostics from the sync console output. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2610">BAZEL-2610</a></li>
+    <li>[fix] Remove the run configuration warning for missing targets, allowing users to run targets even if they are not imported. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2686">BAZEL-2686</a></li>
+    <li>[fix] Run configuration changes are no longer applied immediately after serialization, ensuring the &quot;Apply&quot; button works correctly and cancelling discards changes as expected. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2651">BAZEL-2651</a></li>
+    <li>[fix] Allow running Bazel targets that are not imported, preventing IDE errors and exceptions when importing run configurations with excluded targets. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2686">BAZEL-2686</a></li>
+    <li>[fix] Parse system-out in test cases to make Bazel plugin test output consistent with other plugins, displaying expected and actual values on separate lines with diff tool support. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2255">BAZEL-2255</a></li>
+    <li>[fix] Added exception stacktraces and adjusted logic to mark only failed tests as failed, improving consistency of Bazel plugin test output with other plugins. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2255">BAZEL-2255</a></li>
+    <li>[feature] Add label completion support for `use_extension` in Bazel module files. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-1830">BAZEL-1830</a></li>
+    <li>[fix] Reverted accidental cherry-pick to plugin.xml that caused &quot;Cannot create extension&quot; exception after restarting IDE. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2664">BAZEL-2664</a></li>
+    <li>[fix] New Bazel projects now include bazel convenience symlinks in the generated .gitignore file to prevent an unclean git state after project creation. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-2633">BAZEL-2633</a></li>
+    <li>[feature] Add references for `use_extension` in Bazel module files, improving code intelligence and navigation support in MODULE.bazel. | #<a href="https://youtrack.jetbrains.com/issue/BAZEL-1830">BAZEL-1830</a></li>
+</ul>
+<h3>Bug Fixes</h3>
+<ul>
+</ul>
+<h3>Maintenance</h3>
+<ul>
+</ul>
+</body>
+</html>
