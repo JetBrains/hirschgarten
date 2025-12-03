@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.python
 
+import com.intellij.openapi.project.Project
 import com.jetbrains.python.PyNames
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
@@ -19,7 +20,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
 
-  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(project: Project, targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val defaultTargetInfo = calculateDefaultTargetInfo(targets)
     defaultInterpreter =
       defaultTargetInfo
