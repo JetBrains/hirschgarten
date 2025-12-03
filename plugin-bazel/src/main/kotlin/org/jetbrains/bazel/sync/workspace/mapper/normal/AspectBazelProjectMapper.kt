@@ -115,8 +115,7 @@ class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  (target.sourcesCount > 0 || targetTagsResolver.resolveTags(target).any { it == Tag.APPLICATION || it == Tag.TEST })
-                    && isWorkspaceTarget(target, repoMapping, featureFlags)
+                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
                 } == true
               },
             )
@@ -217,12 +216,9 @@ class AspectBazelProjectMapper(
       }
 
     val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, highPrioritySources, repoMapping, dependencyGraph) }
-    val nonModuleRawTargets =
-      measure("create non module raw targets") {
-        nonModuleTargets
-          .map { it.toBuildTarget() }
-          .filter { it.kind.isExecutable }
-      }
+    val nonModuleRawTargets = measure("create non module raw targets") {
+      nonModuleTargets.map { it.toBuildTarget() }
+    }
 
     return BazelResolvedWorkspace(
       targets =
