@@ -60,7 +60,7 @@ val ProjectView.deriveTargetsFromDirectories: Boolean
   get() = getSection(DeriveTargetsFromDirectoriesSection.KEY) ?: false
 
 val ProjectView.importDepth: Int
-  get() = getSection(ImportDepthSection.KEY) ?: 1
+  get() = getSection(ImportDepthSection.KEY) ?: -1
 
 val ProjectView.enabledRules: List<String>
   get() = getSection(EnabledRulesSection.KEY) ?: emptyList()
