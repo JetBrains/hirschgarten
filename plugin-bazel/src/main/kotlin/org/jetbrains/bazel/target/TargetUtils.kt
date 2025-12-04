@@ -86,9 +86,6 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   private fun logThreadPoolDiagnostics(phase: String) {
     try {
-      // Get the default IO dispatcher thread pool
-      val ioDispatcher = Dispatchers.IO as? kotlinx.coroutines.internal.LimitedDispatcher
-        ?: (Dispatchers.IO as? kotlinx.coroutines.CoroutineDispatcher)
 
       // Use Java ThreadMXBean to get thread statistics
       val threadMXBean = java.lang.management.ManagementFactory.getThreadMXBean()

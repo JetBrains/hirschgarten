@@ -300,9 +300,10 @@ class PythonProjectSync : ProjectSyncHook {
     }
 
   /**
-   * Creates a fallback Python module for files in included directories that are not part of any Python target.
+   * Creates fallback Python modules for files in included directories that are not part of any Python target.
    * This ensures that Python files outside of targets still get a Python SDK instead of falling back to the
    * project-level Java SDK.
+   * Creates one module per root-level folder to allow different folder-level settings.
    */
   private suspend fun createFallbackPythonModuleIfNeeded(
     environment: ProjectSyncHookEnvironment,
@@ -348,18 +349,20 @@ class PythonProjectSync : ProjectSyncHook {
       return
     }
 
-    // Create a fallback module for non-target Python files
-    val fallbackModuleName = "${environment.project.name}.python.non-targets"
-    val fallbackEntitySource = BazelModuleEntitySource(fallbackModuleName)
+    // Create one module per root-level folder to allow different folder-level settings
+    uncoveredRoots.forEach { rootUrl ->
+      // Extract folder name from URL (e.g., "file:///path/to/root/folder1" -> "folder1")
+      val folderName = rootUrl.url.trimEnd('/').substringAfterLast('/')
+      val fallbackModuleName = "${environment.project.name}.python.$folderName"
+      val fallbackEntitySource = BazelModuleEntitySource(fallbackModuleName)
 
-    // Create content roots for each uncovered directory
-    val contentRoots = uncoveredRoots.map { rootUrl ->
+      // Create content root for this directory
       val sourceRootEntity = SourceRootEntity(
         url = rootUrl,
         rootTypeId = SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE),
         entitySource = fallbackEntitySource,
       )
-      ContentRootEntity(
+      val contentRoot = ContentRootEntity(
         url = rootUrl,
         excludedPatterns = emptyList(),
         entitySource = fallbackEntitySource,
@@ -367,29 +370,29 @@ class PythonProjectSync : ProjectSyncHook {
         this.excludedUrls = emptyList()
         this.sourceRoots = listOf(sourceRootEntity)
       }
+
+      // Create the fallback module with Python SDK from Bazel sync
+      // Use JAVA module type (default) with Python SDK - IntelliJ respects Python folders this way
+      // ModuleSourceDependency is crucial - it's the "<module source>" entry that tells IntelliJ
+      // to recognize the module's own content roots as source folders
+      val dependencies = listOf(
+        ModuleSourceDependency,
+        pythonSdk.toModuleDependencyItem(),
+      )
+
+      builder.addEntity(
+        ModuleEntity(
+          name = fallbackModuleName,
+          dependencies = dependencies,
+          entitySource = fallbackEntitySource,
+        ) {
+          // Use default JAVA module type - IntelliJ will respect Python folders with Python SDK
+          this.contentRoots = listOf(contentRoot)
+        },
+      )
+
+      LOG.info("Created fallback Python module: $fallbackModuleName for folder: $folderName with Python SDK: ${pythonSdk.name}")
     }
-
-    // Create the fallback module with Python SDK from Bazel sync
-    // Use JAVA module type (default) with Python SDK - IntelliJ respects Python folders this way
-    // ModuleSourceDependency is crucial - it's the "<module source>" entry that tells IntelliJ
-    // to recognize the module's own content roots as source folders
-    val dependencies = listOf(
-      ModuleSourceDependency,
-      pythonSdk.toModuleDependencyItem(),
-    )
-
-    builder.addEntity(
-      ModuleEntity(
-        name = fallbackModuleName,
-        dependencies = dependencies,
-        entitySource = fallbackEntitySource,
-      ) {
-        // Use default JAVA module type - IntelliJ will respect Python folders with Python SDK
-        this.contentRoots = contentRoots
-      },
-    )
-
-    LOG.info("Created fallback Python module: $fallbackModuleName with Python SDK: ${pythonSdk.name}")
   }
 }
 
