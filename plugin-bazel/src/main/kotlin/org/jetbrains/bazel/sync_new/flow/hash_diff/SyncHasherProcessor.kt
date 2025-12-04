@@ -6,6 +6,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
+import org.jetbrains.bazel.sync_new.connector.consistentLabels
 import org.jetbrains.bazel.sync_new.connector.defaults
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
@@ -64,6 +65,7 @@ class SyncHasherProcessor {
     val result = connector.query {
       defaults()
       keepGoing()
+      consistentLabels()
       output(QueryOutput.PROTO)
       query(query)
     }

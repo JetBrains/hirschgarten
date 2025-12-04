@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot
 
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
+import org.jetbrains.bsp.protocol.JvmPrefixSourceFile
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -19,7 +20,7 @@ import kotlin.io.path.extension
 //
 class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver) {
 
-  fun inferPackages(sources: List<SourceItem>) {
+  fun inferPackages(sources: List<JvmPrefixSourceFile>) {
     if (sources.isEmpty()) {
       return
     }
@@ -49,13 +50,13 @@ class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver) {
 class SourceItemPropagationPrefixTree {
   private data class Node(
     val segment: String,
-    var item: SourceItem?,
+    var item: JvmPrefixSourceFile?,
     val children: MutableList<Node> = mutableListOf(),
   )
 
   private var root = Node("", null)
 
-  fun push(path: Sequence<String>, data: SourceItem) {
+  fun push(path: Sequence<String>, data: JvmPrefixSourceFile) {
     var current = root
     for (segment in path) {
       var node: Node? = null
@@ -107,7 +108,7 @@ class SourceItemPropagationPrefixTree {
     propagateFromRootSourceFileInSubtree(subtreeRoot, rootSourceFile, resolvedPackage)
   }
 
-  private fun propagateFromRootSourceFileInSubtree(subtreeRoot: Node, rootSourceFile: SourceItem, resolvedPackage: String) {
+  private fun propagateFromRootSourceFileInSubtree(subtreeRoot: Node, rootSourceFile: JvmPrefixSourceFile, resolvedPackage: String) {
     val rootPath = rootSourceFile.path.parent
 
     val queue = ArrayDeque<Node>()

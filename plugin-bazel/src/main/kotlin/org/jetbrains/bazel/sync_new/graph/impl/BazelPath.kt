@@ -60,5 +60,14 @@ fun BazelPath.toFileLocation(): FileLocation = when (this) {
 
 fun FileLocation.toBazelPath(): BazelPath = BazelPath.fromFileLocation(this)
 
-// TODO: implement more optimal approach
+// TODO: optimize and directly resolve BazelPath
 fun BazelPathsResolver.resolve(path: BazelPath): Path = resolve(path.toFileLocation())
+
+fun BazelPath.getIncompletePath(): Path {
+  val path = when (this) {
+    is BazelPath.Absolute -> path
+    is BazelPath.MainWorkspace -> relative
+    is BazelPath.ExternalWorkspace -> relative
+  }
+  return Path.of(path)
+}

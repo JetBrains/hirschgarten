@@ -15,6 +15,10 @@ import org.jetbrains.bazel.sync_new.flow.vfs_diff.processor.SyncVFSChangeProcess
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.storageContext
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.LinkOption
+import java.nio.file.Path
 
 // TODO: separate target discovery
 @Service(Service.Level.PROJECT)
@@ -68,11 +72,22 @@ class SyncVFSService(
 
   private fun consumeWatcherFileChanges(): Map<SyncFileState, List<SyncVFSFile>> {
     val changes = vfsListener.file2State.asSequence()
-      .map { (k, v) -> v to SyncFileClassifier.classify(k) }
+      .map { (k, v) -> v to SyncFileClassifier.classify(k.resolveSymlinks()) }
       .groupBy({ (k, _) -> k }, { (_, v) -> v })
       .toMap()
     vfsListener.file2State.clear()
     return changes
+  }
+
+  private fun Path.resolveSymlinks(): Path {
+    if (!Files.exists(this)) {
+      return this
+    }
+    return try {
+      this.toRealPath()
+    } catch (_: IOException) {
+      this
+    }
   }
 
   override fun dispose() {

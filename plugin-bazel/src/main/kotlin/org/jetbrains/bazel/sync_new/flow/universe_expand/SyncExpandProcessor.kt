@@ -4,6 +4,7 @@ import com.intellij.openapi.components.service
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
+import org.jetbrains.bazel.sync_new.connector.consistentLabels
 import org.jetbrains.bazel.sync_new.connector.defaults
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
@@ -14,6 +15,9 @@ import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 
 class SyncExpandProcessor {
   suspend fun process(ctx: SyncExpandContext, diff: SyncColdDiff): SyncColdDiff {
+    if (ctx.scope.isFullSync) {
+      ctx.service.graph.reset()
+    }
     val graph = ctx.service.graph.get()
 
     val added = mutableSetOf<Label>()
@@ -85,7 +89,7 @@ class SyncExpandProcessor {
     return SyncColdDiff(
       added = added,
       removed = removed,
-      changed = changed
+      changed = changed,
     )
   }
 
@@ -98,6 +102,7 @@ class SyncExpandProcessor {
     val result = connector.query {
       defaults()
       keepGoing()
+      consistentLabels()
       output(QueryOutput.PROTO)
       query("deps(${targets.joinToString(separator = " + ") { it.toString() }})")
     }

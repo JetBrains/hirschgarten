@@ -7,7 +7,6 @@ import org.jetbrains.bazel.sync_new.storage.SortedKVStore
 open class MVStoreSortedKVStore<K, V>(
   private val map: MVMap<K, V>,
 ) : SortedKVStore<K, V> {
-  override fun getHighestKey(): K? = map.lastKey()
   override fun get(key: K): V? = map[key]
   override fun put(key: K, value: V) {
     map[key] = value

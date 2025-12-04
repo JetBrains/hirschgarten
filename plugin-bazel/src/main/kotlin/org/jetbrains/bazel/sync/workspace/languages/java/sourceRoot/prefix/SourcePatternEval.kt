@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix
 
-import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.JvmPrefixSourceFile
 import java.nio.file.Path
 import kotlin.io.path.relativeTo
 
@@ -43,10 +43,10 @@ object SourcePatternEval {
 
   fun evalSources(
     workspaceRoot: Path,
-    sources: List<SourceItem>,
+    sources: List<JvmPrefixSourceFile>,
     includes: List<SourceRootPattern>,
     excludes: List<SourceRootPattern>,
-  ): PatternEvalResult<SourceItem> = eval(
+  ): PatternEvalResult<JvmPrefixSourceFile> = eval(
     items = sources,
     transform = { it.path.relativeTo(workspaceRoot).toString() },
     includes = includes.map { { pattern: String -> it.matches(pattern)} },

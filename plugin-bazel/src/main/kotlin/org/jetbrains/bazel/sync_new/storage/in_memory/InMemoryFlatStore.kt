@@ -56,15 +56,14 @@ class InMemoryFlatStore<T>(
     wasModified = true
   }
 
-  override fun modify(op: (value: T) -> T) {
+  override fun modify(op: (value: T) -> T): T {
     while (true) {
-      @Suppress("UNCHECKED_CAST")
-      val current = VALUE_HANDLE.getVolatile(this) as T
+      val current = get()
       val updated = op(current)
       if (VALUE_HANDLE.compareAndSet(this, current, updated)) {
         // assume every modify operation ends up modifying the value
         wasModified = true
-        break
+        return updated
       }
     }
   }

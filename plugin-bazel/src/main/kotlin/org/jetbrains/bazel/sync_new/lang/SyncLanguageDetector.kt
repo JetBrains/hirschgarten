@@ -4,5 +4,5 @@ import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bsp.protocol.RawAspectTarget
 
 interface SyncLanguageDetector {
-  fun detect(ctx: SyncContext, target: RawAspectTarget): List<SyncLanguage>
+  fun detect(ctx: SyncContext, target: RawAspectTarget): Boolean
 }

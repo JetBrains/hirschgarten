@@ -3,7 +3,12 @@ package org.jetbrains.bsp.protocol
 import java.nio.file.Path
 
 data class SourceItem(
-  val path: Path,
+  override val path: Path,
   val generated: Boolean,
-  var jvmPackagePrefix: String? = null,
-)
+  override var jvmPackagePrefix: String? = null,
+) : JvmPrefixSourceFile
+
+interface JvmPrefixSourceFile {
+  val path: Path
+  var jvmPackagePrefix: String?
+}

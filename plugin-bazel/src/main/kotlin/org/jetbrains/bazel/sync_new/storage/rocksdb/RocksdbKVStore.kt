@@ -1,27 +1,25 @@
 package org.jetbrains.bazel.sync_new.storage.rocksdb
 
 import com.github.benmanes.caffeine.cache.Caffeine
-import com.github.benmanes.caffeine.cache.RemovalCause
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.codec.Codec
+import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.SortedKVStore
 import org.rocksdb.ColumnFamilyHandle
 import org.rocksdb.ReadOptions
 import org.rocksdb.RocksDB
-import org.rocksdb.WriteBatch
 import org.rocksdb.WriteOptions
-import java.time.Duration
 import java.util.concurrent.atomic.AtomicReference
 
-class RocksdbSortedKVStore<K : Any, V : Any>(
+class RocksdbKVStore<K : Any, V : Any>(
   private val db: RocksDB,
   private val cfHandle: ColumnFamilyHandle,
   private val keyCodec: Codec<K>,
   private val valueCodec: Codec<V>,
   private val writeQueue: RocksdbWriteQueue,
   private val disposable: Disposable,
-) : SortedKVStore<K, V>, Disposable {
+) : KVStore<K, V>, Disposable {
 
   companion object {
     private val READ_OPTIONS = ReadOptions()
@@ -39,10 +37,6 @@ class RocksdbSortedKVStore<K : Any, V : Any>(
 
   init {
     Disposer.register(disposable, this)
-  }
-
-  override fun getHighestKey(): K? {
-    TODO("Not yet implemented")
   }
 
   override fun get(key: K): V? = cache.get(key) {

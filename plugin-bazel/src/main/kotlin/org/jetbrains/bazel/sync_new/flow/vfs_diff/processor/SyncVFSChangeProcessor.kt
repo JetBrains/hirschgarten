@@ -17,7 +17,7 @@ class SyncVFSChangeProcessor {
 
     val starlarkFileDiff = SyncVFSStarlarkFileProcessor().process(ctx, diff + universeDiff)
 
-    val buildFiles = filterDiff<SyncVFSFile.BuildFile>(diff) + starlarkFileDiff
+    val buildFiles = filterDiff<SyncVFSFile.BuildFile>(diff + universeDiff) + starlarkFileDiff
     val buildFilesDiff = SyncVFSBuildFileProcessor().process(ctx, buildFiles)
 
     val sourceFiles = filterDiff<SyncVFSFile.SourceFile>(diff)

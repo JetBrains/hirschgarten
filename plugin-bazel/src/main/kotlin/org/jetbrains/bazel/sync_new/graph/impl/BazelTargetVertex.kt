@@ -15,6 +15,10 @@ import org.jetbrains.bazel.sync_new.lang.SyncTargetData
 import org.jetbrains.bazel.sync_new.lang.kryo.SyncTargetDataSerializer
 import java.util.EnumSet
 
+const val PRIORITY_LOW: Int = 0
+const val PRIORITY_NORMAL: Int = 100
+const val PRIORITY_HIGH: Int = 200
+
 @Tagged
 data class BazelTargetVertex(
   @field:Tag(1)

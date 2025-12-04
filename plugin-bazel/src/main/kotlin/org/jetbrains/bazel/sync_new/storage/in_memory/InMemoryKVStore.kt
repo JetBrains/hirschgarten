@@ -121,14 +121,6 @@ open class InMemorySortedKVStore<K, V>(
 ), SortedKVStore<K, V> {
   protected val sortedMap: SortedMap<K, V>
     get() = map as NavigableMap<K, V>
-
-  override fun getHighestKey(): K? {
-    return if (sortedMap.isEmpty()) {
-      null
-    } else {
-      sortedMap.lastKey()
-    }
-  }
 }
 
 class InMemorySortedKVStoreBuilder<K, V>(

@@ -28,6 +28,12 @@ fun CodecBuilder.ofLong(): Codec<Long> = codecOf(
   size = { _, _ -> Long.SIZE_BYTES },
 )
 
+fun CodecBuilder.ofInt(): Codec<Int> = codecOf(
+  encode = { _, buffer, value -> buffer.writeVarInt(value) },
+  decode = { _, buffer -> buffer.readVarInt() },
+  size = { _, _ -> Int.SIZE_BYTES },
+)
+
 // using varlong in this case is just waste of resources
 fun CodecBuilder.ofHash128(): Codec<HashValue128> = codecOf(
   encode = { _, buffer, value ->
@@ -41,6 +47,8 @@ fun CodecBuilder.ofHash128(): Codec<HashValue128> = codecOf(
   },
   size = { _, _ -> 2 * Long.SIZE_BYTES },
 )
+
+val hash128Codec: Codec<HashValue128> = codecBuilderOf().ofHash128()
 
 fun CodecBuilder.ofString(): Codec<String> = codecOf(
   encode = { _, buffer, value -> buffer.writeString(value) },
