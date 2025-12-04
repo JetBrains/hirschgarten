@@ -20,6 +20,9 @@
       implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
     <testLocatorProvider implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider" />
+
+    <syncVFSFileContributor implementation="org.jetbrains.bazel.sync_new.languages_impl.java.JavaSyncVFSFileContributor"/>
+    <syncLanguagePlugin implementation="org.jetbrains.bazel.sync_new.languages_impl.jvm.JvmSyncLanguagePlugin"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

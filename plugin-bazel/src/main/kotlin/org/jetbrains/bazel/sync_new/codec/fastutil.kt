@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync_new.codec
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
@@ -21,6 +22,24 @@ object IntOpenHashSetCodec {
       set.add(buffer.readVarInt())
     }
     return set
+  }
+}
+
+object IntArrayListCodec {
+  fun encode(ctx: CodecContext, buffer: CodecBuffer, value: IntArrayList) {
+    buffer.writeVarInt(value.size)
+    for (n in value.indices) {
+      buffer.writeVarInt(value.getInt(n))
+    }
+  }
+
+  fun decode(ctx: CodecContext, buffer: CodecBuffer): IntArrayList {
+    val len = buffer.readVarInt()
+    val list = IntArrayList(len)
+    for (n in 0 until len) {
+      list.add(buffer.readVarInt())
+    }
+    return list
   }
 }
 

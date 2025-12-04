@@ -2,7 +2,9 @@ package org.jetbrains.bazel.sync_new.flow.universe_expand
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncScope
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
@@ -18,11 +20,21 @@ class SyncExpandService(
       .withCreator { SyncReachabilityGraph() }
       .build()
 
-  suspend fun expandDependencyDiff(diff: SyncColdDiff): SyncColdDiff {
+  suspend fun expandDependencyDiff(scope: SyncScope, diff: SyncColdDiff): SyncColdDiff {
     val ctx = SyncExpandContext(
       project = project,
       service = this,
+      scope = scope
     )
     return SyncExpandProcessor().process(ctx, diff)
+  }
+
+  fun isWithinUniverseScope(target: Label): Boolean {
+    val graph = graph.get()
+    val id = graph.label2Id.getInt(target)
+    if (id == SyncReachabilityGraph.EMPTY_ID) {
+      return false
+    }
+    return graph.universeVertices.contains(id)
   }
 }

@@ -13,10 +13,6 @@ class SyncLanguageService {
   private val type2Tag: Reference2LongMap<Class<*>> = Reference2LongOpenHashMap()
   private val lang2Plugins: MutableMap<SyncLanguage, List<SyncLanguagePlugin<*>>> = mutableMapOf()
 
-  private val _languageDetectors: MutableList<SyncLanguageDetector> = mutableListOf()
-  val languageDetectors: List<SyncLanguageDetector>
-    get() = _languageDetectors
-
   init {
     for (plugin in SyncLanguagePlugin.ep.extensionList) {
       val language = plugin.language
@@ -34,8 +30,6 @@ class SyncLanguageService {
         ?: error("SyncClassTag annotation is not found for ${dataType.name}")
       tag2Type[annotation.serialId] = dataType
       type2Tag[dataType] = annotation.serialId
-
-      _languageDetectors.add(plugin.languageDetector)
     }
   }
 

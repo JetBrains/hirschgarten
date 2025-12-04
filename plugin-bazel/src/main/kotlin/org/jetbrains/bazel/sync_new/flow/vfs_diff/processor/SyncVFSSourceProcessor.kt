@@ -9,6 +9,7 @@ import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryArgs
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
+import org.jetbrains.bazel.sync_new.connector.consistentLabels
 import org.jetbrains.bazel.sync_new.connector.defaults
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.noOrderOutput
@@ -22,6 +23,7 @@ import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
+import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFileContributor
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.WildcardFileDiff
 import org.jetbrains.bazel.sync_new.storage.put
 import java.nio.file.Path
@@ -58,7 +60,13 @@ class SyncVFSSourceProcessor {
       }
     }
 
-    val sources = (diff.added + diff.changed).map { it.path }
+    val contributors = SyncVFSFileContributor.ep.extensionList
+    val changedSources = diff.changed.filter { file ->
+      contributors.any {
+        it.doesFileChangeInvalidateTarget(ctx.project, file.path)
+      }
+    }
+    val sources = (diff.added + changedSources).map { it.path }
     for ((source, targets) in runInverseSourceQuery(ctx, sources)) {
       for (target in targets) {
         ctx.storage.source2Target.put(source, target)
@@ -123,7 +131,7 @@ class SyncVFSSourceProcessor {
     val result = connector.query {
       defaults()
       keepGoing()
-      //consistentLabels()
+      consistentLabels()
       output(QueryOutput.PROTO)
       builder()
     }

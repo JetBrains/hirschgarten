@@ -1,8 +1,9 @@
 package org.jetbrains.bazel.sync_new.graph
 
-import it.unimi.dsi.fastutil.longs.LongList
+import it.unimi.dsi.fastutil.ints.IntList
+import it.unimi.dsi.fastutil.ints.IntSet
 
-typealias ID = Long
+typealias ID = Int
 const val EMPTY_ID: ID = 0
 
 interface FastDirectedGraph<V, E> {
@@ -12,16 +13,18 @@ interface FastDirectedGraph<V, E> {
   fun getVertexById(id: ID): V?
   fun getEdgeById(id: ID): E?
 
-  fun getSuccessors(id: ID): LongList
-  fun getPredecessors(id: ID): LongList
+  fun getSuccessors(id: ID): IntList
+  fun getPredecessors(id: ID): IntList
 
-  fun getOutgoingEdges(id: ID): LongList
-  fun getIncomingEdges(id: ID): LongList
+  fun getOutgoingEdges(id: ID): IntList
+  fun getIncomingEdges(id: ID): IntList
 
-  fun getEdgeBetween(from: ID, to: ID): Long
+  fun getEdgeBetween(from: ID, to: ID): ID
 
   fun addVertex(vertex: V)
   fun addEdge(edge: E)
   fun removeVertexById(id: ID): V?
   fun removeEdgeById(id: ID): E?
+
+  fun getAllVertexIds(): IntSet
 }

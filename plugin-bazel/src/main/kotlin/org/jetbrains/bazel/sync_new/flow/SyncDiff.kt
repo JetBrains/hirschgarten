@@ -9,9 +9,9 @@ data class SyncDiff(
   val changed: Set<ChangedTarget>,
 ) {
   val split: SplitDiff by lazy {
-    val mergedAdded = added + changed.map { it.new }
+    val mergedChanged = added + changed.map { it.new }
     val mergedRemoved = removed + changed.map { it.old }
-    SplitDiff(added = mergedAdded, removed = mergedRemoved)
+    SplitDiff(changed = mergedChanged, removed = mergedRemoved)
   }
 }
 
@@ -22,7 +22,7 @@ data class ChangedTarget(
 )
 
 data class SplitDiff(
-  val added: Set<TargetReference>,
+  val changed: Set<TargetReference>,
   val removed: Set<TargetReference>,
 )
 

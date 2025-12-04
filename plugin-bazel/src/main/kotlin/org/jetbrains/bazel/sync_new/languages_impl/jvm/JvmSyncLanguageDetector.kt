@@ -9,10 +9,5 @@ object JvmSyncLanguageDetector : SyncLanguageDetector {
   override fun detect(
     ctx: SyncContext,
     target: RawAspectTarget,
-  ): List<SyncLanguage> =
-    if (target.target.hasJvmTargetInfo()) {
-      listOf(JvmSyncLanguage)
-    } else {
-      listOf()
-    }
+  ): Boolean = target.target.hasJvmTargetInfo()
 }

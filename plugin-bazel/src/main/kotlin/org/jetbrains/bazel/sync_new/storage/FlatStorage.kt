@@ -8,7 +8,7 @@ import kotlin.reflect.KProperty
 interface FlatStorage<V> {
   fun get(): V
   fun set(value: V)
-  fun modify(op: (value: V) -> V)
+  fun modify(op: (value: V) -> V): V
   fun reset()
   fun mark()
 }

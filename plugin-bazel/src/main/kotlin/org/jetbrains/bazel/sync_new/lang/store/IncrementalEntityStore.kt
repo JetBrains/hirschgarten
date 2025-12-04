@@ -1,0 +1,47 @@
+package org.jetbrains.bazel.sync_new.lang.store
+
+interface IncrementalEntityStore<R : IncrementalResourceId, E : IncrementalEntity> {
+  /**
+   * Get or create an entity with unique resource id,
+   * in case when resource id is already taken return the existing entity
+   */
+  fun createEntity(resourceId: R, creator: IncrementalEntityCreator<E>): E
+
+  /**
+   * Modify existing entity with given resource id, return the modified entity
+   */
+  fun modifyEntity(resourceId: R, modifier: (E) -> E): E?
+
+  /**
+   * Remove entity with given resource id
+   */
+  fun removeEntity(resourceId: R): E?
+
+  /**
+   * Get existing entity with given resource id, otherwise null
+   */
+  fun getEntity(resourceId: R): E?
+
+  /**
+   * Create a new automatically managed resource id
+   */
+  fun createResourceId(creator: IncrementalResourceIdCreator<R>): R
+
+  /**
+   * Add directed resource dependency
+   */
+  fun addDependency(from: R, to: R)
+
+  /**
+   * Get all dependants of the given resource id
+   */
+  fun getTransitiveDependants(resourceId: R): Sequence<R>
+}
+
+inline fun <reified U : E, R : IncrementalResourceId, E : IncrementalEntity> IncrementalEntityStore<R, E>.modifyEntityTyped(
+  resourceId: R,
+  crossinline modifier: (U) -> U,
+): E? = modifyEntity(resourceId) {
+  val entity = it as? U ?: return@modifyEntity it
+  return@modifyEntity modifier(entity)
+}

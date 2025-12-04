@@ -7,6 +7,7 @@ import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
 import org.jetbrains.bazel.sync_new.graph.impl.BazelPath
 import org.jetbrains.bazel.sync_new.lang.SyncClassTag
 import org.jetbrains.bazel.sync_new.lang.SyncTargetData
+import java.nio.file.Path
 
 @SyncClassTag(serialId = JvmSyncLanguage.LANGUAGE_TAG)
 @Tagged
@@ -21,10 +22,13 @@ data class JvmSyncTargetData(
   val compilerOptions: JvmCompilerOptions,
 
   @field:Tag(4)
-  val binaryOutputs: List<BazelPath>,
+  val outputs: JvmOutputs,
 
   @field:Tag(5)
-  val binaryMainClass: String
+  val generatedOutputs: JvmOutputs,
+
+  @field:Tag(6)
+  val binaryMainClass: String?,
 ) : SyncTargetData
 
 @Tagged
@@ -36,7 +40,7 @@ data class JvmCompilerOptions(
   val javacOpts: List<String>,
 
   @field:Tag(3)
-  val javaHome: String?
+  val javaHome: Path?,
 )
 
 @Tagged
@@ -45,24 +49,36 @@ data class JvmSourceFile(
   val path: BazelPath,
 
   @field:Tag(2)
-  val jvmPackagePrefix: String?,
+  var jvmPackagePrefix: String? = null,
+
+  @field:Tag(3)
+  val priority: Int,
+
+  @field:Tag(4)
+  val generated: Boolean
 )
 
-@SealedTagged
-sealed interface JvmTarget {
+@Tagged
+data class JvmTarget(
+  @field:Tag(1)
+  val sources: List<JvmSourceFile>,
 
-  @SealedTag(1)
-  @Tagged
-  data class SourceTarget(
-    @field:Tag(1)
-    val sources: List<JvmSourceFile>,
-  ) : JvmTarget
+  @field:Tag(2)
+  val generatedSources: List<BazelPath>,
 
-  @SealedTag(2)
-  @Tagged
-  data class CompiledTarget(
-    val classJars: List<BazelPath>,
-    val sourceJars: List<BazelPath>,
-    val interfaceJars: List<BazelPath>,
-  ) : JvmTarget
-}
+  @field:Tag(3)
+  val jdeps: List<BazelPath>,
+
+  @field:Tag(4)
+  val hasApiGeneratingPlugin: Boolean
+)
+
+@Tagged
+data class JvmOutputs(
+  @field:Tag(1)
+  val classJars: List<BazelPath>,
+  @field:Tag(2)
+  val srcJars: List<BazelPath>,
+  @field:Tag(3)
+  val iJars: List<BazelPath>,
+)

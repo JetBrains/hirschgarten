@@ -3,9 +3,14 @@ package org.jetbrains.bazel.sync_new.flow
 import com.intellij.openapi.project.Project
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.impl.BazelGenericTargetData
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetDependency
@@ -14,31 +19,61 @@ import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetResourceFile
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetSourceFile
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetVertex
 import org.jetbrains.bazel.sync_new.graph.impl.DependencyType
+import org.jetbrains.bazel.sync_new.graph.impl.PRIORITY_NORMAL
 import org.jetbrains.bazel.sync_new.graph.impl.toBazelPath
+import org.jetbrains.bazel.sync_new.lang.SyncLanguageDataBuilder
+import org.jetbrains.bazel.sync_new.lang.SyncLanguageDetector
+import org.jetbrains.bazel.sync_new.lang.SyncLanguagePlugin
 import org.jetbrains.bazel.sync_new.lang.SyncTargetData
 import org.jetbrains.bsp.protocol.RawAspectTarget
+import kotlin.collections.set
+import kotlin.to
 
 class SyncTargetBuilder(
   private val project: Project,
   private val pathsResolver: BazelPathsResolver,
   private val tagsBuilder: SyncTagsBuilder = SyncTagsBuilder(),
 ) {
-  suspend fun buildTargetVertex(ctx: SyncContext, raw: RawAspectTarget): BazelTargetVertex {
+  private data class BakedLanguagePlugin<T : SyncTargetData>(
+    val plugin: SyncLanguagePlugin<T>,
+    val detector: SyncLanguageDetector,
+    val builder: SyncLanguageDataBuilder<T>,
+  )
+
+  private suspend fun <T : SyncTargetData> bakeLanguagePlugin(ctx: SyncContext, plugin: SyncLanguagePlugin<T>): BakedLanguagePlugin<T> {
+    val builder = plugin.createSyncDataBuilder(ctx)
+    builder.init(ctx)
+    return BakedLanguagePlugin(
+      plugin = plugin,
+      detector = plugin.createLanguageDetector(ctx),
+      builder = builder,
+    )
+  }
+
+  suspend fun buildAllChangedTargetVertices(ctx: SyncContext, targets: Collection<RawAspectTarget>): List<Pair<RawAspectTarget, BazelTargetVertex>> {
+    val bakedPlugins = SyncLanguagePlugin.ep.extensionList
+      .filter { it.isEnabled(ctx) }
+      .map { bakeLanguagePlugin(ctx, it) }
+      .toTypedArray()
+    return withContext(Dispatchers.IO) {
+      targets.map {
+        async {
+          it to buildTargetVertex(ctx, it, bakedPlugins)
+        }
+      }.awaitAll()
+    }
+  }
+
+  private suspend fun buildTargetVertex(ctx: SyncContext, raw: RawAspectTarget, plugins: Array<BakedLanguagePlugin<*>>): BazelTargetVertex {
     val genericData = buildGeneralTargetData(raw)
     val targetData = Long2ObjectOpenHashMap<SyncTargetData>()
     val languageTags = LongOpenHashSet()
-    for (detector in ctx.languageService.languageDetectors) {
-      for (language in detector.detect(ctx, raw)) {
-        languageTags.add(language.serialId)
-
-        for (plugin in ctx.languageService.getPluginsByLanguage(language)) {
-          val languageData = plugin.createTargetData(ctx, raw)
-          val tag = ctx.languageService.getTagByType(languageData.javaClass)
-          if (tag == 0L) {
-            error("Tag is not found for ${languageData.javaClass}")
-          }
-          targetData[tag] = languageData
-        }
+    for (plugin in plugins) {
+      if (plugin.detector.detect(ctx, raw)) {
+        val data = plugin.builder.buildTargetData(ctx, raw) ?: continue
+        val serialId = plugin.plugin.language.serialId
+        targetData[serialId] = data
+        languageTags.add(serialId)
       }
     }
     return BazelTargetVertex(
@@ -82,7 +117,7 @@ class SyncTargetBuilder(
       .map {
         BazelTargetSourceFile(
           path = it.toBazelPath(),
-          priority = 0,
+          priority = PRIORITY_NORMAL,
         )
       }
   }

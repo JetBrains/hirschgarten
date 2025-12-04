@@ -28,7 +28,7 @@ enum class SimpleGraphTraversalDirection {
 }
 
 object SimpleGraphTraverser {
-  fun <V> topological(
+  fun <V> bfs(
     graph: SimpleDirectedGraph<V>,
     roots: List<V>,
     visitor: SimpleGraphVisitor<V>,

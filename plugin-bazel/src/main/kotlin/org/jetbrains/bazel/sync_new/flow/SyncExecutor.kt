@@ -1,15 +1,23 @@
 package org.jetbrains.bazel.sync_new.flow
 
+import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.UnindexedFilesScannerExecutor
+import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.util.concurrency.ThreadingAssertions
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.flow.hash_diff.SyncHasherService
@@ -18,9 +26,9 @@ import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.universe_expand.SyncExpandService
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
-import org.jetbrains.bazel.sync_new.graph.impl.BazelFastTargetGraph
 import org.jetbrains.bazel.sync_new.index.SyncIndexService
 import org.jetbrains.bazel.sync_new.index.SyncIndexUpdaterProvider
+import org.jetbrains.bazel.sync_new.lang.SyncLanguagePlugin
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageService
 import org.jetbrains.bazel.sync_new.storage.BazelStorageService
 import org.jetbrains.bazel.sync_new.storage.LifecycleStoreContext
@@ -53,12 +61,17 @@ class SyncExecutor(
       }
       store
     }
+    withTask(project, "warmup_server", "Warming up server") {
+      // force server to start
+      project.connection.runWithServer { /* noop */ }
+    }
     val ctx = SyncContext(
       project = project,
       scope = scope,
       graph = syncStore.targetGraph,
       syncExecutor = this,
       languageService = service<SyncLanguageService>(),
+      pathsResolver = project.connection.runWithServer { server -> server.workspaceBazelPaths().bazelPathsResolver },
     )
 
     val diff = withTask(project, "target_diff", "Computing incremental diff") {
@@ -98,16 +111,16 @@ class SyncExecutor(
   }
 
   private suspend fun SyncConsoleTask.computeSyncDiff(ctx: SyncContext, scope: SyncScope): SyncDiff {
-      val universeDiff = withTask("universe_diff", "Computing universe diff") {
-        project.service<SyncUniverseService>().computeUniverseDiff(scope)
-      }
+    val universeDiff = withTask("universe_diff", "Computing universe diff") {
+      project.service<SyncUniverseService>().computeUniverseDiff(scope)
+    }
     val vfsDiff = withTask("vfs_diff", "Computing VFS diff") {
       project.service<SyncVFSService>().computeVFSDiff(scope, universeDiff)
     }
     val normalizer = SyncDiffNormalizer()
     val normalizedDiff = normalizer.normalize(listOf(vfsDiff, universeDiff))
     val expandedDiff = withTask("expand_diff", "Computing dependency reachability") {
-      project.service<SyncExpandService>().expandDependencyDiff(normalizedDiff)
+      project.service<SyncExpandService>().expandDependencyDiff(scope, normalizedDiff)
     }
     val coldDiff = withTask("hash_diff", "Computing hash diff") {
       project.service<SyncHasherService>().computeHashDiff(expandedDiff)
@@ -157,13 +170,7 @@ class SyncExecutor(
       .toList()
     val rawTargets = fetchRawAspects(ctx, targetsToFetch)
     val vertices = withTask("target_build", "Converting targets") {
-      withContext(Dispatchers.IO) {
-        rawTargets.map {
-          async {
-            it to builder.buildTargetVertex(ctx, it)
-          }
-        }.awaitAll()
-      }
+      builder.buildAllChangedTargetVertices(ctx, rawTargets)
     }
     withTask("apply_diff", "Applying graph diff") {
       for ((_, vertex) in vertices) {
@@ -190,6 +197,35 @@ class SyncExecutor(
           graph.addEdge(edge)
         }
       }
+    }
+    withTask("update_workspace", "Updating workspace") {
+      val syncActivityName =
+        BazelPluginBundle.message(
+          "console.task.sync.activity.name",
+          BazelPluginConstants.BAZEL_DISPLAY_NAME,
+        )
+      val saveAndSyncHandler = serviceAsync<SaveAndSyncHandler>()
+      UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(syncActivityName) {
+        saveAndSyncHandler.disableAutoSave().use {
+          withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
+            reportSequentialProgress {
+              executeWorkspaceImport(ctx, diff, this@withTask)
+            }
+          }
+        }
+      }
+      saveAndSyncHandler.scheduleProjectSave(project = project)
+    }
+  }
+
+  private suspend fun CoroutineScope.executeWorkspaceImport(ctx: SyncContext, diff: SyncDiff, console: SyncConsoleTask) {
+    for (plugin in SyncLanguagePlugin.ep.extensionList) {
+      if (!plugin.isEnabled(ctx)) {
+        continue
+      }
+
+      val importer = plugin.createWorkspaceImporter(ctx);
+      importer.execute(ctx, diff, SyncProgressReporter(console))
     }
   }
 

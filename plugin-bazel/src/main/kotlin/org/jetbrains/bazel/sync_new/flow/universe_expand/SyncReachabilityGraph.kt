@@ -168,7 +168,7 @@ class SyncReachabilityGraph {
     }
     // unreachable => A / B
     // where A = all vertices
-    //       b = all vertices reachable from sync universe
+    //       B = all vertices reachable from sync universe
     reachable.removeAll(visited)
     return reachable
   }

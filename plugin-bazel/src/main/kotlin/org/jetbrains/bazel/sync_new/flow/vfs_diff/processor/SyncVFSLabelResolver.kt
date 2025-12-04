@@ -8,6 +8,7 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.BazelSyncV2
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
+import org.jetbrains.bazel.sync_new.connector.consistentLabels
 import org.jetbrains.bazel.sync_new.connector.defaults
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
@@ -87,6 +88,7 @@ object SyncVFSLabelResolver {
         args = {
           defaults()
           keepGoing()
+          consistentLabels()
           output(QueryOutput.PROTO)
           query(query)
         },

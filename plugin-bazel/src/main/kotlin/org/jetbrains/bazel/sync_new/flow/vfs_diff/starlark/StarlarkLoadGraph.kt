@@ -13,7 +13,6 @@ import org.jetbrains.bazel.sync_new.graph.SimpleGraphVisitor
 import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
-import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.storageContext
 import java.nio.file.Path
 
@@ -65,7 +64,7 @@ class StarlarkLoadGraph(
         SimpleGraphTraversalResult.CONTINUE
       }
     }
-    SimpleGraphTraverser.topological(
+    SimpleGraphTraverser.bfs(
       graph = graph,
       roots = listOf(file),
       visitor = visitor,

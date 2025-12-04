@@ -9,6 +9,7 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
+import org.jetbrains.bazel.sync_new.connector.consistentLabels
 import org.jetbrains.bazel.sync_new.connector.defaults
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
@@ -45,7 +46,7 @@ class StarlarkLoadTrackerService(
       defaults()
       keepGoing()
       output(QueryOutput.PROTO)
-      //consistentLabels()
+      consistentLabels()
       query("buildfiles($universeExpr) union loadfiles($universeExpr)")
     }
     val files = result.unwrap().unwrapProtos()

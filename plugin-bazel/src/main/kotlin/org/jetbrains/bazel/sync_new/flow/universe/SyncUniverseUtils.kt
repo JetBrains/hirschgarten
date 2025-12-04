@@ -15,6 +15,7 @@ val Project.syncRepoMapping: SyncRepoMapping
 fun Label.isInsideUniverse(universe: SyncUniverseState): Boolean {
   return when (this) {
     is ResolvedLabel -> repo.repoName in universe.importState.internalRepos
+      || repo.repoName.substringBefore("+") in universe.importState.internalRepos
     else -> false
   }
 }
