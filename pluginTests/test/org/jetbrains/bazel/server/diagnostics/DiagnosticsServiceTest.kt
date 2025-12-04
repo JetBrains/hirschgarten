@@ -892,15 +892,15 @@ class DiagnosticsServiceTest {
       [675 / 676] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}; 1s disk-cache, remote-cache, multiplex-worker
       ERROR: /Users/user/path/to/project/BUILD.bazel:21:12: compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5} failed: (Exit -1): java failed: error executing JvmCompile command (from target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics) external/community++jbr_toolchains+remotejbr21_macos_aarch64/bin/java -Xms4g -Xmx20g '-XX:SoftRefLRUPolicyMSPerMB=50' '-XX:NonProfiledCodeHeapSize=512m' '-XX:ProfiledCodeHeapSize=512m' ... (remaining 21 arguments skipped)
       Kotlinc Runner: Error: Unresolved reference 'foo'.
-        /Users/user/path/to/project/src/Foo.kt (25:90)
+        /Users/user/path/to/project/src/Foo.kt:25:90
       Kotlinc Runner: Error: Unresolved reference 'bar'.
-        /Users/user/path/to/project/src/Foo.kt (44:33)
+        /Users/user/path/to/project/src/Foo.kt:44:33
       Kotlinc Runner: Error: None of the following candidates is applicable:
       fun <T> Array<out T>.toList(): List<T>
       fun ByteArray.toList(): List<Byte>
       fun ShortArray.toList(): List<Short>
       fun <K, V> Map<out K, V>.toList(): List<Pair<K, V>>
-      	/Users/user/path/to/project/src/package/Zoo.kt (31:3)
+      	/Users/user/path/to/project/src/package/Zoo.kt:31:3
       INFO: Found 1 target...
       Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
       Use --verbose_failures to see the command lines of failed build steps.
@@ -974,16 +974,16 @@ class DiagnosticsServiceTest {
       Javac Runner: Error: cannot find symbol
         symbol:   variable bar
         location: class Bar
-        /Users/user/path/to/project/src/Foo.java (106:26)
+        /Users/user/path/to/project/src/Foo.java:106:26
         code: "bar"
       Javac Runner: Error: reference to foo is ambiguous
         both method foo(java.lang.Integer) in Foo and method foo(java.lang.Double) in Foo match
-        /Users/user/path/to/project/src/Foo.java (110:37)
+        /Users/user/path/to/project/src/Foo.java:110:37
         code: "Foo.foo"
       Javac Runner: Error: cannot find symbol
         symbol:   variable zoo
         location: class Zoo
-        /Users/user/path/to/project/src/package/Zoo.java (33:44)
+        /Users/user/path/to/project/src/package/Zoo.java:33:44
         code: "zoo"
       INFO: Found 1 target...
       Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
@@ -1064,15 +1064,15 @@ class DiagnosticsServiceTest {
       Javac Runner: Error: cannot find symbol
         symbol:   variable bar
         location: class Bar
-        /Users/user/$specialCharsPathSegment/to/project/src/Foo.java (106:26)
+        /Users/user/$specialCharsPathSegment/to/project/src/Foo.java:106:26
         code: "bar"
       Javac Runner: Error: cannot find symbol
         symbol:   variable zoo
         location: class Zoo
-        /Users/user/$specialCharsPathSegment/to/project/src/package/Zoo.java (33:44)
+        /Users/user/$specialCharsPathSegment/to/project/src/package/Zoo.java:33:44
         code: "zoo"  
       Kotlinc Runner: Error: Unresolved reference 'foo'.
-        /Users/user/$specialCharsPathSegment/to/project/src/Foo.kt (25:90)
+        /Users/user/$specialCharsPathSegment/to/project/src/Foo.kt:25:90
       INFO: Found 1 target...
       Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
       Use --verbose_failures to see the command lines of failed build steps.
