@@ -97,7 +97,7 @@ class SyncReachabilityGraph {
     val label = id2Label.remove(id) ?: return null
     label2Id.removeInt(label)
 
-    val successors = id2Successors.remove(id)
+    val successors = id2Successors.get(id)
     if (successors != null) {
       for (n in successors.indices) {
         val predecessors = id2Predecessors.get(successors.getInt(n))
@@ -107,7 +107,7 @@ class SyncReachabilityGraph {
       }
     }
 
-    val predecessors = id2Predecessors.remove(id)
+    val predecessors = id2Predecessors.get(id)
     if (predecessors != null) {
       for (n in predecessors.indices) {
         val successors = id2Successors.get(predecessors.getInt(n))
@@ -116,6 +116,9 @@ class SyncReachabilityGraph {
         }
       }
     }
+
+    id2Successors.remove(id)
+    id2Predecessors.remove(id)
 
     return label
   }

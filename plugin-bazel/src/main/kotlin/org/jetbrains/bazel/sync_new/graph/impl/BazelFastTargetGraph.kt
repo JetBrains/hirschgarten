@@ -198,7 +198,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
     val labelHash = hash { putResolvedLabel(vertex.label as ResolvedLabel) }
     labelHash2VertexId.removeInt(labelHash)
 
-    val successorIds = id2Successors.remove(vertex.vertexId)
+    val successorIds = id2Successors.get(vertex.vertexId)
     if (successorIds != null) {
       for (n in successorIds.indices) {
         val successor = successorIds.getInt(n)
@@ -210,7 +210,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
       }
     }
 
-    val predecessorIds = id2Predecessors.remove(vertex.vertexId)
+    val predecessorIds = id2Predecessors.get(vertex.vertexId)
     if (predecessorIds != null) {
       for (n in predecessorIds.indices) {
         val predecessor = predecessorIds.getInt(n)
@@ -221,6 +221,9 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
         }
       }
     }
+
+    id2Successors.remove(vertex.vertexId)
+    id2Predecessors.remove(vertex.vertexId)
 
     return vertex
   }

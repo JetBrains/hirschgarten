@@ -14,9 +14,11 @@ import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 import org.jetbrains.bazel.sync_new.storage.set
+import org.jetbrains.bazel.sync_new.util.iterator
 
 class SyncHasherProcessor {
   suspend fun process(ctx: SyncHasherContext, diff: SyncColdDiff): SyncColdDiff {
@@ -46,6 +48,12 @@ class SyncHasherProcessor {
 
     for (removed in diff.removed) {
       target2Hash.remove(hashLabel(removed))
+    }
+
+    for ((target, flags) in diff.flags) {
+      if (flags.contains(SyncDiffFlags.FORCE_INVALIDATION)) {
+        newChanged += target
+      }
     }
 
     return SyncColdDiff(

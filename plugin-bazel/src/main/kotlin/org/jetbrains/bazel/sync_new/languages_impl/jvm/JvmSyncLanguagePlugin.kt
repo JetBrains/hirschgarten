@@ -10,7 +10,7 @@ import org.jetbrains.bazel.sync_new.pipeline.SyncWorkspaceImporter
 import org.jetbrains.bsp.protocol.RawAspectTarget
 
 class JvmSyncLanguagePlugin : SyncLanguagePlugin<JvmSyncTargetData> {
-  override val language: SyncLanguage
+  override val language: SyncLanguage<JvmSyncTargetData>
     get() = JvmSyncLanguage
   override val dataType: Class<out JvmSyncTargetData>
     get() = JvmSyncTargetData::class.java
@@ -20,5 +20,5 @@ class JvmSyncLanguagePlugin : SyncLanguagePlugin<JvmSyncTargetData> {
   override suspend fun createSyncDataBuilder(ctx: SyncContext): SyncLanguageDataBuilder<JvmSyncTargetData> =
     JvmSyncTargetBuilder()
 
-  override suspend fun createWorkspaceImporter(ctx: SyncContext): SyncWorkspaceImporter = JvmSyncWorkspaceImporter()
+  override suspend fun createWorkspaceImporter(ctx: SyncContext): SyncWorkspaceImporter = JvmSyncWorkspaceImporter(ctx.project)
 }

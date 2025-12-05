@@ -78,10 +78,6 @@ class SyncExecutor(
       computeSyncDiff(ctx, scope)
     }
 
-    //withTask(project, "repo_mapping", "Updating repo mapping") {
-    //  updateRepoMapping(ctx, diff)
-    //}
-
     withTask(project, "target_graph", "Updating target graph") {
       updateTargetGraph(ctx, diff)
     }
@@ -92,6 +88,10 @@ class SyncExecutor(
 
     withTask(project, "save_internal_stores", "Saving internal store") {
       (project.service<BazelStorageService>() as? LifecycleStoreContext)?.save(force = true)
+    }
+
+    withTask(project, "update_workspace", "Updating workspace") {
+      updateWorkspace(ctx, diff)
     }
 
     return SyncStatus.Success
@@ -165,6 +165,7 @@ class SyncExecutor(
     val builder = SyncTargetBuilder(
       project = project,
       pathsResolver = LegacyBazelFrontendBridge.fetchBazelPathsResolver(project),
+      legacyRepoMapping = LegacyBazelFrontendBridge.toLegacyRepoMapping(project.syncRepoMapping),
     )
     val targetsToFetch = (diff.added.map { it.label } + diff.changed.map { it.label })
       .toList()
@@ -198,24 +199,28 @@ class SyncExecutor(
         }
       }
     }
-    withTask("update_workspace", "Updating workspace") {
-      val syncActivityName =
-        BazelPluginBundle.message(
-          "console.task.sync.activity.name",
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
-        )
-      val saveAndSyncHandler = serviceAsync<SaveAndSyncHandler>()
-      UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(syncActivityName) {
-        saveAndSyncHandler.disableAutoSave().use {
-          withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
-            reportSequentialProgress {
-              executeWorkspaceImport(ctx, diff, this@withTask)
-            }
+  }
+
+  private suspend fun SyncConsoleTask.updateWorkspace(
+    ctx: SyncContext,
+    diff: SyncDiff,
+  ) {
+    val syncActivityName =
+      BazelPluginBundle.message(
+        "console.task.sync.activity.name",
+        BazelPluginConstants.BAZEL_DISPLAY_NAME,
+      )
+    val saveAndSyncHandler = serviceAsync<SaveAndSyncHandler>()
+    UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(syncActivityName) {
+      saveAndSyncHandler.disableAutoSave().use {
+        withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
+          reportSequentialProgress {
+            executeWorkspaceImport(ctx, diff, this@updateWorkspace)
           }
         }
       }
-      saveAndSyncHandler.scheduleProjectSave(project = project)
     }
+    saveAndSyncHandler.scheduleProjectSave(project = project)
   }
 
   private suspend fun CoroutineScope.executeWorkspaceImport(ctx: SyncContext, diff: SyncDiff, console: SyncConsoleTask) {

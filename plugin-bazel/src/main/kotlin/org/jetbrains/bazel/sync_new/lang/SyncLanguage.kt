@@ -10,3 +10,6 @@ interface SyncLanguage<T : SyncTargetData> {
 inline fun <reified T : SyncTargetData> SyncLanguage<T>.getLangData(vertex: BazelTargetVertex): T? {
   return vertex.targetData.get(serialId) as? T?
 }
+
+inline fun <reified T : SyncTargetData> SyncLanguage<T>.hasLang(vertex: BazelTargetVertex): Boolean =
+  vertex.targetData.containsKey(serialId)

@@ -10,7 +10,6 @@ import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntity
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalResourceId
 import org.jetbrains.bazel.sync_new.lang.store.NonHashable
-import org.jetbrains.bazel.sync_new.lang.store.emptyInt
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 import java.nio.file.Path
@@ -25,11 +24,14 @@ sealed interface JvmModuleEntity : IncrementalEntity {
     @field:Tag(1)
     override val resourceId: Int,
 
+    @field:Tag(10)
+    val baseDirectory: Path,
+
     @field:Tag(2)
     val label: Label,
 
     @field:Tag(3)
-    val dependencies: List<Label>,
+    val dependencies: Set<Label>,
 
     @field:Tag(4)
     val sources: List<JvmSourceItem>,
@@ -77,7 +79,10 @@ sealed interface JvmModuleEntity : IncrementalEntity {
   @SealedTag(3)
   @Tagged
   data class VertexDeps(
+    @field:Tag(1)
     override val resourceId: Int,
+
+    @field:Tag(2)
     val deps: Set<Label>,
   ) : JvmModuleEntity
 
@@ -87,7 +92,7 @@ sealed interface JvmModuleEntity : IncrementalEntity {
     @field:Tag(1)
     override val resourceId: Int,
 
-    @field:Tag(1)
+    @field:Tag(2)
     val allTransitiveDeps: Set<Path>
   ) : JvmModuleEntity
 
@@ -144,9 +149,6 @@ sealed interface JvmResourceId : IncrementalResourceId {
   @Tagged
   data class VertexReference(
     @field:Tag(1)
-    override val id: NonHashable<Int> = emptyInt(),
-
-    @field:Tag(2)
     val vertexId: Int,
   ) : JvmResourceId
 
@@ -154,9 +156,6 @@ sealed interface JvmResourceId : IncrementalResourceId {
   @Tagged
   data class VertexDeps(
     @field:Tag(1)
-    override val id: NonHashable<Int> = emptyInt(),
-
-    @field:Tag(2)
     val label: Label,
   ) : JvmResourceId
 
@@ -164,17 +163,13 @@ sealed interface JvmResourceId : IncrementalResourceId {
   @Tagged
   data class JdepsLibrary(
     @field:Tag(1)
-    override val id: NonHashable<Int> = emptyInt(),
-
-    @field:Tag(2)
     val libraryName: String,
   ) : JvmResourceId
 
+  @SealedTag(20)
+  @Tagged
   data class JdepsTransitive(
     @field:Tag(1)
-    override val id: NonHashable<Int> = emptyInt(),
-
-    @field:Tag(2)
     val vertexId: Int,
   ) : JvmResourceId
 
@@ -182,9 +177,6 @@ sealed interface JvmResourceId : IncrementalResourceId {
   @Tagged
   data class AnnotationProcessorLibrary(
     @field:Tag(1)
-    override val id: NonHashable<Int> = emptyInt(),
-
-    @field:Tag(2)
     val owner: Int,
   ) : JvmResourceId
 
@@ -192,9 +184,6 @@ sealed interface JvmResourceId : IncrementalResourceId {
   @Tagged
   data class CompiledLibrary(
     @field:Tag(1)
-    override val id: NonHashable<Int> = emptyInt(),
-
-    @field:Tag(2)
     val owner: Int,
   ) : JvmResourceId
 

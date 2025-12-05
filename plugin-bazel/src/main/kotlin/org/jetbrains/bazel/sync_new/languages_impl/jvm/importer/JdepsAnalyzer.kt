@@ -145,7 +145,7 @@ class JdepsAnalyzer(
     val result = mutableSetOf<Path>()
     for (deps in data.jvmTarget.jdeps) {
       val path = ctx.pathsResolver.resolve(deps)
-      if (Files.exists(path)) {
+      if (!Files.exists(path)) {
         continue
       }
       val deps = path.inputStream().use { Deps.Dependencies.parseFrom(it).dependencyList }

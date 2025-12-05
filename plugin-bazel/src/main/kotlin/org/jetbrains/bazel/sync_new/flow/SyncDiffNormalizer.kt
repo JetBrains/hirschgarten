@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync_new.flow
 
 import org.jetbrains.bazel.sync_new.graph.TargetReference
+import org.jetbrains.bazel.sync_new.util.plus
 
 class SyncDiffNormalizer {
   fun normalize(diff: Collection<SyncColdDiff>): SyncColdDiff {
@@ -12,6 +13,8 @@ class SyncDiffNormalizer {
       removed = removed.toSet(),
       changed = changed.filter { it !in added }
         .toSet(),
+      flags = diff.map { it.flags }
+        .reduce { acc, multimap -> acc + multimap }
     )
   }
 

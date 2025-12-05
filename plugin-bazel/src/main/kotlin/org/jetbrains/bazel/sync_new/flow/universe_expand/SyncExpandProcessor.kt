@@ -28,6 +28,17 @@ class SyncExpandProcessor {
     changed += diff.changed
     removed += diff.removed
 
+    // invalidate direct reverse dependencies
+    for (removed in diff.removed) {
+      val vertexId = graph.getOrAddVertex(removed)
+      val predecessors = graph.getPredecessors(vertexId)
+      for (n in predecessors.indices) {
+        val predecessorId = predecessors.getInt(n)
+        val predecessorLabel = graph.id2Label.get(predecessorId) ?: continue
+        changed += predecessorLabel
+      }
+    }
+
     for (changed in (diff.added + diff.changed)) {
       graph.getOrAddVertex(changed)
       graph.addUniverseVertex(changed)
@@ -112,6 +123,7 @@ class SyncExpandProcessor {
     val targetLabels = targets.map { Label.parse(it.name) }
       .toHashSet()
     val targetDependencies = mutableMapOf<Label, Set<Label>>()
+    // TODO: make it parallel
     for (target in targets) {
       val label = Label.parse(target.name)
       val directInputs = target.ruleInputList.mapNotNull { Label.parseOrNull(it) }

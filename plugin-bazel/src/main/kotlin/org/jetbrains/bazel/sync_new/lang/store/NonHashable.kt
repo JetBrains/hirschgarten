@@ -4,5 +4,3 @@ class NonHashable<T>(val inner: T) {
   override fun equals(other: Any?): Boolean = true
   override fun hashCode(): Int = 0
 }
-
-fun emptyInt(): NonHashable<Int> = NonHashable(0)
