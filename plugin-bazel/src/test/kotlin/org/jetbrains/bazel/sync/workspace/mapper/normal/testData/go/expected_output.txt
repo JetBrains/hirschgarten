@@ -204,6 +204,34 @@ BazelResolvedWorkspace(
         ]
       ),
       RawBuildTarget(
+        id=@//example:go_default_library,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=go_library,
+          languageClasses=[
+            
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/example,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
         id=@//example:hello,
         tags=[
           
@@ -225,6 +253,34 @@ BazelResolvedWorkspace(
           
         ],
         baseDirectory=/tmp/test-workspace/example,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//lib:go_default_library,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=go_library,
+          languageClasses=[
+            
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/lib,
         noBuild=false,
         data=null,
         lowPrioritySharedSources=[

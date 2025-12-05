@@ -149,6 +149,62 @@ BazelResolvedWorkspace(
     ],
     nonModuleTargets=[
       RawBuildTarget(
+        id=@//lib/libA:libA,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=py_library,
+          languageClasses=[
+            
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/lib/libA,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
+        id=@//lib/libB:libB,
+        tags=[
+          
+        ],
+        dependencies=[
+          
+        ],
+        kind=TargetKind(
+          kindString=py_library,
+          languageClasses=[
+            
+          ],
+          ruleType=LIBRARY
+        ),
+        sources=[
+          
+        ],
+        resources=[
+          
+        ],
+        baseDirectory=/tmp/test-workspace/lib/libB,
+        noBuild=false,
+        data=null,
+        lowPrioritySharedSources=[
+          
+        ]
+      ),
+      RawBuildTarget(
         id=@//main:main,
         tags=[
           
