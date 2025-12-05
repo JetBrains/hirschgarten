@@ -1,15 +1,14 @@
 // Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package org.jetbrains.bazel.searchEverywhere
 
-import com.intellij.ide.ui.icons.rpcId
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.searchEverywhere.SeExtendedInfo
 import com.intellij.platform.searchEverywhere.SeItem
 import com.intellij.platform.searchEverywhere.SeItemsProvider
 import com.intellij.platform.searchEverywhere.SeParams
+import com.intellij.platform.searchEverywhere.presentations.SeBasicItemPresentationBuilder
 import com.intellij.platform.searchEverywhere.presentations.SeItemPresentation
-import com.intellij.platform.searchEverywhere.presentations.SeSimpleItemPresentation
 import com.intellij.platform.searchEverywhere.providers.AsyncProcessor
 import com.intellij.platform.searchEverywhere.providers.SeAsyncContributorWrapper
 import com.intellij.platform.searchEverywhere.providers.getExtendedInfo
@@ -30,12 +29,12 @@ class SeLabelItem(
   override fun weight(): Int = weight
 
   override suspend fun presentation(): SeItemPresentation =
-    SeSimpleItemPresentation(
-      iconId = BazelPluginIcons.bazel.rpcId(),
-      text = legacyItem.displayName,
-      extendedInfo = extendedInfo,
-      isMultiSelectionSupported = isMultiSelectionSupported,
-    )
+    SeBasicItemPresentationBuilder()
+      .withIcon(BazelPluginIcons.bazel)
+      .withText(legacyItem.displayName)
+      .withExtendedInfo(extendedInfo)
+      .withMultiSelectionSupported(isMultiSelectionSupported)
+      .build()
 }
 
 @ApiStatus.Internal
