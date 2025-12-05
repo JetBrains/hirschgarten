@@ -8,7 +8,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync_new.graph.ID
@@ -33,6 +35,7 @@ class SyncTargetBuilder(
   private val project: Project,
   private val pathsResolver: BazelPathsResolver,
   private val tagsBuilder: SyncTagsBuilder = SyncTagsBuilder(),
+  private val legacyRepoMapping: RepoMapping
 ) {
   private data class BakedLanguagePlugin<T : SyncTargetData>(
     val plugin: SyncLanguagePlugin<T>,
@@ -81,6 +84,7 @@ class SyncTargetBuilder(
       genericData = genericData,
       languageTags = languageTags,
       targetData = targetData,
+      baseDirectory = pathsResolver.toDirectoryPath(raw.target.label().assumeResolved(), legacyRepoMapping),
     )
   }
 

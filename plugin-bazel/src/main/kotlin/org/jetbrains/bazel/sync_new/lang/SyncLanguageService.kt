@@ -8,10 +8,10 @@ import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap
 
 @Service(Service.Level.APP)
 class SyncLanguageService {
-  private val tag2Lang: Long2ObjectMap<SyncLanguage> = Long2ObjectOpenHashMap()
+  private val tag2Lang: Long2ObjectMap<SyncLanguage<*>> = Long2ObjectOpenHashMap()
   private val tag2Type: Long2ObjectMap<Class<*>> = Long2ObjectOpenHashMap()
   private val type2Tag: Reference2LongMap<Class<*>> = Reference2LongOpenHashMap()
-  private val lang2Plugins: MutableMap<SyncLanguage, List<SyncLanguagePlugin<*>>> = mutableMapOf()
+  private val lang2Plugins: MutableMap<SyncLanguage<*>, List<SyncLanguagePlugin<*>>> = mutableMapOf()
 
   init {
     for (plugin in SyncLanguagePlugin.ep.extensionList) {
@@ -33,8 +33,8 @@ class SyncLanguageService {
     }
   }
 
-  fun getLanguageByTag(serialId: Long): SyncLanguage? = tag2Lang[serialId]
-  fun getPluginsByLanguage(language: SyncLanguage): List<SyncLanguagePlugin<*>> = lang2Plugins[language] ?: listOf()
+  fun getLanguageByTag(serialId: Long): SyncLanguage<*>? = tag2Lang[serialId]
+  fun getPluginsByLanguage(language: SyncLanguage<*>): List<SyncLanguagePlugin<*>> = lang2Plugins[language] ?: listOf()
   fun getTypeByTag(serialId: Long): Class<*>? = tag2Type[serialId]
   fun getTagByType(type: Class<*>): Long = type2Tag.getLong(type)
 }

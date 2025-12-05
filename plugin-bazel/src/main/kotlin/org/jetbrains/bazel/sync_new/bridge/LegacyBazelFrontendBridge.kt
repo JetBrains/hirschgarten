@@ -1,9 +1,8 @@
 package org.jetbrains.bazel.sync_new.bridge
 
-import com.google.common.collect.HashBiMap
 import com.intellij.openapi.project.Project
+import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -15,18 +14,21 @@ import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawAspectTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 
 object LegacyBazelFrontendBridge {
   suspend fun fetchRepoMapping(project: Project): SyncRepoMapping {
     val mapping = project.connection.runWithServer { server -> server.workspaceComputeBazelRepoMapping() }.repoMapping
+    // apparentRepoNameToCanonicalName
     return when (mapping) {
-      is BzlmodRepoMapping -> BzlmodSyncRepoMapping(
-        canonicalRepoNameToLocalPath = mapping.canonicalRepoNameToLocalPath,
-        apparentToCanonical = HashBiMap.create(mapping.apparentRepoNameToCanonicalName),
-        canonicalToPath = mapping.canonicalRepoNameToPath,
-      )
+      is BzlmodRepoMapping -> {
+        val apparentToCanonical = BidirectionalMap<String, String>()
+        mapping.apparentRepoNameToCanonicalName.forEach { (apparent, canonical) -> apparentToCanonical[apparent] = canonical }
+        BzlmodSyncRepoMapping(
+          canonicalRepoNameToLocalPath = mapping.canonicalRepoNameToLocalPath,
+          apparentToCanonical = apparentToCanonical,
+          canonicalToPath = mapping.canonicalRepoNameToPath,
+        )
+      }
 
       RepoMappingDisabled -> DisabledSyncRepoMapping
     }
@@ -62,7 +64,7 @@ object LegacyBazelFrontendBridge {
     return when (repoMapping) {
       is BzlmodSyncRepoMapping -> BzlmodRepoMapping(
         canonicalRepoNameToLocalPath = repoMapping.canonicalRepoNameToLocalPath,
-        apparentRepoNameToCanonicalName = BidirectionalMap.getTypedInstance<String, String>()
+        apparentRepoNameToCanonicalName = org.jetbrains.bazel.commons.BidirectionalMap.getTypedInstance<String, String>()
           .apply { putAll(repoMapping.apparentToCanonical) },
         canonicalRepoNameToPath = repoMapping.canonicalToPath,
       )

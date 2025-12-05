@@ -13,6 +13,7 @@ import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.TargetVertex
 import org.jetbrains.bazel.sync_new.lang.SyncTargetData
 import org.jetbrains.bazel.sync_new.lang.kryo.SyncTargetDataSerializer
+import java.nio.file.Path
 import java.util.EnumSet
 
 const val PRIORITY_LOW: Int = 0
@@ -36,6 +37,9 @@ data class BazelTargetVertex(
   @field:Bind(serializer = SyncTargetDataSerializer::class)
   @field:Tag(10)
   val targetData: Long2ObjectMap<SyncTargetData>,
+
+  @field:Tag(7)
+  val baseDirectory: Path
 ) : TargetVertex
 
 @Tagged

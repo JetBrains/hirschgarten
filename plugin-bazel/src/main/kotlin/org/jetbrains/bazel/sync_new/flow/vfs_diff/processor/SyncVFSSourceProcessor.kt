@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 
+import com.google.common.collect.HashMultimap
 import com.intellij.openapi.components.service
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
@@ -21,6 +22,7 @@ import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseQuery
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFileContributor
@@ -60,6 +62,7 @@ class SyncVFSSourceProcessor {
       }
     }
 
+    val flags = HashMultimap.create<Label, SyncDiffFlags>()
     val contributors = SyncVFSFileContributor.ep.extensionList
     val changedSources = diff.changed.filter { file ->
       contributors.any {
@@ -69,6 +72,7 @@ class SyncVFSSourceProcessor {
     val sources = (diff.added + changedSources).map { it.path }
     for ((source, targets) in runInverseSourceQuery(ctx, sources)) {
       for (target in targets) {
+        flags.put(target, SyncDiffFlags.FORCE_INVALIDATION)
         ctx.storage.source2Target.put(source, target)
         ctx.storage.target2Source.put(target, source)
       }
@@ -77,6 +81,7 @@ class SyncVFSSourceProcessor {
 
     return SyncColdDiff(
       changed = changed,
+      flags = flags
     )
   }
 

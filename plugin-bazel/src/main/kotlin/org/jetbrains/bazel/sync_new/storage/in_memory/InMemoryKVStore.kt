@@ -35,6 +35,9 @@ open class InMemoryKVStore<K, V>(
   override fun get(key: K): V? = map[key]
 
   override fun put(key: K, value: V) {
+    if (key == null || value == null) {
+      println()
+    }
     map[key] = value
     wasModified = true
   }
@@ -59,8 +62,16 @@ open class InMemoryKVStore<K, V>(
   override fun values(): Sequence<V> = map.values.asSequence()
   override fun asSequence(): Sequence<Pair<K, V>> = map.asSequence().map { it.key to it.value }
 
-  override fun computeIfAbsent(key: K, op: (k: K) -> V): V? = map.computeIfAbsent(key, op)
-  override fun compute(key: K, op: (k: K, v: V?) -> V?): V? = map.compute(key, op)
+  override fun computeIfAbsent(key: K, op: (k: K) -> V): V? {
+    val value = map.computeIfAbsent(key, op)
+    wasModified = true
+    return value
+  }
+  override fun compute(key: K, op: (k: K, v: V?) -> V?): V? {
+    val value = map.compute(key, op)
+    wasModified = true
+    return value
+  }
 
   override fun write(ctx: CodecContext, buffer: CodecBuffer) {
     buffer.writeVarInt(CODEC_VERSION)

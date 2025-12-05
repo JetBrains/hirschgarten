@@ -5,7 +5,7 @@ import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.pipeline.SyncWorkspaceImporter
 
 interface SyncLanguagePlugin<T : SyncTargetData> {
-  val language: SyncLanguage
+  val language: SyncLanguage<T>
   val dataType: Class<out T>
 
   fun isEnabled(ctx: SyncContext): Boolean = true

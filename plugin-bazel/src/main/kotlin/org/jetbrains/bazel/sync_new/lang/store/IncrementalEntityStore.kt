@@ -23,11 +23,6 @@ interface IncrementalEntityStore<R : IncrementalResourceId, E : IncrementalEntit
   fun getEntity(resourceId: R): E?
 
   /**
-   * Create a new automatically managed resource id
-   */
-  fun createResourceId(creator: IncrementalResourceIdCreator<R>): R
-
-  /**
    * Add directed resource dependency
    */
   fun addDependency(from: R, to: R)
@@ -36,6 +31,21 @@ interface IncrementalEntityStore<R : IncrementalResourceId, E : IncrementalEntit
    * Get all dependants of the given resource id
    */
   fun getTransitiveDependants(resourceId: R): Sequence<R>
+
+  /**
+   * Get all direct referrers of the given resource id
+   */
+  fun getDirectReferrers(resourceId: R): Sequence<R>
+
+  /**
+   * Get all entities lazily
+   */
+  fun getAllEntities(): Sequence<E>
+
+  /**
+   * Clear all entities and dependencies
+   */
+  fun clear()
 }
 
 inline fun <reified U : E, R : IncrementalResourceId, E : IncrementalEntity> IncrementalEntityStore<R, E>.modifyEntityTyped(

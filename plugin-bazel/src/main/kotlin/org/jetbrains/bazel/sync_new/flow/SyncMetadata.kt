@@ -3,6 +3,9 @@ package org.jetbrains.bazel.sync_new.flow
 import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
+import com.google.common.collect.HashMultimap
+import com.google.common.collect.Multimap
+import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTag
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTagged
 import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
@@ -27,7 +30,7 @@ data class BzlmodSyncRepoMapping(
   val canonicalRepoNameToLocalPath: Map<String, Path> = mapOf(),
 
   @field:Tag(2)
-  val apparentToCanonical: BiMap<String, String> = HashBiMap.create(),
+  val apparentToCanonical: BidirectionalMap<String, String> = BidirectionalMap(),
 
   @field:Tag(3)
   val canonicalToPath: Map<String, Path> = mapOf(),

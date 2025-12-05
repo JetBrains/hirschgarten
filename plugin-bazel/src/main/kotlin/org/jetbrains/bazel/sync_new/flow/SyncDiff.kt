@@ -1,7 +1,12 @@
 package org.jetbrains.bazel.sync_new.flow
 
+import com.google.common.collect.HashMultimap
+import com.google.common.collect.Multimap
+import com.google.common.collect.Multimaps
+import com.google.common.collect.SetMultimap
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.graph.TargetReference
+import org.jetbrains.bazel.sync_new.util.plus
 
 data class SyncDiff(
   val added: Set<TargetReference>,
@@ -38,9 +43,14 @@ class SyncColdDiff(
   val added: Set<Label> = emptySet(),
   val removed: Set<Label> = emptySet(),
   val changed: Set<Label> = emptySet(),
+  val flags: SetMultimap<Label, SyncDiffFlags> = HashMultimap.create(),
 ) {
   val universe: Set<Label> by lazy { added + removed + changed }
   val hasChanged: Boolean = added.isNotEmpty() || removed.isNotEmpty() || changed.isNotEmpty()
+}
+
+enum class SyncDiffFlags {
+  FORCE_INVALIDATION
 }
 
 operator fun SyncColdDiff.plus(other: SyncColdDiff): SyncColdDiff {
@@ -48,5 +58,6 @@ operator fun SyncColdDiff.plus(other: SyncColdDiff): SyncColdDiff {
     added = added + other.added,
     removed = removed + other.removed,
     changed = changed + other.changed,
+    flags = this.flags + other.flags
   )
 }
