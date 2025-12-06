@@ -34,8 +34,7 @@ internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSo
   private companion object {
 
 
-    private val connections = listOf<ConnectionId>(
-    )
+    private val connections = listOf<ConnectionId>()
 
   }
 
@@ -255,8 +254,7 @@ internal class BazelJavaSourceRootEntityData : WorkspaceEntityData<BazelJavaSour
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return BazelJavaSourceRootEntity(packageNameId, sourceRoots, entitySource) {
-    }
+    return BazelJavaSourceRootEntity(packageNameId, sourceRoots, entitySource)
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {

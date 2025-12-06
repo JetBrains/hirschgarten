@@ -18,6 +18,8 @@ import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncProgressReporter
+import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.SyncScope
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
@@ -42,7 +44,7 @@ class SyncUniverseService(
   val universe: SyncUniverseState
     get() = universeState.get()
 
-  suspend fun computeUniverseDiff(scope: SyncScope): SyncColdDiff {
+  suspend fun computeUniverseDiff(scope: SyncScope, progress: SyncProgressReporter): SyncColdDiff {
     val connector = project.service<BazelConnectorService>().ofLegacyTask()
     if (scope.isFullSync) {
       universeState.reset()
@@ -53,7 +55,7 @@ class SyncUniverseService(
     // clean init
     if (state.phase == SyncUniversePhase.BEFORE_FIRST_SYNC) {
       val universe = SyncUniverseImportBuilder.createUniverseImport(project)
-      val repoMapping = LegacyBazelFrontendBridge.fetchRepoMapping(project)
+      val repoMapping = fetchRepoMapping(progress)
       universeState.modify {
         SyncUniverseState(
           importState = universe,
@@ -62,7 +64,9 @@ class SyncUniverseService(
         )
       }
 
-      val targets = computeTargets(connector, universe)
+      val targets = progress.task.withTask("querying_universe_targets", "Querying universe targets") {
+        computeTargets(connector, universe)
+      }
       return SyncColdDiff(added = targets)
     }
 
@@ -72,7 +76,9 @@ class SyncUniverseService(
     // import scope changed
     // compute target diff
     val diff = if (oldImportState.patterns != newImportState.patterns) {
-      computeUniverseDiff(connector, oldImportState, newImportState)
+      progress.task.withTask("querying_universe_targets", "Querying universe targets") {
+        computeUniverseDiff(connector, oldImportState, newImportState)
+      }
     } else {
       SyncColdDiff()
     }
@@ -80,7 +86,7 @@ class SyncUniverseService(
     // internal repos changed
     // compute repo mappings
     val repoMapping = if (oldImportState.internalRepos != newImportState.internalRepos) {
-      LegacyBazelFrontendBridge.fetchRepoMapping(project)
+      fetchRepoMapping(progress)
     } else {
       state.repoMapping
     }
@@ -94,6 +100,11 @@ class SyncUniverseService(
 
     return diff
   }
+
+  private suspend fun fetchRepoMapping(progress: SyncProgressReporter): SyncRepoMapping =
+    progress.task.withTask("fetch_repo_mapping", "Fetching repo mapping") {
+      LegacyBazelFrontendBridge.fetchRepoMapping(project)
+    }
 
   private suspend fun computeUniverseDiff(
     connector: BazelConnector,

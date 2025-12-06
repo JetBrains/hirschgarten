@@ -47,8 +47,8 @@ value class MVStoreWriteCodecBuffer(
     writeBuffer.putLong(value)
   }
 
-  override fun writeBytes(bytes: ByteArray) {
-    writeBuffer.put(bytes)
+  override fun writeBytes(bytes: ByteArray, offset: Int, length: Int) {
+    writeBuffer.put(bytes, offset, length)
   }
 
   override fun writeBuffer(buffer: ByteBuffer) {
@@ -78,11 +78,13 @@ value class MVStoreReadCodecBuffer(
 
   override fun readInt64(): Long = buffer.getLong()
 
-  override fun readBytes(bytes: ByteArray) {
-    buffer.get(bytes)
+  override fun readBytes(bytes: ByteArray, offset: Int, length: Int) {
+    buffer.get(bytes, offset, length)
   }
 
   override fun readBuffer(size: Int): ByteBuffer {
-    return buffer.slice(buffer.position(), size)
+    val slice = buffer.slice(buffer.position(), size)
+    buffer.position(buffer.position() + size)
+    return slice
   }
 }

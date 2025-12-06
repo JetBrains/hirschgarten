@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.flow.universe_expand
 
+import com.google.common.collect.HashMultimap
 import com.intellij.openapi.components.service
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
@@ -12,6 +13,7 @@ import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
 
 class SyncExpandProcessor {
   suspend fun process(ctx: SyncExpandContext, diff: SyncColdDiff): SyncColdDiff {
@@ -28,6 +30,8 @@ class SyncExpandProcessor {
     changed += diff.changed
     removed += diff.removed
 
+    val flags = HashMultimap.create<Label, SyncDiffFlags>()
+
     // invalidate direct reverse dependencies
     for (removed in diff.removed) {
       val vertexId = graph.getOrAddVertex(removed)
@@ -35,7 +39,10 @@ class SyncExpandProcessor {
       for (n in predecessors.indices) {
         val predecessorId = predecessors.getInt(n)
         val predecessorLabel = graph.id2Label.get(predecessorId) ?: continue
-        changed += predecessorLabel
+        if (predecessorLabel !in diff.removed) {
+          changed += predecessorLabel
+          flags.put(predecessorLabel, SyncDiffFlags.FORCE_INVALIDATION)
+        }
       }
     }
 
@@ -101,6 +108,7 @@ class SyncExpandProcessor {
       added = added,
       removed = removed,
       changed = changed,
+      flags = flags
     )
   }
 

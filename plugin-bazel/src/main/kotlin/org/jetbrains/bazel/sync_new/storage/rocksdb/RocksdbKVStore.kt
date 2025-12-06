@@ -5,7 +5,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.storage.KVStore
-import org.jetbrains.bazel.sync_new.storage.SortedKVStore
+import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
+import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.ColumnFamilyHandle
 import org.rocksdb.ReadOptions
 import org.rocksdb.RocksDB
@@ -40,15 +41,15 @@ class RocksdbKVStore<K : Any, V : Any>(
   }
 
   override fun get(key: K): V? = cache.get(key) {
-    val keyBuffer = UnsafeRocksdbCodecBuffer.allocate()
-    keyCodec.encode(UnsafeRocksdbCodecContext, keyBuffer, key)
+    val keyBuffer = UnsafeByteBufferCodecBuffer.allocate()
+    keyCodec.encode(UnsafeCodecContext, keyBuffer, key)
 
-    val valueBuffer = UnsafeRocksdbCodecBuffer.allocate(0)
+    val valueBuffer = UnsafeByteBufferCodecBuffer.allocate(0)
     val result = db.get(cfHandle, READ_OPTIONS, keyBuffer.buffer, valueBuffer.buffer)
     if (result == RocksDB.NOT_FOUND) {
       null
     } else {
-      valueCodec.decode(UnsafeRocksdbCodecContext, valueBuffer)
+      valueCodec.decode(UnsafeCodecContext, valueBuffer)
     }
   }
 
@@ -61,8 +62,8 @@ class RocksdbKVStore<K : Any, V : Any>(
     if (cache.getIfPresent(key) != null) {
       return true
     }
-    val keyBuffer = UnsafeRocksdbCodecBuffer.allocate()
-    keyCodec.encode(UnsafeRocksdbCodecContext, keyBuffer, key)
+    val keyBuffer = UnsafeByteBufferCodecBuffer.allocate()
+    keyCodec.encode(UnsafeCodecContext, keyBuffer, key)
 
     return db.keyExists(cfHandle, READ_OPTIONS, keyBuffer.buffer)
   }
@@ -74,8 +75,8 @@ class RocksdbKVStore<K : Any, V : Any>(
       null
     }
     cache.invalidate(key)
-    val buffer = UnsafeRocksdbCodecBuffer.allocate()
-    keyCodec.encode(UnsafeRocksdbCodecContext, buffer, key)
+    val buffer = UnsafeByteBufferCodecBuffer.allocate()
+    keyCodec.encode(UnsafeCodecContext, buffer, key)
     db.delete(cfHandle, WRITE_OPTIONS, buffer.buffer)
     return value
   }
@@ -108,7 +109,7 @@ class RocksdbKVStore<K : Any, V : Any>(
     db.newIterator(cfHandle).use { iterator ->
       iterator.seekToFirst()
       while (iterator.isValid) {
-        val buffer = UnsafeRocksdbCodecBuffer.allocate(0)
+        val buffer = UnsafeByteBufferCodecBuffer.allocate(0)
         TODO("todo")
         //yield(iterator.key())
         iterator.next()

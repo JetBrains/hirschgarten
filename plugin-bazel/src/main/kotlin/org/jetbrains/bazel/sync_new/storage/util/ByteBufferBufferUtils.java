@@ -1,8 +1,8 @@
-package org.jetbrains.bazel.sync_new.storage.rocksdb;
+package org.jetbrains.bazel.sync_new.storage.util;
 
 import java.nio.ByteBuffer;
 
-public final class RocksdbBufferUtils {
+public final class ByteBufferBufferUtils {
   public static void writeVarInt(ByteBuffer buffer, int x) {
     while ((x & ~0x7f) != 0) {
       buffer.put((byte) (x | 0x80));

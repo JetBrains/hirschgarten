@@ -16,7 +16,7 @@ open class MVStoreDataType<T>(
 
   override fun getMemory(obj: T): Int = codec.getSize(MVStoreCodecContext, obj)
 
-  override fun isMemoryEstimationAllowed(): Boolean = true
+  override fun isMemoryEstimationAllowed(): Boolean = false
 
   override fun write(buff: WriteBuffer, obj: T) {
     codec.encode(MVStoreCodecContext, MVStoreWriteCodecBuffer(buff), obj)

@@ -35,9 +35,6 @@ open class InMemoryKVStore<K, V>(
   override fun get(key: K): V? = map[key]
 
   override fun put(key: K, value: V) {
-    if (key == null || value == null) {
-      println()
-    }
     map[key] = value
     wasModified = true
   }
@@ -67,6 +64,7 @@ open class InMemoryKVStore<K, V>(
     wasModified = true
     return value
   }
+
   override fun compute(key: K, op: (k: K, v: V?) -> V?): V? {
     val value = map.compute(key, op)
     wasModified = true
@@ -75,8 +73,9 @@ open class InMemoryKVStore<K, V>(
 
   override fun write(ctx: CodecContext, buffer: CodecBuffer) {
     buffer.writeVarInt(CODEC_VERSION)
-    buffer.writeVarInt(map.size)
-    for ((key, value) in map) {
+    val copy = map.toMap()
+    buffer.writeVarInt(copy.size)
+    for ((key, value) in copy) {
       keyCodec.encode(ctx, buffer, key)
       valueCodec.encode(ctx, buffer, value)
     }
@@ -89,7 +88,11 @@ open class InMemoryKVStore<K, V>(
     for (n in 0 until size) {
       val key = keyCodec.decode(ctx, buffer)
       val value = valueCodec.decode(ctx, buffer)
-      map[key] = value
+      if (key != null && value != null) {
+        map[key] = value
+      } else {
+        println()
+      }
     }
   }
 

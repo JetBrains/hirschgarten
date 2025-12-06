@@ -66,6 +66,21 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
 
     addMetadata(typeMetadata)
 
+    typeMetadata = FinalClassMetadata.ClassMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.NewSyncBazelEntitySource",
+                                                    properties = listOf(
+                                                      OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
+                                                                          name = "subsystem", valueType = primitiveTypeStringNotNullable,
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
+                                                                          name = "virtualFileUrl",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(
+                                                                            isNullable = true, typeMetadata = FinalClassMetadata.KnownClass(
+                                                                              fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
+                                                                          withDefault = false)),
+                                                    supertypes = listOf("com.intellij.platform.workspace.storage.EntitySource"))
+
+    addMetadata(typeMetadata)
+
     typeMetadata = FinalClassMetadata.ClassMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId", properties = listOf(
         OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "id", valueType = primitiveTypeIntNotNullable,
@@ -231,12 +246,13 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
                             valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
                                                                                 typeMetadata = FinalClassMetadata.KnownClass(
                                                                                   fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "jars",
-                            valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
-                              ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(
-                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
-                                                                            primitive = primitiveTypeListNotNullable), withDefault = false),
+                            withDefault = false), OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "jars",
+                                                                      valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                        ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                  fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
+                                                                                                                      primitive = primitiveTypeListNotNullable),
+                                                                      withDefault = false),
         OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "module",
                             valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
                                                                           entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
@@ -383,12 +399,11 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
                             valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
                                                                                 typeMetadata = FinalClassMetadata.KnownClass(
                                                                                   fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "root",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                  fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
-                            withDefault = false),
+                            withDefault = false), OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "root",
+                                                                      valueType = ValueTypeMetadata.SimpleType.CustomType(
+                                                                        isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(
+                                                                          fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
+                                                                      withDefault = false),
         OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "packagePrefix",
                             valueType = primitiveTypeStringNotNullable, withDefault = false),
         OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "module",
@@ -439,32 +454,32 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
   }
 
   override fun initializeMetadataHash() {
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity", metadataHash = 917847693)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = -800617870)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity", metadataHash = -35974613)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 1532901196)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity",
-                    metadataHash = 1290451696)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity", metadataHash = 867229151)
+                    metadataHash = -844721890)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity", metadataHash = -2137707891)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
-                    metadataHash = -1407175814)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity", metadataHash = 76900813)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity", metadataHash = 1959959221)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageNameId", metadataHash = -1899896495)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
-                    metadataHash = -1715880414)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryId", metadataHash = 1192700660)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId", metadataHash = -219154451)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$GlobalLibraryTableId",
-                    metadataHash = 1911253865)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ModuleLibraryTableId", metadataHash = 777479370)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.ModuleId", metadataHash = -575206713)
+                    metadataHash = 873866698)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity", metadataHash = -1844349399)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity", metadataHash = 950673911)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageNameId", metadataHash = -1335857953)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId", metadataHash = -914279954)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryId", metadataHash = 1783065412)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId", metadataHash = 1939585583)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$GlobalLibraryTableId", metadataHash = 105250347)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ModuleLibraryTableId",
+                    metadataHash = -1712287206)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.ModuleId", metadataHash = 369441961)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ProjectLibraryTableId",
-                    metadataHash = -1574432194)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.EntitySource", metadataHash = -610405892)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource", metadataHash = -1192262342)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource", metadataHash = -1185244447)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource", metadataHash = -1421628915)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource", metadataHash = -468731093)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.SymbolicEntityId", metadataHash = 761750119)
+                    metadataHash = 824092854)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.EntitySource", metadataHash = 823808617)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource", metadataHash = 1476524774)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource", metadataHash = -2119790393)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource", metadataHash = 633678949)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource", metadataHash = -1409629483)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.NewSyncBazelEntitySource", metadataHash = -155951867)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.SymbolicEntityId", metadataHash = -1960707427)
   }
 
 }

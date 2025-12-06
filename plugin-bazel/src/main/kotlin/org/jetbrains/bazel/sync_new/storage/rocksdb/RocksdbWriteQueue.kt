@@ -7,6 +7,8 @@ import com.intellij.util.progress.sleepCancellable
 import kotlinx.coroutines.isActive
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync_new.codec.Codec
+import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
+import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.ColumnFamilyHandle
 import org.rocksdb.RocksDB
 import org.rocksdb.WriteOptions
@@ -51,15 +53,15 @@ class RocksdbWriteQueue(
   private val queue: BlockingQueue<WriteOperation> = LinkedBlockingQueue()
 
   data class ThreadByteBuffer(
-    val buffer1: UnsafeRocksdbCodecBuffer,
-    val buffer2: UnsafeRocksdbCodecBuffer,
+    val buffer1: UnsafeByteBufferCodecBuffer,
+    val buffer2: UnsafeByteBufferCodecBuffer,
     var lastShrinkCheck: Long,
   )
 
   private var buffer: ThreadLocal<ThreadByteBuffer> = ThreadLocal.withInitial {
     ThreadByteBuffer(
-      buffer1 = UnsafeRocksdbCodecBuffer(ByteBuffer.allocateDirect(BUFFER_INITIAL_CAPACITY)),
-      buffer2 = UnsafeRocksdbCodecBuffer(ByteBuffer.allocateDirect(BUFFER_INITIAL_CAPACITY)),
+      buffer1 = UnsafeByteBufferCodecBuffer(ByteBuffer.allocateDirect(BUFFER_INITIAL_CAPACITY)),
+      buffer2 = UnsafeByteBufferCodecBuffer(ByteBuffer.allocateDirect(BUFFER_INITIAL_CAPACITY)),
       lastShrinkCheck = System.currentTimeMillis(),
     )
   }
@@ -125,11 +127,11 @@ class RocksdbWriteQueue(
 
     // write key
     buffer1.reset()
-    desc.keyCodec.encode(UnsafeRocksdbCodecContext, buffer1, operation.key)
+    desc.keyCodec.encode(UnsafeCodecContext, buffer1, operation.key)
 
     // write value
     buffer2.reset()
-    desc.valueCodec.encode(UnsafeRocksdbCodecContext, buffer2, operation.value)
+    desc.valueCodec.encode(UnsafeCodecContext, buffer2, operation.value)
 
     desc.db.put(desc.handle, WRITE_OPTIONS, buffer1.buffer, buffer2.buffer)
   }
@@ -139,7 +141,7 @@ class RocksdbWriteQueue(
     val desc = operation.desc
 
     buffer1.reset()
-    desc.keyCodec.encode(UnsafeRocksdbCodecContext, buffer1, operation.key)
+    desc.keyCodec.encode(UnsafeCodecContext, buffer1, operation.key)
 
     desc.db.delete(desc.handle, WRITE_OPTIONS, buffer1.buffer)
   }

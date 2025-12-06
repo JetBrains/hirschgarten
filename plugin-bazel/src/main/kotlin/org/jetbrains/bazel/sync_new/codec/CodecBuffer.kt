@@ -16,7 +16,7 @@ interface CodecBuffer {
   fun writeInt8(value: Byte)
   fun writeInt32(value: Int)
   fun writeInt64(value: Long)
-  fun writeBytes(bytes: ByteArray)
+  fun writeBytes(bytes: ByteArray, offset: Int = 0, length: Int = bytes.size)
   fun writeBuffer(buffer: ByteBuffer)
 
   fun readVarInt(): Int
@@ -24,7 +24,7 @@ interface CodecBuffer {
   fun readInt8(): Byte
   fun readInt32(): Int
   fun readInt64(): Long
-  fun readBytes(bytes: ByteArray)
+  fun readBytes(bytes: ByteArray, offset: Int = 0, length: Int = bytes.size)
   fun readBuffer(size: Int): ByteBuffer
 }
 
@@ -62,7 +62,7 @@ interface WritableOnlyCodecBuffer : CodecBuffer {
   override fun readInt8(): Byte = error("not supported")
   override fun readInt32(): Int = error("not supported")
   override fun readInt64(): Long = error("not supported")
-  override fun readBytes(bytes: ByteArray) = error("not supported")
+  override fun readBytes(bytes: ByteArray, offset: Int, length: Int) = error("not supported")
   override fun readBuffer(size: Int): ByteBuffer = error("not supported")
 }
 
@@ -78,6 +78,6 @@ interface ReadableOnlyCodecBuffer : CodecBuffer {
   override fun writeInt8(value: Byte) = error("not supported")
   override fun writeInt32(value: Int) = error("not supported")
   override fun writeInt64(value: Long) = error("not supported")
-  override fun writeBytes(bytes: ByteArray) = error("not supported")
+  override fun writeBytes(bytes: ByteArray, offset: Int, length: Int) = error("not supported")
   override fun writeBuffer(buffer: ByteBuffer) = error("not supported")
 }

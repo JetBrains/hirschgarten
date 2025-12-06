@@ -9,6 +9,7 @@ import org.jetbrains.bazel.sync_new.codec.CodecBuilder
 import org.jetbrains.bazel.sync_new.codec.Int2ObjectOpenHashMapCodec
 import org.jetbrains.bazel.sync_new.codec.IntArrayListCodec
 import org.jetbrains.bazel.sync_new.codec.hash128Codec
+import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.codec.ofInt
 import org.jetbrains.bazel.sync_new.codec.versionedCodecOf
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntity
@@ -97,6 +98,7 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     if (entity != null) {
       val metadata = metadataStore.get()
       id2Resource.remove(id)
+      resourceHash2Id.remove(hashResourceId(resourceId))
 
       val successors = metadata.id2Successors.get(id)
       if (successors != null) {
@@ -202,12 +204,16 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
   }
 
   private fun getOrCreateIdFromResourceId(resourceId: R): Int {
-    val id = getIdFromResourceId(resourceId)
-    if (id != EMPTY_ID) {
-      return id
+    val hash = hashResourceId(resourceId)
+    val existingId = resourceHash2Id[hash]
+    if (existingId != null && existingId != EMPTY_ID) {
+      if (id2Resource[existingId] == null) {
+        id2Resource[existingId] = resourceId
+      }
+      return existingId
     }
     val newId = metadataStore.modify { it.copy(nextId = it.nextId + 1) }.nextId
-    resourceHash2Id[hashResourceId(resourceId)] = newId
+    resourceHash2Id[hash] = newId
     id2Resource[newId] = resourceId
     return newId
   }
@@ -235,7 +241,7 @@ inline fun <reified R : IncrementalResourceId, reified E : IncrementalEntity> cr
       "bazel.sync.lang.entity_store.${name}.resource_hash_to_id",
       StorageHints.USE_PAGED_STORE,
     )
-      .withKeyCodec { hash128Codec }
+      .withKeyCodec { ofHash128() }
       .withValueCodec { ofInt() }
       .build()
 

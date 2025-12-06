@@ -9,7 +9,6 @@ import org.jetbrains.bazel.sync_new.codec.kryo.SealedTagged
 import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntity
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalResourceId
-import org.jetbrains.bazel.sync_new.lang.store.NonHashable
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 import java.nio.file.Path
@@ -24,25 +23,25 @@ sealed interface JvmModuleEntity : IncrementalEntity {
     @field:Tag(1)
     override val resourceId: Int,
 
-    @field:Tag(10)
+    @field:Tag(2)
     val baseDirectory: Path,
 
-    @field:Tag(2)
+    @field:Tag(3)
     val label: Label,
 
-    @field:Tag(3)
+    @field:Tag(4)
     val dependencies: Set<Label>,
 
-    @field:Tag(4)
+    @field:Tag(5)
     val sources: List<JvmSourceItem>,
 
-    @field:Tag(5)
+    @field:Tag(6)
     val resources: List<Path>,
 
-    @field:Tag(6)
+    @field:Tag(7)
     val legacyKotlinData: LegacyKotlinTargetData?,
 
-    @field:Tag(7)
+    @field:Tag(8)
     val legacyJvmData: LegacyJvmTargetData?
   ) : JvmModuleEntity
 
@@ -88,12 +87,12 @@ sealed interface JvmModuleEntity : IncrementalEntity {
 
   @SealedTag(4)
   @Tagged
-  data class JdepsTransitive(
+  data class JdepsCache(
     @field:Tag(1)
     override val resourceId: Int,
 
     @field:Tag(2)
-    val allTransitiveDeps: Set<Path>
+    val myJdeps: Set<Path>
   ) : JvmModuleEntity
 
 }
@@ -152,35 +151,35 @@ sealed interface JvmResourceId : IncrementalResourceId {
     val vertexId: Int,
   ) : JvmResourceId
 
-  @SealedTag(10)
+  @SealedTag(2)
   @Tagged
   data class VertexDeps(
     @field:Tag(1)
     val label: Label,
   ) : JvmResourceId
 
-  @SealedTag(2)
+  @SealedTag(3)
   @Tagged
   data class JdepsLibrary(
     @field:Tag(1)
     val libraryName: String,
   ) : JvmResourceId
 
-  @SealedTag(20)
+  @SealedTag(4)
   @Tagged
-  data class JdepsTransitive(
+  data class JdepsCache(
     @field:Tag(1)
     val vertexId: Int,
   ) : JvmResourceId
 
-  @SealedTag(3)
+  @SealedTag(5)
   @Tagged
   data class AnnotationProcessorLibrary(
     @field:Tag(1)
     val owner: Int,
   ) : JvmResourceId
 
-  @SealedTag(4)
+  @SealedTag(6)
   @Tagged
   data class CompiledLibrary(
     @field:Tag(1)
@@ -203,7 +202,7 @@ fun JvmResourceId.hash(): HashValue128 = hash h@{
       putInt(3)
       putString(libraryName)
     }
-    is JvmResourceId.JdepsTransitive -> {
+    is JvmResourceId.JdepsCache -> {
       putInt(4)
       putInt(vertexId)
     }

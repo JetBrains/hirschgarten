@@ -14,6 +14,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 object FastFileToLabelResolver {
+  private val BUILD_FILES = arrayOf("BUILD", "BUILD.bazel")
   private val SLASH_SPLITTER = Splitter.on('/')
   private val SLASH_JOINER = Joiner.on('/')
 
@@ -56,7 +57,12 @@ object FastFileToLabelResolver {
       return false
     }
 
-    return Files.exists(path.resolve("BUILD"))
-      || Files.exists(path.resolve("BUILD.bazel"))
+    for (name in BUILD_FILES) {
+      val path = path.resolve(name)
+      if (Files.exists(path) && Files.isRegularFile(path)) {
+        return true
+      }
+    }
+    return false
   }
 }
