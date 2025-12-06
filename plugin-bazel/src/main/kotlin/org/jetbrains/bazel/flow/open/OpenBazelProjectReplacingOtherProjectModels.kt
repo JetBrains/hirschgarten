@@ -5,6 +5,9 @@ import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.startup.initializeBazelSyncEnvironment
+import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.sync.task.ProjectSyncTask
 
 class OpenBazelProjectReplacingOtherProjectModels : ProjectActivity {
   override suspend fun execute(project: Project) {
@@ -17,6 +20,12 @@ class OpenBazelProjectReplacingOtherProjectModels : ProjectActivity {
     }
     val projectFolder = findProjectFolderFromVFile(project.baseDir) ?: return
     BazelOpenProjectProvider().linkToExistingProjectAsync(projectFolder, project)
+
+    initializeBazelSyncEnvironment()
+    ProjectSyncTask(project).sync(
+      syncScope = SecondPhaseSync,
+      buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
+    )
   }
 
   private fun shouldImportGoogleBazelProject(project: Project) =

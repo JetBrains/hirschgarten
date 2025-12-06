@@ -1,10 +1,8 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
-import com.intellij.util.PlatformUtils
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
 
@@ -16,7 +14,7 @@ object BazelFeatureFlags {
   private const val QUERY_TERMINAL_COMPLETION = "bazel.query.terminal.completion"
 
   @VisibleForTesting
-  const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
+  const val BUILD_PROJECT_ON_SYNC = "bazel.build.project.on.sync"
   private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
   private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
   private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
@@ -91,10 +89,7 @@ object BazelFeatureFlags {
     get() = isEnabled(CHECK_SHARED_SOURCES)
 
   val autoOpenProjectIfPresent: Boolean
-    get() =
-      isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) ||
-        ApplicationManager.getApplication().isHeadlessEnvironment &&
-        !PlatformUtils.isFleetBackend()
+    get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT)
 
   val isQueryTerminalCompletionEnabled: Boolean
     get() = isEnabled(QUERY_TERMINAL_COMPLETION)
