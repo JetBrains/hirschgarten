@@ -35,9 +35,7 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
     internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, PackageMarkerEntity::class.java,
                                                                           ConnectionId.ConnectionType.ONE_TO_MANY, false)
 
-    private val connections = listOf<ConnectionId>(
-      MODULE_CONNECTION_ID,
-    )
+    private val connections = listOf<ConnectionId>(MODULE_CONNECTION_ID)
 
   }
 

@@ -9,3 +9,5 @@ data object BazelProjectEntitySource : BazelEntitySource
 data class BazelModuleEntitySource(val moduleName: String) : BazelEntitySource
 
 data object BazelDummyEntitySource : BazelEntitySource
+
+data class NewSyncBazelEntitySource(val subsystem: String) : EntitySource

@@ -60,6 +60,10 @@ class InMemoryFlatStore<T>(
     while (true) {
       val current = get()
       val updated = op(current)
+      if (updated === current) {
+        wasModified = true
+        return updated
+      }
       if (VALUE_HANDLE.compareAndSet(this, current, updated)) {
         // assume every modify operation ends up modifying the value
         wasModified = true

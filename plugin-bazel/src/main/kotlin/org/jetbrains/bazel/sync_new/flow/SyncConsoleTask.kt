@@ -6,8 +6,8 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 
 class SyncConsoleTask(
-  private val project: Project,
-  private val parentTaskId: String,
+  val project: Project,
+  val parentTaskId: String,
 ) {
   suspend fun <T> withTask(taskId: String, message: String, action: suspend SyncConsoleTask.() -> T): T {
     return project.syncConsole.withSubtask(this.parentTaskId, taskId, message) {

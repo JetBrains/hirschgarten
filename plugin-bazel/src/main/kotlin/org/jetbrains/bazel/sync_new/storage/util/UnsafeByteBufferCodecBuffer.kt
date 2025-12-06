@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync_new.storage.rocksdb
+package org.jetbrains.bazel.sync_new.storage.util
 
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
 import sun.misc.Unsafe
@@ -6,31 +6,34 @@ import java.nio.Buffer
 import java.nio.ByteBuffer
 import kotlin.math.max
 
-class UnsafeRocksdbCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
+class UnsafeByteBufferCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
 
   companion object {
     const val MAX_BUFFER_LENGTH: Int = Int.MAX_VALUE - 8
     const val DEFAULT_BUFFER_SIZE: Int = 256
 
     // TODO: can I use it just like that inside JBR?
-    private val UNSAFE = Unsafe.getUnsafe()
+    private val UNSAFE = UnsafeUtil.unsafe
     private val ADDRESS_OFFSET = UNSAFE.objectFieldOffset(Buffer::class.java.getDeclaredField("address"))
 
-    fun allocate(size: Int = DEFAULT_BUFFER_SIZE) = UnsafeRocksdbCodecBuffer(ByteBuffer.allocateDirect(size))
+    fun allocate(size: Int = DEFAULT_BUFFER_SIZE) = UnsafeByteBufferCodecBuffer(ByteBuffer.allocateDirect(size))
   }
 
   init {
     if (!buffer.isDirect) {
-      error("UnsafeRocksdbCodecBuffer requires direct ByteBuffer")
+      error("UnsafeByteBufferCodecBuffer requires direct ByteBuffer")
     }
   }
 
   override val writable: Boolean = true
   override val readable: Boolean = true
-  override val position: Int = buffer.position()
-  override val size: Int = buffer.capacity()
+  override val position: Int
+    get() = buffer.position()
+  override val size: Int
+    get() = buffer.limit()
 
   override fun reserve(size: Int) {
+    // TODO: not direct buffer version
     val required = buffer.position() + size
     if (required < buffer.capacity()) {
       return
@@ -38,11 +41,14 @@ class UnsafeRocksdbCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
     val newSize = calculateNewSize(buffer.capacity(), required)
     val newBuffer = ByteBuffer.allocateDirect(newSize)
 
+    val oldAddress = UNSAFE.getLong(buffer, ADDRESS_OFFSET)
+    val newAddress = UNSAFE.getLong(newBuffer, ADDRESS_OFFSET)
+
     UNSAFE.copyMemory(
-      /* srcBase = */     buffer,
-      /* srcOffset = */   ADDRESS_OFFSET,
-      /* destBase = */    newBuffer,
-      /* destOffset = */  ADDRESS_OFFSET,
+      /* srcBase = */     null,
+      /* srcOffset = */   oldAddress,
+      /* destBase = */    null,
+      /* destOffset = */  newAddress,
       /* bytes = */       buffer.position().toLong(),
     )
 
@@ -52,12 +58,12 @@ class UnsafeRocksdbCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
 
   override fun writeVarInt(value: Int) {
     reserve(5)
-    RocksdbBufferUtils.writeVarInt(buffer, value)
+    ByteBufferBufferUtils.writeVarInt(buffer, value)
   }
 
   override fun writeVarLong(value: Long) {
     reserve(10)
-    RocksdbBufferUtils.writeVarLong(buffer, value)
+    ByteBufferBufferUtils.writeVarLong(buffer, value)
   }
 
   override fun writeInt8(value: Byte) {
@@ -75,9 +81,9 @@ class UnsafeRocksdbCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
     buffer.putLong(value)
   }
 
-  override fun writeBytes(bytes: ByteArray) {
-    reserve(bytes.size)
-    buffer.put(bytes)
+  override fun writeBytes(bytes: ByteArray, offset: Int, length: Int) {
+    reserve(length)
+    buffer.put(bytes, offset, length)
   }
 
   override fun writeBuffer(buffer: ByteBuffer) {
@@ -85,9 +91,9 @@ class UnsafeRocksdbCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
     this.buffer.put(buffer)
   }
 
-  override fun readVarInt(): Int = RocksdbBufferUtils.readVarInt(buffer)
+  override fun readVarInt(): Int = ByteBufferBufferUtils.readVarInt(buffer)
 
-  override fun readVarLong(): Long = RocksdbBufferUtils.readVarLong(buffer)
+  override fun readVarLong(): Long = ByteBufferBufferUtils.readVarLong(buffer)
 
   override fun readInt8(): Byte = buffer.get()
 
@@ -95,18 +101,21 @@ class UnsafeRocksdbCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
 
   override fun readInt64(): Long = buffer.getLong()
 
-  override fun readBytes(bytes: ByteArray) {
-    buffer.get(bytes)
+  override fun readBytes(bytes: ByteArray, offset: Int, length: Int) {
+    buffer.get(bytes, offset, length)
   }
 
   override fun readBuffer(size: Int): ByteBuffer {
     val result = if (buffer.isDirect) {
       val newBuffer = ByteBuffer.allocateDirect(size)
+      val srcAddress = UNSAFE.getLong(buffer, ADDRESS_OFFSET) + buffer.position()
+      val destAddress = UNSAFE.getLong(newBuffer, ADDRESS_OFFSET)
+
       UNSAFE.copyMemory(
-        /* srcBase = */     buffer,
-        /* srcOffset = */   ADDRESS_OFFSET + buffer.position(),
-        /* destBase = */    newBuffer,
-        /* destOffset = */  ADDRESS_OFFSET,
+        /* srcBase = */     null,
+        /* srcOffset = */   srcAddress,
+        /* destBase = */    null,
+        /* destOffset = */  destAddress,
         /* bytes = */       size.toLong(),
       )
       newBuffer.position(size)
@@ -130,7 +139,9 @@ class UnsafeRocksdbCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
     buffer.position(0)
   }
 
+
   fun shrinkToSize(threshold: Int) {
+    // TODO: not direct buffer version
     if (buffer.capacity() > threshold) {
       val usedSize = buffer.position()
       val newBuffer = ByteBuffer.allocateDirect(usedSize)
@@ -139,11 +150,14 @@ class UnsafeRocksdbCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
       buffer.position(0)
       buffer.limit(usedSize)
 
+      val srcAddress = UNSAFE.getLong(buffer, ADDRESS_OFFSET)
+      val destAddress = UNSAFE.getLong(newBuffer, ADDRESS_OFFSET)
+
       UNSAFE.copyMemory(
-        /* srcBase = */     buffer,
-        /* srcOffset = */   ADDRESS_OFFSET,
-        /* destBase = */    newBuffer,
-        /* destOffset = */  ADDRESS_OFFSET,
+        /* srcBase = */     null,
+        /* srcOffset = */   srcAddress,
+        /* destBase = */    null,
+        /* destOffset = */  destAddress,
         /* bytes = */       usedSize.toLong(),
       )
 

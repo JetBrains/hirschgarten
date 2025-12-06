@@ -43,8 +43,8 @@ value class KryoWriteCodecBuffer(private val output: Output) : WritableOnlyCodec
     output.writeLong(value, false)
   }
 
-  override fun writeBytes(bytes: ByteArray) {
-    output.write(bytes)
+  override fun writeBytes(bytes: ByteArray, offset: Int, length: Int) {
+    output.write(bytes, offset, length)
   }
 
   override fun writeBuffer(buffer: ByteBuffer) {
@@ -52,7 +52,9 @@ value class KryoWriteCodecBuffer(private val output: Output) : WritableOnlyCodec
       output.writeBytes(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining())
     } else {
       val bytes = ByteArray(buffer.remaining())
+      val savedPosition = buffer.position()
       buffer.get(bytes)
+      buffer.position(savedPosition)
       output.write(bytes)
     }
   }
@@ -76,12 +78,13 @@ value class KryoReadCodecBuffer(private val input: Input) : ReadableOnlyCodecBuf
 
   override fun readInt64(): Long = input.readLong(false)
 
-  override fun readBytes(bytes: ByteArray): Unit = input.readBytes(bytes)
+  override fun readBytes(bytes: ByteArray, offset: Int, length: Int): Unit = input.readBytes(bytes, offset, length)
 
   override fun readBuffer(size: Int): ByteBuffer {
     val buffer = ByteBuffer.allocate(size)
     input.readBytes(buffer.array(), 0, size)
     buffer.position(0)
+    buffer.limit(size)
     return buffer
   }
 

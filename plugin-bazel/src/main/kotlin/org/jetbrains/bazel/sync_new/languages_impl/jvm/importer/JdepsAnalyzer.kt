@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync_new.languages_impl.jvm.importer
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import org.jetbrains.bazel.label.Label
@@ -67,6 +68,8 @@ class JdepsAnalyzer(
       }
     }
 
+    val transitiveDepsCache = Int2ObjectOpenHashMap<Set<Path>>()
+
     // process jdeps in reverse topological order
     //
     // jdeps are processed based on transitive dependencies
@@ -87,23 +90,19 @@ class JdepsAnalyzer(
         .map { ctx.pathsResolver.resolve(it) }
         .toHashSet()
 
-      val directTransitiveTargetDeps = graph.getSuccessors(vertexId)
-        .asSequence()
-        .mapNotNull { graph.getVertexById(it) }
-        .flatMap {
-          val jdepsTransitive = storage.getEntity(JvmResourceId.JdepsTransitive(vertexId = vertexId))
-            as? JvmModuleEntity.JdepsTransitive
-          jdepsTransitive?.allTransitiveDeps ?: emptySet()
-        }
-        .toHashSet()
+      // TODO: recheck if I can cache inside bfs
+      val allTransitiveJdeps = transitiveDepsCache.computeIfAbsent(vertexId) {
+        computeAllTransitiveJdeps(ctx, vertexId)
+          .flatMap { it }
+          .toSet()
+      }
 
-      val thisTargetResolvedJDeps = thisTargetDeps - (directTargetDeps + directTransitiveTargetDeps)
-      val thisTargetTransitiveJDeps = thisTargetResolvedJDeps + directTargetDeps + directTransitiveTargetDeps
+      val thisTargetResolvedJDeps = thisTargetDeps - (directTargetDeps + allTransitiveJdeps)
 
       val vertexReferenceId = JvmResourceId.VertexReference(vertexId = vertexId)
-      val jdepsTransitiveId = JvmResourceId.JdepsTransitive(vertexId = vertexId)
+      val jdepsTransitiveId = JvmResourceId.JdepsCache(vertexId = vertexId)
       storage.createEntity(jdepsTransitiveId) {
-        JvmModuleEntity.JdepsTransitive(resourceId = it, allTransitiveDeps = thisTargetTransitiveJDeps)
+        JvmModuleEntity.JdepsCache(resourceId = it, myJdeps = thisTargetResolvedJDeps)
       }
       storage.addDependency(vertexReferenceId, jdepsTransitiveId)
 
@@ -155,6 +154,28 @@ class JdepsAnalyzer(
         .toSet()
     }
     return result
+  }
+
+  private fun computeAllTransitiveJdeps(ctx: SyncContext, vertexId: Int) = sequence {
+    val queue = ArrayDeque<Int>() // TODO: Use IntArrayFIFOQueue
+    val visited = IntOpenHashSet()
+    queue.addLast(vertexId)
+    while (true) {
+      val vertex = queue.removeFirstOrNull() ?: break
+      val jdeps = storage.getEntity(JvmResourceId.JdepsCache(vertexId = vertex))
+        as? JvmModuleEntity.JdepsCache
+      if (jdeps != null) {
+        yield(jdeps.myJdeps)
+      }
+      val succs = ctx.graph.getSuccessors(vertex)
+      for (n in succs.indices) {
+        val succ = succs.getInt(n)
+        if (!visited.add(succ)) {
+          continue
+        }
+        queue.addLast(succ)
+      }
+    }
   }
 
   private fun Deps.Dependency.isRelevant() = kind in sequenceOf(Deps.Dependency.Kind.EXPLICIT, Deps.Dependency.Kind.IMPLICIT)

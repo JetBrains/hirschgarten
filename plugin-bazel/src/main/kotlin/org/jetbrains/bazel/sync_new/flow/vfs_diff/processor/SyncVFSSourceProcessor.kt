@@ -104,6 +104,9 @@ class SyncVFSSourceProcessor {
     // TODO: properly handle resolveFullLabel failure
     val sourceLabels = SyncVFSLabelResolver.resolveSourceFileLabels(ctx, sources)
       .flatMap { it.value }
+    if (sourceLabels.isEmpty()) {
+      return emptyMap()
+    }
     val uniquePredecessorLabels = mutableSetOf<Label>()
     for (label in sourceLabels) {
       uniquePredecessorLabels += label.assumeResolved().copy(target = AllRuleTargets)
@@ -120,9 +123,12 @@ class SyncVFSSourceProcessor {
   }
 
   suspend fun runFullInverseSourceQuery(ctx: SyncVFSContext, sources: Collection<Path>): Map<Path, Set<Label>> {
-    val rdepsExpr = SyncVFSLabelResolver.resolveSourceFileLabels(ctx, sources)
+    val sourceLabels = SyncVFSLabelResolver.resolveSourceFileLabels(ctx, sources)
       .flatMap { it.value }
-      .joinToString(separator = " + ") { it.toString() }
+    if (sourceLabels.isEmpty()) {
+      return emptyMap()
+    }
+    val rdepsExpr = sourceLabels.joinToString(separator = " + ") { it.toString() }
     val universe = ctx.project.service<SyncUniverseService>().universe
     return runSourceMapQuery(ctx) {
       noOrderOutput()

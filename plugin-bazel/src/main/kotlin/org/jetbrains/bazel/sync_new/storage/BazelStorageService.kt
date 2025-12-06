@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryStorageContext
 import org.jetbrains.bazel.sync_new.storage.mvstore.MVStoreStorageContext
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
@@ -26,7 +27,7 @@ class BazelStorageService(
   private var lastSaved = now()
 
   // TODO: finish rocksdb
-  val context: StorageContext = MVStoreStorageContext(
+  val context: StorageContext = InMemoryStorageContext(
     project = project,
     disposable = disposable,
   )

@@ -42,14 +42,7 @@ class SyncExecutor(
   private val logger = logger<SyncExecutor>()
 
   suspend fun execute(scope: SyncScope): SyncStatus {
-    // compute changed targets
-    // check for repo mapping changes
-    // update graph with new targets
-    // run index updating
-    // run sync pipelines
     ThreadingAssertions.assertBackgroundThread()
-    //
-    //return SyncStatus.Success
 
     val syncStore = withTask(project, "sync_store_init", "Initializing sync store") {
       val store = project.service<SyncStoreService>()
@@ -74,8 +67,20 @@ class SyncExecutor(
       pathsResolver = project.connection.runWithServer { server -> server.workspaceBazelPaths().bazelPathsResolver },
     )
 
+    withTask(project, "sync_lifecycle_pre_events", "Executing pre-sync events") {
+      for (listener in SyncLifecycleListener.ep.extensionList) {
+        listener.onPreSync(ctx)
+      }
+    }
+
     val diff = withTask(project, "target_diff", "Computing incremental diff") {
       computeSyncDiff(ctx, scope)
+    }
+
+    withTask(project, "sync_lifecycle_events", "Executing sync events") {
+      for (listener in SyncLifecycleListener.ep.extensionList) {
+        listener.onSync(ctx, diff, SyncProgressReporter(this))
+      }
     }
 
     withTask(project, "target_graph", "Updating target graph") {
@@ -86,12 +91,18 @@ class SyncExecutor(
       updateInternalIndexes(ctx, diff)
     }
 
-    withTask(project, "save_internal_stores", "Saving internal store") {
-      (project.service<BazelStorageService>() as? LifecycleStoreContext)?.save(force = true)
-    }
-
     withTask(project, "update_workspace", "Updating workspace") {
       updateWorkspace(ctx, diff)
+    }
+
+    withTask(project, "sync_lifecycle_post_events", "Executing post-sync events") {
+      for (listener in SyncLifecycleListener.ep.extensionList) {
+        listener.onPostSync(ctx, SyncStatus.Success, SyncProgressReporter(this))
+      }
+    }
+
+    withTask(project, "save_internal_stores", "Saving internal store") {
+      //(project.service<BazelStorageService>().context as? LifecycleStoreContext)?.save(force = true)
     }
 
     return SyncStatus.Success
@@ -112,7 +123,7 @@ class SyncExecutor(
 
   private suspend fun SyncConsoleTask.computeSyncDiff(ctx: SyncContext, scope: SyncScope): SyncDiff {
     val universeDiff = withTask("universe_diff", "Computing universe diff") {
-      project.service<SyncUniverseService>().computeUniverseDiff(scope)
+      project.service<SyncUniverseService>().computeUniverseDiff(scope, SyncProgressReporter(this@withTask))
     }
     val vfsDiff = withTask("vfs_diff", "Computing VFS diff") {
       project.service<SyncVFSService>().computeVFSDiff(scope, universeDiff)
@@ -133,34 +144,10 @@ class SyncExecutor(
       console.addMessage("Targets changed: ${diff.changed.joinToString { it.label.toString() }}")
       diff
     }
-    //val universeDiff = project.service<SyncUniverseService>()
-    //  .computeUniverseDiff(scope)
-    //
-    //val vfsDiff = project.service<SyncVFSService>()
-    //  .computeColdDiff(scope, universeDiff)
-    //
-    //val expandedDiff = project.service<SyncExpandService>()
-    //  .expandDependencyDiff(vfsDiff)
-    //
-    //val hashedDiff = project.service<SyncHasherService>()
-    //  .computeHashDiff(expandedDiff)
-    //
-    //println(universeDiff)
-    //println(vfsDiff)
-    //println(expandedDiff)
-    //println(hashedDiff)
   }
 
   private suspend fun SyncConsoleTask.updateTargetGraph(ctx: SyncContext, diff: SyncDiff) {
     val graph = ctx.graph
-
-    // remove targets
-    for (target in diff.removed) {
-      val id = graph.getVertexIdByLabel(target.label)
-      if (id != EMPTY_ID) {
-        graph.removeVertexById(id)
-      }
-    }
 
     val builder = SyncTargetBuilder(
       project = project,
@@ -170,6 +157,20 @@ class SyncExecutor(
     val targetsToFetch = (diff.added.map { it.label } + diff.changed.map { it.label })
       .toList()
     val rawTargets = fetchRawAspects(ctx, targetsToFetch)
+    val rawTargetsIds = rawTargets.map { it.target.label() }.toSet()
+    if (!targetsToFetch.all { it in rawTargetsIds }) {
+      val console = project.service<ConsoleService>().syncConsole
+      console.addWarnMessage(taskId = parentTaskId, "Inconsistency detected, skipping workspace import")
+      return
+    }
+    // TODO: only update after consistency check
+    // remove targets
+    for (target in diff.removed) {
+      val id = graph.getVertexIdByLabel(target.label)
+      if (id != EMPTY_ID) {
+        graph.removeVertexById(id)
+      }
+    }
     val vertices = withTask("target_build", "Converting targets") {
       builder.buildAllChangedTargetVertices(ctx, rawTargets)
     }
@@ -229,8 +230,10 @@ class SyncExecutor(
         continue
       }
 
-      val importer = plugin.createWorkspaceImporter(ctx);
-      importer.execute(ctx, diff, SyncProgressReporter(console))
+      console.withTask("importing_${plugin.language.name}", "Importing workspace - ${plugin.language.name}") {
+        val importer = plugin.createWorkspaceImporter(ctx)
+        importer.execute(ctx, diff, SyncProgressReporter(this@withTask))
+      }
     }
   }
 

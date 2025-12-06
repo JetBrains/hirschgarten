@@ -41,12 +41,14 @@ data class SyncUniverseImportState(
 @SealedTagged
 sealed interface SyncUniverseTargetPattern {
   @SealedTag(1)
+  @Tagged
   data class Include(
     @field:Tag(1)
     val label: Label,
   ) : SyncUniverseTargetPattern
 
   @SealedTag(2)
+  @Tagged
   data class Exclude(
     @field:Tag(1)
     val label: Label,

@@ -38,9 +38,7 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
     internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, ScalaAddendumEntity::class.java,
                                                                           ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
-    private val connections = listOf<ConnectionId>(
-      MODULE_CONNECTION_ID,
-    )
+    private val connections = listOf<ConnectionId>(MODULE_CONNECTION_ID)
 
   }
 

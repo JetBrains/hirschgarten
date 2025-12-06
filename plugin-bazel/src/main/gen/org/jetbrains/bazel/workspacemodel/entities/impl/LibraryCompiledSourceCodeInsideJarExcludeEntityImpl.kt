@@ -32,8 +32,7 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
   private companion object {
 
 
-    private val connections = listOf<ConnectionId>(
-    )
+    private val connections = listOf<ConnectionId>()
 
   }
 
@@ -235,8 +234,7 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEn
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return LibraryCompiledSourceCodeInsideJarExcludeEntity(libraryId, compiledSourceCodeInsideJarExcludeId, entitySource) {
-    }
+    return LibraryCompiledSourceCodeInsideJarExcludeEntity(libraryId, compiledSourceCodeInsideJarExcludeId, entitySource)
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {

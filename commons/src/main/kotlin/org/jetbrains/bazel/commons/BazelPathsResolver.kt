@@ -20,6 +20,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   fun outputBase(): Path = bazelInfo.outputBase
 
+  fun dotBazelBsp(): Path = bazelInfo.dotBazelBsp()
+
   fun resolvePaths(fileLocations: List<FileLocation>): List<Path> = fileLocations.map(::resolve)
 
   fun resolve(fileLocation: FileLocation): Path = paths.computeIfAbsent(fileLocation, ::doResolve)

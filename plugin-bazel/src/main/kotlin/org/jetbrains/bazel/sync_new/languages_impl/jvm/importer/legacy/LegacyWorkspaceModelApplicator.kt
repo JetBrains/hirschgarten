@@ -40,18 +40,23 @@ class LegacyWorkspaceModelApplicator(
       LegacyModelConverter(storage).convert(ctx)
     }
 
-    val workspaceContext = ctx.project.connection.runWithServer { server -> server.workspaceContext() }
-    updateInternalModelSubtask(
-      ctx = ctx,
-      progress = progress,
-      projectDetails = ProjectDetails(
-        targetIds = legacyModel.targets.map { it.id },
-        targets = legacyModel.targets.toSet(),
-        libraries = legacyModel.libraries,
-        workspaceContext = workspaceContext
-      ),
-      entityStorage = entityStorage
-    )
+    progress.task.withTask(
+      taskId = "calculate-project-structure",
+      message = BazelPluginBundle.message("console.task.model.calculate.structure"),
+    ) {
+      val workspaceContext = ctx.project.connection.runWithServer { server -> server.workspaceContext() }
+      updateInternalModelSubtask(
+        ctx = ctx,
+        progress = progress,
+        projectDetails = ProjectDetails(
+          targetIds = legacyModel.targets.map { it.id },
+          targets = legacyModel.targets.toSet(),
+          libraries = legacyModel.libraries,
+          workspaceContext = workspaceContext,
+        ),
+        entityStorage = entityStorage,
+      )
+    }
 
     progress.task.withTask(
       taskId = "apply-changes-on-workspace-model",
@@ -79,78 +84,72 @@ class LegacyWorkspaceModelApplicator(
     entityStorage: MutableEntityStorage,
   ) {
     val project = ctx.project
-    progress.task.withTask(
-      taskId = "calculate-project-structure",
-      message = BazelPluginBundle.message("console.task.model.calculate.structure"),
-    ) {
-      coroutineScope {
-        val projectBasePath = project.rootDir.toNioPath()
-        val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
 
-        val libraries =
-          bspTracer.spanBuilder("create.libraries.ms").use {
-            libraryGraph.createLibraries(project)
-          }
+    val projectBasePath = project.rootDir.toNioPath()
+    val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
 
-        val libraryModules =
-          bspTracer.spanBuilder("create.library.modules.ms").use {
-            libraryGraph.createLibraryModules(project, projectDetails.defaultJdkName)
-          }
+    val libraries =
+      bspTracer.spanBuilder("create.libraries.ms").use {
+        libraryGraph.createLibraries(project)
+      }
 
-        val targetIdToModuleDetails =
-          bspTracer.spanBuilder("create.module.details.ms").use {
-            val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, libraryGraph)
-            projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
-          }
+    val libraryModules =
+      bspTracer.spanBuilder("create.library.modules.ms").use {
+        libraryGraph.createLibraryModules(project, projectDetails.defaultJdkName)
+      }
 
-        val targetIdToModuleEntitiesMap =
-          bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
-            val syncedTargetIdToTargetInfo =
-              (projectDetails.targets).associateBy { it.id }
-            val targetIdToModuleEntityMap =
-              TargetIdToModuleEntitiesMap(
-                projectDetails = projectDetails,
-                targetIdToModuleDetails = targetIdToModuleDetails,
-                targetIdToTargetInfo = syncedTargetIdToTargetInfo,
-                // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
-                fileToTargetWithoutLowPrioritySharedSources = mapOf(), // TODO
-                projectBasePath = projectBasePath,
-                project = project,
-              )
-            targetIdToModuleEntityMap
-          }
+    val targetIdToModuleDetails =
+      bspTracer.spanBuilder("create.module.details.ms").use {
+        val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, libraryGraph)
+        projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
+      }
 
-        val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
+    val targetIdToModuleEntitiesMap =
+      bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
+        val syncedTargetIdToTargetInfo =
+          (projectDetails.targets).associateBy { it.id }
+        val targetIdToModuleEntityMap =
+          TargetIdToModuleEntitiesMap(
+            projectDetails = projectDetails,
+            targetIdToModuleDetails = targetIdToModuleDetails,
+            targetIdToTargetInfo = syncedTargetIdToTargetInfo,
+            // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
+            fileToTargetWithoutLowPrioritySharedSources = mapOf(), // TODO
+            projectBasePath = projectBasePath,
+            project = project,
+          )
+        targetIdToModuleEntityMap
+      }
 
-        val compiledSourceCodeInsideJarToExclude =
-          bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
-            if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
-              CompiledSourceCodeInsideJarExcludeTransformer().transform(
-                targetIdToModuleDetails.values,
-                projectDetails.libraries.orEmpty(),
-              )
-            } else {
-              null
-            }
-          }
+    val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
 
-        bspTracer.spanBuilder("load.modules.ms").use {
-          val workspaceModel = project.serviceAsync<WorkspaceModel>()
-          val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
-
-          val workspaceModelUpdater =
-            WorkspaceModelUpdater(
-              workspaceEntityStorageBuilder = entityStorage,
-              virtualFileUrlManager = virtualFileUrlManager,
-              projectBasePath = projectBasePath,
-              project = project,
-              importIjars = projectDetails.workspaceContext?.importIjars ?: false,
-            )
-
-          workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
-          compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
+    val compiledSourceCodeInsideJarToExclude =
+      bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
+        if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
+          CompiledSourceCodeInsideJarExcludeTransformer().transform(
+            targetIdToModuleDetails.values,
+            projectDetails.libraries.orEmpty(),
+          )
+        } else {
+          null
         }
       }
+
+    bspTracer.spanBuilder("load.modules.ms").use {
+      val workspaceModel = project.serviceAsync<WorkspaceModel>()
+      val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
+
+      val workspaceModelUpdater =
+        WorkspaceModelUpdater(
+          workspaceEntityStorageBuilder = entityStorage,
+          virtualFileUrlManager = virtualFileUrlManager,
+          projectBasePath = projectBasePath,
+          project = project,
+          importIjars = projectDetails.workspaceContext?.importIjars ?: false,
+        )
+
+      workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
+      compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
     }
   }
 }

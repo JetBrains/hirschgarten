@@ -159,7 +159,11 @@ internal class EmbeddedFlatStoreRWHandler(
   fun write(op: CodecBuffer.() -> Unit) {
     val mvBuffer = WriteBuffer()
     val buffer = MVStoreWriteCodecBuffer(mvBuffer)
-    op(buffer)
+    try {
+      op(buffer)
+    } catch (e: Throwable) {
+      e.printStackTrace()
+    }
     map[name] = mvBuffer.buffer.array()
   }
 

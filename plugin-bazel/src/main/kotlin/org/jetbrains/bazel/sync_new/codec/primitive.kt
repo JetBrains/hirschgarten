@@ -24,14 +24,12 @@ import kotlin.io.path.absolutePathString
 
 fun CodecBuilder.ofLong(): Codec<Long> = codecOf(
   encode = { _, buffer, value -> buffer.writeVarLong(value) },
-  decode = { _, buffer -> buffer.readVarLong() },
-  size = { _, _ -> Long.SIZE_BYTES },
+  decode = { _, buffer -> buffer.readVarLong() }
 )
 
 fun CodecBuilder.ofInt(): Codec<Int> = codecOf(
   encode = { _, buffer, value -> buffer.writeVarInt(value) },
   decode = { _, buffer -> buffer.readVarInt() },
-  size = { _, _ -> Int.SIZE_BYTES },
 )
 
 // using varlong in this case is just waste of resources

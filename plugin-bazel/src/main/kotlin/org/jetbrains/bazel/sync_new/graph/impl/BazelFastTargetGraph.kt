@@ -243,9 +243,10 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
 
   override fun getNextVertexId(): ID = metadata.modify { it.copy(vertexIdCounter = it.vertexIdCounter + 1) }.vertexIdCounter
 
-  override fun getNextEdgeId(): ID = metadata.modify { it.copy(vertexIdCounter = it.edgeIdCounter + 1) }.edgeIdCounter
+  override fun getNextEdgeId(): ID = metadata.modify { it.copy(edgeIdCounter = it.edgeIdCounter + 1) }.edgeIdCounter
 
   override fun clear() {
+    metadata.reset()
     id2Vertex.clear()
     id2Edge.clear()
     id2Compact.clear()

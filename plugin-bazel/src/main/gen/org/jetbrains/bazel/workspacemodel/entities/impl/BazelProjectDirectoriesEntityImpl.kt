@@ -29,8 +29,7 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
   private companion object {
 
 
-    private val connections = listOf<ConnectionId>(
-    )
+    private val connections = listOf<ConnectionId>()
 
   }
 
@@ -308,8 +307,7 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
     return BazelProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, indexAllFilesInIncludedRoots, indexAdditionalFiles,
-                                         entitySource) {
-    }
+                                         entitySource)
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {

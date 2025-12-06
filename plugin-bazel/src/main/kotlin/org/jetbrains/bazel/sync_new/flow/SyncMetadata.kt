@@ -22,9 +22,11 @@ class SyncMetadata(
 sealed interface SyncRepoMapping
 
 @SealedTag(1)
+@Tagged
 object DisabledSyncRepoMapping : SyncRepoMapping
 
 @SealedTag(2)
+@Tagged
 data class BzlmodSyncRepoMapping(
   @field:Tag(1)
   val canonicalRepoNameToLocalPath: Map<String, Path> = mapOf(),
