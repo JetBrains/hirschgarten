@@ -302,7 +302,7 @@
     <registryKey
       defaultValue="false"
       description="Build project on initial project sync"
-      key="bsp.build.project.on.sync"
+      key="bazel.build.project.on.sync"
     />
     <registryKey
       defaultValue="true"
