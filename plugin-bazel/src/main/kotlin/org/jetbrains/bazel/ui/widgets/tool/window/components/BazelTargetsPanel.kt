@@ -54,7 +54,7 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
 
   @RequiresEdt
   fun update(
-    visibleTargets: List<Label>,
+    visibleTargets: List<TargetTreeCompat>,
     searchRegex: Regex?,
     hasAnyTargets: Boolean,
     displayAsTree: Boolean,

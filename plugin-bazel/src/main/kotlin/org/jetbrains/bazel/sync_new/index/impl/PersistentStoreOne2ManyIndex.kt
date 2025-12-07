@@ -12,6 +12,11 @@ private class PersistentStoreOne2ManyIndex<K, V>(
   override val name: String,
   val storage: KVStore<K, Set<V>>,
 ) : One2ManyIndex<K, V>, Disposable {
+
+  init {
+    owner.register(this)
+  }
+
   override fun add(key: K, value: Iterable<V>) {
     storage.compute(key) { _, set ->
       if (set == null) {

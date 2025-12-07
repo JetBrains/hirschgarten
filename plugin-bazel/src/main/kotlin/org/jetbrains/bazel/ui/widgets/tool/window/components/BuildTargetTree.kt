@@ -40,36 +40,45 @@ internal class BuildTargetTree(
 
       override fun isPointSelectable(point: Point): Boolean = getPathForLocation(point.x, point.y) != null
 
-      override fun getSelectedBuildTarget(): BuildTarget? {
+      override fun getSelectedBuildTarget(): TargetTreeCompat? {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
         val userObject = selected?.userObject
         return if (userObject is TargetNodeData) {
-          project.targetUtils.getBuildTargetForLabel(userObject.id)
+          userObject.compat
         } else {
           null
         }
       }
 
-      override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> {
+      override fun getSelectedBuildTargetsUnderDirectory(): List<TargetTreeCompat> {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
         val userObject = selected?.userObject
         val targetUtils = project.targetUtils
         return (
           if (userObject is DirectoryNodeData) {
-            userObject.targets.mapNotNull { targetUtils.getBuildTargetForLabel(it.id) }
+            userObject.targets.map { it.compat }
           } else {
             emptyList()
           }
-        )
+          )
       }
 
       override val copyTargetIdAction: CopyTargetIdAction =
         object : CopyTargetIdAction.FromContainer(this@BuildTargetTree) {
-          override fun getTargetInfo(): BuildTarget? = getSelectedBuildTarget()
+          override fun getTargetInfo(): BuildTarget? =
+            getSelectedBuildTarget()?.let { project.targetUtils.getBuildTargetForLabel(it.label) }
         }
 
       override val bazelJumpToBuildFileAction: BazelJumpToBuildFileAction =
-        BazelJumpToBuildFileAction.NonXmlRegistered(::getSelectedBuildTarget).also {
+        BazelJumpToBuildFileAction.NonXmlRegistered(
+          getTarget = {
+            getSelectedBuildTarget()?.let {
+              project.targetUtils.getBuildTargetForLabel(
+                it.label,
+              )
+            }
+          },
+        ).also {
           it.registerShortcut(this@BuildTargetTree)
         }
     }
@@ -80,20 +89,24 @@ internal class BuildTargetTree(
     isRootVisible = false
 
     // Initialize speed search
-    TreeUIHelper.getInstance().installTreeSpeedSearch(this, {
-      val lastPathComponent = (it.lastPathComponent as? DefaultMutableTreeNode)?.userObject ?: return@installTreeSpeedSearch null
-      when (lastPathComponent) {
-        is DirectoryNodeData -> lastPathComponent.name
-        is TargetNodeData -> lastPathComponent.displayName
-        else -> null
-      }
-    }, true)
+    TreeUIHelper.getInstance().installTreeSpeedSearch(
+      this,
+      {
+        val lastPathComponent = (it.lastPathComponent as? DefaultMutableTreeNode)?.userObject ?: return@installTreeSpeedSearch null
+        when (lastPathComponent) {
+          is DirectoryNodeData -> lastPathComponent.name
+          is TargetNodeData -> lastPathComponent.displayName
+          else -> null
+        }
+      },
+      true,
+    )
 
     registerKeyboardShortcutForPopup(loadedTargetsMouseListener)
     addMouseListener(loadedTargetsMouseListener)
   }
 
-  fun updateTree(visibleTargets: Collection<Label>, displayAsTree: Boolean) {
+  fun updateTree(visibleTargets: Collection<TargetTreeCompat>, displayAsTree: Boolean) {
     val classifier =
       if (displayAsTree) {
         TreeTargetClassifier(project)
@@ -110,13 +123,13 @@ internal class BuildTargetTree(
     expandPath(TreePath(rootNode.path))
   }
 
-  private fun generateTree(targets: Collection<Label>, classifier: BuildTargetClassifierExtension) {
+  private fun generateTree(targets: Collection<TargetTreeCompat>, classifier: BuildTargetClassifierExtension) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
-          id = it,
-          path = classifier.calculateBuildTargetPath(it),
-          displayName = classifier.calculateBuildTargetName(it),
+          compat = it,
+          path = classifier.calculateBuildTargetPath(it.label),
+          displayName = classifier.calculateBuildTargetName(it.label),
         )
       },
       classifier.separator,
@@ -197,7 +210,7 @@ internal class BuildTargetTree(
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(
-      TargetNodeData(identifier.displayName, identifier.id),
+      TargetNodeData(identifier.displayName, identifier.compat),
     )
 
   private fun simplifyNodeIfHasOneChild(
@@ -252,11 +265,11 @@ data class DirectoryNodeData(
 
 data class TargetNodeData(
   @JvmField val displayName: String,
-  @JvmField val id: Label,
+  @JvmField val compat: TargetTreeCompat,
 )
 
 data class BuildTargetTreeIdentifier(
-  @JvmField val id: Label,
+  @JvmField val compat: TargetTreeCompat,
   @JvmField val path: List<String>,
   @JvmField val displayName: String,
 )

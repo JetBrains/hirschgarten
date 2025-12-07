@@ -29,9 +29,13 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.flow.index.TargetTreeIndexService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
+import org.jetbrains.bazel.ui.widgets.tool.window.components.SyncV2TargetTreeCompat
+import org.jetbrains.bazel.ui.widgets.tool.window.components.TargetUtilsTargetTreeCompat
 import org.jetbrains.bazel.ui.widgets.tool.window.components.configureBazelToolWindowToolBar
 import java.awt.BorderLayout
 
@@ -133,7 +137,15 @@ private suspend fun updateVisibleTargets(
   targetPanel: Deferred<BazelTargetsPanel>,
 ) {
   // First, apply the filter
-  val filteredTargets = targetUtils.allBuildTargetAsLabelToTargetMap(model.targetFilter.predicate)
+  val targets = if (BazelSyncV2.useNewTargetTreeStorage) {
+    project.serviceAsync<TargetTreeIndexService>()
+      .getTargetTreeEntriesSequence()
+      .map { SyncV2TargetTreeCompat(it) }
+  } else {
+    targetUtils.allBuildTargets()
+      .map { TargetUtilsTargetTreeCompat(it) }
+  }
+  val filteredTargets = targets.filter { model.targetFilter.predicate(it) }
   val hasAnyTargets = targetUtils.getTotalTargetCount() > 0
   // Then, apply the search query
   var searchRegex: Regex?
@@ -150,16 +162,17 @@ private suspend fun updateVisibleTargets(
 
       searchRegex = model.searchQuery.toRegex(options)
       filteredTargets.filter { target ->
-        searchRegex.containsMatchIn(target.toString()) || searchRegex.containsMatchIn(target.toShortString(project))
+        searchRegex.containsMatchIn(target.name)
+          || searchRegex.containsMatchIn(target.label.toShortString(project))
       }
     }
 
   // Finally, sort the results
-  val visibleTargets = searchResults.sortedBy { it.toShortString(project) }
+  val visibleTargets = searchResults.sortedBy { it.label.toShortString(project) }
   val targetPanel = targetPanel.await()
   withContext(Dispatchers.EDT) {
     targetPanel.update(
-      visibleTargets = visibleTargets,
+      visibleTargets = visibleTargets.toList(),
       searchRegex = searchRegex,
       hasAnyTargets = hasAnyTargets,
       displayAsTree = model.displayAsTree,

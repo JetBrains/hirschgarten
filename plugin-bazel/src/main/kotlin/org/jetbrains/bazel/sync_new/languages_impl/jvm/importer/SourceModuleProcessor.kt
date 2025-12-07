@@ -126,11 +126,12 @@ class SourceModuleProcessor(
     val outputs = jvmData.outputs
     val generatedOutputs = jvmData.generatedOutputs
     return LegacyJvmTargetData(
-      javaHome = compilerOpts.javaHome,
+      javaHome = compilerOpts.javaHome ?: jvmData.toolchain?.javaHome,
       javaVersion = compilerOpts.javaVersion.orEmpty(),
       javacOpts = compilerOpts.javacOpts,
       binaryOutputs = (outputs.classJars + generatedOutputs.classJars + outputs.iJars + generatedOutputs.iJars)
         .map { ctx.pathsResolver.resolve(it) },
+      toolchain = jvmData.toolchain,
     )
   }
 }

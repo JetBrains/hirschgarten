@@ -11,6 +11,7 @@ import com.esotericsoftware.kryo.kryo5.serializers.DefaultSerializers
 import com.esotericsoftware.kryo.kryo5.unsafe.UnsafeByteBufferInput
 import com.esotericsoftware.kryo.kryo5.unsafe.UnsafeByteBufferOutput
 import com.esotericsoftware.kryo.kryo5.util.DefaultInstantiatorStrategy
+import com.esotericsoftware.kryo.kryo5.util.HashMapReferenceResolver
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
 import org.jetbrains.bazel.sync_new.codec.CodecBuilder
@@ -23,15 +24,15 @@ import java.util.EnumSet
 
 
 private val kryoThreadLocal = ThreadLocal.withInitial {
-  val kryo = Kryo()
+  val kryo = Kryo(null, null)
   kryo.classLoader = KryoObjectCodec::class.java.classLoader
   kryo.isRegistrationRequired = false
   kryo.setAutoReset(true)
   kryo.references = true
+  kryo.classResolver
   //kryo.setCopyReferences(true)
   kryo.instantiatorStrategy = DefaultInstantiatorStrategy(StdInstantiatorStrategy())
 
-  // disallow d
   val sealedSerializer = KryoSealedInterfaceSerializerFactory(
     serializer =  KryoCompositeSerializeFactory(
       factories = listOf(
@@ -58,7 +59,6 @@ private val kryoThreadLocal = ThreadLocal.withInitial {
   kryo.registerGuavaSerializers()
 
   kryo.addDefaultSerializer(EnumSet::class.java, DefaultSerializers.EnumSetSerializer())
-  kryo.register(BazelTargetTag::class.java)
 
   kryo
 }
@@ -70,7 +70,7 @@ val kryo: Kryo
 class KryoObjectCodec<T>(
   private val type: Class<T>,
   private val initialBufferSize: Int,
-  private val useDirectBuffers: Boolean = false,
+  private val useDirectBuffers: Boolean = true,
 ) : Codec<T> {
 
   override fun encode(
@@ -189,5 +189,5 @@ class KryoObjectCodec<T>(
   }
 }
 
-inline fun <reified T> CodecBuilder.ofKryo(initialBufferSize: Int = 64): Codec<T> = KryoObjectCodec(T::class.java, initialBufferSize)
+inline fun <reified T> CodecBuilder.ofKryo(initialBufferSize: Int = 256): Codec<T> = KryoObjectCodec(T::class.java, initialBufferSize)
 

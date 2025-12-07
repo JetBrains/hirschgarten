@@ -210,10 +210,14 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
         .toHashSet()
     }
 
-  private fun notifyTargetListUpdated() {
-    check(mutableTargetListUpdated.tryEmit(Unit))
+  fun notifyTargetListUpdated() {
+    emitTargetListUpdate()
     allTargetsAndLibrariesLabelsCache.drop()
     allExecutableTargetsCache.drop()
+  }
+
+  internal fun emitTargetListUpdate() {
+    check(mutableTargetListUpdated.tryEmit(Unit))
   }
 
   @PublicApi

@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.legacy
 
+import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
@@ -23,6 +23,10 @@ import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntityStore
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.JvmModuleEntity
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.JvmResourceId
 import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.Module
+import kotlin.collections.isNotEmpty
+import kotlin.collections.joinToString
 import kotlin.collections.orEmpty
 
 private const val MAX_REPLACE_WSM_ATTEMPTS = 3
@@ -150,6 +154,26 @@ class LegacyWorkspaceModelApplicator(
 
       workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
       compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
+      JavacConfiguration.getOptions(project, JavacConfiguration::class.java).ADDITIONAL_OPTIONS_OVERRIDE =
+        requireNotNull(this.calculateAllJavacOptions(modulesToLoad)) {
+          "javacOptions is null but expected to be computed"
+        }
     }
+  }
+
+  private fun calculateAllJavacOptions(modulesToLoad: List<Module>): HashMap<String, String> {
+    val javacOptions = HashMap<String, String>()
+    for (module in modulesToLoad) {
+      if (module is JavaModule) {
+        val options = module.javaAddendum?.javacOptions
+        if (options != null && options.isNotEmpty()) {
+          if (options.size == 1 && options[0] == "-proc:none") {
+            continue
+          }
+          javacOptions[module.getModuleName()] = options.joinToString(" ")
+        }
+      }
+    }
+    return javacOptions
   }
 }

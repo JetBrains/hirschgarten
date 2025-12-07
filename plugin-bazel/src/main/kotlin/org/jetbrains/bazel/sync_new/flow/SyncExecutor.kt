@@ -128,8 +128,20 @@ class SyncExecutor(
     val vfsDiff = withTask("vfs_diff", "Computing VFS diff") {
       project.service<SyncVFSService>().computeVFSDiff(scope, universeDiff)
     }
+    val scopeDiff = when (scope) {
+      is SyncScope.Partial -> {
+        val changed = scope.targets.filterIsInstance<PartialTarget.ByLabel>()
+          .map { it.label }
+          .toSet()
+        SyncColdDiff(
+          changed = changed,
+        )
+      }
+
+      else -> SyncColdDiff()
+    }
     val normalizer = SyncDiffNormalizer()
-    val normalizedDiff = normalizer.normalize(listOf(vfsDiff, universeDiff))
+    val normalizedDiff = normalizer.normalize(listOf(vfsDiff, universeDiff, scopeDiff))
     val expandedDiff = withTask("expand_diff", "Computing dependency reachability") {
       project.service<SyncExpandService>().expandDependencyDiff(scope, normalizedDiff)
     }
@@ -157,14 +169,12 @@ class SyncExecutor(
     val targetsToFetch = (diff.added.map { it.label } + diff.changed.map { it.label })
       .toList()
     val rawTargets = fetchRawAspects(ctx, targetsToFetch)
-    val rawTargetsIds = rawTargets.map { it.target.label() }.toSet()
-    if (!targetsToFetch.all { it in rawTargetsIds }) {
-      val console = project.service<ConsoleService>().syncConsole
-      console.addWarnMessage(taskId = parentTaskId, "Inconsistency detected, skipping workspace import")
-      return
-    }
-    // TODO: only update after consistency check
-    // remove targets
+    //val rawTargetsIds = rawTargets.map { it.target.label() }.toSet()
+    //if (!targetsToFetch.all { it in rawTargetsIds }) {
+    //  val console = project.service<ConsoleService>().syncConsole
+    //  console.addWarnMessage(taskId = parentTaskId, "Inconsistency detected, skipping workspace import")
+    //  return
+    //}
     for (target in diff.removed) {
       val id = graph.getVertexIdByLabel(target.label)
       if (id != EMPTY_ID) {

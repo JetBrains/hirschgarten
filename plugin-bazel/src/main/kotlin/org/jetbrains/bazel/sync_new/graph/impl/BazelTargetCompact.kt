@@ -2,11 +2,13 @@ package org.jetbrains.bazel.sync_new.graph.impl
 
 import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync_new.codec.kryo.ClassTag
 import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.TargetCompact
 
 @Tagged
+@ClassTag(2144055703)
 data class BazelTargetCompact(
   @field:Tag(1)
   override val vertexId: ID,

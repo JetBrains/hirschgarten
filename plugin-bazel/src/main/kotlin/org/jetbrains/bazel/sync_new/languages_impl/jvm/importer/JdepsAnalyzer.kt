@@ -92,7 +92,7 @@ class JdepsAnalyzer(
 
       // TODO: recheck if I can cache inside bfs
       val allTransitiveJdeps = transitiveDepsCache.computeIfAbsent(vertexId) {
-        computeAllTransitiveJdeps(ctx, vertexId)
+        computeAllTransitiveJdepsClosure(ctx, vertexId)
           .flatMap { it }
           .toSet()
       }
@@ -156,7 +156,7 @@ class JdepsAnalyzer(
     return result
   }
 
-  private fun computeAllTransitiveJdeps(ctx: SyncContext, vertexId: Int) = sequence {
+  private fun computeAllTransitiveJdepsClosure(ctx: SyncContext, vertexId: Int) = sequence {
     val queue = ArrayDeque<Int>() // TODO: Use IntArrayFIFOQueue
     val visited = IntOpenHashSet()
     queue.addLast(vertexId)
@@ -183,16 +183,11 @@ class JdepsAnalyzer(
   private fun shouldSkipJdepsJar(jar: Path): Boolean =
     jar.name.startsWith("header_") && jar.resolveSibling("processed_${jar.name.substring(7)}").exists()
 
-  private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
-
   private fun getSyntheticLibraryName(lib: Path): String {
-    val shaOfPath =
-      Hashing.sha256()
-        .hashString(lib.toString(), StandardCharsets.UTF_8)
-        .toString()
-        .take(7) // just in case of a conflict in filename
-    return lib.fileName
+    val shaOfPath = Hashing.sha256()
+      .hashString(lib.toString(), StandardCharsets.UTF_8)
       .toString()
-      .replace(replacementRegex, "-") + "-" + shaOfPath
+      .take(7)
+    return NameUtils.escape(lib.fileName.toString()) + "-" + shaOfPath
   }
 }
