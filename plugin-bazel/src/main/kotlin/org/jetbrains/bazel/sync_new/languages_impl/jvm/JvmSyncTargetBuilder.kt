@@ -74,6 +74,7 @@ class JvmSyncTargetBuilder : SyncLanguageDataBuilder<JvmSyncTargetData> {
       outputs = jvmTargetInfo.jarsList.toJvmOutputs(),
       generatedOutputs = jvmTargetInfo.generatedJarsList.toJvmOutputs(),
       binaryMainClass = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() },
+      toolchain = resolveToolchain(target),
     )
   }
 
@@ -167,6 +168,34 @@ class JvmSyncTargetBuilder : SyncLanguageDataBuilder<JvmSyncTargetData> {
       bazelPathsResolver.resolve(javaToolchainInfo.bootClasspathJavaHome)
     } else if (javaToolchainInfo.hasJavaHome()) {
       bazelPathsResolver.resolve(javaToolchainInfo.javaHome)
+    } else {
+      null
+    }
+  }
+
+  private fun resolveToolchain(target: BspTargetInfo.TargetInfo): JvmToolchain? {
+    return if (target.hasJavaToolchainInfo() && (target.javaToolchainInfo.hasBootClasspathJavaHome() || !target.hasJavaRuntimeInfo())) {
+      val javaToolchainInfo = target.javaToolchainInfo
+      val javaHome = if (javaToolchainInfo.hasBootClasspathJavaHome()) {
+        javaToolchainInfo.bootClasspathJavaHome
+      } else if (javaToolchainInfo.hasJavaHome()) {
+        javaToolchainInfo.javaHome
+      } else {
+        null
+      }
+
+      JvmToolchain(
+        kind = if (javaToolchainInfo.hasBootClasspathJavaHome()) JvmToolchainKind.BOOT_CLASSPATH else JvmToolchainKind.TOOLCHAIN,
+        javaHome = javaHome?.let(bazelPathsResolver::resolve) ?: return null,
+      )
+    } else if (target.hasJavaRuntimeInfo()) {
+      val javaRuntimeInfo = target.javaRuntimeInfo
+      val javaHome = if (javaRuntimeInfo.hasJavaHome()) javaRuntimeInfo.javaHome else null
+
+      JvmToolchain(
+        kind = JvmToolchainKind.RUNTIME,
+        javaHome = javaHome?.let(bazelPathsResolver::resolve) ?: return null,
+      )
     } else {
       null
     }

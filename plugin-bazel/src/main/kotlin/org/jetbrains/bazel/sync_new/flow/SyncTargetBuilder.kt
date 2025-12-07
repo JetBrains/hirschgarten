@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.flow
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
@@ -13,6 +14,7 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync_new.flow.universe_expand.SyncExpandService
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.impl.BazelGenericTargetData
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetDependency
@@ -42,6 +44,8 @@ class SyncTargetBuilder(
     val detector: SyncLanguageDetector,
     val builder: SyncLanguageDataBuilder<T>,
   )
+
+  private val expandService: SyncExpandService = project.service<SyncExpandService>()
 
   private suspend fun <T : SyncTargetData> bakeLanguagePlugin(ctx: SyncContext, plugin: SyncLanguagePlugin<T>): BakedLanguagePlugin<T> {
     val builder = plugin.createSyncDataBuilder(ctx)
@@ -108,6 +112,7 @@ class SyncTargetBuilder(
       directDependencies = buildDependencyList(raw),
       sources = buildSourceList(raw),
       resources = buildResourceList(raw),
+      isUniverseTarget = expandService.isWithinUniverseScope(raw.target.label()),
     )
   }
 

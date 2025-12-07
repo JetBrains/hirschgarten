@@ -3,9 +3,13 @@ package org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.legacy
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.jvm.sync.SdkUtils
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntityStore
+import org.jetbrains.bazel.sync_new.languages_impl.jvm.JvmToolchain
+import org.jetbrains.bazel.sync_new.languages_impl.jvm.JvmToolchainKind
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.JvmModuleEntity
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.JvmResourceId
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.LegacyJvmTargetData
@@ -15,14 +19,18 @@ import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import java.nio.file.Path
 
 class LegacyModelConverter(
   private val storage: IncrementalEntityStore<JvmResourceId, JvmModuleEntity>,
 ) {
-  fun convert(ctx: SyncContext): LegacyImportData {
+
+  suspend fun convert(ctx: SyncContext): LegacyImportData {
     val targets = mutableListOf<RawBuildTarget>()
     val libraries = mutableListOf<LibraryItem>()
-    for (entity in storage.getAllEntities()) {
+    val entities = storage.getAllEntities()
+    computeDefaultToolchain(ctx, entities)
+    for (entity in entities) {
       when (entity) {
         is JvmModuleEntity.LegacyLibraryModule -> {
           libraries += convertLibraryModule(entity)
@@ -37,8 +45,45 @@ class LegacyModelConverter(
     }
     return LegacyImportData(
       targets = targets,
-      libraries = libraries
+      libraries = libraries,
     )
+  }
+
+  private suspend fun computeDefaultToolchain(ctx: SyncContext, entities: Sequence<JvmModuleEntity>) {
+    storage.removeEntity(JvmResourceId.DefaultToolchain)
+    val jvmToolchainCandidates = mutableListOf<JvmToolchain>()
+    val uniqueJavaHomes = mutableSetOf<Path>()
+    for (entity in entities) {
+      when (entity) {
+        is JvmModuleEntity.LegacySourceModule -> {
+          val toolchain = entity.legacyJvmData?.toolchain ?: continue
+          jvmToolchainCandidates += toolchain
+          uniqueJavaHomes.add(toolchain.javaHome)
+        }
+
+        else -> {}
+      }
+    }
+    storage.createEntity(JvmResourceId.DefaultToolchain) { resourceId ->
+      val toolchain = jvmToolchainCandidates.groupBy { it }
+        .values
+        .sortedByDescending { it.size }
+        .map { it.first() }
+        .maxByOrNull {
+          when (it.kind) {
+            JvmToolchainKind.BOOT_CLASSPATH -> 3
+            JvmToolchainKind.RUNTIME -> 2
+            JvmToolchainKind.TOOLCHAIN -> 1
+          }
+        }
+      JvmModuleEntity.DefaultToolchain(resourceId, toolchain)
+    }
+    for (javaHome in uniqueJavaHomes) {
+      SdkUtils.addJdkIfNeeded(
+        projectName = ctx.project.bazelProjectName,
+        javaHome = javaHome,
+      )
+    }
   }
 
   private fun convertLibraryModule(module: JvmModuleEntity.LegacyLibraryModule): LibraryItem {
@@ -105,8 +150,9 @@ class LegacyModelConverter(
   }
 
   private fun convertLegacyJvmData(data: LegacyJvmTargetData): JvmBuildTarget {
+    val toolchain = storage.getEntity(JvmResourceId.DefaultToolchain) as? JvmModuleEntity.DefaultToolchain
     return JvmBuildTarget(
-      javaHome = data.javaHome,
+      javaHome = data.javaHome ?: (toolchain?.toolchain?.javaHome),
       javaVersion = data.javaVersion,
       javacOpts = data.javacOpts,
       binaryOutputs = data.binaryOutputs,

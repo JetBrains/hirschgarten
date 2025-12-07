@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync_new.languages_impl.kotlin
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.flow.SyncContext
+import org.jetbrains.bazel.sync_new.graph.impl.BazelPath
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageDataBuilder
 import org.jetbrains.bsp.protocol.RawAspectTarget
 import kotlin.collections.plus
@@ -26,6 +27,7 @@ class KotlinSyncTargetBuilder : SyncLanguageDataBuilder<KotlinSyncTargetData> {
       apiVersion = kotlinTarget.apiVersion,
       associates = kotlinTarget.associatesList.map { Label.parse(it) },
       kotlincOptions = kotlinTarget.toKotlincOptArguments(ctx),
+      stdlibJars = kotlinTarget.stdlibsList.map { BazelPath.fromFileLocation(it) },
     )
   }
 

@@ -12,11 +12,11 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bsp.protocol.BuildTarget
 
 internal enum class TargetFilter(
-  @JvmField val predicate: (BuildTarget) -> Boolean,
+  @JvmField val predicate: (TargetTreeCompat) -> Boolean,
 ) {
   OFF({ true }),
-  CAN_RUN({ it.kind.ruleType == RuleType.BINARY }),
-  CAN_TEST({ it.kind.ruleType == RuleType.TEST }),
+  CAN_RUN({ it.isExecutable }),
+  CAN_TEST({ it.isTestable }),
 }
 
 internal class FilterActionGroup(private val model: BazelTargetsPanelModel) :

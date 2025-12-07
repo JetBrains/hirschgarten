@@ -7,11 +7,11 @@ import org.jetbrains.bsp.protocol.BuildTarget
 
 class RunTargetAction(
   project: Project,
-  targetInfo: BuildTarget,
+  targetInfo: BuildTarget?,
   isDebugAction: Boolean = false,
   includeTargetNameInText: Boolean = false,
 ) : BazelRunnerAction(
-    targetInfos = listOf(targetInfo),
+    targetInfos = listOfNotNull(targetInfo),
     text = { isRunConfigName ->
       if (isDebugAction && !isRunConfigName && !includeTargetNameInText) {
         BazelPluginBundle
@@ -23,7 +23,7 @@ class RunTargetAction(
         BazelPluginBundle
           .message(
             "target.run.action.text",
-            if (isRunConfigName || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+            if (isRunConfigName || includeTargetNameInText) targetInfo?.id?.toShortString(project) ?: "" else "",
           ).trim()
       }
     },

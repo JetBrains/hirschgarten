@@ -26,8 +26,10 @@ import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
+import org.jetbrains.bazel.ui.widgets.tool.window.components.TargetTreeCompat
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Component
 import java.awt.Point
@@ -36,9 +38,9 @@ import java.awt.event.MouseEvent
 abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
   abstract fun isPointSelectable(point: Point): Boolean
 
-  abstract fun getSelectedBuildTarget(): BuildTarget?
+  abstract fun getSelectedBuildTarget(): TargetTreeCompat?
 
-  abstract fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget>
+  abstract fun getSelectedBuildTargetsUnderDirectory(): List<TargetTreeCompat>
 
   abstract val copyTargetIdAction: CopyTargetIdAction
 
@@ -84,21 +86,23 @@ abstract class LoadedTargetsMouseListener(private val project: Project) : PopupH
     }
   }
 
-  private fun calculatePopupGroup(target: BuildTarget): ActionGroup =
+  private fun calculatePopupGroup(target: TargetTreeCompat): ActionGroup =
     DefaultActionGroup().apply {
-      ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
+      ResyncTargetAction.createIfEnabled(target.label)?.let { addAction(it) }
       addAction(copyTargetIdAction)
       addSeparator()
       if (!target.noBuild) {
-        addAction(BuildTargetAction(target.id))
+        addAction(BuildTargetAction(target.label))
       }
-      fillWithEligibleActions(project, target, false)
+      val buildTarget = project.targetUtils.getBuildTargetForLabel(target.label) ?: return@apply
+      fillWithEligibleActions(project, buildTarget, false)
       addAction(bazelJumpToBuildFileAction)
-      if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
+      if (StarlarkDebugAction.isApplicableTo(buildTarget)) add(StarlarkDebugAction(target.label))
     }
 
-  private fun calculatePopupGroup(targets: List<BuildTarget>): ActionGroup? {
-    val testTargets = targets.filter { it.kind.ruleType == RuleType.TEST }
+  private fun calculatePopupGroup(targets: List<TargetTreeCompat>): ActionGroup? {
+    val testTargets = targets.filter { it.isTestable }
+      .mapNotNull { project.targetUtils.getBuildTargetForLabel(it.label) }
     return if (testTargets.isEmpty()) {
       null
     } else {
@@ -114,9 +118,16 @@ abstract class LoadedTargetsMouseListener(private val project: Project) : PopupH
   private fun onDoubleClick() {
     getSelectedBuildTarget()?.also {
       when {
-        it.kind.ruleType == RuleType.TEST -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
-        it.kind.ruleType == RuleType.BINARY -> RunTargetAction(project, targetInfo = it).prepareAndPerform(project)
-        !it.noBuild -> BuildTargetAction.buildTarget(project, it.id)
+        it.isTestable -> TestTargetAction(
+          project = project,
+          targetInfos = listOfNotNull(project.targetUtils.getBuildTargetForLabel(it.label)),
+        ).prepareAndPerform(project)
+
+        it.isExecutable -> RunTargetAction(
+          project,
+          targetInfo = project.targetUtils.getBuildTargetForLabel(it.label)
+        ).prepareAndPerform(project)
+        !it.noBuild -> BuildTargetAction.buildTarget(project, it.label)
       }
     }
   }

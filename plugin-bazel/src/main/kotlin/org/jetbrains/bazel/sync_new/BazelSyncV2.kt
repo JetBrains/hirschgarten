@@ -10,4 +10,6 @@ object BazelSyncV2 {
   val useOptimizedInverseSourceQuery: Boolean = true
 
   val useFastSource2Label: Boolean = true
+
+  val useNewTargetTreeStorage: Boolean = true
 }

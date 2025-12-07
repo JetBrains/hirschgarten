@@ -3,17 +3,13 @@ package org.jetbrains.bazel.sync_new.languages_impl.jvm.importer
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet
-import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
 import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.flow.SyncDiff
 import org.jetbrains.bazel.sync_new.flow.SyncProgressReporter
 import org.jetbrains.bazel.sync_new.flow.SyncStatus
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntityStore
-import org.jetbrains.bazel.sync_new.lang.store.persistent.createPersistentIncrementalEntityStore
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.legacy.LegacyWorkspaceModelApplicator
 import org.jetbrains.bazel.sync_new.pipeline.SyncWorkspaceImporter
-import org.jetbrains.bazel.sync_new.storage.storageContext
 
 @Service(Service.Level.PROJECT)
 class JvmSyncWorkspaceImporter(
@@ -35,29 +31,31 @@ class JvmSyncWorkspaceImporter(
       storage.clear()
     }
 
-    // TODO: move to IncrementalEntityStore or some util
-    val (_, removed) = diff.split
-    val toRemove = mutableSetOf<JvmResourceId>()
-    for (removed in removed) {
-      val target = removed.getBuildTarget() ?: continue
-      val vertexId = JvmResourceId.VertexReference(target.vertexId)
-      toRemove.add(vertexId)
-      toRemove += storage.getTransitiveDependants(vertexId)
-    }
-    val r = mutableListOf<JvmResourceId>()
-    for (removed in removed) {
-      val target = removed.getBuildTarget() ?: continue
-      val resourceId = JvmResourceId.VertexReference(vertexId = target.vertexId)
-      for (dependency in storage.getTransitiveDependants(resourceId)) {
-        val referrers = storage.getDirectReferrers(dependency).toList()
-        val canBeRemoved = referrers.isEmpty()
-          || referrers.all { it in toRemove }
-        if (canBeRemoved) {
-          r += dependency
+    progress.task.withTask("removing_entities", "Pruning old entities") {
+      // TODO: move to IncrementalEntityStore or some util
+      val (_, removed) = diff.split
+      val toRemove = mutableSetOf<JvmResourceId>()
+      for (removed in removed) {
+        val target = removed.getBuildTarget() ?: continue
+        val vertexId = JvmResourceId.VertexReference(target.vertexId)
+        toRemove.add(vertexId)
+        toRemove += storage.getTransitiveDependants(vertexId)
+      }
+      val removeQueue = mutableListOf<JvmResourceId>()
+      for (removed in removed) {
+        val target = removed.getBuildTarget() ?: continue
+        val resourceId = JvmResourceId.VertexReference(vertexId = target.vertexId)
+        for (dependency in storage.getTransitiveDependants(resourceId)) {
+          val referrers = storage.getDirectReferrers(dependency).toList()
+          val canBeRemoved = referrers.isEmpty()
+            || referrers.all { it in toRemove }
+          if (canBeRemoved) {
+            removeQueue += dependency
+          }
         }
       }
+      removeQueue.forEach { storage.removeEntity(it) }
     }
-    r.forEach { storage.removeEntity(it) }
 
     computeVertexDepsEntities(diff)
     progress.task.withTask("collecting_jdeps", "Collecting jdeps") {
@@ -66,6 +64,7 @@ class JvmSyncWorkspaceImporter(
     progress.task.withTask("computing_modules", "Computing modules") {
       SourceModuleProcessor(project, storage).computeSourceModules(ctx, diff)
     }
+    KotlinStdlibProcessor(storage).computeKotlinStdlib(ctx, diff)
 
     if (USE_LEGACY_MODEL_APPLICATOR) {
       LegacyWorkspaceModelApplicator(storage).execute(ctx, progress)

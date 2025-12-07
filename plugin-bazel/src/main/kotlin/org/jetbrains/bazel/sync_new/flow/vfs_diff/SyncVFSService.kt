@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
+import org.jetbrains.bazel.sync_new.flow.PartialTarget
 import org.jetbrains.bazel.sync_new.flow.SyncScope
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseDiff
@@ -62,9 +63,17 @@ class SyncVFSService(
       vfsListener.ensureAttached()
     }
     val watcherChanges = consumeWatcherFileChanges()
+    val changedFiles = when (scope) {
+      is SyncScope.Partial -> {
+        scope.targets.filterIsInstance<PartialTarget.ByFile>()
+          .map { SyncFileClassifier.classify(it.file) }
+      }
+
+      else -> emptyList()
+    }
     val watcherDiff = SyncFileDiff(
       removed = watcherChanges[SyncFileState.REMOVED] ?: emptyList(),
-      changed = watcherChanges[SyncFileState.CHANGED] ?: emptyList(),
+      changed = (watcherChanges[SyncFileState.CHANGED] ?: emptyList()) + changedFiles,
       added = watcherChanges[SyncFileState.ADDED] ?: emptyList(),
     )
     return SyncVFSChangeProcessor().processBulk(ctx, watcherDiff)
