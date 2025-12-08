@@ -60,9 +60,11 @@ class BazelRunner(
     fun query(allowManualTargetsSync: Boolean = true, builder: BazelCommand.Query.() -> Unit = {}) =
       BazelCommand.Query(bazelBinary, allowManualTargetsSync, SystemInfoProvider.getInstance()).apply { builder() }
 
-    /** Special version of `query` for asking Bazel about a file instead of a target */
-    fun fileQuery(filePath: Path, builder: BazelCommand.FileQuery.() -> Unit = {}) =
-      BazelCommand.FileQuery(bazelBinary, filePath.toString()).apply { builder() }
+    /** Special version of `query` for asking Bazel about files instead of a target */
+    fun fileQuery(filePaths: List<Path>, builder: BazelCommand.QueryExpression.() -> Unit = {}): BazelCommand.QueryExpression {
+      val fileString = filePaths.joinToString(prefix = "set(", separator = " ", postfix = ")")
+      return queryExpression(fileString, builder)
+    }
 
     /** Purest form of `query`, asking for exact string to execute instead of `Label`s */
     fun queryExpression(expression: String, builder: BazelCommand.QueryExpression.() -> Unit = {}) =

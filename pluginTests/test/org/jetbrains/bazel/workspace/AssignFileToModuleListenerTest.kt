@@ -438,11 +438,10 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     called = true
-    val relativePath =
-      inverseSourcesParams.textDocument.path
-        .relativeTo(projectBasePath)
-        .toString()
-    return InverseSourcesResult(inverseSourcesData.getOrDefault(relativePath, emptyList()))
+    val results = inverseSourcesParams.files.associateWith {
+      inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
+    }
+    return InverseSourcesResult(results)
   }
 }
 
@@ -460,7 +459,7 @@ private class BlockedServerSimulator(private val rendezvous: Channel<*>) : Build
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     rendezvous.receive()
-    return InverseSourcesResult(emptyList())
+    return InverseSourcesResult(emptyMap())
   }
 }
 
