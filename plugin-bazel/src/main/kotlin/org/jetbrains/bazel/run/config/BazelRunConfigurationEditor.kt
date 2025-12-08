@@ -18,6 +18,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.util.textCompletion.TextFieldWithCompletion
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.target.targetUtils
@@ -42,7 +43,7 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
 
   private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addStateEditorFragment() {
     val handler = runConfiguration.handler ?: return
-    this.add(CommonParameterFragments.createHeader(handler.name))
+    this.add(CommonParameterFragments.createHeader(BazelPluginBundle.message("runconfig.header")))
     val stateEditor: SettingsEditor<BazelRunConfigurationState<*>> =
       handler.state.getEditor(
         runConfiguration,
