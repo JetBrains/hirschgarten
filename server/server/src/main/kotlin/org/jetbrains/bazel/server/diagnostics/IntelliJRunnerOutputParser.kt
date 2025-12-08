@@ -23,14 +23,13 @@ object IntelliJRunnerOutputParser : Parser {
       ^
       \s*
       (?<path>\S(?:.*\S)?)
-      \s*
-      \((?<line>\d+):(?<column>\d+)\)
+      :
+      (?<line>\d+):(?<column>\d+)
       \s*
       $
       """.trimIndent(),
     option = RegexOption.COMMENTS,
   )
-
 
   override fun tryParse(output: Output): List<Diagnostic> {
     val peeked = output.peekAll()
