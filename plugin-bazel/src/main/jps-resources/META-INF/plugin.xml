@@ -407,7 +407,6 @@
     />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
-    <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />
 
     <projectService
       serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"

@@ -7,6 +7,7 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/repomapping",

@@ -5,7 +5,6 @@ import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
@@ -16,8 +15,6 @@ import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 private val PROVIDER_ID = Key.create<BuildPluginBeforeRunTaskProvider.Task>("BuildPluginBeforeRunTaskProvider")
 
 public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPluginBeforeRunTaskProvider.Task>() {
-  private val log = logger<BuildPluginBeforeRunTaskProvider>()
-
   public class Task : BeforeRunTask<Task>(PROVIDER_ID)
 
   override fun getId(): Key<Task> = PROVIDER_ID
@@ -41,10 +38,11 @@ public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPlugi
     if (runConfiguration.handler !is IntellijPluginRunHandler) return false
 
     val targetIds = runConfiguration.targets
-    val buildResult =
+    val statusCode =
+      // runBlockingCancellable makes no sense because BeforeRunTasks's aren't cancellable
       runBlocking {
         runBuildTargetTask(targetIds, environment.project)
       }
-    return buildResult?.statusCode == BazelStatus.SUCCESS
+    return statusCode == BazelStatus.SUCCESS
   }
 }
