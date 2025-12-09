@@ -58,30 +58,20 @@ object WildcardTargetExpander {
         packageTargets,
         PACKAGE_SHARD_SIZE,
       )
-    var output: ExpandedTargetsResult? = null
+    if (shards.isEmpty()) return null
+
+    val singleTargets = mutableSetOf<Label>()
+    var buildResult = BazelStatus.SUCCESS
     for (shard in shards) {
-      val result: ExpandedTargetsResult =
-        queryIndividualTargets(
-          shard,
-          excludes,
-          bazelRunner,
-          context,
-        )
-      output =
-        if (output == null) {
-          result
-        } else {
-          ExpandedTargetsResult.merge(
-            output,
-            result,
-          )
-        }
-      if (output.buildResult == BazelStatus.FATAL_ERROR) {
+      val result = queryIndividualTargets(shard, excludes, bazelRunner, context)
+      singleTargets.addAll(result.singleTargets)
+      buildResult = buildResult.merge(result.buildResult)
+      if (buildResult == BazelStatus.FATAL_ERROR) {
         bspClientLogger.warn("Bazel query for expanding package targets failed with fatal error. Skipping further expanding queries.")
-        return output
+        return ExpandedTargetsResult(singleTargets, buildResult)
       }
     }
-    return output
+    return ExpandedTargetsResult(singleTargets, buildResult)
   }
 
   /** Runs a Bazel query to expand the input target patterns to individual Bazel targets.  */
@@ -111,23 +101,20 @@ object WildcardTargetExpander {
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null, shouldLogInvocation = false)
         .waitAndGetResult(ensureAllOutputRead = true)
     return ExpandedTargetsResult(
-      singleTargets = queryResult.stdoutLines.map { Label.parse(it) },
+      singleTargets = queryResult.stdoutLines.mapTo(LinkedHashSet()) { Label.parse(it) },
       queryResult.bazelStatus,
     )
   }
 
-  class ExpandedTargetsResult(val singleTargets: List<Label>, val buildResult: BazelStatus) {
+  class ExpandedTargetsResult(val singleTargets: Set<Label>, val buildResult: BazelStatus) {
     companion object {
       fun merge(first: ExpandedTargetsResult, second: ExpandedTargetsResult): ExpandedTargetsResult {
         val buildResult: BazelStatus = first.buildResult.merge(second.buildResult)
-        val targets = (first.singleTargets + second.singleTargets).distinct()
-        return ExpandedTargetsResult(
-          targets,
-          buildResult,
-        )
+        val targets = LinkedHashSet(first.singleTargets).apply { addAll(second.singleTargets) }
+        return ExpandedTargetsResult(targets, buildResult)
       }
     }
   }
 }
 
-internal fun ExpandedTargetsResult?.orEmpty() = this ?: ExpandedTargetsResult(emptyList(), BazelStatus.SUCCESS)
+internal fun ExpandedTargetsResult?.orEmpty() = this ?: ExpandedTargetsResult(emptySet(), BazelStatus.SUCCESS)
