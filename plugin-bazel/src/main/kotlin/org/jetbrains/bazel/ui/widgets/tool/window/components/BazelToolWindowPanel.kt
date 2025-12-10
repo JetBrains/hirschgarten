@@ -35,8 +35,6 @@ internal fun configureBazelToolWindowToolBar(
       if (FeatureFlagsProvider.getFeatureFlags(project).isBazelQueryTabEnabled) {
         addSeparator()
         add(actionManager.getAction("Bazel.OpenBazelQueryToolWindowAction"))
-        addSeparator()
-        add(actionManager.getAction("Bazel.AbuMagicAction"))
       }
     }
 

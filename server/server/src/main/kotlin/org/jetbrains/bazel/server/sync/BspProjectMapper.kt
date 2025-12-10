@@ -16,7 +16,6 @@ import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
-import kotlin.io.path.relativeToOrNull
 
 class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo: BspInfo) {
   fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
@@ -62,11 +61,7 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     )
 
   suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    return NewInverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, project.workspaceRoot, bazelRunner, project.workspaceContext)
-    //val documentRelativePath =
-    //  inverseSourcesParams.textDocument.path
-    //    .relativeToOrNull(project.workspaceRoot) ?: throw RuntimeException("File path outside of project root")
-    //return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext, project.workspaceRoot)
+    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, project.workspaceRoot, bazelRunner, project.workspaceContext)
   }
 
   suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo =
