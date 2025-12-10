@@ -62,10 +62,11 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     )
 
   suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    val documentRelativePath =
-      inverseSourcesParams.textDocument.path
-        .relativeToOrNull(project.workspaceRoot) ?: throw RuntimeException("File path outside of project root")
-    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext)
+    return NewInverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, project.workspaceRoot, bazelRunner, project.workspaceContext)
+    //val documentRelativePath =
+    //  inverseSourcesParams.textDocument.path
+    //    .relativeToOrNull(project.workspaceRoot) ?: throw RuntimeException("File path outside of project root")
+    //return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext, project.workspaceRoot)
   }
 
   suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo =

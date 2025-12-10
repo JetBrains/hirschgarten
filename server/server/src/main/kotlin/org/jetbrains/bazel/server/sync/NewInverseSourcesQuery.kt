@@ -1,55 +1,97 @@
 package org.jetbrains.bazel.server.sync
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.InverseSourcesResult
 import java.nio.file.Path
 import kotlin.io.path.relativeTo
+import kotlin.system.measureTimeMillis
+import kotlin.time.Duration
+import kotlin.time.TimedValue
+import kotlin.time.measureTimedValue
 
-class NewInverseSourcesQuery(
+object NewInverseSourcesQuery/*(
   private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
   private val workspaceContext: WorkspaceContext,
-  //private val bazelInfo: BazelInfo,
-  //private val bspClientLogger: BspClientLogger,
-) {
-  fun doStuff(vararg file: String): Any {
-    val relatives = file.toList().map { Path.of(it).relativeTo(workspaceRoot) }
-    val step1 = relatives.associateWithLabels()
-    val step2v1f = getSourcesByRule(step1.values, UniverseGenerator.Global, false)
-    val step2v2f = getSourcesByRule(step1.values, UniverseGenerator.EveryAll(" + "), false)
-    val step2v3f = getSourcesByRule(step1.values, UniverseGenerator.CommonPrefix, false)
-    val step2v1t = getSourcesByRule(step1.values, UniverseGenerator.Global, true)
-    val step2v2t = getSourcesByRule(step1.values, UniverseGenerator.EveryAll(","), true)
-    val step2v3t = getSourcesByRule(step1.values, UniverseGenerator.CommonPrefix, true)
-    //val step3 = reverseMap(step2, step1.values.toSet())
-    return mapOf(
-      "step1" to step1,
-      "step2v1f" to step2v1f,
-      "step2v2f" to step2v2f,
-      "step2v3f" to step2v3f,
-      "step2v1t" to step2v1t,
-      "step2v2t" to step2v2t,
-      "step2v3t" to step2v3t,
-    )
+  private val bazelInfo: BazelInfo,
+  private val bspClientLogger: BspClientLogger,
+)*/ {
+  //suspend fun performBenchmarks(filesetName: String, files: List<String>): List<AbuBenchmark> {
+  //  println("\n--- Fileset: $filesetName ---")
+  //  val relatives = files.map { Path.of(it).relativeTo(workspaceRoot) }
+  //  val step1 = benchmark("Files to Labels") { relatives.associateWithLabels() }
+  //  val step2 = SCENARIOS.map { benchmark(it.name) { getSourcesByRule(step1.value.values, it.universeGenerator, it.useAllDeps) } }
+  //  val oneResult = step2.firstOrNull()?.value ?: emptyMap()
+  //  val step3 = benchmark("Reverse map") { reverseMap(oneResult, step1.value.values.toSet()) }
+  //  val results: List<TypedBenchmark<*>> = step2 + listOf(step1, step3)
+  //  return results.map { it.benchmark }
+  //}
+  //
+  //private suspend fun <T> benchmark(name: String, action: () -> T): TypedBenchmark<T> {
+  //  println("Benchmark started: $name")
+  //  val cleanCommand = bazelRunner.buildBazelCommand(workspaceContext) { clean() }
+  //  bazelRunner.runBazelCommand(cleanCommand, serverPidFuture = null, logProcessOutput = false).waitAndGetResult()
+  //  val timedResult = measureTimedValue(action)
+  //  return TypedBenchmark(AbuBenchmark(name, timedResult.duration.inWholeMilliseconds / 1000.0, timedResult.value), timedResult.value)
+  //}
+  //
+  //fun doStuff(vararg file: String): Any {
+  //  val relatives = file.toList().map { Path.of(it).relativeTo(workspaceRoot) }
+  //  val step1 = relatives.associateWithLabels()
+  //  val step2v1f = getSourcesByRule(step1.values, UniverseGenerator.Global, false)
+  //  val step2v2f = getSourcesByRule(step1.values, UniverseGenerator.EveryAll(" + "), false)
+  //  val step2v3f = getSourcesByRule(step1.values, UniverseGenerator.CommonPrefix, false)
+  //  val step2v1t = getSourcesByRule(step1.values, UniverseGenerator.Global, true)
+  //  val step2v2t = getSourcesByRule(step1.values, UniverseGenerator.EveryAll(","), true)
+  //  val step2v3t = getSourcesByRule(step1.values, UniverseGenerator.CommonPrefix, true)
+  //  //val step3 = reverseMap(step2, step1.values.toSet())
+  //  return mapOf(
+  //    "step1" to step1,
+  //    "step2v1f" to step2v1f,
+  //    "step2v2f" to step2v2f,
+  //    "step2v3f" to step2v3f,
+  //    "step2v1t" to step2v1t,
+  //    "step2v2t" to step2v2t,
+  //    "step2v3t" to step2v3t,
+  //  )
+  //}
+
+  suspend fun inverseSourcesQuery(
+    params: InverseSourcesParams,
+    workspaceRoot: Path,
+    bazelRunner: BazelRunner,
+    workspaceContext: WorkspaceContext,
+  ): InverseSourcesResult {
+    val relativePaths = params.files.map { it.relativeTo(workspaceRoot) }
+    val fileLabels = relativePaths.associateWithLabels(bazelRunner, workspaceContext)
+    val sourcesByRule =
+      getSourcesByRule(fileLabels.values, UniverseGenerator.EveryAll(","), bazelRunner, workspaceContext)
+    val rulesBySource = reverseMap(sourcesByRule, fileLabels.values.toSet())
+    val result = params.files.associateWith { rulesBySource[fileLabels[it]] ?: emptyList() }
+    return InverseSourcesResult(result)
   }
 
-  private fun List<Path>.associateWithLabels(): Map<Path, Label> =
-    prepareFileLabelQuery(this).runAndParse().getSourcesPathLabelMap()
+  private suspend fun List<Path>.associateWithLabels(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): Map<Path, Label> =
+    prepareFileLabelQuery(this, bazelRunner, workspaceContext).runAndParse(bazelRunner).getSourcesPathLabelMap()
 
-  private fun getSourcesByRule(
+  private suspend fun getSourcesByRule(
     fileLabels: Collection<Label>,
     universeGenerator: UniverseGenerator,
-    useAllDeps: Boolean,
+    bazelRunner: BazelRunner,
+    workspaceContext: WorkspaceContext,
   ): Map<Label, List<Label>> {
-    val command = prepareInverseSourcesQuery(fileLabels, useAllDeps, universeGenerator)
-    return command.runAndParse().sourceLabelsByRuleNames()
+    val command = prepareInverseSourcesQuery(fileLabels, universeGenerator, bazelRunner, workspaceContext)
+    return command.runAndParse(bazelRunner).sourceLabelsByRuleNames()
   }
 
-  private fun prepareFileLabelQuery(files: List<Path>): BazelCommand =
+  private fun prepareFileLabelQuery(files: List<Path>, bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): BazelCommand =
     bazelRunner.buildBazelCommand(workspaceContext) {
       fileQuery(files) {
         options.addAll(commonQueryFlags)
@@ -59,10 +101,11 @@ class NewInverseSourcesQuery(
   @Suppress("SameParameterValue")
   private fun prepareInverseSourcesQuery(
     fileLabels: Collection<Label>,
-    useAllDeps: Boolean,
     universeGenerator: UniverseGenerator,
+    bazelRunner: BazelRunner,
+    workspaceContext: WorkspaceContext,
   ): BazelCommand {
-    // ABU - set universe and stuff?
+    val useAllDeps = true // ABU - inline (remove false branches)
     val universe = universeGenerator.generateUniverse(fileLabels)
     val targets = fileLabels.joinToString(separator = " + ")
     val expression = when (useAllDeps) {
@@ -80,13 +123,17 @@ class NewInverseSourcesQuery(
     }
   }
 
-  private fun BazelCommand.runAndParse(): Sequence<Build.Target> {
+  private suspend fun BazelCommand.runAndParse(bazelRunner: BazelRunner): List<Build.Target> {
+    val commandString = this.buildExecutionDescriptor().command.joinToString(" ")
     val bazelProcess = bazelRunner.runBazelCommand(this, serverPidFuture = null, logProcessOutput = false) // ABU - what if log?
     val inputStream = bazelProcess.process.inputStream
-    return generateSequence { Build.Target.parseDelimitedFrom(inputStream) }
+    val processOutput = generateSequence { Build.Target.parseDelimitedFrom(inputStream) }
+    bazelProcess.process.awaitExit() // ABU - will this break things?
+    //bazelProcess.process.waitFor() // this DOES break things
+    return processOutput.toList()//.also { println("...Bazel finished") }
   }
 
-  private fun Sequence<Build.Target>.getSourcesPathLabelMap(): Map<Path, Label> =
+  private fun Collection<Build.Target>.getSourcesPathLabelMap(): Map<Path, Label> =
     this
       .filter { it.type == Build.Target.Discriminator.SOURCE_FILE }
       .mapNotNull { it.sourceFile }
@@ -94,7 +141,7 @@ class NewInverseSourcesQuery(
       .associate { it.location to Label.parse(it.name) }
       .mapKeys { Path.of(it.key.dropLineAndColumn()) }
 
-  private fun Sequence<Build.Target>.sourceLabelsByRuleNames(): Map<Label, List<Label>> =
+  private fun Collection<Build.Target>.sourceLabelsByRuleNames(): Map<Label, List<Label>> =
     this
       .filter { it.type == Build.Target.Discriminator.RULE }
       .mapNotNull { it.rule }
@@ -114,7 +161,7 @@ class NewInverseSourcesQuery(
 
 private val commonQueryFlags = listOf(BazelFlag.OutputFormat.streamed_proto(), BazelFlag.keepGoing())
 
-fun <A, B> reverseMap(
+private fun <A, B> reverseMap(
   original: Map<A, List<B>>,
   filter: Set<B>
 ): Map<B, List<A>> {
@@ -159,3 +206,25 @@ private sealed class UniverseGenerator {
     }
   }
 }
+
+private data class Scenario(
+  val name: String,
+  val universeGenerator: UniverseGenerator,
+  val useAllDeps: Boolean,
+)
+
+private val SCENARIOS = listOf(
+  Scenario("Global", UniverseGenerator.Global, false),
+  Scenario("EveryAll", UniverseGenerator.EveryAll(" + "), false),
+  Scenario("CommonPrefix", UniverseGenerator.CommonPrefix, false),
+  Scenario("Global [Sky]", UniverseGenerator.Global, true),
+  Scenario("EveryAll [Sky]", UniverseGenerator.EveryAll(","), true),
+  Scenario("CommonPrefix [Sky]", UniverseGenerator.CommonPrefix, true),
+)
+
+private data class TypedBenchmark<T>(
+  val benchmark: AbuBenchmark,
+  val value: T,
+)
+
+

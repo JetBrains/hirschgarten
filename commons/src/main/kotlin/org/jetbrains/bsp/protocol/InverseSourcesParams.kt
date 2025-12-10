@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class InverseSourcesParams(val textDocument: TextDocumentIdentifier)
+import java.nio.file.Path
+
+data class InverseSourcesParams(val files: List<Path>)

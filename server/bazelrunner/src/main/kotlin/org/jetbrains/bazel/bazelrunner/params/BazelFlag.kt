@@ -56,4 +56,13 @@ object BazelFlag {
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
 
   private fun flag(name: String) = "--$name"
+
+  object OutputFormat {
+    @JvmStatic fun json() = outputFlag("json")
+    @JvmStatic fun xml() = outputFlag("xml")
+    @JvmStatic fun proto() = outputFlag("proto")
+    @JvmStatic fun streamed_proto() = outputFlag("streamed_proto")
+
+    private fun outputFlag(format: String) = arg("output", format)
+  }
 }
