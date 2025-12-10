@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.jvm.run
 
+import com.intellij.coverage.CoverageExecutor
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -20,7 +21,7 @@ import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
-class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
+class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before BuildScriptBeforeRunTaskProvider
     configuration.setBeforeRunTasksFromHandler(
@@ -38,12 +39,20 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     if (executor is DefaultDebugExecutor) {
-      // Only pass SCRIPT_PATH_KEY for debug, because it screws up test result caching; see ScriptPathBeforeRunTaskProvider
-      environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
       environment.putCopyableUserData(COROUTINE_JVM_FLAGS_KEY, Ref())
+    }
+    /**
+     * 1. Allow the user to disable --script_path because it screws up test result caching
+     * 2. Tests with coverage must be run with `bazel coverage`, running with --script_path just runs the tests normally
+     * 3. Because `bazel run` only supports one target, so does `bazel run --script_path`
+     */
+    if (!state.testWithBazel && executor !is CoverageExecutor && configuration.targets.size == 1) {
+      environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
       return ScriptPathTestCommandLineState(environment, state)
     }
-    return BazelTestCommandLineState(environment, state)
+    else {
+      return BazelTestCommandLineState(environment, state)
+    }
   }
 
   class JvmTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
