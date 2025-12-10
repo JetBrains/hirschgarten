@@ -1,0 +1,91 @@
+##### CACHED #####
+
+--- Fileset: ultimateSingleFile ---
+Scenario, Seconds
+Global, 3.927
+EveryAll, 2.032
+CommonPrefix, 1.984
+Global [Sky], 2.61
+EveryAll [Sky], 2.161
+CommonPrefix [Sky], 1.856
+Files to Labels, 8.818
+Reverse map, 0.001
+
+--- Fileset: ultimateSmallFolder ---
+Scenario, Seconds
+Global, 2.128
+EveryAll, 1.666
+CommonPrefix, 1.458
+Global [Sky], 1.3
+EveryAll [Sky], 1.454
+CommonPrefix [Sky], 1.611
+Files to Labels, 2.244
+Reverse map, 0.0
+
+--- Fileset: ultimateNear20 ---
+Scenario, Seconds
+Global, 2.384
+EveryAll, 1.834
+CommonPrefix, 1.707
+Global [Sky], 1.542
+EveryAll [Sky], 1.58
+CommonPrefix [Sky], 1.731
+Files to Labels, 2.133
+Reverse map, 0.0
+
+--- Fileset: ultimateRandom50 ---
+Scenario, Seconds
+Global, 2.618
+EveryAll, 4.082
+CommonPrefix, 3.923
+Global [Sky], 3.206
+EveryAll [Sky], 3.688
+CommonPrefix [Sky], 3.802
+Files to Labels, 2.849
+Reverse map, 0.006
+
+
+##### CLEANED #####
+--- Fileset: ultimateSingleFile ---
+Scenario, Seconds
+Global, 16.539
+EveryAll, 2.449
+CommonPrefix, 2.497
+Global [Sky], 10.984
+EveryAll [Sky], 1.927
+CommonPrefix [Sky], 1.499
+Files to Labels, 1.252
+Reverse map, 0.0
+
+--- Fileset: ultimateSmallFolder ---
+Scenario, Seconds
+Global, 10.647
+EveryAll, 1.265
+CommonPrefix, 0.86
+Global [Sky], 11.034
+EveryAll [Sky], 1.235
+CommonPrefix [Sky], 0.819
+Files to Labels, 0.295
+Reverse map, 0.0
+
+--- Fileset: ultimateNear20 ---
+Scenario, Seconds
+Global, 12.904
+EveryAll, 1.844
+CommonPrefix, 1.634
+Global [Sky], 11.251
+EveryAll [Sky], 1.941
+CommonPrefix [Sky], 1.494
+Files to Labels, 0.284
+Reverse map, 0.0
+
+--- Fileset: ultimateRandom50 ---
+Scenario, Seconds
+Global, 10.296
+EveryAll, 6.383
+CommonPrefix, 11.95
+Global [Sky], 9.875
+EveryAll [Sky], 4.886
+CommonPrefix [Sky], 9.592
+Files to Labels, 0.944
+Reverse map, 0.01

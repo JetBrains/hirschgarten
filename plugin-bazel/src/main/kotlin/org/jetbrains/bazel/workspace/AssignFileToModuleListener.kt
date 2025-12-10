@@ -348,8 +348,6 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
   if (!project.serviceAsync<SyncStatusService>().isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)
-        .targets
-        .toList()
     } catch (ex: Exception) {
       logger.debug(ex)
       null
@@ -358,11 +356,16 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
     null
   }
 
-private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult =
-  project.connection.runWithServer { bspServer ->
-    bspServer
-      .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.toPath())))
-  }
+// ABU - temporary form, no multiple file support yet
+private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): List<Label> {
+  val path = fileUrl.toPath()
+  val result =
+    project.connection.runWithServer { bspServer ->
+      bspServer
+        .buildTargetInverseSources(InverseSourcesParams(listOf(path)))
+    }
+  return result.targets[path] ?: emptyList()
+}
 
 private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
   val moduleId = ModuleId(this.formatAsModuleName(project))

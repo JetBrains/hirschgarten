@@ -1001,6 +1001,10 @@
             class="org.jetbrains.bazel.action.registered.OpenBazelQueryToolWindowAction">
     </action>
 
+    <action id="Bazel.AbuMagicAction"
+            class="org.jetbrains.bazel.action.registered.AbuMagicAction">
+    </action>
+
     <action id="Bazel.OpenProjectViewFile"
             class="org.jetbrains.bazel.action.registered.OpenProjectViewAction">
     </action>
