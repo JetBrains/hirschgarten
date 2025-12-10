@@ -1,12 +1,14 @@
 package org.jetbrains.bazel.sync_new.flow.universe
 
+import org.jetbrains.bazel.label.Label
+
 object SyncUniverseQuery {
   // TODO: use QueryBuilder dsl
-  fun createUniverseQuery(patterns: Iterable<SyncUniverseTargetPattern>): String = buildString {
-    val includes = patterns.filterIsInstance<SyncUniverseTargetPattern.Include>()
-      .joinToString(separator = " ") { it.label.toString() }
-    val excludes = patterns.filterIsInstance<SyncUniverseTargetPattern.Exclude>()
-      .joinToString(separator = " ") { it.label.toString() }
+  fun createUniverseQuery(patterns: Iterable<SyncUniverseFilteredCondition<Label>>): String = buildString {
+    val includes = patterns.filterIsInstance<SyncUniverseFilteredCondition.Include<Label>>()
+      .joinToString(separator = " ") { it.element.toString() }
+    val excludes = patterns.filterIsInstance<SyncUniverseFilteredCondition.Exclude<Label>>()
+      .joinToString(separator = " ") { it.element.toString() }
     if (includes.isEmpty()) {
       append("set(//...)")
     } else {
@@ -19,11 +21,11 @@ object SyncUniverseQuery {
 
   fun createUniverseQuery(state: SyncUniverseState): String = createUniverseQuery(state.importState.patterns)
 
-  fun createSkyQueryUniverseScope(patterns: Iterable<SyncUniverseTargetPattern>): List<String> =
+  fun createSkyQueryUniverseScope(patterns: Iterable<SyncUniverseFilteredCondition<Label>>): List<String> =
     patterns.map {
       when (it) {
-        is SyncUniverseTargetPattern.Include -> it.label.toString()
-        is SyncUniverseTargetPattern.Exclude -> "-${it.label}"
+        is SyncUniverseFilteredCondition.Include<Label> -> it.element.toString()
+        is SyncUniverseFilteredCondition.Exclude<Label> -> "-${it.element}"
       }
     }
 }

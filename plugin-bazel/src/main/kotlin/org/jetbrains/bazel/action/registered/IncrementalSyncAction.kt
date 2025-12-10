@@ -18,7 +18,7 @@ class IncrementalSyncAction : SuspendableAction({ BazelPluginBundle.message("inc
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     if (BazelSyncV2.isEnabled) {
       project.service<SyncBridgeService>()
-        .sync(scope = SyncScope.Incremental)
+        .sync(scope = SyncScope.Incremental())
     }
   }
 

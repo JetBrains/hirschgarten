@@ -46,10 +46,11 @@ object LegacyBazelFrontendBridge {
   //  return result.targets.values.toList()
   //}
 
-  suspend fun fetchPartialTargets(project: Project, repoMapping: SyncRepoMapping, targets: List<Label>): List<RawAspectTarget> {
+  suspend fun fetchPartialTargets(project: Project, repoMapping: SyncRepoMapping, targets: List<Label>, build: Boolean): List<RawAspectTarget> {
     val params = WorkspaceBuildPartialTargetsParams(
       targets = targets,
       repoMapping = toLegacyRepoMapping(repoMapping),
+      build = build
     )
     val result = project.connection.runWithServer { server -> server.workspaceBuildTargetsPartial(params) }
     return result.targets.values

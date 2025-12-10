@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sync_new.flow.vfs_diff
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.bazel.commons.constants.Constants
@@ -20,7 +19,7 @@ class SyncVFSFileFilter(
     if (isAspectsDir(vFile)) {
       return false
     }
-    return vFile.extension in watchableExtensions || isBazelFile(vFile) || REMOVE_THIS(vFile)
+    return vFile.extension in watchableExtensions || isBazelFile(vFile)
   }
 
   private fun isBazelFile(vFile: VirtualFile): Boolean {
@@ -39,13 +38,5 @@ class SyncVFSFileFilter(
     val projectRoot = project.rootDir.toNioPath()
     val bazelBspDir = projectRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME)
     return path.startsWith(bazelBspDir)
-  }
-
-  private fun REMOVE_THIS(vFile: VirtualFile): Boolean {
-    val ext = vFile.extension
-    return when (ext) {
-      "java", "kt" -> true
-      else -> false
-    }
   }
 }

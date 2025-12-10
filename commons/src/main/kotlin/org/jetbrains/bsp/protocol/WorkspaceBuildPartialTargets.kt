@@ -6,7 +6,8 @@ import org.jetbrains.bazel.label.Label
 
 class WorkspaceBuildPartialTargetsParams(
   val targets: List<Label>,
-  val repoMapping: RepoMapping
+  val repoMapping: RepoMapping,
+  val build: Boolean
 )
 
 data class WorkspaceBuildPartialTargetsResult(

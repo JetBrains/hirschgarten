@@ -41,7 +41,10 @@ data class BazelTargetVertex(
   val targetData: Long2ObjectMap<SyncTargetData>,
 
   @field:Tag(7)
-  val baseDirectory: Path
+  val baseDirectory: Path,
+
+  @field:Tag(8)
+  val kind: String
 ) : TargetVertex
 
 @Tagged
@@ -60,7 +63,7 @@ data class BazelGenericTargetData(
   val resources: List<BazelTargetResourceFile>,
 
   @field:Tag(5)
-  val isUniverseTarget: Boolean
+  val isUniverseTarget: Boolean,
 )
 
 @EnumTagged

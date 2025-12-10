@@ -81,7 +81,7 @@ class RocksdbStorageContext(
       .setCreateIfMissing(true)
       .setCreateMissingColumnFamilies(true)
       // Write settings (balanced for graph ingestion)
-      .setWriteBufferSize(256 * 1024 * 1024) // 256MB memtable
+      .setWriteBufferSize(64 * 1024 * 1024) // 256MB memtable
       .setMaxWriteBufferNumber(4)
       .setMinWriteBufferNumberToMerge(1)
       .setAllowConcurrentMemtableWrite(true)
@@ -111,7 +111,7 @@ class RocksdbStorageContext(
       // Table options for reads
       .setTableFormatConfig(
         BlockBasedTableConfig()
-          .setBlockCache(LRUCache(1024 * 1024 * 1024, 8, false)) // 1GB cache, 8 shard bits
+          .setBlockCache(LRUCache(128 * 1024 * 1024, 8, false))
           .setBlockSize(32 * 1024) // 32KB blocks
           .setCacheIndexAndFilterBlocks(true)
           .setCacheIndexAndFilterBlocksWithHighPriority(true)
@@ -146,7 +146,7 @@ class RocksdbStorageContext(
     }
 
     // Shared block cache across all column families for better memory utilization
-    val sharedBlockCache = LRUCache(512 * 1024 * 1024) // 512MB shared cache
+    val sharedBlockCache = LRUCache(128 * 1024 * 1024) // 512MB shared cache
     
     val options = ColumnFamilyOptions()
       .setCompressionType(CompressionType.NO_COMPRESSION)
@@ -167,8 +167,8 @@ class RocksdbStorageContext(
           .setBlockCache(sharedBlockCache) // Shared cache
           .setBlockSize(32 * 1024) // Larger blocks for better compression of sequential IDs
           .setCacheIndexAndFilterBlocks(true)
-          .setPinL0FilterAndIndexBlocksInCache(true)
-          .setPinTopLevelIndexAndFilter(true) // Keep top-level index in memory
+          .setPinL0FilterAndIndexBlocksInCache(false)
+          .setPinTopLevelIndexAndFilter(false) // Keep top-level index in memory
           .setFilterPolicy(org.rocksdb.BloomFilter(10.0, false)) // Bloom filter with 10 bits per key
           .setWholeKeyFiltering(true) // Enable whole key bloom filtering
           .setFormatVersion(5) // Latest format with better bloom filter support
@@ -176,6 +176,7 @@ class RocksdbStorageContext(
           .setPartitionFilters(true) // Partition filters for better memory efficiency
           .setMetadataBlockSize(8 * 1024) // Larger metadata blocks
           .setCacheIndexAndFilterBlocksWithHighPriority(true) // Prioritize index/filter in cache
+          .setOptimizeFiltersForMemory(true)
       )
 
     if (comparator != null) {

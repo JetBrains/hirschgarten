@@ -231,6 +231,17 @@ sealed interface JvmResourceId : IncrementalResourceId {
   @ClassTag(542285109)
   data object KotlinStdlib : JvmResourceId
 
+  @SealedTag(9)
+  @Tagged
+  @ClassTag(312458415)
+  data class GeneratedLibrary(
+    @field:Tag(1)
+    val owner: Int,
+
+    @field:Tag(2)
+    val name: String,
+  ) : JvmResourceId
+
 }
 
 fun JvmResourceId.hash(): HashValue128 = hash h@{
@@ -243,6 +254,7 @@ fun JvmResourceId.hash(): HashValue128 = hash h@{
     is JvmResourceId.CompiledLibrary -> {
       putInt(2)
       putInt(owner)
+      putString(name)
     }
 
     is JvmResourceId.JdepsLibrary -> {
@@ -271,6 +283,11 @@ fun JvmResourceId.hash(): HashValue128 = hash h@{
 
     JvmResourceId.KotlinStdlib -> {
       putInt(8)
+    }
+
+    is JvmResourceId.GeneratedLibrary -> {
+      putInt(9)
+      putInt(owner)
     }
   }
 }

@@ -27,7 +27,7 @@ abstract class BazelProjectAware(private val workspace: BazelWorkspace) : Extern
       BazelCoroutineService.getInstance(workspace.project).start {
         if (BazelSyncV2.isEnabled) {
           workspace.project.service<SyncBridgeService>()
-            .sync(scope = SyncScope.Incremental)
+            .sync(scope = SyncScope.Incremental())
         } else {
           ProjectSyncTask(workspace.project).sync(syncScope = SecondPhaseSync, buildProject = false)
         }

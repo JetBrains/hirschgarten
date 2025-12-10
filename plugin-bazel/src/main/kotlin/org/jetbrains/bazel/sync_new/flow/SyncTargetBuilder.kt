@@ -89,6 +89,7 @@ class SyncTargetBuilder(
       languageTags = languageTags,
       targetData = targetData,
       baseDirectory = pathsResolver.toDirectoryPath(raw.target.label().assumeResolved(), legacyRepoMapping),
+      kind = raw.target.kind,
     )
   }
 
