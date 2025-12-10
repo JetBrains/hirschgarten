@@ -136,17 +136,15 @@ private suspend fun updateVisibleTargets(
   model: BazelTargetsPanelModel,
   targetPanel: Deferred<BazelTargetsPanel>,
 ) {
-  // First, apply the filter
   val targets = if (BazelSyncV2.useNewTargetTreeStorage) {
     project.serviceAsync<TargetTreeIndexService>()
-      .getTargetTreeEntriesSequence()
+      .getTargetTreeEntriesCached()
       .map { SyncV2TargetTreeCompat(it) }
   } else {
     targetUtils.allBuildTargets()
       .map { TargetUtilsTargetTreeCompat(it) }
   }
   val filteredTargets = targets.filter { model.targetFilter.predicate(it) }
-  val hasAnyTargets = targetUtils.getTotalTargetCount() > 0
   // Then, apply the search query
   var searchRegex: Regex?
   val searchResults =
@@ -169,12 +167,13 @@ private suspend fun updateVisibleTargets(
 
   // Finally, sort the results
   val visibleTargets = searchResults.sortedBy { it.label.toShortString(project) }
+    .toList()
   val targetPanel = targetPanel.await()
   withContext(Dispatchers.EDT) {
     targetPanel.update(
-      visibleTargets = visibleTargets.toList(),
+      visibleTargets = visibleTargets,
       searchRegex = searchRegex,
-      hasAnyTargets = hasAnyTargets,
+      hasAnyTargets = visibleTargets.isNotEmpty(),
       displayAsTree = model.displayAsTree,
     )
   }

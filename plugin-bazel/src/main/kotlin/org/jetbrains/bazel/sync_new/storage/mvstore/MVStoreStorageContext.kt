@@ -53,7 +53,7 @@ class MVStoreStorageContext(
     Disposer.register(disposable, this)
   }
 
-  override fun <K, V> createKVStore(
+  override fun <K : Any, V : Any> createKVStore(
     name: String,
     keyType: Class<K>,
     valueType: Class<V>,
@@ -71,7 +71,7 @@ class MVStoreStorageContext(
       )
     }
 
-  override fun <K, V> createSortedKVStore(
+  override fun <K : Any, V : Any> createSortedKVStore(
     name: String,
     keyType: Class<K>,
     valueType: Class<V>,
@@ -91,7 +91,7 @@ class MVStoreStorageContext(
       )
     }
 
-  override fun <T> createFlatStore(
+  override fun <T : Any> createFlatStore(
     name: String,
     type: Class<T>,
     vararg hints: StorageHints,

@@ -22,14 +22,39 @@ import org.jetbrains.bazel.sync_new.graph.impl.BazelPath
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
-fun CodecBuilder.ofLong(): Codec<Long> = codecOf(
-  encode = { _, buffer, value -> buffer.writeVarLong(value) },
-  decode = { _, buffer -> buffer.readVarLong() }
+fun CodecBuilder.ofLong(useVarLong: Boolean = false): Codec<Long> = codecOf(
+  encode = { _, buffer, value ->
+    if (useVarLong) {
+      buffer.writeVarLong(value)
+    } else {
+      buffer.writeInt64(value)
+    }
+
+  },
+  decode = { _, buffer ->
+    if (useVarLong) {
+      buffer.readVarLong()
+    } else {
+      buffer.readInt64()
+    }
+  },
 )
 
-fun CodecBuilder.ofInt(): Codec<Int> = codecOf(
-  encode = { _, buffer, value -> buffer.writeVarInt(value) },
-  decode = { _, buffer -> buffer.readVarInt() },
+fun CodecBuilder.ofInt(useVarInt: Boolean = false): Codec<Int> = codecOf(
+  encode = { _, buffer, value ->
+    if (useVarInt) {
+      buffer.writeVarInt(value)
+    } else {
+      buffer.writeInt32(value)
+    }
+  },
+  decode = { _, buffer ->
+    if (useVarInt) {
+      buffer.readVarInt()
+    } else {
+      buffer.readInt32()
+    }
+  },
 )
 
 // using varlong in this case is just waste of resources
@@ -50,12 +75,12 @@ val hash128Codec: Codec<HashValue128> = codecBuilderOf().ofHash128()
 
 fun CodecBuilder.ofString(): Codec<String> = codecOf(
   encode = { _, buffer, value -> buffer.writeString(value) },
-  decode = { _, buffer -> buffer.readString() }
+  decode = { _, buffer -> buffer.readString() },
 )
 
 fun CodecBuilder.ofPath(): Codec<Path> = codecOf(
   encode = { _, buffer, value -> buffer.writeString(value.absolutePathString()) },
-  decode = { _, buffer -> Path.of(buffer.readString()) }
+  decode = { _, buffer -> Path.of(buffer.readString()) },
 )
 
 // TODO: check if it is actually correct, or should it be serialized differently

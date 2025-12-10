@@ -42,7 +42,7 @@ class StarlarkLoadGraph(
 
       override val id2Predecessors: KVStore<HashValue128, Set<HashValue128>> =
         project.storageContext.createKVStore<HashValue128, Set<HashValue128>>(
-          "bazel.sync.vfs_diff.starlark.id2Successors",
+          "bazel.sync.vfs_diff.starlark.id2Predecessors",
           StorageHints.USE_PAGED_STORE,
         )
           .withKeyCodec { ofHash128() }

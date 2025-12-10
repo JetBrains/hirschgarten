@@ -26,6 +26,8 @@ import kotlin.io.path.name
 class JdepsAnalyzer(
   private val storage: IncrementalEntityStore<JvmResourceId, JvmModuleEntity>,
 ) {
+  private val vertexId2JdepsCache = Int2ObjectOpenHashMap<Set<Path>>()
+
   suspend fun computeJdepsForChangedTargets(ctx: SyncContext, diff: SyncDiff) {
     // in previous logic all entities should have been pruned
 
@@ -70,6 +72,9 @@ class JdepsAnalyzer(
 
     val transitiveDepsCache = Int2ObjectOpenHashMap<Set<Path>>()
 
+    // Clear the jdeps cache at the start to ensure fresh data
+    vertexId2JdepsCache.clear()
+
     // process jdeps in reverse topological order
     //
     // jdeps are processed based on transitive dependencies
@@ -104,6 +109,8 @@ class JdepsAnalyzer(
       storage.createEntity(jdepsTransitiveId) {
         JvmModuleEntity.JdepsCache(resourceId = it, myJdeps = thisTargetResolvedJDeps)
       }
+
+      vertexId2JdepsCache.put(vertexId, thisTargetResolvedJDeps)
       storage.addDependency(vertexReferenceId, jdepsTransitiveId)
 
       val thisTargetOutputJars = (jvmData.outputs.classJars + jvmData.outputs.iJars)
@@ -162,11 +169,19 @@ class JdepsAnalyzer(
     queue.addLast(vertexId)
     while (true) {
       val vertex = queue.removeFirstOrNull() ?: break
-      val jdeps = storage.getEntity(JvmResourceId.JdepsCache(vertexId = vertex))
-        as? JvmModuleEntity.JdepsCache
-      if (jdeps != null) {
-        yield(jdeps.myJdeps)
+
+      val cachedJdeps = vertexId2JdepsCache.get(vertex)
+      if (cachedJdeps != null) {
+        yield(cachedJdeps)
+      } else {
+        val jdeps = storage.getEntity(JvmResourceId.JdepsCache(vertexId = vertex))
+          as? JvmModuleEntity.JdepsCache
+        if (jdeps != null) {
+          vertexId2JdepsCache.put(vertex, jdeps.myJdeps)
+          yield(jdeps.myJdeps)
+        }
       }
+
       val succs = ctx.graph.getSuccessors(vertex)
       for (n in succs.indices) {
         val succ = succs.getInt(n)

@@ -21,6 +21,7 @@ import org.jetbrains.bazel.workspacemodel.entities.NewSyncBazelEntitySource
 import java.nio.file.Path
 
 // legacy ported
+// TODO: recompute only on project view change
 class DirectoriesLifecycleListener : SyncLifecycleListener {
   private val entitySource = NewSyncBazelEntitySource("directories")
 

@@ -27,6 +27,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 
 // legacy ported
+// TODO: make it incremental
 class IndexAdditionalFilesLifecycleListener : SyncLifecycleListener {
 
   override suspend fun onPostSync(ctx: SyncContext, status: SyncStatus, progress: SyncProgressReporter) {

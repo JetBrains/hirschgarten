@@ -27,6 +27,14 @@ value class MVStoreWriteCodecBuffer(
     WRITE_BUFFER_GROW_HANDLE.invokeExact(writeBuffer, size)
   }
 
+  override fun flip() {
+    buffer.flip()
+  }
+
+  override fun clear() {
+    buffer.clear()
+  }
+
   override fun writeVarInt(value: Int) {
     writeBuffer.putVarInt(value)
   }
@@ -67,6 +75,14 @@ value class MVStoreReadCodecBuffer(
     get() = buffer.position()
   override val size: Int
     get() = buffer.capacity()
+
+  override fun flip() {
+    buffer.flip()
+  }
+
+  override fun clear() {
+    buffer.clear()
+  }
 
   override fun readVarInt(): Int = DataUtils.readVarInt(buffer)
 

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sync_new.storage.util
 
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
-import sun.misc.Unsafe
 import java.nio.Buffer
 import java.nio.ByteBuffer
 import kotlin.math.max
@@ -16,14 +15,14 @@ class UnsafeByteBufferCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
     private val UNSAFE = UnsafeUtil.unsafe
     private val ADDRESS_OFFSET = UNSAFE.objectFieldOffset(Buffer::class.java.getDeclaredField("address"))
 
-    fun allocate(size: Int = DEFAULT_BUFFER_SIZE) = UnsafeByteBufferCodecBuffer(ByteBuffer.allocateDirect(size))
+    fun allocateUnsafe(size: Int = DEFAULT_BUFFER_SIZE) =
+      UnsafeByteBufferCodecBuffer(ByteBuffer.allocateDirect(size))
+
+    fun allocateHeap(size: Int = DEFAULT_BUFFER_SIZE) =
+      UnsafeByteBufferCodecBuffer(ByteBuffer.allocate(size))
   }
 
-  init {
-    if (!buffer.isDirect) {
-      error("UnsafeByteBufferCodecBuffer requires direct ByteBuffer")
-    }
-  }
+  // allow both direct and heap ByteBuffer
 
   override val writable: Boolean = true
   override val readable: Boolean = true
@@ -33,27 +32,47 @@ class UnsafeByteBufferCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
     get() = buffer.limit()
 
   override fun reserve(size: Int) {
-    // TODO: not direct buffer version
     val required = buffer.position() + size
-    if (required < buffer.capacity()) {
+    if (required <= buffer.capacity()) {
       return
     }
+
     val newSize = calculateNewSize(buffer.capacity(), required)
-    val newBuffer = ByteBuffer.allocateDirect(newSize)
+    val newBuffer = if (buffer.isDirect) {
+      ByteBuffer.allocateDirect(newSize)
+    } else {
+      ByteBuffer.allocate(newSize)
+    }
 
-    val oldAddress = UNSAFE.getLong(buffer, ADDRESS_OFFSET)
-    val newAddress = UNSAFE.getLong(newBuffer, ADDRESS_OFFSET)
+    val oldPosition = buffer.position()
+    buffer.position(0)
+    buffer.limit(oldPosition)
 
-    UNSAFE.copyMemory(
-      /* srcBase = */     null,
-      /* srcOffset = */   oldAddress,
-      /* destBase = */    null,
-      /* destOffset = */  newAddress,
-      /* bytes = */       buffer.position().toLong(),
-    )
+    if (buffer.isDirect) {
+      val oldAddress = UNSAFE.getLong(buffer, ADDRESS_OFFSET)
+      val newAddress = UNSAFE.getLong(newBuffer, ADDRESS_OFFSET)
 
-    newBuffer.position(buffer.position())
+      UNSAFE.copyMemory(
+        /* srcBase = */     null,
+        /* srcOffset = */   oldAddress,
+        /* destBase = */    null,
+        /* destOffset = */  newAddress,
+        /* bytes = */       oldPosition.toLong(),
+      )
+    } else {
+      newBuffer.put(buffer)
+    }
+
+    newBuffer.position(oldPosition)
     buffer = newBuffer
+  }
+
+  override fun flip() {
+    buffer.flip()
+  }
+
+  override fun clear() {
+    buffer.clear()
   }
 
   override fun writeVarInt(value: Int) {
@@ -124,32 +143,43 @@ class UnsafeByteBufferCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
     } else {
       val newBuffer = ByteBuffer.allocate(size)
       val oldLimit = buffer.limit()
-      buffer.limit(buffer.position() + size)
-      newBuffer.put(buffer)
+      val oldPosition = buffer.position()
+      buffer.limit(oldPosition + size)
+      newBuffer.put(buffer) // advances position by `size`
       buffer.limit(oldLimit)
       newBuffer.flip()
       newBuffer
     }
-    buffer.position(buffer.position() + size)
+
+    // manually advance only for direct buffers; heap buffers were advanced by put()
+    if (buffer.isDirect) {
+      buffer.position(buffer.position() + size)
+    }
+
     return result
   }
 
-
   fun reset() {
-    buffer.position(0)
+    buffer.clear()
   }
 
-
   fun shrinkToSize(threshold: Int) {
-    // TODO: not direct buffer version
-    if (buffer.capacity() > threshold) {
-      val usedSize = buffer.position()
-      val newBuffer = ByteBuffer.allocateDirect(usedSize)
+    if (buffer.capacity() <= threshold) {
+      return
+    }
 
-      val oldPosition = buffer.position()
-      buffer.position(0)
-      buffer.limit(usedSize)
+    val usedSize = buffer.position()
+    val newBuffer = if (buffer.isDirect) {
+      ByteBuffer.allocateDirect(usedSize)
+    } else {
+      ByteBuffer.allocate(usedSize)
+    }
 
+    val oldPosition = buffer.position()
+    buffer.position(0)
+    buffer.limit(usedSize)
+
+    if (buffer.isDirect) {
       val srcAddress = UNSAFE.getLong(buffer, ADDRESS_OFFSET)
       val destAddress = UNSAFE.getLong(newBuffer, ADDRESS_OFFSET)
 
@@ -160,20 +190,27 @@ class UnsafeByteBufferCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
         /* destOffset = */  destAddress,
         /* bytes = */       usedSize.toLong(),
       )
-
-      newBuffer.position(oldPosition)
-      buffer = newBuffer
+    } else {
+      newBuffer.put(buffer)
     }
+
+    newBuffer.position(oldPosition)
+    buffer = newBuffer
   }
 
-  fun calculateNewSize(current: Int, required: Int): Int {
+  private fun calculateNewSize(current: Int, required: Int): Int {
     var value = max(current, 2)
     while (value < required) {
-      value = value + value shl 1
+      value = value + (value shl 1)
       if (value > MAX_BUFFER_LENGTH) {
         value = MAX_BUFFER_LENGTH
       }
     }
     return value
+  }
+
+  fun ensureCapacity(required: Int) {
+    if (buffer.capacity() >= required) return
+    reserve(required - buffer.capacity())
   }
 }

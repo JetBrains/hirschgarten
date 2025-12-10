@@ -26,7 +26,6 @@ import java.nio.file.Path
 class SyncVFSBuildFileProcessor {
   suspend fun process(ctx: SyncVFSContext, diff: WildcardFileDiff<SyncVFSFile.BuildFile>): SyncColdDiff {
     // TODO: optimize query by finding relatively shallow dominators
-
     val addedBuildFiles = diff.added.map { it.path }
     val changedBuildFiles = diff.changed.map { it.path }
     val buildLabels = SyncVFSLabelResolver.resolveSourceFileLabels(
@@ -122,6 +121,4 @@ class SyncVFSBuildFileProcessor {
     }
     return WorkspacePathUtils.resolveExternalRepoPath(ctx, path)
   }
-
-
 }
