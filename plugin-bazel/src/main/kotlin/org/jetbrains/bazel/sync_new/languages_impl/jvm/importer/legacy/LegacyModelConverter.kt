@@ -28,7 +28,7 @@ class LegacyModelConverter(
   suspend fun convert(ctx: SyncContext): LegacyImportData {
     val targets = mutableListOf<RawBuildTarget>()
     val libraries = mutableListOf<LibraryItem>()
-    val entities = storage.getAllEntities()
+    val entities = storage.getAllEntities().toList()
     computeDefaultToolchain(ctx, entities)
     for (entity in entities) {
       when (entity) {
@@ -49,7 +49,7 @@ class LegacyModelConverter(
     )
   }
 
-  private suspend fun computeDefaultToolchain(ctx: SyncContext, entities: Sequence<JvmModuleEntity>) {
+  private suspend fun computeDefaultToolchain(ctx: SyncContext, entities: List<JvmModuleEntity>) {
     storage.removeEntity(JvmResourceId.DefaultToolchain)
     val jvmToolchainCandidates = mutableListOf<JvmToolchain>()
     val uniqueJavaHomes = mutableSetOf<Path>()

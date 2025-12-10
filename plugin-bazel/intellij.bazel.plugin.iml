@@ -148,5 +148,14 @@
     <orderEntry type="library" name="rocksdb.rocksdbjni" level="project" />
     <orderEntry type="library" name="esotericsoftware.kryo.kryo6" level="project" />
     <orderEntry type="library" name="esotericsoftware.kryo.kryo5" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/rocksdb_natives/rocksdbjni-10.4.2-osx.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

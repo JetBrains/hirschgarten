@@ -1,21 +1,21 @@
 package org.jetbrains.bazel.sync_new.storage
 
 interface StorageContext {
-  fun <K, V> createKVStore(
+  fun <K : Any, V : Any> createKVStore(
     name: String,
     keyType: Class<K>,
     valueType: Class<V>,
     vararg hints: StorageHints,
   ): KVStoreBuilder<*, K, V>
 
-  fun <K, V> createSortedKVStore(
+  fun <K : Any, V : Any> createSortedKVStore(
     name: String,
     keyType: Class<K>,
     valueType: Class<V>,
     vararg hints: StorageHints,
   ): SortedKVStoreBuilder<*, K, V>
 
-  fun <T> createFlatStore(
+  fun <T : Any> createFlatStore(
     name: String,
     type: Class<T>,
     vararg hints: StorageHints,
@@ -26,11 +26,11 @@ interface LifecycleStoreContext {
   fun save(force: Boolean = false)
 }
 
-inline fun <reified K, reified V> StorageContext.createKVStore(name: String, vararg hints: StorageHints): KVStoreBuilder<*, K, V> =
+inline fun <reified K : Any, reified V : Any> StorageContext.createKVStore(name: String, vararg hints: StorageHints): KVStoreBuilder<*, K, V> =
   createKVStore(name, K::class.java, V::class.java, *hints)
 
-inline fun <reified K, reified V> StorageContext.createSortedKVStore(name: String, vararg hints: StorageHints): SortedKVStoreBuilder<*, K, V> =
+inline fun <reified K : Any, reified V : Any> StorageContext.createSortedKVStore(name: String, vararg hints: StorageHints): SortedKVStoreBuilder<*, K, V> =
   createSortedKVStore(name, K::class.java, V::class.java, *hints)
 
-inline fun <reified T> StorageContext.createFlatStore(name: String, vararg hints: StorageHints): FlatStoreBuilder<T> =
+inline fun <reified T : Any> StorageContext.createFlatStore(name: String, vararg hints: StorageHints): FlatStoreBuilder<T> =
   createFlatStore(name, T::class.java, *hints)

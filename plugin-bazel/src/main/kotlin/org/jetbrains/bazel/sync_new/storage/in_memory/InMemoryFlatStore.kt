@@ -87,7 +87,7 @@ class InMemoryFlatStore<T>(
   }
 
   override fun read(ctx: CodecContext, buffer: CodecBuffer) {
-    check(buffer.readVarInt() == CODEC_VERSION) { "unsupported version version" }
+    check(buffer.readVarInt() == CODEC_VERSION) { "unsupported version" }
     try {
       set(codec.decode(ctx, buffer))
     } catch (ex: Throwable) {

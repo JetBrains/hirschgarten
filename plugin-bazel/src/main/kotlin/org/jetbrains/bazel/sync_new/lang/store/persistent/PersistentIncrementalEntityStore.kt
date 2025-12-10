@@ -186,6 +186,7 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     }
     val metadata = metadataStore.get()
     return metadata.id2Predecessors[id]?.asSequence()
+      ?.filter { id2Resource.contains(it) }
       ?.mapNotNull { id2Resource[it] }
       ?: emptySequence()
   }
@@ -226,10 +227,11 @@ inline fun <reified R : IncrementalResourceId, reified E : IncrementalEntity> cr
   crossinline entityCodec: CodecBuilder.() -> Codec<E>,
   crossinline idHasher: R.() -> HashValue128,
 ): PersistentIncrementalEntityStore<R, E> = object : PersistentIncrementalEntityStore<R, E>() {
-  override val metadataStore: FlatStorage<PersistentMetadata> = storageContext.createFlatStore<PersistentMetadata>("bazel.sync.lang.entity_store.${name}.metadata")
-    .withCreator { PersistentMetadata() }
-    .withCodec { PersistentMetadata.codec }
-    .build()
+  override val metadataStore: FlatStorage<PersistentMetadata> =
+    storageContext.createFlatStore<PersistentMetadata>("bazel.sync.lang.entity_store.${name}.metadata")
+      .withCreator { PersistentMetadata() }
+      .withCodec { PersistentMetadata.codec }
+      .build()
 
   override val resourceId2EntityStore: KVStore<Int, E> =
     storageContext.createKVStore<Int, E>("bazel.sync.lang.entity_store.${name}.entities", StorageHints.USE_PAGED_STORE)
@@ -239,7 +241,7 @@ inline fun <reified R : IncrementalResourceId, reified E : IncrementalEntity> cr
   override val resourceHash2Id: KVStore<HashValue128, Int> =
     storageContext.createKVStore<HashValue128, Int>(
       "bazel.sync.lang.entity_store.${name}.resource_hash_to_id",
-      StorageHints.USE_PAGED_STORE,
+      StorageHints.USE_IN_MEMORY,
     )
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofInt() }

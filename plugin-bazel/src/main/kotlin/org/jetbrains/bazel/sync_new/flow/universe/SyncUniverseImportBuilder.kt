@@ -9,6 +9,7 @@ import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 object SyncUniverseImportBuilder {
   suspend fun createUniverseImport(project: Project): SyncUniverseImportState {
     val workspaceContext = LegacyBazelFrontendBridge.fetchWorkspaceContext(project)
+    workspaceContext.directories
     val patterns = workspaceContext.targets.map {
       when (it) {
         is ExcludableValue.Excluded<Label> -> SyncUniverseTargetPattern.Exclude(it.value)

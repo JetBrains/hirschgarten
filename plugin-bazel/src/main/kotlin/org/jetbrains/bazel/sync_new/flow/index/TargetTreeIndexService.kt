@@ -4,6 +4,7 @@ import com.dynatrace.hash4j.hashing.HashValue128
 import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.util.concurrency.SynchronizedClearableLazy
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.codec.kryo.ClassTag
@@ -30,17 +31,21 @@ import java.util.EnumSet
 class TargetTreeIndexService(
   private val project: Project,
 ) : SyncIndexUpdater {
-  private val index = project.syncIndexService.createOne2OneIndex("target2TargetTreeEntry") { name, ctx ->
+  private val targetTreeIndex = project.syncIndexService.createOne2OneIndex("target2TargetTreeEntry") { name, ctx ->
     ctx.createKVStore<HashValue128, TargetTreeEntry>(name, StorageHints.USE_IN_MEMORY)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofKryo() }
       .build()
   }
 
+  private val targetEntriesCached = SynchronizedClearableLazy {
+    targetTreeIndex.values.toList()
+  }
+
   override suspend fun updateIndexes(ctx: SyncContext, diff: SyncDiff) {
     val (added, removed) = diff.split
     for (removed in removed) {
-      index.invalidate(hashLabel(removed.label))
+      targetTreeIndex.invalidate(hashLabel(removed.label))
     }
     for (added in added) {
       val target = added.getBuildTarget() ?: continue
@@ -59,15 +64,16 @@ class TargetTreeIndexService(
           }
         },
       )
-      index.set(hashLabel(target.label), entry)
+      targetTreeIndex.set(hashLabel(target.label), entry)
     }
 
+    targetEntriesCached.drop()
     project.targetUtils.emitTargetListUpdate()
   }
 
   private fun hashLabel(label: Label) = hash { putResolvedLabel(label.assumeResolved()) }
 
-  fun getTargetTreeEntriesSequence(): Sequence<TargetTreeEntry> = index.values
+  fun getTargetTreeEntriesCached(): Sequence<TargetTreeEntry> = targetEntriesCached.value.asSequence()
 
 }
 

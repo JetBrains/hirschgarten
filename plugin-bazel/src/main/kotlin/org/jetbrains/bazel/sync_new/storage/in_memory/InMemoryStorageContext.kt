@@ -2,12 +2,9 @@ package org.jetbrains.bazel.sync_new.storage.in_memory
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.util.Disposer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.sync_new.codec.readString
 import org.jetbrains.bazel.sync_new.codec.writeString
 import org.jetbrains.bazel.sync_new.storage.FlatPersistentStore
@@ -40,7 +37,7 @@ class InMemoryStorageContext(
       if (file.exists()) {
         try {
           RandomAccessFile(file.toFile(), "r").use { handle ->
-            val buffer = UnsafeByteBufferCodecBuffer.allocate(handle.length().toInt())
+            val buffer = UnsafeByteBufferCodecBuffer.allocateUnsafe(handle.length().toInt())
             handle.seek(0)
             handle.channel.read(buffer.buffer)
             buffer.buffer.flip()
@@ -61,7 +58,7 @@ class InMemoryStorageContext(
     }
   }
 
-  override fun <K, V> createKVStore(
+  override fun <K : Any, V : Any> createKVStore(
     name: String,
     keyType: Class<K>,
     valueType: Class<V>,
@@ -70,7 +67,7 @@ class InMemoryStorageContext(
     return InMemoryKVStoreBuilder(this, name)
   }
 
-  override fun <K, V> createSortedKVStore(
+  override fun <K : Any, V : Any> createSortedKVStore(
     name: String,
     keyType: Class<K>,
     valueType: Class<V>,
@@ -79,7 +76,7 @@ class InMemoryStorageContext(
     return InMemorySortedKVStoreBuilder(this, name)
   }
 
-  override fun <T> createFlatStore(
+  override fun <T : Any> createFlatStore(
     name: String,
     type: Class<T>,
     vararg hints: StorageHints,
@@ -93,7 +90,7 @@ class InMemoryStorageContext(
     }
     synchronized(lock) {
       for (store in stores) {
-        val buffer = UnsafeByteBufferCodecBuffer.allocate()
+        val buffer = UnsafeByteBufferCodecBuffer.allocateUnsafe()
         store.value.write(UnsafeCodecContext, buffer)
         buffer.buffer.flip()
         contents[store.key] = buffer
@@ -102,7 +99,7 @@ class InMemoryStorageContext(
       RandomAccessFile(file.toFile(), "rw").use { file ->
         // TODO create memory mapped CodecBuffer
         // 64mb - small projects should fit there entirely
-        val buffer = UnsafeByteBufferCodecBuffer.allocate(64 * 1024 * 1024)
+        val buffer = UnsafeByteBufferCodecBuffer.allocateUnsafe(64 * 1024 * 1024)
         buffer.writeVarInt(stores.size)
         for ((name, content) in contents) {
           buffer.writeString(name)
@@ -134,7 +131,7 @@ class InMemoryStorageContext(
     synchronized(lock) {
       stores[store.name] = store
 
-      val buffer = UnsafeByteBufferCodecBuffer.allocate()
+      val buffer = UnsafeByteBufferCodecBuffer.allocateUnsafe()
       store.write(UnsafeCodecContext, buffer)
       contents[store.name] = buffer
     }

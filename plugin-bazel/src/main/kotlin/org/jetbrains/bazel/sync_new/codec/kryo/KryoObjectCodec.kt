@@ -10,6 +10,7 @@ import com.esotericsoftware.kryo.kryo5.objenesis.strategy.StdInstantiatorStrateg
 import com.esotericsoftware.kryo.kryo5.serializers.DefaultSerializers
 import com.esotericsoftware.kryo.kryo5.unsafe.UnsafeByteBufferInput
 import com.esotericsoftware.kryo.kryo5.unsafe.UnsafeByteBufferOutput
+import com.esotericsoftware.kryo.kryo5.util.DefaultClassResolver
 import com.esotericsoftware.kryo.kryo5.util.DefaultInstantiatorStrategy
 import com.esotericsoftware.kryo.kryo5.util.HashMapReferenceResolver
 import org.jetbrains.bazel.sync_new.codec.Codec
@@ -24,7 +25,7 @@ import java.util.EnumSet
 
 
 private val kryoThreadLocal = ThreadLocal.withInitial {
-  val kryo = Kryo(null, null)
+  val kryo = Kryo(DefaultClassResolver(), null)
   kryo.classLoader = KryoObjectCodec::class.java.classLoader
   kryo.isRegistrationRequired = false
   kryo.setAutoReset(true)

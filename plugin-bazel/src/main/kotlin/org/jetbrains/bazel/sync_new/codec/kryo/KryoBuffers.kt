@@ -23,6 +23,10 @@ value class KryoWriteCodecBuffer(private val output: Output) : WritableOnlyCodec
     OUTPUT_REQUIRE_HANDLE.invoke(output, size)
   }
 
+  override fun flip() {
+
+  }
+
   override fun writeVarInt(value: Int) {
     output.writeVarInt(value, true)
   }

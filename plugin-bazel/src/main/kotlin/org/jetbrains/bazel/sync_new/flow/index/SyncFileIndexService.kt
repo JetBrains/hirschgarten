@@ -27,7 +27,7 @@ import java.nio.file.Path
 class SyncFileIndexService(
   private val project: Project,
 ) : SyncIndexUpdater {
-  private val file2TargetIndex: One2ManyIndex<HashValue128, Int> = project.syncIndexService.createOne2ManyIndex(
+  private val file2TargetId: One2ManyIndex<HashValue128, Int> = project.syncIndexService.createOne2ManyIndex(
     "file2TargetIndex",
   ) { name, ctx ->
     ctx.createKVStore<HashValue128, Set<Int>>(name, StorageHints.USE_PAGED_STORE)
@@ -47,7 +47,7 @@ class SyncFileIndexService(
       for (source in target.genericData.sources) {
         val realPath = pathsResolver.resolve(source.path)
         val hash = hashFilePath(realPath)
-        file2TargetIndex.invalidate(hash, target.vertexId)
+        file2TargetId.invalidate(hash, target.vertexId)
       }
     }
 
@@ -56,18 +56,18 @@ class SyncFileIndexService(
       for (source in target.genericData.sources) {
         val realPath = pathsResolver.resolve(source.path)
         val hash = hashFilePath(realPath)
-        file2TargetIndex.add(hash, listOf(target.vertexId))
+        file2TargetId.add(hash, listOf(target.vertexId))
       }
     }
   }
 
   fun getTargetVertexBySourceFile(file: Path): Sequence<BazelTargetVertex> {
-    return file2TargetIndex.get(hashFilePath(file))
+    return file2TargetId.get(hashFilePath(file))
       .mapNotNull { syncStoreService.targetGraph.getVertexById(it) }
   }
 
   fun getTargetLabelsBySourceFile(file: Path): Sequence<Label> {
-    return file2TargetIndex.get(hashFilePath(file))
+    return file2TargetId.get(hashFilePath(file))
       .mapNotNull { syncStoreService.targetGraph.getVertexCompactById(it) }
       .map { it.label }
   }

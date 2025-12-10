@@ -4,6 +4,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.util.progress.sleepCancellable
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList
 import kotlinx.coroutines.isActive
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync_new.codec.Codec
@@ -11,48 +13,40 @@ import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.ColumnFamilyHandle
 import org.rocksdb.RocksDB
+import org.rocksdb.WriteBatch
 import org.rocksdb.WriteOptions
 import java.nio.ByteBuffer
 import java.time.Duration
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
-// offload serialization and rocksdb write operations to separate thread
-// TODO: split into serialization queue and IO queue - this would require keeping order of operations,
-//  so we could process serialization and writes in batches
-//         <batch of writes>
-//          |   |   |   |
-//          |   |   |   | serialization threads<1..n>
-//          |   |   |   |
-//  <serialized sequenced key-value pairs>
-//               |
-//               |
-//       <single writer thread>
-//  -- now we are wasting resources by using only single thread for serialization
 class RocksdbWriteQueue(
   private val project: Project,
   private val disposable: Disposable,
 ) : Disposable {
   companion object {
-    private const val BUFFER_SHRINK_INTERVAL_MS = 60_000L // check for shrink every 60 seconds
+    private const val BUFFER_SHRINK_INTERVAL_MS = 60_000L
     private const val BUFFER_SHRINK_GAP_THRESHOLD = 1024
     private const val BUFFER_INITIAL_CAPACITY = 1024 * 1024
+    private const val QUEUE_CAPACITY = 128 * 1024
+    private const val WRITE_BATCH_SIZE = 4096
 
-    // TODO: check how native buffers are handled, can I just discard them after put/remove?
     private val WRITE_OPTIONS: WriteOptions = WriteOptions()
       .setSync(false)
+      .setDisableWAL(true)
   }
 
   private val running: AtomicBoolean = AtomicBoolean(true)
   private val exited: AtomicBoolean = AtomicBoolean(false)
   private val thread: Thread
   private val latch: CountDownLatch = CountDownLatch(1)
-  private val queue: BlockingQueue<WriteOperation> = LinkedBlockingQueue()
+  private val queue: BlockingQueue<WriteOperation> = ArrayBlockingQueue(QUEUE_CAPACITY)
+  private val tlsWriteBatch = ThreadLocal.withInitial { WriteBatch() }
 
-  data class ThreadByteBuffer(
+  class ThreadByteBuffer(
     val buffer1: UnsafeByteBufferCodecBuffer,
     val buffer2: UnsafeByteBufferCodecBuffer,
     var lastShrinkCheck: Long,
@@ -85,15 +79,48 @@ class RocksdbWriteQueue(
 
   private fun task() {
     val threadLocalBuffer = buffer.get()
+    val batch = ArrayList<WriteOperation>(WRITE_BATCH_SIZE)
     while (running.opaque) {
-      val operation = queue.poll()
+      val operation = queue.poll(100, TimeUnit.MILLISECONDS)
+      if (operation == null) {
+        if (batch.isNotEmpty()) {
+          if (handleOperationsBatch(batch, threadLocalBuffer)) {
+            break
+          }
+          batch.clear()
+        }
+        continue
+      }
+      batch.add(operation)
+      queue.drainTo(batch, WRITE_BATCH_SIZE - batch.size)
+      if (batch.size >= WRITE_BATCH_SIZE) {
+        if (handleOperationsBatch(batch, threadLocalBuffer)) {
+          break
+        }
+        batch.clear()
+      }
+    }
+    if (batch.isNotEmpty()) {
+      handleOperationsBatch(batch, threadLocalBuffer)
+      batch.clear()
+    }
+    if (queue.drainTo(batch) > 0) {
+      handleOperationsBatch(batch, threadLocalBuffer)
+    }
+    latch.countDown()
+  }
+
+  private fun handleOperationsBatch(batch: MutableList<WriteOperation>, threadLocalBuffer: ThreadByteBuffer): Boolean {
+    val operationByDb = Reference2ObjectLinkedOpenHashMap<WriteOperationDesc<*, *>, ReferenceArrayList<WriteOperation>>()
+    var shutdown = false
+    for (operation in batch) {
       when (operation) {
-        is WriteOperation.WritePlain<*, *> -> {
-          handleWriteOperation(operation, threadLocalBuffer)
+        is WriteOperation.RemovePlain<*, *> -> {
+          operationByDb.computeIfAbsent(operation.desc) { ReferenceArrayList() }.add(operation)
         }
 
-        is WriteOperation.RemovePlain<*, *> -> {
-          handleRemoveOperation(operation, threadLocalBuffer)
+        is WriteOperation.WritePlain<*, *> -> {
+          operationByDb.computeIfAbsent(operation.desc) { ReferenceArrayList() }.add(operation)
         }
 
         WriteOperation.BufferShrinkTick -> {
@@ -101,11 +128,72 @@ class RocksdbWriteQueue(
         }
 
         WriteOperation.ShutdownPoison -> {
-          break
+          shutdown = true
+        }
+
+        is WriteOperation.Barrier -> {
+          for ((desc, operation) in operationByDb) {
+            handleBatch(desc, operation)
+          }
+          operationByDb.clear()
+          operation.callback()
         }
       }
     }
-    latch.countDown()
+    for ((desc, operations) in operationByDb) {
+      handleBatch(desc, operations)
+    }
+    return shutdown
+  }
+
+  private fun <K, V> handleBatch(desc: WriteOperationDesc<K, V>, operations: ReferenceArrayList<WriteOperation>) {
+    val buffer = buffer.get()
+    val keyBuffer = buffer.buffer1
+    val valueBuffer = buffer.buffer2
+    val batch = tlsWriteBatch.get()
+    batch.clear()
+    
+    try {
+      for (operation in operations) {
+        when (operation) {
+          is WriteOperation.RemovePlain<*, *> -> {
+            @Suppress("UNCHECKED_CAST")
+            operation as WriteOperation.RemovePlain<K, V>
+
+            keyBuffer.clear()
+            desc.keyCodec.encode(UnsafeCodecContext, keyBuffer, operation.key)
+            keyBuffer.flip()
+
+            batch.delete(desc.handle, keyBuffer.buffer)
+            operation.callback(operation.key)
+          }
+
+          is WriteOperation.WritePlain<*, *> -> {
+            @Suppress("UNCHECKED_CAST")
+            operation as WriteOperation.WritePlain<K, V>
+
+            keyBuffer.clear()
+            desc.keyCodec.encode(UnsafeCodecContext, keyBuffer, operation.key)
+            keyBuffer.flip()
+
+            valueBuffer.clear()
+            desc.valueCodec.encode(UnsafeCodecContext, valueBuffer, operation.value)
+            valueBuffer.flip()
+
+            batch.put(desc.handle, keyBuffer.buffer, valueBuffer.buffer)
+            operation.callback(operation.key, operation.value)
+          }
+
+          else -> {
+            /* noop */
+          }
+        }
+      }
+
+      desc.db.write(WRITE_OPTIONS, batch)
+    } finally {
+      batch.clear()
+    }
   }
 
   private fun handleBufferShrinkTick(threadLocalBuffer: ThreadByteBuffer) {
@@ -117,37 +205,14 @@ class RocksdbWriteQueue(
     }
   }
 
-  private fun <K, V> handleWriteOperation(
-    operation: WriteOperation.WritePlain<K, V>,
-    threadLocalBuffer: ThreadByteBuffer,
-  ) {
-    val desc = operation.desc
-    val buffer1 = threadLocalBuffer.buffer1
-    val buffer2 = threadLocalBuffer.buffer2
-
-    // write key
-    buffer1.reset()
-    desc.keyCodec.encode(UnsafeCodecContext, buffer1, operation.key)
-
-    // write value
-    buffer2.reset()
-    desc.valueCodec.encode(UnsafeCodecContext, buffer2, operation.value)
-
-    desc.db.put(desc.handle, WRITE_OPTIONS, buffer1.buffer, buffer2.buffer)
-  }
-
-  private fun <K, V> handleRemoveOperation(operation: WriteOperation.RemovePlain<K, V>, threadLocalBuffer: ThreadByteBuffer) {
-    val buffer1 = threadLocalBuffer.buffer1
-    val desc = operation.desc
-
-    buffer1.reset()
-    desc.keyCodec.encode(UnsafeCodecContext, buffer1, operation.key)
-
-    desc.db.delete(desc.handle, WRITE_OPTIONS, buffer1.buffer)
-  }
-
   fun enqueue(operation: WriteOperation) {
-    queue.put(operation)
+    var backoff = 1L
+    while (!queue.offer(operation, backoff, TimeUnit.MILLISECONDS)) {
+      if (!running.opaque) {
+        error("Write queue is shutting down")
+      }
+      backoff = maxOf(backoff * 2, 1000L)
+    }
   }
 
   fun awaitExit(duration: Duration = Duration.ofMinutes(5)): Boolean {
@@ -159,16 +224,28 @@ class RocksdbWriteQueue(
   }
 
   override fun dispose() {
-    // TODO: handle this case properly
     if (!awaitExit()) {
-      error("Failed to exit write queue thread within time constrain")
+      error("failed to exit write queue thread within time constrain")
     }
   }
 }
 
 sealed interface WriteOperation {
-  data class WritePlain<K, V>(val desc: WriteOperationDesc<K, V>, val key: K, val value: V) : WriteOperation
-  data class RemovePlain<K, V>(val desc: WriteOperationDesc<K, V>, val key: K) : WriteOperation
+  data class WritePlain<K, V>(
+    val desc: WriteOperationDesc<K, V>,
+    val key: K,
+    val value: V,
+    val callback: (key: K, value: V) -> Unit,
+  ) : WriteOperation
+
+  data class RemovePlain<K, V>(
+    val desc: WriteOperationDesc<K, V>,
+    val key: K,
+    val callback: (key: K) -> Unit,
+  ) : WriteOperation
+
+  data class Barrier(val callback: () -> Unit) : WriteOperation
+
   object BufferShrinkTick : WriteOperation
   object ShutdownPoison : WriteOperation
 }

@@ -27,7 +27,7 @@ interface KVStoreBuilder<B, K, V>
 }
 
 interface SortedKVStore<K, V> : KVStore<K, V> {
-  // TODO:
+  // TODO
 }
 
 interface SortedKVStoreBuilder<B, K, V> : KVStoreBuilder<B, K, V>

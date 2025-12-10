@@ -10,6 +10,8 @@ interface CodecBuffer {
   val size: Int
 
   fun reserve(size: Int)
+  fun flip()
+  fun clear()
 
   fun writeVarInt(value: Int)
   fun writeVarLong(value: Long)
@@ -51,11 +53,14 @@ fun CodecBuffer.writeBoolean(value: Boolean) {
 
 fun CodecBuffer.readBoolean(): Boolean = readInt8() != 0.toByte()
 
-interface WritableOnlyCodecBuffer : CodecBuffer {
+internal interface WritableOnlyCodecBuffer : CodecBuffer {
   override val writable: Boolean
     get() = true
   override val readable: Boolean
     get() = false
+
+  override fun flip(): Unit = error("not supported")
+  override fun clear(): Unit = error("not supported")
 
   override fun readVarInt(): Int = error("not supported")
   override fun readVarLong(): Long = error("not supported")
@@ -66,18 +71,21 @@ interface WritableOnlyCodecBuffer : CodecBuffer {
   override fun readBuffer(size: Int): ByteBuffer = error("not supported")
 }
 
-interface ReadableOnlyCodecBuffer : CodecBuffer {
+internal interface ReadableOnlyCodecBuffer : CodecBuffer {
   override val writable: Boolean
     get() = false
   override val readable: Boolean
     get() = true
 
-  override fun reserve(size: Int) = error("not supported")
-  override fun writeVarInt(value: Int) = error("not supported")
-  override fun writeVarLong(value: Long) = error("not supported")
-  override fun writeInt8(value: Byte) = error("not supported")
-  override fun writeInt32(value: Int) = error("not supported")
-  override fun writeInt64(value: Long) = error("not supported")
-  override fun writeBytes(bytes: ByteArray, offset: Int, length: Int) = error("not supported")
-  override fun writeBuffer(buffer: ByteBuffer) = error("not supported")
+  override fun flip(): Unit = error("not supported")
+  override fun clear(): Unit = error("not supported")
+
+  override fun reserve(size: Int): Unit = error("not supported")
+  override fun writeVarInt(value: Int): Unit = error("not supported")
+  override fun writeVarLong(value: Long): Unit = error("not supported")
+  override fun writeInt8(value: Byte): Unit = error("not supported")
+  override fun writeInt32(value: Int): Unit = error("not supported")
+  override fun writeInt64(value: Long): Unit = error("not supported")
+  override fun writeBytes(bytes: ByteArray, offset: Int, length: Int): Unit = error("not supported")
+  override fun writeBuffer(buffer: ByteBuffer): Unit = error("not supported")
 }
