@@ -205,6 +205,10 @@
                     interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
