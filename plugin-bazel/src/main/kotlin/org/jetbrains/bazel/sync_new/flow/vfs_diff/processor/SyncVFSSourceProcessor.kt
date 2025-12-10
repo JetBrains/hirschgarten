@@ -64,15 +64,21 @@ class SyncVFSSourceProcessor {
 
     val flags = HashMultimap.create<Label, SyncDiffFlags>()
     val contributors = SyncVFSFileContributor.ep.extensionList
-    val changedSources = diff.changed.filter { file ->
-      contributors.any {
-        it.doesFileChangeInvalidateTarget(ctx.project, file.path)
+    val changedSources = if (ctx.scope.build) {
+      diff.changed
+    } else {
+      diff.changed.filter { file ->
+        contributors.any {
+          it.doesFileChangeInvalidateTarget(ctx.project, file.path)
+        }
       }
     }
     val sources = (diff.added + changedSources).map { it.path }
     for ((source, targets) in runInverseSourceQuery(ctx, sources)) {
       for (target in targets) {
-        flags.put(target, SyncDiffFlags.FORCE_INVALIDATION)
+        if (BazelSyncV2.useFileChangeBasedInvalidation || ctx.scope.build) {
+          flags.put(target, SyncDiffFlags.FORCE_INVALIDATION)
+        }
         ctx.storage.source2Target.put(source, target)
         ctx.storage.target2Source.put(target, source)
       }

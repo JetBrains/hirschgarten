@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.flow
 
+import com.google.common.collect.HashMultimap
 import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
@@ -21,17 +22,15 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.flow.hash_diff.SyncHasherService
-import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.universe_expand.SyncExpandService
+import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSService
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.index.SyncIndexService
 import org.jetbrains.bazel.sync_new.index.SyncIndexUpdaterProvider
 import org.jetbrains.bazel.sync_new.lang.SyncLanguagePlugin
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageService
-import org.jetbrains.bazel.sync_new.storage.BazelStorageService
-import org.jetbrains.bazel.sync_new.storage.LifecycleStoreContext
 import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bsp.protocol.RawAspectTarget
 
@@ -65,6 +64,7 @@ class SyncExecutor(
       syncExecutor = this,
       languageService = service<SyncLanguageService>(),
       pathsResolver = project.connection.runWithServer { server -> server.workspaceBazelPaths().bazelPathsResolver },
+      session = SyncSession()
     )
 
     withTask(project, "sync_lifecycle_pre_events", "Executing pre-sync events") {
@@ -123,7 +123,7 @@ class SyncExecutor(
 
   private suspend fun SyncConsoleTask.computeSyncDiff(ctx: SyncContext, scope: SyncScope): SyncDiff {
     val universeDiff = withTask("universe_diff", "Computing universe diff") {
-      project.service<SyncUniverseService>().computeUniverseDiff(scope, SyncProgressReporter(this@withTask))
+      project.service<SyncUniverseService>().computeUniverseDiff(ctx, scope, SyncProgressReporter(this@withTask))
     }
     val vfsDiff = withTask("vfs_diff", "Computing VFS diff") {
       project.service<SyncVFSService>().computeVFSDiff(scope, universeDiff)
@@ -135,6 +135,11 @@ class SyncExecutor(
           .toSet()
         SyncColdDiff(
           changed = changed,
+          flags = HashMultimap.create<Label, SyncDiffFlags>().apply {
+            for (changed in changed) {
+              put(changed, SyncDiffFlags.FORCE_INVALIDATION)
+            }
+          },
         )
       }
 
@@ -256,6 +261,7 @@ class SyncExecutor(
         project = project,
         repoMapping = project.syncRepoMapping,
         targets = targets,
+        build = ctx.scope.build
       )
     }
   }

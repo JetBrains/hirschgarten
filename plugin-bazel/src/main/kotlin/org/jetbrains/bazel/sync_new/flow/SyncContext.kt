@@ -12,5 +12,6 @@ data class SyncContext(
   val graph: BazelFastTargetGraph,
   val syncExecutor: SyncExecutor,
   val languageService: SyncLanguageService,
-  val pathsResolver: BazelPathsResolver
+  val pathsResolver: BazelPathsResolver,
+  val session: SyncSession
 )

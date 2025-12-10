@@ -14,6 +14,7 @@ import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
+import org.jetbrains.bazel.sync_new.util.plus
 
 class SyncExpandProcessor {
   suspend fun process(ctx: SyncExpandContext, diff: SyncColdDiff): SyncColdDiff {
@@ -33,18 +34,18 @@ class SyncExpandProcessor {
     val flags = HashMultimap.create<Label, SyncDiffFlags>()
 
     // invalidate direct reverse dependencies
-    for (removed in diff.removed) {
-      val vertexId = graph.getOrAddVertex(removed)
-      val predecessors = graph.getPredecessors(vertexId)
-      for (n in predecessors.indices) {
-        val predecessorId = predecessors.getInt(n)
-        val predecessorLabel = graph.id2Label.get(predecessorId) ?: continue
-        if (predecessorLabel !in diff.removed) {
-          changed += predecessorLabel
-          flags.put(predecessorLabel, SyncDiffFlags.FORCE_INVALIDATION)
-        }
-      }
-    }
+    //for (removed in diff.removed) {
+    //  val vertexId = graph.getOrAddVertex(removed)
+    //  val predecessors = graph.getPredecessors(vertexId)
+    //  for (n in predecessors.indices) {
+    //    val predecessorId = predecessors.getInt(n)
+    //    val predecessorLabel = graph.id2Label.get(predecessorId) ?: continue
+    //    if (predecessorLabel !in diff.removed) {
+    //      changed += predecessorLabel
+    //      flags.put(predecessorLabel, SyncDiffFlags.FORCE_INVALIDATION)
+    //    }
+    //  }
+    //}
 
     for (changed in (diff.added + diff.changed)) {
       graph.getOrAddVertex(changed)
@@ -108,7 +109,7 @@ class SyncExpandProcessor {
       added = added,
       removed = removed,
       changed = changed,
-      flags = flags
+      flags = flags + diff.flags
     )
   }
 

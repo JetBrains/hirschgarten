@@ -10,19 +10,23 @@ object SyncUniverseImportBuilder {
   suspend fun createUniverseImport(project: Project): SyncUniverseImportState {
     val workspaceContext = LegacyBazelFrontendBridge.fetchWorkspaceContext(project)
     workspaceContext.directories
-    val patterns = workspaceContext.targets.map {
-      when (it) {
-        is ExcludableValue.Excluded<Label> -> SyncUniverseTargetPattern.Exclude(it.value)
-        is ExcludableValue.Included<Label> -> SyncUniverseTargetPattern.Include(it.value)
-      }
-    }
-    val internalRepos = patterns.filterIsInstance<SyncUniverseTargetPattern.Include>()
-      .map { it.label.assumeResolved() }
+    val patterns = workspaceContext.targets.toFilteredCondition()
+    val directories = workspaceContext.directories.toFilteredCondition()
+    val internalRepos = patterns.filterIsInstance<SyncUniverseFilteredCondition.Include<Label>>()
+      .map { it.element.assumeResolved() }
       .map { it.repo.repoName }
       .toSet()
     return SyncUniverseImportState(
       patterns = patterns.toSet(),
+      directories = directories.toSet(),
       internalRepos = internalRepos,
     )
+  }
+
+  private fun <T> List<ExcludableValue<T>>.toFilteredCondition(): List<SyncUniverseFilteredCondition<T>> = this.map {
+    when (it) {
+      is ExcludableValue.Excluded<T> -> SyncUniverseFilteredCondition.Exclude(it.value)
+      is ExcludableValue.Included<T> -> SyncUniverseFilteredCondition.Include(it.value)
+    }
   }
 }

@@ -4,9 +4,11 @@ import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 sealed interface SyncScope {
-  data class Full(val build: Boolean = false) : SyncScope
-  object Incremental : SyncScope
-  data class Partial(val targets: List<PartialTarget>) : SyncScope
+  val build: Boolean
+
+  data class Full(override val build: Boolean = false) : SyncScope
+  data class Incremental(override val build: Boolean = false) : SyncScope
+  data class Partial(val targets: List<PartialTarget>, override val build: Boolean = false) : SyncScope
 
   val isFullSync: Boolean
     get() = this is Full

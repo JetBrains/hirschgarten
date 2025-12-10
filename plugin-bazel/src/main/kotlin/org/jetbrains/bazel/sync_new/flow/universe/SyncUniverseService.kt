@@ -18,6 +18,7 @@ import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.flow.SyncProgressReporter
 import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.SyncScope
@@ -44,7 +45,7 @@ class SyncUniverseService(
   val universe: SyncUniverseState
     get() = universeState.get()
 
-  suspend fun computeUniverseDiff(scope: SyncScope, progress: SyncProgressReporter): SyncColdDiff {
+  suspend fun computeUniverseDiff(ctx: SyncContext, scope: SyncScope, progress: SyncProgressReporter): SyncColdDiff {
     val connector = project.service<BazelConnectorService>().ofLegacyTask()
     if (scope.isFullSync) {
       universeState.reset()
@@ -90,6 +91,10 @@ class SyncUniverseService(
     } else {
       state.repoMapping
     }
+
+    ctx.session.universeChanges = SyncUniverseChanges(
+      hasDirectoriesChanged = oldImportState.directories != newImportState.directories
+    )
 
     universeState.modify {
       it.copy(

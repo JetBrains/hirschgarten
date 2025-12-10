@@ -111,7 +111,7 @@ class ProjectSyncService(
       repoMapping = params.repoMapping,
       targetLabels = params.targets,
       originId = null,
-      build = false,
+      build = params.build,
     )
     return WorkspaceBuildPartialTargetsResult(
       rootTargets = result.rootTargets,

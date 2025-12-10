@@ -12,4 +12,6 @@ object BazelSyncV2 {
   val useFastSource2Label: Boolean = true
 
   val useNewTargetTreeStorage: Boolean = true
+
+  val useFileChangeBasedInvalidation: Boolean = true
 }

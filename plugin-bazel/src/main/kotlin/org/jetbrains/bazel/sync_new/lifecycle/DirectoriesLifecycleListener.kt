@@ -21,11 +21,15 @@ import org.jetbrains.bazel.workspacemodel.entities.NewSyncBazelEntitySource
 import java.nio.file.Path
 
 // legacy ported
-// TODO: recompute only on project view change
 class DirectoriesLifecycleListener : SyncLifecycleListener {
   private val entitySource = NewSyncBazelEntitySource("directories")
 
   override suspend fun onPostSync(ctx: SyncContext, status: SyncStatus, progress: SyncProgressReporter) {
+    val hasDirectoriesChanged = (ctx.session.universeChanges?.hasDirectoriesChanged ?: false)
+      || ctx.scope.isFullSync
+    if (!hasDirectoriesChanged) {
+      return
+    }
     progress.task.withTask("collect_project_dirs", "Collect project directories") {
       val workspaceContext = ctx.project.connection.runWithServer { server -> server.workspaceContext() }
       val pathsResolver = ctx.project.connection.runWithServer { server -> server.workspaceBazelPaths().bazelPathsResolver }

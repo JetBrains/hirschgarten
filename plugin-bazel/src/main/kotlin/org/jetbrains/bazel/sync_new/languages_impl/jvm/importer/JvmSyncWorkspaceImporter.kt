@@ -7,6 +7,7 @@ import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.flow.SyncDiff
 import org.jetbrains.bazel.sync_new.flow.SyncProgressReporter
 import org.jetbrains.bazel.sync_new.flow.SyncStatus
+import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntityRemovalPropagator
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntityStore
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.legacy.LegacyWorkspaceModelApplicator
 import org.jetbrains.bazel.sync_new.pipeline.SyncWorkspaceImporter
@@ -32,29 +33,34 @@ class JvmSyncWorkspaceImporter(
     }
 
     progress.task.withTask("removing_entities", "Pruning old entities") {
-      // TODO: move to IncrementalEntityStore or some util
       val (_, removed) = diff.split
-      val toRemove = mutableSetOf<JvmResourceId>()
-      for (removed in removed) {
-        val target = removed.getBuildTarget() ?: continue
-        val vertexId = JvmResourceId.VertexReference(target.vertexId)
-        toRemove.add(vertexId)
-        toRemove += storage.getTransitiveDependants(vertexId)
-      }
-      val removeQueue = mutableListOf<JvmResourceId>()
-      for (removed in removed) {
-        val target = removed.getBuildTarget() ?: continue
-        val resourceId = JvmResourceId.VertexReference(vertexId = target.vertexId)
-        for (dependency in storage.getTransitiveDependants(resourceId)) {
-          val referrers = storage.getDirectReferrers(dependency).toList()
-          val canBeRemoved = referrers.isEmpty()
-            || referrers.all { it in toRemove }
-          if (canBeRemoved) {
-            removeQueue += dependency
-          }
-        }
-      }
-      removeQueue.forEach { storage.removeEntity(it) }
+      IncrementalEntityRemovalPropagator.remove(
+        store = storage,
+        removed = removed.mapNotNull { it.getBuildTarget() }
+          .map { JvmResourceId.VertexReference(vertexId = it.vertexId) }
+      )
+      // TODO: move to IncrementalEntityStore or some util
+      //val toRemove = mutableSetOf<JvmResourceId>()
+      //for (removed in removed) {
+      //  val target = removed.getBuildTarget() ?: continue
+      //  val vertexId = JvmResourceId.VertexReference(target.vertexId)
+      //  toRemove.add(vertexId)
+      //  toRemove += storage.getTransitiveDependants(vertexId)
+      //}
+      //val removeQueue = mutableListOf<JvmResourceId>()
+      //for (removed in removed) {
+      //  val target = removed.getBuildTarget() ?: continue
+      //  val resourceId = JvmResourceId.VertexReference(vertexId = target.vertexId)
+      //  for (dependency in storage.getTransitiveDependants(resourceId)) {
+      //    val referrers = storage.getDirectReferrers(dependency).toList()
+      //    val canBeRemoved = referrers.isEmpty()
+      //      || referrers.all { it in toRemove }
+      //    if (canBeRemoved) {
+      //      removeQueue += dependency
+      //    }
+      //  }
+      //}
+      //removeQueue.forEach { storage.removeEntity(it) }
     }
 
     computeVertexDepsEntities(diff)
@@ -62,6 +68,8 @@ class JvmSyncWorkspaceImporter(
       JdepsAnalyzer(storage).computeJdepsForChangedTargets(ctx, diff)
     }
     progress.task.withTask("computing_modules", "Computing modules") {
+      GeneratedSourcesProcessor(storage).computeGeneratedSources(ctx, diff)
+      LibraryModuleProcessor(storage).computeLibraryModules(ctx, diff)
       SourceModuleProcessor(project, storage).computeSourceModules(ctx, diff)
     }
     KotlinStdlibProcessor(storage).computeKotlinStdlib(ctx, diff)
