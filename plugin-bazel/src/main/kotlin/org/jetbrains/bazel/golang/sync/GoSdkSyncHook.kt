@@ -1,10 +1,10 @@
-
 package org.jetbrains.bazel.golang.sync
 
 import com.goide.sdk.GoSdk
 import com.goide.sdk.GoSdkService
 import com.goide.sdk.GoSdkUtil
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.application.backgroundWriteAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -55,7 +55,9 @@ class GoSdkSyncHook : ProjectPostSyncHook {
       writeAction {
         filesToReparse.forEach { it.refresh(false, false) }
       }
-      FileContentUtilCore.reparseFiles(filesToReparse)
+      backgroundWriteAction {
+        FileContentUtilCore.reparseFiles(filesToReparse)
+      }
     }
   }
 
