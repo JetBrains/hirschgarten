@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.jvm.run
 
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
-import com.intellij.execution.process.ProcessOutputType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
@@ -48,9 +48,12 @@ suspend fun runWithScriptPath(
   val scriptHandler = OSProcessHandler(commandLine)
   scriptHandler.addProcessListener(
     object : ProcessListener {
+      private val ansiEscapeDecoder = AnsiEscapeDecoder()
+
       override fun onTextAvailable(e: ProcessEvent, outputType: Key<*>) {
-        val type = outputType as? ProcessOutputType ?: ProcessOutputType.STDOUT
-        handler.notifyTextAvailable(e.text, type)
+        ansiEscapeDecoder.escapeText(e.text, outputType) { text, type ->
+          handler.notifyTextAvailable(text, type)
+        }
       }
     },
   )
