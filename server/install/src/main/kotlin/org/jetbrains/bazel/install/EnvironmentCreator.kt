@@ -41,6 +41,7 @@ class EnvironmentCreator(private val projectRootDir: Path) {
   private fun createEmptyBuildFile(dotBazelBspDir: Path) {
     dotBazelBspDir.resolve(Constants.defaultBuildFileName())
       .writeIfDifferent("")
+    dotBazelBspDir.resolve(Constants.WORKSPACE_FILE_NAME).deleteIfExists()
   }
 
   fun createGitIgnoreFile(dotBazelBspDir: Path) {
