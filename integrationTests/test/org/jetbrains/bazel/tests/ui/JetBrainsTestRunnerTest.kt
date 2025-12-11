@@ -40,20 +40,15 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           )
         }
 
-        /*
-        TODO: Test caching doesn't work unless "Test with Bazel" is checked in the run config settings (off by default),
-        setting that checkbox via driver is non-trivial :(
-
-        step("run the same again to check that it's cached") {
+        step("run the same again to check that it is NOT cached because we use --script_path by default") {
           execute { openFile("TestKotlin.kt") }
           clickTestGutterOnLine(8)
 
           verifyTestStatus(
             listOf("1 test passed"),
-            listOf("JUnit Jupiter", "TestKotlin", "interesting#test () (cached)"),
+            listOf("JUnit Jupiter", "TestKotlin", "interesting#test ()"),
           )
         }
-        */
 
         step("open TestJava.java and run the whole class") {
           execute { openFile("TestJava.java") }
@@ -133,6 +128,40 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
       }
     }
+  }
+
+  @Test
+  fun checkTestCaching() {
+    createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
+      // This is required for Bazel test caching!
+      .setTestWithBazel(true)
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        ideFrame {
+          syncBazelProject(buildAndSync = true)
+          waitForIndicators(10.minutes)
+
+          step("open TestKotlin.kt and run TestKotlin.` interesting#test `") {
+            execute { openFile("TestKotlin.kt") }
+            clickTestGutterOnLine(8)
+
+            verifyTestStatus(
+              listOf("1 test passed"),
+              listOf("JUnit Jupiter", "TestKotlin", "interesting#test ()"),
+            )
+          }
+
+          step("run the same again to check that it's cached") {
+            execute { openFile("TestKotlin.kt") }
+            clickTestGutterOnLine(8)
+
+            verifyTestStatus(
+              listOf("1 test passed"),
+              listOf("JUnit Jupiter", "TestKotlin", "interesting#test () (cached)"),
+            )
+          }
+        }
+      }
   }
 
   /**
