@@ -8,9 +8,12 @@ object DebugHelper {
     // https://bazel.build/reference/command-line-reference#flag--java_debug
     "--wrapper_script_flag=--debug=$port"
 
+  fun spawnStrategy(): String =
+    "--spawn_strategy=local"
+
   fun generateRunArguments(debugType: DebugType?): List<String> =
     when (debugType) {
-      is DebugType.JDWP -> listOf(jdwpArgument(debugType.port))
+      is DebugType.JDWP -> listOf(jdwpArgument(debugType.port), spawnStrategy())
       else -> emptyList()
     }
 
