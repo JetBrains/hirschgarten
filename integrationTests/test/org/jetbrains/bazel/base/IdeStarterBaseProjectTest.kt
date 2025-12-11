@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.AfterEach
 import com.intellij.ide.starter.process.ProcessKiller.killProcesses
 import com.intellij.ide.starter.process.getProcessList
+import org.jetbrains.bazel.tests.ui.expandedTree
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
@@ -83,6 +84,8 @@ abstract class IdeStarterBaseProjectTest {
           }
         }
       }
+
+    expandedTree = false
   }
 
   @AfterEach
