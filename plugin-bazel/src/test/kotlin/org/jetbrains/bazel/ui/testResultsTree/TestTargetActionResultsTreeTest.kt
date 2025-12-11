@@ -48,7 +48,6 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
           step("Sync & set up project") {
             syncBazelProject()
             waitForIndicators(5.minutes)
-            execute { enableHotswap() }
             takeScreenshot("afterSync")
           }
 
@@ -93,9 +92,4 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
     addCommand(CMD_PREFIX + "runSimpleKotlinTest")
     return this
   }
-}
-
-private fun <T : CommandChain> T.enableHotswap(): T {
-  addCommand(CMD_PREFIX + "enableHotswap")
-  return this
 }

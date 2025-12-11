@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.jvm.run
 
-import com.intellij.coverage.CoverageExecutor
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.util.Ref
@@ -43,10 +43,10 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
     }
     /**
      * 1. Allow the user to disable --script_path because it screws up test result caching
-     * 2. Tests with coverage must be run with `bazel coverage`, running with --script_path just runs the tests normally
+     * 2. Tests with coverage must be run with `bazel coverage`, because running with --script_path just runs the tests normally
      * 3. Because `bazel run` only supports one target, so does `bazel run --script_path`
      */
-    if (!state.testWithBazel && executor !is CoverageExecutor && configuration.targets.size == 1) {
+    if (((!state.testWithBazel && executor is DefaultRunExecutor) || executor is DefaultDebugExecutor) && configuration.targets.size == 1) {
       environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
       return ScriptPathTestCommandLineState(environment, state)
     }
