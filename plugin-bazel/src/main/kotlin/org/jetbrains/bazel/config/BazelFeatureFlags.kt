@@ -35,7 +35,7 @@ object BazelFeatureFlags {
   private const val FIND_IN_FILES_NON_INDEXABLE = "bazel.find.in.files.non.indexable"
 
   @VisibleForTesting
-  const val RUNCONFIG_TEST_WITH_BAZEL = "bazel.runconfig.test.with.bazel"
+  const val RUN_CONFIG_RUN_WITH_BAZEL = "bazel.run.config.run.with.bazel"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -106,10 +106,15 @@ object BazelFeatureFlags {
   val findInFilesNonIndexable: Boolean
     get() = isEnabled(FIND_IN_FILES_NON_INDEXABLE)
 
-  val runConfigTestWithBazel: Boolean
-    get() = isEnabled(RUNCONFIG_TEST_WITH_BAZEL)
+  val runConfigRunWithBazel: Boolean
+    get() = isEnabled(RUN_CONFIG_RUN_WITH_BAZEL)
 
-  private fun isEnabled(key: String): Boolean = Registry.`is`(key) || System.getProperty(key, "false").toBoolean()
+  private fun isEnabled(key: String): Boolean {
+    System.getProperty(key)?.let { value ->
+      return value.toBooleanStrict()
+    }
+    return Registry.`is`(key)
+  }
 }
 
 object FeatureFlagsProvider {

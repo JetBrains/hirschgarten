@@ -24,6 +24,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
   @Test
   fun openProject() {
     createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
+      .setRunConfigRunWithBazel(false)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
       ideFrame {
@@ -40,7 +41,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           )
         }
 
-        step("run the same again to check that it is NOT cached because we use --script_path by default") {
+        step("run the same again to check that it is NOT cached because we use --script_path in this test") {
           execute { openFile("TestKotlin.kt") }
           clickTestGutterOnLine(8)
 
@@ -134,7 +135,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
   fun checkTestCaching() {
     createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
       // This is required for Bazel test caching!
-      .setTestWithBazel(true)
+      .setRunConfigRunWithBazel(true)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {

@@ -28,11 +28,11 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
 
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
-  fun testTestResultsTree(runTestWithBazel: Boolean) {
+  fun testTestResultsTree(runConfigRunWithBazel: Boolean) {
     val fileName = "SimpleKotlinTest.kt"
 
     createContext("testTargetActionResultsTree", IdeaBazelCases.TestTargetActionResultsTree)
-      .setTestWithBazel(runTestWithBazel)
+      .setRunConfigRunWithBazel(runConfigRunWithBazel)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
