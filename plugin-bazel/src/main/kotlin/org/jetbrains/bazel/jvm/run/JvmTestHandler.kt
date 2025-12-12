@@ -35,7 +35,7 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
   override val name: String
     get() = "Jvm Test Handler"
 
-  override val state = JvmTestState()
+  override val state = JvmTestState(configuration.project)
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     if (executor is DefaultDebugExecutor) {
@@ -46,12 +46,12 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
      * 2. Tests with coverage must be run with `bazel coverage`, because running with --script_path just runs the tests normally
      * 3. Because `bazel run` only supports one target, so does `bazel run --script_path`
      */
-    if (((!state.testWithBazel && executor is DefaultRunExecutor) || executor is DefaultDebugExecutor) && configuration.targets.size == 1) {
+    return if (((!state.runWithBazel && executor is DefaultRunExecutor) || executor is DefaultDebugExecutor) && configuration.targets.size == 1) {
       environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
-      return ScriptPathTestCommandLineState(environment, state)
+      ScriptPathTestCommandLineState(environment, state)
     }
     else {
-      return BazelTestCommandLineState(environment, state)
+      BazelTestCommandLineState(environment, state)
     }
   }
 

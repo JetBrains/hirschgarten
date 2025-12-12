@@ -8,6 +8,7 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/sync/bazelPaths",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/taskEvents",

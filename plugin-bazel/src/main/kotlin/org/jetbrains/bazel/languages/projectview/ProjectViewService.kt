@@ -14,6 +14,7 @@ import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
+import org.jetbrains.bazel.sync.SyncCache
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
@@ -51,6 +52,15 @@ class ProjectViewService(private val project: Project) {
 
     return parseProjectView(projectViewPath)
   }
+
+  private val cachedProjectViewComputable = SyncCache.SyncCacheComputable {
+    getProjectView()
+  }
+
+  /**
+   * Get the cached project view which is reset on every project resync.
+   */
+  fun getCachedProjectView(): ProjectView = SyncCache.getInstance(project).get(cachedProjectViewComputable)
 
   private fun findProjectViewPath(): Path {
     val pathFromSettings = project.bazelProjectSettings.projectViewPath

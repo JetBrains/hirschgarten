@@ -407,9 +407,9 @@
     />
 
     <registryKey
-      defaultValue="false"
-      description="If enabled, sets the default value of &quot;Test with Bazel&quot; to 'true' for new run configurations."
-      key="bazel.runconfig.test.with.bazel"
+      defaultValue="true"
+      description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overriden with a project view flag."
+      key="bazel.run.config.run.with.bazel"
       restartRequired="false"
     />
 
