@@ -71,4 +71,3 @@ private fun findKotlinFqnByShortName(project: Project, scope: GlobalSearchScope,
 
 private fun invokeDefaultJavaLocator(protocol: String, fqn: String?, project: Project, scope: GlobalSearchScope): List<Location<*>?> =
   (fqn?.let { JavaTestLocator.INSTANCE.getLocation(protocol, it, project, scope) } ?: emptyList())
-    .also { if (it.isNotEmpty()) println("Something found for $fqn") else println("No results for $fqn") }
