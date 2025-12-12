@@ -32,7 +32,7 @@ class SyncVFSListener(
   // TODO: too many changes threshold
   // TODO: should I also persist this map???
   val file2State: KVStore<Path, SyncFileState> =
-    project.storageContext.createKVStore<Path, SyncFileState>("bazel.sync.vfs_diff.file2State", StorageHints.USE_PAGED_STORE)
+    project.storageContext.createKVStore<Path, SyncFileState>("bazel.sync.vfs_diff.file2State", StorageHints.USE_IN_MEMORY)
       .withKeyCodec { ofPath() }
       .withValueCodec { ofKryo() }
       .build()

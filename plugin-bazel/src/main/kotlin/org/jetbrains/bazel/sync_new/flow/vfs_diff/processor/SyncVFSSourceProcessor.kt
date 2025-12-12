@@ -87,7 +87,7 @@ class SyncVFSSourceProcessor {
 
     return SyncColdDiff(
       changed = changed,
-      flags = flags
+      flags = flags,
     )
   }
 
@@ -120,11 +120,15 @@ class SyncVFSSourceProcessor {
 
     // query: rdeps(<unique packages>, <source files as labels>)
     val rdepsExpr = sourceLabels.joinToString(separator = " + ") { it.toString() }
+    val rdepsUniverse = uniquePredecessorLabels.joinToString(separator = " ") { it.toString() }
 
     return runSourceMapQuery(ctx) {
-      noOrderOutput()
-      universeScope(uniquePredecessorLabels.map { it.toString() })
-      query("allrdeps($rdepsExpr, 1)")
+      consistentLabels()
+      if (BazelSyncV2.useSkyQueryForInverseSourceQueries) {
+        noOrderOutput()
+        universeScope(uniquePredecessorLabels.map { it.toString() })
+      }
+      query("rdeps(set($rdepsUniverse), $rdepsExpr, 1)")
     }
   }
 
@@ -134,12 +138,16 @@ class SyncVFSSourceProcessor {
     if (sourceLabels.isEmpty()) {
       return emptyMap()
     }
-    val rdepsExpr = sourceLabels.joinToString(separator = " + ") { it.toString() }
     val universe = ctx.project.service<SyncUniverseService>().universe
+    val rdepsExpr = sourceLabels.joinToString(separator = " + ") { it.toString() }
+    val rdepsUniverse = SyncUniverseQuery.createUniverseQuery(universe.importState.patterns)
     return runSourceMapQuery(ctx) {
-      noOrderOutput()
-      universeScope(SyncUniverseQuery.createSkyQueryUniverseScope(universe.importState.patterns))
-      query("allrdeps($rdepsExpr, 1)")
+      consistentLabels()
+      if (BazelSyncV2.useSkyQueryForInverseSourceQueries) {
+        noOrderOutput()
+        universeScope(SyncUniverseQuery.createSkyQueryUniverseScope(universe.importState.patterns))
+      }
+      query("rdeps($rdepsUniverse, $rdepsExpr, 1)")
     }
   }
 

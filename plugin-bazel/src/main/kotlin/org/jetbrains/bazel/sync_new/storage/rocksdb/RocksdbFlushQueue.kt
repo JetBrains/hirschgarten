@@ -1,0 +1,195 @@
+package org.jetbrains.bazel.sync_new.storage.rocksdb
+
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList
+import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
+import org.rocksdb.RocksDB
+import org.rocksdb.WriteBatch
+import org.rocksdb.WriteOptions
+import java.util.Queue
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.thread
+
+class RocksdbFlushQueue(
+  private val db: RocksDB,
+  private val disposable: Disposable,
+) : Disposable {
+  companion object {
+    private const val QUEUE_POLL_TIMEOUT = 100L
+    private const val FLUSH_BATCH_SIZE = 1024
+
+    private val WRITE_OPTIONS: WriteOptions = WriteOptions()
+      .setSync(false)
+      .setDisableWAL(true)
+  }
+
+  private val queue: BlockingMWSRCoalescingQueue<FlushOperation> = object : BlockingMWSRCoalescingQueue<FlushOperation>() {
+    override fun isCoalescingSupported(value: FlushOperation?): Boolean {
+      return value is FlushOperation.FlushDirty<*, *>
+    }
+  }
+  private val running: AtomicBoolean = AtomicBoolean(true)
+  private val shutdownLatch = CountDownLatch(1)
+  private val tlsKeyBuffer: RocksdbThreadLocalBufferPool = RocksdbThreadLocalBufferPool(initialSize = 256)
+  private val tlsValueBuffer: RocksdbThreadLocalBufferPool = RocksdbThreadLocalBufferPool(initialSize = 1024 * 1024)
+
+  init {
+    val thread = Thread { task() }
+    thread.name = "bazel rocksdb flush queue"
+    thread.start()
+    Disposer.register(disposable, this)
+  }
+
+  fun enqueue(operation: FlushOperation) {
+    queue.offer(operation)
+  }
+
+  private fun task() {
+    val batch = ReferenceArrayList<FlushOperation>(FLUSH_BATCH_SIZE)
+    while (running.get()) {
+      try {
+        val operation = queue.take(QUEUE_POLL_TIMEOUT, TimeUnit.MILLISECONDS)
+        if (operation == null) {
+          if (handleBatch(batch)) {
+            break
+          }
+          batch.clear()
+        }
+        queue.drainTo(batch, FLUSH_BATCH_SIZE - batch.size)
+        if (operation != null) {
+          batch.add(operation)
+        }
+        if (batch.size >= FLUSH_BATCH_SIZE) {
+          if (handleBatch(batch)) {
+            break
+          }
+          batch.clear()
+        }
+      } catch (ex: Throwable) {
+        ex.printStackTrace()
+      } catch (_: InterruptedException) {
+        Thread.currentThread().interrupt()
+        break
+      }
+    }
+    handleBatch(batch)
+    shutdownLatch.countDown()
+  }
+
+  private fun handleBatch(batch: ReferenceArrayList<FlushOperation>): Boolean {
+    val operationByStore = Reference2ObjectLinkedOpenHashMap<RocksdbKVStore<*, *>, ArrayDeque<FlushOperation>>()
+    var shutdown = false
+    for (operation in batch) {
+      when (operation) {
+        is FlushOperation.Barrier<*, *> -> {
+          operationByStore.computeIfAbsent(operation.store) { ArrayDeque() }.add(operation)
+        }
+
+        is FlushOperation.FlushDirty<*, *> -> {
+          operationByStore.computeIfAbsent(operation.store) { ArrayDeque() }.add(operation)
+        }
+
+        FlushOperation.Shutdown -> shutdown = true
+      }
+    }
+    for ((store, ops) in operationByStore) {
+      handleStoreBatch(store, ops)
+    }
+    return shutdown
+  }
+
+  private fun <K : Any, V : Any> handleStoreBatch(store: RocksdbKVStore<K, V>, operations: ArrayDeque<FlushOperation>) {
+    WriteBatch().use { batch ->
+      while (operations.isNotEmpty()) {
+        val operation = operations.removeFirst()
+        when (operation) {
+          is FlushOperation.Barrier<*, *> -> {
+            operation as FlushOperation.Barrier<K, V>
+            handleStoreBatch(operation.store, operations)
+            operation.callback()
+            break
+          }
+
+          is FlushOperation.FlushDirty<*, *> -> {
+            operation as FlushOperation.FlushDirty<K, V>
+            val state = store.consumeKeyState(operation.key)
+            when (state) {
+              is KeyState.Added<K, V> -> {
+                val keyBuffer = tlsKeyBuffer.use { buffer ->
+                  store.keyCodec.encode(UnsafeCodecContext, buffer, operation.key)
+                  buffer.flip()
+                  buffer
+                }
+                val valueBuffer = tlsValueBuffer.use { buffer ->
+                  store.valueCodec.encode(UnsafeCodecContext, buffer, state.value)
+                  buffer.flip()
+                  buffer
+                }
+
+                batch.put(store.cfHandle, keyBuffer.buffer, valueBuffer.buffer)
+              }
+
+              is KeyState.Evicted<K, V> -> {
+                val keyBuffer = tlsKeyBuffer.use { buffer ->
+                  store.keyCodec.encode(UnsafeCodecContext, buffer, operation.key)
+                  buffer.flip()
+                  buffer
+                }
+                val valueBuffer = tlsValueBuffer.use { buffer ->
+                  store.valueCodec.encode(UnsafeCodecContext, buffer, state.value)
+                  buffer.flip()
+                  buffer
+                }
+
+                batch.put(store.cfHandle, keyBuffer.buffer, valueBuffer.buffer)
+              }
+
+              is KeyState.Removed<K, V> -> {
+                val keyBuffer = tlsKeyBuffer.use { buffer ->
+                  store.keyCodec.encode(UnsafeCodecContext, buffer, operation.key)
+                  buffer.flip()
+                  buffer
+                }
+
+                batch.delete(store.cfHandle, keyBuffer.buffer)
+              }
+            }
+          }
+
+          else -> {}
+        }
+      }
+      db.write(WRITE_OPTIONS, batch)
+    }
+  }
+
+  private fun shutdown(time: Long, unit: TimeUnit): Boolean {
+    if (!running.compareAndSet(true, false)) {
+      return true
+    }
+    queue.offer(FlushOperation.Shutdown)
+    return shutdownLatch.await(time, unit)
+  }
+
+  override fun dispose() {
+    shutdown(1, TimeUnit.MINUTES)
+  }
+}
+
+sealed interface FlushOperation {
+  data class FlushDirty<K : Any, V : Any>(
+    val store: RocksdbKVStore<K, V>,
+    val key: K,
+  ) : FlushOperation
+
+  data class Barrier<K : Any, V : Any>(
+    val store: RocksdbKVStore<K, V>,
+    val callback: () -> Unit,
+  ) : FlushOperation
+
+  data object Shutdown : FlushOperation
+}

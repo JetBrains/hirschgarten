@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync_new.storage.rocksdb
 
 import com.github.benmanes.caffeine.cache.Caffeine
+import com.github.benmanes.caffeine.cache.RemovalCause
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.codec.Codec
@@ -11,9 +12,6 @@ import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.ColumnFamilyHandle
 import org.rocksdb.ReadOptions
 import org.rocksdb.RocksDB
-import org.rocksdb.WriteBatch
-import org.rocksdb.WriteBatchWithIndex
-import org.rocksdb.WriteOptions
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -23,10 +21,10 @@ import java.util.concurrent.locks.StampedLock
 // TODO: handle queue offer timeouts properly, retries etc
 class RocksdbKVStore<K : Any, V : Any>(
   private val db: RocksDB,
-  private val cfHandle: ColumnFamilyHandle,
-  private val keyCodec: Codec<K>,
-  private val valueCodec: Codec<V>,
-  private val writeQueue: RocksdbWriteQueue,
+  internal val cfHandle: ColumnFamilyHandle,
+  internal val keyCodec: Codec<K>,
+  internal val valueCodec: Codec<V>,
+  private val flushQueue: RocksdbFlushQueue,
   private val disposable: Disposable,
 ) : KVStore<K, V>, Disposable {
 
@@ -52,38 +50,35 @@ class RocksdbKVStore<K : Any, V : Any>(
     private val VALUE_BUFFER_POOL = RocksdbThreadLocalBufferPool(initialSize = 4096)
   }
 
-  private data class PendingOp<V>(
-    val kind: PendingOpKind,
-    val value: V?,
-  )
-
-  private enum class PendingOpKind {
-    WRITE, DELETE
-  }
-
   private val cache = Caffeine.newBuilder()
     .softValues()
     .executor { it.run() }
+    .evictionListener<K, V> { k, v, cause ->
+      if (k == null || v == null) {
+        return@evictionListener
+      }
+      when (cause) {
+        RemovalCause.COLLECTED, RemovalCause.EXPIRED, RemovalCause.SIZE -> {
+          evictedQueue[k] = v
+          flushQueue.enqueue(FlushOperation.FlushDirty(this, k))
+        }
+
+        else -> { /* noop */
+        }
+      }
+    }
     .build<K, V?>()
 
   private val clearLock = Any()
 
-  private val writeOpDesc: WriteOperationDesc<K, V> = WriteOperationDesc(db, cfHandle, keyCodec, valueCodec)
-  private val pendingOps: ConcurrentMap<K, PendingOp<V>> = ConcurrentHashMap()
   private val computeLocks: ConcurrentMap<K, StampedLock> = ConcurrentHashMap()
+  private val evictedQueue: ConcurrentMap<K, V> = ConcurrentHashMap()
 
   init {
     Disposer.register(disposable, this)
   }
 
   override fun get(key: K): V? {
-    val pending = pendingOps[key]
-    if (pending != null) {
-      return when (pending.kind) {
-        PendingOpKind.WRITE -> pending.value!!
-        PendingOpKind.DELETE -> null
-      }
-    }
     return cache.get(key) { k ->
       val keyBuffer = KEY_BUFFER_POOL.use { buffer ->
         keyCodec.encode(UnsafeCodecContext, buffer, k)
@@ -117,39 +112,12 @@ class RocksdbKVStore<K : Any, V : Any>(
 
   override fun put(key: K, value: V) {
     cache.put(key, value)
-    pendingOps[key] = PendingOp(PendingOpKind.WRITE, value)
-    val operation = WriteOperation.WritePlain(
-      desc = writeOpDesc,
-      key = key,
-      value = value,
-      callback = { k, _ ->
-        pendingOps.compute(k) { _, v ->
-          if (v == null) {
-            null
-          } else {
-            if (v.kind == PendingOpKind.WRITE && v.value == null) {
-              null
-            } else {
-              v
-            }
-          }
-        }
-      },
-    )
-    this.writeQueue.enqueue(operation)
+    flushQueue.enqueue(FlushOperation.FlushDirty(this, key))
   }
 
   override fun contains(key: K): Boolean {
     if (cache.getIfPresent(key) != null) {
       return true
-    }
-
-    val pending = pendingOps[key]
-    if (pending != null) {
-      return when (pending.kind) {
-        PendingOpKind.WRITE -> true
-        PendingOpKind.DELETE -> false
-      }
     }
 
     val keyBuffer = KEY_BUFFER_POOL.use { buffer ->
@@ -174,37 +142,20 @@ class RocksdbKVStore<K : Any, V : Any>(
     } else {
       null
     }
+    evictedQueue.remove(key)
     cache.invalidate(key)
-    pendingOps[key] = PendingOp(PendingOpKind.DELETE, value)
-    val operation = WriteOperation.RemovePlain(
-      desc = writeOpDesc,
-      key = key,
-      callback = { k ->
-        pendingOps.compute(k) { _, v ->
-          if (v == null) {
-            null
-          } else {
-            if (v.kind == PendingOpKind.DELETE) {
-              null
-            } else {
-              v
-            }
-          }
-        }
-      },
-    )
-    this.writeQueue.enqueue(operation)
+    flushQueue.enqueue(FlushOperation.FlushDirty(this, key))
     return value
   }
 
   override fun clear() {
     synchronized(clearLock) {
       val latch = CountDownLatch(1)
-      writeQueue.enqueue(WriteOperation.Barrier { latch.countDown() })
+      flushQueue.enqueue(FlushOperation.Barrier(this) { latch.countDown() })
       latch.await()
       cache.invalidateAll()
       computeLocks.clear()
-      pendingOps.clear()
+      evictedQueue.clear()
       val (start, end) = db.newIterator(cfHandle).use { iter ->
         iter.seekToFirst()
         if (iter.isValid) {
@@ -234,32 +185,24 @@ class RocksdbKVStore<K : Any, V : Any>(
       while (iter.isValid) {
         val keyBuffer = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(iter.key()))
         val key = keyCodec.decode(UnsafeCodecContext, keyBuffer)
-
-        if (pendingOps[key] == null) {
-          yielded += key
-
-          val existingValue = cache.getIfPresent(key)
-          if (existingValue == null) {
-            val valueBuffer = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(iter.value()))
-            val value = valueCodec.decode(UnsafeCodecContext, valueBuffer)
-            cache.put(key, value)
-            yield(key to value)
-          } else {
-            yield(key to existingValue)
-          }
+        yielded += key
+        val existingValue = cache.getIfPresent(key)
+        if (existingValue == null) {
+          val valueBuffer = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(iter.value()))
+          val value = valueCodec.decode(UnsafeCodecContext, valueBuffer)
+          cache.put(key, value)
+          yield(key to value)
+        } else {
+          yield(key to existingValue)
         }
         iter.next()
       }
     }
-    for ((key, op) in pendingOps) {
+    for ((key, value) in cache.asMap().entries) {
       if (yielded.contains(key)) {
         continue
       }
-      when (op.kind) {
-        PendingOpKind.WRITE -> yield(Pair(key, op.value!!))
-        PendingOpKind.DELETE -> { /* noop */
-        }
-      }
+      yield(key to value)
     }
   }
 
@@ -323,6 +266,22 @@ class RocksdbKVStore<K : Any, V : Any>(
       computeLocks.remove(key)
     }
   }
+
+  internal fun consumeKeyState(key: K): KeyState<K, V> {
+    val cachedValue = cache.getIfPresent(key)
+    val evictedValue = evictedQueue.remove(key)
+    return when {
+      evictedValue != null && cachedValue == null -> KeyState.Evicted(evictedValue)
+      cachedValue == null -> KeyState.Removed(key)
+      else -> KeyState.Added(cachedValue)
+    }
+  }
+}
+
+sealed interface KeyState<K, V> {
+  data class Added<K, V>(val value: V) : KeyState<K, V>
+  data class Removed<K, V>(val key: K) : KeyState<K, V>
+  data class Evicted<K, V>(val value: V) : KeyState<K, V>
 }
 
 class RocksdbKVStoreBuilder<K : Any, V : Any>(
@@ -336,7 +295,7 @@ class RocksdbKVStoreBuilder<K : Any, V : Any>(
       cfHandle = owner.createColumnFamily(name),
       keyCodec = keyCodec ?: error("Key codec must be specified"),
       valueCodec = valueCodec ?: error("Value codec must be specified"),
-      writeQueue = owner.writeQueue,
+      flushQueue = owner.flushQueue,
       disposable = disposable,
     )
   }
