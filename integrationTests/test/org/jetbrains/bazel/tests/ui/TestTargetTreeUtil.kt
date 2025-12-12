@@ -56,6 +56,6 @@ private fun List<UiText>.filterRelevant() =
     .map { it.text }
     .filter { " sec" !in it && " ms" !in it && it != "Test Results" }
 
-fun IDETestContext.setTestWithBazel(runTestWithBazel: Boolean): IDETestContext = applyVMOptionsPatch {
-  addSystemProperty(BazelFeatureFlags.RUNCONFIG_TEST_WITH_BAZEL, runTestWithBazel.toString())
+fun IDETestContext.setRunConfigRunWithBazel(runTestWithBazel: Boolean): IDETestContext = applyVMOptionsPatch {
+  addSystemProperty(BazelFeatureFlags.RUN_CONFIG_RUN_WITH_BAZEL, runTestWithBazel.toString())
 }

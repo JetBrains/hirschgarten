@@ -6,36 +6,35 @@ import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.execution.ui.SettingsEditorFragmentType
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
-import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
-import com.intellij.openapi.externalSystem.service.ui.util.SettingsFragmentInfo
 import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.ui.PortField
-import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.xmlb.annotations.Attribute
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.runConfigRunWithBazel
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
+import org.jetbrains.bazel.run.state.HasRunWithBazel
 import org.jetbrains.bazel.run.state.addEnvironmentFragment
+import org.jetbrains.bazel.run.state.addRunWithBazelFragment
 import org.jetbrains.bazel.run.state.addTestFilterFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
-import javax.swing.JCheckBox
 
-class JvmTestState :
+class JvmTestState(project: Project) :
   AbstractGenericTestState<JvmTestState>(),
   HasDebugPort,
-  HasTestWithBazel {
+  HasRunWithBazel {
   @com.intellij.configurationStore.Property(description = "Debug port")
   @get:Attribute("debugPort")
   override var debugPort: Int by property(5005)
 
-  @com.intellij.configurationStore.Property(description = "Test with Bazel")
-  @get:Attribute("testWithBazel")
-  override var testWithBazel: Boolean by property(BazelFeatureFlags.runConfigTestWithBazel)
+  @com.intellij.configurationStore.Property(description = "Run with Bazel")
+  @get:Attribute("runWithBazel")
+  override var runWithBazel: Boolean by property(ProjectViewService.getInstance(project).getCachedProjectView().runConfigRunWithBazel)
 
   override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<JvmTestState> = JvmTestStateEditor(configuration)
 }
@@ -50,7 +49,7 @@ class JvmTestStateEditor(private val config: BazelRunConfiguration) :
       addTestFilterFragment()
       add(programArgumentsFragment())
       addEnvironmentFragment()
-      addTestWithBazelFragment()
+      addRunWithBazelFragment()
     }
 }
 
@@ -75,31 +74,3 @@ fun <C : HasDebugPort> SettingsEditorFragmentContainer<C>.addDebugPortFragment()
     { state, component -> component.number = state.debugPort },
     { state, component -> state.debugPort = component.number },
   )
-
-interface HasTestWithBazel {
-  var testWithBazel: Boolean
-}
-
-private fun <C : HasTestWithBazel> SettingsEditorFragmentContainer<C>.addTestWithBazelFragment(): SettingsEditorFragment<C, DialogPanel> {
-  val checkBox = JCheckBox(BazelPluginBundle.message("runconfig.test.with.bazel"))
-  return addSettingsEditorFragment(
-    object : SettingsFragmentInfo {
-      override val settingsName: String = "Test with Bazel"
-      override val settingsId: String = settingsName
-      override val settingsGroup = settingsName
-      override val settingsPriority: Int = 1
-      override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
-      override val settingsHint: String? = null
-      override val settingsActionHint: String? = null
-    },
-    {
-      panel {
-        row {
-          cell(checkBox).contextHelp(BazelPluginBundle.message("runconfig.test.with.bazel.hint"))
-        }
-      }
-    },
-    { state, _ -> checkBox.isSelected = state.testWithBazel },
-    { state, _ -> state.testWithBazel = checkBox.isSelected },
-  )
-}
