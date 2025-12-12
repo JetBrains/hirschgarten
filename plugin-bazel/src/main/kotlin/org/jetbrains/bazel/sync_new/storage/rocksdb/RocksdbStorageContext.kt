@@ -72,7 +72,7 @@ class RocksdbStorageContext(
   private val lock: Any = Any()
   private val columnFamilyCache: MutableMap<String, ColumnFamilyHandle> = mutableMapOf()
   internal val db: RocksDB
-  internal val writeQueue: RocksdbWriteQueue
+  internal val flushQueue: RocksdbFlushQueue
   private val storages: MutableMap<FlatPersistentStore, FlatStorageHandler> = mutableMapOf()
   private val inMemoryColumn: ColumnFamilyHandle
 
@@ -134,7 +134,7 @@ class RocksdbStorageContext(
     for (handle in cfHandles) {
       columnFamilyCache[handle.name.decodeToString()] = handle
     }
-    writeQueue = RocksdbWriteQueue(project = project, disposable = disposable)
+    flushQueue = RocksdbFlushQueue(db = db, disposable = disposable)
     inMemoryColumn = createColumnFamily("IN_MEMORY_STORE")
     Disposer.register(disposable, this)
   }
@@ -267,7 +267,6 @@ class RocksdbStorageContext(
 
   override fun dispose() {
     save(force = true)
-    Disposer.dispose(writeQueue)
     inMemoryColumn.close()
     db.close()
     storages.clear()
