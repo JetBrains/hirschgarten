@@ -103,7 +103,7 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
 
   override fun getId(): Key<Task> = PROVIDER_ID
 
-  override fun getName(): String = BazelPluginBundle.message("runconfig.script.path.before.run.task.name")
+  override fun getName(): String = BazelPluginBundle.message("console.task.build.title")
 
   class Task : BeforeRunTask<Task>(PROVIDER_ID)
 }
