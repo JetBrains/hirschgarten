@@ -42,7 +42,8 @@ object InverseSourcesQuery {
   private fun prepareFileLabelQuery(files: List<Path>, bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): BazelCommand =
     bazelRunner.buildBazelCommand(workspaceContext) {
       fileQuery(files) {
-        options.addAll(commonQueryFlags)
+        options.add(BazelFlag.OutputFormat.streamed_proto())
+        options.add(BazelFlag.keepGoing())
       }
     }
 
@@ -52,20 +53,15 @@ object InverseSourcesQuery {
     bazelRunner: BazelRunner,
     workspaceContext: WorkspaceContext,
   ): BazelCommand {
-    val useAllDeps = true // ABU - inline (remove false branches)
     val universe = generateUniverse(fileLabels)
     val targets = fileLabels.joinToString(separator = " + ")
-    val expression = when (useAllDeps) {
-      true -> "allrdeps($targets, 1)"
-      false -> "rdeps($universe, $targets, 1)"
-    }
+    val expression = "allrdeps($targets, 1)"
     return bazelRunner.buildBazelCommand(workspaceContext) {
       queryExpression(expression) {
-        options.addAll(commonQueryFlags)
-        if (useAllDeps) {
-          options.add("--universe_scope=$universe")
-          options.add("--order_output=no")
-        }
+        options.add(BazelFlag.OutputFormat.streamed_proto())
+        options.add(BazelFlag.keepGoing())
+        options.add(BazelFlag.orderOutput(false))
+        options.add(BazelFlag.universeScope(universe))
       }
     }
   }
@@ -80,7 +76,7 @@ object InverseSourcesQuery {
     val bazelProcess = bazelRunner.runBazelCommand(this, serverPidFuture = null, logProcessOutput = false) // ABU - what if log is enabled??
     val inputStream = bazelProcess.process.inputStream
     val processOutput = generateSequence { Build.Target.parseDelimitedFrom(inputStream) }
-    bazelProcess.process.awaitExit() // ABU - will this break things?
+    bazelProcess.process.awaitExit()
     return processOutput.toList()
   }
 
@@ -107,10 +103,8 @@ object InverseSourcesQuery {
       ?: emptyList()
 
   private fun String.dropLineAndColumn(): String =
-    substringBeforeLast(':').substringBeforeLast(':') // ABU - will path:123:456 always look like that?
+    substringBeforeLast(':').substringBeforeLast(':')
 }
-
-private val commonQueryFlags = listOf(BazelFlag.OutputFormat.streamed_proto(), BazelFlag.keepGoing())
 
 private fun <A, B> reverseMap(
   original: Map<A, List<B>>,
