@@ -23,12 +23,34 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.isBrokenBazelProject
+import java.nio.file.Path
 
 class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   companion object {
     // See https://youtrack.jetbrains.com/issue/BAZEL-1500. Broken projects are handled by OpenBrokenBazelProjectStartupActivity already.
     val Project.isLinkedBazelProject: Boolean
       get() = isBazelProject || isBrokenBazelProject
+
+    /**
+     * Closes the current project and reopens it as a Bazel project.
+     * Must be called from application-level scope (use [BazelApplicationCoroutineScopeService.launch]).
+     */
+    internal suspend fun closeAndReopenAsBazelProject(project: Project, file: Path) {
+      val projectManager = serviceAsync<ProjectManager>()
+      withContext(Dispatchers.EDT) {
+        projectManager.closeAndDispose(project)
+      }
+
+      ProjectUtil.openOrImportAsync(
+        file = file,
+        options = OpenProjectTask {
+          runConfigurators = true
+          isNewProject = true
+          useDefaultProjectAsTemplate = true
+          forceOpenInNewFrame = true
+        },
+      )
+    }
   }
 
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
@@ -40,31 +62,16 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
     project.isLinkedBazelProject
 
   override suspend fun linkAndLoadProjectAsync(project: Project, externalProjectPath: String) {
-    serviceAsync<ApplicationService>().launch {
-      val projectManager = serviceAsync<ProjectManager>()
-      withContext(Dispatchers.EDT) {
-        projectManager.closeAndDispose(project)
-      }
+    val service = serviceAsync<BazelApplicationCoroutineScopeService>()
+    service.launch {
+      val file = readAction {
+        LocalFileSystem.getInstance()
+          .findFileByPath(externalProjectPath)
+          ?.children
+          ?.firstOrNull { isBuildFile(project, it) }
+      }?.toNioPath()!!
 
-      val file =
-        readAction {
-          LocalFileSystem
-            .getInstance()
-            .findFileByPath(externalProjectPath)
-            ?.children
-            ?.firstOrNull { isBuildFile(project, it) }
-        }?.toNioPath()!!
-
-      ProjectUtil.openOrImportAsync(
-        file = file,
-        options =
-          OpenProjectTask {
-            runConfigurators = true
-            isNewProject = true
-            useDefaultProjectAsTemplate = true
-            forceOpenInNewFrame = true
-          },
-      )
+      closeAndReopenAsBazelProject(project, file)
     }
   }
 
@@ -81,12 +88,17 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   ) {
   }
 
-  @Service(Service.Level.APP)
-  private class ApplicationService(private val coroutineScope: CoroutineScope) {
-    fun launch(block: suspend CoroutineScope.() -> Unit): Job =
-      coroutineScope.launch(
-        start = CoroutineStart.UNDISPATCHED,
-        block = block,
-      )
-  }
+}
+
+/**
+ * Application-level coroutine scope service for operations that must survive project closure.
+ * Use this when you need to close a project and then open another one.
+ */
+@Service(Service.Level.APP)
+internal class BazelApplicationCoroutineScopeService(private val coroutineScope: CoroutineScope) {
+  fun launch(block: suspend CoroutineScope.() -> Unit): Job =
+    coroutineScope.launch(
+      start = CoroutineStart.UNDISPATCHED,
+      block = block,
+    )
 }
