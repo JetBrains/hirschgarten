@@ -187,6 +187,35 @@ switched_rules.use_languages(
     java = True,
 )
 
+# grpc-java, grpc, abseil-cpp and re2 overrides adress BAZEL-2571
+# grpc-java@1.66.0 (pulled via googleapis-grpc-java) expects repos from grpc extensions
+# that newer grpc versions don't provide. Upgrade to 1.75.0 which declares them directly.
+single_version_override(
+    module_name = "grpc-java",
+    version = "1.75.0",
+)
+
+# grpc@1.66.0 (pulled via grpc-java) uses deprecated com_google_googleapis_imports
+# from switched_rules, which newer go`ogleapis versions don't generate.
+# grpc 1.69.0 is the version that grpc-java 1.75.0 depends on.
+single_version_override(
+    module_name = "grpc",
+    version = "1.69.0",
+)
+
+# abseil-cpp 20240722.0 uses deprecated cc_configure_extension API.
+# Upgrade to a version compatible with modern Bazel.
+single_version_override(
+    module_name = "abseil-cpp",
+    version = "20250127.1",
+)
+
+# re2 2024-07-02 uses deprecated cc_configure_extension API.
+single_version_override(
+    module_name = "re2",
+    version = "2025-08-12.bcr.1",
+)
+
 bazel_dep(name = "rules_apple", version = "3.20.1")
 
 # Needed because googleapis transitively pulls in a broken version

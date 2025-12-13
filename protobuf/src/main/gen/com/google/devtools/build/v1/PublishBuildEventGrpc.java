@@ -4,9 +4,6 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 /**
  */
-@javax.annotation.Generated(
-    value = "by gRPC proto compiler",
-    comments = "Source: google/devtools/build/v1/publish_build_event.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class PublishBuildEventGrpc {
 
@@ -89,6 +86,21 @@ public final class PublishBuildEventGrpc {
         }
       };
     return PublishBuildEventStub.newStub(factory, channel);
+  }
+
+  /**
+   * Creates a new blocking-style stub that supports all types of calls on the service
+   */
+  public static PublishBuildEventBlockingV2Stub newBlockingV2Stub(
+      io.grpc.Channel channel) {
+    io.grpc.stub.AbstractStub.StubFactory<PublishBuildEventBlockingV2Stub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<PublishBuildEventBlockingV2Stub>() {
+        @java.lang.Override
+        public PublishBuildEventBlockingV2Stub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new PublishBuildEventBlockingV2Stub(channel, callOptions);
+        }
+      };
+    return PublishBuildEventBlockingV2Stub.newStub(factory, channel);
   }
 
   /**
@@ -186,6 +198,39 @@ public final class PublishBuildEventGrpc {
 
   /**
    * A stub to allow clients to do synchronous rpc calls to service PublishBuildEvent.
+   */
+  public static final class PublishBuildEventBlockingV2Stub
+      extends io.grpc.stub.AbstractBlockingStub<PublishBuildEventBlockingV2Stub> {
+    private PublishBuildEventBlockingV2Stub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+      super(channel, callOptions);
+    }
+
+    @java.lang.Override
+    protected PublishBuildEventBlockingV2Stub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+      return new PublishBuildEventBlockingV2Stub(channel, callOptions);
+    }
+
+    /**
+     */
+    public com.google.protobuf.Empty publishLifecycleEvent(com.google.devtools.build.v1.PublishLifecycleEventRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getPublishLifecycleEventMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/10918")
+    public io.grpc.stub.BlockingClientCall<com.google.devtools.build.v1.PublishBuildToolEventStreamRequest, com.google.devtools.build.v1.PublishBuildToolEventStreamResponse>
+        publishBuildToolEventStream() {
+      return io.grpc.stub.ClientCalls.blockingBidiStreamingCall(
+          getChannel(), getPublishBuildToolEventStreamMethod(), getCallOptions());
+    }
+  }
+
+  /**
+   * A stub to allow clients to do limited synchronous rpc calls to service PublishBuildEvent.
    */
   public static final class PublishBuildEventBlockingStub
       extends io.grpc.stub.AbstractBlockingStub<PublishBuildEventBlockingStub> {
