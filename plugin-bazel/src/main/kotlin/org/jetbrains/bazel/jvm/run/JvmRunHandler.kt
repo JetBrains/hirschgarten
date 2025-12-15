@@ -82,6 +82,15 @@ class RunScriptPathCommandLineState(environment: ExecutionEnvironment, val setti
     handler: BazelProcessHandler,
   ) {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
-    runWithScriptPath(scriptPath, environment.project, originId, pidDeferred, handler, settings.env.envs)
+    runWithScriptPath(
+      scriptPath,
+      environment.project,
+      originId,
+      pidDeferred,
+      handler,
+      settings.env.envs,
+      isTest = false,
+      testFilter = null,
+    )
   }
 }

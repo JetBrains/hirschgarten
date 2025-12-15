@@ -98,6 +98,7 @@ class ScriptPathTestCommandLineState(environment: ExecutionEnvironment, val sett
       pidDeferred = pidDeferred,
       handler = handler,
       env = settings.env.envs,
+      isTest = true,
       testFilter = settings.testFilter,
     )
   }
