@@ -81,17 +81,19 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
         "enable_workspace=false" in starlarkSemantics -> false
         else -> bazelReleaseVersion.major <= 7
       }
+    val autoloadsDisabled = "incompatible_disable_autoloads_in_main_repo=true" in starlarkSemantics
 
     // https://github.com/bazelbuild/bazel/issues/23043
     // https://bazel.build/reference/command-line-reference#flag--incompatible_autoload_externally
-    val externalAutoloads =
+    val externalAutoloads = if (autoloadsDisabled) emptyList()
+    else (
       parseExternalAutoloads(starlarkSemantics) ?: when (bazelReleaseVersion.major) {
         // Bazel 8 autoloads several rules by default to ease migration.
         // This can be turned off via e.g. --incompatible_autoload_externally=""
         8 -> listOf("rules_python", "rules_java", "rules_android")
         // Bazel 9 and higher will not autoload rules by default; Bazel 7 had bundled rules instead of autoloading.
         else -> emptyList()
-      }
+      })
 
     return StarlarkSemantics(
       isBzlModEnabled = isBzlModEnabled,
