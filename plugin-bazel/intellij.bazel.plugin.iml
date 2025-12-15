@@ -151,7 +151,52 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../third_party/libraries/rocksdb_natives/rocksdbjni-10.4.2-osx.jar!/" />
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/rocksdbjni-10.4.2-linux32-musl.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/rocksdbjni-10.4.2-linux32.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/rocksdbjni-10.4.2-linux64-musl.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/rocksdbjni-10.4.2-linux64.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/rocksdbjni-10.4.2-win64.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../third_party/libraries/rocksdbjni-10.4.2-osx.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

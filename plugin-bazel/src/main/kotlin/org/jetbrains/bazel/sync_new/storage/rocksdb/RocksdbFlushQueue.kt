@@ -8,11 +8,10 @@ import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.RocksDB
 import org.rocksdb.WriteBatch
 import org.rocksdb.WriteOptions
-import java.util.Queue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.concurrent.thread
+import java.util.concurrent.atomic.AtomicLong
 
 class RocksdbFlushQueue(
   private val db: RocksDB,
@@ -27,15 +26,12 @@ class RocksdbFlushQueue(
       .setDisableWAL(true)
   }
 
-  private val queue: BlockingMWSRCoalescingQueue<FlushOperation> = object : BlockingMWSRCoalescingQueue<FlushOperation>() {
-    override fun isCoalescingSupported(value: FlushOperation?): Boolean {
-      return value is FlushOperation.FlushDirty<*, *>
-    }
-  }
+  private val queue: CoalescingTransferQueue<CoalescenceKey, FlushOperation> = CoalescingTransferQueue()
   private val running: AtomicBoolean = AtomicBoolean(true)
   private val shutdownLatch = CountDownLatch(1)
   private val tlsKeyBuffer: RocksdbThreadLocalBufferPool = RocksdbThreadLocalBufferPool(initialSize = 256)
   private val tlsValueBuffer: RocksdbThreadLocalBufferPool = RocksdbThreadLocalBufferPool(initialSize = 1024 * 1024)
+  private val operationId: AtomicLong = AtomicLong(0)
 
   init {
     val thread = Thread { task() }
@@ -45,14 +41,18 @@ class RocksdbFlushQueue(
   }
 
   fun enqueue(operation: FlushOperation) {
-    queue.offer(operation)
+    val key = when (operation) {
+      is FlushOperation.FlushDirty<*, *> -> CoalescenceKey.Flush(operation.key)
+      else -> CoalescenceKey.Propagate(operationId.incrementAndGet())
+    }
+    queue.offer(key, operation)
   }
 
   private fun task() {
     val batch = ReferenceArrayList<FlushOperation>(FLUSH_BATCH_SIZE)
     while (running.get()) {
       try {
-        val operation = queue.take(QUEUE_POLL_TIMEOUT, TimeUnit.MILLISECONDS)
+        val operation = queue.poll(QUEUE_POLL_TIMEOUT, TimeUnit.MILLISECONDS)
         if (operation == null) {
           if (handleBatch(batch)) {
             break
@@ -171,13 +171,18 @@ class RocksdbFlushQueue(
     if (!running.compareAndSet(true, false)) {
       return true
     }
-    queue.offer(FlushOperation.Shutdown)
+    enqueue(FlushOperation.Shutdown)
     return shutdownLatch.await(time, unit)
   }
 
   override fun dispose() {
     shutdown(1, TimeUnit.MINUTES)
   }
+}
+
+sealed interface CoalescenceKey {
+  data class Flush(val key: Any) : CoalescenceKey
+  data class Propagate(val id: Long) : CoalescenceKey
 }
 
 sealed interface FlushOperation {

@@ -6,11 +6,14 @@ import org.jetbrains.bazel.sync_new.codec.CodecBuffer
 import org.jetbrains.bazel.sync_new.codec.CodecContext
 import org.jetbrains.bazel.sync_new.storage.BaseKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.BaseSortedKVStoreBuilder
+import org.jetbrains.bazel.sync_new.storage.CloseableIterator
 import org.jetbrains.bazel.sync_new.storage.FlatPersistentStore
 import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreWithModificationMarker
 import org.jetbrains.bazel.sync_new.storage.SortedKVStore
+import org.jetbrains.bazel.sync_new.storage.asCloseable
+import org.jetbrains.bazel.sync_new.storage.asCloseableIterator
 import java.util.NavigableMap
 import java.util.SortedMap
 import java.util.concurrent.ConcurrentHashMap
@@ -54,10 +57,11 @@ open class InMemoryKVStore<K, V>(
     wasModified = true
   }
 
-  override fun keys(): Sequence<K> = map.keys.asSequence()
-
-  override fun values(): Sequence<V> = map.values.asSequence()
-  override fun asSequence(): Sequence<Pair<K, V>> = map.asSequence().map { it.key to it.value }
+  override fun keys(): CloseableIterator<K> = map.keys.iterator().asCloseable()
+  override fun values(): CloseableIterator<V> = map.values.iterator().asCloseable()
+  override fun iterator(): CloseableIterator<Pair<K, V>> = map.asSequence()
+    .map { it.key to it.value }
+    .asCloseableIterator()
 
   override fun computeIfAbsent(key: K, op: (k: K) -> V): V? {
     val value = map.computeIfAbsent(key, op)

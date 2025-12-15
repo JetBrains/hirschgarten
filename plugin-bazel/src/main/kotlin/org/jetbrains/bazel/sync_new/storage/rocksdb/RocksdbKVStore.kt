@@ -6,13 +6,15 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.storage.BaseKVStoreBuilder
+import org.jetbrains.bazel.sync_new.storage.CloseableIterator
 import org.jetbrains.bazel.sync_new.storage.KVStore
+import org.jetbrains.bazel.sync_new.storage.mapCloseable
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.ColumnFamilyHandle
 import org.rocksdb.ReadOptions
 import org.rocksdb.RocksDB
-import java.nio.ByteBuffer
+import org.rocksdb.RocksIterator
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.CountDownLatch
@@ -173,36 +175,66 @@ class RocksdbKVStore<K : Any, V : Any>(
     }
   }
 
-  // TODO: implement asSequence only for keys if needed
-  override fun keys(): Sequence<K> = asSequence().map { it.first }
+  override fun keys(): CloseableIterator<K> = iterator().mapCloseable { (k, _) -> k }
 
-  override fun values(): Sequence<V> = asSequence().map { it.second }
+  override fun values(): CloseableIterator<V> = iterator().mapCloseable { (_, v) -> v }
 
-  override fun asSequence(): Sequence<Pair<K, V>> = sequence {
-    val yielded = mutableSetOf<K>()
-    db.newIterator(cfHandle, SEQ_READ_OPTIONS).use { iter ->
-      iter.seekToFirst()
-      while (iter.isValid) {
-        val keyBuffer = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(iter.key()))
-        val key = keyCodec.decode(UnsafeCodecContext, keyBuffer)
-        yielded += key
-        val existingValue = cache.getIfPresent(key)
-        if (existingValue == null) {
-          val valueBuffer = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(iter.value()))
-          val value = valueCodec.decode(UnsafeCodecContext, valueBuffer)
+  override fun iterator(): CloseableIterator<Pair<K, V>> = object : CloseableIterator<Pair<K, V>> {
+    private var iter: RocksIterator? = null
+    private val yieldQueue = HashSet(cache.asMap().keys)
+
+    override fun next(): Pair<K, V> {
+      val iter = iter
+      if (iter != null && iter.isValid) {
+        val key = keyCodec.decode(UnsafeCodecContext, UnsafeByteBufferCodecBuffer.from(iter.key()))
+        yieldQueue.remove(key)
+        val evicted = evictedQueue.remove(key)
+        if (evicted != null) {
+          iter.next()
+          return key to evicted
+        }
+        val cached = cache.getIfPresent(key)
+        val pair = if (cached == null) {
+          val value = valueCodec.decode(UnsafeCodecContext, UnsafeByteBufferCodecBuffer.from(iter.value()))
           cache.put(key, value)
-          yield(key to value)
+          key to value
         } else {
-          yield(key to existingValue)
+          key to cached
         }
         iter.next()
+        return pair
       }
+
+      while (yieldQueue.isNotEmpty()) {
+        val key = yieldQueue.first()
+        yieldQueue.remove(key)
+        val value = evictedQueue.remove(key) ?: cache.getIfPresent(key)
+        if (value != null) {
+          return key to value
+        }
+      }
+
+      throw NoSuchElementException()
     }
-    for ((key, value) in cache.asMap().entries) {
-      if (yielded.contains(key)) {
-        continue
+
+    override fun hasNext(): Boolean {
+      val iter = if (iter == null) {
+        val newIter = db.newIterator(cfHandle, SEQ_READ_OPTIONS)
+        newIter.seekToFirst()
+        if (!newIter.isValid) {
+          newIter.close()
+          return false
+        }
+        iter = newIter
+        newIter
+      } else {
+        iter!!
       }
-      yield(key to value)
+      return iter.isValid || yieldQueue.isNotEmpty()
+    }
+
+    override fun close() {
+      iter?.close()
     }
   }
 

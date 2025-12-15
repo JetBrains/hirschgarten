@@ -2,7 +2,9 @@ package org.jetbrains.bazel.sync_new.storage.mvstore
 
 import org.h2.mvstore.MVMap
 import org.jetbrains.bazel.sync_new.storage.BaseSortedKVStoreBuilder
+import org.jetbrains.bazel.sync_new.storage.CloseableIterator
 import org.jetbrains.bazel.sync_new.storage.SortedKVStore
+import org.jetbrains.bazel.sync_new.storage.asCloseable
 
 open class MVStoreSortedKVStore<K, V>(
   private val map: MVMap<K, V>,
@@ -20,26 +22,33 @@ open class MVStoreSortedKVStore<K, V>(
     map.clear()
   }
 
-  override fun keys(): Sequence<K> = sequence {
+  override fun keys(): CloseableIterator<K> = map.cursor(null).asCloseable()
+
+  override fun values(): CloseableIterator<V> = object : CloseableIterator<V> {
     val cursor = map.cursor(null)
-    while (cursor.hasNext()) {
-      yield(cursor.next())
+    override fun next(): V {
+      cursor.next()
+      return cursor.value
+    }
+
+    override fun hasNext(): Boolean = cursor.hasNext()
+
+    override fun close() {
+
     }
   }
 
-  override fun values(): Sequence<V> = sequence {
+  override fun iterator(): CloseableIterator<Pair<K, V>> = object : CloseableIterator<Pair<K, V>> {
     val cursor = map.cursor(null)
-    while (cursor.hasNext()) {
+    override fun next(): Pair<K, V> {
       cursor.next()
-      yield(cursor.value)
+      return cursor.key to cursor.value
     }
-  }
 
-  override fun asSequence(): Sequence<Pair<K, V>> = sequence {
-    val cursor = map.cursor(null)
-    while (cursor.hasNext()) {
-      cursor.next()
-      yield(cursor.key to cursor.value)
+    override fun hasNext(): Boolean = cursor.hasNext()
+
+    override fun close() {
+
     }
   }
 
