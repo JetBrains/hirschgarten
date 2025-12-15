@@ -33,13 +33,19 @@ suspend fun runWithScriptPath(
   pidDeferred: CompletableDeferred<Long?>,
   handler: BazelProcessHandler,
   env: Map<String, String>,
-  testFilter: String? = null,
+  isTest: Boolean,
+  testFilter: String?,
 ) {
+  val parentEnvironment = if (isTest) {
+    // Bazel tests don't receive the full environment because of sandboxing
+    GeneralCommandLine.ParentEnvironmentType.NONE
+  } else {
+    GeneralCommandLine.ParentEnvironmentType.CONSOLE
+  }
   val commandLine =
     GeneralCommandLine()
       .withExePath(scriptPath.toString())
-      // don't inherit IntelliJ's environment variables as the script should be self-contained
-      .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
+      .withParentEnvironmentType(parentEnvironment)
       .withEnvironment(env)
   if (testFilter != null) {
     commandLine.environment[BAZEL_TEST_FILTER_ENV] = testFilter
