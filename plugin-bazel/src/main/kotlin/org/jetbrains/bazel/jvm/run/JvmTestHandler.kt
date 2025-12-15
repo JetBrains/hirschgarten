@@ -4,6 +4,7 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.util.Ref
@@ -21,7 +22,7 @@ import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
-class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
+class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before BuildScriptBeforeRunTaskProvider
     configuration.setBeforeRunTasksFromHandler(
@@ -35,16 +36,24 @@ class JvmTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   override val name: String
     get() = "Jvm Test Handler"
 
-  override val state = JvmTestState()
+  override val state = JvmTestState(configuration.project)
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     if (executor is DefaultDebugExecutor) {
-      // Only pass SCRIPT_PATH_KEY for debug, because it screws up test result caching; see ScriptPathBeforeRunTaskProvider
-      environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
       environment.putCopyableUserData(COROUTINE_JVM_FLAGS_KEY, Ref())
-      return ScriptPathTestCommandLineState(environment, state)
     }
-    return BazelTestCommandLineState(environment, state)
+    /**
+     * 1. Allow the user to disable --script_path because it screws up test result caching
+     * 2. Tests with coverage must be run with `bazel coverage`, because running with --script_path just runs the tests normally
+     * 3. Because `bazel run` only supports one target, so does `bazel run --script_path`
+     */
+    return if (((!state.runWithBazel && executor is DefaultRunExecutor) || executor is DefaultDebugExecutor) && configuration.targets.size == 1) {
+      environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
+      ScriptPathTestCommandLineState(environment, state)
+    }
+    else {
+      BazelTestCommandLineState(environment, state)
+    }
   }
 
   class JvmTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
@@ -82,6 +91,14 @@ class ScriptPathTestCommandLineState(environment: ExecutionEnvironment, val sett
     handler: BazelProcessHandler,
   ) {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
-    runWithScriptPath(scriptPath, environment.project, originId, pidDeferred, handler, settings.env.envs)
+    runWithScriptPath(
+      scriptPath = scriptPath,
+      project = environment.project,
+      originId = originId,
+      pidDeferred = pidDeferred,
+      handler = handler,
+      env = settings.env.envs,
+      testFilter = settings.testFilter,
+    )
   }
 }

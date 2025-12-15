@@ -104,7 +104,6 @@ class BazelRunner(
   ): BazelCommand {
     val commandBuilder = CommandBuilder(workspaceContext)
     val command = doBuild(commandBuilder)
-    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath
 
     // These options are the same as in Google's Bazel plugin for IntelliJ
     // They make the output suitable for display in the console
