@@ -20,6 +20,8 @@ class UnsafeByteBufferCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
 
     fun allocateHeap(size: Int = DEFAULT_BUFFER_SIZE) =
       UnsafeByteBufferCodecBuffer(ByteBuffer.allocate(size))
+
+    fun from(array: ByteArray) = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(array))
   }
 
   // allow both direct and heap ByteBuffer

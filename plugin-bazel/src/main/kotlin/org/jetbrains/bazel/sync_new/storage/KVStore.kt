@@ -10,9 +10,9 @@ interface KVStore<K, V> {
   fun contains(key: K): Boolean
   fun remove(key: K, useReturn: Boolean = false): V?
   fun clear()
-  fun keys(): Sequence<K>
-  fun values(): Sequence<V>
-  fun asSequence(): Sequence<Pair<K, V>>
+  fun keys(): CloseableIterator<K>
+  fun values(): CloseableIterator<V>
+  fun iterator(): CloseableIterator<Pair<K, V>>
 
   fun computeIfAbsent(key: K, op: (k: K) -> V): V?
   fun compute(key: K, op: (k: K, v: V?) -> V?): V?

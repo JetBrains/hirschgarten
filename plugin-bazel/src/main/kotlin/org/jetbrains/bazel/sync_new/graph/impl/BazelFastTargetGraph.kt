@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sync_new.graph.impl
 
 import com.dynatrace.hash4j.hashing.HashValue128
-import com.jetbrains.rd.util.keySet
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntList
@@ -23,6 +22,7 @@ import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.FastTargetGraph
 import org.jetbrains.bazel.sync_new.storage.StorageContext
 import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.asClosingSequence
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.getValue
@@ -120,9 +120,9 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
     .build()
 
   override val vertices: Sequence<BazelTargetVertex>
-    get() = id2Vertex.values()
+    get() = id2Vertex.values().asClosingSequence()
   override val edges: Sequence<BazelTargetEdge>
-    get() = id2Edge.values()
+    get() = id2Edge.values().asClosingSequence()
 
   override fun getVertexById(id: ID): BazelTargetVertex? = id2Vertex.get(id)
 

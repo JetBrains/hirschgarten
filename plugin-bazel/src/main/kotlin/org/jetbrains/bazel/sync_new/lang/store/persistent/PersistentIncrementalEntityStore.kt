@@ -8,7 +8,6 @@ import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.codec.CodecBuilder
 import org.jetbrains.bazel.sync_new.codec.Int2ObjectOpenHashMapCodec
 import org.jetbrains.bazel.sync_new.codec.IntArrayListCodec
-import org.jetbrains.bazel.sync_new.codec.hash128Codec
 import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.codec.ofInt
 import org.jetbrains.bazel.sync_new.codec.versionedCodecOf
@@ -20,6 +19,7 @@ import org.jetbrains.bazel.sync_new.storage.FlatStorage
 import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.StorageContext
 import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.asClosingSequence
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.set
@@ -151,7 +151,7 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     }
   }
 
-  override fun getAllEntities(): Sequence<E> = resourceId2EntityStore.values()
+  override fun getAllEntities(): Sequence<E> = resourceId2EntityStore.values().asClosingSequence()
 
   override fun getTransitiveDependants(resourceId: R): Sequence<R> {
     val id = getIdFromResourceId(resourceId)

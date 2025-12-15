@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync_new.graph
 
 import org.jetbrains.bazel.sync_new.storage.KVStore
+import org.jetbrains.bazel.sync_new.storage.asClosingSequence
 import org.jetbrains.bazel.sync_new.storage.put
 import org.jetbrains.bazel.sync_new.storage.remove
 import org.jetbrains.bazel.sync_new.storage.set
@@ -17,7 +18,7 @@ abstract class PersistentDirectedGraph<ID, V> : SimpleDirectedGraph<V> {
   fun getVertexById(id: ID): V? = id2Vertex[id]
 
   override val vertices: Sequence<V>
-    get() = id2Vertex.values()
+    get() = id2Vertex.values().asClosingSequence()
 
   override fun getSuccessors(vertex: V): Sequence<V> {
     val vertexId = getVertexId(vertex)

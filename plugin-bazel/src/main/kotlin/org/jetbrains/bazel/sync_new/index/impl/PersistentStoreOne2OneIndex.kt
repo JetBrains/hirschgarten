@@ -6,6 +6,7 @@ import org.jetbrains.bazel.sync_new.index.SyncIndexContext
 import org.jetbrains.bazel.sync_new.index.SyncIndexUtils
 import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.StorageContext
+import org.jetbrains.bazel.sync_new.storage.asClosingSequence
 
 class PersistentStoreOne2OneIndex<K, V>(
   val owner: SyncIndexContext,
@@ -13,7 +14,7 @@ class PersistentStoreOne2OneIndex<K, V>(
   val store: KVStore<K, V>,
 ) : One2OneIndex<K, V>, Disposable {
   override val values: Sequence<V>
-    get() = store.values()
+    get() = store.values().asClosingSequence()
 
   init {
     owner.register(this)
