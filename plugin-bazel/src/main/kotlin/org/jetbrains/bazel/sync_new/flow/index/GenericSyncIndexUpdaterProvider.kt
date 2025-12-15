@@ -8,6 +8,7 @@ import org.jetbrains.bazel.sync_new.index.SyncIndexUpdaterProvider
 class GenericSyncIndexUpdaterProvider : SyncIndexUpdaterProvider {
   override suspend fun createUpdaters(ctx: SyncContext): List<SyncIndexUpdater> = listOf(
     ctx.project.serviceAsync<SyncFileIndexService>(),
+    ctx.project.serviceAsync<TransitiveClosureIndexService>(),
     ctx.project.serviceAsync<TargetTreeIndexService>()
   )
 }

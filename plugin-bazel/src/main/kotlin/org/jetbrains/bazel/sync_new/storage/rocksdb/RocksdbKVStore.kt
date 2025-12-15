@@ -175,7 +175,52 @@ class RocksdbKVStore<K : Any, V : Any>(
     }
   }
 
-  override fun keys(): CloseableIterator<K> = iterator().mapCloseable { (k, _) -> k }
+  // TODO: remove duplicated code
+  override fun keys(): CloseableIterator<K> = object : CloseableIterator<K> {
+    private var iter: RocksIterator? = null
+    private val yieldQueue = HashSet(cache.asMap().keys)
+
+    override fun next(): K {
+      val iter = iter
+      if (iter != null && iter.isValid) {
+        val key = keyCodec.decode(UnsafeCodecContext, UnsafeByteBufferCodecBuffer.from(iter.key()))
+        yieldQueue.remove(key)
+        iter.next()
+        return key
+      }
+
+      while (yieldQueue.isNotEmpty()) {
+        val key = yieldQueue.first()
+        yieldQueue.remove(key)
+        val value = evictedQueue.remove(key) ?: cache.getIfPresent(key)
+        if (value != null) {
+          return key
+        }
+      }
+
+      throw NoSuchElementException()
+    }
+
+    override fun hasNext(): Boolean {
+      val iter = if (iter == null) {
+        val newIter = db.newIterator(cfHandle, SEQ_READ_OPTIONS)
+        newIter.seekToFirst()
+        if (!newIter.isValid) {
+          newIter.close()
+          return false
+        }
+        iter = newIter
+        newIter
+      } else {
+        iter!!
+      }
+      return iter.isValid || yieldQueue.isNotEmpty()
+    }
+
+    override fun close() {
+      iter?.close()
+    }
+  }
 
   override fun values(): CloseableIterator<V> = iterator().mapCloseable { (_, v) -> v }
 

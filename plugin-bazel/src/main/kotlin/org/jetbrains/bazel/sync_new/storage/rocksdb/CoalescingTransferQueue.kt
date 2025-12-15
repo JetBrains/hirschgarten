@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync_new.storage.rocksdb
 
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.LinkedTransferQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -8,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 internal class CoalescingTransferQueue<K : Any, V : Any> {
   private data class Node<K, T>(val key: K, val value: T, val live: AtomicBoolean = AtomicBoolean(true))
 
-  private val queue = LinkedTransferQueue<Node<K, V>>()
+  private val queue = LinkedBlockingQueue<Node<K, V>>()
   private val last = ConcurrentHashMap<K, Node<K, V>>()
 
   val isEmpty: Boolean get() = queue.isEmpty()

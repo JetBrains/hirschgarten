@@ -8,6 +8,7 @@ const val EMPTY_ID: ID = 0
 
 interface FastDirectedGraph<V, E> {
   val vertices: Sequence<V>
+
   val edges: Sequence<E>
 
   fun getVertexById(id: ID): V?
