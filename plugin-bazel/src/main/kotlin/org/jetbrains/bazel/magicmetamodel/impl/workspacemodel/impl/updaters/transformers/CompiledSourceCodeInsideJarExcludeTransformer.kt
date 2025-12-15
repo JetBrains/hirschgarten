@@ -46,7 +46,7 @@ class CompiledSourceCodeInsideJarExcludeTransformer {
   private fun calculateLibrariesFromInternalTargetsUrls(libraryItems: List<LibraryItem>): Set<String> =
     libraryItems
       .asSequence()
-      .filter { libraryItem -> libraryItem.isFromInternalTarget }
+      .filter { libraryItem -> libraryItem.containsInternalJars }
       .flatMap { libraryItem -> libraryItem.jars.asSequence() + libraryItem.ijars.asSequence() + libraryItem.sourceJars.asSequence() }
       .map { jarPath -> JarFileSystem.PROTOCOL_PREFIX + jarPath.invariantSeparatorsPathString + JarFileSystem.JAR_SEPARATOR }
       .toSet()
