@@ -48,7 +48,8 @@ object ProjectViewToWorkspaceContextConverter {
       buildFlags = projectView.buildFlags,
       syncFlags = projectView.syncFlags,
       debugFlags = projectView.debugFlags,
-      bazelBinary = projectView.bazelBinary ?: resolveBazelBinary(workspaceRoot),
+      bazelBinary = projectView.bazelBinary?.let { workspaceRoot.resolve(it) }
+        ?: resolveBazelBinary(workspaceRoot),
       allowManualTargetsSync = projectView.allowManualTargetsSync,
       dotBazelBspDirPath = dotBazelBspDirPath,
       importDepth = projectView.importDepth,
