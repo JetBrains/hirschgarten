@@ -73,7 +73,7 @@ object InverseSourcesQuery {
       .joinToString(separator = ",") { "$it:all" }
 
   private suspend fun BazelCommand.runAndParse(bazelRunner: BazelRunner): List<Build.Target> {
-    val bazelProcess = bazelRunner.runBazelCommand(this, serverPidFuture = null, logProcessOutput = false) // ABU - what if log is enabled??
+    val bazelProcess = bazelRunner.runBazelCommand(this, serverPidFuture = null, logProcessOutput = false)
     val inputStream = bazelProcess.process.inputStream
     val processOutput = generateSequence { Build.Target.parseDelimitedFrom(inputStream) }
     bazelProcess.process.awaitExit()

@@ -12,6 +12,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -58,8 +59,6 @@ import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
-import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import java.nio.file.Path
 
 class AssignFileToModuleListener : BulkFileListener {
@@ -99,10 +98,10 @@ class AssignFileToModuleListener : BulkFileListener {
         delay(PROCESSING_DELAY)
 
         val workspaceModel = project.serviceAsync<WorkspaceModel>()
-        val event = Controller.getInstance(project).getSingleEventOrNullAndClear()
-        if (event != null) {
+        val events = Controller.getInstance(project).getEventsAndClear()
+        if (events.isNotEmpty()) {
           controller.processWithLock {
-            processFileEvent(event = event, project = project, workspaceModel = workspaceModel)
+            processFileEvent(event = events.first(), project = project, workspaceModel = workspaceModel)
           }
         }
       }
@@ -113,33 +112,31 @@ class AssignFileToModuleListener : BulkFileListener {
 
   @Service(Service.Level.PROJECT)
   private class Controller {
-    private var moreThanOneEvent = false
-    private var eventWaiting: VFileEvent? = null
+    private var eventsReachedLimit = false
+    private val eventQueue = mutableListOf<VFileEvent>()
 
     private val processingLock = Mutex()
 
     /** @return `true` if this event was the first to be reported in the batch, `false` otherwise */
     fun addEvent(event: VFileEvent): Boolean =
       synchronized(this) {
-        if (eventWaiting == null) {
-          eventWaiting = event
-          true
-        } else {
-          moreThanOneEvent = true
-          false
+        if (!eventsReachedLimit) {
+          eventQueue += event
+          if (eventQueue.size == 1) {
+            return true
+          } else if (eventQueue.size >= EVENT_QUEUE_LIMIT) {
+            eventsReachedLimit = true
+          }
         }
+        return false
       }
 
-    fun getSingleEventOrNullAndClear(): VFileEvent? {
+    fun getEventsAndClear(): List<VFileEvent> {
       synchronized(this) {
-        val singleEvent =
-          when {
-            moreThanOneEvent -> null
-            else -> eventWaiting
-          }
-        moreThanOneEvent = false
-        eventWaiting = null
-        return singleEvent
+        val events = eventQueue.toList()
+        eventQueue.clear()
+        eventsReachedLimit = false
+        return events
       }
     }
 
@@ -226,35 +223,29 @@ private suspend fun processFileEvent(
 ) {
   val entityStorageDiff = MutableEntityStorage.from(workspaceModel.currentSnapshot)
 
-  val newFile = getNewFile(event)
-  val oldFilePath = getOldFilePath(event) // the old file must be kept as a path, since this file no longer exists
+  val filesChanged = event.getOldAndNewFile()
 
-  withBackgroundProgress(project, event.getProgressMessage(newFile)) {
+  withBackgroundProgress(project, event.getProgressMessage(filesChanged.newFile)) {
     reportSequentialProgress { reporter ->
+      val targetUtils = project.serviceAsync<TargetUtils>()
       val contentRootsToRemove =
-        oldFilePath?.let {
-          val targetUtils = project.serviceAsync<TargetUtils>()
-          processFileRemoved(
-            oldFilePath = it,
-            newFile = newFile,
-            project = project,
-            workspaceModel = workspaceModel,
-            targetUtils = targetUtils,
-          )
-        }
-      val mutableRemovalMap = contentRootsToRemove?.toMutableMap() ?: mutableMapOf()
-
-      reporter.nextStep(PROGRESS_DELETE_STEP_SIZE)
-      newFile?.let {
-        processFileCreated(
-          newFile = it,
+        processFileRemoved(
+          filesChanged = filesChanged,
           project = project,
           workspaceModel = workspaceModel,
-          entityStorageDiff = entityStorageDiff,
-          progressReporter = reporter,
-          mutableRemovalMap = mutableRemovalMap,
+          targetUtils = targetUtils,
         )
-      }
+      val mutableRemovalMap = contentRootsToRemove.toMutableMap()
+
+      reporter.nextStep(PROGRESS_DELETE_STEP_SIZE)
+      processFileCreated(
+        filesChanged = filesChanged,
+        project = project,
+        workspaceModel = workspaceModel,
+        entityStorageDiff = entityStorageDiff,
+        progressReporter = reporter,
+        mutableRemovalMap = mutableRemovalMap,
+      )
 
       mutableRemovalMap.values.flatten().forEach { entityStorageDiff.removeEntity(it) }
 
@@ -267,6 +258,7 @@ private suspend fun processFileEvent(
   }
 }
 
+@NlsSafe
 private fun VFileEvent.getProgressMessage(newFile: VirtualFile?): String =
   when (this) {
     is VFileCreateEvent -> BazelPluginBundle.message("file.change.processing.title.create", newFile?.name ?: "")
@@ -275,13 +267,14 @@ private fun VFileEvent.getProgressMessage(newFile: VirtualFile?): String =
   }
 
 private suspend fun processFileCreated(
-  newFile: VirtualFile,
+  filesChanged: OldAndNewFile,
   project: Project,
   workspaceModel: WorkspaceModel,
   entityStorageDiff: MutableEntityStorage,
   progressReporter: SequentialProgressReporter,
   mutableRemovalMap: MutableMap<ModuleEntity, List<ContentRootEntity>>,
 ) {
+  val newFile = filesChanged.newFile ?: return
   val existingModules =
     getModulesForFile(newFile, project)
       .filter { it.moduleEntity?.entitySource != BazelDummyEntitySource }
@@ -299,6 +292,8 @@ private suspend fun processFileCreated(
 
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val path = url.toPath()
+
+  @Suppress("DialogTitleCapitalization") // "Querying Bazel" has title capitalization, it's a false positive
   val targets =
     progressReporter.nextStep(
       endFraction = PROGRESS_QUERY_STEP_SIZE,
@@ -323,14 +318,14 @@ suspend fun getModulesForFile(newFile: VirtualFile, project: Project): Set<Modul
   readAction { ProjectFileIndex.getInstance(project).getModulesForFile(newFile, true) }
 
 private fun processFileRemoved(
-  oldFilePath: Path,
-  newFile: VirtualFile?,
+  filesChanged: OldAndNewFile,
   project: Project,
   workspaceModel: WorkspaceModel,
   targetUtils: TargetUtils,
 ): Map<ModuleEntity, List<ContentRootEntity>> {
+  val oldFilePath = filesChanged.oldFile ?: return emptyMap()
   val oldUrl = workspaceModel.getVirtualFileUrlManager().fromPath(oldFilePath.toString())
-  val newUrl = newFile?.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
+  val newUrl = filesChanged.newFile?.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val modules =
     targetUtils
       .getTargetsForPath(oldFilePath)
@@ -418,3 +413,15 @@ private val logger = Logger.getInstance(AssignFileToModuleListener::class.java)
 
 private const val PROGRESS_DELETE_STEP_SIZE = 20
 private const val PROGRESS_QUERY_STEP_SIZE = 80
+private const val EVENT_QUEUE_LIMIT = 5
+
+private data class OldAndNewFile(
+  val oldFile: Path?, // the old file must be kept as a path, since this file no longer exists
+  val newFile: VirtualFile?,
+)
+
+private fun VFileEvent.getOldAndNewFile(): OldAndNewFile =
+  OldAndNewFile(
+    oldFile = getOldFilePath(this),
+    newFile = getNewFile(this),
+  )
