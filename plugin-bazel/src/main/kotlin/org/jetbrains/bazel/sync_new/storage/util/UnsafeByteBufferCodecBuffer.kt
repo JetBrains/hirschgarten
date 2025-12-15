@@ -1,11 +1,12 @@
 package org.jetbrains.bazel.sync_new.storage.util
 
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
+import org.jetbrains.bazel.sync_new.codec.HasByteBuffer
 import java.nio.Buffer
 import java.nio.ByteBuffer
 import kotlin.math.max
 
-class UnsafeByteBufferCodecBuffer(var buffer: ByteBuffer) : CodecBuffer {
+class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer, HasByteBuffer {
 
   companion object {
     const val MAX_BUFFER_LENGTH: Int = Int.MAX_VALUE - 8

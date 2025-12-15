@@ -36,7 +36,9 @@ class SyncFileIndexService(
       .build()
   }
 
-  private val syncStoreService = project.service<SyncStoreService>()
+  private val syncStoreService by lazy { project.service<SyncStoreService>() }
+
+  private val transitiveClosureService by lazy { project.service<TransitiveClosureIndexService>() }
 
   override suspend fun updateIndexes(ctx: SyncContext, diff: SyncDiff) {
     val pathsResolver = LegacyBazelFrontendBridge.fetchBazelPathsResolver(project)
@@ -46,8 +48,7 @@ class SyncFileIndexService(
       val target = removed.getBuildTarget() ?: continue
       for (source in target.genericData.sources) {
         val realPath = pathsResolver.resolve(source.path)
-        val hash = hashFilePath(realPath)
-        file2TargetId.invalidate(hash, target.vertexId)
+        file2TargetId.invalidate(hashFilePath(realPath), target.vertexId)
       }
     }
 
@@ -55,8 +56,7 @@ class SyncFileIndexService(
       val target = changed.getBuildTarget() ?: continue
       for (source in target.genericData.sources) {
         val realPath = pathsResolver.resolve(source.path)
-        val hash = hashFilePath(realPath)
-        file2TargetId.add(hash, listOf(target.vertexId))
+        file2TargetId.add(hashFilePath(realPath), listOf(target.vertexId))
       }
     }
   }
@@ -70,6 +70,14 @@ class SyncFileIndexService(
     return file2TargetId.get(hashFilePath(file))
       .mapNotNull { syncStoreService.targetGraph.getVertexCompactById(it) }
       .map { it.label }
+  }
+
+  fun getTargetIdsBySourceFile(file: Path): Sequence<Int> = file2TargetId.get(hashFilePath(file))
+
+  fun getAllReverseExecutableTargetsBySourceFile(file: Path): Sequence<Label> {
+    return getTargetIdsBySourceFile(file)
+      .flatMap { vertexId -> transitiveClosureService.getAllReverseTransitiveExecutableTargetIds(vertexId) }
+      .mapNotNull { syncStoreService.targetGraph.getVertexCompactById(it)?.label }
   }
 
   private fun hashFilePath(path: Path): HashValue128 = hash { putString(path.toString()) }
