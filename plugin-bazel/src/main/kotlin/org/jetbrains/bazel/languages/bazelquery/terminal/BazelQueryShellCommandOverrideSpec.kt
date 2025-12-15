@@ -13,7 +13,6 @@ import org.jetbrains.bazel.languages.bazelquery.completion.TargetCompletionsGene
 import org.jetbrains.bazel.languages.bazelquery.documentation.BazelQueryFunctionDocumentationTarget
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunction
 import org.jetbrains.bazel.languages.bazelquery.options.BazelQueryCommonOptions
-import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget
 import org.jetbrains.bazel.languages.bazelrc.documentation.flagToDocumentationMarkdownText
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.plugins.terminal.block.completion.spec.ShellCommandSpec
@@ -36,7 +35,9 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
     subcommands { context: ShellRuntimeContext ->
       if (context.project.isBazelProject) {
         subcommand("query") {
-          parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
+          parserOptions = ShellCommandParserOptions.builder()
+            .optionArgSeparators(listOf("=", " "))
+            .build()
           description(BazelPluginBundle.message("bazelquery.query.description"))
 
           allOptions(context)
