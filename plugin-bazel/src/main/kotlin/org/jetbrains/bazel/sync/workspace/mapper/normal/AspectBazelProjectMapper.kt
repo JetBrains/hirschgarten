@@ -163,7 +163,7 @@ class AspectBazelProjectMapper(
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
-        createLibraries(workspaceContext, targetsAsLibraries, repoMapping) +
+        createLibraries(workspaceContext, targetsAsLibraries) +
           librariesFromDeps.values
             .flatten()
             .distinct()
@@ -235,7 +235,7 @@ class AspectBazelProjectMapper(
             jars = it.outputs.toList(),
             sourceJars = it.sources.toList(),
             mavenCoordinates = it.mavenCoordinates,
-            isFromInternalTarget = it.isFromInternalTarget,
+            containsInternalJars = it.containsInternalJars,
             isLowPriority = it.isLowPriority,
           )
         },
@@ -278,7 +278,7 @@ class AspectBazelProjectMapper(
           Label.parse(target.id + "_output_jars"),
           target,
           onlyOutputJars = true,
-          isInternalTarget = true,
+          containsInternalJars = true,
         )?.let { library ->
           target.label() to listOf(library)
         }
@@ -647,7 +647,6 @@ class AspectBazelProjectMapper(
   private suspend fun createLibraries(
     workspaceContext: WorkspaceContext,
     targets: Map<Label, TargetInfo>,
-    repoMapping: RepoMapping,
   ): Map<Label, Library> =
     withContext(Dispatchers.Default) {
       targets
@@ -658,7 +657,7 @@ class AspectBazelProjectMapper(
               label = targetId,
               targetInfo = targetInfo,
               onlyOutputJars = false,
-              isInternalTarget = isTargetTreatedAsInternal(targetId.assumeResolved(), repoMapping),
+              containsInternalJars = targetInfo.containsAnyInternalJars(),
             )?.let { library ->
               targetId to library
             }
@@ -668,12 +667,16 @@ class AspectBazelProjectMapper(
         .toMap()
     }
 
+  private fun TargetInfo.containsAnyInternalJars() = jvmTargetInfo.jarsList.any { jars ->
+    jars.sourceJarsList.any { !it.isExternal } && jars.binaryJarsList.any { !it.isExternal }
+  }
+
   private fun createLibrary(
     workspaceContext: WorkspaceContext,
     label: Label,
     targetInfo: TargetInfo,
     onlyOutputJars: Boolean,
-    isInternalTarget: Boolean,
+    containsInternalJars: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
     val rawSources = getSourceJarPaths(targetInfo);
@@ -711,7 +714,7 @@ class AspectBazelProjectMapper(
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
-      isFromInternalTarget = isInternalTarget,
+      containsInternalJars = containsInternalJars,
     )
   }
 
