@@ -35,9 +35,11 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
     subcommands { context: ShellRuntimeContext ->
       if (context.project.isBazelProject) {
         subcommand("query") {
-          parserOptions = ShellCommandParserOptions.builder()
-            .optionArgSeparators(listOf("=", " "))
-            .build()
+          parserOptions(
+            ShellCommandParserOptions.builder()
+              .optionArgSeparators(listOf("=", " "))
+              .build()
+          )
           description(BazelPluginBundle.message("bazelquery.query.description"))
 
           allOptions(context)
@@ -57,11 +59,11 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
 private fun ShellCommandContext.dummyArgs() {
   argument {
     displayName(BazelPluginBundle.message("bazelquery.query.option.description"))
-    isVariadic = true
-    isOptional = true
+    variadic()
+    optional()
     suggestions(
       ShellRuntimeDataGenerator { context ->
-        listOf(ShellCompletionSuggestion(context.typedPrefix) { isHidden = true })
+        listOf(ShellCompletionSuggestion(context.typedPrefix) { hidden() })
       },
     )
   }
@@ -84,8 +86,8 @@ private fun ShellCommandContext.queryCompletion() {
             .map { target ->
               ShellCompletionSuggestion(target) {
                 icon(BazelPluginIcons.bazel)
-                prefixReplacementIndex = offset
-                priority = targetPriority
+                prefixReplacementIndex(offset)
+                priority(targetPriority)
               }
             }.toMutableList()
         suggestions.addAll(
@@ -93,8 +95,8 @@ private fun ShellCommandContext.queryCompletion() {
             ShellCompletionSuggestion("${it.name}()") {
               description(functionDescriptionHtml(it, context.project))
               icon(BazelPluginIcons.bazel)
-              prefixReplacementIndex = offset
-              insertValue = "${it.name}({cursor})"
+              prefixReplacementIndex(offset)
+              insertValue("${it.name}({cursor})")
             }
           },
         )
@@ -103,8 +105,8 @@ private fun ShellCommandContext.queryCompletion() {
         // Inspired from ShellDataGenerators#getFileSuggestions.
         if (isStartAndEndWithQuote(context.typedPrefix)) {
           val emptySuggestion = ShellCompletionSuggestion("") {
-            prefixReplacementIndex = offset
-            isHidden = true
+            prefixReplacementIndex(offset)
+            hidden()
           }
           suggestions.add(emptySuggestion)
         }
@@ -164,9 +166,9 @@ private fun ShellCommandContext.optionWithUnknownArgs(flag: Flag, project: Proje
   option("--${flag.option.name}") {
     description(flagDescriptionHtml(flag, project))
     argument {
-      isOptional = true
+      optional()
       suggestions {
-        listOf(ShellCompletionSuggestion("") { isHidden = true })
+        listOf(ShellCompletionSuggestion("") { hidden() })
       }
     }
   }
@@ -183,18 +185,18 @@ private fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, con
     argument {
       // Boolean flags can be provided as --<option> without any arguments, but not Tristate.
       if (flag is Flag.Boolean) {
-        isOptional = true
+        optional()
       }
       // Boolean and Tristate flags have these same arguments
       suggestions("true", "yes", "1", "false", "no", "0")
     }
-    exclusiveOn = listOf(falseFlag)
+    exclusiveOn(listOf(falseFlag))
   }
 
   // Both Boolean and Tristate can be negated with --no<option>
   option(falseFlag) {
     description(flagDescriptionHtml(flag, context.project))
-    exclusiveOn = listOf(trueFlag)
+    exclusiveOn(listOf(trueFlag))
   }
 }
 
