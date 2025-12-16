@@ -49,7 +49,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
       .build()
 
   private val id2Compact =
-    storage.createKVStore<ID, BazelTargetCompact>("bazel.target.graph.id2label", StorageHints.USE_PAGED_STORE)
+    storage.createKVStore<ID, BazelTargetCompact>("bazel.target.graph.id2label", StorageHints.USE_IN_MEMORY)
       .withKeyCodec { ofInt() }
       .withValueCodec { ofKryo() }
       .build()
@@ -141,6 +141,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
 
   override fun getLabelByVertexId(id: ID): Label? = id2Compact.get(id)?.label
   override fun getVertexCompactById(id: ID): BazelTargetCompact? = id2Compact.get(id)
+  override fun getAllVertexCompacts(): Sequence<BazelTargetCompact> = id2Compact.values().asClosingSequence()
 
   override fun getEdgeById(id: ID): BazelTargetEdge? = id2Edge.get(id)
 
@@ -176,6 +177,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
   override fun addVertex(vertex: BazelTargetVertex) {
     id2Vertex.put(vertex.vertexId, vertex)
     id2Compact.put(vertex.vertexId, vertex.toTargetCompact())
+    id2Successors.computeIfAbsent(vertex.vertexId) { IntArrayList() }
 
     val labelHash = hash { putResolvedLabel(vertex.label as ResolvedLabel) }
     labelHash2VertexId.put(labelHash, vertex.vertexId)

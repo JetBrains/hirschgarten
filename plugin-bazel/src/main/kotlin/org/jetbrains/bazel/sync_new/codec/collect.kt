@@ -46,6 +46,7 @@ object IntArrayCodec {
     val result = IntArray(length)
     if (buffer is HasByteBuffer) {
       buffer.buffer.asIntBuffer().get(result)
+      buffer.buffer.position(buffer.buffer.position() + length * Int.SIZE_BYTES)
     } else {
       for (n in 0 until length) {
         result[n] = buffer.readInt32()
@@ -81,6 +82,7 @@ object LongArrayCodec {
     val result = LongArray(length)
     if (buffer is HasByteBuffer) {
       buffer.buffer.asLongBuffer().get(result)
+      buffer.buffer.position(buffer.buffer.position() + length * Long.SIZE_BYTES)
     } else {
       for (n in 0 until length) {
         result[n] = buffer.readInt64()

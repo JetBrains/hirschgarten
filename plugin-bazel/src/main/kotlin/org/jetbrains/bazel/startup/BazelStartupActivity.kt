@@ -23,6 +23,9 @@ import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.flow.universe.SyncUniversePhase
+import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
@@ -95,11 +98,19 @@ private fun executeOnSyncedProject(project: Project) {
  * TODO: BAZEL-2038
  */
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
-  project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
+  isBeforeFirstSync(project) ||
     project.serviceAsync<BazelProjectProperties>().isBrokenBazelProject ||
     !PlatformUtils.isGoIde() &&
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache ||
     !bazelExecPathExists(project)
+
+private suspend fun isBeforeFirstSync(project: Project): Boolean {
+  return if (BazelSyncV2.isEnabled) {
+    project.serviceAsync<SyncUniverseService>().universe.phase == SyncUniversePhase.BEFORE_FIRST_SYNC
+  } else {
+    project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0
+  }
+}
 
 private suspend fun bazelExecPathExists(project: Project): Boolean =
   project

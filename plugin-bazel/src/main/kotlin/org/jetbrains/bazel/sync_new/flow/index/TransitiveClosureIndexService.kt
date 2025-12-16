@@ -141,7 +141,8 @@ class TransitiveClosureIndexService(
             val rdeps = ctx.graph.getPredecessors(vertexId)
             var bits: BitSet? = null
             for (n in rdeps.indices) {
-              val rdepBit = result.get(n) ?: continue
+              val rdepVertexId = rdeps.getInt(n)
+              val rdepBit = result.get(rdepVertexId) ?: continue
               if (bits == null) {
                 bits = rdepBit.clone() as BitSet
               } else {
@@ -153,8 +154,8 @@ class TransitiveClosureIndexService(
             if (execIdx >= 0) {
               if (bits == null) {
                 bits = BitSet(execs.size)
-                bits.set(execIdx)
               }
+              bits.set(execIdx)
             }
 
             if (bits != null) {

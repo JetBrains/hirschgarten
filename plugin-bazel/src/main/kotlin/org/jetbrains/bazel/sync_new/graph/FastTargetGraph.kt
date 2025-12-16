@@ -24,6 +24,7 @@ interface FastTargetGraph<V : TargetVertex, E : TargetEdge, C : TargetCompact> :
   fun getVertexIdByLabel(label: Label): ID?
   fun getLabelByVertexId(id: ID): Label?
   fun getVertexCompactById(id: ID): C?
+  fun getAllVertexCompacts(): Sequence<C>
 
   fun getNextVertexId(): ID
   fun getNextEdgeId(): ID

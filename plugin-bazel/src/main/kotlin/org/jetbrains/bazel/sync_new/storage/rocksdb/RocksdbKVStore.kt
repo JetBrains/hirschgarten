@@ -18,6 +18,7 @@ import org.rocksdb.RocksIterator
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.StampedLock
 
 // TODO: handle queue offer timeouts properly, retries etc
@@ -53,7 +54,6 @@ class RocksdbKVStore<K : Any, V : Any>(
   }
 
   private val cache = Caffeine.newBuilder()
-    .softValues()
     .executor { it.run() }
     .evictionListener<K, V> { k, v, cause ->
       if (k == null || v == null) {
@@ -69,6 +69,7 @@ class RocksdbKVStore<K : Any, V : Any>(
         }
       }
     }
+    .expireAfterAccess(5, TimeUnit.MINUTES)
     .build<K, V?>()
 
   private val clearLock = Any()
@@ -93,6 +94,7 @@ class RocksdbKVStore<K : Any, V : Any>(
         if (!mayExist) {
           return@get null
         }
+        keyBuffer.buffer.rewind()
       }
 
       VALUE_BUFFER_POOL.use { buffer ->
@@ -207,7 +209,7 @@ class RocksdbKVStore<K : Any, V : Any>(
         newIter.seekToFirst()
         if (!newIter.isValid) {
           newIter.close()
-          return false
+          return yieldQueue.isNotEmpty()
         }
         iter = newIter
         newIter
@@ -268,7 +270,7 @@ class RocksdbKVStore<K : Any, V : Any>(
         newIter.seekToFirst()
         if (!newIter.isValid) {
           newIter.close()
-          return false
+          return yieldQueue.isNotEmpty()
         }
         iter = newIter
         newIter

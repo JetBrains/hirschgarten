@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingService
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
 import org.jetbrains.bazel.sync_new.connector.BazelConnector
@@ -102,6 +103,9 @@ class SyncUniverseService(
         repoMapping = repoMapping,
       )
     }
+
+    // TODO: compat that
+    BazelRepoMappingService.getInstance(project).dropCaches()
 
     return diff
   }

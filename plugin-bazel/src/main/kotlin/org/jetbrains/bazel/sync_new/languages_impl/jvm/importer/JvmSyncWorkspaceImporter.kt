@@ -39,28 +39,6 @@ class JvmSyncWorkspaceImporter(
         removed = removed.mapNotNull { it.getBuildTarget() }
           .map { JvmResourceId.VertexReference(vertexId = it.vertexId) }
       )
-      // TODO: move to IncrementalEntityStore or some util
-      //val toRemove = mutableSetOf<JvmResourceId>()
-      //for (removed in removed) {
-      //  val target = removed.getBuildTarget() ?: continue
-      //  val vertexId = JvmResourceId.VertexReference(target.vertexId)
-      //  toRemove.add(vertexId)
-      //  toRemove += storage.getTransitiveDependants(vertexId)
-      //}
-      //val removeQueue = mutableListOf<JvmResourceId>()
-      //for (removed in removed) {
-      //  val target = removed.getBuildTarget() ?: continue
-      //  val resourceId = JvmResourceId.VertexReference(vertexId = target.vertexId)
-      //  for (dependency in storage.getTransitiveDependants(resourceId)) {
-      //    val referrers = storage.getDirectReferrers(dependency).toList()
-      //    val canBeRemoved = referrers.isEmpty()
-      //      || referrers.all { it in toRemove }
-      //    if (canBeRemoved) {
-      //      removeQueue += dependency
-      //    }
-      //  }
-      //}
-      //removeQueue.forEach { storage.removeEntity(it) }
     }
 
     computeVertexDepsEntities(diff)
