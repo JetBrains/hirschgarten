@@ -61,7 +61,7 @@ private fun ShellCommandContext.dummyArgs() {
     isOptional = true
     suggestions(
       ShellRuntimeDataGenerator { context ->
-        listOf(ShellCompletionSuggestion(name = context.typedPrefix, isHidden = true))
+        listOf(ShellCompletionSuggestion(context.typedPrefix) { isHidden = true })
       },
     )
   }
@@ -82,29 +82,30 @@ private fun ShellCommandContext.queryCompletion() {
         val suggestions: MutableList<ShellCompletionSuggestion> =
           targets
             .map { target ->
-              ShellCompletionSuggestion(
-                name = target,
-                icon = BazelPluginIcons.bazel,
-                prefixReplacementIndex = offset,
-                priority = targetPriority,
-              )
+              ShellCompletionSuggestion(target) {
+                icon(BazelPluginIcons.bazel)
+                prefixReplacementIndex = offset
+                priority = targetPriority
+              }
             }.toMutableList()
         suggestions.addAll(
           knownCommands.map {
-            ShellCompletionSuggestion(
-              name = "${it.name}()",
-              description = functionDescriptionHtml(it, context.project),
-              icon = BazelPluginIcons.bazel,
-              prefixReplacementIndex = offset,
-              insertValue = "${it.name}({cursor})",
-            )
+            ShellCompletionSuggestion("${it.name}()") {
+              description(functionDescriptionHtml(it, context.project))
+              icon(BazelPluginIcons.bazel)
+              prefixReplacementIndex = offset
+              insertValue = "${it.name}({cursor})"
+            }
           },
         )
 
         // Empty suggestion for the parser to consider quoted expression as valid argument, so flags will be suggested after the argument.
         // Inspired from ShellDataGenerators#getFileSuggestions.
         if (isStartAndEndWithQuote(context.typedPrefix)) {
-          val emptySuggestion = ShellCompletionSuggestion(name = "", prefixReplacementIndex = offset, isHidden = true)
+          val emptySuggestion = ShellCompletionSuggestion("") {
+            prefixReplacementIndex = offset
+            isHidden = true
+          }
           suggestions.add(emptySuggestion)
         }
 
@@ -165,7 +166,7 @@ private fun ShellCommandContext.optionWithUnknownArgs(flag: Flag, project: Proje
     argument {
       isOptional = true
       suggestions {
-        listOf(ShellCompletionSuggestion(name = "", isHidden = true))
+        listOf(ShellCompletionSuggestion("") { isHidden = true })
       }
     }
   }
