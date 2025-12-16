@@ -22,6 +22,7 @@ import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 @Service(Service.Level.PROJECT)
 class SyncFileIndexService(
@@ -37,7 +38,6 @@ class SyncFileIndexService(
   }
 
   private val syncStoreService by lazy { project.service<SyncStoreService>() }
-
   private val transitiveClosureService by lazy { project.service<TransitiveClosureIndexService>() }
 
   override suspend fun updateIndexes(ctx: SyncContext, diff: SyncDiff) {
@@ -75,11 +75,16 @@ class SyncFileIndexService(
   fun getTargetIdsBySourceFile(file: Path): Sequence<Int> = file2TargetId.get(hashFilePath(file))
 
   fun getAllReverseExecutableTargetsBySourceFile(file: Path): Sequence<Label> {
-    return getTargetIdsBySourceFile(file)
+    val transitiveExecutableTargets = getTargetIdsBySourceFile(file)
       .flatMap { vertexId -> transitiveClosureService.getAllReverseTransitiveExecutableTargetIds(vertexId) }
       .mapNotNull { syncStoreService.targetGraph.getVertexCompactById(it)?.label }
+    val selfExecutableTargets = getTargetIdsBySourceFile(file)
+      .mapNotNull { syncStoreService.targetGraph.getVertexCompactById(it) }
+      .filter { it.isExecutable }
+      .map { it.label }
+    return (selfExecutableTargets + transitiveExecutableTargets).distinct()
   }
 
-  private fun hashFilePath(path: Path): HashValue128 = hash { putString(path.toString()) }
+  private fun hashFilePath(path: Path): HashValue128 = hash { putString(path.absolutePathString()) }
 
 }

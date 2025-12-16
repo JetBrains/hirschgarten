@@ -22,6 +22,7 @@ import org.jetbrains.bazel.sync_new.flow.SyncProgressReporter
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntityStore
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.JvmModuleEntity
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.JvmResourceId
+import org.jetbrains.bazel.sync_new.languages_impl.jvm.index.JvmModuleSyncIndex
 import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
@@ -42,6 +43,13 @@ class LegacyWorkspaceModelApplicator(
       message = "Preparing legacy model",
     ) {
       LegacyModelConverter(storage).convert(ctx)
+    }
+
+    progress.task.withTask(
+      taskId = "updating_legacy_indexes",
+      message = "Updating legacy indexes",
+    ) {
+      ctx.project.serviceAsync<JvmModuleSyncIndex>().reset(legacyModel)
     }
 
     progress.task.withTask(

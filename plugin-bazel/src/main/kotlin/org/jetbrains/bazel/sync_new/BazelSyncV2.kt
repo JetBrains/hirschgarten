@@ -15,4 +15,6 @@ object BazelSyncV2 {
   val useNewTargetTreeStorage: Boolean = true
 
   val useFileChangeBasedInvalidation: Boolean = true
+
+  val disallowLegacyFullTargetGraphMaterialization = true
 }

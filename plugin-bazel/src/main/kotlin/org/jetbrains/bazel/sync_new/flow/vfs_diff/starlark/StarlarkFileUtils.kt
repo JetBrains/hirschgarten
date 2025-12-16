@@ -4,6 +4,7 @@ import com.dynatrace.hash4j.hashing.HashValue128
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 fun Build.SourceFile.toPath(): Path =
   if (location.contains(':')) {
@@ -13,5 +14,5 @@ fun Build.SourceFile.toPath(): Path =
   }
 
 object StarlarkFileUtils {
-  fun hashWorkspacePath(path: Path): HashValue128 = hash { putString(path.toString()) }
+  fun hashWorkspacePath(path: Path): HashValue128 = hash { putString(path.absolutePathString()) }
 }

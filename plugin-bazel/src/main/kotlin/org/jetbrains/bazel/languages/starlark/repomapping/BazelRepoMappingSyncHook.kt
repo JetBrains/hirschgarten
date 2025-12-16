@@ -8,6 +8,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.util.concurrency.SynchronizedClearableLazy
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.config.rootDir
@@ -84,14 +85,25 @@ class BazelRepoMappingService(
   private val project: Project,
 ) : PersistentStateComponent<BazelRepoMappingServiceState> {
 
+  private val apparentRepoNameToCanonicalNameV2Cached = SynchronizedClearableLazy {
+    when (val mapping = project.syncRepoMapping) {
+      is BzlmodSyncRepoMapping -> mapping.apparentToCanonical
+      DisabledSyncRepoMapping -> emptyMap()
+    }
+  }
+
+  private val canonicalRepoNameToPathV2Cached = SynchronizedClearableLazy {
+    when (val mapping = project.syncRepoMapping) {
+      is BzlmodSyncRepoMapping -> mapping.apparentToCanonical.entries.associate { (canonical, apparent) -> apparent to canonical }
+      DisabledSyncRepoMapping -> emptyMap()
+    }
+  }
+
   @Volatile
   var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
     get() {
       return if (BazelSyncV2.isEnabled) {
-        when (val mapping = project.syncRepoMapping) {
-          is BzlmodSyncRepoMapping -> mapping.apparentToCanonical
-          DisabledSyncRepoMapping -> emptyMap()
-        }
+        apparentRepoNameToCanonicalNameV2Cached.get()
       } else {
         field
       }
@@ -105,11 +117,7 @@ class BazelRepoMappingService(
   var canonicalRepoNameToApparentName: Map<String, String> = emptyMap()
     get() {
       return if (BazelSyncV2.isEnabled) {
-        // TODO: cache
-        when (val mapping = project.syncRepoMapping) {
-          is BzlmodSyncRepoMapping -> mapping.apparentToCanonical.entries.associate { (canonical, apparent) -> apparent to canonical }
-          DisabledSyncRepoMapping -> emptyMap()
-        }
+        canonicalRepoNameToPathV2Cached.get()
       } else {
         field
       }
@@ -119,7 +127,6 @@ class BazelRepoMappingService(
   var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
     get() {
       return if (BazelSyncV2.isEnabled) {
-        // TODO: cache
         when (val mapping = project.syncRepoMapping) {
           is BzlmodSyncRepoMapping -> mapping.canonicalRepoNameToLocalPath
           DisabledSyncRepoMapping -> emptyMap()
@@ -138,6 +145,11 @@ class BazelRepoMappingService(
   override fun loadState(state: BazelRepoMappingServiceState) {
     apparentRepoNameToCanonicalName = state.apparentRepoNameToCanonicalName
     canonicalRepoNameToPath = state.canonicalRepoNameToPath.mapValues { (_, path) -> Path(path) }
+  }
+
+  fun dropCaches() {
+    canonicalRepoNameToPathV2Cached.drop()
+    apparentRepoNameToCanonicalNameV2Cached.drop()
   }
 
   companion object {
