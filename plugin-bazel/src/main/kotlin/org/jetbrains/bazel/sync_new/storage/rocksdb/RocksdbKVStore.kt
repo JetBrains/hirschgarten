@@ -21,7 +21,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.StampedLock
 
-// TODO: handle queue offer timeouts properly, retries etc
 class RocksdbKVStore<K : Any, V : Any>(
   private val db: RocksDB,
   internal val cfHandle: ColumnFamilyHandle,
@@ -65,7 +64,8 @@ class RocksdbKVStore<K : Any, V : Any>(
           flushQueue.enqueue(FlushOperation.FlushDirty(this, k))
         }
 
-        else -> { /* noop */
+        else -> {
+          /* noop */
         }
       }
     }
@@ -115,8 +115,7 @@ class RocksdbKVStore<K : Any, V : Any>(
   }
 
   override fun put(key: K, value: V) {
-    cache.put(key, value)
-    flushQueue.enqueue(FlushOperation.FlushDirty(this, key))
+    putInternal(key, value, acquireLock = true)
   }
 
   override fun contains(key: K): Boolean {
@@ -141,15 +140,7 @@ class RocksdbKVStore<K : Any, V : Any>(
   }
 
   override fun remove(key: K, useReturn: Boolean): V? {
-    val value = if (useReturn) {
-      get(key)
-    } else {
-      null
-    }
-    evictedQueue.remove(key)
-    cache.invalidate(key)
-    flushQueue.enqueue(FlushOperation.FlushDirty(this, key))
-    return value
+    return removeInternal(key, useReturn = useReturn, acquireLock = true)
   }
 
   override fun clear() {
@@ -304,7 +295,7 @@ class RocksdbKVStore<K : Any, V : Any>(
         return@useComputeLock v
       }
       v = op(key)
-      put(key, v)
+      putInternal(key, v, acquireLock = false)
       return@useComputeLock v
     } finally {
       lock.unlock(stamp)
@@ -323,9 +314,9 @@ class RocksdbKVStore<K : Any, V : Any>(
         stamp = lock.writeLock()
       }
       if (newValue == null) {
-        remove(key, useReturn = false)
+        removeInternal(key, useReturn = false, acquireLock = false)
       } else {
-        put(key, newValue)
+        putInternal(key, newValue, acquireLock = false)
       }
       return@useComputeLock newValue
     } finally {
@@ -337,12 +328,45 @@ class RocksdbKVStore<K : Any, V : Any>(
     cfHandle.close()
   }
 
+  private fun putInternal(key: K, value: V, acquireLock: Boolean) = useWriteLock(key, acquire = acquireLock) {
+    cache.put(key, value)
+    flushQueue.enqueue(FlushOperation.FlushDirty(this, key))
+  }
+
+  private fun removeInternal(key: K, useReturn: Boolean, acquireLock: Boolean) = useWriteLock(key, acquire = acquireLock) {
+    val value = if (useReturn) {
+      get(key)
+    } else {
+      null
+    }
+    evictedQueue.remove(key)
+    cache.invalidate(key)
+    flushQueue.enqueue(FlushOperation.FlushDirty(this, key))
+    value
+  }
+
   private inline fun <T> useComputeLock(key: K, crossinline op: (lock: StampedLock) -> T): T {
     val lock = computeLocks.computeIfAbsent(key) { StampedLock() }
     try {
       return op(lock)
     } finally {
       computeLocks.remove(key)
+    }
+  }
+
+  private inline fun <T> useWriteLock(key: K, acquire: Boolean, op: () -> T): T {
+    if (!acquire) {
+      return op()
+    }
+    val lock = computeLocks[key]
+    if (lock == null) {
+      return op()
+    }
+    val stamp = lock.writeLock()
+    try {
+      return op()
+    } finally {
+      lock.unlock(stamp)
     }
   }
 
