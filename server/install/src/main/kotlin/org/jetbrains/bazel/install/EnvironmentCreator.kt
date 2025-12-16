@@ -114,6 +114,8 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     val sourceAbsolutePath = source.resolve(destinationRelativePath)
     // extension.bzl is written in BazelBspLanguageExtensionsGenerator, we don't have to delete it
     if (destinationRelativePath == Constants.EXTENSIONS_BZL) return
+    // BUILD is written in copyFileTree
+    if (destinationRelativePath == Constants.BUILD_FILE_NAMES.last()) return
     // Templates are expanded inside TemplateWriter, we don't have to delete them
     val templateAbsolutePath = sourceAbsolutePath.resolveSibling(sourceAbsolutePath.name + Constants.TEMPLATE_EXTENSION)
     if (sourceAbsolutePath.notExists() && templateAbsolutePath.notExists()) {
