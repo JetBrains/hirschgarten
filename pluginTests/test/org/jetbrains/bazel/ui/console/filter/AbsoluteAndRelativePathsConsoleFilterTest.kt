@@ -6,8 +6,8 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
