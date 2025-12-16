@@ -25,7 +25,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "895ec375e08ef59436740036a9164f70e3cd5b4c",
+        commitHash = "682aed9b15c007bbb9bed2246f54ff4c44ec1bf7",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("importRunConfigurations") },
         isReusable = false,
@@ -53,6 +53,19 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
           val moduleBazelPath = checkNotNull(singleProject().getBasePath()) + "/MODULE.bazel"
           consoleView.waitContainsText("MODULE.bazel from envs: $moduleBazelPath", timeout = 5.seconds)
           consoleView.waitContainsText("Args: [-moduleBazelLocation=$moduleBazelPath", timeout = 5.seconds)
+        }
+        step("Check that parent environment variables are passed to run targets (BAZEL-2761)") {
+          val homeValue = System.getProperty("user.home")
+          checkNotNull(homeValue) { "user.home system property is not set" }
+
+          val homeFound =
+            runCatching { consoleView.waitContainsText("PARENT_ENV_HOME=$homeValue", timeout = 5.seconds) }.isSuccess
+          val userProfileFound =
+            runCatching { consoleView.waitContainsText("PARENT_ENV_USERPROFILE=$homeValue", timeout = 5.seconds) }.isSuccess
+
+          check(homeFound || userProfileFound) {
+            "Parent environment variables not passed: neither HOME nor USERPROFILE found in output (expected: $homeValue)"
+          }
         }
       }
     }
