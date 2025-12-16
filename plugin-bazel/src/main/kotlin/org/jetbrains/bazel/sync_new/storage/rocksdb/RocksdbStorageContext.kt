@@ -4,7 +4,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.util.Disposer
-import org.jetbrains.bazel.sync_new.codec.writeString
 import org.jetbrains.bazel.sync_new.storage.FlatPersistentStore
 import org.jetbrains.bazel.sync_new.storage.FlatStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.KVStoreBuilder
@@ -21,6 +20,7 @@ import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.AbstractComparator
 import org.rocksdb.BlockBasedTableConfig
+import org.rocksdb.BloomFilter
 import org.rocksdb.BuiltinComparator
 import org.rocksdb.ColumnFamilyDescriptor
 import org.rocksdb.ColumnFamilyHandle
@@ -29,6 +29,7 @@ import org.rocksdb.CompactionStyle
 import org.rocksdb.ComparatorOptions
 import org.rocksdb.CompressionType
 import org.rocksdb.DBOptions
+import org.rocksdb.IndexType
 import org.rocksdb.LRUCache
 import org.rocksdb.Options
 import org.rocksdb.ReadOptions
@@ -117,10 +118,10 @@ class RocksdbStorageContext(
           .setCacheIndexAndFilterBlocksWithHighPriority(true)
           .setPinL0FilterAndIndexBlocksInCache(true)
           .setPinTopLevelIndexAndFilter(true)
-          .setFilterPolicy(org.rocksdb.BloomFilter(10.0, false)) // 10 bits per key
+          .setFilterPolicy(BloomFilter(10.0, false)) // 10 bits per key
           .setWholeKeyFiltering(true)
           .setFormatVersion(5)
-          .setIndexType(org.rocksdb.IndexType.kTwoLevelIndexSearch)
+          .setIndexType(IndexType.kTwoLevelIndexSearch)
           .setPartitionFilters(true)
           .setOptimizeFiltersForMemory(false) // Optimize for speed, not memory
           .setMetadataBlockSize(8 * 1024)
@@ -169,10 +170,10 @@ class RocksdbStorageContext(
           .setCacheIndexAndFilterBlocks(true)
           .setPinL0FilterAndIndexBlocksInCache(false)
           .setPinTopLevelIndexAndFilter(false) // Keep top-level index in memory
-          .setFilterPolicy(org.rocksdb.BloomFilter(10.0, false)) // Bloom filter with 10 bits per key
+          .setFilterPolicy(BloomFilter(10.0, false)) // Bloom filter with 10 bits per key
           .setWholeKeyFiltering(true) // Enable whole key bloom filtering
           .setFormatVersion(5) // Latest format with better bloom filter support
-          .setIndexType(org.rocksdb.IndexType.kTwoLevelIndexSearch) // Two-level index for large datasets
+          .setIndexType(IndexType.kTwoLevelIndexSearch) // Two-level index for large datasets
           .setPartitionFilters(true) // Partition filters for better memory efficiency
           .setMetadataBlockSize(8 * 1024) // Larger metadata blocks
           .setCacheIndexAndFilterBlocksWithHighPriority(true) // Prioritize index/filter in cache
