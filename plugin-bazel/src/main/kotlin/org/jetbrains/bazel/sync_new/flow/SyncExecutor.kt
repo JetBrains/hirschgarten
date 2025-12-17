@@ -46,7 +46,7 @@ class SyncExecutor(
     val syncStore = withTask(project, "sync_store_init", "Initializing sync store") {
       val store = project.service<SyncStoreService>()
       if (scope is SyncScope.Full) {
-        store.syncMetadata.set(SyncMetadata())
+        store.syncMetadata.reset()
         store.targetGraph.clear()
         project.serviceAsync<SyncIndexService>().invalidateAll()
         project.service<SyncVFSService>().resetAll()

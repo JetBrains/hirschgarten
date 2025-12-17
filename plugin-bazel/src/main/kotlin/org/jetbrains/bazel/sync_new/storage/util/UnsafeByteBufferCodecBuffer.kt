@@ -212,8 +212,16 @@ class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer
     return value
   }
 
-  fun ensureCapacity(required: Int) {
-    if (buffer.capacity() >= required) return
-    reserve(required - buffer.capacity())
+  fun resizeTo(required: Int) {
+    if (buffer.capacity() >= required) {
+      buffer.clear()
+      return
+    }
+    val newSize = calculateNewSize(buffer.capacity(), required)
+    buffer = if (buffer.isDirect) {
+      ByteBuffer.allocateDirect(newSize)
+    } else {
+      ByteBuffer.allocate(newSize)
+    }
   }
 }
