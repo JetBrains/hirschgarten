@@ -1,12 +1,10 @@
 package org.jetbrains.bazel.server.bsp.utils
 
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 
 class InternalAspectsResolver(
   val bspInfo: BspInfo,
-  val bazelRelease: BazelRelease,
 ) {
   private val prefix: Lazy<String> = lazy { getPrefix() }
 

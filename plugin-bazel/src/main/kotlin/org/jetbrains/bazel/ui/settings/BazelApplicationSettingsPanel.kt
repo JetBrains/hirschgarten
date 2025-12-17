@@ -12,8 +12,6 @@ import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.CollectionComboBoxModel
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.JComponent
@@ -82,7 +80,6 @@ class BazelApplicationSettingsConfigurable : SearchableConfigurable {
       group(BazelPluginBundle.message("application.settings.updates.title")) {
         row(BazelPluginBundle.message("application.settings.update.channel.dropdown.title")) {
           cell(updateChannelComboBox)
-            .align(Align.FILL)
             .contextHelp(BazelPluginBundle.message("application.settings.update.channel.dropdown.help.description"))
         }
       }

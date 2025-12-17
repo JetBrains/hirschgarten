@@ -14,12 +14,13 @@ object Constants {
 
   const val WORKSPACE_FILE_NAME: String = "WORKSPACE"
   const val MODULE_BAZEL_FILE_NAME = "MODULE.bazel"
-  const val BAZELISK_VERSION_FILE_NAME = ".bazelversion"
+  const val BAZEL_VERSION_FILE_NAME = ".bazelversion"
+  const val BAZELISK_VERSION_FILE_NAME = ".bazeliskversion"
   const val BAZELISK_RC_FILE_NAME = ".bazeliskrc"
   const val BAZEL_IGNORE_FILE_NAME = ".bazelignore"
   val WORKSPACE_FILE_NAMES: Array<String> = arrayOf(MODULE_BAZEL_FILE_NAME, WORKSPACE_FILE_NAME, "WORKSPACE.bazel", "WORKSPACE.bzlmod")
   val BUILD_FILE_NAMES: Array<String> = arrayOf("BUILD.bazel", "BUILD")
-  val BAZELISK_FILE_NAMES = listOf(BAZELISK_VERSION_FILE_NAME, BAZELISK_RC_FILE_NAME)
+  val BAZELISK_FILE_NAMES = listOf(BAZEL_VERSION_FILE_NAME, BAZELISK_RC_FILE_NAME)
   val SUPPORTED_EXTENSIONS: Array<String> = arrayOf("bazel", "bazelproject", "bzlmod", "bzl")
   val SUPPORTED_CONFIG_FILE_NAMES: Array<String> = WORKSPACE_FILE_NAMES + BUILD_FILE_NAMES + BAZELISK_FILE_NAMES
 

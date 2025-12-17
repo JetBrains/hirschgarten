@@ -10,15 +10,18 @@ import com.intellij.util.io.HttpRequests
 import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
 import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isExecutable
 import kotlin.io.path.pathString
+import kotlin.io.path.readText
 
 private val log = logger<ProjectViewToWorkspaceContextConverter>()
 
@@ -45,7 +48,8 @@ object ProjectViewToWorkspaceContextConverter {
       buildFlags = projectView.buildFlags,
       syncFlags = projectView.syncFlags,
       debugFlags = projectView.debugFlags,
-      bazelBinary = projectView.bazelBinary ?: resolveBazelBinary(),
+      bazelBinary = projectView.bazelBinary?.let { workspaceRoot.resolve(it) }
+        ?: resolveBazelBinary(workspaceRoot),
       allowManualTargetsSync = projectView.allowManualTargetsSync,
       dotBazelBspDirPath = dotBazelBspDirPath,
       importDepth = projectView.importDepth,
@@ -80,12 +84,29 @@ object ProjectViewToWorkspaceContextConverter {
     }
   }
 
-  private fun resolveBazelBinary(): Path {
-    // First try to find bazel or bazelisk on PATH
+  private fun resolveBazelBinary(workspaceRoot: Path): Path {
+    val bazeliskVersion = readBazeliskVersion(workspaceRoot)
+    if (bazeliskVersion != null) {
+      // If requested a specific version, download it
+      return downloadBazelisk(bazeliskVersion) ?: throw IllegalStateException("Failed to download bazelisk $bazeliskVersion")
+    }
+
+    // Otherwise try to find bazel or bazelisk on PATH
     findBazelOnPathOrNull()?.let { return it }
 
-    // If not found, try to download bazelisk
-    return downloadBazelisk() ?: Path.of("bazel")
+    // If not found, try to download any version of bazelisk
+    return downloadBazelisk(bazeliskVersion = null) ?: Path.of("bazel")
+  }
+
+  /**
+   * Logic specific to IntelliJ monorepo, see https://youtrack.jetbrains.com/issue/BAZEL-2573/Hermetic-workflow-.bazeliskversion
+   */
+  private fun readBazeliskVersion(workspaceRoot: Path): String? {
+    val bazeliskVersionFile = workspaceRoot.resolve(Constants.BAZELISK_VERSION_FILE_NAME)
+    return runCatching { bazeliskVersionFile.readText() }
+      .getOrNull()
+      ?.trim()
+      ?.takeIf { it.isNotEmpty() }
   }
 
   private fun findBazelOnPathOrNull(): Path? =
@@ -102,8 +123,8 @@ object ProjectViewToWorkspaceContextConverter {
     return if (path.exists() && path.isExecutable()) path else null
   }
 
-  private fun downloadBazelisk(): Path? {
-    val downloadUrl = calculateBazeliskDownloadLink() ?: return null
+  private fun downloadBazelisk(bazeliskVersion: String?): Path? {
+    val downloadUrl = calculateBazeliskDownloadLink(bazeliskVersion) ?: return null
 
     // Use IntelliJ's system cache directory
     val cacheDir = Path.of(PathManager.getSystemPath(), "bazel-plugin")
@@ -115,7 +136,8 @@ object ProjectViewToWorkspaceContextConverter {
     }
 
     // Download bazelisk to the cache folder
-    val bazeliskFile = cacheDir.resolve("bazelisk")
+    val targetFileName = if (bazeliskVersion == null) "bazelisk" else "bazelisk-$bazeliskVersion"
+    val bazeliskFile = cacheDir.resolve(targetFileName)
     if (Files.exists(bazeliskFile)) {
       log.info("Bazelisk already exists in the cache folder: ${bazeliskFile.toAbsolutePath()}")
       return bazeliskFile
@@ -126,8 +148,8 @@ object ProjectViewToWorkspaceContextConverter {
     // Download with progress indicator
     try {
       val task =
-        object : Task.Modal(null, BazelPluginBundle.message("bazel.project.downloading.bazelisk"), true) {
-          override fun run(indicator: ProgressIndicator) {
+        object : Task.WithResult<Unit, IOException>(null, BazelPluginBundle.message("bazel.project.downloading.bazelisk"), true) {
+          override fun compute(indicator: ProgressIndicator) {
             indicator.text = BazelPluginBundle.message("bazel.project.downloading.bazelisk.binary")
             indicator.isIndeterminate = false
 
@@ -148,8 +170,14 @@ object ProjectViewToWorkspaceContextConverter {
     }
   }
 
-  private fun calculateBazeliskDownloadLink(): String? {
-    val base = "https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-"
+  private fun calculateBazeliskDownloadLink(bazeliskVersion: String?): String? {
+    val downloadSegment = if (bazeliskVersion != null) {
+      "download/v$bazeliskVersion"
+    }
+    else {
+      "latest/download"
+    }
+    val base = "https://github.com/bazelbuild/bazelisk/releases/$downloadSegment/bazelisk-"
 
     val platform =
       when (OS.CURRENT) {

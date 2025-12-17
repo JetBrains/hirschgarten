@@ -90,7 +90,6 @@ class BazelBspServer(
     val aspectsResolver =
       InternalAspectsResolver(
         bspInfo = bspInfo,
-        bazelRelease = bazelInfo.release,
       )
 
     val bazelBspAspectsManager =

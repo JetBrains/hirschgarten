@@ -20,6 +20,7 @@ import com.intellij.psi.codeStyle.NameUtil
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.util.Processor
 import com.intellij.util.containers.ContainerUtil
+import com.intellij.util.text.matching.MatchingMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
@@ -58,7 +59,7 @@ class LabelSearchEverywhereContributor(private val project: Project) :
         .buildMatcher("*$pattern")
         .withSeparators("@/:")
         .typoTolerant()
-        .withCaseSensitivity(NameUtil.MatchingCaseSensitivity.NONE)
+        .withMatchingMode(MatchingMode.IGNORE_CASE)
         .build()
 
     val foundItems =

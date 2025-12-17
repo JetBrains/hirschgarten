@@ -31,7 +31,7 @@ class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
   private val libraries: Map<String, Library>,
-  private val runtimeDependencies: List<String> = emptyList(),
+  private val runtimeOnlyDependencies: Set<String> = emptySet(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
   override suspend fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
@@ -40,7 +40,7 @@ class ModuleEntityUpdater(
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val dependenciesFromEntity =
       entityToAdd.dependencies.map { dependency ->
-        val runtime = runtimeDependencies.contains(dependency)
+        val runtime = dependency in runtimeOnlyDependencies
         val libraryDependency = libraries[dependency]
         if (libraryDependency != null) {
           val exported = !libraryDependency.isLowPriority

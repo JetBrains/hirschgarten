@@ -126,7 +126,7 @@ object BazelBuildTargetSharder {
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
     if (wildcardIncludes.isEmpty()) {
-      return ExpandedTargetsResult(includes, BazelStatus.SUCCESS)
+      return ExpandedTargetsResult(includes.toSet(), BazelStatus.SUCCESS)
     }
     val expandedTargets: Map<Label, List<Label>> =
       WildcardTargetExpander.expandToNonRecursiveWildcardTargets(
@@ -159,7 +159,7 @@ object BazelBuildTargetSharder {
 
     // finally add back any explicitly-specified, unexcluded single targets which may have been
     // removed by the query (for example, because they have the 'manual' tag)
-    val singleTargets = includes.filter { !it.isWildcard }
+    val singleTargets = includes.filterTo(LinkedHashSet()) { !it.isWildcard }
     return ExpandedTargetsResult.merge(
       result,
       ExpandedTargetsResult(singleTargets, result.buildResult),
@@ -167,12 +167,12 @@ object BazelBuildTargetSharder {
   }
 
   /**
-   * Shards a list of individual blaze targets (with no wildcard expressions other than for excluded
+   * Shards a list of individual Bazel targets (with no wildcard expressions other than for excluded
    * target patterns).
    */
   private fun shardTargetsToBatches(
-    targets: List<Label>,
-    excludes: List<Label>,
+    targets: Collection<Label>,
+    excludes: Collection<Label>,
     shardSize: Int,
   ): ShardedTargetList = LexicographicTargetBatcher().getShardedTargetList(targets.toSet(), excludes.toSet(), shardSize)
 

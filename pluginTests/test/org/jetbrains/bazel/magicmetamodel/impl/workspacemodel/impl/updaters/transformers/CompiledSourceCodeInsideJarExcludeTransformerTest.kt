@@ -108,7 +108,7 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
         jars = listOf(Path("/path/to/jar.jar")),
         sourceJars = listOf(Path("/path/to/sourceJar.jar")),
         mavenCoordinates = null,
-        isFromInternalTarget = true,
+        containsInternalJars = true,
         isLowPriority = false,
       )
 
@@ -120,7 +120,7 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
         jars = listOf(Path("/path/to/another/jar.jar")),
         sourceJars = listOf(Path("/path/to/another/sourceJar.jar")),
         mavenCoordinates = null,
-        isFromInternalTarget = false,
+        containsInternalJars = false,
         isLowPriority = false,
       )
 

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
@@ -65,7 +64,6 @@ class BazelBspLanguageExtensionsGeneratorTest {
     )
   private lateinit var dotBazelBspAspectsPath: Path
   private lateinit var internalAspectsResolverMock: InternalAspectsResolver
-  private val bazelRelease = BazelRelease(5)
 
   private fun getExtensionsFileContent(): String =
     dotBazelBspAspectsPath
@@ -83,7 +81,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
     val dotBazelBspPath = EnvironmentCreator(tempRoot).create()
 
     dotBazelBspAspectsPath = dotBazelBspPath.resolve("aspects")
-    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot), bazelRelease)
+    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot))
   }
 
   @Test

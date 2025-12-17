@@ -20,6 +20,11 @@
     <psiElementConfigurationLocator
       implementation="org.jetbrains.bazel.kotlin.junit.KotlinPsiElementConfigurationLocator"
     />
+    <testLocatorProvider
+      id="kotlinShortNameLocator"
+      implementation="org.jetbrains.bazel.jvm.run.KotlinShortNameTestLocatorProvider"
+      order="before defaultJavaLocator"
+    />
     <syncVFSFileContributor implementation="org.jetbrains.bazel.sync_new.languages_impl.kotlin.vfs.KotlinSyncVFSFileContributor"/>
     <syncLanguagePlugin implementation="org.jetbrains.bazel.sync_new.languages_impl.kotlin.KotlinSyncLanguagePlugin"/>
   </extensions>

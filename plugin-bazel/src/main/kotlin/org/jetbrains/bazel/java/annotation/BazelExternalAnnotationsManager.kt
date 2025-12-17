@@ -61,6 +61,19 @@ class BazelExternalAnnotationsManager(project: Project) :
     value: Array<out PsiNameValuePair>?,
   ) = delegate.annotateExternally(listOwner, annotationFQName, fromFile, value)
 
+  override fun annotateExternallyModCommand(
+    listOwner: PsiModifierListOwner,
+    annotationFQName: String,
+    value: Array<out PsiNameValuePair?>?,
+  ): ModCommand = delegate.annotateExternallyModCommand(listOwner, annotationFQName, value)
+
+  override fun annotateExternallyModCommand(
+    listOwner: PsiModifierListOwner,
+    annotationFQName: String,
+    value: Array<out PsiNameValuePair?>?,
+    annotationsToRemove: List<String>,
+  ): ModCommand = delegate.annotateExternallyModCommand(listOwner, annotationFQName, value, annotationsToRemove)
+
   override fun deannotate(listOwner: PsiModifierListOwner, annotationFQN: String): Boolean = delegate.deannotate(listOwner, annotationFQN)
 
   override fun elementRenamedOrMoved(element: PsiModifierListOwner, oldExternalName: String) =
@@ -118,6 +131,19 @@ private class DummyExternalAnnotationsManager(psiManager: PsiManager) : ModComma
     fromFile: PsiFile,
     value: Array<out PsiNameValuePair>?,
   ) = Unit
+
+  override fun annotateExternallyModCommand(
+    listOwner: PsiModifierListOwner,
+    annotationFQName: String,
+    value: Array<out PsiNameValuePair?>?,
+  ): ModCommand = ModNothing()
+
+  override fun annotateExternallyModCommand(
+    listOwner: PsiModifierListOwner,
+    annotationFQName: String,
+    value: Array<out PsiNameValuePair?>?,
+    annotationsToRemove: List<String>,
+  ): ModCommand = ModNothing()
 
   override fun deannotate(listOwner: PsiModifierListOwner, annotationFQN: String): Boolean = false
 

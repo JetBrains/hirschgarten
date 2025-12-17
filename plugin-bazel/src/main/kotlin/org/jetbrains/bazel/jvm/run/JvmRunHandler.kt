@@ -3,6 +3,7 @@ package org.jetbrains.bazel.jvm.run
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
@@ -10,6 +11,7 @@ import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
+import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
@@ -33,14 +35,19 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   override val name: String
     get() = "Jvm Run Handler"
 
-  override val state = JvmRunState()
+  override val state = JvmRunState(configuration.project)
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     if (executor is DefaultDebugExecutor) {
       environment.putCopyableUserData(COROUTINE_JVM_FLAGS_KEY, Ref())
     }
-    environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
-    return RunScriptPathCommandLineState(environment, state)
+    return if (state.runWithBazel && executor is DefaultRunExecutor) {
+      BazelRunCommandLineState(environment, state)
+    }
+    else {
+      environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
+      RunScriptPathCommandLineState(environment, state)
+    }
   }
 
   class JvmRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
@@ -75,6 +82,15 @@ class RunScriptPathCommandLineState(environment: ExecutionEnvironment, val setti
     handler: BazelProcessHandler,
   ) {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
-    runWithScriptPath(scriptPath, environment.project, originId, pidDeferred, handler, settings.env.envs)
+    runWithScriptPath(
+      scriptPath,
+      environment.project,
+      originId,
+      pidDeferred,
+      handler,
+      settings.env.envs,
+      isTest = false,
+      testFilter = null,
+    )
   }
 }

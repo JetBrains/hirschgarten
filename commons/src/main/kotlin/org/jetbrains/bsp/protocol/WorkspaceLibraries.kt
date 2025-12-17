@@ -11,7 +11,7 @@ public data class LibraryItem(
   val jars: List<Path>,
   val sourceJars: List<Path>,
   val mavenCoordinates: MavenCoordinates?,
-  val isFromInternalTarget: Boolean,
+  val containsInternalJars: Boolean,
   val isLowPriority: Boolean,
 )
 

@@ -5,12 +5,12 @@ import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
 import com.intellij.driver.sdk.ui.components.elements.popupMenu
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
 
 /**
@@ -20,9 +20,12 @@ import kotlin.time.Duration.Companion.minutes
  */
 class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
 
-  @Test
-  fun openProject() {
-    createContext("runAllTestsAction", IdeaBazelCases.RunAllTestsAction).runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
+  @ParameterizedTest
+  @ValueSource(booleans = [false, true])
+  fun openProject(runConfigRunWithBazel: Boolean) {
+    createContext("runAllTestsAction", IdeaBazelCases.RunAllTestsAction)
+      .setRunConfigRunWithBazel(runConfigRunWithBazel)
+      .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {
         syncBazelProject()
         waitForIndicators(5.minutes)

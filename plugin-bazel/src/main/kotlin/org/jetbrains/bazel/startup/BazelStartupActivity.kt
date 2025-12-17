@@ -37,6 +37,18 @@ import kotlin.io.path.isDirectory
 private val log = logger<BazelStartupActivity>()
 
 /**
+ * Initializes the Bazel sync environment (TelemetryManager, ProcessSpawner, etc.).
+ * Must be called before running any sync operations.
+ */
+fun initializeBazelSyncEnvironment() {
+  ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
+  TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
+  BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
+  SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
+  FileUtil.provideFileUtil(FileUtilIntellij)
+}
+
+/**
  * Runs actions after the project has started up and the index is up to date.
  *
  * @see org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor for additional actions that
@@ -44,11 +56,7 @@ private val log = logger<BazelStartupActivity>()
  */
 class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
-    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
-    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-    BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
-    SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
-    FileUtil.provideFileUtil(FileUtilIntellij)
+    initializeBazelSyncEnvironment()
     log.info("Executing Bazel startup activity for project: $project")
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
     try {

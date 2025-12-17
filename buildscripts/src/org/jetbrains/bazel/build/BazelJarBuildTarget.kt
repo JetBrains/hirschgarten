@@ -49,7 +49,7 @@ object BazelJarBuildTarget {
               val module =
                 context.projectModel.project.findModuleByName(moduleName)
                   ?: error("Module '$moduleName' not found")
-              moduleOutputAsSource(context, module)
+              moduleOutputAsSource(module, outputProvider = context.outputProvider)
             },
         )
         jarFile

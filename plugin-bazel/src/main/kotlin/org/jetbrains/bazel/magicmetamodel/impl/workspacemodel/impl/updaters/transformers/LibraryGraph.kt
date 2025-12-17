@@ -9,6 +9,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.filterRuntimeOnly
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
@@ -94,7 +95,10 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
           baseDirContentRoot = null,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
-          runtimeDependencies = library.dependencies.filter { it.isRuntime }.map { it.toDependencyId(project) },
+          runtimeOnlyDependencies = library
+            .dependencies
+            .filterRuntimeOnly()
+            .mapTo(mutableSetOf()) { it.toDependencyId(project) },
         )
       }
   }

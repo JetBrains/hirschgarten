@@ -36,10 +36,10 @@ class JavaModuleWithSourcesUpdater(
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
       ModuleEntityUpdater(
-        workspaceModelEntityUpdaterConfig,
-        calculateJavaModuleDependencies(entityToAdd),
-        libraries,
-        entityToAdd.runtimeDependencies,
+        workspaceModelEntityUpdaterConfig = workspaceModelEntityUpdaterConfig,
+        defaultDependencies = calculateJavaModuleDependencies(entityToAdd),
+        libraries = libraries,
+        runtimeOnlyDependencies = entityToAdd.runtimeOnlyDependencies,
       )
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
@@ -143,7 +143,12 @@ class JavaModuleWithoutSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
-      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd), libraries, entityToAdd.runtimeDependencies)
+      ModuleEntityUpdater(
+        workspaceModelEntityUpdaterConfig,
+        calculateJavaModuleDependencies(entityToAdd),
+        libraries,
+        entityToAdd.runtimeOnlyDependencies,
+      )
 
     return moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
   }

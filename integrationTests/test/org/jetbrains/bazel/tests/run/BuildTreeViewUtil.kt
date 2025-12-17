@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.tests.run
 
 import com.intellij.driver.sdk.step
-import com.intellij.driver.sdk.ui.UiText
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
 import com.intellij.driver.sdk.ui.components.elements.tree
@@ -22,8 +21,3 @@ fun IdeaFrameUI.verifyBuildResultsTree(expectedTexts: Set<String>) {
 
 fun IdeaFrameUI.buildTreeView(): JTreeUiComponent =
   tree(xQuery { byAccessibleName("Build results") })
-
-private fun List<UiText>.filterRelevant() =
-  this
-    .map { it.text }
-//.filter { " sec" !in it && " ms" !in it && it != "Test Results" }

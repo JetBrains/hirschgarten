@@ -26,6 +26,7 @@
       implementation="org.jetbrains.bazel.golang.debug.BazelGoTestHandler$BazelGoTestHandlerProvider"
     />
     <targetKindProvider implementation="org.jetbrains.bazel.golang.targetKinds.GoBazelRules" />
+    <indexAdditionalFilesContributor implementation="org.jetbrains.bazel.golang.sync.GoIndexAdditionalFilesContributor"/>
   </extensions>
   <extensions defaultExtensionNs="com.goide">
     <dlv.positionConverterFactory

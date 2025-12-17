@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.bsp.utils
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
@@ -33,6 +32,6 @@ class InternalAspectsResolverTest {
     aspectLabel shouldBe "//.bazelbsp/aspects:core.bzl%get_classpath"
   }
 
-  private fun createAspectsResolver(bspProjectRoot: String, bazelRelease: BazelRelease = BazelRelease(5)): InternalAspectsResolver =
-    InternalAspectsResolver(BspInfo(Paths.get(bspProjectRoot)), bazelRelease)
+  private fun createAspectsResolver(bspProjectRoot: String): InternalAspectsResolver =
+    InternalAspectsResolver(BspInfo(Paths.get(bspProjectRoot)))
 }
