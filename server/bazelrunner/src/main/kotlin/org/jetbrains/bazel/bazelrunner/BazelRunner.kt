@@ -33,8 +33,7 @@ class BazelRunner(
   }
 
   inner class CommandBuilder(workspaceContext: WorkspaceContext) {
-    //private val bazelBinary = workspaceContext.bazelBinary?.pathString ?: "bazel"
-    private val bazelBinary = "/Users/mkocot/Documents/semi/logzel/logzel"
+    private val bazelBinary = workspaceContext.bazelBinary?.pathString ?: "bazel"
     var inheritWorkspaceOptions = false
 
     fun clean(builder: BazelCommand.Clean.() -> Unit = {}) = BazelCommand.Clean(bazelBinary).apply { builder() }
