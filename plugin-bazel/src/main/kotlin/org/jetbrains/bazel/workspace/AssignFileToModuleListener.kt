@@ -225,7 +225,7 @@ private suspend fun processFileEvents(
 
   val fileChanges = events.map { it.getOldAndNewFile() }
 
-  withBackgroundProgress(project, "ABU - name in progress") { // ABU
+  withBackgroundProgress(project, getProgressTitle(fileChanges)) {
     reportSequentialProgress { reporter ->
       val targetUtils = project.serviceAsync<TargetUtils>()
       val contentRootsToRemove =
@@ -259,12 +259,12 @@ private suspend fun processFileEvents(
 }
 
 @NlsSafe
-private fun VFileEvent.getProgressMessage(newFile: VirtualFile?): String =
-  when (this) {
-    is VFileCreateEvent -> BazelPluginBundle.message("file.change.processing.title.create", newFile?.name ?: "")
-    is VFileDeleteEvent -> BazelPluginBundle.message("file.change.processing.title.delete")
-    else -> BazelPluginBundle.message("file.change.processing.title.change", newFile?.name ?: "")
-  }
+private fun getProgressTitle(fileChanges: List<OldAndNewFile>): String =
+  fileChanges
+    .singleOrNull()
+    ?.newFile
+    ?.let { BazelPluginBundle.message("file.change.processing.title.single", it.name) }
+    ?: BazelPluginBundle.message("file.change.processing.title.multiple")
 
 private suspend fun processFileCreated(
   fileChanges: List<OldAndNewFile>,
@@ -315,7 +315,6 @@ suspend fun getModulesForFile(newFile: VirtualFile, project: Project): Set<Modul
   val modules = readAction { ProjectFileIndex.getInstance(project).getModulesForFile(newFile, true) }
   return modules
     .filter { it.moduleEntity?.entitySource != BazelDummyEntitySource }
-    .filter { it.name != "simple-bazel" }  // ABU
     .mapNotNull { it.moduleEntity }
     .toSet()
 }
@@ -406,9 +405,6 @@ private fun VirtualFileUrl.addToModule(
 
   entityStorageDiff.modifyModuleEntity(module) { contentRoots += contentRootEntity }
 }
-
-private fun findContentRoots(module: ModuleEntity, url: VirtualFileUrl): List<ContentRootEntity> =
-  module.contentRoots.filter { it.url == url }
 
 private fun findContentRoots(module: ModuleEntity, urls: Set<VirtualFileUrl>): List<ContentRootEntity> =
   module.contentRoots.filter { urls.contains(it.url) }
