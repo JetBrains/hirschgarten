@@ -12,12 +12,14 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.startup.FileUtilIntellij
 import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.exists
+import kotlin.io.path.readLines
 import kotlin.io.path.readText
 
 fun String.label() = Label.parse(this)
@@ -74,6 +76,14 @@ val mockBazelInfo =
 val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot)
 val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelInfo)
 
+fun splitOfTargetPattern(cmds : List<String>) : Pair<List<String>, List<String>> {
+  cmds.indexOf("--") shouldBe -1
+  val targetPatternFiles = cmds.filter { s -> s.startsWith("--target_pattern_file=")}
+  val targetPatternFileArgument = targetPatternFiles.singleOrNull() ?: fail("Expected precisely one target pattern file argument")
+  val patterns = Path(targetPatternFileArgument.substringAfter("--target_pattern_file=")).readLines()
+  return Pair(patterns, cmds.filter { s -> !s.startsWith("--target_pattern_file=")})
+}
+
 class BazelRunnerBuilderTest {
   @BeforeEach
   fun beforeEach() {
@@ -83,13 +93,14 @@ class BazelRunnerBuilderTest {
   }
 
   @Test
-  fun `most bare bones build without targets (even though it's not correct)`() {
+  fun `most bare bones build without targets`() {
     val command =
       bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = false) {
         build()
       }
 
-    command.buildExecutionDescriptor().command shouldContainExactly
+    val (targets, cmds) = splitOfTargetPattern(command.buildExecutionDescriptor().command)
+    cmds shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -98,40 +109,12 @@ class BazelRunnerBuilderTest {
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
-        "--",
       )
+    targets shouldBe emptyList()
   }
 
   @Test
-  fun `build with targets from spec without bazel info (legacy flow)`() {
-    val command =
-      bazelRunner.buildBazelCommand(mockContext) {
-        build {
-          addTargetsFromExcludableList(mockContext.targets)
-        }
-      }
-
-    command.buildExecutionDescriptor().command shouldContainExactly
-      listOf(
-        "bazel",
-        "build",
-        BazelFlag.toolTag(),
-        "--override_repository=bazelbsp_aspect=.bazelbsp",
-        "--curses=no",
-        "--color=yes",
-        "--noprogress_in_terminal_title",
-        "flag1",
-        "flag2",
-        "--",
-        "in1",
-        "in2",
-        "-ex1",
-        "-ex2",
-      )
-  }
-
-  @Test
-  fun `build with targets from spec (new flow with target pattern file)`() {
+  fun `build with targets from spec`() {
     val command =
       bazelRunnerWithBazelInfo.buildBazelCommand(mockContext) {
         build {
@@ -249,8 +232,9 @@ class BazelRunnerBuilderTest {
           environment["key"] = "value"
         }
       }
+    val (targets, cmds) = splitOfTargetPattern(command.buildExecutionDescriptor().command)
 
-    command.buildExecutionDescriptor().command shouldContainExactly
+    cmds shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -262,9 +246,8 @@ class BazelRunnerBuilderTest {
         "flag1",
         "flag2",
         "--action_env=key=value",
-        "--",
-        "in1",
       )
+    targets shouldBe listOf("in1")
   }
 
   @Test
@@ -434,7 +417,8 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.buildExecutionDescriptor().command shouldContainExactly
+    val (targets, cmds) = splitOfTargetPattern(command.buildExecutionDescriptor().command)
+    cmds shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -448,8 +432,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "--",
-        "in1",
       )
+    targets shouldBe listOf("in1")
   }
 }
