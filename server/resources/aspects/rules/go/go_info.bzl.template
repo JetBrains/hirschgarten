@@ -52,7 +52,7 @@ def extract_go_info(target, ctx, output_groups, **kwargs):
             for library in ctx.rule.attr.embed:
                 library_kind = library[BspAspectInfo].bsp_info.kind
                 if library_kind == "go_source" or library_kind == "go_proto_library":
-                    sources += library[BspAspectInfo].bsp_info.output_groups["bazel-sources-go-outputs"].to_list()
+                    sources += library[BspAspectInfo].bsp_info.output_groups["bazel-sources-go-direct-outputs"].to_list()
                 else:
                     library_labels.append(str(library.label))
 
