@@ -80,7 +80,14 @@ class SyncVFSSourceProcessor {
           flags.put(target, SyncDiffFlags.FORCE_INVALIDATION)
         }
         ctx.storage.source2Target.put(source, target)
-        ctx.storage.target2Source.put(target, source)
+        ctx.storage.target2Source.compute(target) { _, v ->
+          if (v == null) {
+            mutableSetOf()
+          } else {
+            v.add(source)
+            v
+          }
+        }
       }
       changed += targets
     }

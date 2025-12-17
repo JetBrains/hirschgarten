@@ -24,6 +24,8 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
+import org.jetbrains.bazel.sync_new.flow.SyncScope
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniversePhase
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.target.TargetUtils
@@ -78,10 +80,14 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
       PhasedSync(project).sync()
     } else {
       log.info("Running Bazel sync task")
-      ProjectSyncTask(project).sync(
-        syncScope = SecondPhaseSync,
-        buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
-      )
+      if (BazelSyncV2.isEnabled) {
+        project.serviceAsync<SyncBridgeService>().sync(scope = SyncScope.Full(build = BazelFeatureFlags.isBuildProjectOnSyncEnabled))
+      } else {
+        ProjectSyncTask(project).sync(
+          syncScope = SecondPhaseSync,
+          buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
+        )
+      }
     }
   }
 }
@@ -97,12 +103,17 @@ private fun executeOnSyncedProject(project: Project) {
  * [workspaceModelLoadedFromCache] is always false with GoLand
  * TODO: BAZEL-2038
  */
-private suspend fun isProjectInIncompleteState(project: Project): Boolean =
-  isBeforeFirstSync(project) ||
+private suspend fun isProjectInIncompleteState(project: Project): Boolean {
+  if (BazelSyncV2.isEnabled) {
+    // TODO: fix
+    return false
+  }
+  return isBeforeFirstSync(project) ||
     project.serviceAsync<BazelProjectProperties>().isBrokenBazelProject ||
     !PlatformUtils.isGoIde() &&
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache ||
     !bazelExecPathExists(project)
+}
 
 private suspend fun isBeforeFirstSync(project: Project): Boolean {
   return if (BazelSyncV2.isEnabled) {

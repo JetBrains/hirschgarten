@@ -20,6 +20,26 @@ inline fun <T> CodecBuilder.ofSet(
   },
 )
 
+inline fun <T> CodecBuilder.ofMutableSet(
+  elementCodec: Codec<T>,
+  crossinline setFactory: () -> MutableSet<T> = { mutableSetOf() },
+): Codec<MutableSet<T>> = codecOf(
+  encode = { ctx, buffer, value ->
+    buffer.writeVarInt(value.size)
+    for (element in value) {
+      elementCodec.encode(ctx, buffer, element)
+    }
+  },
+  decode = { ctx, buffer ->
+    val size = buffer.readVarInt()
+    val result = setFactory()
+    repeat(size) {
+      result.add(elementCodec.decode(ctx, buffer))
+    }
+    result
+  },
+)
+
 object IntArrayCodec {
   fun encode(
     ctx: CodecContext,

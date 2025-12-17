@@ -71,7 +71,7 @@ val kryo: Kryo
 class KryoObjectCodec<T>(
   private val type: Class<T>,
   private val initialBufferSize: Int,
-  private val useDirectBuffers: Boolean = true,
+  private val useDirectBuffers: Boolean = false,
 ) : Codec<T> {
 
   override fun encode(

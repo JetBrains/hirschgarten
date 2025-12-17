@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.codec.ofLabel
+import org.jetbrains.bazel.sync_new.codec.ofMutableSet
 import org.jetbrains.bazel.sync_new.codec.ofPath
 import org.jetbrains.bazel.sync_new.codec.ofSet
 import org.jetbrains.bazel.sync_new.storage.KVStore
@@ -37,10 +38,10 @@ class SyncVFSStoreService(
       .withValueCodec { ofSet(ofLabel()) }
       .build()
 
-  internal val target2Source: KVStore<Label, Set<Path>> =
-    project.storageContext.createKVStore<Label, Set<Path>>("bazel.sync.vfs.target2source", StorageHints.USE_PAGED_STORE)
+  internal val target2Source: KVStore<Label, MutableSet<Path>> =
+    project.storageContext.createKVStore<Label, MutableSet<Path>>("bazel.sync.vfs.target2source", StorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofLabel() }
-      .withValueCodec { ofSet(ofPath()) }
+      .withValueCodec { ofMutableSet(ofPath()) }
       .build()
 
   suspend fun invalidateAll() {

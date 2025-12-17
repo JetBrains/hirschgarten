@@ -98,12 +98,14 @@ class RocksdbKVStore<K : Any, V : Any>(
       }
 
       VALUE_BUFFER_POOL.use { buffer ->
+        buffer.buffer.clear()
         val size = db.get(cfHandle, RANDOM_READ_OPTIONS, keyBuffer.buffer, buffer.buffer)
         if (size == RocksDB.NOT_FOUND) {
           null
         } else {
-          if (size > buffer.size) {
-            buffer.ensureCapacity(size)
+          if (size > buffer.buffer.capacity()) {
+            buffer.resizeTo(size)
+            keyBuffer.buffer.rewind()
             db.get(cfHandle, RANDOM_READ_OPTIONS, keyBuffer.buffer, buffer.buffer)
           }
           buffer.buffer.position(0)
