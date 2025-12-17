@@ -22,7 +22,7 @@ data class JavaModule(
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
   val workspaceModelEntitiesFolderMarker: Boolean = false,
-  val runtimeDependencies: List<String> = emptyList(),
+  val runtimeOnlyDependencies: Set<String> = emptySet(),
 ) : WorkspaceModelEntity(),
   Module {
   override fun getModuleName(): String = genericModuleInfo.name

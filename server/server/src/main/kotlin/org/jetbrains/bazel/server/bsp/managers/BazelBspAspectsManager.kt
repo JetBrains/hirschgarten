@@ -14,7 +14,6 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -23,6 +22,7 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.exists
+import kotlin.io.path.invariantSeparatorsPathString
 
 data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
   val isFailure: Boolean
@@ -171,7 +171,7 @@ class BazelBspAspectsManager(
         is BzlmodRepoMapping -> {
           repoMapping.canonicalRepoNameToLocalPath
             .map { (key, value) ->
-              "\"${key.dropWhile { it == '@' }}\": \"${value.toString().replace("\\", "/")}\""
+              "\"${key.dropWhile { it == '@' }}\": \"${value.invariantSeparatorsPathString}\""
             }.joinToString(",\n", "{\n", "\n}")
         }
 

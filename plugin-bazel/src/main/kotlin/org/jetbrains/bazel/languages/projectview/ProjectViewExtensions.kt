@@ -22,6 +22,7 @@ import org.jetbrains.bazel.languages.projectview.sections.ImportRunConfiguration
 import org.jetbrains.bazel.languages.projectview.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.PreferClassJarsOverSourcelessJarsSection
 import org.jetbrains.bazel.languages.projectview.sections.PythonCodeGeneratorRuleNamesSection
+import org.jetbrains.bazel.languages.projectview.sections.RunConfigRunWithBazelSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardingApproachSection
 import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection
@@ -62,7 +63,7 @@ val ProjectView.deriveTargetsFromDirectories: Boolean
   get() = getSection(DeriveTargetsFromDirectoriesSection.KEY) ?: false
 
 val ProjectView.importDepth: Int
-  get() = getSection(ImportDepthSection.KEY) ?: 1
+  get() = getSection(ImportDepthSection.KEY) ?: -1
 
 val ProjectView.enabledRules: List<String>
   get() = getSection(EnabledRulesSection.KEY) ?: emptyList()
@@ -111,6 +112,9 @@ val ProjectView.useJetBrainsTestRunner: Boolean
 
 val ProjectView.preferClassJarsOverSourcelessJars: Boolean
   get() = getSection(PreferClassJarsOverSourcelessJarsSection.KEY) ?: false
+
+val ProjectView.runConfigRunWithBazel: Boolean
+  get() = getSection(RunConfigRunWithBazelSection.KEY) ?: false
 
 /**
  * List of names of repositories that should be treated as internal because there are some targets that we want to be imported that
