@@ -438,12 +438,10 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     called = true
-    return InverseSourcesResult(emptyMap()) // ABU - compilation hotfix; do better
-    //val relativePath =
-    //  inverseSourcesParams.textDocument.path
-    //    .relativeTo(projectBasePath)
-    //    .toString()
-    //return InverseSourcesResult(inverseSourcesData.getOrDefault(relativePath, emptyList()))
+    val results = inverseSourcesParams.files.associateWith {
+      inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
+    }
+    return InverseSourcesResult(results)
   }
 }
 
