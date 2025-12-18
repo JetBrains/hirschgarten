@@ -1,17 +1,14 @@
 version: "1.0"
 profile:
-  name: qodana.recommended
+  path: /data/project/plugins/bazel/tools/qodana/qodana.ultimate.profile.yaml
 include:
   - name: QodanaSanity
   - name: HighlightVisitorInternal
-exclude:
-  - name: CheckDependencyLicenses
-  - name: UnnecessaryUnicodeEscape
-  - name: UnstableApiUsage
-  - name: DialogTitleCapitalization
-  - name: MarkedForRemoval
-  - name: WrongPackageStatement
   - name: UnresolvedPropertyKey
+exclude:
+  - name: All
+    paths:
+      - testData
 failureConditions:
   severityThresholds:
     critical: 3950
