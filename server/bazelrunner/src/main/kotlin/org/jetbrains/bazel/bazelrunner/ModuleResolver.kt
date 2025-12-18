@@ -3,6 +3,7 @@ package org.jetbrains.bazel.bazelrunner
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import kotlin.collections.set
 
 sealed interface ShowRepoResult {
   val name: String
@@ -33,27 +34,56 @@ class ModuleOutputParser {
       .substringBefore("\",")
       .trim()
 
+  private fun splitInfoGroups(lines: List<String>): Map<String, List<String>> {
+    var groups = mutableMapOf<String, List<String>>()
+    var currentGroup = mutableListOf<String>()
+    var currentGroupName: String? = null
+    for (line in lines) {
+      if (line.startsWith("## ")) {
+        if (currentGroupName != null) {
+          groups[currentGroupName] = currentGroup
+        }
+        currentGroup = mutableListOf<String>()
+        currentGroupName = line.substringAfter("## ").trim()
+        if (currentGroupName.endsWith(":")) {
+          currentGroupName = currentGroupName.substring(0, currentGroupName.length - 1)
+        }
+      }
+      currentGroup.add(line)
+    }
+    if (currentGroupName != null) {
+      groups[currentGroupName] = currentGroup
+    }
+    return groups
+  }
+
+  fun parseShowRepoStanza(stanza: List<String>): ShowRepoResult? {
+    try {
+      // No matter how the repository is defined, it will always have a name
+      val name = extractAttribute(stanza, "name")
+
+      val isLocalRepository = stanza.any { it.contains("local_repository(") }
+      if (isLocalRepository) {
+        val path = extractAttribute(stanza, "path")
+        return ShowRepoResult.LocalRepository(name, path)
+      }
+      else {
+        return ShowRepoResult.Unknown(name, stanza.joinToString("\n") + "\n")
+      }
+    }
+    catch (e: Exception) {
+      return null
+    }
+  }
+
   // TODO: keep track of https://github.com/bazelbuild/bazel/issues/21617
-  fun parseShowRepoResult(bazelProcessResult: BazelProcessResult): ShowRepoResult {
+  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult): Map<String, ShowRepoResult?> {
     if (bazelProcessResult.isNotSuccess) {
       // If the exit code is not 0, bazel prints the error message to stderr
       error("Failed to resolve module from bazel info. Bazel Info output:\n'${bazelProcessResult.stderr}'")
     }
 
-    try {
-      // No matter how the repository is defined, it will always have a name
-      val name = extractAttribute(bazelProcessResult.stdoutLines, "name")
-
-      val isLocalRepository = bazelProcessResult.stdoutLines.any { it.contains("local_repository(") }
-      if (isLocalRepository) {
-        val path = extractAttribute(bazelProcessResult.stdoutLines, "path")
-        return ShowRepoResult.LocalRepository(name, path)
-      } else {
-        return ShowRepoResult.Unknown(name, bazelProcessResult.stdout)
-      }
-    } catch (e: Exception) {
-      throw IllegalStateException("Failed to parse module from bazel info. Bazel Info output:\n'${bazelProcessResult.stdout}'", e)
-    }
+    return splitInfoGroups(bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }
   }
 }
 
@@ -65,18 +95,19 @@ class ModuleResolver(
   /**
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
-  suspend fun resolveModule(moduleName: String): ShowRepoResult {
+  suspend fun resolveModule(moduleNames: List<String>): Map<String, ShowRepoResult?> {
+    if (moduleNames.isEmpty()) return emptyMap() // avoid bazel call if no information is needed
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         showRepo {
-          options.add(moduleName)
+          options.addAll(moduleNames)
         }
       }
     val processResult =
       bazelRunner
         .runBazelCommand(command, serverPidFuture = null)
         .waitAndGetResult(true)
-    return moduleOutputParser.parseShowRepoResult(processResult)
+    return moduleOutputParser.parseShowRepoResults(processResult)
   }
 
   val gson = bazelGson
@@ -112,6 +143,6 @@ class ModuleResolver(
     val output = processResult.stdout.toJson()
     @Suppress("UNCHECKED_CAST")
     return output?.let { gson.fromJson(output, Map::class.java) } as? Map<String, String>
-      ?: error("Failed to parse repo mapping from bazel. Bazel output:\n$output")
+           ?: error("Failed to parse repo mapping from bazel. Bazel output:\n$output")
   }
 }
