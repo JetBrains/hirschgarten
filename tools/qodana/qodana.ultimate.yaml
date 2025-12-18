@@ -12,6 +12,53 @@ exclude:
   - name: MarkedForRemoval
   - name: WrongPackageStatement
   - name: UnresolvedPropertyKey
+  - name: All
+    paths:
+      - testData
+      - CIDR/cidr-lang/testData
+      - CIDR/clion/main/testData
+      - community/android/android/testData
+      - community/java/java-tests/testData
+      - community/json/backend/tests/testData
+      - community/platform/lang-impl/testData
+      - community/platform/platform-tests/testData
+      - community/platform/statistics/envTests/testData
+      - community/plugins/devkit/devkit-java-tests/testData
+      - community/plugins/editorconfig/testData
+      - community/plugins/grazie/src/test/testData
+      - community/plugins/sh/core/testData
+      - community/plugins/textmate/tests/testData
+      - community/plugins/toml/tests/testData
+      - community/plugins/yaml/backend/testData
+      - community/python/testData
+      - community/xml/relaxng/testData
+      - community/xml/tests/testData
+      - contrib/Angular/testData
+      - contrib/CloudFormation/testData
+      - fleet/app.fleet/src/test/testData
+      - fleet/plugins/json/parsing/test/testData
+      - fleet/plugins/yaml/test/testData
+      - goland/intellij-go/impl/testData
+      - phpstorm/php/testData
+      - plugins/amper/testData
+      - plugins/bazel/pluginTests/testData
+      - plugins/Docker/Docker-compose/testData
+      - plugins/Docker/Docker-gateway/tests/testData
+      - plugins/frameworks/micronaut/micronaut-yaml/testData
+      - plugins/frameworks/quarkus/quarkus-yaml/testData
+      - plugins/full-line/core-local-impl/testData
+      - plugins/http-client/restClient/testData
+      - plugins/JavaScriptLanguage/testData
+      - plugins/kubernetes/backend/testData
+      - plugins/kubernetes/charts-gotpl/testData
+      - plugins/NodeJS/tests/testData
+      - plugins/package-checker/tests/testData
+      - plugins/spring/spring-boot/spring-boot-config-yaml/testData
+      - plugins/spring/spring-boot/spring-boot-json/testData
+      - plugins/spring/spring-mvc-support/spring-mvc/testData
+      - plugins/velocity/tests/testData
+      - rider/test/cases/testData
+      - ruby/docker/tests/testData
 failureConditions:
   severityThresholds:
     critical: 3950
