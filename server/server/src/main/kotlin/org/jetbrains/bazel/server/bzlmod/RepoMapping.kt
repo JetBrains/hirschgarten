@@ -32,7 +32,8 @@ suspend fun calculateRepoMapping(
     try {
       // empty string is the name of the root module
       moduleResolver.getRepoMapping("")
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       bspClientLogger.error(e.toString())
       return RepoMappingDisabled
     }
@@ -44,16 +45,16 @@ suspend fun calculateRepoMapping(
       .reduceOrNull { acc, map -> acc + map }
       .orEmpty()
 
-  for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
+  moduleResolver.resolveModule(workspaceContext.externalRepositoriesTreatedAsInternal).forEach { externalRepo, showRepoResult ->
     try {
-      val showRepoResult = moduleResolver.resolveModule(externalRepo)
       when (showRepoResult) {
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
         else -> {
           bspClientLogger.warn("Tried to import external module $externalRepo, but it was not `local_path_override`: $showRepoResult")
         }
       }
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       bspClientLogger.error(e.toString())
     }
   }
@@ -68,7 +69,8 @@ suspend fun calculateRepoMapping(
     val repoPath =
       if (localPath != null) {
         bazelInfo.workspaceRoot.resolve(localPath)
-      } else {
+      }
+      else {
         // See https://bazel.build/external/overview#directory-layout
         bazelInfo.outputBase.resolve("external").resolve(canonicalName)
       }
