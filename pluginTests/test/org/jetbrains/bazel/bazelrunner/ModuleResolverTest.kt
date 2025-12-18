@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner
 
+import io.kotest.assertions.fail
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -19,13 +20,13 @@ class ModuleResolverTest {
   fun `should throw on failed show repo invocation`() {
     val stderr =
       "ERROR: In repo argument lll: Module lll does not exist in the dependency graph." +
-        "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
+      "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
     val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), BazelStatus.BUILD_ERROR)
 
     val moduleOutputParser = ModuleOutputParser()
 
     shouldThrow<IllegalStateException> {
-      moduleOutputParser.parseShowRepoResult(result)
+      moduleOutputParser.parseShowRepoResults(result)
     }.also {
       it.message shouldBe "Failed to resolve module from bazel info. Bazel Info output:\n'$stderr\n'"
     }
@@ -47,8 +48,8 @@ class ModuleResolverTest {
 
     val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
 
-    val parsed = moduleOutputParser.parseShowRepoResult(result)
-    parsed shouldBe ShowRepoResult.LocalRepository("community~", "community")
+    val parsed = moduleOutputParser.parseShowRepoResults(result)
+    parsed shouldBe mapOf("@community" to ShowRepoResult.LocalRepository("community~", "community"))
   }
 
   @Test
@@ -75,10 +76,68 @@ class ModuleResolverTest {
 
     val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
 
-    val parsed = moduleOutputParser.parseShowRepoResult(result)
+    val parsed =
+      moduleOutputParser.parseShowRepoResults(result).get("rules_jvm_external@6.5") ?: fail("No entry produced for rules_jvm_external")
 
     parsed.shouldBeInstanceOf<ShowRepoResult.Unknown>()
     parsed.output shouldBe stdout + "\n"
     parsed.name shouldBe "rules_jvm_external~"
+  }
+
+  @Test
+  fun `should correctly parse many repositories`() {
+    val stdout = """
+        ## community@_:
+        # <builtin>
+        local_repository(
+          name = "community+",
+          path = "community",
+        )
+        # Rule community+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+        ## rules_jvm@_:
+        # <builtin>
+        local_repository(
+          name = "rules_jvm+",
+          path = "community/build/jvm-rules",
+        )
+        # Rule rules_jvm+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+        ## lib@_:
+        # <builtin>
+        local_repository(
+          name = "lib+",
+          path = "community/lib",
+        )
+        # Rule lib+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+        ## ultimate_lib@_:
+        # <builtin>
+        local_repository(
+          name = "ultimate_lib+",
+          path = "lib",
+        )
+        # Rule ultimate_lib+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+        ## jps_to_bazel@_:
+        # <builtin>
+        local_repository(
+          name = "jps_to_bazel+",
+          path = "community/platform/build-scripts/bazel",
+        )
+        # Rule jps_to_bazel+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+    """.trimIndent()
+
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+
+    val parsed = moduleOutputParser.parseShowRepoResults(result)
+    parsed shouldBe mapOf(
+      "community@_" to ShowRepoResult.LocalRepository("community+", "community"),
+      "rules_jvm@_" to ShowRepoResult.LocalRepository("rules_jvm+", "community/build/jvm-rules"),
+      "lib@_" to ShowRepoResult.LocalRepository("lib+", "community/lib"),
+      "ultimate_lib@_" to ShowRepoResult.LocalRepository("ultimate_lib+", "lib"),
+      "jps_to_bazel@_" to ShowRepoResult.LocalRepository("jps_to_bazel+", "community/platform/build-scripts/bazel"),
+    )
   }
 }
