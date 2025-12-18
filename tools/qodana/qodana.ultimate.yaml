@@ -1,9 +1,10 @@
 version: "1.0"
 profile:
-  path: plugins/bazel/tools/qodana/qodana.ultimate.profile.yaml
+  path: /data/project/plugins/bazel/tools/qodana/qodana.ultimate.profile.yaml
 include:
   - name: QodanaSanity
   - name: HighlightVisitorInternal
+  - name: UnresolvedPropertyKey
 exclude:
   - name: All
     paths:
