@@ -65,8 +65,8 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     directories: List<ExcludableValue<Path>>,
     targets: List<ExcludableValue<Label>>
   ): Pair<Set<Path>, Set<Path>> {
-    val included : MutableSet<Path> = mutableSetOf()
-    val excluded : MutableSet<Path> = mutableSetOf()
+    val included = mutableSetOf<Path>()
+    val excluded = mutableSetOf<Path>()
 
     for (directory in directories) {
       val relativeToWorkspaceRoot = workspaceRoot.resolve(directory.value).normalize()
@@ -76,19 +76,20 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
       }
     }
 
-    val includedFromTargets : MutableSet<Path> = mutableSetOf()
-    val excludedFromTargets : MutableSet<Path> = mutableSetOf()
+    val includedFromTargets = mutableSetOf<Path>()
+    val excludedFromTargets = mutableSetOf<Path>()
     // If we include (exclude) a directory by target, we want to add (remove) only directories of it's package
     // and not subpackages, so we need to additionally include (exclude) them.
-    val excludedAdditionally : MutableSet<Path> = mutableSetOf()
-    val includedAdditionally : MutableSet<Path> = mutableSetOf()
+    val excludedAdditionally = mutableSetOf<Path>()
+    val includedAdditionally = mutableSetOf<Path>()
 
     for (target in targets) {
       val path = workspaceRoot.resolve(target.value.packagePath.toPath()).normalize()
       val subPackages = getSubPackages(path, workspaceRoot)
-      val (targetSet, additionalSet) =
-        if (target is ExcludableValue.Included) includedFromTargets to excludedAdditionally
-        else excludedFromTargets to includedAdditionally
+      val (targetSet, additionalSet) = when (target) {
+        is ExcludableValue.Included<Label> -> includedFromTargets to excludedAdditionally
+        is ExcludableValue.Excluded<Label> -> excludedFromTargets to includedAdditionally
+      }
 
       targetSet.add(path)
       if (target.value.isRecursive) targetSet.addAll(subPackages)
@@ -142,6 +143,7 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
         }
 
         override fun visitFileFailed(file: Path, exc: IOException): FileVisitResult {
+          log.error("Error while visiting file $file", exc)
           return FileVisitResult.CONTINUE
         }
       })
