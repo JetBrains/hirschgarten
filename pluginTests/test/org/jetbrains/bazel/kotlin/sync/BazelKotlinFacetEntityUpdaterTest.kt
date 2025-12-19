@@ -15,6 +15,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.Dependency
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
@@ -54,8 +55,8 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           type = ModuleTypeId("JAVA_MODULE"),
           dependencies =
             listOf(
-              "module2",
-              "module3",
+              Dependency("module2"),
+              Dependency("module3"),
             ),
           kind =
             TargetKind(
