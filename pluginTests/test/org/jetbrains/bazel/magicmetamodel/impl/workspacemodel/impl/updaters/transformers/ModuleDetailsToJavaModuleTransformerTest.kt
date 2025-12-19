@@ -17,6 +17,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.Dependency
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
@@ -137,8 +138,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2.module2",
-            "module3.module3",
+            Dependency("module2.module2"),
+            Dependency("module3.module3"),
           ),
         kind =
           TargetKind(
@@ -260,8 +261,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2.module2",
-            "module3.module3",
+            Dependency("module2.module2"),
+            Dependency("module3.module3"),
           ),
         associates =
           listOf(
@@ -442,8 +443,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2.module2",
-            "module3.module3",
+            Dependency("module2.module2"),
+            Dependency("module3.module3"),
           ),
         kind =
           TargetKind(
@@ -493,7 +494,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module3.module3",
+            Dependency("module3.module3"),
           ),
         kind =
           TargetKind(
@@ -635,9 +636,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2.module2",
-            "module3.module3",
-            dummyJavaModuleName,
+            Dependency("module2.module2"),
+            Dependency("module3.module3"),
+            Dependency(dummyJavaModuleName),
           ),
         kind =
           TargetKind(
