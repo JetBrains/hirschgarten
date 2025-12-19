@@ -7,10 +7,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.storage.SymbolicEntityId
-import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
-import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
 
 @GeneratedCodeApiVersion(3)
 interface LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuilder<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
@@ -19,7 +16,8 @@ interface LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEnti
   var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
 }
 
-internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType : EntityType<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder>() {
+internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType :
+  EntityType<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder>() {
   override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity> get() = LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
   operator fun invoke(
     libraryId: LibraryId,
