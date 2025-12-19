@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync
 
-import org.jetbrains.bazel.bazelrunner.BazelCommand.Build.Companion.log
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.label.Label
@@ -9,6 +8,7 @@ import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.Project
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -18,15 +18,7 @@ import org.jetbrains.bsp.protocol.RawAspectTarget
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import java.io.IOException
-import java.nio.file.FileVisitOption
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
-import java.util.EnumSet
-import kotlin.io.path.notExists
 import kotlin.io.path.relativeToOrNull
 
 class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo: BspInfo) {
@@ -41,17 +33,13 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     )
   }
 
-  fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
+  suspend fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
     // bazel symlinks exclusion logic is now taken care by BazelSymlinkExcludeService,
     // so there is no need for excluding them here anymore
     val workspaceRoot = project.workspaceRoot
 
     val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude(workspaceRoot)
-    val (includedDirectories, excludedDirectories) = getProjectDirs(
-      workspaceRoot,
-      project.workspaceContext.directories,
-      project.workspaceContext.targets,
-    )
+    val (includedDirectories, excludedDirectories) = getProjectDirs(workspaceRoot, project.workspaceContext)
 
     return WorkspaceDirectoriesResult(
       includedDirectories = includedDirectories.map { it.toDirectoryItem() },
@@ -60,15 +48,14 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     )
   }
 
-  private fun getProjectDirs(
+  private suspend fun getProjectDirs(
     workspaceRoot: Path,
-    directories: List<ExcludableValue<Path>>,
-    targets: List<ExcludableValue<Label>>
+    workspaceContext: WorkspaceContext
   ): Pair<Set<Path>, Set<Path>> {
     val included = mutableSetOf<Path>()
     val excluded = mutableSetOf<Path>()
 
-    for (directory in directories) {
+    for (directory in workspaceContext.directories) {
       val relativeToWorkspaceRoot = workspaceRoot.resolve(directory.value).normalize()
       when (directory) {
         is ExcludableValue.Included<Path> -> included.add(relativeToWorkspaceRoot)
@@ -83,9 +70,10 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     val excludedAdditionally = mutableSetOf<Path>()
     val includedAdditionally = mutableSetOf<Path>()
 
-    for (target in targets) {
+    val allSubPackages = getSubPackages(workspaceRoot, workspaceContext)
+    for (target in workspaceContext.targets) {
       val path = workspaceRoot.resolve(target.value.packagePath.toPath()).normalize()
-      val subPackages = getSubPackages(path, workspaceRoot)
+      val subPackages = allSubPackages.filter { it.startsWith(path) && it != path }.toSet()
       val (targetSet, additionalSet) = when (target) {
         is ExcludableValue.Included<Label> -> includedFromTargets to excludedAdditionally
         is ExcludableValue.Excluded<Label> -> excludedFromTargets to includedAdditionally
@@ -121,36 +109,29 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     }
   }
 
-  private fun getSubPackages(path: Path, workspaceRoot: Path): Set<Path> {
-    val packages = mutableSetOf<Path>()
-    if (path.notExists()) return packages
+  private suspend fun getSubPackages(workspaceRoot: Path, workspaceContext: WorkspaceContext): Sequence<Path> {
+    val patterns = workspaceContext.targets.map { it.value.packagePath.toString() }.distinct()
+    val out = runBazelBuildfilesQuery(workspaceContext, patterns)
+    val allPkgDirs =
+      if (out.isBlank()) emptySequence()
+      else out.lineSequence()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .mapNotNull { workspaceRoot.resolve(it).normalize().parent }
+    return allPkgDirs
+  }
 
-    try {
-      val options = EnumSet.of(FileVisitOption.FOLLOW_LINKS)
-      Files.walkFileTree(path, options, Int.MAX_VALUE, object : SimpleFileVisitor<Path>() {
-        override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-          val dirName = dir.fileName.toString()
-
-          if (dirName.startsWith(".") ||
-              (dirName.startsWith("bazel-") && Files.isSymbolicLink(dir))) {
-            return FileVisitResult.SKIP_SUBTREE
-          }
-          if (Files.isRegularFile(dir.resolve("BUILD")) ||
-              Files.isRegularFile(dir.resolve("BUILD.bazel"))) {
-            packages.add(workspaceRoot.resolve(dir).normalize())
-          }
-          return FileVisitResult.CONTINUE
-        }
-
-        override fun visitFileFailed(file: Path, exc: IOException): FileVisitResult {
-          log.error("Error while visiting file $file", exc)
-          return FileVisitResult.CONTINUE
-        }
-      })
-    } catch (e: IOException) {
-      log.error("Error while walking directory $path", e)
+  private suspend fun runBazelBuildfilesQuery(workspaceContext: WorkspaceContext, patterns: List<String>): String {
+    if (patterns.isEmpty()) return ""
+    fun norm(p: String): String {
+      val trimmed = p.trim()
+      val recursive = if (trimmed.endsWith("/...")) trimmed.dropLast(4) else trimmed
+      return if (recursive.startsWith("//")) recursive else "//$recursive"
     }
-    return packages
+
+    val args = patterns.filter { it.isNotBlank() }.joinToString(" ") { norm(it) }
+    val expr = "buildfiles(set($args))"
+    return BazelQueryRunner.runQuery(expr, bazelRunner, workspaceContext)
   }
 
   fun workspaceBazelRepoMapping(project: Project): WorkspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(project.repoMapping)
@@ -181,4 +162,27 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
 
   suspend fun classpathQuery(project: Project, target: Label): BspJvmClasspath =
     ClasspathQuery.classPathQuery(target, bspInfo, bazelRunner, project.workspaceContext)
+
+  internal object BazelQueryRunner {
+    suspend fun runQuery(
+      expr: String,
+      bazelRunner: BazelRunner,
+      workspaceContext: WorkspaceContext,
+      extraOptions: List<String> = emptyList(),
+    ): String {
+      val command = bazelRunner.buildBazelCommand(workspaceContext, inheritProjectviewOptionsOverride = true) {
+        queryExpression(expr) {
+          options.add("--keep_going")
+          options.addAll(extraOptions)
+        }
+      }
+      val process = bazelRunner.runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
+      val result = process.waitAndGetResult(ensureAllOutputRead = true)
+
+      if (result.isNotSuccess) {
+        throw RuntimeException("bazel query failed: ${result.stderr}")
+      }
+      return result.stdout
+    }
+  }
 }
