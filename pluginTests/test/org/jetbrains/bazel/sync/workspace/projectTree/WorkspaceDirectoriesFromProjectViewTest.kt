@@ -1,7 +1,13 @@
 package org.jetbrains.bazel.sync.workspace.projectTree
 
+import com.intellij.platform.ide.progress.ModalTaskOwner
+import com.intellij.platform.ide.progress.TaskCancellation
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import com.intellij.psi.PsiFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -15,7 +21,9 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.Project
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
+import java.nio.file.Files
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.createTempDirectory
@@ -30,6 +38,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
   override fun setUp() {
     super.setUp()
     workspaceRoot = createTempDirectory("workspace")
+    ProcessSpawner.provideProcessSpawner(TestProcessSpawner())
     bazelRunner = BazelRunner(null, workspaceRoot, null)
     bspInfo = object : BspInfo(workspaceRoot) {
       override val bazelBspDir: Path
@@ -51,10 +60,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
           -excluded
       """.trimIndent(),
     )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
 
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -88,10 +95,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -119,10 +123,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -148,10 +149,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -190,10 +188,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -232,10 +227,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -271,10 +263,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -312,10 +301,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -353,10 +339,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -395,10 +378,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
-
-    val result = mapper.workspaceDirectories(project)
+    val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
@@ -418,8 +398,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     )
   }
 
-
-
   private fun createFromProjectView(projectView: ProjectView): Project {
     val workspaceContext = ProjectViewToWorkspaceContextConverter
       .convert(projectView, bspInfo.bazelBspDir, workspaceRoot)
@@ -428,6 +406,19 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       directories = workspaceContext.directories,
       targets = workspaceContext.targets
     )
+  }
+
+  private fun runMapper(psiFile: PsiFile?): WorkspaceDirectoriesResult {
+    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val project = createFromProjectView(projectView)
+    val owner = ModalTaskOwner.guess()
+    return runWithModalProgressBlocking(
+      owner,
+      "Running Bazel Query",
+      TaskCancellation.cancellable()
+    ) {
+      mapper.workspaceDirectories(project)
+    }
   }
 
   private fun createFakeProject(
@@ -468,5 +459,58 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets = emptyMap(),
         rootTargets = emptySet()
     )
+  }
+
+  private class TestProcessSpawner : ProcessSpawner {
+    override suspend fun spawnProcess(
+      command: List<String>,
+      environment: Map<String, String>,
+      redirectErrorStream: Boolean,
+      workDirectory: String?
+    ): SpawnedProcess {
+      val cmd = command.joinToString(" ")
+      val stdout = when {
+        cmd.contains(" query ") && cmd.contains("buildfiles(set(") -> mockBuildfilesOutput(workDirectory)
+        else -> ""
+      }
+      return CompletedSpawnedProcess(stdout, "", 0)
+    }
+
+    override fun killProcessTree(process: SpawnedProcess): Boolean = true
+    override fun killProcess(process: SpawnedProcess) {}
+    override fun killProcess(pid: Int) {}
+
+    private class CompletedSpawnedProcess(
+      private val out: String,
+      private val err: String,
+      private val code: Int
+    ) : SpawnedProcess {
+      override val pid: Long get() = 0L
+      override val inputStream: java.io.InputStream get() = out.byteInputStream()
+      override val errorStream: java.io.InputStream get() = err.byteInputStream()
+      override val isAlive: Boolean get() = false
+      override fun waitFor(timeout: Int, unit: java.util.concurrent.TimeUnit): Boolean = true
+      override fun waitFor(): Int = code
+      override suspend fun awaitExit(): Int = code
+      override fun destroy() {}
+    }
+
+    private fun mockBuildfilesOutput(workDir: String?): String {
+      if (workDir == null) return ""
+      val root = Path.of(workDir)
+      val lines = mutableListOf<String>()
+
+      fun addIfExists(rel: String) {
+        val p = root.resolve(rel)
+        if (Files.exists(p)) lines += rel
+      }
+
+      addIfExists("included/BUILD")
+      addIfExists("excluded/BUILD")
+      addIfExists("pkg/BUILD")
+      addIfExists("pkg/subpkg/BUILD")
+
+      return lines.joinToString("\n")
+    }
   }
 }
