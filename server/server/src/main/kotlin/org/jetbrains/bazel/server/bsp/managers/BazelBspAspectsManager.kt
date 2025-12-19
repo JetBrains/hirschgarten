@@ -158,8 +158,6 @@ class BazelBspAspectsManager(
       Constants.CORE_BZL + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve(Constants.CORE_BZL),
       mapOf(
-        "isPropagateExportsFromDepsEnabled" to
-          featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
         "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
       ),
     )

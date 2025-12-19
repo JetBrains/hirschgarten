@@ -19,6 +19,7 @@ message Dependency {
 
   string id = 1;
   DependencyType dependency_type = 2;
+  bool exported = 3;
 }
 
 message JvmOutputs {

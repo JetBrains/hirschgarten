@@ -4,7 +4,6 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import org.jetbrains.bazel.label.DependencyLabel
 import java.nio.file.Path
 
 internal fun Path.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
@@ -20,10 +19,3 @@ internal fun String.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileU
   url.virtualFile
   return url
 }
-
-internal fun List<DependencyLabel>.filterRuntimeOnly() = this
-  .groupBy { it.label }
-  .mapNotNull { (label, deps) ->
-    val isRuntimeOnly = deps.all { it.isRuntime }
-    if (isRuntimeOnly) DependencyLabel(label = label, isRuntime = true) else null
-  }
