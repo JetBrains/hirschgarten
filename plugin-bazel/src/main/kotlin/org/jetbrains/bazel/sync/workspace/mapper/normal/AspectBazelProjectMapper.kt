@@ -925,6 +925,7 @@ class AspectBazelProjectMapper(
     DependencyLabel(
       label = label(),
       isRuntime = dependencyType == BspTargetInfo.Dependency.DependencyType.RUNTIME,
+      exported = exported,
     )
 
   private fun List<Library>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.label) }

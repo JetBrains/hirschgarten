@@ -16,9 +16,7 @@ object BazelFeatureFlags {
   @VisibleForTesting
   const val BUILD_PROJECT_ON_SYNC = "bazel.build.project.on.sync"
   private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
-  private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
   private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
-  private const val ADD_DUMMY_MODULE_DEPENDENCIES = "bsp.add.dummy.module.dependencies"
   private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
   private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
   private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
@@ -49,19 +47,8 @@ object BazelFeatureFlags {
   val isShortenModuleLibraryNamesEnabled: Boolean
     get() = isEnabled(SHORTEN_MODULE_LIBRARY_NAMES)
 
-  val isWrapLibrariesInsideModulesEnabled: Boolean
-    get() = isEnabled(WRAP_LIBRARIES_INSIDE_MODULES) || isKotlinPluginK2Mode
-
-  val isKotlinPluginK2Mode: Boolean
-    get() = System.getProperty("idea.kotlin.plugin.use.k1", "false").toBoolean().not()
-
   val executeSecondPhaseOnSync: Boolean
     get() = isEnabled(EXECUTE_SECOND_PHASE_ON_SYNC)
-
-  val addDummyModuleDependencies: Boolean
-    get() =
-      (Registry.stringValue(ADD_DUMMY_MODULE_DEPENDENCIES).toBooleanStrictOrNull() ?: !fbsrSupportedInPlatform) &&
-        !enableBazelJavaClassFinder
 
   // File-based source root problems fixed here: https://youtrack.jetbrains.com/issue/IDEA-371097
   val fbsrSupportedInPlatform: Boolean
@@ -123,7 +110,6 @@ object FeatureFlagsProvider {
       FeatureFlags(
         isPythonSupportEnabled = isPythonSupportEnabled,
         isGoSupportEnabled = isGoSupportEnabled,
-        isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
         isSharedSourceSupportEnabled = isSharedSourceSupportEnabled(project),

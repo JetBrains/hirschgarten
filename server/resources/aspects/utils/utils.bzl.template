@@ -291,11 +291,13 @@ def _is_valid_make_var(varname):
     return True
 
 
+EXPORT_DEPS = [
+    "exports",
+]
 
 COMPILE_DEPS = [
     "deps",
     "jars",
-    "exports",
     "associates",
     "embed", # from rules_go
     "compilers",  # From go_proto_library
@@ -313,4 +315,4 @@ RUNTIME_DEPS = [
     "runtime_deps",
 ]
 
-ALL_DEPS = COMPILE_DEPS + PRIVATE_COMPILE_DEPS + RUNTIME_DEPS
+ALL_DEPS = COMPILE_DEPS + PRIVATE_COMPILE_DEPS + RUNTIME_DEPS + EXPORT_DEPS

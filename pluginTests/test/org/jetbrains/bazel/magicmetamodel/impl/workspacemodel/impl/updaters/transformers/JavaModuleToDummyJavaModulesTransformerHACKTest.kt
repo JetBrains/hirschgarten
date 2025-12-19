@@ -14,6 +14,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.Dependency
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
@@ -39,9 +40,9 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         dependencies =
           listOf(
-            "module2",
-            "module3",
-            "@maven//:lib1",
+            Dependency("module2"),
+            Dependency("module3"),
+            Dependency("@maven//:lib1"),
           ),
         kind =
           TargetKind(
@@ -133,7 +134,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        dependencies = listOf("@maven//:lib1"),
+        dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -224,7 +225,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        dependencies = listOf("@maven//:lib1"),
+        dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -286,7 +287,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        dependencies = listOf("@maven//:lib1"),
+        dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -355,7 +356,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        dependencies = listOf("@maven//:lib1"),
+        dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -412,7 +413,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        dependencies = listOf("@maven//:lib1"),
+        dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -518,7 +519,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        dependencies = listOf("@maven//:lib1"),
+        dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -607,7 +608,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        dependencies = listOf("@maven//:lib1"),
+        dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -892,7 +893,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       GenericModuleInfo(
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        dependencies = listOf("@maven//:lib1"),
+        dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
             kindString = "java_library",
