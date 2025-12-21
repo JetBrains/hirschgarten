@@ -1,26 +1,28 @@
 package org.jetbrains.bazel.sync_new.storage.rocksdb
 
 import com.github.benmanes.caffeine.cache.Caffeine
-import com.github.benmanes.caffeine.cache.RemovalCause
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.storage.BaseKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.CloseableIterator
 import org.jetbrains.bazel.sync_new.storage.KVStore
-import org.jetbrains.bazel.sync_new.storage.mapCloseable
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
+import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferObjectPool
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.ColumnFamilyHandle
 import org.rocksdb.ReadOptions
 import org.rocksdb.RocksDB
 import org.rocksdb.RocksIterator
+import org.rocksdb.WriteBatch
+import org.rocksdb.WriteOptions
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.StampedLock
 
+// TODO: rewrite this
 class RocksdbKVStore<K : Any, V : Any>(
   private val db: RocksDB,
   internal val cfHandle: ColumnFamilyHandle,
@@ -48,71 +50,58 @@ class RocksdbKVStore<K : Any, V : Any>(
       .setIgnoreRangeDeletions(true)
       .setTailing(false)
 
-    private val KEY_BUFFER_POOL = RocksdbThreadLocalBufferPool(initialSize = 128)
-    private val VALUE_BUFFER_POOL = RocksdbThreadLocalBufferPool(initialSize = 4096)
+    private val MIN_KEY = ByteArray(0)
+    private val MAX_KEY = ByteArray(256) { 0xFF.toByte() }
+  }
+
+  private sealed interface Value<out V> {
+    data class Present<V>(val value: V) : Value<V>
+    data object Tombstone : Value<Nothing>
   }
 
   private val cache = Caffeine.newBuilder()
     .executor { it.run() }
-    .evictionListener<K, V> { k, v, cause ->
-      if (k == null || v == null) {
-        return@evictionListener
-      }
-      when (cause) {
-        RemovalCause.COLLECTED, RemovalCause.EXPIRED, RemovalCause.SIZE -> {
-          evictedQueue[k] = v
-          flushQueue.enqueue(FlushOperation.FlushDirty(this, k))
-        }
-
-        else -> {
-          /* noop */
-        }
-      }
-    }
-    .expireAfterAccess(5, TimeUnit.MINUTES)
-    .build<K, V?>()
-
-  private val clearLock = Any()
+    .build<K, Value<V>>()
 
   private val computeLocks: ConcurrentMap<K, StampedLock> = ConcurrentHashMap()
-  private val evictedQueue: ConcurrentMap<K, V> = ConcurrentHashMap()
+  private val removalQueue: ConcurrentSkipListSet<K> = ConcurrentSkipListSet()
 
   init {
     Disposer.register(disposable, this)
   }
 
   override fun get(key: K): V? {
-    return cache.get(key) { k ->
-      val keyBuffer = KEY_BUFFER_POOL.use { buffer ->
-        keyCodec.encode(UnsafeCodecContext, buffer, k)
-        buffer.flip()
-        buffer
-      }
+    val value = cache.get(key) { k ->
+      UnsafeByteBufferObjectPool.use { keyBuf, valueBuf ->
+        keyCodec.encode(UnsafeCodecContext, keyBuf, k)
+        keyBuf.flip()
 
-      if (USE_BLOOM_EXISTENCE_CHECK) {
-        val mayExist = db.keyMayExist(cfHandle, RANDOM_READ_OPTIONS, keyBuffer.buffer)
-        if (!mayExist) {
-          return@get null
-        }
-        keyBuffer.buffer.rewind()
-      }
-
-      VALUE_BUFFER_POOL.use { buffer ->
-        buffer.buffer.clear()
-        val size = db.get(cfHandle, RANDOM_READ_OPTIONS, keyBuffer.buffer, buffer.buffer)
-        if (size == RocksDB.NOT_FOUND) {
-          null
-        } else {
-          if (size > buffer.buffer.capacity()) {
-            buffer.resizeTo(size)
-            keyBuffer.buffer.rewind()
-            db.get(cfHandle, RANDOM_READ_OPTIONS, keyBuffer.buffer, buffer.buffer)
+        if (USE_BLOOM_EXISTENCE_CHECK) {
+          val mayExist = db.keyMayExist(cfHandle, RANDOM_READ_OPTIONS, keyBuf.buffer)
+          if (!mayExist) {
+            return@use Value.Tombstone
           }
-          buffer.buffer.position(0)
-          buffer.buffer.limit(size)
-          valueCodec.decode(UnsafeCodecContext, buffer)
+          keyBuf.buffer.rewind()
+        }
+
+        val size = db.get(cfHandle, RANDOM_READ_OPTIONS, keyBuf.buffer, valueBuf.buffer)
+        if (size == RocksDB.NOT_FOUND) {
+          Value.Tombstone
+        }
+        else {
+          if (size > valueBuf.buffer.capacity()) {
+            valueBuf.resizeTo(size)
+            valueBuf.buffer.clear()
+            keyBuf.buffer.rewind()
+            db.get(cfHandle, RANDOM_READ_OPTIONS, keyBuf.buffer, valueBuf.buffer)
+          }
+          Value.Present(valueCodec.decode(UnsafeCodecContext, valueBuf))
         }
       }
+    }
+    return when (value) {
+      is Value.Present -> value.value
+      Value.Tombstone -> null
     }
   }
 
@@ -121,24 +110,27 @@ class RocksdbKVStore<K : Any, V : Any>(
   }
 
   override fun contains(key: K): Boolean {
-    if (cache.getIfPresent(key) != null) {
-      return true
-    }
-
-    val keyBuffer = KEY_BUFFER_POOL.use { buffer ->
-      keyCodec.encode(UnsafeCodecContext, buffer, key)
-      buffer.flip()
-      buffer
-    }
-
-    if (USE_BLOOM_EXISTENCE_CHECK) {
-      val mayExist = db.keyMayExist(cfHandle, RANDOM_READ_OPTIONS, keyBuffer.buffer)
-      if (!mayExist) {
-        return false
+    val cached = cache.getIfPresent(key)
+    if (cached != null) {
+      return when (cached) {
+        is Value.Present<V> -> true
+        Value.Tombstone -> false
       }
     }
 
-    return db.keyExists(cfHandle, RANDOM_READ_OPTIONS, keyBuffer.buffer)
+    return UnsafeByteBufferObjectPool.use { buffer ->
+      keyCodec.encode(UnsafeCodecContext, buffer, key)
+      buffer.flip()
+
+      if (USE_BLOOM_EXISTENCE_CHECK) {
+        val mayExist = db.keyMayExist(cfHandle, RANDOM_READ_OPTIONS, buffer.buffer)
+        if (!mayExist) {
+          return@use false
+        }
+      }
+
+      db.keyExists(cfHandle, RANDOM_READ_OPTIONS, buffer.buffer)
+    }
   }
 
   override fun remove(key: K, useReturn: Boolean): V? {
@@ -146,138 +138,110 @@ class RocksdbKVStore<K : Any, V : Any>(
   }
 
   override fun clear() {
-    synchronized(clearLock) {
-      val latch = CountDownLatch(1)
-      flushQueue.enqueue(FlushOperation.Barrier(this) { latch.countDown() })
-      latch.await()
-      cache.invalidateAll()
-      computeLocks.clear()
-      evictedQueue.clear()
-      val (start, end) = db.newIterator(cfHandle).use { iter ->
-        iter.seekToFirst()
-        if (iter.isValid) {
-          val start = iter.key()
-          iter.seekToLast()
-          val end = iter.key()
-          Pair(start, end)
-        } else {
+    val latch = CountDownLatch(1)
+    flushQueue.enqueue(FlushOperation.Barrier(this) { latch.countDown() })
+    latch.await()
+
+    cache.invalidateAll()
+    computeLocks.clear()
+    WriteBatch().use { batch ->
+      batch.deleteRange(cfHandle, MIN_KEY, MAX_KEY)
+      WriteOptions().use { opts -> db.write(opts, batch) }
+    }
+  }
+
+  override fun keys(): CloseableIterator<K> = createIter(useValues = false) { k, _ -> k }
+
+  override fun values(): CloseableIterator<V> = createIter(useValues = true) { _, v -> v!! }
+
+  override fun iterator(): CloseableIterator<Pair<K, V>> = createIter(useValues = true) { k, v -> Pair(k, v!!) }
+
+  private fun <T> createIter(useValues: Boolean, transform: (k: K, v: V?) -> T): CloseableIterator<T> = object : CloseableIterator<T> {
+    private val cacheQueue = LinkedHashSet<K>(cache.asMap().keys)
+    private val yielded = HashSet<K>()
+    private var nextKey: K? = null
+    private var iter: RocksIterator? = null
+
+    override fun next(): T {
+      if (cacheQueue.isNotEmpty()) {
+        val key = cacheQueue.removeFirst()
+        val cached = cache.getIfPresent(key)
+        if (cached != null) {
+          when (cached) {
+            is Value.Present<V> -> {
+              yielded.add(key)
+              return transform(key, cached.value)
+            }
+            Value.Tombstone -> {
+              // concurrent modification
+              // TODO: handle this case separately or make iterator copy-on-write
+            }
+          }
+        }
+      }
+
+      val nextKey = nextKey
+      val iter = iter
+      if (iter != null && nextKey != null && iter.isValid) {
+        val value = if (useValues) {
+          // TODO: use more performant unsafe buffer
+          val buffer = UnsafeByteBufferCodecBuffer.from(iter.value())
+          valueCodec.decode(UnsafeCodecContext, buffer)
+        }
+        else {
           null
         }
-      } ?: return@synchronized
-      db.deleteRange(cfHandle, start, end)
-      db.delete(cfHandle, end)
-      db.compactRange(cfHandle)
-    }
-  }
-
-  // TODO: remove duplicated code
-  override fun keys(): CloseableIterator<K> = object : CloseableIterator<K> {
-    private var iter: RocksIterator? = null
-    private val yieldQueue = HashSet(cache.asMap().keys)
-
-    override fun next(): K {
-      val iter = iter
-      if (iter != null && iter.isValid) {
-        val key = keyCodec.decode(UnsafeCodecContext, UnsafeByteBufferCodecBuffer.from(iter.key()))
-        yieldQueue.remove(key)
         iter.next()
-        return key
-      }
-
-      while (yieldQueue.isNotEmpty()) {
-        val key = yieldQueue.first()
-        yieldQueue.remove(key)
-        val value = evictedQueue.remove(key) ?: cache.getIfPresent(key)
-        if (value != null) {
-          return key
-        }
+        yielded.add(nextKey)
+        this.nextKey = null
+        return transform(nextKey, value)
       }
 
       throw NoSuchElementException()
     }
 
     override fun hasNext(): Boolean {
-      val iter = if (iter == null) {
+      if (iter == null) {
         val newIter = db.newIterator(cfHandle, SEQ_READ_OPTIONS)
         newIter.seekToFirst()
-        if (!newIter.isValid) {
-          newIter.close()
-          return yieldQueue.isNotEmpty()
-        }
         iter = newIter
-        newIter
-      } else {
-        iter!!
       }
-      return iter.isValid || yieldQueue.isNotEmpty()
-    }
-
-    override fun close() {
-      iter?.close()
-    }
-  }
-
-  override fun values(): CloseableIterator<V> = iterator().mapCloseable { (_, v) -> v }
-
-  override fun iterator(): CloseableIterator<Pair<K, V>> = object : CloseableIterator<Pair<K, V>> {
-    private var iter: RocksIterator? = null
-    private val yieldQueue = HashSet(cache.asMap().keys)
-
-    override fun next(): Pair<K, V> {
-      val iter = iter
-      if (iter != null && iter.isValid) {
-        val key = keyCodec.decode(UnsafeCodecContext, UnsafeByteBufferCodecBuffer.from(iter.key()))
-        yieldQueue.remove(key)
-        val evicted = evictedQueue.remove(key)
-        if (evicted != null) {
-          iter.next()
-          return key to evicted
+      while (cacheQueue.isNotEmpty()) {
+        val key = cacheQueue.first
+        if (yielded.contains(key)) {
+          continue
         }
         val cached = cache.getIfPresent(key)
-        val pair = if (cached == null) {
-          val value = valueCodec.decode(UnsafeCodecContext, UnsafeByteBufferCodecBuffer.from(iter.value()))
-          cache.put(key, value)
-          key to value
-        } else {
-          key to cached
-        }
-        iter.next()
-        return pair
-      }
-
-      while (yieldQueue.isNotEmpty()) {
-        val key = yieldQueue.first()
-        yieldQueue.remove(key)
-        val value = evictedQueue.remove(key) ?: cache.getIfPresent(key)
-        if (value != null) {
-          return key to value
+        if (cached != null) {
+          when (cached) {
+            is Value.Present<V> -> return true
+            Value.Tombstone -> cacheQueue.remove(key)
+          }
         }
       }
-
-      throw NoSuchElementException()
-    }
-
-    override fun hasNext(): Boolean {
-      val iter = if (iter == null) {
-        val newIter = db.newIterator(cfHandle, SEQ_READ_OPTIONS)
-        newIter.seekToFirst()
-        if (!newIter.isValid) {
-          newIter.close()
-          return yieldQueue.isNotEmpty()
+      val iter = iter
+      if (iter != null) {
+        while (iter.isValid) {
+          val buffer = UnsafeByteBufferCodecBuffer.from(iter.key())
+          val key = keyCodec.decode(UnsafeCodecContext, buffer)
+          if (yielded.contains(key)) {
+            iter.next()
+            continue
+          }
+          nextKey = key
+          if (!cacheQueue.contains(key)) {
+            return true
+          }
+          iter.next()
         }
-        iter = newIter
-        newIter
-      } else {
-        iter!!
       }
-      return iter.isValid || yieldQueue.isNotEmpty()
+      return false
     }
 
     override fun close() {
       iter?.close()
     }
   }
-
 
   override fun computeIfAbsent(key: K, op: (k: K) -> V): V? = useComputeLock(key) {
     val lock = computeLocks.computeIfAbsent(key) { StampedLock() }
@@ -287,10 +251,12 @@ class RocksdbKVStore<K : Any, V : Any>(
       if (v != null) {
         return@useComputeLock v
       }
-      stamp = lock.tryConvertToWriteLock(stamp)
-      if (stamp == 0L) {
+      val newStamp = lock.tryConvertToWriteLock(stamp)
+      if (newStamp == 0L) {
         lock.unlockRead(stamp)
         stamp = lock.writeLock()
+      } else {
+        stamp = newStamp
       }
       v = get(key)
       if (v != null) {
@@ -299,7 +265,8 @@ class RocksdbKVStore<K : Any, V : Any>(
       v = op(key)
       putInternal(key, v, acquireLock = false)
       return@useComputeLock v
-    } finally {
+    }
+    finally {
       lock.unlock(stamp)
     }
   }
@@ -310,18 +277,22 @@ class RocksdbKVStore<K : Any, V : Any>(
       // keep read lock in case if op() is expensive
       val v = get(key)
       val newValue = op(key, v)
-      stamp = lock.tryConvertToWriteLock(stamp)
-      if (stamp == 0L) {
+      val newStamp = lock.tryConvertToWriteLock(stamp)
+      if (newStamp == 0L) {
         lock.unlockRead(stamp)
         stamp = lock.writeLock()
+      } else {
+        stamp = newStamp
       }
       if (newValue == null) {
         removeInternal(key, useReturn = false, acquireLock = false)
-      } else {
+      }
+      else {
         putInternal(key, newValue, acquireLock = false)
       }
       return@useComputeLock newValue
-    } finally {
+    }
+    finally {
       lock.unlock(stamp)
     }
   }
@@ -331,18 +302,18 @@ class RocksdbKVStore<K : Any, V : Any>(
   }
 
   private fun putInternal(key: K, value: V, acquireLock: Boolean) = useWriteLock(key, acquire = acquireLock) {
-    cache.put(key, value)
+    cache.put(key, Value.Present(value))
     flushQueue.enqueue(FlushOperation.FlushDirty(this, key))
   }
 
   private fun removeInternal(key: K, useReturn: Boolean, acquireLock: Boolean) = useWriteLock(key, acquire = acquireLock) {
     val value = if (useReturn) {
       get(key)
-    } else {
+    }
+    else {
       null
     }
-    evictedQueue.remove(key)
-    cache.invalidate(key)
+    cache.put(key, Value.Tombstone)
     flushQueue.enqueue(FlushOperation.FlushDirty(this, key))
     value
   }
@@ -351,7 +322,8 @@ class RocksdbKVStore<K : Any, V : Any>(
     val lock = computeLocks.computeIfAbsent(key) { StampedLock() }
     try {
       return op(lock)
-    } finally {
+    }
+    finally {
       computeLocks.remove(key)
     }
   }
@@ -367,26 +339,36 @@ class RocksdbKVStore<K : Any, V : Any>(
     val stamp = lock.writeLock()
     try {
       return op()
-    } finally {
+    }
+    finally {
       lock.unlock(stamp)
     }
   }
 
-  internal fun consumeKeyState(key: K): KeyState<K, V> {
-    val cachedValue = cache.getIfPresent(key)
-    val evictedValue = evictedQueue.remove(key)
-    return when {
-      evictedValue != null && cachedValue == null -> KeyState.Evicted(evictedValue)
-      cachedValue == null -> KeyState.Removed(key)
-      else -> KeyState.Added(cachedValue)
+  internal fun consumeKey(key: K): KeyAction<K, V> {
+    if (removalQueue.remove(key)) {
+      // TODO: handle cache evictions here
+      return KeyAction.Remove(key)
+    }
+    val value = cache.getIfPresent(key)
+    if (value == null) {
+      // states:
+      // 1. not loaded yet
+      // 2. removed
+      // 3. TODO: evicted - look at this case more closely
+      return KeyAction.Noop()
+    }
+    return when (value) {
+      is Value.Present<V> -> KeyAction.Overwrite(value.value)
+      Value.Tombstone -> KeyAction.Remove(key)
     }
   }
 }
 
-sealed interface KeyState<K, V> {
-  data class Added<K, V>(val value: V) : KeyState<K, V>
-  data class Removed<K, V>(val key: K) : KeyState<K, V>
-  data class Evicted<K, V>(val value: V) : KeyState<K, V>
+sealed interface KeyAction<K, V> {
+  data class Overwrite<K, V>(val value: V) : KeyAction<K, V>
+  data class Remove<K, V>(val key: K) : KeyAction<K, V>
+  class Noop<K, V> : KeyAction<K, V>
 }
 
 class RocksdbKVStoreBuilder<K : Any, V : Any>(

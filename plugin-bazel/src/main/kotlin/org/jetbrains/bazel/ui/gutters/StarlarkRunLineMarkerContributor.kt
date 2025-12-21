@@ -72,7 +72,7 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     if (this == null) {
       emptyList()
     } else {
-      listOfNotNull(ResyncTargetAction.createIfEnabled(id)) +
+      listOfNotNull(ResyncTargetAction.createIfEnabled(project, id)) +
         DefaultActionGroup().fillWithEligibleActions(project, this, false).childActionsOrStubs.toList() +
         BuildTargetAction(this.id)
     }

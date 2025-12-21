@@ -5,7 +5,7 @@ import com.intellij.openapi.components.service
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryArgs
@@ -76,7 +76,7 @@ class SyncVFSSourceProcessor {
     val sources = (diff.added + changedSources).map { it.path }
     for ((source, targets) in runInverseSourceQuery(ctx, sources)) {
       for (target in targets) {
-        if (BazelSyncV2.useFileChangeBasedInvalidation || ctx.scope.build) {
+        if (ctx.flags.useFileChangeBasedInvalidation || ctx.scope.build) {
           flags.put(target, SyncDiffFlags.FORCE_INVALIDATION)
         }
         ctx.storage.source2Target.put(source, target)
@@ -102,7 +102,7 @@ class SyncVFSSourceProcessor {
     if (sources.isEmpty()) {
       return emptyMap()
     }
-    if (!BazelSyncV2.useOptimizedInverseSourceQuery) {
+    if (!ctx.flags.useOptimizedInverseSourceQuery) {
       return runFullInverseSourceQuery(ctx, sources)
     }
     val sourceMap = runNarrowInverseSourceQuery(ctx, sources)
@@ -131,7 +131,7 @@ class SyncVFSSourceProcessor {
 
     return runSourceMapQuery(ctx) {
       consistentLabels()
-      if (BazelSyncV2.useSkyQueryForInverseSourceQueries) {
+      if (ctx.flags.useSkyQueryForInverseSourceQueries) {
         noOrderOutput()
         universeScope(uniquePredecessorLabels.map { it.toString() })
       }
@@ -150,7 +150,7 @@ class SyncVFSSourceProcessor {
     val rdepsUniverse = SyncUniverseQuery.createUniverseQuery(universe.importState.patterns)
     return runSourceMapQuery(ctx) {
       consistentLabels()
-      if (BazelSyncV2.useSkyQueryForInverseSourceQueries) {
+      if (ctx.flags.useSkyQueryForInverseSourceQueries) {
         noOrderOutput()
         universeScope(SyncUniverseQuery.createSkyQueryUniverseScope(universe.importState.patterns))
       }

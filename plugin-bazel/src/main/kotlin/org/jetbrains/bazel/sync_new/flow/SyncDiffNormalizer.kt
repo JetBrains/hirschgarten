@@ -21,15 +21,19 @@ class SyncDiffNormalizer {
   fun toHotDiff(ctx: SyncContext, diff: SyncColdDiff): SyncDiff {
     val graph = ctx.graph
     return SyncDiff(
-      added = diff.added.map { TargetReference.ofGraphLazy(it, graph) }.toSet(),
-      removed = diff.removed.map { TargetReference.ofGraphNow(it, graph) }.toSet(),
+      added = diff.added.map { TargetReference.ofGraphLazy(it, graph) }
+        .distinctBy { it.label }
+        .toSet(),
+      removed = diff.removed.map { TargetReference.ofGraphNow(it, graph) }
+        .distinctBy { it.label }
+        .toSet(),
       changed = diff.changed.map {
         ChangedTarget(
           label = it,
           old = TargetReference.ofGraphNow(it, graph),
           new = TargetReference.ofGraphLazy(it, graph),
         )
-      }.toSet(),
+      }.distinctBy { it.label }.toSet(),
     )
   }
 }

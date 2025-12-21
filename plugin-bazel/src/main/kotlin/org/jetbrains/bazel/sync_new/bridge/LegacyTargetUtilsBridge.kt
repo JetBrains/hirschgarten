@@ -3,7 +3,7 @@ package org.jetbrains.bazel.sync_new.bridge
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.flow.SyncStoreService
 import org.jetbrains.bazel.sync_new.flow.index.SyncFileIndexService
 import org.jetbrains.bazel.sync_new.flow.index.target_utils.TargetUtilsIndexService
@@ -27,7 +27,7 @@ class LegacyTargetUtilsBridge(private val project: Project) {
   fun getTargetForLibraryId(libraryId: String): Label? = jvmModuleSyncIndexService.getTargetForLibraryId(libraryId)
   fun getBuildTargetForLabel(label: Label): BuildTarget? = targetUtilsIndexService.getBspBuildTarget(label)
   fun getAllBuildTargets(): Sequence<BuildTarget> {
-    if (BazelSyncV2.disallowLegacyFullTargetGraphMaterialization) {
+    if (project.service<SyncFlagsService>().disallowLegacyFullTargetGraphMaterialization) {
       throw IllegalStateException("full graph materialization is not allowed")
     }
     return syncStoreService.targetGraph

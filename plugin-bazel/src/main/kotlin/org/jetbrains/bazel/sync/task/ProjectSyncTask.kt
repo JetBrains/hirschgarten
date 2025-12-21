@@ -44,7 +44,7 @@ import org.jetbrains.bazel.sync.status.SyncFatalFailureException
 import org.jetbrains.bazel.sync.status.SyncPartialFailureException
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
-import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
@@ -55,7 +55,7 @@ private val log = logger<ProjectSyncTask>()
 
 class ProjectSyncTask(private val project: Project) {
   suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
-    if (BazelSyncV2.isEnabled) {
+    if (project.isNewSyncEnabled) {
       error("sync V2 is enabled, ProjectSyncTask should not be used")
     }
     if (project.isTrusted()) {

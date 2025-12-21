@@ -16,10 +16,10 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
-import org.jetbrains.bazel.sync_new.BazelSyncV2
 import org.jetbrains.bazel.sync_new.flow.BzlmodSyncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.DisabledSyncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
+import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -102,7 +102,7 @@ class BazelRepoMappingService(
   @Volatile
   var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
     get() {
-      return if (BazelSyncV2.isEnabled) {
+      return if (project.isNewSyncEnabled) {
         apparentRepoNameToCanonicalNameV2Cached.get()
       } else {
         field
@@ -116,7 +116,7 @@ class BazelRepoMappingService(
   @Volatile
   var canonicalRepoNameToApparentName: Map<String, String> = emptyMap()
     get() {
-      return if (BazelSyncV2.isEnabled) {
+      return if (project.isNewSyncEnabled) {
         canonicalRepoNameToPathV2Cached.get()
       } else {
         field
@@ -126,7 +126,7 @@ class BazelRepoMappingService(
   @Volatile
   var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
     get() {
-      return if (BazelSyncV2.isEnabled) {
+      return if (project.isNewSyncEnabled) {
         when (val mapping = project.syncRepoMapping) {
           is BzlmodSyncRepoMapping -> mapping.canonicalRepoNameToLocalPath
           DisabledSyncRepoMapping -> emptyMap()

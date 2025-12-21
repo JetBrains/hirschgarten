@@ -13,16 +13,16 @@ import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.jetbrains.bazel.sync_new.BazelSyncV2
 import org.jetbrains.bazel.sync_new.flow.PartialTarget
 import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
 import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 
 // TODO: refactor this action to use DataContext and don't use constructor with parameters
 class ResyncTargetAction private constructor(private val targetId: Label) :
   SuspendableAction({ BazelPluginBundle.message("target.partial.sync.action.text") }, AllIcons.Actions.Refresh) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    if (BazelSyncV2.isEnabled) {
+    if (project.isNewSyncEnabled) {
       val scope = SyncScope.Partial(targets = listOf(PartialTarget.ByLabel(targetId)))
       project.service<SyncBridgeService>().sync(scope)
     } else {
@@ -34,7 +34,7 @@ class ResyncTargetAction private constructor(private val targetId: Label) :
   override fun update(project: Project, e: AnActionEvent) {
     // for now we dont support jps modules (TODO: https://youtrack.jetbrains.com/issue/BAZEL-1238)
     val isJpsDisabled = !project.bazelJVMProjectSettings.enableBuildWithJps
-    if (BazelSyncV2.isEnabled) {
+    if (project.isNewSyncEnabled) {
       e.presentation.isVisible = true
     } else {
       e.presentation.isVisible = BazelFeatureFlags.enablePartialSync && project.isBazelProject && isJpsDisabled
@@ -43,8 +43,8 @@ class ResyncTargetAction private constructor(private val targetId: Label) :
   }
 
   companion object {
-    fun createIfEnabled(targetId: Label): ResyncTargetAction? =
-      if (BazelFeatureFlags.enablePartialSync || BazelSyncV2.isEnabled) {
+    fun createIfEnabled(project: Project, targetId: Label): ResyncTargetAction? =
+      if (BazelFeatureFlags.enablePartialSync || project.isNewSyncEnabled) {
         ResyncTargetAction(targetId)
       } else {
         null

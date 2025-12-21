@@ -29,8 +29,8 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.sync_new.BazelSyncV2
 import org.jetbrains.bazel.sync_new.flow.index.TargetTreeIndexService
+import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
@@ -136,7 +136,7 @@ private suspend fun updateVisibleTargets(
   model: BazelTargetsPanelModel,
   targetPanel: Deferred<BazelTargetsPanel>,
 ) {
-  val targets = if (BazelSyncV2.useNewTargetTreeStorage) {
+  val targets = if (project.isNewSyncEnabled) {
     project.serviceAsync<TargetTreeIndexService>()
       .getTargetTreeEntriesCached()
       .map { SyncV2TargetTreeCompat(it) }

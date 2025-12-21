@@ -99,7 +99,7 @@ class LegacyModelConverter(
       jars = module.classJars.toList(),
       sourceJars = module.sourceJars.toList(),
       mavenCoordinates = null, // TODO
-      isFromInternalTarget = module.isFromInternalTarget,
+      containsInternalJars = module.isFromInternalTarget, // TODO: BAZEL-2754 BAZEL-2392
       isLowPriority = module.isLowPriority,
     )
   }

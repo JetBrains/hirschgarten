@@ -9,8 +9,10 @@ import org.jetbrains.bazel.sync_new.flow.SyncProgressReporter
 import org.jetbrains.bazel.sync_new.flow.SyncStatus
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntityRemovalPropagator
 import org.jetbrains.bazel.sync_new.lang.store.IncrementalEntityStore
+import org.jetbrains.bazel.sync_new.lang.store.persistent.PersistentIncrementalEntityStore
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.legacy.LegacyWorkspaceModelApplicator
 import org.jetbrains.bazel.sync_new.pipeline.SyncWorkspaceImporter
+import org.jetbrains.bazel.sync_new.storage.rocksdb.RocksdbKVStore
 
 @Service(Service.Level.PROJECT)
 class JvmSyncWorkspaceImporter(
@@ -30,6 +32,13 @@ class JvmSyncWorkspaceImporter(
   ): SyncStatus {
     if (ctx.scope.isFullSync) {
       storage.clear()
+
+      //val iter = ((storage as PersistentIncrementalEntityStore<*, *>).resourceId2EntityStore as RocksdbKVStore<*, *>).values()
+      //while (iter.hasNext()) {
+      //  val value = iter.next()
+      //  println(value)
+      //}
+      //iter.close()
     }
 
     progress.task.withTask("removing_entities", "Pruning old entities") {

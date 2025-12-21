@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 
 import com.intellij.openapi.components.service
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.consistentLabels
@@ -51,7 +50,7 @@ object SyncVFSLabelResolver {
   //  https://github.com/bazelbuild/bazel/blob/f11c3eb5c39ef035bfa9593f209b3579df2113aa/src/main/java/com/google/devtools/build/lib/cmdline/TargetPattern.java#L372
   suspend fun resolveSourceFileLabels(ctx: SyncVFSContext, sources: Collection<Path>): Map<Path, Set<Label>> {
     val workspaceRoot = ctx.pathsResolver.workspaceRoot()
-    if (BazelSyncV2.useFastSource2Label) {
+    if (ctx.flags.useFastSource2Label) {
       return FastFileToLabelResolver.computeSourceFilesLabels(ctx, sources)
     }
 

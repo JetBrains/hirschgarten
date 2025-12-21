@@ -3,11 +3,11 @@ package org.jetbrains.bazel.sync_new.flow.vfs_diff
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import org.jetbrains.bazel.sync_new.BazelSyncV2
+import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 
 class SyncVFSInitActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
-    if (!BazelSyncV2.isEnabled) {
+    if (!project.isNewSyncEnabled) {
       return
     }
 

@@ -25,14 +25,14 @@ class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer
     fun from(array: ByteArray) = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(array))
   }
 
-  // allow both direct and heap ByteBuffer
-
   override val writable: Boolean = true
   override val readable: Boolean = true
   override val position: Int
     get() = buffer.position()
   override val size: Int
     get() = buffer.limit()
+  val array: ByteArray
+    get() = buffer.array()
 
   override fun reserve(size: Int) {
     val required = buffer.position() + size

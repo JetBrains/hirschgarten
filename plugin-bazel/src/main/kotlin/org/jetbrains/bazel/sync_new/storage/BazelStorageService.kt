@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryStorageContext
 import org.jetbrains.bazel.sync_new.storage.rocksdb.RocksdbStorageContext
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit

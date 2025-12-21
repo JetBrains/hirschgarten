@@ -3,22 +3,23 @@ package org.jetbrains.bazel.sync_new.lang.store
 
 object IncrementalEntityRemovalPropagator {
   fun <R : IncrementalResourceId, E : IncrementalEntity> remove(store: IncrementalEntityStore<R, E>, removed: Iterable<R>) {
-    val toRemove = mutableSetOf<R>()
+    val toRemove = hashSetOf<R>()
+    toRemove += removed
     for (removed in removed) {
-      toRemove.add(removed)
       toRemove += store.getTransitiveDependants(removed)
     }
-    val removeQueue = mutableListOf<R>()
-    for (removed in removed) {
-      for (dependency in store.getTransitiveDependants(removed)) {
-        val referrers = store.getDirectReferrers(dependency).toList()
-        val canBeRemoved = referrers.isEmpty()
-          || referrers.all { it in toRemove }
-        if (canBeRemoved) {
-          removeQueue += dependency
-        }
+    val removeQueue = LinkedHashSet<R>()
+    removeQueue += removed
+    for (candidate in toRemove) {
+      val referrers = store.getDirectReferrers(candidate).toList()
+      val canBeRemoved = referrers.isEmpty()
+                         || referrers.all { it in toRemove }
+      if (canBeRemoved) {
+        removeQueue += candidate
       }
     }
-    removeQueue.forEach { store.removeEntity(it) }
+    for (it in removeQueue) {
+      store.removeEntity(it)
+    }
   }
 }

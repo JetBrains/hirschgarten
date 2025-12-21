@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList
+import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferObjectPool
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.RocksDB
 import org.rocksdb.WriteBatch
@@ -29,8 +30,6 @@ class RocksdbFlushQueue(
   private val queue: CoalescingTransferQueue<CoalescenceKey, FlushOperation> = CoalescingTransferQueue()
   private val running: AtomicBoolean = AtomicBoolean(true)
   private val shutdownLatch = CountDownLatch(1)
-  private val tlsKeyBuffer: RocksdbThreadLocalBufferPool = RocksdbThreadLocalBufferPool(initialSize = 256)
-  private val tlsValueBuffer: RocksdbThreadLocalBufferPool = RocksdbThreadLocalBufferPool(initialSize = 1024 * 1024)
   private val operationId: AtomicLong = AtomicLong(0)
 
   init {
@@ -54,15 +53,16 @@ class RocksdbFlushQueue(
       try {
         val operation = queue.poll(QUEUE_POLL_TIMEOUT, TimeUnit.MILLISECONDS)
         if (operation == null) {
-          if (handleBatch(batch)) {
-            break
+          if (batch.isNotEmpty()) {
+            if (handleBatch(batch)) {
+              break
+            }
+            batch.clear()
           }
-          batch.clear()
+          continue
         }
+        batch.add(operation)
         queue.drainTo(batch, FLUSH_BATCH_SIZE - batch.size)
-        if (operation != null) {
-          batch.add(operation)
-        }
         if (batch.size >= FLUSH_BATCH_SIZE) {
           if (handleBatch(batch)) {
             break
@@ -116,46 +116,24 @@ class RocksdbFlushQueue(
 
           is FlushOperation.FlushDirty<*, *> -> {
             operation as FlushOperation.FlushDirty<K, V>
-            val state = store.consumeKeyState(operation.key)
-            when (state) {
-              is KeyState.Added<K, V> -> {
-                val keyBuffer = tlsKeyBuffer.use { buffer ->
-                  store.keyCodec.encode(UnsafeCodecContext, buffer, operation.key)
-                  buffer.flip()
-                  buffer
+            val action = store.consumeKey(operation.key)
+            when (action) {
+              is KeyAction.Noop<K, V> -> {}
+              is KeyAction.Overwrite<K, V> -> {
+                UnsafeByteBufferObjectPool.use { keyBuf, valueBuf ->
+                  store.keyCodec.encode(UnsafeCodecContext, keyBuf, operation.key)
+                  keyBuf.flip()
+                  store.valueCodec.encode(UnsafeCodecContext, valueBuf, action.value)
+                  valueBuf.flip()
+                  batch.put(keyBuf.buffer, valueBuf.buffer)
                 }
-                val valueBuffer = tlsValueBuffer.use { buffer ->
-                  store.valueCodec.encode(UnsafeCodecContext, buffer, state.value)
-                  buffer.flip()
-                  buffer
-                }
-
-                batch.put(store.cfHandle, keyBuffer.buffer, valueBuffer.buffer)
               }
-
-              is KeyState.Evicted<K, V> -> {
-                val keyBuffer = tlsKeyBuffer.use { buffer ->
-                  store.keyCodec.encode(UnsafeCodecContext, buffer, operation.key)
-                  buffer.flip()
-                  buffer
+              is KeyAction.Remove<K, V> -> {
+                UnsafeByteBufferObjectPool.use { keyBuf ->
+                  store.keyCodec.encode(UnsafeCodecContext, keyBuf, operation.key)
+                  keyBuf.flip()
+                  batch.delete(keyBuf.buffer)
                 }
-                val valueBuffer = tlsValueBuffer.use { buffer ->
-                  store.valueCodec.encode(UnsafeCodecContext, buffer, state.value)
-                  buffer.flip()
-                  buffer
-                }
-
-                batch.put(store.cfHandle, keyBuffer.buffer, valueBuffer.buffer)
-              }
-
-              is KeyState.Removed<K, V> -> {
-                val keyBuffer = tlsKeyBuffer.use { buffer ->
-                  store.keyCodec.encode(UnsafeCodecContext, buffer, operation.key)
-                  buffer.flip()
-                  buffer
-                }
-
-                batch.delete(store.cfHandle, keyBuffer.buffer)
               }
             }
           }

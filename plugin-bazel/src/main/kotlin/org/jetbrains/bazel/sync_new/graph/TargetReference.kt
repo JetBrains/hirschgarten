@@ -26,7 +26,7 @@ interface TargetReference {
         get() = label
 
       // if target is not available now, try again
-      override fun getBuildTarget(): BazelTargetVertex? = target ?: targetGraph.getVertexByLabel(label)
+      override fun getBuildTarget(): BazelTargetVertex? = target
     }
   }
 }

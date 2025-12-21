@@ -14,9 +14,9 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.jetbrains.bazel.sync_new.BazelSyncV2
 import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
 import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 
 abstract class BazelProjectAware(private val workspace: BazelWorkspace) : ExternalSystemProjectAware {
   override val settingsFiles: Set<String>
@@ -25,11 +25,12 @@ abstract class BazelProjectAware(private val workspace: BazelWorkspace) : Extern
   override fun reloadProject(context: ExternalSystemProjectReloadContext) {
     if (context.isExplicitReload) {
       BazelCoroutineService.getInstance(workspace.project).start {
-        if (BazelSyncV2.isEnabled) {
-          workspace.project.service<SyncBridgeService>()
+        val project = workspace.project
+        if (project.isNewSyncEnabled) {
+          project.service<SyncBridgeService>()
             .sync(scope = SyncScope.Incremental())
         } else {
-          ProjectSyncTask(workspace.project).sync(syncScope = SecondPhaseSync, buildProject = false)
+          ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
         }
       }
     }
