@@ -101,7 +101,7 @@ class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(proje
 
   private fun BuildTarget.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id.toShortString(project), true).also {
-      ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
+      ResyncTargetAction.createIfEnabled(project, id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
       if (!noBuild) {

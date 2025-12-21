@@ -22,6 +22,7 @@ import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.asClosingSequence
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.createKVStore
+import org.jetbrains.bazel.sync_new.storage.mutate
 import org.jetbrains.bazel.sync_new.storage.set
 
 private const val EMPTY_ID: Int = 0
@@ -64,10 +65,10 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     }
   }
 
-  protected abstract val metadataStore: FlatStorage<PersistentMetadata>
-  protected abstract val resourceId2EntityStore: KVStore<Int, E>
-  protected abstract val resourceHash2Id: KVStore<HashValue128, Int>
-  protected abstract val id2Resource: KVStore<Int, R>
+  internal abstract val metadataStore: FlatStorage<PersistentMetadata>
+  internal abstract val resourceId2EntityStore: KVStore<Int, E>
+  internal abstract val resourceHash2Id: KVStore<HashValue128, Int>
+  internal abstract val id2Resource: KVStore<Int, R>
 
   override fun createEntity(resourceId: R, creator: IncrementalEntityCreator<E>): E {
     val id = getOrCreateIdFromResourceId(resourceId)
@@ -94,38 +95,43 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     if (id == EMPTY_ID) {
       return null
     }
-    val entity = resourceId2EntityStore.remove(id)
+    val entity = resourceId2EntityStore.remove(id, useReturn = true)
     if (entity != null) {
-      val metadata = metadataStore.get()
+      val hash = hashResourceId(resourceId)
       id2Resource.remove(id)
-      resourceHash2Id.remove(hashResourceId(resourceId))
-
-      val successors = metadata.id2Successors.get(id)
-      if (successors != null) {
-        for (i in successors.indices) {
-          val successorId = successors.getInt(i)
-          val predecessorsList = metadata.id2Predecessors.get(successorId)
-          if (predecessorsList != null) {
-            predecessorsList.rem(id)
+      resourceHash2Id.remove(hash)
+      metadataStore.mutate { metadata ->
+        val successors = metadata.id2Successors.get(id)
+        if (successors != null) {
+          for (i in successors.indices) {
+            val successorId = successors.getInt(i)
+            val predecessorsList = metadata.id2Predecessors.get(successorId)
+            if (predecessorsList != null) {
+              predecessorsList.rem(id)
+              if (predecessorsList.isEmpty) {
+                metadata.id2Predecessors.remove(successorId)
+              }
+            }
           }
         }
-      }
 
-      val predecessors = metadata.id2Predecessors.get(id)
-      if (predecessors != null) {
-        for (i in predecessors.indices) {
-          val predecessorId = predecessors.getInt(i)
-          val successorsList = metadata.id2Successors.get(predecessorId)
-          if (successorsList != null) {
-            successorsList.rem(id)
+        val predecessors = metadata.id2Predecessors.get(id)
+        if (predecessors != null) {
+          for (i in predecessors.indices) {
+            val predecessorId = predecessors.getInt(i)
+            val successorsList = metadata.id2Successors.get(predecessorId)
+            if (successorsList != null) {
+              successorsList.rem(id)
+              if (successorsList.isEmpty) {
+                metadata.id2Successors.remove(predecessorId)
+              }
+            }
           }
         }
+
+        metadata.id2Successors.remove(id)
+        metadata.id2Predecessors.remove(id)
       }
-
-      metadata.id2Successors.remove(id)
-      metadata.id2Predecessors.remove(id)
-
-      metadataStore.set(metadata)
     }
     return entity
   }
@@ -145,8 +151,14 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
       return
     }
     metadataStore.modify {
-      it.id2Successors.computeIfAbsent(fromId) { IntArrayList() }.add(toId)
-      it.id2Predecessors.computeIfAbsent(toId) { IntArrayList() }.add(fromId)
+      val successors = it.id2Successors.computeIfAbsent(fromId) { IntArrayList() }
+      if (!successors.contains(toId)) {
+        successors.add(toId)
+      }
+      val predecessors = it.id2Predecessors.computeIfAbsent(toId) { IntArrayList() }
+      if (!predecessors.contains(fromId)) {
+        predecessors.add(fromId)
+      }
       it
     }
   }
@@ -163,16 +175,20 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
       val queue = ArrayDeque<Int>() // TODO: use IntArrayFIFOQueue
       val visited = IntOpenHashSet()
       queue.add(id)
+      visited.add(id)
       while (true) {
-        val id = queue.removeFirstOrNull() ?: break
-        if (visited.contains(id)) {
-          continue
+        val currentId = queue.removeFirstOrNull() ?: break
+        if (currentId != id) {
+          yield(currentId)
         }
-        visited.add(id)
-        yield(id)
-        val successors = metadata.id2Successors[id]
+        val successors = metadata.id2Successors[currentId]
         if (successors != null) {
-          queue.addAll(successors)
+          for (i in successors.indices) {
+            val successorId = successors.getInt(i)
+            if (visited.add(successorId)) {
+              queue.add(successorId)
+            }
+          }
         }
       }
     }
@@ -186,7 +202,6 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     }
     val metadata = metadataStore.get()
     return metadata.id2Predecessors[id]?.asSequence()
-      ?.filter { id2Resource.contains(it) }
       ?.mapNotNull { id2Resource[it] }
       ?: emptySequence()
   }
@@ -208,10 +223,11 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     val hash = hashResourceId(resourceId)
     val existingId = resourceHash2Id[hash]
     if (existingId != null && existingId != EMPTY_ID) {
-      if (id2Resource[existingId] == null) {
-        id2Resource[existingId] = resourceId
+      val existingResource = id2Resource[existingId]
+      if (existingResource != null) {
+        return existingId
       }
-      return existingId
+      resourceHash2Id.remove(hash)
     }
     val newId = metadataStore.modify { it.copy(nextId = it.nextId + 1) }.nextId
     resourceHash2Id[hash] = newId
@@ -238,6 +254,7 @@ inline fun <reified R : IncrementalResourceId, reified E : IncrementalEntity> cr
       .withKeyCodec { ofInt() }
       .withValueCodec { entityCodec() }
       .build()
+
   override val resourceHash2Id: KVStore<HashValue128, Int> =
     storageContext.createKVStore<HashValue128, Int>(
       "bazel.sync.lang.entity_store.${name}.resource_hash_to_id",

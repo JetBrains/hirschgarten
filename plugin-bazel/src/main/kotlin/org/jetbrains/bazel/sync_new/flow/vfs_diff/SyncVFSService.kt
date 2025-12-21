@@ -55,6 +55,7 @@ class SyncVFSService(
       scope = scope,
       isFirstSync = isFirstSync,
       universeDiff = universeDiff,
+      flags = project.service(),
     )
     if (isFirstSync) {
       vfsState.modify { state -> state.copy(listenState = SyncVFSListenState.LISTENING_VFS) }

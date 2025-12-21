@@ -7,7 +7,6 @@ import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
@@ -36,8 +35,8 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.sync_new.BazelSyncV2
 import org.jetbrains.bazel.sync_new.bridge.LegacyTargetUtilsBridge
+import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -65,6 +64,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()
   private val syncV2Bridge by lazy { LegacyTargetUtilsBridge(project) }
+  private val syncV2Enabled = project.isNewSyncEnabled // cache service access
 
   private val allTargetsAndLibrariesLabelsCache =
     SynchronizedClearableLazy {
@@ -80,7 +80,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   val allTargetsAndLibrariesLabels: List<String>
-    get() = if (BazelSyncV2.isEnabled) {
+    get() = if (syncV2Enabled) {
       syncV2Bridge.allTargetsLabels
     } else {
       allTargetsAndLibrariesLabelsCache.value
@@ -89,7 +89,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   val allExecutableTargetLabels: List<String>
-    get() = if (BazelSyncV2.isEnabled) {
+    get() = if (syncV2Enabled) {
       syncV2Bridge.allExecutableTargetLabels
     } else {
       allExecutableTargetsCache.value
@@ -99,7 +99,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   val targetListUpdated: SharedFlow<Unit> = mutableTargetListUpdated.asSharedFlow()
 
   init {
-    if (!BazelSyncV2.isEnabled) {
+    if (!syncV2Enabled) {
       // cannot use opt-in (no such opt-in in 243)
       @Suppress("OPT_IN_USAGE")
       coroutineScope.awaitCancellationAndInvoke(Dispatchers.IO) {
@@ -109,7 +109,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   }
 
   override suspend fun save() {
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       return
     }
 
@@ -125,14 +125,14 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   }
 
   fun addFileToTargetIdEntry(file: Path, targets: List<Label>) {
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       throw IllegalStateException()
     }
     db.addFileToTarget(file, targets)
   }
 
   fun removeFileToTargetIdEntry(file: Path) {
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       throw IllegalStateException()
     }
     db.removeFileToTarget(file)
@@ -141,7 +141,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   @InternalApi
   @TestOnly
   fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       throw IllegalStateException()
     }
     db.setTargets(labelToTargetInfo)
@@ -159,7 +159,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     libraryItems: List<LibraryItem>?,
   ) {
     ThreadingAssertions.assertBackgroundThread()
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       throw IllegalStateException()
     }
     val labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id }
@@ -242,7 +242,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
 
   fun notifyTargetListUpdated() {
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       throw IllegalStateException()
     }
     emitTargetListUpdate()
@@ -255,20 +255,20 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   }
 
   @PublicApi
-  fun allTargets(): Sequence<Label> = if (BazelSyncV2.isEnabled) {
+  fun allTargets(): Sequence<Label> = if (syncV2Enabled) {
     syncV2Bridge.getAllTargets()
   } else {
     db.getAllTargets()
   }
 
-  fun getTotalTargetCount(): Int = if (BazelSyncV2.isEnabled) {
+  fun getTotalTargetCount(): Int = if (syncV2Enabled) {
     -1
   } else {
     db.getTotalTargetCount()
   }
 
   @PublicApi
-  fun getTargetsForPath(path: Path): List<Label> = if (BazelSyncV2.isEnabled) {
+  fun getTargetsForPath(path: Path): List<Label> = if (syncV2Enabled) {
     syncV2Bridge.getTargetsForFile(path).toList()
   } else {
     db.getTargetsForPath(path) ?: emptyList()
@@ -279,7 +279,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       return file.toNioPathOrNull()?.let { syncV2Bridge.getExecutableTargetsForFile(it).toList() } ?: emptyList()
     }
     val executableDirectTargets =
@@ -295,14 +295,14 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
 
   @PublicApi
-  fun getTargetForModuleId(moduleId: String): Label? = if (BazelSyncV2.isEnabled) {
+  fun getTargetForModuleId(moduleId: String): Label? = if (syncV2Enabled) {
     syncV2Bridge.getTargetForModuleId(moduleId)
   } else {
     db.getTargetForModuleId(moduleId)
   }
 
   @PublicApi
-  fun getTargetForLibraryId(libraryId: String): Label? = if (BazelSyncV2.isEnabled) {
+  fun getTargetForLibraryId(libraryId: String): Label? = if (syncV2Enabled) {
     syncV2Bridge.getTargetForLibraryId(libraryId)
   } else {
     db.getTargetForLibraryId(libraryId)
@@ -314,7 +314,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
    */
   @InternalApi
   fun getBuildTargetForLabel(label: Label): BuildTarget? =
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       syncV2Bridge.getBuildTargetForLabel(label)
     } else {
       db.getBuildTargetForLabel(label, project)
@@ -324,7 +324,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun getBuildTargetForModule(module: Module): BuildTarget? = getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
 
   @InternalApi
-  fun allBuildTargets(): Sequence<BuildTarget> = if (BazelSyncV2.isEnabled) {
+  fun allBuildTargets(): Sequence<BuildTarget> = if (syncV2Enabled) {
     syncV2Bridge.getAllBuildTargets()
   } else {
     db.getAllBuildTargets()
@@ -333,7 +333,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   // todo: avoid such methods as we load all targets into memory
   @InternalApi
   fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<Label> =
-    if (BazelSyncV2.isEnabled) {
+    if (syncV2Enabled) {
       syncV2Bridge.getAllBuildTargets()
         .filter(predicate)
         .map { it.id }
@@ -342,7 +342,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       db.allBuildTargetAsLabelToTargetMap(predicate)
     }
 
-  fun getTotalFileCount(): Int = if (BazelSyncV2.isEnabled) {
+  fun getTotalFileCount(): Int = if (syncV2Enabled) {
     -1
   } else {
     db.getTotalFileCount()

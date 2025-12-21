@@ -8,14 +8,14 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.jetbrains.bazel.sync_new.BazelSyncV2
 import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
 import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 import org.jetbrains.bazel.ui.console.isBuildInProgress
 
 class BuildAndResyncAction : SuspendableAction({ BazelPluginBundle.message("build.and.resync.action.text") }) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    if (BazelSyncV2.isEnabled) {
+    if (project.isNewSyncEnabled) {
       project.service<SyncBridgeService>()
         .sync(scope = SyncScope.Full(build = true))
     } else {

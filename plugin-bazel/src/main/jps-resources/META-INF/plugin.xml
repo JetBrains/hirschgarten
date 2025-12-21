@@ -452,6 +452,13 @@
       restartRequired="false"
     />
 
+    <registryKey
+      defaultValue="false"
+      description="If enabled incremental sync can be used on per-project basis"
+      key="bazel.new.sync.enabled"
+      restartRequired="true"
+    />
+
     <postStartupActivity implementation="org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSInitActivity"/>
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
@@ -879,6 +886,12 @@
         id="bazel.experimental.project.settings"
         instance="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurable"
         provider="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurableProvider"
+      />
+      <configurable
+        key="configurable.display.name.bazel.sync.project.settings"
+        id="bazel.sync.project.settings"
+        instance="org.jetbrains.bazel.sync_new.settings.BazelSyncProjectSettingsConfigurable"
+        provider="org.jetbrains.bazel.sync_new.settings.BazelSyncProjectSettingsConfigurableProvider"
       />
     </projectConfigurable>
 

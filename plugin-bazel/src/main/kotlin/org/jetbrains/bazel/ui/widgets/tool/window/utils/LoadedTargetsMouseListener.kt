@@ -91,7 +91,7 @@ abstract class LoadedTargetsMouseListener(private val project: Project) : PopupH
 
   private fun calculatePopupGroup(target: TargetTreeCompat): ActionGroup =
     DefaultActionGroup().apply {
-      ResyncTargetAction.createIfEnabled(target.label)?.let { addAction(it) }
+      ResyncTargetAction.createIfEnabled(project, target.label)?.let { addAction(it) }
       addAction(copyTargetIdAction)
       addSeparator()
       if (!target.noBuild) {

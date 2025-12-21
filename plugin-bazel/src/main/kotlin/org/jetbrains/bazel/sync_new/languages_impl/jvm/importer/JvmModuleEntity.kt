@@ -202,14 +202,6 @@ sealed interface JvmResourceId : IncrementalResourceId {
     val vertexId: Int,
   ) : JvmResourceId
 
-  @SealedTag(5)
-  @Tagged
-  @ClassTag(1759799926)
-  data class AnnotationProcessorLibrary(
-    @field:Tag(1)
-    val owner: Int,
-  ) : JvmResourceId
-
   @SealedTag(6)
   @Tagged
   @ClassTag(2134784395)
@@ -246,10 +238,6 @@ sealed interface JvmResourceId : IncrementalResourceId {
 
 fun JvmResourceId.hash(): HashValue128 = hash h@{
   when (this@hash) {
-    is JvmResourceId.AnnotationProcessorLibrary -> {
-      putInt(1)
-      putInt(owner)
-    }
 
     is JvmResourceId.CompiledLibrary -> {
       putInt(2)
@@ -288,6 +276,7 @@ fun JvmResourceId.hash(): HashValue128 = hash h@{
     is JvmResourceId.GeneratedLibrary -> {
       putInt(9)
       putInt(owner)
+      putString(name)
     }
   }
 }

@@ -20,6 +20,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.flow.hash_diff.SyncHasherService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
@@ -64,7 +65,8 @@ class SyncExecutor(
       syncExecutor = this,
       languageService = service<SyncLanguageService>(),
       pathsResolver = project.connection.runWithServer { server -> server.workspaceBazelPaths().bazelPathsResolver },
-      session = SyncSession()
+      session = SyncSession(),
+      flags = project.service<SyncFlagsService>(),
     )
 
     withTask(project, "sync_lifecycle_pre_events", "Executing pre-sync events") {
@@ -150,8 +152,19 @@ class SyncExecutor(
     val expandedDiff = withTask("expand_diff", "Computing dependency reachability") {
       project.service<SyncExpandService>().expandDependencyDiff(scope, normalizedDiff)
     }
-    val coldDiff = withTask("hash_diff", "Computing hash diff") {
-      project.service<SyncHasherService>().computeHashDiff(expandedDiff)
+    val useHasher = when {
+      ctx.scope.isFullSync -> true
+      !ctx.flags.useTargetHasher -> false
+      ctx.flags.useTargetHasherThreshold -> expandedDiff.universe.size >= ctx.flags.targetHasherThreshold
+      else -> true
+    }
+    val coldDiff = if (useHasher) {
+      withTask("hash_diff", "Computing hash diff") {
+        project.service<SyncHasherService>().computeHashDiff(expandedDiff)
+      }
+    }
+    else {
+      expandedDiff
     }
     return withTask("baking diff", "Converting to hot diff") {
       val diff = normalizer.toHotDiff(ctx, coldDiff)
@@ -180,7 +193,7 @@ class SyncExecutor(
     //  console.addWarnMessage(taskId = parentTaskId, "Inconsistency detected, skipping workspace import")
     //  return
     //}
-    for (target in diff.removed) {
+    for (target in diff.removed + diff.changed.map { it.old }) {
       val id = graph.getVertexIdByLabel(target.label)
       if (id != EMPTY_ID) {
         graph.removeVertexById(id)
@@ -261,7 +274,7 @@ class SyncExecutor(
         project = project,
         repoMapping = project.syncRepoMapping,
         targets = targets,
-        build = ctx.scope.build
+        build = ctx.scope.build,
       )
     }
   }
