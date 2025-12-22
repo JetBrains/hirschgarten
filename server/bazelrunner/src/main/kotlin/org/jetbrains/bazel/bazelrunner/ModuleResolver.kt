@@ -115,18 +115,21 @@ class ModuleResolver(
   /**
    * Obtains the mappings from apparent repo names to canonical repo names in the context of `canonicalRepoName`.
    *
-   * <canonicalRepoName> is a canonical repo name without any leading @ characters.
+   * <canonicalRepoNames> is a list of canonical repo name without any leading @ characters.
    * The canonical repo name of the root module repository is the empty string.
    */
-  suspend fun getRepoMapping(canonicalRepoName: String): Map<String, String> {
-    if (canonicalRepoName.startsWith('@')) {
-      error("Canonical repo name cannot contain '@' characters: $canonicalRepoName")
+  suspend fun getRepoMappings(canonicalRepoNames: List<String>): Map<String, Map<String, String>> {
+    if (canonicalRepoNames.isEmpty()) return emptyMap()
+    canonicalRepoNames.forEach {
+      if (it.startsWith('@')) {
+        error("Canonical repo name cannot contain '@' characters: $it")
+      }
     }
 
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         dumpRepoMapping {
-          options.add(canonicalRepoName)
+          options.addAll(canonicalRepoNames)
         }
       }
     val processResult =
@@ -139,10 +142,12 @@ class ModuleResolver(
       error("dumpRepoMapping failed with output: ${processResult.stdout}")
     }
 
-    // Output is json, we need to parse it
-    val output = processResult.stdout.toJson()
     @Suppress("UNCHECKED_CAST")
-    return output?.let { gson.fromJson(output, Map::class.java) } as? Map<String, String>
-           ?: error("Failed to parse repo mapping from bazel. Bazel output:\n$output")
+    return processResult.stdoutLines.map {
+      it.toJson().let {
+        it.let { gson.fromJson(it, Map::class.java) as? Map<String, String> }
+        ?: error("Failed to parse repo mapping from bazel. Bazel output:\n$it")
+      }
+    }.zip(canonicalRepoNames).associate { (map, canonicalRepoName) -> canonicalRepoName to map }
   }
 }
