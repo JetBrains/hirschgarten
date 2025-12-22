@@ -3,7 +3,6 @@ package org.jetbrains.bazel.bazelrunner
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.bazelrunner.outputs.spawnProcessBlocking
-import org.jetbrains.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
@@ -77,7 +76,7 @@ class BazelRunner(
 
     fun build(builder: BazelCommand.Build.() -> Unit = {}) =
       BazelCommand
-        .Build(bazelInfo, bazelBinary)
+        .Build(bazelBinary)
         .apply { builder() }
         .also { inheritWorkspaceOptions = true }
 

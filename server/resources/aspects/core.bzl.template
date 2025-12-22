@@ -1,7 +1,7 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
 load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
-load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups", "do_starlark_string_expansion_dict", "is_valid_aspect_target", "BspAspectInfo")
+load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "EXPORT_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups", "do_starlark_string_expansion_dict", "is_valid_aspect_target", "BspAspectInfo")
 load("//${bspPath}/aspects:rules/java/java_info.bzl", "java_info_in_target", "java_info_reference")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
@@ -14,14 +14,15 @@ RUNTIME = 1
 # Max filename length is 255 symbols on all major OSes. Choose a smaller number to make up for additional suffixes/prefixes.
 MAX_FILENAME_LENGTH = 200
 
-def make_dep(dep, dependency_type):
+def make_dep(dep, dependency_type, exported):
     return struct(
         id = str(dep[BspAspectInfo].bsp_info.id),
         dependency_type = dependency_type,
+        exported = exported,
     )
 
-def make_deps(deps, dependency_type):
-    return [make_dep(dep, dependency_type) for dep in deps]
+def make_deps(deps, dependency_type, exported = False):
+    return [make_dep(dep, dependency_type, exported) for dep in deps]
 
 def _is_analysis_test(target):
     """Returns if the target is an analysis test.
@@ -38,25 +39,6 @@ def files_to_list(source):
     else:
         return files.to_list()
 
-def _is_proto_library_wrapper(target, ctx):
-    """Returns True if the target is an empty shim around a proto library."""
-    if not ctx.rule.kind.endswith("proto_library") or ctx.rule.kind == "proto_library":
-        return False
-
-    # treat any *proto_library rule with a single proto_library dep as a shim
-    deps = collect_targets_from_attrs(ctx.rule.attr, ["deps"])
-    return len(deps) == 1 and is_valid_aspect_target(deps[0]) and deps[0][BspAspectInfo].bsp_info.kind == "proto_library"
-
-def _get_forwarded_deps(target, ctx):
-    """Returns the list of deps of this target to forward.
-
-    Used to handle wrapper/shim targets which are really just pointers to a
-    different target (for example, java_proto_library)
-    """
-    if _is_proto_library_wrapper(target, ctx):
-        return collect_targets_from_attrs(ctx.rule.attr, ["deps"])
-    return []
-
 def _bsp_target_info_aspect_impl(target, ctx):
     if target.label.name.endswith(".semanticdb") or _is_analysis_test(target):
         return []
@@ -69,51 +51,29 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     direct_dep_targets = collect_targets_from_attrs(rule_attrs, COMPILE_DEPS)
     private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
-    direct_deps = make_deps(direct_dep_targets, COMPILE)
-
-    exported_deps_from_deps = []
-    if ${isPropagateExportsFromDepsEnabled}:
-        for dep in direct_dep_targets:
-            exported_deps_from_deps = exported_deps_from_deps + dep[BspAspectInfo].bsp_info.export_deps
-
-    compile_deps = direct_deps + exported_deps_from_deps
+    compile_deps = make_deps(direct_dep_targets, COMPILE)
 
     runtime_dep_targets = collect_targets_from_attrs(rule_attrs, RUNTIME_DEPS)
     runtime_deps = make_deps(runtime_dep_targets, RUNTIME)
 
-    all_deps = depset(compile_deps + runtime_deps).to_list()
-
-    # Propagate my own exports
-    export_deps = []
+    direct_export_targets = []
     direct_exports = []
-    if java_info_in_target(target):
-        direct_exports = collect_targets_from_attrs(rule_attrs, ["exports"])
-        export_deps.extend(make_deps(direct_exports, COMPILE))
-        for export in direct_exports:
-            export_deps.extend(export[BspAspectInfo].bsp_info.export_deps)
-        export_deps = depset(export_deps).to_list()
+    direct_exports_set = {}
+    can_have_exports = java_info_in_target(target)
+    if can_have_exports:
+        direct_export_targets = collect_targets_from_attrs(rule_attrs, EXPORT_DEPS)
+        direct_exports = make_deps(direct_export_targets, COMPILE, True)
+        direct_exports_set = {str(dep.label): None for dep in direct_export_targets}
 
-    forwarded_deps = _get_forwarded_deps(target, ctx) + direct_exports
+    all_deps = [dep for dep in compile_deps + runtime_deps if not(dep.id in direct_exports_set)] + direct_exports
 
-    dep_targets = direct_dep_targets + private_direct_dep_targets + runtime_dep_targets + direct_exports
+    dep_targets = direct_dep_targets + private_direct_dep_targets + runtime_dep_targets + direct_export_targets
     output_groups = dict()
     for dep in dep_targets:
         dep_info = dep[BspAspectInfo]
         for k, v in dep_info.bsp_info.output_groups.items():
-            if dep in forwarded_deps:
-                # unconditionally roll up deps for these targets
-                output_groups[k] = output_groups[k] + [v] if k in output_groups else [v]
+            if k.endswith("-direct-outputs"):
                 continue
-
-            # roll up outputs of direct deps into '-direct-deps' output group
-            if k.endswith("-direct-deps"):
-                continue
-            if k.endswith("-outputs"):
-                directs = k[:-len("outputs")] + "direct-deps"
-                output_groups[directs] = output_groups[directs] + [v] if directs in output_groups else [v]
-                continue
-
-            # everything else gets rolled up transitively
             output_groups[k] = output_groups[k] + [v] if k in output_groups else [v]
 
     # Convert output_groups from lists to depsets after the lists are finalized. This avoids
@@ -187,7 +147,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     exported_properties = dict(
         id = target.label,
         kind = rule_kind,
-        export_deps = export_deps,
+        export_deps = direct_exports,
         output_groups = output_groups,
     )
 

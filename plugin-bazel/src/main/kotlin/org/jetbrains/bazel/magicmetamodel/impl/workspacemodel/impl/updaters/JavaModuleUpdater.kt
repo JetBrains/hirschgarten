@@ -39,7 +39,6 @@ class JavaModuleWithSourcesUpdater(
         workspaceModelEntityUpdaterConfig = workspaceModelEntityUpdaterConfig,
         defaultDependencies = calculateJavaModuleDependencies(entityToAdd),
         libraries = libraries,
-        runtimeOnlyDependencies = entityToAdd.runtimeOnlyDependencies,
       )
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
@@ -147,7 +146,6 @@ class JavaModuleWithoutSourcesUpdater(
         workspaceModelEntityUpdaterConfig,
         calculateJavaModuleDependencies(entityToAdd),
         libraries,
-        entityToAdd.runtimeOnlyDependencies,
       )
 
     return moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
