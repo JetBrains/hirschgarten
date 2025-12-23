@@ -18,27 +18,3 @@ data class BzlmodRepoMapping(
 ) : RepoMapping
 
 data object RepoMappingDisabled : RepoMapping
-
-fun Label.canonicalize(repoMapping: RepoMapping): Label =
-  when (repoMapping) {
-    is RepoMappingDisabled -> this
-    is BzlmodRepoMapping -> {
-      when (this) {
-        is ResolvedLabel -> {
-          when (this.repo) {
-            is Main -> this
-            is Canonical -> this
-            is Apparent -> {
-              val apparentRepoName = this.repoName
-              val canonicalRepoName =
-                repoMapping.apparentRepoNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
-              this.copy(repo = Canonical.createCanonicalOrMain(canonicalRepoName))
-            }
-          }
-        }
-
-        is RelativeLabel -> error("Relative label $this cannot be canonicalized")
-        is SyntheticLabel -> this
-      }
-    }
-  }
