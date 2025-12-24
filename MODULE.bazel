@@ -56,7 +56,7 @@ maven.install(
         "com.fasterxml.jackson.core:jackson-databind:2.20.0",
         "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.20.0",
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.20.0",
-        "com.google.auto.value:auto-value-annotations:1.11.0",
+        "com.google.auto.value:auto-value-annotations:1.11.1",
         "com.google.auto.value:auto-value:1.11.0",
         "com.google.flogger:flogger:0.9",
         "com.google.flogger:flogger-system-backend:0.9",
