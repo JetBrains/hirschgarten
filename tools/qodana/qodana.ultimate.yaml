@@ -1,17 +1,39 @@
 version: "1.0"
 profile:
-  name: qodana.recommended
-include:
-  - name: QodanaSanity
-  - name: HighlightVisitorInternal
-exclude:
-  - name: CheckDependencyLicenses
-  - name: UnnecessaryUnicodeEscape
-  - name: UnstableApiUsage
-  - name: DialogTitleCapitalization
-  - name: MarkedForRemoval
-  - name: WrongPackageStatement
-  - name: UnresolvedPropertyKey
+  base:
+    name: empty
+  groups:
+    - groupId: UltimateRegressions
+      inspections:
+        - QodanaSanity
+        - UnresolvedPropertyKey
+  inspections:
+    - group: UltimateRegressions
+      enabled: true
+      ignore:
+        - "**/test/data/**"
+        - "**/test/resources/**"
+        - "**/testData/**"
+        - "**/testdata/**"
+        - "**/TestResources/**"
+        - "**/*TestResources/**"
+        - "**/*.bash"
+        - "**/*.def"
+        - "**/*.ft"
+        - "**/*.http"
+        - "**/*.ignore"
+        - "**/*.json"
+        - "**/*.ndjson"
+        - "**/*.ps1"
+        - "**/*.rest"
+        - "**/*.rnc"
+        - "**/*.sh"
+        - "**/*.template"
+        - "**/*.toml"
+        - "**/*.vm"
+        - "**/*.yaml"
+        - "**/*.yml"
+        - "**/*.zsh"
 failureConditions:
   severityThresholds:
-    critical: 3950
+    critical: 100
