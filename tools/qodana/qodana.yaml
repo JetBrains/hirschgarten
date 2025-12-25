@@ -6,7 +6,7 @@ profile:
     - groupId: UltimateRegressions
       inspections:
         - QodanaSanity
-        - HighlightVisitorInternal
+        - UnresolvedPropertyKey
   inspections:
     - group: UltimateRegressions
       enabled: true
