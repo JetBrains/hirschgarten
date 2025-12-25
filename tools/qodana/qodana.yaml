@@ -1,37 +1,54 @@
 version: "1.0"
 profile:
-  name: qodana.recommended
-include:
-  - name: QodanaSanity
-  - name: HighlightVisitorInternal
-exclude:
-  - name: All
-    paths:
-      - plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java
-      - plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
-      - plugin-bazel/src/test/testData/bazelrc
-      - plugin-bazel/src/test/testData/starlark
-      # generated workspace entities are full of various things, boring for qodana
-      - plugin-bazel/workspacemodel/src/main/gen
-      # aspects should be boring for qodana
-      - server/aspects
-      # server/example contains small examples of edge cases, boring for qodana
-      - server/example/kotlincplugin/UserIsOpenTest.kt
-      # .teamcity currently doesn't comply with k2, so we remove it
-      - .teamcity
-      # test projects, not needed for qodana, may produce false positives
-      - server/e2e/test-projects
-      # template files
-      - server/resources/aspects/rules/android/android_info.bzl.template
-      - server/resources/aspects/rules/jvm/jvm_info.bzl.template
-      - server/resources/aspects/utils/utils.bzl.template
-      - server/resources/aspects/rules/protobuf/protobuf_info.bzl.template
-      - server/resources/aspects/core.bzl.template
-      - server/executioncontext/projectview/src/test/resources/projectview
-  - name: CheckDependencyLicenses
-  - name: UnnecessaryUnicodeEscape
-  - name: UnstableApiUsage
-  - name: DialogTitleCapitalization
+  base:
+    name: empty
+  groups:
+    - groupId: UltimateRegressions
+      inspections:
+        - QodanaSanity
+        - HighlightVisitorInternal
+  inspections:
+    - group: UltimateRegressions
+      enabled: true
+      ignore:
+        # from `exclude: - name: All`
+        - "plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java"
+        - "plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java"
+        - "plugin-bazel/src/test/testData/bazelrc/**"
+        - "plugin-bazel/src/test/testData/starlark/**"
+        - "plugin-bazel/workspacemodel/src/main/gen/**"
+        - "server/aspects/**"
+        - "server/example/kotlincplugin/UserIsOpenTest.kt"
+        - ".teamcity/**"
+        - "server/e2e/test-projects/**"
+        - "server/resources/aspects/**/*.template"
+        - "server/executioncontext/projectview/src/test/resources/projectview/**"
+
+        # common file extensions ignore (from target format)
+        - "**/test/data/**"
+        - "**/test/resources/**"
+        - "**/testData/**"
+        - "**/testdata/**"
+        - "**/TestResources/**"
+        - "**/*TestResources/**"
+        - "**/*.bash"
+        - "**/*.def"
+        - "**/*.ft"
+        - "**/*.http"
+        - "**/*.ignore"
+        - "**/*.json"
+        - "**/*.ndjson"
+        - "**/*.ps1"
+        - "**/*.rest"
+        - "**/*.rnc"
+        - "**/*.sh"
+        - "**/*.template"
+        - "**/*.toml"
+        - "**/*.vm"
+        - "**/*.yaml"
+        - "**/*.yml"
+        - "**/*.zsh"
+
 failureConditions:
   severityThresholds:
     critical: 10
