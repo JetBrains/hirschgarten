@@ -5,7 +5,7 @@ INTELLIJ_BAZEL_VERSION = "9999.9.9"
 PLATFORM_VERSION = "253"
 
 # make sure to always choose the lowest among different benchmark build numbers
-SINCE_VERSION = "253.22441"
+SINCE_VERSION = "253.29346.138"
 UNTIL_VERSION = "253.*"
 
 BENCHMARK_BUILD_NUMBER = "253.22441.33"
