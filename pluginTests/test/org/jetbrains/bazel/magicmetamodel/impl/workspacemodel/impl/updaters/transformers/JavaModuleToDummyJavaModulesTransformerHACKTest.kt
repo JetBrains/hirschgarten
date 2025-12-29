@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.openapi.module.StdModuleTypes
+import com.intellij.openapi.module.JavaModuleType.JAVA_MODULE_ENTITY_TYPE_ID_NAME
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
@@ -37,7 +37,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies =
           listOf(
             Dependency("module2"),
@@ -133,7 +133,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
@@ -224,7 +224,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
@@ -286,7 +286,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
@@ -355,7 +355,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
@@ -412,7 +412,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
@@ -518,7 +518,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
@@ -607,7 +607,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
@@ -691,7 +691,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule1 =
       GenericModuleInfo(
         name = projectRoot1Name,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(),
         kind =
           TargetKind(
@@ -722,7 +722,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule2 =
       GenericModuleInfo(
         name = projectRoot2Name,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(),
         kind =
           TargetKind(
@@ -772,7 +772,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(),
         kind =
           TargetKind(
@@ -820,7 +820,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = emptyList(),
         kind =
           TargetKind(
@@ -892,7 +892,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = listOf(Dependency("@maven//:lib1")),
         kind =
           TargetKind(
@@ -974,7 +974,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = emptyList(),
         kind =
           TargetKind(
@@ -1047,7 +1047,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = emptyList(),
         kind =
           TargetKind(
@@ -1112,7 +1112,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = emptyList(),
         kind =
           TargetKind(
@@ -1170,7 +1170,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = emptyList(),
         kind =
           TargetKind(
@@ -1253,7 +1253,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenModule =
       GenericModuleInfo(
         name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(JAVA_MODULE_ENTITY_TYPE_ID_NAME),
         dependencies = emptyList(),
         kind =
           TargetKind(
