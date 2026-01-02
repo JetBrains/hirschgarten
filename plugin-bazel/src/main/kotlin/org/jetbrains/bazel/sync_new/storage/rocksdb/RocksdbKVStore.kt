@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.sync_new.storage.rocksdb
 
+import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
+import com.github.benmanes.caffeine.cache.RemovalCause
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.codec.Codec
@@ -22,7 +24,6 @@ import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.locks.StampedLock
 
-// TODO: rewrite this
 class RocksdbKVStore<K : Any, V : Any>(
   private val db: RocksDB,
   internal val cfHandle: ColumnFamilyHandle,
@@ -59,12 +60,18 @@ class RocksdbKVStore<K : Any, V : Any>(
     data object Tombstone : Value<Nothing>
   }
 
-  private val cache = Caffeine.newBuilder()
+  private val cache: Cache<K, Value<V>> = Caffeine.newBuilder()
     .executor { it.run() }
-    .build<K, Value<V>>()
+    .removalListener<K, Value<V>> { key, value, cause ->
+      when (cause) {
+        RemovalCause.EXPIRED, RemovalCause.SIZE -> removalQueue[key] = value
+        else -> {}
+      }
+    }
+    .build()
 
   private val computeLocks: ConcurrentMap<K, StampedLock> = ConcurrentHashMap()
-  private val removalQueue: ConcurrentSkipListSet<K> = ConcurrentSkipListSet()
+  private val removalQueue: ConcurrentMap<K, Value<V>> = ConcurrentHashMap()
 
   init {
     Disposer.register(disposable, this)
@@ -346,16 +353,22 @@ class RocksdbKVStore<K : Any, V : Any>(
   }
 
   internal fun consumeKey(key: K): KeyAction<K, V> {
-    if (removalQueue.remove(key)) {
-      // TODO: handle cache evictions here
-      return KeyAction.Remove(key)
+    val removed = removalQueue.remove(key)
+    if (removed != null) {
+      val value = cache.getIfPresent(key)
+      if (value == null) {
+        return consumeKey(key)
+      } else {
+        when (removed) {
+          is Value.Present<V> -> return KeyAction.Overwrite(removed.value)
+          else -> {
+            /* noop */
+          }
+        }
+      }
     }
     val value = cache.getIfPresent(key)
     if (value == null) {
-      // states:
-      // 1. not loaded yet
-      // 2. removed
-      // 3. TODO: evicted - look at this case more closely
       return KeyAction.Noop()
     }
     return when (value) {
