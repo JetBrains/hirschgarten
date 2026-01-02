@@ -11,17 +11,19 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.Dependency
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
+import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
@@ -74,9 +76,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         buildTargetId,
         listOf(),
         listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          DependencyLabel.parse("module2"),
+          DependencyLabel.parse("module3"),
+          DependencyLabel.parse("@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -110,8 +112,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         javacOptions = listOf("opt1", "opt2", "opt3"),
         dependencies =
           listOf(
-            Label.parse("module2"),
-            Label.parse("module3"),
+            DependencyLabel.parse("module2"),
+            DependencyLabel.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -136,8 +138,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2.module2",
-            "module3.module3",
+            Dependency("module2.module2"),
+            Dependency("module3.module3"),
           ),
         kind =
           TargetKind(
@@ -211,9 +213,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         buildTargetId,
         listOf(),
         listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          DependencyLabel.parse("module2"),
+          DependencyLabel.parse("module3"),
+          DependencyLabel.parse("@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -234,8 +236,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         javacOptions = listOf(),
         dependencies =
           listOf(
-            Label.parse("module2"),
-            Label.parse("module3"),
+            DependencyLabel.parse("module2"),
+            DependencyLabel.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -259,8 +261,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2.module2",
-            "module3.module3",
+            Dependency("module2.module2"),
+            Dependency("module3.module3"),
           ),
         associates =
           listOf(
@@ -324,9 +326,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         buildTargetId1,
         listOf(),
         listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          DependencyLabel.parse("module2"),
+          DependencyLabel.parse("module3"),
+          DependencyLabel.parse("@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_library",
@@ -360,8 +362,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         javacOptions = listOf("opt1.1", "opt1.2", "opt1.3"),
         dependencies =
           listOf(
-            Label.parse("module2"),
-            Label.parse("module3"),
+            DependencyLabel.parse("module2"),
+            DependencyLabel.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -385,8 +387,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         buildTargetId2,
         listOf(),
         listOf(
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          DependencyLabel.parse("module3"),
+          DependencyLabel.parse("@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_test",
@@ -414,7 +416,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         javacOptions = listOf("opt2.1", "opt2.2"),
         dependencies =
           listOf(
-            Label.parse("module3"),
+            DependencyLabel.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -441,8 +443,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2.module2",
-            "module3.module3",
+            Dependency("module2.module2"),
+            Dependency("module3.module3"),
           ),
         kind =
           TargetKind(
@@ -492,7 +494,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module3.module3",
+            Dependency("module3.module3"),
           ),
         kind =
           TargetKind(
@@ -574,9 +576,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         buildTargetId,
         listOf(),
         listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
+          DependencyLabel.parse("module2"),
+          DependencyLabel.parse("module3"),
+          DependencyLabel.parse("@maven//:lib1"),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -607,8 +609,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         javacOptions = listOf("opt1", "opt2", "opt3"),
         dependencies =
           listOf(
-            Label.parse("module2"),
-            Label.parse("module3"),
+            DependencyLabel.parse("module2"),
+            DependencyLabel.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -634,9 +636,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2.module2",
-            "module3.module3",
-            dummyJavaModuleName,
+            Dependency("module2.module2"),
+            Dependency("module3.module3"),
+            Dependency(dummyJavaModuleName),
           ),
         kind =
           TargetKind(
@@ -752,7 +754,7 @@ class ExtractJvmBuildTargetTest {
       RawBuildTarget(
         Label.parse("target"),
         listOf("tag1", "tag2"),
-        listOf(Label.parse("dep1"), Label.parse("dep2")),
+        listOf(DependencyLabel.parse("dep1"), DependencyLabel(Label.parse("dep2"))),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,

@@ -3,15 +3,15 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.workspaceModel.ide.toPath
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ModifiablePackageMarkerEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.packageMarkerEntities
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
+import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
+import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
@@ -51,8 +51,8 @@ class PackageMarkerEntityUpdater(
     return parentModuleEntity.packageMarkerEntities
   }
 
-  private fun iterateSubdirectories(entityToAdd: JavaSourceRoot): List<ModifiablePackageMarkerEntity> {
-    val entities = mutableListOf<ModifiablePackageMarkerEntity>()
+  private fun iterateSubdirectories(entityToAdd: JavaSourceRoot): List<PackageMarkerEntityBuilder> {
+    val entities = mutableListOf<PackageMarkerEntityBuilder>()
     val visitor =
       object : SimpleFileVisitor<Path>() {
         override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {

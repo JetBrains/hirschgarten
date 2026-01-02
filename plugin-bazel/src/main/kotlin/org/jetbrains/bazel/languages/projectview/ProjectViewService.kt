@@ -1,20 +1,23 @@
 package org.jetbrains.bazel.languages.projectview
 
 import com.google.common.hash.HashCode
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.readAction
+import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.findFile
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
+import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 import org.jetbrains.bazel.sync.SyncCache
-import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.notExists
 
 /**
  * Service responsible for parsing and caching ProjectView files.
@@ -22,18 +25,26 @@ import kotlin.io.path.notExists
  */
 @Service(Service.Level.PROJECT)
 class ProjectViewService(private val project: Project) {
-
+  /**
+   * Gets the current ProjectView, parsing it if necessary.
+   * Uses caching with file modification time checking for efficiency.
+   */
   fun getProjectView(): ProjectView {
     var projectViewPath = findProjectViewPath()
 
-    if (projectViewPath.notExists()) {
-      projectViewPath =
-        ProjectViewFileUtils.calculateProjectViewFilePath(
-          overwrite = true,
-          projectRootDir = project.rootDir,
-          projectViewPath = projectViewPath,
-        )
-      project.setProjectViewPath(projectViewPath)
+    if (projectViewPath == null || !projectViewPath.exists()) {
+      val newProjectView = ProjectViewFileUtils.calculateProjectViewFilePath(
+        overwrite = true,
+        projectRootDir = project.rootDir,
+        projectViewPath = null,
+      )
+      projectViewPath = VirtualFileManager.getInstance()
+        .findFileByNioPath(newProjectView)
+      project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewPath)
+    }
+
+    if (projectViewPath == null) {
+      return getDefaultProjectView()
     }
 
     return parseProjectView(projectViewPath)
@@ -43,35 +54,49 @@ class ProjectViewService(private val project: Project) {
     getProjectView()
   }
 
+  /**
+   * Get the cached project view which is reset on every project resync.
+   */
   fun getCachedProjectView(): ProjectView = SyncCache.getInstance(project).get(cachedProjectViewComputable)
 
-  private fun findProjectViewPath(): Path {
+  private fun findProjectViewPath(): VirtualFile? {
     val pathFromSettings = project.bazelProjectSettings.projectViewPath
     if (pathFromSettings != null && pathFromSettings.exists()) {
       return pathFromSettings
     }
-    val rootDir = project.rootDir.toNioPath()
-    val projectViewPath = rootDir.resolve(".bazelproject")
+    val rootDir = project.rootDir
+    return rootDir.findFile(".bazelproject")
+      ?: rootDir.findFileByRelativePath(".bazelbsp/.bazelproject")
+  }
 
-    return if (projectViewPath.exists()) {
-      projectViewPath
-    } else {
-      rootDir.resolve(".bazelbsp/.bazelproject")
+  private fun parseProjectView(projectViewPath: VirtualFile): ProjectView {
+    return runBlockingCancellable {
+      parseProjectViewAsync(projectViewPath) ?: getDefaultProjectView()
     }
   }
 
-  private fun parseProjectView(projectViewPath: Path): ProjectView =
-    ReadAction.compute<ProjectView, RuntimeException> {
-      val virtualFile =
-        VirtualFileManager.getInstance().findFileByNioPath(projectViewPath)
-          ?: error("Could not find project view file at $projectViewPath")
+  private suspend fun parseProjectViewAsync(projectViewPath: VirtualFile): ProjectView? = readAction {
+    val psi = PsiManager.getInstance(project).findFile(projectViewPath) as? ProjectViewPsiFile
+      ?: return@readAction null
+    return@readAction ProjectView.fromProjectViewPsiFile(psi)
+  }
 
-      val psiFile =
-        PsiManager.getInstance(project).findFile(virtualFile) as? ProjectViewPsiFile
-          ?: error("Could not parse project view file at $projectViewPath")
+  private fun getDefaultProjectView(): ProjectView {
+    val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir)
+    val psiFile = PsiFileFactory.getInstance(project)
+      .createFileFromText(".bazelproject", ProjectViewLanguage, content) as ProjectViewPsiFile
+    return ProjectView.fromProjectViewPsiFile(psiFile)
+  }
 
-      ProjectView.fromProjectViewPsiFile(psiFile)
+  suspend fun forceReparseCurrentProjectViewFiles() {
+    val projectViewPath = findProjectViewPath() ?: return
+    val imports = parseProjectViewAsync(projectViewPath)?.imports ?: emptyList()
+
+    writeAction {
+      PsiDocumentManager.getInstance(project)
+        .reparseFiles(imports + projectViewPath, false)
     }
+  }
 
   fun getProjectViewConfigurationHash(): HashCode = ProjectViewHasher.hash(getProjectView())
 

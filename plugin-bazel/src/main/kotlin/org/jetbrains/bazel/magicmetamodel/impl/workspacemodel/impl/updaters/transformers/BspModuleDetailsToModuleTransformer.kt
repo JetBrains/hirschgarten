@@ -2,18 +2,19 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.Dependency
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JavacOptionsItem
 
 data class BspModuleDetails(
   val target: BuildTarget,
   val javacOptions: List<String>,
   val type: ModuleTypeId,
   val associates: List<Label> = listOf(),
-  val dependencies: List<Label>,
+  val dependencies: List<DependencyLabel>,
 )
 
 class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
@@ -22,7 +23,7 @@ class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, Bui
     GenericModuleInfo(
       name = inputEntity.target.id.formatAsModuleName(project),
       type = inputEntity.type,
-      dependencies = inputEntity.dependencies.map { it.formatAsModuleName(project) },
+      dependencies = inputEntity.dependencies.map { Dependency(it.label.formatAsModuleName(project), it.isRuntime, it.exported) },
       kind = inputEntity.target.kind,
       associates =
         inputEntity.associates.mapNotNull {

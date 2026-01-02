@@ -6,10 +6,16 @@ import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
 import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.driver.sdk.ui.xQuery
+import com.intellij.ide.starter.ide.IDETestContext
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.junit.jupiter.api.Assertions
 import kotlin.time.Duration.Companion.minutes
 
-private val expandedTreeForProject = mutableSetOf<String>()
+/**
+ * If we have too many test results, then part of the tree may be cut off because it doesn't fit into the screen
+ */
+private const val TREE_SIZE_THAT_FITS_INTO_SCREEN = 6
+var expandedTree = false
 
 /**
  * @param expectedStatus e.g., `listOf("2 tests passed", "2 tests total")`
@@ -22,12 +28,18 @@ fun IdeaFrameUI.verifyTestStatus(expectedStatus: List<String>, expectedTree: Col
     Assertions.assertEquals(expectedStatus, actualStatus, "Test status must match")
   }
   step("Verify test results tree") {
-    if (expandedTreeForProject.add(project.toString())) {
+    if (!expandedTree) {
       x { byAccessibleName("Show Passed") }.click()
+      expandedTree = true
     }
     val treeComponent = testTreeView()
     treeComponent.expandAll()
     val actualTree = treeComponent.getAllTexts().filterRelevant()
+    val expectedTree = if (expectedTree.size > TREE_SIZE_THAT_FITS_INTO_SCREEN && actualTree.size >= TREE_SIZE_THAT_FITS_INTO_SCREEN) {
+      expectedTree.take(actualTree.size)
+    } else {
+      expectedTree
+    }
 
     when (expectedTree) {
       is Set -> Assertions.assertEquals(expectedTree, actualTree.toSet(), "Test result tree must match")
@@ -43,3 +55,7 @@ private fun List<UiText>.filterRelevant() =
   this
     .map { it.text }
     .filter { " sec" !in it && " ms" !in it && it != "Test Results" }
+
+fun IDETestContext.setRunConfigRunWithBazel(runTestWithBazel: Boolean): IDETestContext = applyVMOptionsPatch {
+  addSystemProperty(BazelFeatureFlags.RUN_CONFIG_RUN_WITH_BAZEL, runTestWithBazel.toString())
+}

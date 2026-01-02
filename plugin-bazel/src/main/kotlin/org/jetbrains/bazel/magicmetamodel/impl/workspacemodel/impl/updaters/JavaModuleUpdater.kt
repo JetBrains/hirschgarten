@@ -16,9 +16,9 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.workspacemodel.entities.Module
 import java.nio.file.Path
 
 class JavaModuleWithSourcesUpdater(
@@ -35,7 +35,11 @@ class JavaModuleWithSourcesUpdater(
 
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
-      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd), libraries)
+      ModuleEntityUpdater(
+        workspaceModelEntityUpdaterConfig = workspaceModelEntityUpdaterConfig,
+        defaultDependencies = calculateJavaModuleDependencies(entityToAdd),
+        libraries = libraries,
+      )
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
 
@@ -138,7 +142,11 @@ class JavaModuleWithoutSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
-      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd), libraries)
+      ModuleEntityUpdater(
+        workspaceModelEntityUpdaterConfig,
+        calculateJavaModuleDependencies(entityToAdd),
+        libraries,
+      )
 
     return moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
   }

@@ -14,7 +14,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.util.net.NetUtils
-import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +29,6 @@ import org.jetbrains.bazel.debug.connector.StarlarkSocketConnector
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -76,12 +74,12 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
       val connector = connectToDebugServer(project, port)
       val starter = starlarkManager.ProcessStarter(connector)
       starlarkManager.registerJobToCancel(debugJob)
-      promise.setResult(
-        XDebuggerManager
-          .getInstance(project)
-          .startSessionOnEDT(environment, starter)
-          .runContentDescriptor,
-      )
+      val descriptor = withContext(Dispatchers.EDT) {
+        XDebuggerManager.getInstance(project).newSessionBuilder(starter)
+          .environment(environment)
+          .startSession().runContentDescriptor
+      }
+      promise.setResult(descriptor)
     } catch (e: CancellationException) {
       // user cancelled the connection attempt before it was completed
       debugJob.cancel(e)
@@ -146,14 +144,6 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
         Registry.intValue("bazel.starlark.debug.socket.attempts"),
         Registry.intValue("bazel.starlark.debug.socket.interval").toLong(),
       )
-    }
-
-  private suspend fun XDebuggerManager.startSessionOnEDT(
-    environment: ExecutionEnvironment,
-    starter: StarlarkDebugSessionManager.ProcessStarter,
-  ): XDebugSession =
-    withContext(Dispatchers.EDT) {
-      startSession(environment, starter)
     }
 
   class Settings : RunnerSettings {

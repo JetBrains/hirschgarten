@@ -1,10 +1,8 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
-import com.intellij.util.PlatformUtils
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
 
@@ -16,11 +14,9 @@ object BazelFeatureFlags {
   private const val QUERY_TERMINAL_COMPLETION = "bazel.query.terminal.completion"
 
   @VisibleForTesting
-  const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
+  const val BUILD_PROJECT_ON_SYNC = "bazel.build.project.on.sync"
   private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
-  private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
   private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
-  private const val ADD_DUMMY_MODULE_DEPENDENCIES = "bsp.add.dummy.module.dependencies"
   private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
   private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
   private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
@@ -36,6 +32,9 @@ object BazelFeatureFlags {
   private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
   private const val FIND_IN_FILES_NON_INDEXABLE = "bazel.find.in.files.non.indexable"
 
+  @VisibleForTesting
+  const val RUN_CONFIG_RUN_WITH_BAZEL = "bazel.run.config.run.with.bazel"
+
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
 
@@ -48,22 +47,12 @@ object BazelFeatureFlags {
   val isShortenModuleLibraryNamesEnabled: Boolean
     get() = isEnabled(SHORTEN_MODULE_LIBRARY_NAMES)
 
-  val isWrapLibrariesInsideModulesEnabled: Boolean
-    get() = isEnabled(WRAP_LIBRARIES_INSIDE_MODULES) || isKotlinPluginK2Mode
-
-  val isKotlinPluginK2Mode: Boolean
-    get() = System.getProperty("idea.kotlin.plugin.use.k1", "false").toBoolean().not()
-
   val executeSecondPhaseOnSync: Boolean
     get() = isEnabled(EXECUTE_SECOND_PHASE_ON_SYNC)
 
-  val addDummyModuleDependencies: Boolean
-    get() =
-      (Registry.stringValue(ADD_DUMMY_MODULE_DEPENDENCIES).toBooleanStrictOrNull() ?: !fbsrSupportedInPlatform) &&
-        !enableBazelJavaClassFinder
-
   // File-based source root problems fixed here: https://youtrack.jetbrains.com/issue/IDEA-371097
-  val fbsrSupportedInPlatform: Boolean = org.jetbrains.bazel.sdkcompat.fbsrSupportedInPlatform
+  val fbsrSupportedInPlatform: Boolean
+    get() = true
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
@@ -90,10 +79,7 @@ object BazelFeatureFlags {
     get() = isEnabled(CHECK_SHARED_SOURCES)
 
   val autoOpenProjectIfPresent: Boolean
-    get() =
-      isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) ||
-        ApplicationManager.getApplication().isHeadlessEnvironment &&
-        !PlatformUtils.isFleetBackend()
+    get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT)
 
   val isQueryTerminalCompletionEnabled: Boolean
     get() = isEnabled(QUERY_TERMINAL_COMPLETION)
@@ -107,7 +93,15 @@ object BazelFeatureFlags {
   val findInFilesNonIndexable: Boolean
     get() = isEnabled(FIND_IN_FILES_NON_INDEXABLE)
 
-  private fun isEnabled(key: String): Boolean = Registry.`is`(key) || System.getProperty(key, "false").toBoolean()
+  val runConfigRunWithBazel: Boolean
+    get() = isEnabled(RUN_CONFIG_RUN_WITH_BAZEL)
+
+  private fun isEnabled(key: String): Boolean {
+    System.getProperty(key)?.let { value ->
+      return value.toBooleanStrict()
+    }
+    return Registry.`is`(key)
+  }
 }
 
 object FeatureFlagsProvider {
@@ -116,7 +110,6 @@ object FeatureFlagsProvider {
       FeatureFlags(
         isPythonSupportEnabled = isPythonSupportEnabled,
         isGoSupportEnabled = isGoSupportEnabled,
-        isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
         isSharedSourceSupportEnabled = isSharedSourceSupportEnabled(project),

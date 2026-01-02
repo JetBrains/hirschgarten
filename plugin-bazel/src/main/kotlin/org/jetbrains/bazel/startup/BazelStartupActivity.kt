@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.startup
 
+import com.intellij.find.impl.FindInProjectUtil
+import com.intellij.ide.util.gotoByName.GOTO_FILE_SEARCH_IN_NON_INDEXABLE
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -17,8 +19,6 @@ import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.projectAware.BazelWorkspace
-import org.jetbrains.bazel.sdkcompat.configureRunConfigurationIgnoreProducers
-import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
@@ -32,6 +32,18 @@ import kotlin.io.path.isDirectory
 private val log = logger<BazelStartupActivity>()
 
 /**
+ * Initializes the Bazel sync environment (TelemetryManager, ProcessSpawner, etc.).
+ * Must be called before running any sync operations.
+ */
+fun initializeBazelSyncEnvironment() {
+  ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
+  TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
+  BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
+  SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
+  FileUtil.provideFileUtil(FileUtilIntellij)
+}
+
+/**
  * Runs actions after the project has started up and the index is up to date.
  *
  * @see org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor for additional actions that
@@ -39,11 +51,7 @@ private val log = logger<BazelStartupActivity>()
  */
 class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
-    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
-    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-    BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
-    SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
-    FileUtil.provideFileUtil(FileUtilIntellij)
+    initializeBazelSyncEnvironment()
     log.info("Executing Bazel startup activity for project: $project")
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
     try {
@@ -65,7 +73,6 @@ class BazelStartupActivity : BazelProjectActivity() {
 private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   updateBazelFileTargetsWidget(project)
-  configureRunConfigurationIgnoreProducers(project)
   project.serviceAsync<BazelWorkspace>().initialize()
 }
 
@@ -86,9 +93,9 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
 
 private fun executeOnSyncedProject(project: Project) {
   // Only enable searching after all the excludes from the project view are applied
-  if (BazelFeatureFlags.findInFilesNonIndexable) {
-    setFindInFilesNonIndexable(project)
-  }
+  if (!BazelFeatureFlags.findInFilesNonIndexable) return
+  project.putUserData(FindInProjectUtil.FIND_IN_FILES_SEARCH_IN_NON_INDEXABLE, true)
+  project.putUserData(GOTO_FILE_SEARCH_IN_NON_INDEXABLE, true)
 }
 
 /**

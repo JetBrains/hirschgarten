@@ -90,8 +90,7 @@ java_library(
     name = "kotlin",
     neverlink = 1,
     visibility = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin:__subpackages__",
-        "//sdkcompat:__subpackages__",
+        "//visibility:public",
     ],
     exports = select_from_plugin_api_directory(
         android_studio = [":kotlin"],
@@ -116,10 +115,7 @@ java_library(
     name = "java",
     neverlink = 1,
     visibility = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/modify/ideStarter:__pkg__",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ideStarter:__pkg__",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java:__subpackages__",
-        "//sdkcompat:__subpackages__",
+        "//visibility:public",
     ],
     exports = select_from_plugin_api_directory(
         android_studio = [":java"],
@@ -143,7 +139,7 @@ java_library(
 java_library(
     name = "junit",
     neverlink = 1,
-    visibility = ["//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/junit:__subpackages__"],
+    visibility = ["//visibility:public"],
     exports = select_from_plugin_api_directory(
         android_studio = [],
         clion = [],
@@ -159,6 +155,20 @@ java_library(
         android_studio = [],
         clion = [],
         intellij = [":junit"],
+    ),
+)
+
+# IntelliJ Bytecode Viewer plugin
+java_library(
+    name = "bytecode_viewer",
+    neverlink = 1,
+    visibility = [
+        "//visibility:public",
+    ],
+    exports = select_from_plugin_api_directory(
+        android_studio = [":bytecode_viewer"],
+        clion = [],
+        intellij = [":bytecode_viewer"],
     ),
 )
 

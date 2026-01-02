@@ -19,6 +19,7 @@ message Dependency {
 
   string id = 1;
   DependencyType dependency_type = 2;
+  bool exported = 3;
 }
 
 message JvmOutputs {
@@ -42,6 +43,7 @@ message JavaToolchainInfo {
   string source_version = 1;
   string target_version = 2;
   FileLocation java_home = 3;
+  FileLocation boot_classpath_java_home = 4;
 }
 
 message JavaRuntimeInfo {

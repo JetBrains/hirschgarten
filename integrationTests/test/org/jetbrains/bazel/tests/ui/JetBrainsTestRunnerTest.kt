@@ -16,15 +16,20 @@ import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openProject() {
-    createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner).runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
+    createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
+      .setRunConfigRunWithBazel(false)
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
       ideFrame {
         syncBazelProject(buildAndSync = true)
+        waitForIndicators(10.minutes)
 
         step("open TestKotlin.kt and run TestKotlin.` interesting#test `") {
           execute { openFile("TestKotlin.kt") }
@@ -36,13 +41,13 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           )
         }
 
-        step("run the same again to check that it's cached") {
+        step("run the same again to check that it is NOT cached because we use --script_path in this test") {
           execute { openFile("TestKotlin.kt") }
           clickTestGutterOnLine(8)
 
           verifyTestStatus(
             listOf("1 test passed"),
-            listOf("JUnit Jupiter", "TestKotlin", "interesting#test () (cached)"),
+            listOf("JUnit Jupiter", "TestKotlin", "interesting#test ()"),
           )
         }
 
@@ -124,6 +129,40 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
       }
     }
+  }
+
+  @Test
+  fun checkTestCaching() {
+    createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
+      // This is required for Bazel test caching!
+      .setRunConfigRunWithBazel(true)
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        ideFrame {
+          syncBazelProject(buildAndSync = true)
+          waitForIndicators(10.minutes)
+
+          step("open TestKotlin.kt and run TestKotlin.` interesting#test `") {
+            execute { openFile("TestKotlin.kt") }
+            clickTestGutterOnLine(8)
+
+            verifyTestStatus(
+              listOf("1 test passed"),
+              listOf("JUnit Jupiter", "TestKotlin", "interesting#test ()"),
+            )
+          }
+
+          step("run the same again to check that it's cached") {
+            execute { openFile("TestKotlin.kt") }
+            clickTestGutterOnLine(8)
+
+            verifyTestStatus(
+              listOf("1 test passed"),
+              listOf("JUnit Jupiter", "TestKotlin", "interesting#test () (cached)"),
+            )
+          }
+        }
+      }
   }
 
   /**

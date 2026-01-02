@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -18,6 +19,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
@@ -30,7 +32,6 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
@@ -52,6 +53,7 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 class AspectBazelProjectMapper(
+  private val project: Project,
   private val languagePluginsService: LanguagePluginsService,
   private val featureFlags: FeatureFlags,
   private val bazelPathsResolver: BazelPathsResolver,
@@ -78,61 +80,53 @@ class AspectBazelProjectMapper(
   ): IntermediateTargetData? {
     val languages = inferLanguages(this)
     val languagePlugin = languagePluginsService.getLanguagePlugin(languages) ?: return null
-    val tags = targetTagsResolver.resolveTags(this, workspaceContext).toSet()
+    val tags = targetTagsResolver.resolveTags(this).toSet()
     val label = this.label().assumeResolved()
     return IntermediateTargetData(
       label = label,
       target = this,
       extraLibraries = extraLibraries[label] ?: emptyList(),
       tags = tags,
-      sources = resolveSourceSet(this, languagePlugin),
+      sources = resolveSourceSet(this, languagePlugin).toList(),
       languages = languages,
     )
   }
 
   suspend fun createProject(
-    targets: Map<Label, TargetInfo>,
+    allTargets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
     workspaceContext: WorkspaceContext,
     featureFlags: FeatureFlags,
     repoMapping: RepoMapping,
     hasError: Boolean,
   ): BazelResolvedWorkspace {
-    languagePluginsService.all.forEach { it.prepareSync(targets.values.asSequence(), workspaceContext) }
+    languagePluginsService.all.forEach { it.prepareSync(project, allTargets.values.asSequence(), workspaceContext) }
     val dependencyGraph =
       measure("Build dependency tree") {
-        DependencyGraph(rootTargets, targets)
+        DependencyGraph(rootTargets, allTargets)
       }
     val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
-        // the import depth mechanism does not apply for go targets sync
-        // for now, go sync assumes to retrieve all transitive targets, which is equivalent to `import_depth: -1`
-        // in fact, go sync should not even go through this highly overfitted JVM model: https://youtrack.jetbrains.com/issue/BAZEL-2210
-        val (goTargetLabels, nonGoTargetLabels) = rootTargets.partition { targets[it]?.hasGoTargetInfo() == true }
-        val nonGoTargetsAtDepth =
+        val targetsAtDepth =
           dependencyGraph
             .allTargetsAtDepth(
               workspaceContext.importDepth,
-              nonGoTargetLabels.toSet(),
+              rootTargets,
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
-              targetSupportsStrictDeps = { id -> targets[id]?.let { targetSupportsStrictDeps(it) } == true },
+              targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
-                targets[id]?.let { target ->
+                allTargets[id]?.let { target ->
                   target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
                 } == true
               },
             )
-        val (nonGoTargetsToImport, nonWorkspaceTargets) =
-          nonGoTargetsAtDepth.targets.partition {
+        val (targetsToImport, nonWorkspaceTargets) =
+          targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, featureFlags)
           }
-        val goTargetsToImport =
-          dependencyGraph
-            .allTransitiveTargets(goTargetLabels.toSet())
-            .targets
-            .filter { isWorkspaceTarget(it, repoMapping, featureFlags) }
-        val libraries = (nonWorkspaceTargets + nonGoTargetsAtDepth.directDependencies).associateBy { it.label() }
-        (nonGoTargetsToImport + goTargetsToImport).asSequence() to libraries
+        val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.hasJvmTargetInfo() }
+        val jvmLibraries = (nonWorkspaceTargets + jvmDirectDependencies).associateBy { it.label() }
+        (targetsToImport + nonJvmDirectDependencies).asSequence() to jvmLibraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -140,7 +134,7 @@ class AspectBazelProjectMapper(
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
-        calculateOutputJarsLibraries(targetsToImport)
+        calculateOutputJarsLibraries(workspaceContext, targetsToImport)
       }
     val annotationProcessorLibraries =
       measure("Create AP libraries") {
@@ -148,7 +142,7 @@ class AspectBazelProjectMapper(
       }
     val kotlinStdlibsMapper =
       measure("Create kotlin stdlibs") {
-        calculateKotlinStdlibsMapper(targetsToImport)
+        calculateKotlinStdlibsMapper(targetsToImport, dependencyGraph)
       }
     val kotlincPluginLibrariesMapper =
       measure("Create kotlinc plugin libraries") {
@@ -170,7 +164,7 @@ class AspectBazelProjectMapper(
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
-        createLibraries(targetsAsLibraries, repoMapping) +
+        createLibraries(workspaceContext, targetsAsLibraries) +
           librariesFromDeps.values
             .flatten()
             .distinct()
@@ -192,10 +186,10 @@ class AspectBazelProjectMapper(
       }
 
     val nonModuleTargetIds =
-      (removeDotBazelBspTarget(targets.keys) - librariesToImport.keys).toSet()
+      (removeDotBazelBspTarget(allTargets.keys) - librariesToImport.keys).toSet()
     val nonModuleTargets =
       createNonModuleTargets(
-        targets.filterKeys {
+        allTargets.filterKeys {
           nonModuleTargetIds.contains(it) &&
             isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
         },
@@ -207,7 +201,8 @@ class AspectBazelProjectMapper(
 
     val targets =
       measure("create intermediate targets") {
-        targets.values.mapNotNull { it.toIntermediateData(workspaceContext, extraLibraries) }.toList()
+        // Use targetsToImport here instead of allTargets here to respect import_depth
+        createIntermediateTargetData(workspaceContext, targetsToImport, extraLibraries)
       }
 
     val highPrioritySources =
@@ -222,12 +217,9 @@ class AspectBazelProjectMapper(
       }
 
     val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, highPrioritySources, repoMapping, dependencyGraph) }
-    val nonModuleRawTargets =
-      measure("create non module raw targets") {
-        nonModuleTargets
-          .map { it.toBuildTarget() }
-          .filter { it.kind.isExecutable }
-      }
+    val nonModuleRawTargets = measure("create non module raw targets") {
+      nonModuleTargets.map { it.toBuildTarget() }
+    }
 
     return BazelResolvedWorkspace(
       targets =
@@ -244,13 +236,31 @@ class AspectBazelProjectMapper(
             jars = it.outputs.toList(),
             sourceJars = it.sources.toList(),
             mavenCoordinates = it.mavenCoordinates,
-            isFromInternalTarget = it.isFromInternalTarget,
+            containsInternalJars = it.containsInternalJars,
             isLowPriority = it.isLowPriority,
           )
         },
       hasError = hasError,
     )
   }
+
+  private suspend fun AspectBazelProjectMapper.createIntermediateTargetData(
+    workspaceContext: WorkspaceContext,
+    targets: Sequence<TargetInfo>,
+    extraLibraries: Map<Label, List<Library>>,
+  ): List<IntermediateTargetData> =
+    withContext(Dispatchers.Default) {
+      val tasks = targets.map {
+        async {
+          it.toIntermediateData(workspaceContext, extraLibraries)
+        }
+      }
+
+      return@withContext tasks
+        .toList()
+        .awaitAll()
+        .filterNotNull()
+    }
 
   private fun <K, V> concatenateMaps(vararg maps: Map<K, List<V>>): Map<K, List<V>> =
     maps
@@ -260,11 +270,20 @@ class AspectBazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
+  private fun calculateOutputJarsLibraries(
+    workspaceContext: WorkspaceContext,
+    targetsToImport: Sequence<TargetInfo>,
+  ): Map<Label, List<Library>> =
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
+        createLibrary(
+          workspaceContext,
+          Label.parse(target.id + "_output_jars"),
+          target,
+          onlyOutputJars = true,
+          containsInternalJars = true,
+        )?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -274,8 +293,9 @@ class AspectBazelProjectMapper(
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
+          (targetInfo.sourcesList.isEmpty() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
           targetInfo.jvmTargetInfo.hasApiGeneratingPlugins
-      )
+        )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -300,12 +320,31 @@ class AspectBazelProjectMapper(
       }.map { Label.parse(it.key) to listOf(it.value) }
       .toMap()
 
-  private fun calculateKotlinStdlibsMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
+  private fun targetsDependingOnKotlinStdlib(targetsToImport: Sequence<TargetInfo>, dependencyGraph: DependencyGraph): Set<Label> {
+    val toProcess = ArrayDeque(targetsToImport.filter { it.kotlinTargetInfo != null }.map { it.label() }.toList())
+    val visited = toProcess.toMutableSet()
+    while (toProcess.isNotEmpty()) {
+      val info = toProcess.removeFirst()
+      for (reverseDep in dependencyGraph.getReverseDependenciesInfo(info)) {
+        val reverseDepLabel = reverseDep.label()
+        if (reverseDepLabel in visited) continue
+        if (!reverseDep.hasJvmTargetInfo()) continue
+        toProcess.add(reverseDepLabel)
+        visited.add(reverseDepLabel)
+      }
+    }
+    return visited
+  }
+
+  private fun calculateKotlinStdlibsMapper(
+    targetsToImport: Sequence<TargetInfo>,
+    dependencyGraph: DependencyGraph,
+  ): Map<Label, List<Library>> {
     val projectLevelKotlinStdlibsLibrary = calculateProjectLevelKotlinStdlibsLibrary(targetsToImport)
-    val kotlinTargetsIds = targetsToImport.filter { it.hasKotlinTargetInfo() }.map { it.label() }
+    val kotlinDependentTargetsIds = targetsDependingOnKotlinStdlib(targetsToImport, dependencyGraph)
 
     return projectLevelKotlinStdlibsLibrary
-      ?.let { stdlibsLibrary -> kotlinTargetsIds.associateWith { listOf(stdlibsLibrary) } }
+      ?.let { stdlibsLibrary -> kotlinDependentTargetsIds.associateWith { listOf(stdlibsLibrary) } }
       .orEmpty()
   }
 
@@ -532,7 +571,7 @@ class AspectBazelProjectMapper(
       val dependencies =
         targetsToImport[targetOrLibrary]?.dependenciesList.orEmpty().map { it.label() } +
           libraryDependencies[targetOrLibrary].orEmpty().map { it.label } +
-          librariesToImport[targetOrLibrary]?.dependencies.orEmpty()
+          librariesToImport[targetOrLibrary]?.dependencies.orEmpty().map { it.label }
 
       dependencies.flatMapTo(outputJars) { dependency ->
         getJdepsJarsFromTransitiveDependencies(
@@ -603,22 +642,26 @@ class AspectBazelProjectMapper(
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
-          tags = targetTagsResolver.resolveTags(targetInfo, workspaceContext),
+          tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
           kindString = targetInfo.kind,
         )
       }
 
-  private suspend fun createLibraries(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, Library> =
+  private suspend fun createLibraries(
+    workspaceContext: WorkspaceContext,
+    targets: Map<Label, TargetInfo>,
+  ): Map<Label, Library> =
     withContext(Dispatchers.Default) {
       targets
         .map { (targetId, targetInfo) ->
           async {
             createLibrary(
+              workspaceContext = workspaceContext,
               label = targetId,
               targetInfo = targetInfo,
               onlyOutputJars = false,
-              isInternalTarget = isTargetTreatedAsInternal(targetId.assumeResolved(), repoMapping),
+              containsInternalJars = targetInfo.containsAnyInternalJars(),
             )?.let { library ->
               targetId to library
             }
@@ -628,14 +671,25 @@ class AspectBazelProjectMapper(
         .toMap()
     }
 
+  private fun TargetInfo.containsAnyInternalJars() = jvmTargetInfo.jarsList.any { jars ->
+    jars.sourceJarsList.any { !it.isExternal } && jars.binaryJarsList.any { !it.isExternal }
+  }
+
   private fun createLibrary(
+    workspaceContext: WorkspaceContext,
     label: Label,
     targetInfo: TargetInfo,
     onlyOutputJars: Boolean,
-    isInternalTarget: Boolean,
+    containsInternalJars: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
-    val sources = getSourceJarPaths(targetInfo)
+    val rawSources = getSourceJarPaths(targetInfo);
+    val sources = if (workspaceContext.preferClassJarsOverSourcelessJars) {
+      rawSources - outputs
+    } else {
+      rawSources
+    }
+
     val interfaceJars = getTargetInterfaceJarsSet(targetInfo).toSet()
     val dependencies: List<BspTargetInfo.Dependency> = if (!onlyOutputJars) targetInfo.dependenciesList else emptyList()
     if (!shouldCreateLibrary(
@@ -661,10 +715,10 @@ class AspectBazelProjectMapper(
       label = label,
       outputs = outputs,
       sources = sources,
-      dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
+      dependencies = targetInfo.dependenciesList.map { it.toDependencyLabel() },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
-      isFromInternalTarget = isInternalTarget,
+      containsInternalJars = containsInternalJars,
     )
   }
 
@@ -760,9 +814,9 @@ class AspectBazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-            )
-        )
-    ) ||
+              )
+          )
+      ) ||
       (
         featureFlags.isGoSupportEnabled &&
           target.hasGoTargetInfo() &&
@@ -770,7 +824,7 @@ class AspectBazelProjectMapper(
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target)
-      ) ||
+        ) ||
       target.hasProtobufTargetInfo()
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
@@ -810,18 +864,18 @@ class AspectBazelProjectMapper(
     withContext(Dispatchers.Default) {
       val tasks =
         targets.map { target ->
-          // async {
-          createRawBuildTarget(
-            target,
-            highPrioritySources,
-            repoMapping,
-            dependencyGraph,
-          )
-          // }
+          async {
+            createRawBuildTarget(
+              target,
+              highPrioritySources,
+              repoMapping,
+              dependencyGraph,
+            )
+          }
         }
 
       return@withContext tasks
-        // .awaitAll()
+        .awaitAll()
         .filterNotNull()
         .filterNot { BuildTargetTag.NO_IDE in it.tags }
     }
@@ -837,7 +891,7 @@ class AspectBazelProjectMapper(
     val resolvedDependencies = resolveDirectDependencies(target)
     // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
-    val directDependencies = extraLibraries.map { it.label } + resolvedDependencies + lowPriorityExtraLibraries.map { it.label }
+    val directDependencies = extraLibraries.toDependencyLabels() + resolvedDependencies + lowPriorityExtraLibraries.toDependencyLabels()
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.languages) ?: return null
     val resources = resolveResources(target, languagePlugin)
@@ -850,7 +904,7 @@ class AspectBazelProjectMapper(
         targetData.sources to emptyList()
       }
 
-    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, bazelPathsResolver)
+    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetData.sources, bazelPathsResolver)
     val data = languagePlugin.createBuildTargetData(context, target)
 
     return RawBuildTarget(
@@ -858,7 +912,7 @@ class AspectBazelProjectMapper(
       tags = tags.mapNotNull(BspMappings::toBspTag),
       dependencies = directDependencies,
       kind = inferKind(tags, target.kind, targetData.languages),
-      sources = targetSources,
+      sources = languagePlugin.transformSources(targetSources),
       resources = resources,
       baseDirectory = baseDirectory,
       noBuild = Tag.NO_BUILD in tags,
@@ -867,7 +921,17 @@ class AspectBazelProjectMapper(
     )
   }
 
-  private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
+  private fun resolveDirectDependencies(target: TargetInfo): List<DependencyLabel> =
+    target.dependenciesList.map { it.toDependencyLabel() }
+
+  private fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
+    DependencyLabel(
+      label = label(),
+      isRuntime = dependencyType == BspTargetInfo.Dependency.DependencyType.RUNTIME,
+      exported = exported,
+    )
+
+  private fun List<Library>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.label) }
 
   // TODO: this is a re-creation of `Language.allOfKind`. To be removed when this logic is merged with client-side
   private val languagesFromKinds: Map<String, Set<LanguageClass>> =
@@ -916,7 +980,7 @@ class AspectBazelProjectMapper(
       }
     }
 
-  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
+  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Sequence<SourceItem> {
     val sources =
       target.sourcesList
         .asSequence()
@@ -928,18 +992,25 @@ class AspectBazelProjectMapper(
         .map(bazelPathsResolver::resolve)
         .filter { it.extension != "srcjar" }
 
+    val sourceItems = sources.map {
+      SourceItem(
+        path = bazelPathsResolver.resolve(it),
+        generated = false
+      )
+    }
+
+    val generatedSourceItems = generatedSources.map {
+      SourceItem(
+        path = bazelPathsResolver.resolve(it),
+        generated = true
+      )
+    }
+
     val extraSources = languagePlugin.calculateAdditionalSources(target)
 
-    return (sources + extraSources + generatedSources)
-      .distinct()
-      .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
-      .map {
-        SourceItem(
-          path = it,
-          generated = false,
-          jvmPackagePrefix = (languagePlugin as? JVMPackagePrefixResolver)?.resolveJvmPackagePrefix(it),
-        )
-      }.toList()
+    return (sourceItems + generatedSourceItems + extraSources)
+      .distinctBy { it.path }
+      .onEach { if (it.path.notExists()) logNonExistingFile(it.path, target.id) }
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {

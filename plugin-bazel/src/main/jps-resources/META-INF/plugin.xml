@@ -25,7 +25,12 @@
   <dependencies>
     <plugin id="com.intellij.modules.lang" />
     <module name="intellij.platform.searchEverywhere" />
+    <module name="intellij.libraries.grpc"/>
   </dependencies>
+
+  <content namespace="jetbrains">
+    <module name="intellij.bazel.kotlin.k2"/>
+  </content>
 
   <depends
     config-file="withCodeWithMe.xml"
@@ -196,6 +201,14 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
+                    interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+                    dynamic="true"
+    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.bzlmodResolver"
                     interface="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver"
                     dynamic="true"
@@ -212,6 +225,10 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
+    <projectViewSectionProvider
+      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
+
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook" />
 
     <projectSyncHook
@@ -289,11 +306,15 @@
     <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.DefaultProjectViewSectionProvider"/>
   </extensions>
 
+  <extensions defaultExtensionNs="ByteCodeViewer">
+    <classFileFinder implementation="org.jetbrains.bazel.bytecodeViewer.BazelBytecodeViewerClassFileFinder"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <registryKey
       defaultValue="false"
       description="Build project on initial project sync"
-      key="bsp.build.project.on.sync"
+      key="bazel.build.project.on.sync"
     />
     <registryKey
       defaultValue="true"
@@ -309,11 +330,6 @@
       defaultValue="true"
       description="Shorten module/library names by hashing the first parts and retaining the others"
       key="bsp.shorten.module.library.names"
-    />
-    <registryKey
-      defaultValue="false"
-      description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
-      key="bsp.wrap.libraries.inside.modules"
     />
     <registryKey
       defaultValue="true"
@@ -414,8 +430,15 @@
       restartRequired="true"
     />
 
+    <registryKey
+      defaultValue="true"
+      description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overriden with a project view flag."
+      key="bazel.run.config.run.with.bazel"
+      restartRequired="false"
+    />
+
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
-    <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.sdkcompat.BazelRunConfigurationProducerSuppressor" />
+    <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />
 
     <projectService
@@ -538,8 +561,7 @@
 
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
-    <projectPreInit implementation="org.jetbrains.bazel.sdkcompat.OpenBazelProjectAndSyncStartupActivity"/>
-    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
+    <projectPreInit implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectAndSyncStartupActivity"/>
     <notificationGroup
       displayType="BALLOON"
       id="BazelSlowPlugins"
@@ -551,7 +573,7 @@
       implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"
     />
 
-    <projectStorePathCustomizer implementation="org.jetbrains.bazel.sdkcompat.BazelProjectStorePathCustomizer"/>
+    <projectStorePathCustomizer implementation="org.jetbrains.bazel.flow.open.BazelProjectStorePathCustomizer"/>
 
     <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
@@ -600,6 +622,10 @@
     <lang.findUsagesProvider
       implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"
       language="Starlark"
+    />
+    <lang.elementManipulator
+      forClass="org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression"
+      implementationClass="org.jetbrains.bazel.languages.starlark.rename.StarlarkStringLiteralManipulator"
     />
     <lang.foldingBuilder
       implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"
@@ -865,6 +891,7 @@
     <editorTabTitleProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabTitleProvider"/>
     <editorNotificationProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNotificationProvider"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher" />
+    <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUsageSearcher"/>
     <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider" />
     <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType" />
     <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner" />
@@ -876,9 +903,7 @@
       implementation="org.jetbrains.bazel.searchEverywhere.SeLabelProviderFactory"
     />
 
-    <portForwarding.processHandlerPidProvider
-      implementation="org.jetbrains.bazel.sdkcompat.BazelProcessHandlerPidProvider"
-    />
+    <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
   </extensions>
 
   <actions>

@@ -15,7 +15,7 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiTryI
 /**
  * Immutable representation of a ProjectView: a map of section keys to parsed values.
  */
-data class ProjectView(val sections: Map<SectionKey<*>, Any>) {
+data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<VirtualFile>) {
   inline fun <reified T> getSection(key: SectionKey<T>): T? {
     var value = sections[key] as? T
     // in case of not existing section, try to get default one
@@ -40,7 +40,10 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>) {
     fun fromProjectViewPsiFile(file: ProjectViewPsiFile): ProjectView {
       val rawItems = collectRawItems(file)
       val sections = buildSectionsMap(file.project, rawItems)
-      return ProjectView(sections)
+      val imports = rawItems.filterIsInstance<RawImport>()
+        .mapNotNull { tryResolveImportFile(file.project, it.path, false) }
+        .toList()
+      return ProjectView(sections, imports)
     }
 
     private fun collectRawItems(file: ProjectViewPsiFile): List<RawItem> {
@@ -53,6 +56,7 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>) {
             val values = section.getItems().map { it.text.trim() }
             rawSections.add(RawSection(name, values))
           }
+
           is ProjectViewPsiImport, is ProjectViewPsiTryImport -> {
             val path = section.getImportPath()?.text?.trim() ?: ""
             rawSections.add(RawImport(path, section.isImportRequired))
@@ -71,6 +75,7 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>) {
             val parsed = section?.fromRawValues(item.contents) ?: continue
             mergeSection(result, section.sectionKey, parsed)
           }
+
           is RawImport -> {
             val vFile = tryResolveImportFile(project, item.path, item.required) ?: continue
             handleImport(project, vFile, result)

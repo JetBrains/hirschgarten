@@ -14,15 +14,14 @@ import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.containers.Interner
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.addLibraryModulePrefix
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.Library
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
@@ -37,18 +36,24 @@ class ModuleEntityUpdater(
 
   private fun addModuleEntity(builder: MutableEntityStorage, entityToAdd: GenericModuleInfo): ModuleEntity {
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
+    val usesJpsExportSemantics = entityToAdd.kind.usesJpsExportSemantics()
     val dependenciesFromEntity =
       entityToAdd.dependencies.map { dependency ->
-        val libraryDependency = libraries[dependency]
+        val runtime = dependency.isRuntimeOnly
+        val libraryDependency = libraries[dependency.id]
+        val exported = dependency.exported || !usesJpsExportSemantics
         if (libraryDependency != null) {
-          val exported = !libraryDependency.isLowPriority
-          if (BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled && !entityToAdd.isLibraryModule) {
-            toModuleDependencyItemModuleDependency(dependency.addLibraryModulePrefix(), exported)
+          if (!entityToAdd.isLibraryModule) {
+            toModuleDependencyItemModuleDependency(
+              dependency.id.addLibraryModulePrefix(),
+              exported && !libraryDependency.isLowPriority,
+              runtime,
+            )
           } else {
-            toLibraryDependency(dependency, exported = exported || entityToAdd.isLibraryModule)
+            toLibraryDependency(dependency.id, exported = true, runtime)
           }
         } else {
-          toModuleDependencyItemModuleDependency(dependency)
+          toModuleDependencyItemModuleDependency(dependency.id, exported = exported, runtime = runtime)
         }
       }
 
@@ -84,18 +89,18 @@ class ModuleEntityUpdater(
         )
     }
 
-  private fun toModuleDependencyItemModuleDependency(moduleName: String, exported: Boolean = true): ModuleDependency =
+  private fun toModuleDependencyItemModuleDependency(moduleName: String, exported: Boolean = true, runtime: Boolean = false): ModuleDependency =
     dependencyInterner.intern(
       ModuleDependency(
         module = idInterner.intern(ModuleId(moduleName)) as ModuleId,
         exported = exported,
-        scope = DependencyScope.COMPILE,
+        scope = dependencyScope(runtime),
         productionOnTest = true,
       ),
     ) as ModuleDependency
 }
 
-internal fun toLibraryDependency(libraryName: String, exported: Boolean = true): LibraryDependency =
+internal fun toLibraryDependency(libraryName: String, exported: Boolean = true, runtime: Boolean = false): LibraryDependency =
   dependencyInterner.intern(
     LibraryDependency(
       library =
@@ -106,6 +111,9 @@ internal fun toLibraryDependency(libraryName: String, exported: Boolean = true):
           ),
         ) as LibraryId,
       exported = exported, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
-      scope = DependencyScope.COMPILE,
+      scope = dependencyScope(runtime),
     ),
   ) as LibraryDependency
+
+private fun dependencyScope(runtime: Boolean): DependencyScope =
+  if (runtime) DependencyScope.RUNTIME else DependencyScope.COMPILE

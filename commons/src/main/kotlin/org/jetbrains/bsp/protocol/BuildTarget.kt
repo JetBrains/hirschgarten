@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.protocol
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
@@ -16,7 +17,7 @@ interface BuildTarget {
 data class RawBuildTarget(
   override val id: Label,
   override val tags: List<String>,
-  val dependencies: List<Label>,
+  val dependencies: List<DependencyLabel>,
   override val kind: TargetKind,
   val sources: List<SourceItem>,
   val resources: List<Path>,

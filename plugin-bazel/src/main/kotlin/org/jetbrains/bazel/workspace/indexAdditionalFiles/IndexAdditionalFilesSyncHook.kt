@@ -2,7 +2,6 @@ package org.jetbrains.bazel.workspace.indexAdditionalFiles
 
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
@@ -12,23 +11,33 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
+import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 
 private val INDEX_ADDITIONAL_FILES_DEFAULT =
   Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES + Constants.MODULE_BAZEL_FILE_NAME +
     Constants.SUPPORTED_EXTENSIONS.map { extension -> "*.$extension" }
 
+/**
+ * This sync hook does two important things:
+ * 1. Supports [org.jetbrains.bazel.languages.projectview.language.sections.IndexAdditionalFilesInDirectoriesSection],
+ *    see documentation for that class.
+ * 2. Loads all non-indexable files that happen to be under `directories:` (and not excluded) into the VFS,
+ *    so that "Go to file by name" is quicker, see https://youtrack.jetbrains.com/issue/IJPL-207088
+ */
 private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
     environment.withSubtask("Collect additional files to index") {
@@ -43,6 +52,10 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
           this += indexAdditionalFilesByName(environment, mutableEntityStorage, projectDirectoriesEntity, virtualFileUrlManager)
           getProjectView(project, virtualFileUrlManager)?.let { this += it }
           this += getWorkspaceFiles(project, virtualFileUrlManager)
+
+          for (contributor in IndexAdditionalFilesContributor.ep.extensionList) {
+            this += contributor.getAdditionalFiles(project)
+          }
         }
 
       mutableEntityStorage.modifyBazelProjectDirectoriesEntity(projectDirectoriesEntity) {
@@ -63,7 +76,6 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
     if (workspaceContext.indexAllFilesInDirectories) {
       return emptyList()
     }
-    val acceptedNames = workspaceContext.indexAdditionalFilesInDirectories.toSet() + INDEX_ADDITIONAL_FILES_DEFAULT
     val indexAdditionalFilesGlob =
       ProjectViewGlobSet(workspaceContext.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT)
 
@@ -114,11 +126,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
   }
 
   private fun getProjectView(project: Project, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl? {
-    val projectView =
-      project.bazelProjectSettings.projectViewPath?.let {
-        LocalFileSystem.getInstance().findFileByNioFile(it)
-      }
-    return projectView?.toVirtualFileUrl(virtualFileUrlManager)
+    return project.bazelProjectSettings.projectViewPath?.toVirtualFileUrl(virtualFileUrlManager)
   }
 
   private fun getWorkspaceFiles(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =

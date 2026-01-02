@@ -2,8 +2,6 @@ package org.jetbrains.bazel.install
 
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
-import java.io.IOException
-import java.lang.Thread.sleep
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
@@ -41,15 +39,14 @@ class EnvironmentCreator(private val projectRootDir: Path) {
   }
 
   private fun createEmptyBuildFile(dotBazelBspDir: Path) {
-    val destinationBuildFilePath = dotBazelBspDir.resolve(Constants.defaultBuildFileName())
-    val destinationWorkspaceFilePath = dotBazelBspDir.resolve(Constants.WORKSPACE_FILE_NAME)
-    destinationBuildFilePath.toFile().createNewFile()
-    destinationWorkspaceFilePath.toFile().createNewFile()
+    dotBazelBspDir.resolve(Constants.defaultBuildFileName())
+      .writeIfDifferent("")
+    dotBazelBspDir.resolve(Constants.WORKSPACE_FILE_NAME).deleteIfExists()
   }
 
   fun createGitIgnoreFile(dotBazelBspDir: Path) {
-    val outputFile = dotBazelBspDir.resolve(".gitignore")
-    outputFile.writeIfDifferent("*")
+    dotBazelBspDir.resolve(".gitignore")
+      .writeIfDifferent("*")
   }
 
   private fun copyAspectsFromResources(destinationPath: Path) =
@@ -76,6 +73,18 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     Files.walk(destination).use { destinationFiles ->
       destinationFiles.forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
     }
+
+    destination.resolve(Constants.BUILD_FILE_NAMES.last())
+      .writeIfDifferent(
+        """
+        package(default_visibility = ["//visibility:public"])
+
+        filegroup(
+            name = "aspects",
+            srcs = glob(["**/*"]),
+        )
+      """.trimIndent(),
+      )
   }
 
   private fun copyUsingRelativePath(
@@ -105,6 +114,8 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     val sourceAbsolutePath = source.resolve(destinationRelativePath)
     // extension.bzl is written in BazelBspLanguageExtensionsGenerator, we don't have to delete it
     if (destinationRelativePath == Constants.EXTENSIONS_BZL) return
+    // BUILD is written in copyFileTree
+    if (destinationRelativePath == Constants.BUILD_FILE_NAMES.last()) return
     // Templates are expanded inside TemplateWriter, we don't have to delete them
     val templateAbsolutePath = sourceAbsolutePath.resolveSibling(sourceAbsolutePath.name + Constants.TEMPLATE_EXTENSION)
     if (sourceAbsolutePath.notExists() && templateAbsolutePath.notExists()) {

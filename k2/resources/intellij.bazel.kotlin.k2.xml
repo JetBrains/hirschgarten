@@ -1,0 +1,12 @@
+<idea-plugin visibility="internal">
+
+  <dependencies>
+    <plugin id="com.intellij.modules.kotlin.k2"/>
+    <module name="intellij.kotlin.refactorings.move"/>
+  </dependencies>
+
+  <projectListeners>
+    <listener class="org.jetbrains.bazel.kotlin.k2.BazelK2MoveDeclarationsRefactoringListener"
+              topic="org.jetbrains.kotlin.idea.k2.refactoring.move.processor.K2MoveDeclarationsRefactoringListener"/>
+  </projectListeners>
+</idea-plugin>

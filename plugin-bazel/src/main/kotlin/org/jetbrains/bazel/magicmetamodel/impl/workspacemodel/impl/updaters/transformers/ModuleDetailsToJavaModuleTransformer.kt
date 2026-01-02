@@ -2,19 +2,18 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendum
 import org.jetbrains.bazel.utils.StringUtils
+import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
+import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
+import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendum
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -53,18 +52,11 @@ class ModuleDetailsToJavaModuleTransformer(
     return when (dummyModulesResult) {
       is JavaModuleToDummyJavaModulesTransformerHACK.DummyModulesToAdd -> {
         val dummyModules = dummyModulesResult.dummyModules
-        val dummyModuleDependencies =
-          if (BazelFeatureFlags.addDummyModuleDependencies) {
-            dummyModules.map { it.genericModuleInfo.name }
-          } else {
-            emptyList()
-          }
         val javaModuleWithDummyDependencies =
           javaModule.copy(
             genericModuleInfo =
               javaModule.genericModuleInfo.copy(
-                dependencies =
-                  javaModule.genericModuleInfo.dependencies + dummyModuleDependencies,
+                dependencies = javaModule.genericModuleInfo.dependencies,
               ),
           )
         listOf(javaModuleWithDummyDependencies) + dummyModules

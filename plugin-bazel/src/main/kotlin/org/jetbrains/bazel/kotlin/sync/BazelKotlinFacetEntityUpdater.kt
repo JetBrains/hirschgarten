@@ -6,8 +6,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.arguments.parseCommandLineArguments
 import org.jetbrains.kotlin.config.JvmTarget
@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerSettingsData
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
-import org.jetbrains.kotlin.idea.workspaceModel.ModifiableKotlinSettingsEntity
+import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntityBuilder
 import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import java.nio.file.Path
@@ -114,7 +114,7 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
 
   private fun MutableEntityStorage.addKotlinSettingsEntity(
     parentModuleEntity: ModuleEntity,
-    kotlinSettingsEntity: ModifiableKotlinSettingsEntity,
+    kotlinSettingsEntity: KotlinSettingsEntityBuilder,
   ): KotlinSettingsEntity {
     val updatedParentModuleEntity =
       modifyModuleEntity(parentModuleEntity) {

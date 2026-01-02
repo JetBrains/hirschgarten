@@ -7,6 +7,7 @@ interface DiagnosticsParser {
     bazelOutput: String,
     target: Label,
     isCommandLineFormattedOutput: Boolean = false,
+    onlyFromParsedOutput: Boolean = false,
   ): List<Diagnostic>
 }
 
@@ -15,9 +16,10 @@ class DiagnosticsParserImpl : DiagnosticsParser {
     bazelOutput: String,
     target: Label,
     isCommandLineFormattedOutput: Boolean,
+    onlyFromParsedOutput: Boolean,
   ): List<Diagnostic> {
     val output = prepareOutput(bazelOutput, target)
-    val diagnostics = collectDiagnostics(output, isCommandLineFormattedOutput)
+    val diagnostics = collectDiagnostics(output, isCommandLineFormattedOutput, onlyFromParsedOutput)
     return deduplicate(diagnostics)
   }
 
@@ -27,7 +29,7 @@ class DiagnosticsParserImpl : DiagnosticsParser {
     return Output(relevantLines, target)
   }
 
-  private fun collectDiagnostics(output: Output, isCommandLineFormattedOutput: Boolean): List<Diagnostic> {
+  private fun collectDiagnostics(output: Output, isCommandLineFormattedOutput: Boolean, onlyFromParsedOutput: Boolean): List<Diagnostic> {
     val diagnostics = mutableListOf<Diagnostic>()
     while (output.nonEmpty()) {
       val parsers = if (isCommandLineFormattedOutput) CommandLineOutputParser else Parsers
@@ -40,7 +42,7 @@ class DiagnosticsParserImpl : DiagnosticsParser {
       }
     }
 
-    if (diagnostics.isEmpty() && output.containsError()) {
+    if (diagnostics.isEmpty() && !onlyFromParsedOutput) {
       diagnostics.add(
         Diagnostic(
           position = Position(0, 0),
@@ -48,7 +50,6 @@ class DiagnosticsParserImpl : DiagnosticsParser {
           fileLocation = null,
           targetLabel = output.targetLabel,
         ),
-
       )
     }
 
@@ -60,14 +61,12 @@ class DiagnosticsParserImpl : DiagnosticsParser {
       .groupBy { Triple(it.fileLocation, it.message, it.position) }
       .values
       .map { it.first() }
-
-  private fun Output.containsError(): Boolean = lines.any { line -> ErrorMessages.any { errorMessage -> errorMessage in line } }
-
   companion object {
     private val Parsers =
       listOf(
         BazelRootMessageParser,
         CompilerDiagnosticParser,
+        IntelliJRunnerOutputParser,
         Scala3CompilerDiagnosticParser,
         AllCatchParser,
       )
@@ -80,6 +79,5 @@ class DiagnosticsParserImpl : DiagnosticsParser {
         "^$".toRegex(),
         "Use --sandbox_debug to see verbose messages from the sandbox".toRegex(),
       )
-    private val ErrorMessages = listOf("error", "Error", "ERROR")
   }
 }

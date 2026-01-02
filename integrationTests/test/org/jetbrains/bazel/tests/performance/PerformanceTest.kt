@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.tests.performance
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
@@ -22,12 +24,14 @@ import com.intellij.tools.ide.metrics.collector.publishing.PerformanceMetricsDto
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
+import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.execute
+import org.jetbrains.bazel.ideStarter.openBspToolWindow
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.startup.IntellijTelemetryManager
@@ -37,6 +41,7 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * ```sh
@@ -55,7 +60,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
     }
     val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
     val commitHash = System.getProperty("bazel.ide.starter.test.commit.hash").orEmpty()
-    val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "main"
+    val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "252"
     val projectHomeRelativePath: String? = System.getProperty("bazel.ide.starter.test.project.home.relative.path")
 
     return GitProjectInfo(
@@ -75,19 +80,27 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProject() {
-    val commands =
-      CommandChain()
-        .startRecordingMaxMemory()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .recordMemory("bsp.used.after.sync.mb")
-        .openBspToolWindow()
-        .takeScreenshot("openBspToolWindow")
-        .stopRecordingMaxMemory()
-        .waitForSmartMode()
-        .recordMemory("bsp.used.after.indexing.mb")
-        .exitApp()
-    val startResult = createContext("performance", IdeaBazelCases.withProject(getProjectInfoFromSystemProperties())).runIDE(commands = commands, runTimeout = timeout)
+    val projectName = System.getenv("BAZEL_PERF_PROJECT_NAME") ?: "performance"
+    val context = createContext(projectName, IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
+    val startResult =
+      context
+        .runIdeWithDriver(runTimeout = timeout)
+        .useDriverAndCloseIde {
+          ideFrame {
+            step("Collect performance metrics during Bazel sync") {
+              execute { startRecordingMaxMemory() }
+              execute { takeScreenshot("startSync") }
+              execute { openBspToolWindow() }
+              execute { takeScreenshot("openBspToolWindow") }
+              execute { waitForBazelSync() }
+              execute { recordMemory("bsp.used.after.sync.mb") }
+              execute { stopRecordingMaxMemory() }
+              execute { waitForSmartMode() }
+              execute { recordMemory("bsp.used.after.indexing.mb") }
+            }
+            waitForIndicators(10.minutes)
+          }
+        }
 
     val spans = OpenTelemetrySpanCollector(SpanFilter.nameEquals("bsp.sync.project.ms")).collect(startResult.runContext.logsDir)
 
@@ -101,7 +114,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
     check(spans.size > 1) { "No spans received" }
     check(meters.size > 1) { "No performance metrics received" }
 
-    startResult.publishPerformanceMetrics(metrics = spans + meters)
+    startResult.publishPerformanceMetrics(projectName = projectName, metrics = spans + meters)
   }
 }
 

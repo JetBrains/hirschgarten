@@ -5,13 +5,14 @@ import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_MODULE_ENTITY
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
 import org.jetbrains.bazel.target.addLibraryModulePrefix
+import org.jetbrains.bazel.workspacemodel.entities.Dependency
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 
@@ -20,38 +21,10 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
 
   fun calculateAllDependencies(
     target: RawBuildTarget,
-    includesTransitive: Boolean = !BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled,
-  ): List<Label> =
-    if (includesTransitive) {
-      calculateAllTransitiveDependencies(target)
-    } else {
-      calculateDirectDependencies(target)
-    }
+  ): List<DependencyLabel> =
+    calculateDirectDependencies(target)
 
-  private fun calculateAllTransitiveDependencies(target: RawBuildTarget): List<Label> {
-    val toVisit = target.dependencies.toMutableSet()
-    val visited = mutableSetOf(target.id)
-    val result = mutableListOf<Label>()
-
-    while (toVisit.isNotEmpty()) {
-      val currentNode = toVisit.first()
-      toVisit -= currentNode
-
-      if (currentNode !in visited) {
-        // don't traverse further when hitting modules
-        if (currentNode.isCurrentNodeLibrary()) {
-          toVisit += graph[currentNode].orEmpty()
-        }
-        visited += currentNode
-        result += currentNode
-      }
-    }
-    return result
-  }
-
-  private fun calculateDirectDependencies(target: RawBuildTarget): List<Label> = target.dependencies
-
-  private fun Label.isCurrentNodeLibrary() = this in graph
+  private fun calculateDirectDependencies(target: RawBuildTarget): List<DependencyLabel> = target.dependencies
 
   fun createLibraries(project: Project): List<Library> =
     libraries
@@ -67,8 +40,6 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
       }
 
   fun createLibraryModules(project: Project, defaultJdkName: String?): List<JavaModule> {
-    if (!BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
-
     return libraries
       .map { library ->
         val libraryName = library.id.formatAsModuleName(project)
@@ -79,12 +50,14 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
               name = libraryModuleName,
               type = JAVA_MODULE_ENTITY_TYPE_ID,
               dependencies =
-                listOf(libraryName) +
-                  library.dependencies.map { targetId ->
-                    val rawId = targetId.formatAsModuleName(project)
-                    val id = if (targetId.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
-                    id
-                  },
+                listOf(Dependency(libraryName, isRuntimeOnly = false, exported = true)) +
+                library.dependencies.map { dep ->
+                  Dependency(
+                    dep.toDependencyId(project),
+                    isRuntimeOnly = dep.isRuntime,
+                    exported = dep.exported,
+                  )
+                },
               kind =
                 TargetKind(
                   kindString = "java_library",
@@ -102,4 +75,9 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
   }
 
   private fun Label.isLibraryId() = this in graph.keys
+
+  private fun DependencyLabel.toDependencyId(project: Project): String {
+    val rawId = label.formatAsModuleName(project)
+    return if (label.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
+  }
 }

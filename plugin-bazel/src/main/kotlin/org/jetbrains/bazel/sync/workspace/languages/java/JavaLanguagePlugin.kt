@@ -1,16 +1,24 @@
 package org.jetbrains.bazel.sync.workspace.languages.java
 
+import com.intellij.openapi.project.Project
 import com.intellij.util.EnvironmentUtil
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JavaSourceRootPackageInference
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourcePatternEval
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourceRootPattern
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROEnable
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
 class JavaLanguagePlugin(
@@ -18,12 +26,27 @@ class JavaLanguagePlugin(
   private val jdkResolver: JdkResolver,
   private val packageResolver: JvmPackageResolver,
 ) : LanguagePlugin<JvmBuildTarget>,
-  JVMPackagePrefixResolver {
+    JVMPackagePrefixResolver {
+  private val packageInference = JavaSourceRootPackageInference(packageResolver)
   private var jdk: Jdk? = null
 
-  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
+  private var cachedJavaSROEnable = false
+  private var cachedSROIncludeMatchers: List<SourceRootPattern> = listOf()
+  private var cachedSROExcludeMatchers: List<SourceRootPattern> = listOf()
+
+  override fun prepareSync(project: Project, targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
-    jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it) } ?: jdkResolver.resolve(targets)
+    jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets)
+
+    val projectView = ProjectViewService.getInstance(project)
+      .getCachedProjectView()
+    cachedJavaSROEnable = projectView.javaSROEnable
+
+    val patterns = JavaSourceRootPatternContributor.ep
+      .extensionList
+      .map { it.getPatterns(project) }
+    cachedSROIncludeMatchers = patterns.flatMap { it.includes }
+    cachedSROExcludeMatchers = patterns.flatMap { it.excludes }
   }
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
@@ -35,11 +58,12 @@ class JavaLanguagePlugin(
     val mainClass = getMainClass(jvmTarget)
 
     val jdk = jdk ?: return null
-    val javaHome = jdk.javaHome ?: return null
+    val javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: javaVersionFromToolchain(target)
+    val javaHome = jdk.javaHome
     val environmentVariables =
       context.target.envMap + context.target.envInheritList.associateWith { EnvironmentUtil.getValue(it) ?: "" }
     return JvmBuildTarget(
-      javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: jdk.version,
+      javaVersion = javaVersion.orEmpty(),
       javaHome = javaHome,
       javacOpts = jvmTarget.javacOptsList,
       binaryOutputs = binaryOutputs,
@@ -50,16 +74,51 @@ class JavaLanguagePlugin(
     )
   }
 
+  override fun transformSources(sources: List<SourceItem>): List<SourceItem> {
+    if (cachedJavaSROEnable) {
+      val root = bazelPathsResolver.workspaceRoot()
+      val (matched, unmatched) = SourcePatternEval.evalSources(
+        workspaceRoot = root,
+        sources = sources,
+        includes = cachedSROIncludeMatchers,
+        excludes = cachedSROExcludeMatchers,
+      )
+      if (matched.isNotEmpty()) {
+        packageInference.inferPackages(matched)
+      }
+      for (item in unmatched) {
+        item.jvmPackagePrefix = packageResolver.calculateJvmPackagePrefix(item.path)
+      }
+    } else {
+      for (item in sources) {
+        item.jvmPackagePrefix = packageResolver.calculateJvmPackagePrefix(item.path)
+      }
+    }
+    return sources
+  }
+
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.JAVA)
 
   override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 
-  private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? =
-    javacOpts.firstNotNullOfOrNull {
-      val flagName = it.substringBefore(' ')
-      val argument = it.substringAfter(' ')
-      if (flagName == "-target" || flagName == "--target" || flagName == "--release") argument else null
+  private fun javaVersionFromToolchain(target: TargetInfo): String? = if (target.hasJavaToolchainInfo()) {
+    target.javaToolchainInfo.sourceVersion
+  } else {
+    null
+  }
+
+  private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? {
+    for (i in javacOpts.indices) {
+      val option = javacOpts[i]
+      val flagName = option.substringBefore(' ', missingDelimiterValue = option)
+      val argument = option.substringAfter(' ', missingDelimiterValue = "")
+      if (flagName == "-target" || flagName == "--target" || flagName == "--release") {
+        if (argument.isNotBlank()) return argument
+        return javacOpts.getOrNull(i + 1)
+      }
     }
+    return null
+  }
 }

@@ -5,7 +5,7 @@ load("@${rulesetName}//java/common:java_plugin_info.bzl", "JavaPluginInfo")
 load("@${rulesetName}//java:java_utils.bzl", java_utils = "utils")
 #end
 
-load("//aspects:utils/utils.bzl", "create_struct", "to_file_location", "BspAspectInfo")
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "to_file_location", "BspAspectInfo")
 
 def java_info_in_target(target):
     #if( $javaEnabled == "true" )
@@ -78,10 +78,16 @@ def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
     toolchain_info = None
     if toolchain != None:
         java_home = to_file_location(toolchain.java_runtime.java_home, "", False, True) if hasattr(toolchain, "java_runtime") else None
+
+        # See https://github.com/bazelbuild/rules_java/commit/449303e723185a8197794c42711602e66b1a9296#diff-fe0bb6824aba3c40e5f366dce11a17b53e7e8fefb12c94afe652f480fd05cd00
+        _system_path = getattr(getattr(toolchain, "_bootclasspath_info", None), "_system_path", None)
+        boot_classpath_java_home = to_file_location(_system_path, "", False, True) if _system_path else None
+
         toolchain_info = create_struct(
             source_version = toolchain.source_version,
             target_version = toolchain.target_version,
             java_home = java_home,
+            boot_classpath_java_home = boot_classpath_java_home,
         )
     else:
         for dep in dep_targets:

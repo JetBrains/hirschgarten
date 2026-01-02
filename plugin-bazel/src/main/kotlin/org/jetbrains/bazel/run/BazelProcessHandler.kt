@@ -7,8 +7,6 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.future.asCompletableFuture
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.sdkcompat.HasDeferredPid
-import org.jetbrains.bazel.sdkcompat.ProcessHandlerCompat
 import java.io.OutputStream
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.cancellation.CancellationException
@@ -16,9 +14,8 @@ import kotlin.coroutines.cancellation.CancellationException
 open class BazelProcessHandler(
   private val project: Project,
   private val runDeferred: Deferred<*>,
-  override val pid: Deferred<Long?>? = null,
-) : ProcessHandlerCompat(),
-  HasDeferredPid {
+  val pid: Deferred<Long?>? = null,
+) : ProcessHandler() {
   override fun startNotify() {
     super.startNotify()
     runDeferred.invokeOnCompletion { e ->
@@ -55,5 +52,6 @@ open class BazelProcessHandler(
 
   override fun getProcessInput(): OutputStream? = null
 
-  protected override fun getNativePidCompat(): CompletableFuture<Long?>? = pid?.asCompletableFuture()
+  final override fun getNativePid(): CompletableFuture<Long?>? =
+    pid?.asCompletableFuture()
 }

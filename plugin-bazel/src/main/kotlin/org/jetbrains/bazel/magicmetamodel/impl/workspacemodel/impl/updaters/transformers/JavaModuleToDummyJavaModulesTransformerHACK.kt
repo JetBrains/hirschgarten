@@ -5,30 +5,30 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bazel.utils.commonAncestor
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.utils.isUnder
+import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.pathString
-
-private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally
@@ -85,7 +85,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     )
   }
 
-  private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in RELEVANT_EXTENSIONS || this.sourcePath.isDirectory()
+  private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in Constants.JVM_LANGUAGES_EXTENSIONS || this.sourcePath.isDirectory()
 
   private fun tryMergeSources(
     sourceRoots: List<JavaSourceRoot>,
@@ -132,7 +132,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     if (mergedRootsCoverNewFiles(
         mergedRoots = mergedSourceRootPaths,
         originalRoots = originalSourceRoots,
-        relevantExtensions = RELEVANT_EXTENSIONS,
+        relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
       )
     ) {
       return null
@@ -176,7 +176,12 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     relevantExtensions: List<String>? = null,
   ): Boolean {
     for (mergedRoot in mergedRoots) {
-      Files.walk(mergedRoot).use { children ->
+      val childrenStream = try {
+        Files.walk(mergedRoot)
+      } catch (_: NoSuchFileException) {
+        return true
+      }
+      childrenStream.use { children ->
         for (fileUnderRoot in children) {
           if (fileUnderRoot.isDirectory()) continue
           if (relevantExtensions != null) {

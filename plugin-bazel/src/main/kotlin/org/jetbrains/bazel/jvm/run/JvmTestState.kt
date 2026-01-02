@@ -8,24 +8,33 @@ import com.intellij.openapi.externalSystem.service.execution.configuration.fragm
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
 import com.intellij.openapi.options.SettingsEditor
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.ui.PortField
 import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.runConfigRunWithBazel
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
+import org.jetbrains.bazel.run.state.HasRunWithBazel
 import org.jetbrains.bazel.run.state.addEnvironmentFragment
+import org.jetbrains.bazel.run.state.addRunWithBazelFragment
 import org.jetbrains.bazel.run.state.addTestFilterFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
-import org.jetbrains.bazel.run.state.workingDirectoryFragment
 
-class JvmTestState :
+class JvmTestState(project: Project) :
   AbstractGenericTestState<JvmTestState>(),
-  HasDebugPort {
+  HasDebugPort,
+  HasRunWithBazel {
   @com.intellij.configurationStore.Property(description = "Debug port")
   @get:Attribute("debugPort")
   override var debugPort: Int by property(5005)
+
+  @com.intellij.configurationStore.Property(description = "Run with Bazel")
+  @get:Attribute("runWithBazel")
+  override var runWithBazel: Boolean by property(ProjectViewService.getInstance(project).getCachedProjectView().runConfigRunWithBazel)
 
   override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<JvmTestState> = JvmTestStateEditor(configuration)
 }
@@ -39,8 +48,8 @@ class JvmTestStateEditor(private val config: BazelRunConfiguration) :
       add(bazelParamsFragment())
       addTestFilterFragment()
       add(programArgumentsFragment())
-      add(workingDirectoryFragment(config))
       addEnvironmentFragment()
+      addRunWithBazelFragment()
     }
 }
 

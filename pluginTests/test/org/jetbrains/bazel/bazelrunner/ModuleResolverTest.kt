@@ -1,0 +1,143 @@
+package org.jetbrains.bazel.bazelrunner
+
+import io.kotest.assertions.fail
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
+import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
+import org.jetbrains.bazel.commons.BazelStatus
+import org.junit.jupiter.api.Test
+
+class ModuleResolverTest {
+  fun makeOutputCollector(lines: String): OutputCollector =
+    OutputCollector().also {
+      lines.lines().forEach(it::onNextLine)
+    }
+
+  val moduleOutputParser = ModuleOutputParser()
+
+  @Test
+  fun `should throw on failed show repo invocation`() {
+    val stderr =
+      "ERROR: In repo argument lll: Module lll does not exist in the dependency graph." +
+      "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), BazelStatus.BUILD_ERROR)
+
+    val moduleOutputParser = ModuleOutputParser()
+
+    shouldThrow<IllegalStateException> {
+      moduleOutputParser.parseShowRepoResults(result)
+    }.also {
+      it.message shouldBe "Failed to resolve module from bazel info. Bazel Info output:\n'$stderr\n'"
+    }
+  }
+
+  @Test
+  fun `should correctly parse local_repository`() {
+    val stdout =
+      """
+      ## @community:
+      # <builtin>
+      local_repository(
+        name = "community~",
+        path = "community",
+      )
+      # Rule community~ instantiated at (most recent call last):
+      #   <builtin> in <toplevel>
+      """.trimIndent()
+
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+
+    val parsed = moduleOutputParser.parseShowRepoResults(result)
+    parsed shouldBe mapOf("@community" to ShowRepoResult.LocalRepository("community~", "community"))
+  }
+
+  @Test
+  fun `should correctly parse http_archive`() {
+    val stdout =
+      """
+      ## rules_jvm_external@6.5:
+      # <builtin>
+      http_archive(
+        name = "rules_jvm_external~",
+        urls = ["https://github.com/bazel-contrib/rules_jvm_external/releases/download/6.5/rules_jvm_external-6.5.tar.gz"],
+        integrity = "sha256-Ok1WNXhRz1sNrlOLPz4GEqT1iSXfs8rbLgxOh9UeYp4=",
+        strip_prefix = "rules_jvm_external-6.5",
+        remote_file_urls = {},
+        remote_file_integrity = {},
+        remote_patches = {},
+        remote_patch_strip = 0,
+      )
+      # Rule rules_jvm_external~ instantiated at (most recent call last):
+      #   <builtin> in <toplevel>
+      # Rule http_archive defined at (most recent call last):
+      #   /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/39b3974c0c7bcab09c689dfd2d36f22b/external/bazel_tools/tools/build_defs/repo/http.bzl:387:31 in <toplevel>
+      """.trimIndent()
+
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+
+    val parsed =
+      moduleOutputParser.parseShowRepoResults(result).get("rules_jvm_external@6.5") ?: fail("No entry produced for rules_jvm_external")
+
+    parsed.shouldBeInstanceOf<ShowRepoResult.Unknown>()
+    parsed.output shouldBe stdout + "\n"
+    parsed.name shouldBe "rules_jvm_external~"
+  }
+
+  @Test
+  fun `should correctly parse many repositories`() {
+    val stdout = """
+        ## community@_:
+        # <builtin>
+        local_repository(
+          name = "community+",
+          path = "community",
+        )
+        # Rule community+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+        ## rules_jvm@_:
+        # <builtin>
+        local_repository(
+          name = "rules_jvm+",
+          path = "community/build/jvm-rules",
+        )
+        # Rule rules_jvm+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+        ## lib@_:
+        # <builtin>
+        local_repository(
+          name = "lib+",
+          path = "community/lib",
+        )
+        # Rule lib+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+        ## ultimate_lib@_:
+        # <builtin>
+        local_repository(
+          name = "ultimate_lib+",
+          path = "lib",
+        )
+        # Rule ultimate_lib+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+        ## jps_to_bazel@_:
+        # <builtin>
+        local_repository(
+          name = "jps_to_bazel+",
+          path = "community/platform/build-scripts/bazel",
+        )
+        # Rule jps_to_bazel+ instantiated at (most recent call last):
+        #   <builtin> in <toplevel>
+    """.trimIndent()
+
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+
+    val parsed = moduleOutputParser.parseShowRepoResults(result)
+    parsed shouldBe mapOf(
+      "community@_" to ShowRepoResult.LocalRepository("community+", "community"),
+      "rules_jvm@_" to ShowRepoResult.LocalRepository("rules_jvm+", "community/build/jvm-rules"),
+      "lib@_" to ShowRepoResult.LocalRepository("lib+", "community/lib"),
+      "ultimate_lib@_" to ShowRepoResult.LocalRepository("ultimate_lib+", "lib"),
+      "jps_to_bazel@_" to ShowRepoResult.LocalRepository("jps_to_bazel+", "community/platform/build-scripts/bazel"),
+    )
+  }
+}

@@ -3,9 +3,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.DependencyScope
-import com.intellij.platform.workspace.jps.entities.LibraryDependency
-import com.intellij.platform.workspace.jps.entities.LibraryId
-import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -13,17 +10,18 @@ import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
-import com.intellij.testFramework.junit5.SystemProperty
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
+import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.Dependency
+import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -50,8 +48,6 @@ val testLibraries: List<Library> =
 val testLibrariesByName: Map<String, Library> =
   testLibraries.associateBy { it.displayName }
 
-@SystemProperty("bsp.wrap.libraries.inside.modules", "false")
-@SystemProperty("idea.kotlin.plugin.use.k1", "true")
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
   private val defaultDependencies =
@@ -82,10 +78,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2",
-            "lib1",
-            "module3",
-            "lib2",
+            Dependency("module2"),
+            Dependency("lib1"),
+            Dependency("module3"),
+            Dependency("lib2"),
           ),
         kind =
           TargetKind(
@@ -115,14 +111,11 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                LibraryDependency(
-                  library =
-                    LibraryId(
-                      name = "lib1",
-                      tableId = LibraryTableId.ProjectLibraryTableId,
-                    ),
+                ModuleDependency(
+                  module = ModuleId(name = "lib1".addLibraryModulePrefix()),
                   exported = true,
                   scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
                 ),
                 ModuleDependency(
                   module = ModuleId("module3"),
@@ -130,14 +123,11 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                LibraryDependency(
-                  library =
-                    LibraryId(
-                      name = "lib2",
-                      tableId = LibraryTableId.ProjectLibraryTableId,
-                    ),
+                ModuleDependency(
+                  module = ModuleId(name = "lib2".addLibraryModulePrefix()),
                   exported = true,
                   scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
                 ),
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
@@ -161,10 +151,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module2",
-            "module3",
-            "lib1",
-            "lib2",
+            Dependency("module2"),
+            Dependency("module3"),
+            Dependency("lib1"),
+            Dependency("lib2"),
           ),
         kind =
           TargetKind(
@@ -180,8 +170,8 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "module3",
-            "lib1",
+            Dependency("module3"),
+            Dependency("lib1"),
           ),
         kind =
           TargetKind(
@@ -219,23 +209,17 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                LibraryDependency(
-                  library =
-                    LibraryId(
-                      name = "lib1",
-                      tableId = LibraryTableId.ProjectLibraryTableId,
-                    ),
+                ModuleDependency(
+                  module = ModuleId("lib1".addLibraryModulePrefix()),
                   exported = true,
                   scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
                 ),
-                LibraryDependency(
-                  library =
-                    LibraryId(
-                      name = "lib2",
-                      tableId = LibraryTableId.ProjectLibraryTableId,
-                    ),
+                ModuleDependency(
+                  module = ModuleId("lib2".addLibraryModulePrefix()),
                   exported = true,
                   scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
                 ),
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
@@ -258,14 +242,11 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                LibraryDependency(
-                  library =
-                    LibraryId(
-                      name = "lib1",
-                      tableId = LibraryTableId.ProjectLibraryTableId,
-                    ),
+                ModuleDependency(
+                  module = ModuleId("lib1".addLibraryModulePrefix()),
                   exported = true,
                   scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
                 ),
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,

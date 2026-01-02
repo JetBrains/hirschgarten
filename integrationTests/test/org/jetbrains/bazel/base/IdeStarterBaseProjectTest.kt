@@ -19,6 +19,7 @@ import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.process.findAndKillProcesses
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -31,6 +32,8 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
+import org.jetbrains.bazel.tests.ui.expandedTree
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -80,6 +83,13 @@ abstract class IdeStarterBaseProjectTest {
           }
         }
       }
+
+    expandedTree = false
+  }
+
+  @AfterEach
+  fun tearDown() {
+    killBazelProcesses()
   }
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
@@ -113,6 +123,28 @@ abstract class IdeStarterBaseProjectTest {
     }
     return this
   }
+
+  companion object {
+    fun killBazelProcesses() {
+      try {
+        // Kill Bazel server Java processes started for the test workspace
+        findAndKillProcesses(
+          message = "Killing Bazel server processes",
+          filter = java.util.function.Predicate { p ->
+            val hasServerJar = p.arguments.any { arg ->
+              arg.contains("A-server.jar") || arg.endsWith("/server.jar") || arg.endsWith("\\server.jar") || arg.endsWith("-server.jar")
+            }
+            val fromIdeTestsWorkspace = p.arguments.any { arg ->
+              arg.startsWith("--workspace_directory=") && (arg.contains("/ide-tests/") || arg.contains("\\ide-tests\\"))
+            }
+            hasServerJar && fromIdeTestsWorkspace
+          },
+        )
+      } catch (t: Throwable) {
+        System.err.println("Failed to find/kill Bazel server processes: ${t.message}")
+      }
+    }
+  }
 }
 
 /**
@@ -138,20 +170,14 @@ fun Driver.syncBazelProject(buildAndSync: Boolean = false) {
 fun Driver.syncBazelProjectCloseDialog() {
   execute(CommandChain().takeScreenshot("startSync"))
   execute(CommandChain().openBspToolWindow())
-  // this is required for a weird bug when you run multiple tests, and a dialog for "add file to git" appears
+  // close only the Git confirmation dialog; other popups like "Loading file" are not closable via dispose()
   ideFrame {
-    val dialogFound =
-      try {
-        dialog().waitFound(timeout = 30.seconds)
-        true
-      } catch (e: Exception) {
-        false
-      }
+    val gitAddDialog = dialog(title = "Add File to Git")
+    val dialogFound = runCatching { gitAddDialog.waitFound(timeout = 30.seconds) }.isSuccess
 
     if (dialogFound) {
-      dialog {
-        closeDialog()
-      }
+      runCatching { gitAddDialog.closeDialog() }
+        .onFailure { System.err.println("Failed to close 'Add File to Git' dialog: ${it.message}") }
     }
   }
   execute(CommandChain().takeScreenshot("openBspToolWindow"))
