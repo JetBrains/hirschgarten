@@ -12,17 +12,16 @@ class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer
     const val MAX_BUFFER_LENGTH: Int = Int.MAX_VALUE - 8
     const val DEFAULT_BUFFER_SIZE: Int = 256
 
-    // TODO: can I use it just like that inside JBR?
     private val UNSAFE = UnsafeUtil.unsafe
     private val ADDRESS_OFFSET = UNSAFE.objectFieldOffset(Buffer::class.java.getDeclaredField("address"))
 
-    fun allocateUnsafe(size: Int = DEFAULT_BUFFER_SIZE) =
+    fun allocateUnsafe(size: Int = DEFAULT_BUFFER_SIZE): UnsafeByteBufferCodecBuffer =
       UnsafeByteBufferCodecBuffer(ByteBuffer.allocateDirect(size))
 
-    fun allocateHeap(size: Int = DEFAULT_BUFFER_SIZE) =
+    fun allocateHeap(size: Int = DEFAULT_BUFFER_SIZE): UnsafeByteBufferCodecBuffer =
       UnsafeByteBufferCodecBuffer(ByteBuffer.allocate(size))
 
-    fun from(array: ByteArray) = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(array))
+    fun from(array: ByteArray): UnsafeByteBufferCodecBuffer = UnsafeByteBufferCodecBuffer(ByteBuffer.wrap(array))
   }
 
   override val writable: Boolean = true
