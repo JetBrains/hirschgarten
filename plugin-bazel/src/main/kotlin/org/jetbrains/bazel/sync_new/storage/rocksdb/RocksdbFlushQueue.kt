@@ -27,7 +27,7 @@ class RocksdbFlushQueue(
       .setDisableWAL(true)
   }
 
-  private val queue: CoalescingTransferQueue<CoalescenceKey, FlushOperation> = CoalescingTransferQueue()
+  private val queue: CoalescingBlockingQueue<CoalescenceKey, FlushOperation> = CoalescingBlockingQueue()
   private val running: AtomicBoolean = AtomicBoolean(true)
   private val shutdownLatch = CountDownLatch(1)
   private val operationId: AtomicLong = AtomicLong(0)
