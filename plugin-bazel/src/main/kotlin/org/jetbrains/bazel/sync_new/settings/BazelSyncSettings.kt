@@ -29,8 +29,6 @@ import javax.swing.JCheckBox
 data class BazelSyncSettings(
   var enableIncrementalSync: Boolean = false,
   var useTargetHasher: Boolean = true,
-  var useTargetHasherThreshold: Boolean = true,
-  var targetHasherThreshold: Int = 100,
 ) {
   companion object {
     @JvmStatic
@@ -54,6 +52,7 @@ internal class BazelSyncSettingsService : DumbAware, PersistentStateComponent<Ba
   }
 }
 
+// TODO: localize strings
 internal class BazelSyncSettingsConfigurable(
   private val project: Project,
 ) : BoundConfigurable("Incremental sync"), SearchableConfigurable, Configurable.Beta {
@@ -62,8 +61,6 @@ internal class BazelSyncSettingsConfigurable(
   override fun createPanel(): DialogPanel = panel {
     group("Incremental Sync") {
       lateinit var incrementalSyncEnabled: Cell<JCheckBox>
-      lateinit var targetHasherEnabled: Cell<JCheckBox>
-      lateinit var targetHasherThresholdEnabled: Cell<JCheckBox>
 
       row {
         incrementalSyncEnabled = checkBox("Enable incremental sync")
@@ -73,25 +70,13 @@ internal class BazelSyncSettingsConfigurable(
 
       indent {
         row {
-          targetHasherEnabled = checkBox("Use target hasher")
+          checkBox("Use target hasher")
             .bindSelected(settings::useTargetHasher)
             .contextHelp(
               description = "Use target hashing for narrowing target changes. " +
                             "Disabling it might reduce time spend on querying bazel.",
             )
         }
-
-        indent {
-          row {
-            targetHasherThresholdEnabled = checkBox("Target threshold")
-              .bindSelected(settings::useTargetHasherThreshold)
-              .gap(RightGap.SMALL)
-
-            intTextField(0..Int.MAX_VALUE)
-              .bindIntText(settings::targetHasherThreshold)
-              .enabledIf(targetHasherThresholdEnabled.selected)
-          }
-        }.visibleIf(targetHasherEnabled.selected)
       }.visibleIf(incrementalSyncEnabled.selected)
     }
   }
