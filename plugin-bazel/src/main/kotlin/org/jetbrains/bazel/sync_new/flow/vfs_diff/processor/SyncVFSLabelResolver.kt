@@ -46,7 +46,7 @@ object SyncVFSLabelResolver {
   }
 
   // TODO: maybe bypass bazel query completely?
-  //  this is how set(<file>) is evaluated in bazel - simple walk backwards until encounter package
+  //  this is how set(<file>) is evaluated in bazel - simple walk backwards until package is encountered
   //  https://github.com/bazelbuild/bazel/blob/f11c3eb5c39ef035bfa9593f209b3579df2113aa/src/main/java/com/google/devtools/build/lib/cmdline/TargetPattern.java#L372
   suspend fun resolveSourceFileLabels(ctx: SyncVFSContext, sources: Collection<Path>): Map<Path, Set<Label>> {
     val workspaceRoot = ctx.pathsResolver.workspaceRoot()
