@@ -155,7 +155,6 @@ class SyncExecutor(
     val useHasher = when {
       ctx.scope.isFullSync -> true
       !ctx.flags.useTargetHasher -> false
-      ctx.flags.useTargetHasherThreshold -> expandedDiff.universe.size >= ctx.flags.targetHasherThreshold
       else -> true
     }
     val coldDiff = if (useHasher) {

@@ -23,8 +23,6 @@ class SyncFlagsService private constructor(private val project: Project) {
   val disallowLegacyFullTargetGraphMaterialization: Boolean = true
 
   val useTargetHasher: Boolean = settings.useTargetHasher
-  val useTargetHasherThreshold: Boolean = settings.useTargetHasherThreshold
-  val targetHasherThreshold: Int = settings.targetHasherThreshold
   val isEnabled: Boolean = isFeatureEnabled && settings.enableIncrementalSync
 }
 
