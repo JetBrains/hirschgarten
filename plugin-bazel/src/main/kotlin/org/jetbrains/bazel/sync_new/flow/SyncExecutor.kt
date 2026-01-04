@@ -187,12 +187,15 @@ class SyncExecutor(
     val targetsToFetch = (diff.added.map { it.label } + diff.changed.map { it.label })
       .toList()
     val rawTargets = fetchRawAspects(ctx, targetsToFetch)
-    //val rawTargetsIds = rawTargets.map { it.target.label() }.toSet()
-    //if (!targetsToFetch.all { it in rawTargetsIds }) {
-    //  val console = project.service<ConsoleService>().syncConsole
-    //  console.addWarnMessage(taskId = parentTaskId, "Inconsistency detected, skipping workspace import")
-    //  return
-    //}
+    // TODO: at this point we already had to invoke `bazel build`
+    //  that means we have in/out artifacts of each target
+    //  from queries aren't able to detect ALL changed, after this step we should
+    //   1. collect all in/out artifacts
+    //   2. compare them to previous state
+    //   3. update target diff accordingly
+    //   4. update target graph ONLY with changed targets(for over vertices below should be only over changed targets)
+    //  this step is OG plugin `artifact tracking` counterpart
+    //  * this step should as lightweight as possible
     for (target in diff.removed + diff.changed.map { it.old }) {
       val id = graph.getVertexIdByLabel(target.label)
       if (id != EMPTY_ID) {
