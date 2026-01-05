@@ -32,13 +32,6 @@ class JvmSyncWorkspaceImporter(
   ): SyncStatus {
     if (ctx.scope.isFullSync) {
       storage.clear()
-
-      //val iter = ((storage as PersistentIncrementalEntityStore<*, *>).resourceId2EntityStore as RocksdbKVStore<*, *>).values()
-      //while (iter.hasNext()) {
-      //  val value = iter.next()
-      //  println(value)
-      //}
-      //iter.close()
     }
 
     progress.task.withTask("removing_entities", "Pruning old entities") {
@@ -59,7 +52,11 @@ class JvmSyncWorkspaceImporter(
       LibraryModuleProcessor(storage).computeLibraryModules(ctx, diff)
       SourceModuleProcessor(project, storage).computeSourceModules(ctx, diff)
     }
-    KotlinStdlibProcessor(storage).computeKotlinStdlib(ctx, diff)
+    progress.task.withTask("computing_stdlib", "Computing kotlin stdlib") {
+      val processor = KotlinStdlibProcessor(storage)
+      processor.computeKotlinStdlib(ctx, diff)
+      processor.computeTransitiveKotlinStdlib(ctx, diff)
+    }
 
     if (USE_LEGACY_MODEL_APPLICATOR) {
       LegacyWorkspaceModelApplicator(storage).execute(ctx, progress)
