@@ -26,9 +26,6 @@
     <orderEntry type="library" scope="PROVIDED" name="studio-platform" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.swingx" />
     <orderEntry type="module" module-name="intellij.libraries.caffeine" />
-    <orderEntry type="module" module-name="intellij.android.common" />
-    <orderEntry type="module" module-name="intellij.android.core" />
-    <orderEntry type="module" module-name="intellij.android.jps.model" />
     <orderEntry type="module" module-name="intellij.bazel.commons" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.server" exported="" />
