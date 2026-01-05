@@ -61,6 +61,7 @@ class ModuleDetailsToJavaModuleTransformer(
           )
         listOf(javaModuleWithDummyDependencies) + dummyModules
       }
+
       is JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots -> {
         val javaModuleWithMergedSourceRoots =
           javaModule.copy(
@@ -103,18 +104,14 @@ class ModuleDetailsToJavaModuleTransformer(
   private fun JvmBuildTarget?.toJdkName(): String? = this?.javaHome?.let { project.bazelProjectName.projectNameToJdkName(it) }
 
   private fun toKotlinAddendum(inputEntity: ModuleDetails): KotlinAddendum? {
-    val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
-    return if (kotlinBuildTarget != null) {
-      with(kotlinBuildTarget) {
-        KotlinAddendum(
-          languageVersion = languageVersion,
-          apiVersion = apiVersion,
-          moduleName = moduleName,
-          kotlincOptions = kotlincOptions,
-        )
-      }
-    } else {
-      null
+    val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target) ?: return null
+    return with(kotlinBuildTarget) {
+      KotlinAddendum(
+        languageVersion = languageVersion,
+        apiVersion = apiVersion,
+        moduleName = moduleName,
+        kotlincOptions = kotlincOptions,
+      )
     }
   }
 
@@ -139,9 +136,9 @@ class ModuleDetailsToJavaModuleTransformer(
   private fun toAssociates(inputEntity: ModuleDetails): List<Label> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
     return kotlinBuildTarget
-      ?.associates
-      ?.distinct()
-      ?: emptyList()
+             ?.associates
+             ?.distinct()
+           ?: emptyList()
   }
 }
 
