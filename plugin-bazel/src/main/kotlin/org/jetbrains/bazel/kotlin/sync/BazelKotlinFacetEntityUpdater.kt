@@ -42,11 +42,14 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     kotlinAddendum: KotlinAddendum,
     projectBasePath: Path,
   ) = parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
-    kotlinAddendum.languageVersion.takeIf { it.isNotEmpty() }.let {
+    kotlinAddendum.languageVersion?.let {
       languageVersion = it
     }
-    kotlinAddendum.apiVersion.takeIf { it.isNotEmpty() }.let {
+    kotlinAddendum.apiVersion?.let {
       apiVersion = it
+    }
+    kotlinAddendum.moduleName?.let {
+      moduleName = it
     }
     autoAdvanceLanguageVersion = false
     autoAdvanceApiVersion = false

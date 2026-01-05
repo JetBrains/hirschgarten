@@ -109,6 +109,7 @@ class ModuleDetailsToJavaModuleTransformer(
         KotlinAddendum(
           languageVersion = languageVersion,
           apiVersion = apiVersion,
+          moduleName = moduleName,
           kotlincOptions = kotlincOptions,
         )
       }

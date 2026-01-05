@@ -73,6 +73,7 @@ message KotlinTargetInfo {
   repeated string kotlinc_opts = 400;
   repeated FileLocation stdlibs = 500;
   repeated KotlincPluginInfo kotlinc_plugin_infos = 600;
+  string module_name = 700;
 }
 
 message PythonTargetInfo {
