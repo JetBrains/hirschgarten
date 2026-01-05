@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.IntList
 import it.unimi.dsi.fastutil.ints.IntLists
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.ints.IntSet
+import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.codec.Int2ObjectOpenHashMapCodec
 import org.jetbrains.bazel.sync_new.codec.IntArrayCodec
 import org.jetbrains.bazel.sync_new.codec.IntOpenHashSetCodec
@@ -37,26 +38,7 @@ class TransitiveClosureIndexService(
       StorageHints.USE_IN_MEMORY,
     )
       .withCreator { TransitiveClosure() }
-      .withCodec {
-        versionedCodecOf(
-          version = 1,
-          encode = { ctx, buffer, value ->
-            Int2ObjectOpenHashMapCodec.encode(ctx, buffer, value.vertexId2TransitiveClosure) { buffer, value ->
-              LongArrayCodec.encode(ctx, buffer, value.toLongArray())
-            }
-          },
-          decode = { ctx, buffer, version ->
-            check(version == 1) { "unsupported version" }
-            val result = TransitiveClosure()
-            result.idx2VertexId = IntArrayCodec.decode(ctx, buffer)
-            result.vertexId2TransitiveClosure =
-              Int2ObjectOpenHashMapCodec.decode(ctx, buffer) { buffer ->
-                BitSet.valueOf(LongArrayCodec.decode(ctx, buffer))
-              }
-            result
-          },
-        )
-      }
+      .withCodec { TransitiveClosure.codec }
       .build()
 
   private val executableTargets: FlatStorage<IntOpenHashSet> =
@@ -108,7 +90,7 @@ class TransitiveClosureIndexService(
     }
     transitiveClosure.mutate { it.idx2VertexId = execs }
 
-    val result = Int2ObjectOpenHashMap<BitSet>()
+    val result = Int2ObjectOpenHashMap<BitStore>()
     val state = Int2ByteOpenHashMap()
     val stack = ArrayDeque<Int>() // TODO: use IntArrayFIFOQueue
 
@@ -139,13 +121,14 @@ class TransitiveClosureIndexService(
             state.put(vertexId, TransitiveClosure.STATE_VISITED)
 
             val rdeps = ctx.graph.getPredecessors(vertexId)
-            var bits: BitSet? = null
+            var bits: BitStore? = null
             for (n in rdeps.indices) {
               val rdepVertexId = rdeps.getInt(n)
               val rdepBit = result.get(rdepVertexId) ?: continue
               if (bits == null) {
-                bits = rdepBit.clone() as BitSet
-              } else {
+                bits = rdepBit.copy()
+              }
+              else {
                 bits.or(rdepBit)
               }
             }
@@ -153,7 +136,7 @@ class TransitiveClosureIndexService(
             val execIdx = exec2Index.getOrDefault(vertexId, -1)
             if (execIdx >= 0) {
               if (bits == null) {
-                bits = BitSet(execs.size)
+                bits = BitStore.create(size = execs.size)
               }
               bits.set(execIdx)
             }
@@ -181,24 +164,50 @@ class TransitiveClosureIndexService(
 
 private class TransitiveClosure(
   var idx2VertexId: IntArray = IntArray(0),
-  var vertexId2TransitiveClosure: Int2ObjectOpenHashMap<BitSet> = Int2ObjectOpenHashMap(),
+  var vertexId2TransitiveClosure: Int2ObjectOpenHashMap<BitStore> = Int2ObjectOpenHashMap(),
 ) {
   companion object {
     const val STATE_NOT_VISITED: Byte = 0
     const val STATE_VISITING: Byte = 1
     const val STATE_VISITED: Byte = 2
+
+    internal val codec = versionedCodecOf(
+      version = 1,
+      encode = { ctx, buffer, value ->
+        IntArrayCodec.encode(ctx, buffer, value.idx2VertexId)
+        Int2ObjectOpenHashMapCodec.encode(ctx, buffer, value.vertexId2TransitiveClosure) { buffer, value ->
+          BitStore.codec.encode(ctx, buffer, value)
+        }
+      },
+      decode = { ctx, buffer, version ->
+        check(version == 1) { "unsupported version" }
+        val result = TransitiveClosure()
+        result.idx2VertexId = IntArrayCodec.decode(ctx, buffer)
+        result.vertexId2TransitiveClosure =
+          Int2ObjectOpenHashMapCodec.decode(ctx, buffer) { buffer ->
+            BitStore.codec.decode(ctx, buffer)
+          }
+        result
+      },
+    )
   }
 
   fun getAllReverseTransitiveTargetIds(vertexId: Int, filter: IntSet? = null): IntList {
     val closure = vertexId2TransitiveClosure[vertexId] ?: return IntLists.EMPTY_LIST
     val result = IntArrayList()
-    var idx = closure.nextSetBit(0)
-    while (idx >= 0) {
-      val vertexId = idx2VertexId[idx]
-      if (filter == null || filter.contains(vertexId)) {
+    if (filter == null) {
+      closure.each { idx ->
+        val vertexId = idx2VertexId[idx]
         result.add(vertexId)
       }
-      idx = closure.nextSetBit(idx + 1)
+    }
+    else {
+      closure.each { idx ->
+        val vertexId = idx2VertexId[idx]
+        if (filter.contains(vertexId)) {
+          result.add(vertexId)
+        }
+      }
     }
     return result
   }
