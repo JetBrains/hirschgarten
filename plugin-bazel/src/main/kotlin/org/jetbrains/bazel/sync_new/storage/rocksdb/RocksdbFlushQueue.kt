@@ -69,9 +69,11 @@ class RocksdbFlushQueue(
           }
           batch.clear()
         }
-      } catch (ex: Throwable) {
+      }
+      catch (ex: Throwable) {
         ex.printStackTrace()
-      } catch (_: InterruptedException) {
+      }
+      catch (_: InterruptedException) {
         Thread.currentThread().interrupt()
         break
       }
@@ -103,15 +105,20 @@ class RocksdbFlushQueue(
   }
 
   private fun <K : Any, V : Any> handleStoreBatch(store: RocksdbKVStore<K, V>, operations: ArrayDeque<FlushOperation>) {
+    if (operations.isEmpty()) {
+      return
+    }
     WriteBatch().use { batch ->
       while (operations.isNotEmpty()) {
         val operation = operations.removeFirst()
         when (operation) {
           is FlushOperation.Barrier<*, *> -> {
             operation as FlushOperation.Barrier<K, V>
+            db.write(WRITE_OPTIONS, batch)
+            batch.clear()
             handleStoreBatch(operation.store, operations)
             operation.callback()
-            break
+            return
           }
 
           is FlushOperation.FlushDirty<*, *> -> {
@@ -125,14 +132,15 @@ class RocksdbFlushQueue(
                   keyBuf.flip()
                   store.valueCodec.encode(UnsafeCodecContext, valueBuf, action.value)
                   valueBuf.flip()
-                  batch.put(keyBuf.buffer, valueBuf.buffer)
+                  batch.put(operation.store.cfHandle, keyBuf.buffer, valueBuf.buffer)
                 }
               }
+
               is KeyAction.Remove<K, V> -> {
                 UnsafeByteBufferObjectPool.use { keyBuf ->
                   store.keyCodec.encode(UnsafeCodecContext, keyBuf, operation.key)
                   keyBuf.flip()
-                  batch.delete(keyBuf.buffer)
+                  batch.delete(operation.store.cfHandle, keyBuf.buffer)
                 }
               }
             }
