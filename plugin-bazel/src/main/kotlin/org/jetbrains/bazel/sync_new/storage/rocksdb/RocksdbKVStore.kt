@@ -202,7 +202,9 @@ class RocksdbKVStore<K : Any, V : Any>(
     private var nextEntry: Pair<K, V?>? = null
 
     override fun hasNext(): Boolean {
-      if (nextEntry != null) return true
+      if (nextEntry != null) {
+        return true
+      }
       return advance()
     }
 
@@ -224,7 +226,9 @@ class RocksdbKVStore<K : Any, V : Any>(
       // yield first, not-yielded dirty put
       while (dirtyKeysIter.hasNext()) {
         val (k, d) = dirtyKeysIter.next()
-        if (!yielded.add(k)) continue
+        if (!yielded.add(k)) {
+          continue
+        }
 
         when (d) {
           is Dirty.Put<V> -> {
