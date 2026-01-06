@@ -3,7 +3,7 @@ package org.jetbrains.bazel.sync_new.storage.util
 import java.util.concurrent.TimeUnit
 
 internal object UnsafeByteBufferObjectPool {
-  val pool = BoundedBlockingObjectPool(maxSize = 64) { UnsafeByteBufferCodecBuffer.allocateUnsafe(1024 * 1024) }
+  val pool = BoundedBlockingObjectPool(maxSize = 64) { UnsafeByteBufferCodecBuffer.allocateUnsafe(size = 1024 * 1024) }
 
   fun acquire(): UnsafeByteBufferCodecBuffer {
     val buffer = pool.acquire(100, TimeUnit.MILLISECONDS) ?: error("No buffers available")
