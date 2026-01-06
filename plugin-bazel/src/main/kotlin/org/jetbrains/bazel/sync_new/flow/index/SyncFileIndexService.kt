@@ -8,7 +8,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.codec.ofInt
-import org.jetbrains.bazel.sync_new.codec.ofSet
+import org.jetbrains.bazel.sync_new.codec.ofMutableSet
 import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.flow.SyncDiff
 import org.jetbrains.bazel.sync_new.flow.SyncStoreService
@@ -31,9 +31,9 @@ class SyncFileIndexService(
   private val file2TargetId: One2ManyIndex<HashValue128, Int> = project.syncIndexService.createOne2ManyIndex(
     "file2TargetIndex",
   ) { name, ctx ->
-    ctx.createKVStore<HashValue128, Set<Int>>(name, StorageHints.USE_PAGED_STORE)
+    ctx.createKVStore<HashValue128, MutableSet<Int>>(name, StorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
-      .withValueCodec { ofSet(ofInt()) }
+      .withValueCodec { ofMutableSet(ofInt()) }
       .build()
   }
 
