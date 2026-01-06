@@ -19,41 +19,40 @@ import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import java.io.RandomAccessFile
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.exists
 
-class InMemoryStorageContext(
+open class InMemoryStorageContext(
   internal val project: Project,
-  private val disposable: Disposable,
+  internal val disposable: Disposable,
 ) : StorageContext, LifecycleStoreContext, PersistentStoreOwner, Disposable {
   private val stores: MutableMap<String, FlatPersistentStore> = HashMap()
   private val contents: MutableMap<String, UnsafeByteBufferCodecBuffer> = HashMap()
   private val lock = Any()
-  private val file = project.getProjectDataPath("bazel-storage.dat")
+  private val file = getSaveFile()
 
   init {
     Disposer.register(disposable, this)
+    if (file.exists()) {
+      try {
+        RandomAccessFile(file.toFile(), "r").use { handle ->
+          val buffer = UnsafeByteBufferCodecBuffer.allocateUnsafe(handle.length().toInt())
+          handle.seek(0)
+          handle.channel.read(buffer.buffer)
+          buffer.buffer.flip()
 
-    synchronized(lock) {
-      if (file.exists()) {
-        try {
-          RandomAccessFile(file.toFile(), "r").use { handle ->
-            val buffer = UnsafeByteBufferCodecBuffer.allocateUnsafe(handle.length().toInt())
-            handle.seek(0)
-            handle.channel.read(buffer.buffer)
-            buffer.buffer.flip()
-
+          val size = buffer.readVarInt()
+          for (n in 0 until size) {
+            val storeName = buffer.readString()
             val size = buffer.readVarInt()
-            for (n in 0 until size) {
-              val storeName = buffer.readString()
-              val size = buffer.readVarInt()
-              val buffer = buffer.readBuffer(size)
-              contents[storeName] = UnsafeByteBufferCodecBuffer(buffer)
-            }
+            val buffer = buffer.readBuffer(size)
+            contents[storeName] = UnsafeByteBufferCodecBuffer(buffer)
           }
-        } catch (e: Throwable) {
-          Files.deleteIfExists(file)
-          logger<InMemoryStorageContext>().warn("Failed to load in-memory storage", e)
         }
+      }
+      catch (e: Throwable) {
+        Files.deleteIfExists(file)
+        logger<InMemoryStorageContext>().warn("Failed to load in-memory storage", e)
       }
     }
   }
@@ -120,7 +119,8 @@ class InMemoryStorageContext(
       if (buffer != null) {
         try {
           store.read(UnsafeCodecContext, buffer)
-        } catch (e: Throwable) {
+        }
+        catch (e: Throwable) {
           logger<InMemoryStorageContext>().warn("Failed to read store ${store.name}", e)
         }
       }
@@ -139,5 +139,9 @@ class InMemoryStorageContext(
 
   override fun dispose() {
     save(force = true)
+  }
+
+  protected open fun getSaveFile(): Path {
+    return project.getProjectDataPath("bazel-storage.dat")
   }
 }
