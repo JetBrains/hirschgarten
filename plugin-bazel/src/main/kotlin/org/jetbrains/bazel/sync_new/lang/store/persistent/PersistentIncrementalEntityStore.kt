@@ -73,7 +73,7 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
   override fun createEntity(resourceId: R, creator: IncrementalEntityCreator<E>): E {
     val id = getOrCreateIdFromResourceId(resourceId)
     return resourceId2EntityStore.computeIfAbsent(id) { creator.create(id) }
-      ?: error("Failed to create entity")
+           ?: error("Failed to create entity")
   }
 
   override fun modifyEntity(resourceId: R, modifier: (E) -> E): E? {
@@ -84,7 +84,8 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     return resourceId2EntityStore.compute(id) { _, v ->
       if (v == null) {
         null
-      } else {
+      }
+      else {
         modifier(v)
       }
     }
@@ -150,7 +151,7 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     if (fromId == EMPTY_ID || toId == EMPTY_ID) {
       return
     }
-    metadataStore.modify {
+    metadataStore.mutate {
       val successors = it.id2Successors.computeIfAbsent(fromId) { IntArrayList() }
       if (!successors.contains(toId)) {
         successors.add(toId)
@@ -159,11 +160,17 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
       if (!predecessors.contains(fromId)) {
         predecessors.add(fromId)
       }
-      it
     }
   }
 
   override fun getAllEntities(): Sequence<E> = resourceId2EntityStore.values().asClosingSequence()
+
+  //override fun getAllEntities(): Sequence<E> {
+  //  return id2Resource.keys()
+  //    .use { iter ->
+  //      iter.asSequence().mapNotNull { id -> resourceId2EntityStore[id] }
+  //    }
+  //}
 
   override fun getTransitiveDependants(resourceId: R): Sequence<R> {
     val id = getIdFromResourceId(resourceId)
