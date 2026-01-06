@@ -18,6 +18,7 @@ import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.WildcardFileDiff
+import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.put
 import org.jetbrains.bazel.sync_new.storage.remove
 import org.jetbrains.bazel.sync_new.storage.set
@@ -65,9 +66,9 @@ class SyncVFSBuildFileProcessor {
 
     // remove all targets belonging to specific BUILD file
     for (file in diff.removed) {
-      val removed = ctx.storage.build2Targets.remove(file.path) ?: continue
+      val removed = ctx.storage.build2Targets.remove(hash(file.path)) ?: continue
       for (label in removed) {
-        ctx.storage.target2Build.remove(label)
+        ctx.storage.target2Build.remove(hash(label))
       }
       removedTargets += removed
     }
@@ -77,20 +78,20 @@ class SyncVFSBuildFileProcessor {
       val newTargets = targets[changed.path]
         ?.map { Label.parse(it.name) }
         ?.toSet() ?: emptySet()
-      val oldTargets = ctx.storage.build2Targets[changed.path]
+      val oldTargets = ctx.storage.build2Targets[hash(changed.path)]
         ?.toSet() ?: emptySet()
 
       for (target in newTargets + oldTargets) {
         when {
           target in oldTargets && target !in newTargets -> {
             removedTargets.add(target)
-            ctx.storage.target2Build.remove(target)
-            ctx.storage.build2Targets.remove(changed.path, target)
+            ctx.storage.target2Build.remove(hash(target))
+            ctx.storage.build2Targets.remove(hash(changed.path), target)
           }
           target !in oldTargets && target in newTargets -> {
             addedTargets.add(target)
-            ctx.storage.target2Build.put(target, changed.path)
-            ctx.storage.build2Targets.put(changed.path, target)
+            ctx.storage.target2Build.put(hash(target), changed.path)
+            ctx.storage.build2Targets.put(hash(changed.path), target)
           }
           else -> changedTargets.add(target)
         }
@@ -100,8 +101,8 @@ class SyncVFSBuildFileProcessor {
     for (added in diff.added) {
       val newTargets = targets[added.path]?.map { Label.parse(it.name) } ?: continue
       for (target in newTargets) {
-        ctx.storage.target2Build[target] = added.path
-        ctx.storage.build2Targets.put(added.path, target)
+        ctx.storage.target2Build[hash(target)] = added.path
+        ctx.storage.build2Targets.put(hash (added.path), target)
         addedTargets += target
       }
     }
