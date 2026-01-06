@@ -187,9 +187,9 @@ class RocksdbKVStore<K : Any, V : Any>(
 
   override fun iterator(): CloseableIterator<Pair<K, V>> = createIter(useValues = true) { k, v -> Pair(k, v!!) }
 
-  private fun <T> createIter(
+  private inline fun <T> createIter(
     useValues: Boolean,
-    transform: (k: K, v: V?) -> T,
+    crossinline transform: (k: K, v: V?) -> T,
   ): CloseableIterator<T> = object : CloseableIterator<T> {
 
     // snapshot of dirty overlay at iterator creation time
