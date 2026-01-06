@@ -11,6 +11,7 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import java.nio.file.Files
+import java.nio.file.LinkOption
 import java.nio.file.Path
 
 object FastFileToLabelResolver {
@@ -59,7 +60,7 @@ object FastFileToLabelResolver {
 
     for (name in BUILD_FILES) {
       val path = path.resolve(name)
-      if (Files.exists(path) && Files.isRegularFile(path)) {
+      if (Files.exists(path, LinkOption.NOFOLLOW_LINKS) && Files.isRegularFile(path)) {
         return true
       }
     }
