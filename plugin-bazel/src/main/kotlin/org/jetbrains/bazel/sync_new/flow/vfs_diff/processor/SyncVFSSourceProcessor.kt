@@ -27,6 +27,7 @@ import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFileContributor
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.WildcardFileDiff
+import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.put
 import java.nio.file.Path
 
@@ -40,14 +41,14 @@ class SyncVFSSourceProcessor {
       val target2Sources = mutableMapOf<Label, MutableSet<Path>>()
       // populate with all target sources
       for ((source, targets) in sources) {
-        ctx.storage.source2Target.put(source, targets)
+        ctx.storage.source2Target.put(hash(source), targets)
         // use nested foreach to use multimap put semantics
         for (target in targets) {
           target2Sources.computeIfAbsent(target) { mutableSetOf() }.add(source)
         }
       }
       for ((target, sources) in target2Sources) {
-        ctx.storage.target2Source.put(target, sources)
+        ctx.storage.target2Source.put(hash(target), sources)
       }
       return SyncColdDiff()
     }
@@ -55,10 +56,10 @@ class SyncVFSSourceProcessor {
     val changed = mutableSetOf<Label>()
 
     for (remove in diff.removed) {
-      val targets = ctx.storage.source2Target.remove(remove.path) ?: continue
+      val targets = ctx.storage.source2Target.remove(hash(remove.path)) ?: continue
       changed += targets
       for (target in targets) {
-        ctx.storage.target2Source.remove(target)
+        ctx.storage.target2Source.remove(hash(target))
       }
     }
 
@@ -79,8 +80,8 @@ class SyncVFSSourceProcessor {
         if (ctx.flags.useFileChangeBasedInvalidation || ctx.scope.build) {
           flags.put(target, SyncDiffFlags.FORCE_INVALIDATION)
         }
-        ctx.storage.source2Target.put(source, target)
-        ctx.storage.target2Source.compute(target) { _, v ->
+        ctx.storage.source2Target.put(hash(source), target)
+        ctx.storage.target2Source.compute(hash(target)) { _, v ->
           if (v == null) {
             mutableSetOf()
           } else {
