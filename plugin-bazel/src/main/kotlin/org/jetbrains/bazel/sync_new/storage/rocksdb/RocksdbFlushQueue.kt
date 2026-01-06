@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.sync_new.storage.rocksdb
 
-import com.intellij.openapi.Disposable
-import com.intellij.openapi.util.Disposer
 import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferObjectPool
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
+import org.rocksdb.FlushOptions
 import org.rocksdb.RocksDB
 import org.rocksdb.WriteBatch
 import org.rocksdb.WriteOptions
@@ -16,8 +15,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 class RocksdbFlushQueue(
   private val db: RocksDB,
-  private val disposable: Disposable,
-) : Disposable {
+) : AutoCloseable {
   companion object {
     private const val QUEUE_POLL_TIMEOUT = 100L
     private const val FLUSH_BATCH_SIZE = 1024
@@ -36,8 +34,8 @@ class RocksdbFlushQueue(
     val thread = Thread { task() }
     thread.name = "bazel rocksdb flush queue"
     thread.start()
-    Disposer.register(disposable, this)
   }
+
 
   fun enqueue(operation: FlushOperation) {
     val key = when (operation) {
@@ -49,13 +47,14 @@ class RocksdbFlushQueue(
 
   private fun task() {
     val batch = ReferenceArrayList<FlushOperation>(FLUSH_BATCH_SIZE)
+    var shutdown = false
     while (running.get()) {
       try {
         val operation = queue.poll(QUEUE_POLL_TIMEOUT, TimeUnit.MILLISECONDS)
         if (operation == null) {
           if (batch.isNotEmpty()) {
             if (handleBatch(batch)) {
-              break
+              shutdown = true
             }
             batch.clear()
           }
@@ -65,9 +64,12 @@ class RocksdbFlushQueue(
         queue.drainTo(batch, FLUSH_BATCH_SIZE - batch.size)
         if (batch.size >= FLUSH_BATCH_SIZE) {
           if (handleBatch(batch)) {
-            break
+            shutdown = true
           }
           batch.clear()
+        }
+        if (shutdown) {
+          break
         }
       }
       catch (ex: Throwable) {
@@ -101,6 +103,13 @@ class RocksdbFlushQueue(
     for ((store, ops) in operationByStore) {
       handleStoreBatch(store, ops)
     }
+    val cfFamilies = operationByStore.keys
+      .map { it.cfHandle }
+      .toList()
+    val opts = FlushOptions()
+      .setWaitForFlush(true)
+      .setAllowWriteStall(true)
+    opts.use { opts -> db.flush(opts, cfFamilies) }
     return shutdown
   }
 
@@ -118,7 +127,6 @@ class RocksdbFlushQueue(
             batch.clear()
             handleStoreBatch(operation.store, operations)
             operation.callback()
-            return
           }
 
           is FlushOperation.FlushDirty<*, *> -> {
@@ -161,7 +169,7 @@ class RocksdbFlushQueue(
     return shutdownLatch.await(time, unit)
   }
 
-  override fun dispose() {
+  override fun close() {
     shutdown(1, TimeUnit.MINUTES)
   }
 }

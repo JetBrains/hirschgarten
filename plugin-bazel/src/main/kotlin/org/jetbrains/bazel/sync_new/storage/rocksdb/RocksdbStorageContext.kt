@@ -29,6 +29,7 @@ import org.rocksdb.CompactionStyle
 import org.rocksdb.ComparatorOptions
 import org.rocksdb.CompressionType
 import org.rocksdb.DBOptions
+import org.rocksdb.FlushOptions
 import org.rocksdb.IndexType
 import org.rocksdb.LRUCache
 import org.rocksdb.Options
@@ -55,18 +56,17 @@ class RocksdbStorageContext(
       .setVerifyChecksums(false)
       .setFillCache(true) // Enable block cache for hot data
       .setReadaheadSize(0) // No readahead for random access
-    
+
     // Optimized for sequential scans (graph traversal)
     private val SCAN_READ_OPTIONS = ReadOptions()
       .setVerifyChecksums(false)
       .setFillCache(false) // Don't pollute cache during scans
       .setReadaheadSize(2 * 1024 * 1024) // 2MB readahead for sequential access
-    
+
     private val WRITE_OPTIONS = WriteOptions()
   }
 
   private class FlatStorageHandler(
-    val storage: FlatPersistentStore,
     val key: ByteArray,
   )
 
@@ -74,15 +74,16 @@ class RocksdbStorageContext(
   private val columnFamilyCache: MutableMap<String, ColumnFamilyHandle> = mutableMapOf()
   internal val db: RocksDB
   internal val flushQueue: RocksdbFlushQueue
-  private val storages: MutableMap<FlatPersistentStore, FlatStorageHandler> = mutableMapOf()
+  private val flatStorages: MutableMap<FlatPersistentStore, FlatStorageHandler> = mutableMapOf()
   private val inMemoryColumn: ColumnFamilyHandle
 
   init {
+    Disposer.register(disposable, this)
     val options = Options()
       .setCreateIfMissing(true)
       .setCreateMissingColumnFamilies(true)
       // Write settings (balanced for graph ingestion)
-      .setWriteBufferSize(64 * 1024 * 1024) // 256MB memtable
+      .setWriteBufferSize(64 * 1024 * 1024) // 64MB memtable
       .setMaxWriteBufferNumber(4)
       .setMinWriteBufferNumberToMerge(1)
       .setAllowConcurrentMemtableWrite(true)
@@ -124,7 +125,7 @@ class RocksdbStorageContext(
           .setIndexType(IndexType.kTwoLevelIndexSearch)
           .setPartitionFilters(true)
           .setOptimizeFiltersForMemory(false) // Optimize for speed, not memory
-          .setMetadataBlockSize(8 * 1024)
+          .setMetadataBlockSize(8 * 1024),
       )
 
     val dbPath = project.getProjectDataPath("bazel-rocksdb.db")
@@ -135,9 +136,8 @@ class RocksdbStorageContext(
     for (handle in cfHandles) {
       columnFamilyCache[handle.name.decodeToString()] = handle
     }
-    flushQueue = RocksdbFlushQueue(db = db, disposable = disposable)
+    flushQueue = RocksdbFlushQueue(db = db)
     inMemoryColumn = createColumnFamily("IN_MEMORY_STORE")
-    Disposer.register(disposable, this)
   }
 
   internal fun createColumnFamily(name: String, comparator: Comparator<ByteBuffer>? = null): ColumnFamilyHandle = synchronized(lock) {
@@ -147,8 +147,8 @@ class RocksdbStorageContext(
     }
 
     // Shared block cache across all column families for better memory utilization
-    val sharedBlockCache = LRUCache(128 * 1024 * 1024) // 512MB shared cache
-    
+    val sharedBlockCache = LRUCache(128 * 1024 * 1024) // 128MB shared cache
+
     val options = ColumnFamilyOptions()
       .setCompressionType(CompressionType.NO_COMPRESSION)
       .setCompactionStyle(CompactionStyle.LEVEL)
@@ -177,7 +177,7 @@ class RocksdbStorageContext(
           .setPartitionFilters(true) // Partition filters for better memory efficiency
           .setMetadataBlockSize(8 * 1024) // Larger metadata blocks
           .setCacheIndexAndFilterBlocksWithHighPriority(true) // Prioritize index/filter in cache
-          .setOptimizeFiltersForMemory(true)
+          .setOptimizeFiltersForMemory(true),
       )
 
     if (comparator != null) {
@@ -191,7 +191,8 @@ class RocksdbStorageContext(
         override fun compare(a: ByteBuffer, b: ByteBuffer): Int = comparator.compare(a, b)
       }
       options.setComparator(comparator)
-    } else {
+    }
+    else {
       options.setComparator(BuiltinComparator.BYTEWISE_COMPARATOR)
     }
 
@@ -210,8 +211,7 @@ class RocksdbStorageContext(
   ): KVStoreBuilder<*, K, V> = when {
     StorageHints.USE_PAGED_STORE in hints -> RocksdbKVStoreBuilder(
       owner = this,
-      name = name,
-      disposable = disposable,
+      name = name
     )
 
     else -> InMemoryKVStoreBuilder(owner = this, name = name)
@@ -231,7 +231,7 @@ class RocksdbStorageContext(
   ): FlatStoreBuilder<T> = InMemoryFlatStoreBuilder(owner = this, name = name)
 
   override fun save(force: Boolean) {
-    for ((storage, handler) in storages) {
+    for ((storage, handler) in flatStorages) {
       if (!force && storage is PersistentStoreWithModificationMarker) {
         if (!storage.wasModified) {
           return
@@ -245,8 +245,8 @@ class RocksdbStorageContext(
 
   override fun register(store: FlatPersistentStore) {
     synchronized(lock) {
-      val handler = FlatStorageHandler(store, getInMemoryStorageKey(store))
-      storages.putIfAbsent(store, handler)
+      val handler = FlatStorageHandler(key = getInMemoryStorageKey(store))
+      flatStorages.putIfAbsent(store, handler)
 
       val key = getInMemoryStorageKey(store)
       val value = db.get(READ_OPTIONS, key)
@@ -259,7 +259,7 @@ class RocksdbStorageContext(
 
   override fun unregister(store: FlatPersistentStore) {
     synchronized(lock) {
-      val handler = storages.remove(store) ?: return
+      val handler = flatStorages.remove(store) ?: return
       val buffer = UnsafeByteBufferCodecBuffer.allocateHeap()
       store.write(UnsafeCodecContext, buffer)
       db.put(WRITE_OPTIONS, handler.key, buffer.buffer.array())
@@ -268,9 +268,20 @@ class RocksdbStorageContext(
 
   override fun dispose() {
     save(force = true)
+    flushQueue.close()
+    flush()
     inMemoryColumn.close()
+    for (handle in columnFamilyCache.values) {
+      handle.close()
+    }
     db.close()
-    storages.clear()
+  }
+
+  private fun flush() {
+    val opts = FlushOptions()
+      .setWaitForFlush(true)
+      .setAllowWriteStall(true)
+    opts.use { opts -> db.flush(opts) }
   }
 
   private fun getInMemoryStorageKey(store: FlatPersistentStore): ByteArray =
