@@ -40,6 +40,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
     api_version = language_version
     associates = getattr(rule_attrs, "associates", [])
     associates_labels = [str(associate.label) for associate in associates]
+    module_name = getattr(provider, "module_name", None)
 
     # Sometimes, associate targets only export the necessary dependencies for associating.
     # This workaround provides additional exports from the direct dependencies to be used as associates.
@@ -70,6 +71,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
         kotlinc_opts = kotlinc_opts,
         stdlibs = stdlibs,
         kotlinc_plugin_infos = kt_compiler_plugin_infos,
+        module_name = module_name,
     )
 
     info_file = dict(kotlin_target_info = kotlin_target_info)
