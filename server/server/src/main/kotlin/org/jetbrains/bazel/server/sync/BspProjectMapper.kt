@@ -4,6 +4,8 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
@@ -19,6 +21,7 @@ import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.relativeToOrNull
 
 class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo: BspInfo) {
@@ -110,27 +113,25 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
   }
 
   private suspend fun getSubPackages(workspaceRoot: Path, workspaceContext: WorkspaceContext): Sequence<Path> {
-    val patterns = workspaceContext.targets.map { it.value.packagePath.toString() }.distinct()
+    val patterns = workspaceContext.targets.map { it.value.assumeResolved() }.distinct()
     val out = runBazelBuildfilesQuery(workspaceContext, patterns)
     val allPkgDirs =
       if (out.isBlank()) emptySequence()
       else out.lineSequence()
         .map { it.trim() }
         .filter { it.isNotEmpty() }
-        .mapNotNull { workspaceRoot.resolve(it).normalize().parent }
+        .mapNotNull { workspaceRoot.resolve(Label.parse(it).packagePath.toPath()).normalize() }
+        .map { if (it.isRegularFile()) it.parent else it }
     return allPkgDirs
   }
 
-  private suspend fun runBazelBuildfilesQuery(workspaceContext: WorkspaceContext, patterns: List<String>): String {
+  private suspend fun runBazelBuildfilesQuery(workspaceContext: WorkspaceContext, patterns: List<ResolvedLabel>): String {
     if (patterns.isEmpty()) return ""
-    fun norm(p: String): String {
-      val trimmed = p.trim()
-      val recursive = if (trimmed.endsWith("/...")) trimmed.dropLast(4) else trimmed
-      return if (recursive.startsWith("//")) recursive else "//$recursive"
+    val expr = buildString {
+      append("buildfiles(set(")
+      patterns.joinTo(this, separator = " ") { it.toString() }
+      append("))")
     }
-
-    val args = patterns.filter { it.isNotBlank() }.joinToString(" ") { norm(it) }
-    val expr = "buildfiles(set($args))"
     return BazelQueryRunner.runQuery(expr, bazelRunner, workspaceContext)
   }
 
