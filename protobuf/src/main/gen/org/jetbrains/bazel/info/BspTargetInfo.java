@@ -10692,6 +10692,18 @@ public final class BspTargetInfo {
      */
     org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
         int index);
+
+    /**
+     * <code>string module_name = 700;</code>
+     * @return The moduleName.
+     */
+    java.lang.String getModuleName();
+    /**
+     * <code>string module_name = 700;</code>
+     * @return The bytes for moduleName.
+     */
+    com.google.protobuf.ByteString
+        getModuleNameBytes();
   }
   /**
    * Protobuf type {@code bazelbsp.KotlinTargetInfo}
@@ -10714,6 +10726,7 @@ public final class BspTargetInfo {
           com.google.protobuf.LazyStringArrayList.emptyList();
       stdlibs_ = java.util.Collections.emptyList();
       kotlincPluginInfos_ = java.util.Collections.emptyList();
+      moduleName_ = "";
     }
 
     @java.lang.Override
@@ -10970,6 +10983,45 @@ public final class BspTargetInfo {
       return kotlincPluginInfos_.get(index);
     }
 
+    public static final int MODULE_NAME_FIELD_NUMBER = 700;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object moduleName_ = "";
+    /**
+     * <code>string module_name = 700;</code>
+     * @return The moduleName.
+     */
+    @java.lang.Override
+    public java.lang.String getModuleName() {
+      java.lang.Object ref = moduleName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        moduleName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string module_name = 700;</code>
+     * @return The bytes for moduleName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getModuleNameBytes() {
+      java.lang.Object ref = moduleName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        moduleName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -11001,6 +11053,9 @@ public final class BspTargetInfo {
       }
       for (int i = 0; i < kotlincPluginInfos_.size(); i++) {
         output.writeMessage(600, kotlincPluginInfos_.get(i));
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(moduleName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 700, moduleName_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -11041,6 +11096,9 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(600, kotlincPluginInfos_.get(i));
       }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(moduleName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(700, moduleName_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -11068,6 +11126,8 @@ public final class BspTargetInfo {
           .equals(other.getStdlibsList())) return false;
       if (!getKotlincPluginInfosList()
           .equals(other.getKotlincPluginInfosList())) return false;
+      if (!getModuleName()
+          .equals(other.getModuleName())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -11099,6 +11159,8 @@ public final class BspTargetInfo {
         hash = (37 * hash) + KOTLINC_PLUGIN_INFOS_FIELD_NUMBER;
         hash = (53 * hash) + getKotlincPluginInfosList().hashCode();
       }
+      hash = (37 * hash) + MODULE_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getModuleName().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -11250,6 +11312,7 @@ public final class BspTargetInfo {
           kotlincPluginInfosBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000020);
+        moduleName_ = "";
         return this;
       }
 
@@ -11318,6 +11381,9 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000008) != 0)) {
           kotlincOpts_.makeImmutable();
           result.kotlincOpts_ = kotlincOpts_;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.moduleName_ = moduleName_;
         }
       }
 
@@ -11447,6 +11513,11 @@ public final class BspTargetInfo {
             }
           }
         }
+        if (!other.getModuleName().isEmpty()) {
+          moduleName_ = other.moduleName_;
+          bitField0_ |= 0x00000040;
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -11521,6 +11592,11 @@ public final class BspTargetInfo {
                 }
                 break;
               } // case 4802
+              case 5602: {
+                moduleName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 5602
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -12382,6 +12458,78 @@ public final class BspTargetInfo {
           kotlincPluginInfos_ = null;
         }
         return kotlincPluginInfosBuilder_;
+      }
+
+      private java.lang.Object moduleName_ = "";
+      /**
+       * <code>string module_name = 700;</code>
+       * @return The moduleName.
+       */
+      public java.lang.String getModuleName() {
+        java.lang.Object ref = moduleName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          moduleName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string module_name = 700;</code>
+       * @return The bytes for moduleName.
+       */
+      public com.google.protobuf.ByteString
+          getModuleNameBytes() {
+        java.lang.Object ref = moduleName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          moduleName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string module_name = 700;</code>
+       * @param value The moduleName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModuleName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        moduleName_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string module_name = 700;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearModuleName() {
+        moduleName_ = getDefaultInstance().getModuleName();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string module_name = 700;</code>
+       * @param value The bytes for moduleName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModuleNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        moduleName_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -22039,48 +22187,49 @@ java.lang.String defaultValue) {
       "n_value\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022+\n\013" +
       "plugin_jars\030d \003(\0132\026.bazelbsp.FileLocatio" +
       "n\022>\n\026kotlinc_plugin_options\030\310\001 \003(\0132\035.baz" +
-      "elbsp.KotlincPluginOption\"\324\001\n\020KotlinTarg" +
+      "elbsp.KotlincPluginOption\"\352\001\n\020KotlinTarg" +
       "etInfo\022\030\n\020language_version\030d \001(\t\022\024\n\013api_" +
       "version\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014k" +
       "otlinc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026.b" +
       "azelbsp.FileLocation\022:\n\024kotlinc_plugin_i" +
       "nfos\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo" +
-      "\"\257\001\n\020PythonTargetInfo\022+\n\013interpreter\030\001 \001" +
-      "(\0132\026.bazelbsp.FileLocation\022\017\n\007version\030\002 " +
-      "\001(\t\022\017\n\007imports\030\003 \003(\t\022\031\n\021is_code_generato" +
-      "r\030\004 \001(\010\0221\n\021generated_sources\030\005 \003(\0132\026.baz" +
-      "elbsp.FileLocation\"\322\001\n\014GoTargetInfo\022\023\n\013i" +
-      "mport_path\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132" +
-      "\026.bazelbsp.FileLocation\0221\n\021generated_sou" +
-      "rces\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023ge" +
-      "nerated_libraries\030\004 \003(\0132\026.bazelbsp.FileL" +
-      "ocation\022\026\n\016library_labels\030\005 \003(\t\"N\n\022Proto" +
-      "bufTargetInfo\0228\n\017source_mappings\030\003 \003(\0132\037" +
-      ".bazelbsp.ProtobufSourceMapping\"X\n\025Proto" +
-      "bufSourceMapping\022\023\n\013import_path\030\001 \001(\t\022*\n" +
-      "\nproto_file\030\002 \001(\0132\026.bazelbsp.FileLocatio" +
-      "n\"\274\006\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001" +
-      "(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\0132\024" +
-      ".bazelbsp.Dependency\022\'\n\007sources\0302 \003(\0132\026." +
-      "bazelbsp.FileLocation\0221\n\021generated_sourc" +
-      "es\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\treso" +
-      "urces\030< \003(\0132\026.bazelbsp.FileLocation\022*\n\003e" +
-      "nv\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntry\022" +
-      "\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010" +
-      "\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_target_i" +
-      "nfo\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229\n\023j" +
-      "ava_toolchain_info\030\320\017 \001(\0132\033.bazelbsp.Jav" +
-      "aToolchainInfo\0225\n\021java_runtime_info\030\270\027 \001" +
-      "(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021scala_t" +
-      "arget_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTarget" +
-      "Info\0227\n\022kotlin_target_info\030\3306 \001(\0132\032.baze" +
-      "lbsp.KotlinTargetInfo\0227\n\022python_target_i" +
-      "nfo\030\300> \001(\0132\032.bazelbsp.PythonTargetInfo\022/" +
-      "\n\016go_target_info\030\340] \001(\0132\026.bazelbsp.GoTar" +
-      "getInfo\022;\n\024protobuf_target_info\030\260m \001(\0132\034" +
-      ".bazelbsp.ProtobufTargetInfo\032*\n\010EnvEntry" +
-      "\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org." +
-      "jetbrains.bazel.infob\006proto3"
+      "\022\024\n\013module_name\030\274\005 \001(\t\"\257\001\n\020PythonTargetI" +
+      "nfo\022+\n\013interpreter\030\001 \001(\0132\026.bazelbsp.File" +
+      "Location\022\017\n\007version\030\002 \001(\t\022\017\n\007imports\030\003 \003" +
+      "(\t\022\031\n\021is_code_generator\030\004 \001(\010\0221\n\021generat" +
+      "ed_sources\030\005 \003(\0132\026.bazelbsp.FileLocation" +
+      "\"\322\001\n\014GoTargetInfo\022\023\n\013import_path\030\001 \001(\t\022-" +
+      "\n\rsdk_home_path\030\002 \001(\0132\026.bazelbsp.FileLoc" +
+      "ation\0221\n\021generated_sources\030\003 \003(\0132\026.bazel" +
+      "bsp.FileLocation\0223\n\023generated_libraries\030" +
+      "\004 \003(\0132\026.bazelbsp.FileLocation\022\026\n\016library" +
+      "_labels\030\005 \003(\t\"N\n\022ProtobufTargetInfo\0228\n\017s" +
+      "ource_mappings\030\003 \003(\0132\037.bazelbsp.Protobuf" +
+      "SourceMapping\"X\n\025ProtobufSourceMapping\022\023" +
+      "\n\013import_path\030\001 \001(\t\022*\n\nproto_file\030\002 \001(\0132" +
+      "\026.bazelbsp.FileLocation\"\274\006\n\nTargetInfo\022\n" +
+      "\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*" +
+      "\n\014dependencies\030( \003(\0132\024.bazelbsp.Dependen" +
+      "cy\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.FileLocat" +
+      "ion\0221\n\021generated_sources\0303 \003(\0132\026.bazelbs" +
+      "p.FileLocation\022)\n\tresources\030< \003(\0132\026.baze" +
+      "lbsp.FileLocation\022*\n\003env\030F \003(\0132\035.bazelbs" +
+      "p.TargetInfo.EnvEntry\022\023\n\013env_inherit\030P \003" +
+      "(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspace_name" +
+      "\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132\027.bazel" +
+      "bsp.JvmTargetInfo\0229\n\023java_toolchain_info" +
+      "\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainInfo\0225\n\021" +
+      "java_runtime_info\030\270\027 \001(\0132\031.bazelbsp.Java" +
+      "RuntimeInfo\0225\n\021scala_target_info\030\240\037 \001(\0132" +
+      "\031.bazelbsp.ScalaTargetInfo\0227\n\022kotlin_tar" +
+      "get_info\030\3306 \001(\0132\032.bazelbsp.KotlinTargetI" +
+      "nfo\0227\n\022python_target_info\030\300> \001(\0132\032.bazel" +
+      "bsp.PythonTargetInfo\022/\n\016go_target_info\030\340" +
+      "] \001(\0132\026.bazelbsp.GoTargetInfo\022;\n\024protobu" +
+      "f_target_info\030\260m \001(\0132\034.bazelbsp.Protobuf" +
+      "TargetInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005v" +
+      "alue\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel.in" +
+      "fob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -22145,7 +22294,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_KotlinTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_KotlinTargetInfo_descriptor,
-        new java.lang.String[] { "LanguageVersion", "ApiVersion", "Associates", "KotlincOpts", "Stdlibs", "KotlincPluginInfos", });
+        new java.lang.String[] { "LanguageVersion", "ApiVersion", "Associates", "KotlincOpts", "Stdlibs", "KotlincPluginInfos", "ModuleName", });
     internal_static_bazelbsp_PythonTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable = new

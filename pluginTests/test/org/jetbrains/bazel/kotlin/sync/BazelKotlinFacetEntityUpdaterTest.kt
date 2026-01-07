@@ -6,8 +6,10 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.testFramework.runInEdtAndWait
+import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
@@ -21,12 +23,14 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 import kotlin.io.path.name
 
 class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
+
   @Test
   fun `should add KotlinFacet when given KotlinAddendum`() {
     runInEdtAndWait {
@@ -40,8 +44,9 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         KotlinBuildTarget(
           languageVersion = "1.8",
           apiVersion = "1.8",
-          kotlincOptions = listOf(),
+          kotlincOptions = listOf("-opt-in=com.example.ExperimentalApi"),
           associates = associates.map { Label.parse(it) },
+          moduleName = "kotlin-module",
           jvmBuildTarget =
             JvmBuildTarget(
               javaHome = javaHome,
@@ -82,6 +87,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
             KotlinAddendum(
               languageVersion = kotlinBuildTarget.languageVersion,
               apiVersion = kotlinBuildTarget.apiVersion,
+              moduleName = kotlinBuildTarget.moduleName,
               kotlincOptions = kotlinBuildTarget.kotlincOptions,
             ),
         )
@@ -105,6 +111,17 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
       facet.shouldNotBeNull()
       val retrievedFacetSettings = facet.configuration.settings
       retrievedFacetSettings.additionalVisibleModuleNames shouldBe associates
+      retrievedFacetSettings
+        .compilerArguments
+        .shouldBeInstanceOf<K2JVMCompilerArguments>()
+        .apply {
+          moduleName shouldBe "kotlin-module"
+          apiVersion shouldBe "1.8"
+          languageVersion shouldBe "1.8"
+          autoAdvanceLanguageVersion shouldBe false
+          autoAdvanceApiVersion shouldBe false
+          optIn.shouldNotBeNull() shouldHaveSingleElement "com.example.ExperimentalApi"
+        }
     }
   }
 
