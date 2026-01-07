@@ -698,15 +698,15 @@ http_archive(
 
 # SDK 253
 
-SDK_253_PLUGIN_REPOSITORY_VERSION = "253.22441.33"
+SDK_253_PLUGIN_REPOSITORY_VERSION = "253.29346.138"
 
-SDK_253_INTELLIJ_REPOSITORY_VERSION = "253.22441.33-EAP-SNAPSHOT"
+SDK_253_INTELLIJ_REPOSITORY_VERSION = "253.29346.138"
 
-SDK_253_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
+SDK_253_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
 IC_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
 
-IC_253_SHA = "0f81c61837be81623fd039459fa1cc00a18d57bead5d74102125b2a66b435a50"
+IC_253_SHA = "7a879267b0815964ee59d36ea2e42bcf8910330bd19cb8a8666271f632c9cd33"
 
 http_archive(
     name = "intellij_ce_2025_3",
@@ -717,7 +717,7 @@ http_archive(
 
 IC_253_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
 
-IC_253_SOURCES_SHA = "ad44bb6010d8da72e5c04cf27847d9d266929a14d044e3139d57f0a2003474ae"
+IC_253_SOURCES_SHA = "eceeae4daa9f5201ac090cf0ad5a23a4e1fdc44502ecccb852622cc5162ef9c8"
 
 http_jar(
     name = "intellij_ce_2025_3_sources",
@@ -770,7 +770,7 @@ http_jar(
 
 CODE_WITH_ME_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_253_SHA = "9dfb2603682c3f008f74c5b83b2750dc4a020ee7ed27e7b39672841fc4aba17c"
+CODE_WITH_ME_253_SHA = "90bc6817c4cb851c0cf7428f572c1a85df95a7da27a77bb6dbdf75503f96ba51"
 
 http_jar(
     name = "code_with_me_2025_3",
@@ -780,7 +780,7 @@ http_jar(
 
 CODE_WITH_ME_SPLIT_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_REPOSITORY_VERSION, SDK_253_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_SPLIT_253_SHA = "d02e1eb46814ac61f571b57ac9bb4412fe80ced382b2561ba30bc93d03abbe13"
+CODE_WITH_ME_SPLIT_253_SHA = "d4c16e84fec997f1a308a34ce37778536bde8b9178a69ce81ef36a5790565002"
 
 http_jar(
     name = "code_with_me_split_2025_3",
