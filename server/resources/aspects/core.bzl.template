@@ -33,11 +33,15 @@ def _is_analysis_test(target):
     return AnalysisTestResultInfo in target
 
 def files_to_list(source):
+    # While the attributes 'srcs', 'deps', etc., are usually used for targets (includuding source files),
+    # this assumption can break if custom rules are used. Even if we cannot fully support such rules, we
+    # should ignore them without erroring out.
+    if type(source) != "Target":
+        return []
     files = source[DefaultInfo].files
     if files == None:
         return []
-    else:
-        return files.to_list()
+    return files.to_list()
 
 def _bsp_target_info_aspect_impl(target, ctx):
     if target.label.name.endswith(".semanticdb") or _is_analysis_test(target):
