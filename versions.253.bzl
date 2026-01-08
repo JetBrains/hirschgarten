@@ -1,11 +1,11 @@
 """Release versions of plugins. The file is swaped with versions.bzl on CI during release"""
 
-INTELLIJ_BAZEL_VERSION = "2025.3.2"
+INTELLIJ_BAZEL_VERSION = "2025.3.3"
 
 PLATFORM_VERSION = "253"
 
 # make sure to always choose the lowest among different benchmark build numbers
-SINCE_VERSION = "253.29346.138"
+SINCE_VERSION = "253.28294"
 UNTIL_VERSION = "253.*"
 
 BENCHMARK_BUILD_NUMBER = "253.22441.33"
