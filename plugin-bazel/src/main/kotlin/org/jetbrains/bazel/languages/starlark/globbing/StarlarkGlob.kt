@@ -404,11 +404,7 @@ object StarlarkGlob {
       val childrenSnapshots = readAction {
         ProgressManager.checkCanceled()
         val children = getChildren(base) ?: return@readAction null
-        val snapshots = ArrayList<Triple<VirtualFile, String, Boolean>>(children.size)
-        for (child in children) {
-          snapshots.add(Triple(child, child.name, child.isDirectory))
-        }
-        snapshots
+        children.map { child -> Triple(child, child.name, child.isDirectory) }
       } ?: return tasks.awaitAll().flatten().toSet()
 
       for ((child, childName, childIsDir) in childrenSnapshots) {
