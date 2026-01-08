@@ -416,7 +416,7 @@ class RocksdbKVStore<K : Any, V : Any>(
     }
   }
 
-  private inline fun <T> useWriteLock(key: K, acquire: Boolean, op: () -> T): T {
+  private inline fun <T> useWriteLock(key: K, acquire: Boolean, crossinline op: () -> T): T {
     if (!acquire) {
       return op()
     }
