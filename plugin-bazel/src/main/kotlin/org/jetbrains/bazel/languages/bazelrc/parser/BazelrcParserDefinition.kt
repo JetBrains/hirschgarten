@@ -17,8 +17,6 @@ import org.jetbrains.bazel.languages.bazelrc.lexer.BazelrcLexer
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
 
 class BazelrcParserDefinition : ParserDefinition {
-  private val file = IFileElementType(BazelrcLanguage)
-
   override fun createLexer(project: Project?): Lexer = BazelrcLexer()
 
   override fun createParser(project: Project?): PsiParser =
@@ -38,3 +36,5 @@ class BazelrcParserDefinition : ParserDefinition {
 
   override fun createFile(viewProvider: FileViewProvider): PsiFile = BazelrcFile(viewProvider)
 }
+
+private val file = IFileElementType(BazelrcLanguage)
