@@ -115,14 +115,12 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
   private suspend fun getSubPackages(workspaceRoot: Path, workspaceContext: WorkspaceContext): Sequence<Path> {
     val patterns = workspaceContext.targets.map { it.value.assumeResolved() }.distinct()
     val out = runBazelBuildfilesQuery(workspaceContext, patterns)
-    val allPkgDirs =
-      if (out.isBlank()) emptySequence()
-      else out.lineSequence()
+    if (out.isBlank()) return emptySequence()
+    return out.lineSequence()
         .map { it.trim() }
         .filter { it.isNotEmpty() }
         .mapNotNull { workspaceRoot.resolve(Label.parse(it).packagePath.toPath()).normalize() }
         .map { if (it.isRegularFile()) it.parent else it }
-    return allPkgDirs
   }
 
   private suspend fun runBazelBuildfilesQuery(workspaceContext: WorkspaceContext, patterns: List<ResolvedLabel>): String {
