@@ -17,10 +17,6 @@ java_library(
             "@code_with_me_2025_2//jar",
             "@code_with_me_split_2025_2//jar",
         ],
-        "intellij-2025.3": [
-            "@code_with_me_2025_3//jar",
-            "@code_with_me_split_2025_3//jar",
-        ],
         "default": [],
     }),
 )

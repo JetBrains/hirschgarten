@@ -16,7 +16,6 @@ java_library(
     exports = select_for_plugin_api({
         "intellij-2025.1": ["@protoedit_2025_1//:protoedit"],
         "intellij-2025.2": ["@protoedit_2025_2//:protoedit"],
-        "intellij-2025.3": ["@protoedit_2025_3//:protoedit"],
         "default": [],
     }),
 )
