@@ -77,14 +77,9 @@ suspend fun calculateRepoMapping(
     moduleCanonicalNameToPath[canonicalName] = repoPath
   }
 
-  val apparentRepoNameToCanonicalName =
-    BidirectionalMap
-      .getTypedInstance<String, String>()
-      .apply { putAll(moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName) }
-
   return BzlmodRepoMapping(
     moduleCanonicalNameToLocalPath,
-    apparentRepoNameToCanonicalName,
+    moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
     moduleCanonicalNameToPath,
   )
 }
