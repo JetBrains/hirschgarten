@@ -18,17 +18,21 @@ import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.util.concurrency.annotations.RequiresBlockingContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flattenMerge
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toSet
+import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import java.util.function.Predicate
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 
 /**
  * Implementation of a subset of UNIX-style file globbing, expanding "*" and "?" as wildcards, but
@@ -63,7 +67,8 @@ object StarlarkGlob {
   fun matches(pattern: String, str: String): Boolean =
     try {
       matches(pattern, str, null)
-    } catch (_: PatternSyntaxException) {
+    }
+    catch (_: PatternSyntaxException) {
       false
     }
 
@@ -143,7 +148,8 @@ object StarlarkGlob {
             if (len > i + 2 && pattern[i + 2] == '/') {
               // We have '**/' -- skip the '/'.
               toIncrement = 2
-            } else if (len == i + 2 && i > 0 && pattern[i - 1] == '/') {
+            }
+            else if (len == i + 2 && i > 0 && pattern[i - 1] == '/') {
               // We have '/**' -- remove the '/'.
               regexp.delete(regexp.length - 1, regexp.length)
             }
@@ -176,7 +182,7 @@ object StarlarkGlob {
 
     /** Creates a glob builder with the given base path.  */
     init {
-      this.pathFilter = Predicate { file: VirtualFile? -> true }
+      this.pathFilter = Predicate { true }
     }
 
     /**
@@ -283,7 +289,7 @@ object StarlarkGlob {
    */
   private class GlobVisitor(
     private val excludeDirectories: Boolean,
-    private val dirPred: Predicate<VirtualFile>
+    private val dirPred: Predicate<VirtualFile>,
   ) {
     private val cache: Cache<String, Pattern> =
       CacheBuilder
@@ -309,28 +315,28 @@ object StarlarkGlob {
      * exclude pattern segment contains `**` or if any include pattern segment
      * contains `**` but not equal to it.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun globAsync(
       base: VirtualFile,
       patterns: Collection<String>,
-    ): Set<VirtualFile> = coroutineScope {
+    ): Set<VirtualFile> {
       val baseIsDirectory = readAction { base.isDirectory }
 
       // We do a dumb loop, even though it will likely duplicate work
       // (e.g., readdir calls). In order to optimize, we would need
       // to keep track of which patterns shared sub-patterns and which did not
       // (for example consider the glob [*/*.java, sub/*.java, */*.txt]).
-      val deferredResults = checkAndSplitPatterns(patterns).map { splitPattern ->
-        async {
+      return checkAndSplitPatterns(patterns)
+        .asFlow()
+        .flatMapMerge { splitPattern ->
           reallyGlob(
             base,
             baseIsDirectory,
             splitPattern,
             0,
           )
-        }
-      }
-
-      deferredResults.flatMapTo(mutableSetOf()) { it.await() }
+        }.flattenMerge()
+        .toSet()
     }
 
     /**
@@ -339,46 +345,44 @@ object StarlarkGlob {
      * <pre>
      * reallyGlob base []     = { base }
      * reallyGlob base [x:xs] = union { reallyGlob(f, xs) | f results "base/x" }
-     </pre> *
+    </pre> *
      */
-    suspend fun CoroutineScope.reallyGlob(
+    fun reallyGlob(
       base: VirtualFile,
       baseIsDirectory: Boolean,
       patternParts: Array<String>,
       idx: Int,
-    ): Set<VirtualFile> {
+    ): Flow<Flow<VirtualFile>> = flow {
       checkCanceled()
       if (baseIsDirectory && !readAction { dirPred.test(base) }) {
-        return emptySet()
+        return@flow
       }
 
       if (idx == patternParts.size) { // Base case.
-        return if (!(excludeDirectories && baseIsDirectory)) {
-          setOf(base)
-        } else {
-          emptySet()
+        if (!(excludeDirectories && baseIsDirectory)) {
+          emit(flowOf(base))
         }
+        return@flow
       }
 
       if (!baseIsDirectory) {
         // Nothing to find here.
-        return emptySet()
+        return@flow
       }
 
-      val tasks = mutableListOf<Deferred<Set<VirtualFile>>>()
       val pattern = patternParts[idx]
 
       // ** is special: it can match nothing at all.
       // For example, x/** matches x, **/y matches y, and x/**/y matches x/y.
       if ("**" == pattern) {
-        tasks += async {
+        emitAll(
           reallyGlob(
             base,
             baseIsDirectory,
             patternParts,
             idx + 1,
-          )
-        }
+          ),
+        )
       }
 
       if (!pattern.contains("*") && !pattern.contains("?")) {
@@ -386,61 +390,62 @@ object StarlarkGlob {
         val (child, childIsDir, childIsFile) = readAction {
           val child = base.findChild(pattern) ?: return@readAction null
           Triple(child, child.isDirectory, child.isFile)
-        } ?: return tasks.awaitAll().flatten().toSet()
+        } ?: return@flow
         if (!childIsDir && !childIsFile) {
           // The file is a dangling symlink, fifo, does not exist, etc.
-          return tasks.awaitAll().flatten().toSet()
+          return@flow
         }
-
-        val res = reallyGlob(
-          child,
-          childIsDir,
-          patternParts,
-          idx + 1,
+        emitAll(
+          reallyGlob(
+            child,
+            childIsDir,
+            patternParts,
+            idx + 1,
+          ),
         )
-        return tasks.awaitAll().flatten().toSet() + res
+        return@flow
       }
 
       val childrenSnapshots = readAction {
         ProgressManager.checkCanceled()
         val children = getChildren(base) ?: return@readAction null
         children.map { child -> Triple(child, child.name, child.isDirectory) }
-      } ?: return tasks.awaitAll().flatten().toSet()
+      } ?: return@flow
 
       for ((child, childName, childIsDir) in childrenSnapshots) {
         checkCanceled()
 
         if ("**" == pattern && childIsDir) {
           // Recurse without shifting the pattern.
-          tasks += async {
+          emitAll(
             reallyGlob(
               child,
               childIsDir,
               patternParts,
               idx,
-            )
-          }
+            ),
+          )
         }
         if (matches(pattern, childName, cache)) {
           // Recurse and consume one segment of the pattern.
           if (childIsDir) {
-            tasks += async {
+            emitAll(
               reallyGlob(
                 child,
                 childIsDir,
                 patternParts,
                 idx + 1,
-              )
-            }
-          } else {
+              ),
+            )
+          }
+          else {
             // Instead of using an async call, just repeat the base case above.
             if (idx + 1 == patternParts.size) {
-              tasks += async { setOf(child) }
+              emit(flowOf(child))
             }
           }
         }
       }
-      return tasks.awaitAll().flatten().toSet()
     }
 
     fun getChildren(file: VirtualFile?): Array<VirtualFile>? = file?.children
