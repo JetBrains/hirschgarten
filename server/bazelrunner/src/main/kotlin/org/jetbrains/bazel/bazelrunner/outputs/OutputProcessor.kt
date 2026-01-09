@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
-import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -12,7 +10,12 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import kotlin.coroutines.cancellation.CancellationException
 
-abstract class OutputProcessor(private val process: SpawnedProcess, vararg loggers: OutputHandler) {
+abstract class OutputProcessor(
+  private val process: SpawnedProcess,
+  vararg loggers: OutputHandler,
+  shouldReadStdout: Boolean,
+  shouldReadStderr: Boolean,
+) {
   val stdoutCollector = OutputCollector()
   val stderrCollector = OutputCollector()
 
@@ -20,8 +23,12 @@ abstract class OutputProcessor(private val process: SpawnedProcess, vararg logge
   protected val runningProcessors = mutableListOf<Future<*>>()
 
   init {
-    start(process.inputStream, stdoutCollector, *loggers)
-    start(process.errorStream, stderrCollector, *loggers)
+    if (shouldReadStdout) {
+      start(process.inputStream, stdoutCollector, *loggers)
+    }
+    if (shouldReadStderr) {
+      start(process.errorStream, stderrCollector, *loggers)
+    }
   }
 
   protected open fun shutdown() {

@@ -2,7 +2,12 @@ package org.jetbrains.bazel.bazelrunner.outputs
 
 import java.util.concurrent.TimeUnit
 
-class SyncOutputProcessor(process: SpawnedProcess, vararg loggers: OutputHandler) : OutputProcessor(process, *loggers) {
+class SyncOutputProcessor(
+  process: SpawnedProcess,
+  vararg loggers: OutputHandler,
+  shouldReadStdout: Boolean = true,
+  shouldReadStderr: Boolean = true,
+) : OutputProcessor(process, *loggers, shouldReadStdout = shouldReadStdout, shouldReadStderr = shouldReadStderr) {
   override fun isRunning(): Boolean = true
 
   override fun shutdown() {

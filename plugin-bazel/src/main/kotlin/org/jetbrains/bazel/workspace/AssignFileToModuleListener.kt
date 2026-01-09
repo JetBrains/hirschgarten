@@ -8,7 +8,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -55,42 +54,48 @@ import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import java.nio.file.Path
+import java.util.UUID
 
 class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
-    // if the list has multiple events, a resync is required
-    val event = events.singleOrNull()
-    if (event != null && !ApplicationManager.getApplication().isUnitTestMode) {
-      afterSingleFileEvent(event)
+    if (!ApplicationManager.getApplication().isUnitTestMode) {
+      process(events)
     }
   }
 
   // the returned map is for testing purposes; Project location hash is used instead of Project since it's safer to store
   @VisibleForTesting
-  fun afterSingleFileEvent(event: VFileEvent): Map<String, Job> {
-    val file = getAffectedFile(event) ?: return emptyMap()
+  fun process(events: List<VFileEvent>): Map<String, Job> {
+    // Getting the affected file is quite an expensive operation (source: `VFileEvent` documentation).
+    // To improve performance, the first event from the list is used to decide whether to process or not.
+    // IntelliJ usually reports file events one by one, so this logic will rarely change anything.
+    val firstEvent = events.firstOrNull() ?: return emptyMap()
+    val file = getAffectedFile(firstEvent) ?: return emptyMap()
     val isSource =
-      if (event is VFileDeleteEvent) {
+      if (firstEvent is VFileDeleteEvent) {
         file.extension?.let { SourceType.fromExtension(it) } != null
       } else {
         file.isSourceFile()
       }
     return if (isSource) {
-      getRelatedProjects(file).associateProjectIdWithJob { processWithDelay(it, event) }
+      getRelatedProjects(file).associateProjectIdWithJob { processWithDelay(it, events) }
     } else {
       emptyMap()
     }
   }
 
-  private fun processWithDelay(project: Project, event: VFileEvent): Job? {
+  private fun processWithDelay(project: Project, events: List<VFileEvent>): Job? {
+    if (events.isEmpty()) return null
+
     val controller = Controller.getInstance(project)
     if (controller.isAnotherProcessingInProgress()) return null
-    val eventIsFirstInQueue = controller.addEvent(event)
+    val eventIsFirstInQueue = controller.addEvents(events)
 
     // only the first event in the queue should trigger the delayed processing
     return if (eventIsFirstInQueue) {
@@ -112,30 +117,24 @@ class AssignFileToModuleListener : BulkFileListener {
 
   @Service(Service.Level.PROJECT)
   private class Controller {
-    private var eventsReachedLimit = false
     private val eventQueue = mutableListOf<VFileEvent>()
 
     private val processingLock = Mutex()
 
-    /** @return `true` if this event was the first to be reported in the batch, `false` otherwise */
-    fun addEvent(event: VFileEvent): Boolean =
+    /** @return `true` if these events were the first to be reported in the batch, `false` otherwise */
+    fun addEvents(events: List<VFileEvent>): Boolean {
       synchronized(this) {
-        if (!eventsReachedLimit) {
-          eventQueue += event
-          if (eventQueue.size == 1) {
-            return true
-          } else if (eventQueue.size >= EVENT_QUEUE_LIMIT) {
-            eventsReachedLimit = true
-          }
-        }
-        return false
+        if (eventQueue.size > EVENT_QUEUE_LIMIT) return false
+        val eventIsFirstInQueue = eventQueue.isEmpty()
+        eventQueue += events
+        return eventIsFirstInQueue
       }
+    }
 
     fun getEventsAndClear(): List<VFileEvent> {
       synchronized(this) {
-        val events = eventQueue.toList()
+        val events = eventQueue.takeIf { it.size <= EVENT_QUEUE_LIMIT }?.toList() ?: emptyList()
         eventQueue.clear()
-        eventsReachedLimit = false
         return events
       }
     }
@@ -221,6 +220,9 @@ private suspend fun processFileEvents(
   project: Project,
   workspaceModel: WorkspaceModel,
 ) {
+  val originId = "file-event-" + UUID.randomUUID().toString()
+  project.syncConsole.startTask(originId, "Title", "Message")
+
   val entityStorageDiff = MutableEntityStorage.from(workspaceModel.currentSnapshot)
 
   val fileChanges = events.map { it.getOldAndNewFile() }
@@ -245,6 +247,7 @@ private suspend fun processFileEvents(
         entityStorageDiff = entityStorageDiff,
         progressReporter = reporter,
         mutableRemovalMap = mutableRemovalMap,
+        originId = originId,
       )
 
       mutableRemovalMap.values.flatten().forEach { entityStorageDiff.removeEntity(it) }
@@ -256,6 +259,8 @@ private suspend fun processFileEvents(
       }
     }
   }
+
+  project.syncConsole.finishTask(originId, "Message 2")
 }
 
 @NlsSafe
@@ -273,8 +278,11 @@ private suspend fun processFileCreated(
   entityStorageDiff: MutableEntityStorage,
   progressReporter: SequentialProgressReporter,
   mutableRemovalMap: MutableMap<ModuleEntity, List<ContentRootEntity>>,
+  originId: String,
 ) {
   val newFiles = fileChanges.mapNotNull { it.newFile }
+  if (newFiles.isEmpty()) return
+
   val existingModules = newFiles.associateWith { getModulesForFile(it, project) }
   val targetUtils = project.targetUtils
 
@@ -286,7 +294,8 @@ private suspend fun processFileCreated(
     ) {
       queryTargetsForFile(
         project = project,
-        filePaths = newFiles.mapNotNull { it.toNioPathOrNull() }
+        filePaths = newFiles.mapNotNull { it.toNioPathOrNull() },
+        originId = originId,
       )
     } ?: emptyMap()
 
@@ -342,10 +351,10 @@ private fun processFileRemoved(
     .filter { it.value.isNotEmpty() }
 }
 
-private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>): Map<Path, List<Label>>? =
+private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>, originId: String): Map<Path, List<Label>>? =
   if (!project.serviceAsync<SyncStatusService>().isSyncInProgress) {
     try {
-      askForInverseSources(project, filePaths)
+      askForInverseSources(project, filePaths, originId)
     } catch (ex: Exception) {
       logger.debug(ex)
       null
@@ -354,11 +363,11 @@ private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>)
     null
   }
 
-private suspend fun askForInverseSources(project: Project, filePaths: List<Path>): Map<Path, List<Label>> {
+private suspend fun askForInverseSources(project: Project, filePaths: List<Path>, originId: String): Map<Path, List<Label>> {
   val result =
     project.connection.runWithServer { bspServer ->
       bspServer
-        .buildTargetInverseSources(InverseSourcesParams(filePaths))
+        .buildTargetInverseSources(InverseSourcesParams(originId, filePaths))
     }
   return result.targets
 }
@@ -414,7 +423,7 @@ private val logger = Logger.getInstance(AssignFileToModuleListener::class.java)
 
 private const val PROGRESS_DELETE_STEP_SIZE = 20
 private const val PROGRESS_QUERY_STEP_SIZE = 80
-private const val EVENT_QUEUE_LIMIT = 5
+private const val EVENT_QUEUE_LIMIT = 200
 
 private data class OldAndNewFile(
   val oldFile: Path?, // the old file must be kept as a path, since this file no longer exists
