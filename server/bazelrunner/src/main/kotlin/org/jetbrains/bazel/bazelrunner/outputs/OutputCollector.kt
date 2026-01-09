@@ -5,9 +5,8 @@ class OutputCollector : OutputHandler {
   private val stringBuilder = StringBuilder()
 
   override fun onNextLine(line: String) {
-    lines.add(line)
+    lines.add(line.removeSuffix("\n").removeSuffix("\r"))
     stringBuilder.append(line)
-    stringBuilder.append(System.lineSeparator())
   }
 
   fun lines(): List<String> = lines.toList()

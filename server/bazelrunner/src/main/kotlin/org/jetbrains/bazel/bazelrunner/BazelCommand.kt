@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.openapi.application.PathManager
+import com.jediterm.core.util.TermSize
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.SystemInfoProvider
@@ -76,6 +77,8 @@ abstract class BazelCommand(val bazelBinary: String) {
 
   // See https://bazel.build/reference/command-line-reference#options-common-to-all-commands and command-specific options
   val options: MutableList<String> = mutableListOf(BazelFlag.toolTag())
+
+  var ptyTermSize: TermSize? = null
 
   abstract fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor
 

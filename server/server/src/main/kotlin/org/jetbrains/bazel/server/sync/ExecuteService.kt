@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -21,6 +22,7 @@ import org.jetbrains.bazel.server.bsp.managers.BepReader
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -34,6 +36,7 @@ import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 
 class ExecuteService(
+  private val project: Project,
   private val compilationManager: BazelBspCompilationManager,
   private val projectProvider: ProjectProvider,
   private val bazelRunner: BazelRunner,
@@ -109,6 +112,7 @@ class ExecuteService(
           params.environmentVariables?.let { environment.putAll(it) }
           params.arguments?.let { programArguments.addAll(it) }
           params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.trim().split(" ")) }
+          ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(params.originId)
         }
       }
     val bazelProcessResult =
@@ -190,7 +194,6 @@ class ExecuteService(
     params.environmentVariables?.let { (command as HasEnvironment).environment.putAll(it) }
     params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     additionalProgramArguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
-    command.options.add(BazelFlag.color(true))
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
     with(command as HasMultipleTargets) {
       targets.addAll(targetsSpec.values)
@@ -227,6 +230,7 @@ class ExecuteService(
             options.addAll(additionalArguments)
             targets.addAll(allTargets)
             useBes(bepReader.eventFile.toPath().toAbsolutePath())
+            ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(originId)
           }
         }
       bazelRunner
