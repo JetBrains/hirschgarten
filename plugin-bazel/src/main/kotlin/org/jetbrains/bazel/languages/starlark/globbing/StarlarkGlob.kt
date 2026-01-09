@@ -5,7 +5,6 @@ import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.collect.Lists
-import com.google.common.collect.Ordering
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.progress.ProgressManager
@@ -18,17 +17,14 @@ import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.util.concurrency.annotations.RequiresBlockingContext
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flattenMerge
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toSet
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import java.util.function.Predicate
 import java.util.regex.Pattern
@@ -178,12 +174,7 @@ object StarlarkGlob {
     private val patterns: MutableList<String> = ArrayList()
     private val excludes: MutableList<String> = ArrayList()
     private var excludeDirectories = false
-    private var pathFilter: Predicate<VirtualFile>
-
-    /** Creates a glob builder with the given base path.  */
-    init {
-      this.pathFilter = Predicate { true }
-    }
+    private var pathFilter: Predicate<VirtualFile> = Predicate { true }
 
     /**
      * Adds a pattern to include to the glob builder.
@@ -266,20 +257,14 @@ object StarlarkGlob {
       if (!base.exists() || patterns.isEmpty()) {
         return emptyList()
       }
+      checkCanceled()
 
-      return withContext(Dispatchers.IO) {
-        checkCanceled()
+      val included = GlobVisitor(excludeDirectories, pathFilter)
+        .globAsync(base, patterns)
+      val excluded = GlobVisitor(excludeDirectories, pathFilter)
+        .globAsync(base, excludes)
 
-        val included = GlobVisitor(excludeDirectories, pathFilter)
-          .globAsync(base, patterns)
-        val excluded = GlobVisitor(excludeDirectories, pathFilter)
-          .globAsync(base, excludes)
-        val files = (included - excluded).toList()
-
-        Ordering
-          .from(Comparator.comparing(VirtualFile::getPath))
-          .immutableSortedCopy(files)
-      }
+      return (included - excluded).sortedBy { it.path }
     }
   }
 
@@ -335,7 +320,7 @@ object StarlarkGlob {
             splitPattern,
             0,
           )
-        }.flattenMerge()
+        }
         .toSet()
     }
 
@@ -352,22 +337,22 @@ object StarlarkGlob {
       baseIsDirectory: Boolean,
       patternParts: Array<String>,
       idx: Int,
-    ): Flow<Flow<VirtualFile>> = flow {
+    ): Flow<VirtualFile> = channelFlow {
       checkCanceled()
       if (baseIsDirectory && !readAction { dirPred.test(base) }) {
-        return@flow
+        return@channelFlow
       }
 
       if (idx == patternParts.size) { // Base case.
         if (!(excludeDirectories && baseIsDirectory)) {
-          emit(flowOf(base))
+          send(base)
         }
-        return@flow
+        return@channelFlow
       }
 
       if (!baseIsDirectory) {
         // Nothing to find here.
-        return@flow
+        return@channelFlow
       }
 
       val pattern = patternParts[idx]
@@ -375,14 +360,12 @@ object StarlarkGlob {
       // ** is special: it can match nothing at all.
       // For example, x/** matches x, **/y matches y, and x/**/y matches x/y.
       if ("**" == pattern) {
-        emitAll(
-          reallyGlob(
-            base,
-            baseIsDirectory,
-            patternParts,
-            idx + 1,
-          ),
-        )
+        reallyGlob(
+          base,
+          baseIsDirectory,
+          patternParts,
+          idx + 1,
+        ).onEach { send(it) }.launchIn(this)
       }
 
       if (!pattern.contains("*") && !pattern.contains("?")) {
@@ -390,58 +373,52 @@ object StarlarkGlob {
         val (child, childIsDir, childIsFile) = readAction {
           val child = base.findChild(pattern) ?: return@readAction null
           Triple(child, child.isDirectory, child.isFile)
-        } ?: return@flow
+        } ?: return@channelFlow
         if (!childIsDir && !childIsFile) {
           // The file is a dangling symlink, fifo, does not exist, etc.
-          return@flow
+          return@channelFlow
         }
-        emitAll(
-          reallyGlob(
-            child,
-            childIsDir,
-            patternParts,
-            idx + 1,
-          ),
-        )
-        return@flow
+        reallyGlob(
+          child,
+          childIsDir,
+          patternParts,
+          idx + 1,
+        ).onEach { send(it) }.launchIn(this)
+        return@channelFlow
       }
 
       val childrenSnapshots = readAction {
         ProgressManager.checkCanceled()
         val children = getChildren(base) ?: return@readAction null
         children.map { child -> Triple(child, child.name, child.isDirectory) }
-      } ?: return@flow
+      } ?: return@channelFlow
 
       for ((child, childName, childIsDir) in childrenSnapshots) {
         checkCanceled()
 
         if ("**" == pattern && childIsDir) {
           // Recurse without shifting the pattern.
-          emitAll(
-            reallyGlob(
-              child,
-              childIsDir,
-              patternParts,
-              idx,
-            ),
-          )
+          reallyGlob(
+            child,
+            childIsDir,
+            patternParts,
+            idx,
+          ).onEach { send(it) }.launchIn(this)
         }
         if (matches(pattern, childName, cache)) {
           // Recurse and consume one segment of the pattern.
           if (childIsDir) {
-            emitAll(
-              reallyGlob(
-                child,
-                childIsDir,
-                patternParts,
-                idx + 1,
-              ),
-            )
+            reallyGlob(
+              child,
+              childIsDir,
+              patternParts,
+              idx + 1,
+            ).onEach { send(it) }.launchIn(this)
           }
           else {
             // Instead of using an async call, just repeat the base case above.
             if (idx + 1 == patternParts.size) {
-              emit(flowOf(child))
+              send(child)
             }
           }
         }
