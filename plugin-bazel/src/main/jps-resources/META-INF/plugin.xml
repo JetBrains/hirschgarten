@@ -424,6 +424,12 @@
       key="bazel.run.config.run.with.bazel"
       restartRequired="false"
     />
+    <registryKey
+      defaultValue="true"
+      description="If true, IDEA will run Bazel commands in a pseudo-terminal, providing more rich formatting and progress reporting"
+      key="bazel.use.pty"
+      restartRequired="true"
+    />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />

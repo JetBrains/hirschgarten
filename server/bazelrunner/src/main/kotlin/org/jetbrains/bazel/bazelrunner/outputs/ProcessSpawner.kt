@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
+import com.jediterm.core.util.TermSize
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -11,6 +12,7 @@ interface ProcessSpawner {
     environment: Map<String, String>,
     redirectErrorStream: Boolean,
     workDirectory: String?,
+    ptyTermSize: TermSize?,
   ): SpawnedProcess
 
   /**
@@ -48,6 +50,7 @@ fun ProcessSpawner.spawnProcessBlocking(
   environment: Map<String, String>,
   redirectErrorStream: Boolean,
   workDirectory: String? = null,
+  ptyTermSize: TermSize? = null,
 ): SpawnedProcess =
   runBlocking {
     spawnProcess(
@@ -55,5 +58,6 @@ fun ProcessSpawner.spawnProcessBlocking(
       environment = environment,
       redirectErrorStream = redirectErrorStream,
       workDirectory = workDirectory,
+      ptyTermSize = ptyTermSize,
     )
   }

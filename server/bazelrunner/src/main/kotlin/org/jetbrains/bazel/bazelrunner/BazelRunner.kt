@@ -3,6 +3,8 @@ package org.jetbrains.bazel.bazelrunner
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.bazelrunner.outputs.spawnProcessBlocking
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
@@ -105,15 +107,23 @@ class BazelRunner(
     val command = doBuild(commandBuilder)
     val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath
 
-    // These options are the same as in Google's Bazel plugin for IntelliJ
-    // They make the output suitable for display in the console
-    command.options.addAll(
-      listOf(
-        "--curses=no",
-        "--color=yes",
-        "--noprogress_in_terminal_title",
-      ),
-    )
+    if (command.ptyTermSize != null) {
+      command.options.addAll(
+        listOf(
+          curses(true),
+          color(true),
+        ),
+      )
+    }
+    else {
+      command.options.addAll(
+        listOf(
+          curses(false),
+          color(true),
+          "--noprogress_in_terminal_title",
+        ),
+      )
+    }
 
     inheritProjectviewOptionsOverride?.let {
       commandBuilder.inheritWorkspaceOptions = it
@@ -156,6 +166,7 @@ class BazelRunner(
           environment = environment,
           redirectErrorStream = false,
           workDirectory = workspaceRoot.toString(),
+          ptyTermSize = command.ptyTermSize,
         )
     createdProcessIdDeferred?.complete(process.pid)
 

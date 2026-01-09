@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
-import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -35,12 +33,46 @@ abstract class OutputProcessor(private val process: SpawnedProcess, vararg logge
       Runnable {
         try {
           BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
-            var prevLine: String? = null
-
+            // Don't use readLine() because it doesn't preserve line separators
+            val currentLine = StringBuilder()
+            var lookAheadChar: Int? = null
             while (!Thread.currentThread().isInterrupted) {
-              val line = reader.readLine() ?: return@Runnable
-              if (line == prevLine) continue
-              prevLine = line
+              var nextChar: Int
+              if (lookAheadChar != null) {
+                nextChar = lookAheadChar
+                lookAheadChar = null
+              }
+              else {
+                nextChar = reader.read()
+              }
+              if (nextChar == -1) {
+                if (currentLine.isEmpty()) break
+              }
+              else {
+                currentLine.append(nextChar.toChar())
+              }
+              // Don't split on \r if it's actually \r\n
+              if (nextChar.toChar() == '\r') {
+                // Only read the next char if it's already available, because PTY terminal can end a line with just \r to overwrite it.
+                // This .ready() check is probably not 100% reliable, worst case scenario we could send \n as a separate line.
+                if (reader.ready()) {
+                  nextChar = reader.read()
+                  if (nextChar == '\n'.code) {
+                    currentLine.append(nextChar.toChar())
+                  }
+                  else {
+                    lookAheadChar = nextChar
+                  }
+                }
+              }
+              val line: String
+              if (currentLine.isNotEmpty() && (currentLine.last() == '\n' || currentLine.last() == '\r' || nextChar == -1)) {
+                line = currentLine.toString()
+                currentLine.clear()
+              }
+              else {
+                continue
+              }
               if (isRunning()) {
                 handlers.forEach { it.onNextLine(line) }
               } else {
