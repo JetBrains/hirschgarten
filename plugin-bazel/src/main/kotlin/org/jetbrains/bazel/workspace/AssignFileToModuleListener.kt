@@ -41,6 +41,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -56,6 +57,7 @@ import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
@@ -233,7 +235,14 @@ private suspend fun processFileEvents(
   val fileChanges = events.map { it.getOldAndNewFile() }
 
   val progressTitle = getProgressTitle(fileChanges)
-  project.syncConsole.startTask(originId, progressTitle, BazelPluginBundle.message("file.change.processing.message.start"))
+  val job = currentCoroutineContext()[Job]
+  project.syncConsole.startTask(
+    taskId = originId,
+    title = progressTitle,
+    message = BazelPluginBundle.message("file.change.processing.message.start"),
+    showConsole = TaskConsole.ShowConsole.ON_FAIL,
+    cancelAction = createCancelAction(job),
+  )
 
   withBackgroundProgress(project, progressTitle) {
     reportSequentialProgress { reporter ->
@@ -279,6 +288,15 @@ private fun getProgressTitle(fileChanges: List<OldAndNewFile>): String =
     ?.newFile
     ?.let { BazelPluginBundle.message("file.change.processing.title.single", it.name) }
     ?: BazelPluginBundle.message("file.change.processing.title.multiple")
+
+private fun createCancelAction(
+  job: Job?,
+): () -> Unit =
+  if (job != null) {
+    { job.cancel(CancellationException("File change processing was cancelled")) }
+  } else {
+    {}
+  }
 
 private suspend fun processFileCreated(
   fileChanges: List<OldAndNewFile>,
