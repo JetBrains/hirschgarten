@@ -1,343 +1,339 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import com.intellij.testFramework.utils.io.createFile
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.ResourceItem
+import org.jetbrains.bsp.protocol.UltimateBuildTarget
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.nio.file.Files
-import kotlin.io.path.Path
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
 
 @DisplayName("ResourcesItemToJavaResourceRootTransformer.transform(resourcesItem) tests")
 class ResourcesItemToJavaResourceRootTransformerTest {
-  private val projectBasePath = Path("").toAbsolutePath()
+  @TempDir
+  private lateinit var tempDir: Path
 
-  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
+  private lateinit var projectBasePath: Path
+
+  private val resourcesDir1 by lazy { tempDir.resolve("base/dir1") }
+  private val resources1 by lazy { listOf(resourcesDir1.resolve("resource1")) }
+  private val resourcesDir2 by lazy { tempDir.resolve("base/dir2") }
+  private val resources2 by lazy { listOf(resourcesDir2.resolve("resource2")) }
+
+  private val resourcesItemToJavaResourceRootTransformer by lazy {
+    val ultimateTargets = listOf(
+      createRawBuildTarget(
+        id = Label.parse("//:resources_1"),
+        kind = TargetKind("resourcegroup", setOf(LanguageClass.ULTIMATE), RuleType.UNKNOWN),
+        data = UltimateBuildTarget(
+          resources = resources1,
+          stripPrefix = resourcesDir1,
+          addPrefix = "new/prefix",
+        ),
+      ),
+      createRawBuildTarget(
+        id = Label.parse("//:resources_2"),
+        kind = TargetKind("resourcegroup", setOf(LanguageClass.ULTIMATE), RuleType.UNKNOWN),
+        data = UltimateBuildTarget(
+          resources = resources2,
+          stripPrefix = resourcesDir2,
+          addPrefix = null,
+        ),
+      ),
+    ).associateBy { it.id }
+    ResourcesItemToJavaResourceRootTransformer(ultimateTargets)
+  }
+
+  @BeforeEach
+  fun beforeEach() {
+    projectBasePath = tempDir.resolve("project").createDirectories()
+  }
+
+  @Test
+  fun `should exclude resources that are not present in the strip prefix`() {
+    // given
+    val buildTarget = createRawBuildTarget(
+      resources = listOf(
+        ResourceItem.Target(Label.parse("//:resources_1")),
+        ResourceItem.Target(Label.parse("//:resources_2")),
+      ),
+    )
+
+    resourcesDir1.createDirectories()
+    resourcesDir2.createDirectories()
+    resources1.forEach { it.createFile() }
+    resources2.forEach { it.createFile() }
+    val excludedFile = createTempFile(resourcesDir1, "resource2")
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldContainExactly listOf(
+      ResourceRoot(
+        resourcePath = resourcesDir1,
+        rootType = SourceRootTypeId("java-resource"),
+        relativePath = "new/prefix",
+        excluded = listOf(excludedFile),
+      ),
+      ResourceRoot(
+        resourcePath = resourcesDir2,
+        rootType = SourceRootTypeId("java-resource"),
+        relativePath = null,
+      ),
+    )
+  }
+
+  @Test
+  fun `should return resource root for target resources`() {
+    // given
+    val buildTarget = createRawBuildTarget(
+      resources = listOf(
+        ResourceItem.Target(Label.parse("//:resources_1")),
+        ResourceItem.Target(Label.parse("//:resources_2")),
+      ),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldContainExactly listOf(
+      ResourceRoot(
+        resourcePath = resourcesDir1,
+        rootType = SourceRootTypeId("java-resource"),
+        relativePath = "new/prefix",
+      ),
+      ResourceRoot(
+        resourcePath = resourcesDir2,
+        rootType = SourceRootTypeId("java-resource"),
+        relativePath = null,
+      ),
+    )
+  }
+
+  @Test
+  fun `should return multiple resource roots for mixed resources of files and targets`() {
+    // given
+    val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
+
+    val buildTarget = createRawBuildTarget(
+      resources = listOf(
+        ResourceItem.File(resourceFilePath),
+        ResourceItem.Target(Label.parse("//:resources_1")),
+      ),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldContainExactlyInAnyOrder listOf(
+      ResourceRoot(resourcePath = resourceFilePath, rootType = SourceRootTypeId("java-resource")),
+      ResourceRoot(resourcePath = resourcesDir1, rootType = SourceRootTypeId("java-resource"), relativePath = "new/prefix"),
+    )
+  }
 
   @Test
   fun `should return no resources roots for no resources items`() {
     // given
-    val emptyResources = listOf<RawBuildTarget>()
+    val buildTarget = createRawBuildTarget()
 
     // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(emptyResources)
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
     javaResources shouldBe emptyList()
   }
 
   @Test
-  fun `should return single resource root for resources item with one file path`() {
+  fun `should return single resource root for resources item with one file`() {
     // given
-    val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
-    resourceFilePath.toFile().deleteOnExit()
+    val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
 
-    val buildTarget =
-      RawBuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        listOf(),
-        TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.JAVA),
-        ),
-        emptyList(),
-        listOf(resourceFilePath),
-        baseDirectory = Path("base/dir"),
-      )
+    val buildTarget = createRawBuildTarget(resources = listOf(ResourceItem.File(resourceFilePath)))
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
-    val expectedJavaResource =
-      ResourceRoot(
-        resourcePath = resourceFilePath,
-        rootType = SourceRootTypeId("java-resource"),
-      )
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = resourceFilePath,
+      rootType = SourceRootTypeId("java-resource"),
+    )
 
-    javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
   }
 
   @Test
   fun `should return resource root with type test for resources item coming from a build target having test target kind`() {
     // given
-    val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
-    resourceFilePath.toFile().deleteOnExit()
+    val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
 
-    val buildTarget =
-      RawBuildTarget(
-        Label.parse("//target"),
-        listOf(),
-        listOf(),
-        TargetKind(
-          kindString = "java_test",
-          ruleType = RuleType.TEST,
-          languageClasses = setOf(LanguageClass.JAVA),
-        ),
-        emptyList(),
-        listOf(resourceFilePath),
-        baseDirectory = Path("base/dir"),
-      )
+    val buildTarget = createRawBuildTarget(
+      kind = TargetKind(
+        kindString = "java_test",
+        ruleType = RuleType.TEST,
+        languageClasses = setOf(LanguageClass.JAVA),
+      ),
+      resources = listOf(ResourceItem.File(resourceFilePath)),
+    )
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
-    val expectedJavaResource =
-      ResourceRoot(
-        resourcePath = resourceFilePath,
-        rootType = SourceRootTypeId("java-test-resource"),
-      )
 
-    javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = resourceFilePath,
+      rootType = SourceRootTypeId("java-test-resource"),
+    )
   }
 
   @Test
   fun `should return single resource root for resources item with one dir path`() {
     // given
-    val resourceDirPath = Files.createTempDirectory(projectBasePath, "resource")
-    resourceDirPath.toFile().deleteOnExit()
+    val resourceDirPath = createTempDirectory(projectBasePath, "resource")
 
-    val buildTarget =
-      RawBuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        listOf(),
-        TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.JAVA),
-        ),
-        emptyList(),
-        listOf(resourceDirPath),
-        baseDirectory = Path("base/dir"),
-      )
+    val buildTarget = createRawBuildTarget(resources = listOf(ResourceItem.File(resourceDirPath)))
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
-    val expectedJavaResource =
-      ResourceRoot(
-        resourcePath = resourceDirPath,
-        rootType = SourceRootTypeId("java-resource"),
-      )
 
-    javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = resourceDirPath,
+      rootType = SourceRootTypeId("java-resource"),
+    )
   }
 
   @Test
   fun `should return multiple resource roots for resources item with multiple paths with the same directories`() {
     // given
+    val resourceFilePath1 = createTempFile(projectBasePath, "resource", "File1.txt")
+    val resourceFilePath2 = createTempFile(projectBasePath, "resource", "File2.txt")
+    val resourceFilePath3 = createTempFile(projectBasePath, "resource", "File3.txt")
 
-    val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource", "File1.txt")
-    resourceFilePath1.toFile().deleteOnExit()
-    val resourceFilePath2 = Files.createTempFile(projectBasePath, "resource", "File2.txt")
-    resourceFilePath2.toFile().deleteOnExit()
-    val resourceFilePath3 = Files.createTempFile(projectBasePath, "resource", "File3.txt")
-    resourceFilePath3.toFile().deleteOnExit()
-
-    val buildTarget =
-      RawBuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        listOf(),
-        TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.JAVA),
-        ),
-        emptyList(),
-        listOf(resourceFilePath1, resourceFilePath2, resourceFilePath3),
-        baseDirectory = Path("base/dir"),
-      )
+    val buildTarget = createRawBuildTarget(
+      resources = listOf(resourceFilePath1, resourceFilePath2, resourceFilePath3).map(ResourceItem::File),
+    )
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
-    val expectedJavaResource1 =
+    javaResources shouldContainExactlyInAnyOrder listOf(
       ResourceRoot(
         resourcePath = resourceFilePath1,
         rootType = SourceRootTypeId("java-resource"),
-      )
-
-    val expectedJavaResource2 =
+      ),
       ResourceRoot(
         resourcePath = resourceFilePath2,
         rootType = SourceRootTypeId("java-resource"),
-      )
-
-    val expectedJavaResource3 =
+      ),
       ResourceRoot(
         resourcePath = resourceFilePath3,
         rootType = SourceRootTypeId("java-resource"),
-      )
-
-    val expectedJavaResources = listOf(expectedJavaResource1, expectedJavaResource2, expectedJavaResource3)
-
-    javaResources shouldContainExactlyInAnyOrder expectedJavaResources
+      ),
+    )
   }
 
   @Test
   fun `should return multiple resource roots for resources item with multiple paths`() {
     // given
-    val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File1.txt")
-    resourceFilePath.toFile().deleteOnExit()
+    val resourceFilePath = createTempFile(projectBasePath, "resource", "File1.txt")
+    val resourceDirPath = createTempDirectory(projectBasePath, "resourcedir")
 
-    val resourceDirPath = Files.createTempDirectory(projectBasePath, "resourcedir")
-    resourceDirPath.toFile().deleteOnExit()
-
-    val buildTarget =
-      RawBuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        listOf(),
-        TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.JAVA),
-        ),
-        emptyList(),
-        listOf(resourceFilePath, resourceDirPath),
-        baseDirectory = Path("base/dir"),
-      )
+    val buildTarget = createRawBuildTarget(resources = listOf(resourceFilePath, resourceDirPath).map(ResourceItem::File))
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
-    val expectedJavaResource1 =
+    javaResources shouldContainExactlyInAnyOrder listOf(
       ResourceRoot(
         resourcePath = resourceFilePath,
         rootType = SourceRootTypeId("java-resource"),
-      )
-    val expectedJavaResource2 =
+      ),
       ResourceRoot(
         resourcePath = resourceDirPath,
         rootType = SourceRootTypeId("java-resource"),
-      )
-
-    javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource1, expectedJavaResource2)
+      ),
+    )
   }
 
   @Test
   fun `should return multiple resource roots for multiple resources items`() {
     // given
-
-    val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource", "File1.txt")
-    resourceFilePath1.toFile().deleteOnExit()
-
-    val resourceFilePath2 = Files.createTempFile(projectBasePath, "resource", "File2.txt")
-    resourceFilePath2.toFile().deleteOnExit()
-
-    val resourceDirPath3 = Files.createTempDirectory(projectBasePath, "resourcedir")
-    resourceDirPath3.toFile().deleteOnExit()
+    val resourceFilePath1 = createTempFile(projectBasePath, "resource", "File1.txt")
+    val resourceFilePath2 = createTempFile(projectBasePath, "resource", "File2.txt")
+    val resourceDirPath3 = createTempDirectory(projectBasePath, "resourcedir")
 
     val buildTarget =
-      RawBuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        listOf(),
-        TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.JAVA),
-        ),
-        emptyList(),
-        listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
-        baseDirectory = Path("base/dir"),
-      )
+      createRawBuildTarget(resources = listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3).map(ResourceItem::File))
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
-    val expectedJavaResource1 =
+    javaResources shouldContainExactlyInAnyOrder listOf(
       ResourceRoot(
         resourcePath = resourceFilePath1,
         rootType = SourceRootTypeId("java-resource"),
-      )
-    val expectedJavaResource2 =
+      ),
       ResourceRoot(
         resourcePath = resourceFilePath2,
         rootType = SourceRootTypeId("java-resource"),
-      )
-    val expectedJavaResource3 =
+      ),
       ResourceRoot(
         resourcePath = resourceDirPath3,
         rootType = SourceRootTypeId("java-resource"),
-      )
-
-    javaResources shouldContainExactlyInAnyOrder
-      listOf(
-        expectedJavaResource1,
-        expectedJavaResource2,
-        expectedJavaResource3,
-      )
+      ),
+    )
   }
 
   @Test
   fun `should return resource roots regardless they have resource items in project base path or not`() {
     // given
-
-    val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource1", "File1.txt")
-    resourceFilePath1.toFile().deleteOnExit()
-
-    val resourceFilePath2 = Files.createTempFile("resource2", "File2.txt")
-    resourceFilePath2.toFile().deleteOnExit()
-
-    val resourceDirPath3 = Files.createTempDirectory(projectBasePath, "resourcedir")
-    resourceDirPath3.toFile().deleteOnExit()
+    val resourceFilePath1 = createTempFile(projectBasePath, "resource1", "File1.txt")
+    val resourceFilePath2 = createTempFile(tempDir, "resource2", "File2.txt")
+    val resourceDirPath3 = createTempDirectory(projectBasePath, "resourcedir")
 
     val buildTarget =
-      RawBuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        listOf(),
-        TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.JAVA),
-        ),
-        emptyList(),
-        listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
-        baseDirectory = Path("base/dir"),
-      )
+      createRawBuildTarget(resources = listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3).map(ResourceItem::File))
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
-    val expectedJavaResource1 =
+    javaResources shouldContainExactlyInAnyOrder listOf(
       ResourceRoot(
         resourcePath = resourceFilePath1,
         rootType = SourceRootTypeId("java-resource"),
-      )
-    val expectedJavaResource2 =
+      ),
       ResourceRoot(
         resourcePath = resourceFilePath2,
         rootType = SourceRootTypeId("java-resource"),
-      )
-    val expectedJavaResource3 =
+      ),
       ResourceRoot(
         resourcePath = resourceDirPath3,
         rootType = SourceRootTypeId("java-resource"),
-      )
-
-    javaResources shouldContainExactlyInAnyOrder
-      listOf(
-        expectedJavaResource1,
-        expectedJavaResource2,
-        expectedJavaResource3,
-      )
+      ),
+    )
   }
 }

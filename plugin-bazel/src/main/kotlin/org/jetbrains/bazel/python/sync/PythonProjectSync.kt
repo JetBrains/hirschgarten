@@ -3,6 +3,7 @@ package org.jetbrains.bazel.python.sync
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -52,6 +53,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.ResourceItem
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.Path
 
@@ -59,6 +61,8 @@ private const val PYTHON_SDK_ID = "PythonSDK"
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
+
+private val log = logger<PythonProjectSync>()
 
 class PythonProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
@@ -267,7 +271,15 @@ class PythonProjectSync : ProjectSyncHook {
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> =
-    target.resources.map { resource ->
+    target.resources.mapNotNull { resource ->
+      when (resource) {
+        is ResourceItem.File -> resource.path
+        is ResourceItem.Target -> null.also {
+          log.warn("Resources from rule targets are not supported for Python - ${resource.label} is ignored.")
+          }
+        }
+      }
+      .map { resource ->
       val resourceUrl = resource.toVirtualFileUrl(virtualFileUrlManager)
       val resourceRootEntity =
         SourceRootEntity(

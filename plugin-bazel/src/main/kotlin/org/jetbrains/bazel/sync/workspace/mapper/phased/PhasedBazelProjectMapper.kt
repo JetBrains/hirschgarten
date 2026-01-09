@@ -23,6 +23,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.ResourceItem
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -116,8 +117,8 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
     return (sources + itemsFromDependencies).distinct()
   }
 
-  private fun Build.Target.calculateResources(project: PhasedBazelMappedProject): List<Path> {
-    val directResources = resources.calculateFiles()
+  private fun Build.Target.calculateResources(project: PhasedBazelMappedProject): List<ResourceItem> {
+    val directResources = resources.calculateFiles().map(ResourceItem::File)
     val resourcesFromDependencies = resources.calculateModuleDependencies(project).flatMap { it.calculateResources(project) }
     return (directResources + resourcesFromDependencies).distinct()
   }

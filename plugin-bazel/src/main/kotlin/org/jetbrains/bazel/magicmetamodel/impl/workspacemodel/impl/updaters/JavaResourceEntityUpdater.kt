@@ -21,18 +21,14 @@ class JavaResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: W
     parentModuleEntity: ModuleEntity,
   ): List<JavaResourceRootPropertiesEntity> {
     val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
-
-    val sourceRoots =
-      (entitiesToAdd zip contentRootEntities).map { (entityToAdd, contentRootEntity) ->
-        addSourceRootEntity(
-          workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
-          contentRootEntity,
-          entityToAdd,
-          parentModuleEntity,
-        )
-      }
-    return sourceRoots.map { sourceRoot ->
-      addJavaResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, sourceRoot)
+    return (entitiesToAdd zip contentRootEntities).map { (entityToAdd, contentRootEntity) ->
+      val sourceRoot = addSourceRootEntity(
+        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+        contentRootEntity,
+        entityToAdd,
+        parentModuleEntity,
+      )
+      addJavaResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, sourceRoot)
     }
   }
 
@@ -41,6 +37,7 @@ class JavaResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: W
       entitiesToAdd.map { entityToAdd ->
         ContentRoot(
           path = entityToAdd.resourcePath,
+          excluded = entityToAdd.excluded,
         )
       }
 
@@ -68,11 +65,15 @@ class JavaResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: W
     return updatedContentRootEntity.sourceRoots.last()
   }
 
-  private fun addJavaResourceRootEntity(builder: MutableEntityStorage, sourceRoot: SourceRootEntity): JavaResourceRootPropertiesEntity {
+  private fun addJavaResourceRootEntity(
+    builder: MutableEntityStorage,
+    resourceRoot: ResourceRoot,
+    sourceRoot: SourceRootEntity,
+  ): JavaResourceRootPropertiesEntity {
     val entity =
       JavaResourceRootPropertiesEntity(
         generated = DEFAULT_GENERATED,
-        relativeOutputPath = DEFAULT_RELATIVE_OUTPUT_PATH,
+        relativeOutputPath = resourceRoot.relativePath ?: DEFAULT_RELATIVE_OUTPUT_PATH,
         entitySource = sourceRoot.entitySource,
       )
 

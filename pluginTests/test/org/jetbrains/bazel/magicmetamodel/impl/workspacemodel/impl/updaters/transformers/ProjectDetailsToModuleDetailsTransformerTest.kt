@@ -11,6 +11,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.ResourceItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -77,7 +78,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
-        listOf(Path("/root/dir/resource/File.txt")),
+        listOf(Path("/root/dir/resource/File.txt")).map(ResourceItem::File),
         baseDirectory = Path("base/dir"),
         data =
           JvmBuildTarget(
@@ -127,7 +128,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
-        listOf(Path("/root/dir1/resource/File.txt")),
+        listOf(Path("/root/dir1/resource/File.txt")).map(ResourceItem::File),
         baseDirectory = Path("base/dir"),
         data =
           JvmBuildTarget(
@@ -150,7 +151,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
           SourceItem(Path("/root/dir2/example/package/File1.java"), false),
           SourceItem(Path("/root/dir2/example/package/File2.java"), false),
         ),
-        listOf(Path("/root/dir2/resource/File.txt")),
+        listOf(Path("/root/dir2/resource/File.txt")).map(ResourceItem::File),
         baseDirectory = Path("base/dir"),
       )
     val target3Id = Label.parse("target3")

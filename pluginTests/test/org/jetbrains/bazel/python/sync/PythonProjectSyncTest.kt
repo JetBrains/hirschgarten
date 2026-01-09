@@ -17,6 +17,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.LanguageClass
@@ -40,6 +41,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.ResourceItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -113,6 +115,64 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedModuleEntities
     actualModuleEntities.shouldAllHaveTheSameSDK()
+  }
+
+  @Test
+  fun `should ignore resource targets`() {
+    // given
+    val pythonBinaryInfo = GeneratedTargetInfo(targetId = Label.parse("@@server:main_app"), type = "PYTHON_MODULE")
+    val resourceTarget = Label.parse("@@server:resource_target")
+    val resourceFile = Path("/ResourceFile")
+    val target = generateTargetWithResource(
+      info = pythonBinaryInfo,
+      sources = emptyList(),
+      resources = listOf(ResourceItem.File(resourceFile), ResourceItem.Target(resourceTarget)),
+    )
+    val server = BuildServerMock()
+    val resolver = BazelWorkspaceResolveServiceMock(
+      resolvedWorkspace = BazelResolvedWorkspace(
+        targets = listOf(target),
+      ),
+    )
+    val diff = AllProjectStructuresProvider(project).newDiff()
+
+    // when
+    runBlocking {
+      reportSequentialProgress { reporter ->
+        val environment =
+          ProjectSyncHook.ProjectSyncHookEnvironment(
+            project = project,
+            syncScope = SecondPhaseSync,
+            server = server,
+            resolver = resolver,
+            diff = diff,
+            taskId = "test",
+            progressReporter = reporter,
+            buildTargets = emptyMap(),
+          )
+        hook.onSync(environment)
+      }
+    }
+
+    // then
+    val actualModuleEntities =
+      diff.workspaceModelDiff.mutableEntityStorage
+        .entities(ModuleEntity::class.java)
+        .toList()
+        .filter { it.type == ModuleTypeId("PYTHON_MODULE") }
+
+    actualModuleEntities shouldContainExactlyInAnyOrder listOf(
+      generateExpectedModuleEntity(pythonBinaryInfo, emptyList()),
+    )
+
+    val actualSourceRoots = diff.workspaceModelDiff.mutableEntityStorage
+      .entities(SourceRootEntity::class.java)
+      .toList()
+
+    val expectedResourceUrl = resourceFile.toVirtualFileUrl(virtualFileUrlManager)
+    actualSourceRoots.shouldHaveSingleElement {
+      it.url == expectedResourceUrl && it.rootTypeId == SourceRootTypeId("python-resource")
+    }
   }
 
   @Test
@@ -218,6 +278,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     info: GeneratedTargetInfo,
     sources: List<SourceItem>,
     resources: List<Path>,
+  ): RawBuildTarget = generateTargetWithResource(info, sources, resources.map { ResourceItem.File(it) })
+
+  private fun generateTargetWithResource(
+    info: GeneratedTargetInfo,
+    sources: List<SourceItem>,
+    resources: List<ResourceItem>,
   ): RawBuildTarget {
     val target =
       RawBuildTarget(
@@ -282,7 +348,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         }
       ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
     } +
-      target.resources.map {
+    target.resources
+      .map { (it as ResourceItem.File).path }
+      .map {
         val url = it.toVirtualFileUrl(virtualFileUrlManager)
         val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-resource"), parentModuleEntity.entitySource)
         val contentRootEntity =

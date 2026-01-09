@@ -20,7 +20,7 @@ data class RawBuildTarget(
   val dependencies: List<DependencyLabel>,
   override val kind: TargetKind,
   val sources: List<SourceItem>,
-  val resources: List<Path>,
+  val resources: List<ResourceItem>,
   override val baseDirectory: Path,
   override val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
   override var data: BuildTargetData? = null,
@@ -107,3 +107,10 @@ data class ProtobufBuildTarget(
 
 @ClassDiscriminator(8)
 object VoidBuildTarget : BuildTargetData
+
+@ClassDiscriminator(9)
+data class UltimateBuildTarget(
+  val resources: List<Path>,
+  val stripPrefix: Path?,
+  val addPrefix: String?,
+) : BuildTargetData

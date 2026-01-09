@@ -12,6 +12,7 @@ import org.jetbrains.bazel.sync.workspace.languages.protobuf.ProtobufLanguagePlu
 import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.ultimate.UltimateLanguagePlugin
 
 @Service(Service.Level.PROJECT)
 class LanguagePluginsService {
@@ -30,6 +31,7 @@ class LanguagePluginsService {
       LanguageClass.THRIFT,
       LanguageClass.PYTHON,
       LanguageClass.GO,
+      LanguageClass.ULTIMATE,
     )
 
   val all
@@ -45,6 +47,7 @@ class LanguagePluginsService {
     PythonLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
     ThriftLanguagePlugin().also(this::registerLangaugePlugin)
     ProtobufLanguagePlugin(javaPlugin).also(this::registerLangaugePlugin)
+    UltimateLanguagePlugin().also(this::registerLangaugePlugin)
   }
 
   private fun registerLangaugePlugin(plugin: LanguagePlugin<*>) {
@@ -63,8 +66,7 @@ class LanguagePluginsService {
     languagePriority
       .asSequence()
       .filter { langs.contains(it) }
-      .mapNotNull { registry[it] }
-      .firstOrNull()
+      .firstNotNullOfOrNull { registry[it] }
       ?.let { return it }
 
   inline fun <reified PLUGIN> getLanguagePlugin(lang: LanguageClass): PLUGIN =

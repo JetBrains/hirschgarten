@@ -174,5 +174,6 @@
     <orderEntry type="library" scope="TEST" name="grpc-stub" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.test" />
     <orderEntry type="module" module-name="intellij.libraries.jediterm.core" />
+    <orderEntry type="module" module-name="intellij.libraries.velocity" />
   </component>
 </module>

@@ -1,0 +1,28 @@
+load("//${bspPath}/aspects:utils/utils.bzl", "file_location", "create_struct")
+
+def extract_ultimate_info(target, ctx, output_groups, **kwargs):
+    if not is_resourcegroup(ctx):
+        return None, None
+    ultimate_target_info = create_struct(
+        resource_group = extract_resourcegroup_info(target, ctx)
+    )
+    return dict(ultimate_target_info = ultimate_target_info), None
+
+def extract_resourcegroup_info(target, ctx):
+    sources = [f for src in getattr(ctx.rule.attr, "srcs", []) for f in src.files.to_list()]
+    strip_prefix = []
+    if hasattr(ctx.rule.attr, "strip_prefix"):
+        strip_prefix = [
+            file_location(f)
+            for f in getattr(ctx.rule.attr, "strip_prefix").files.to_list()
+        ]
+    add_prefix = getattr(ctx.rule.attr, "add_prefix", "")
+    return create_struct(
+        files = [file_location(f) for f in sources],
+        strip_prefix = strip_prefix,
+        add_prefix = add_prefix,
+    )
+
+def is_resourcegroup(ctx):
+    return ctx.rule.kind == "resourcegroup"
+

@@ -18,6 +18,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.RawPhasedTarget
+import org.jetbrains.bsp.protocol.ResourceItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -239,7 +240,7 @@ class FirstPhaseTargetToBspMapperTest {
               listOf(
                 target1Resource1,
                 target1Resource2,
-              ),
+              ).map(ResourceItem::File),
             baseDirectory = workspaceRoot.resolve(Path("target1")),
           ),
           // target2: now merges its declared language with those inferred from its .kt sources
@@ -277,7 +278,7 @@ class FirstPhaseTargetToBspMapperTest {
               listOf(
                 target3Resource1,
                 target3Resource2,
-              ),
+              ).map(ResourceItem::File),
             baseDirectory = workspaceRoot.resolve(Path("target3")),
           ),
           // // target4
@@ -369,7 +370,7 @@ class FirstPhaseTargetToBspMapperTest {
                 // resources merged from filegroupResources dependency
                 workspaceRoot.resolve("filegroupResources/file1.txt"),
                 workspaceRoot.resolve("filegroupResources/file2.txt"),
-              ),
+              ).map(ResourceItem::File),
             baseDirectory = workspaceRoot.resolve(Path("target8")),
           ),
           RawBuildTarget(

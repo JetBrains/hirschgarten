@@ -8,6 +8,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.ResourceItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -158,7 +159,7 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
                 jvmPackagePrefix = it.packagePrefix,
               )
             },
-          resources = resourceRoots,
+          resources = resourceRoots.map(ResourceItem::File),
           baseDirectory = Path("base/dir"),
         ),
       javacOptions = listOf(),

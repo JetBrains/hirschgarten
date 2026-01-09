@@ -9,7 +9,7 @@ import kotlin.io.path.extension
 
 abstract class WorkspaceModelEntity
 
-data class ContentRoot(val path: Path) : WorkspaceModelEntity()
+data class ContentRoot(val path: Path, val excluded: List<Path> = emptyList()) : WorkspaceModelEntity()
 
 interface ResourceRootEntity
 
@@ -17,9 +17,12 @@ interface EntityDependency
 
 data class GenericSourceRoot(val sourcePath: Path, val rootType: SourceRootTypeId) : WorkspaceModelEntity()
 
-data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) :
-  WorkspaceModelEntity(),
-  ResourceRootEntity
+data class ResourceRoot(
+  val resourcePath: Path,
+  val rootType: SourceRootTypeId,
+  val relativePath: String? = null,
+  val excluded: List<Path> = emptyList(),
+) : WorkspaceModelEntity(), ResourceRootEntity
 
 data class Library(
   val displayName: String,

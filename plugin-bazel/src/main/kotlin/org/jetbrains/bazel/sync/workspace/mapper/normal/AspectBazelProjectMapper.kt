@@ -41,6 +41,7 @@ import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.ResourceItem
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
@@ -852,6 +853,7 @@ class AspectBazelProjectMapper(
       "go_library",
       "go_binary",
       "go_test",
+      "resourcegroup",
     )
 
   // TODO BAZEL-2208
@@ -979,6 +981,9 @@ class AspectBazelProjectMapper(
       if (target.hasGoTargetInfo()) {
         add(LanguageClass.GO)
       }
+      if (target.hasUltimateTargetInfo()) {
+        add(LanguageClass.ULTIMATE)
+      }
       languagesFromKinds[target.kind]?.let {
         addAll(it)
       }
@@ -1022,12 +1027,18 @@ class AspectBazelProjectMapper(
     logger.warn(message)
   }
 
-  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<Path> {
-    val resources = bazelPathsResolver.resolvePaths(target.resourcesList)
-    val extraResources = languagePlugin.resolveAdditionalResources(target)
-    return (resources.asSequence() + extraResources)
+  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<ResourceItem> {
+    val resources = bazelPathsResolver
+      .resolvePaths(target.resourcesList)
+      .asSequence()
+      .plus(languagePlugin.resolveAdditionalResources(target))
       .distinct()
-      .toList()
+      .map { ResourceItem.File(it) }
+    val resourceTargets = target.resourceTargetsList
+      .asSequence()
+      .map { ResourceItem.Target(Label.parse(it)) }
+      .distinct()
+    return (resources + resourceTargets).toList()
   }
 
   private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {

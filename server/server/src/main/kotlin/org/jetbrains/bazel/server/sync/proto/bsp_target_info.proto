@@ -101,6 +101,16 @@ message ProtobufSourceMapping {
   FileLocation proto_file = 2;
 }
 
+message UltimateTargetInfo {
+  UltimateResourceGroup resource_group = 1;
+}
+
+message UltimateResourceGroup {
+  repeated FileLocation files = 1;
+  repeated FileLocation strip_prefix = 2;
+  string add_prefix = 3;
+}
+
 message TargetInfo {
   string id = 10;
   string kind = 20;
@@ -109,6 +119,7 @@ message TargetInfo {
   repeated FileLocation sources = 50;
   repeated FileLocation generated_sources = 51;
   repeated FileLocation resources = 60;
+  repeated string resource_targets = 61;
   map<string, string> env = 70;
   repeated string env_inherit = 80;
   bool executable = 90;
@@ -121,4 +132,5 @@ message TargetInfo {
   PythonTargetInfo python_target_info = 8000;
   GoTargetInfo go_target_info = 12000;
   ProtobufTargetInfo protobuf_target_info = 14000;
+  UltimateTargetInfo ultimate_target_info = 15000;
 }

@@ -29,7 +29,7 @@ class ModuleDetailsToJavaModuleTransformer(
 ) {
   private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, project)
   private val type = ModuleTypeId("JAVA_MODULE")
-  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
+  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(targetsMap)
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargetWithoutLowPrioritySharedSources, project)
 
@@ -66,7 +66,7 @@ class ModuleDetailsToJavaModuleTransformer(
         val javaModuleWithMergedSourceRoots =
           javaModule.copy(
             sourceRoots = dummyModulesResult.mergedSourceRoots,
-            resourceRoots = dummyModulesResult.mergedResourceRoots ?: javaModule.resourceRoots,
+            resourceRoots = dummyModulesResult.mergedResourceRoots,
           )
         listOf(javaModuleWithMergedSourceRoots)
       }

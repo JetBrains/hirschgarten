@@ -43,7 +43,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
 
   data class DummyModulesToAdd(val dummyModules: List<JavaModule>) : Result
 
-  data class MergedRoots(val mergedSourceRoots: List<JavaSourceRoot>, val mergedResourceRoots: List<ResourceRoot>?) : Result
+  data class MergedRoots(val mergedSourceRoots: List<JavaSourceRoot>, val mergedResourceRoots: List<ResourceRoot>) : Result
 
   fun transform(inputEntity: JavaModule): Result {
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
@@ -59,7 +59,9 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
           sourceRootsForParentDirs,
         )
       if (mergedSourceRoots != null) {
-        val mergedResourceRoots = tryMergeResources(inputEntity.resourceRoots)
+        val mergedResourceRoots = inputEntity.resourceRoots
+          .groupBy { it.relativePath }
+          .flatMap { (relativePath, roots) -> tryMergeResources(roots, relativePath) ?: roots }
         return MergedRoots(
           mergedSourceRoots = mergedSourceRoots + irrelevantSourceRoots,
           mergedResourceRoots = mergedResourceRoots,
@@ -148,7 +150,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
    */
   private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargetWithoutLowPrioritySharedSources[this]?.size ?: 0) > 1
 
-  private fun tryMergeResources(resourceRoots: List<ResourceRoot>): List<ResourceRoot>? {
+  private fun tryMergeResources(resourceRoots: List<ResourceRoot>, relativePath: String?): List<ResourceRoot>? {
     if (resourceRoots.isEmpty()) return emptyList()
     val rootType = resourceRoots.first().rootType
 
@@ -157,12 +159,12 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     val commonAncestor = resourceRootPaths.commonAncestor()?.takeIf { it.isDirectory() }
 
     if (commonAncestor != null && !mergedRootsCoverNewFiles(listOf(commonAncestor), resourceRootPathSet)) {
-      return listOf(ResourceRoot(commonAncestor, rootType))
+      return listOf(ResourceRoot(commonAncestor, rootType, relativePath))
     }
 
     val parentDirectories = resourceRootPaths.map { it.parent }.toSet().filterPathsThatDontContainEachOther()
     if (!mergedRootsCoverNewFiles(parentDirectories, resourceRootPathSet)) {
-      return parentDirectories.map { ResourceRoot(it, rootType) }
+      return parentDirectories.map { ResourceRoot(it, rootType, relativePath) }
     }
     return null
   }

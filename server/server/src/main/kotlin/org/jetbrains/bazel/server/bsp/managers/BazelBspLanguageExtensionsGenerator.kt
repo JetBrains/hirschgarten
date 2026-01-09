@@ -36,6 +36,13 @@ enum class Language(
   ),
   Go("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true, false),
   Protobuf("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto", "protobuf"), listOf("extract_protobuf_info"), true, false),
+  Ultimate(
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/ultimate/ultimate_info.bzl",
+    listOf("rules_jvm"),
+    listOf("extract_ultimate_info"),
+    true,
+    false,
+  ),
   ;
 
   fun toLoadStatement(): String =
