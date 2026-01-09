@@ -18,21 +18,25 @@ class BazelProcess internal constructor(
   private val serverPidFuture: CompletableFuture<Long>?,
   private val finishCallback: () -> Unit = {},
 ) {
-  suspend fun waitAndGetResult(ensureAllOutputRead: Boolean = false): BazelProcessResult {
-    return try {
+  suspend fun waitAndGetResult(
+    ensureAllOutputRead: Boolean = false,
+    shouldReadStdout: Boolean = true,
+    shouldReadStderr: Boolean = true,
+  ): BazelProcessResult =
+    try {
       val stopwatch = Stopwatch.start()
       val outputProcessor: OutputProcessor =
         if (logger != null) {
           if (ensureAllOutputRead) {
-            SyncOutputProcessor(process, logger::message)
+            SyncOutputProcessor(process, logger::message, shouldReadStdout = shouldReadStdout, shouldReadStderr = shouldReadStderr)
           } else {
-            AsyncOutputProcessor(process, logger::message)
+            AsyncOutputProcessor(process, logger::message, shouldReadStdout = shouldReadStdout, shouldReadStderr = shouldReadStderr)
           }
         } else {
           if (ensureAllOutputRead) {
-            SyncOutputProcessor(process, LOGGER::info)
+            SyncOutputProcessor(process, LOGGER::info, shouldReadStdout = shouldReadStdout, shouldReadStderr = shouldReadStderr)
           } else {
-            AsyncOutputProcessor(process, LOGGER::info)
+            AsyncOutputProcessor(process, LOGGER::info, shouldReadStdout = shouldReadStdout, shouldReadStderr = shouldReadStderr)
           }
         }
 
@@ -43,7 +47,6 @@ class BazelProcess internal constructor(
     } finally {
       finishCallback()
     }
-  }
 
   private fun logCompletion(exitCode: Int, duration: Duration) {
     logger?.message("Command completed in %s (exit code %d)", Format.duration(duration), exitCode)

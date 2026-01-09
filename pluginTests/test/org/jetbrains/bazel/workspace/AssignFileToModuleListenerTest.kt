@@ -367,7 +367,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   private fun contentChangeEvent(file: VirtualFile) = VFileContentChangeEvent(requestor, file, 0, 0)
 
-  private fun VFileEvent.process(): Job? = AssignFileToModuleListener().afterSingleFileEvent(this)[project.locationHash]
+  private fun VFileEvent.process(): Job? = AssignFileToModuleListener().process(listOf(this))[project.locationHash]
 
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     this.toVirtualFileUrl(virtualFileUrlManager).assertFileBelongsToTargets(*expectedBelongingStatus)

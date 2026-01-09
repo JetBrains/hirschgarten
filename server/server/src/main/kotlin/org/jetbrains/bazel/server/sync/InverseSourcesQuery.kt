@@ -19,31 +19,40 @@ object InverseSourcesQuery {
     workspaceContext: WorkspaceContext,
   ): InverseSourcesResult {
     val relativePaths = params.files.map { it.relativeTo(workspaceRoot) }
-    val fileLabels = relativePaths.associateWithLabels(bazelRunner, workspaceContext)
-    val sourcesByRule =
-      getSourcesByRule(fileLabels.values, bazelRunner, workspaceContext)
-    val rulesBySource = reverseMap(sourcesByRule, fileLabels.values.toSet())
-    val result = params.files.associateWith { rulesBySource[fileLabels[it]] ?: emptyList() }
+    val fileLabels = relativePaths.associateWithLabels(bazelRunner, workspaceContext, params.originId)
+    val result =
+      if (fileLabels.isNotEmpty()) {
+        val sourcesByRule =
+          getSourcesByRule(fileLabels.values, bazelRunner, workspaceContext, params.originId)
+        val rulesBySource = reverseMap(sourcesByRule, fileLabels.values.toSet())
+        params.files.associateWith { rulesBySource[fileLabels[it]] ?: emptyList() }
+      } else {
+        emptyMap()
+      }
     return InverseSourcesResult(result)
   }
 
-  private suspend fun List<Path>.associateWithLabels(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): Map<Path, Label> =
-    prepareFileLabelQuery(this, bazelRunner, workspaceContext).runAndParse(bazelRunner).getSourcesPathLabelMap()
+  private suspend fun List<Path>.associateWithLabels(
+    bazelRunner: BazelRunner,
+    workspaceContext: WorkspaceContext,
+    originId: String?,
+  ): Map<Path, Label> =
+    prepareFileLabelQuery(this, bazelRunner, workspaceContext).runAndParse(bazelRunner, originId).getSourcesPathLabelMap()
 
   private suspend fun getSourcesByRule(
     fileLabels: Collection<Label>,
     bazelRunner: BazelRunner,
     workspaceContext: WorkspaceContext,
+    originId: String?,
   ): Map<Label, List<Label>> {
     val command = prepareInverseSourcesQuery(fileLabels, bazelRunner, workspaceContext)
-    return command.runAndParse(bazelRunner).sourceLabelsByRuleNames()
+    return command.runAndParse(bazelRunner, originId).sourceLabelsByRuleNames()
   }
 
   private fun prepareFileLabelQuery(files: List<Path>, bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): BazelCommand =
     bazelRunner.buildBazelCommand(workspaceContext) {
       fileQuery(files) {
         options.add(BazelFlag.OutputFormat.streamed_proto())
-        options.add(BazelFlag.keepGoing())
       }
     }
 
@@ -59,7 +68,6 @@ object InverseSourcesQuery {
     return bazelRunner.buildBazelCommand(workspaceContext) {
       queryExpression(expression) {
         options.add(BazelFlag.OutputFormat.streamed_proto())
-        options.add(BazelFlag.keepGoing())
         options.add(BazelFlag.orderOutput(false))
         options.add(BazelFlag.universeScope(universe))
       }
@@ -72,11 +80,11 @@ object InverseSourcesQuery {
       .distinct()
       .joinToString(separator = ",") { "$it:all" }
 
-  private suspend fun BazelCommand.runAndParse(bazelRunner: BazelRunner): List<Build.Target> {
-    val bazelProcess = bazelRunner.runBazelCommand(this, serverPidFuture = null, logProcessOutput = false)
+  private suspend fun BazelCommand.runAndParse(bazelRunner: BazelRunner, originId: String?): List<Build.Target> {
+    val bazelProcess = bazelRunner.runBazelCommand(this, serverPidFuture = null, logProcessOutput = true, originId = originId)
+    bazelProcess.waitAndGetResult(false, shouldReadStdout = false)
     val inputStream = bazelProcess.process.inputStream
     val processOutput = generateSequence { Build.Target.parseDelimitedFrom(inputStream) }
-    bazelProcess.process.awaitExit()
     return processOutput.toList()
   }
 
