@@ -2,6 +2,7 @@
 
 package org.jetbrains.bazel.workspace
 
+import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.Service
@@ -38,6 +39,7 @@ import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.toPath
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
@@ -104,9 +106,15 @@ class AssignFileToModuleListener : BulkFileListener {
 
         val workspaceModel = project.serviceAsync<WorkspaceModel>()
         val events = Controller.getInstance(project).getEventsAndClear()
+        val originId = "file-event-" + UUID.randomUUID().toString()
         if (events.isNotEmpty()) {
           controller.processWithLock {
-            processFileEvents(events = events, project = project, workspaceModel = workspaceModel)
+            try {
+              processFileEvents(events = events, project = project, workspaceModel = workspaceModel, originId = originId)
+            } catch (e: CancellationException) {
+              project.syncConsole.finishTask(originId, BazelPluginBundle.message("file.change.processing.message.cancelled"), SkippedResultImpl())
+              throw e
+            }
           }
         }
       }
@@ -219,15 +227,15 @@ private suspend fun processFileEvents(
   events: List<VFileEvent>,
   project: Project,
   workspaceModel: WorkspaceModel,
+  originId: String,
 ) {
-  val originId = "file-event-" + UUID.randomUUID().toString()
-  project.syncConsole.startTask(originId, "Title", "Message")
-
   val entityStorageDiff = MutableEntityStorage.from(workspaceModel.currentSnapshot)
-
   val fileChanges = events.map { it.getOldAndNewFile() }
 
-  withBackgroundProgress(project, getProgressTitle(fileChanges)) {
+  val progressTitle = getProgressTitle(fileChanges)
+  project.syncConsole.startTask(originId, progressTitle, BazelPluginBundle.message("file.change.processing.message.start"))
+
+  withBackgroundProgress(project, progressTitle) {
     reportSequentialProgress { reporter ->
       val targetUtils = project.serviceAsync<TargetUtils>()
       val contentRootsToRemove =
@@ -260,7 +268,8 @@ private suspend fun processFileEvents(
     }
   }
 
-  project.syncConsole.finishTask(originId, "Message 2")
+
+  project.syncConsole.finishTask(originId, BazelPluginBundle.message("file.change.processing.message.finish"))
 }
 
 @NlsSafe
