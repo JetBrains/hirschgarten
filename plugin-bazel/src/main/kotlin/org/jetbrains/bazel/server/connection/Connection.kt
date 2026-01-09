@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.server.connection
 
+import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.BazelBspServer
 import org.jetbrains.bazel.server.bsp.BspServerApi
@@ -14,13 +14,14 @@ import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
 
 suspend fun startServer(
+  project: Project,
   client: JoinedBuildClient,
   workspaceRoot: Path,
   workspaceContext: WorkspaceContext,
   featureFlags: FeatureFlags,
 ): BspServerApi {
   val bspInfo = BspInfo(workspaceRoot)
-  val bspServer = BazelBspServer(bspInfo, workspaceContext, workspaceRoot)
+  val bspServer = BazelBspServer(project, bspInfo, workspaceContext, workspaceRoot)
   val bspClientLogger = BspClientLogger(client)
   val bazelRunner = BazelRunner(bspClientLogger, bspServer.workspaceRoot)
   bspServer.verifyBazelVersion(bazelRunner, workspaceContext)
@@ -28,7 +29,7 @@ suspend fun startServer(
   bazelRunner.bazelInfo = bazelInfo
   val bazelPathsResolver = BazelPathsResolver(bazelInfo)
   val compilationManager =
-    BazelBspCompilationManager(bazelRunner, bazelPathsResolver, client, bspServer.workspaceRoot)
+    BazelBspCompilationManager(project, bazelRunner, bazelPathsResolver, client, bspServer.workspaceRoot)
   val services =
     bspServer.bspServerData(
       bspClientLogger,
