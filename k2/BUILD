@@ -13,7 +13,7 @@ kt_jvm_library(
   srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
   deps = [
     ":k2_resources",
-    "//plugin-bazel:plugin_neverlink",
+    "//:bazel-plugin_neverlink",
   ]
 )
 
