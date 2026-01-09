@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -8,6 +9,7 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
@@ -15,6 +17,7 @@ import java.nio.file.Path
 // TODO: remove this file once we untangle the spaghetti and use the method from ExecuteService
 
 class BazelBspCompilationManager(
+  private val project: Project,
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
   val client: JoinedBuildClient,
@@ -45,6 +48,7 @@ class BazelBspCompilationManager(
               excludedTargets.addAll(targetsSpec.excludedValues)
               this.environment.putAll(environment)
               useBes(bepReader.eventFile.toPath().toAbsolutePath())
+              ptyTermSize = originId?.let { ConsoleService.getInstance(project).ptyTermSize(originId) }
             }
           }
         val result =

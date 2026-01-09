@@ -441,6 +441,12 @@
       key="bazel.run.config.run.with.bazel"
       restartRequired="false"
     />
+    <registryKey
+      defaultValue="true"
+      description="If true, IDEA will run Bazel commands in a pseudo-terminal, providing more rich formatting and progress reporting"
+      key="bazel.use.pty"
+      restartRequired="true"
+    />
 
     <registryKey defaultValue="false"
                  description="Enable running non-binary bazel targets using synthetically generated targets"

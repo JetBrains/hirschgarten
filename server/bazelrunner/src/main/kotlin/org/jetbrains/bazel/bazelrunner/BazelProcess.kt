@@ -24,9 +24,9 @@ class BazelProcess internal constructor(
       val outputProcessor: OutputProcessor =
         if (logger != null) {
           if (ensureAllOutputRead) {
-            SyncOutputProcessor(process, logger::message)
+            SyncOutputProcessor(process, logger::messageWithoutNewLine)
           } else {
-            AsyncOutputProcessor(process, logger::message)
+            AsyncOutputProcessor(process, logger::messageWithoutNewLine)
           }
         } else {
           if (ensureAllOutputRead) {
@@ -46,7 +46,7 @@ class BazelProcess internal constructor(
   }
 
   private fun logCompletion(exitCode: Int, duration: Duration) {
-    logger?.message("Command completed in %s (exit code %d)", Format.duration(duration), exitCode)
+    logger?.message("\nCommand completed in ${Format.duration(duration)} (exit code $exitCode)")
   }
 
   companion object {
