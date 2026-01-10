@@ -6,7 +6,7 @@ import java.nio.Buffer
 import java.nio.ByteBuffer
 import kotlin.math.max
 
-class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer, HasByteBuffer {
+class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer, HasByteBuffer, ByteBufferCompat {
 
   companion object {
     const val MAX_BUFFER_LENGTH: Int = Int.MAX_VALUE - 8
@@ -79,12 +79,12 @@ class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer
 
   override fun writeVarInt(value: Int) {
     reserve(5)
-    ByteBufferBufferUtils.writeVarInt(buffer, value)
+    ByteBufferUtils.writeVarInt(this, value)
   }
 
   override fun writeVarLong(value: Long) {
     reserve(10)
-    ByteBufferBufferUtils.writeVarLong(buffer, value)
+    ByteBufferUtils.writeVarLong(this, value)
   }
 
   override fun writeInt8(value: Byte) {
@@ -112,9 +112,9 @@ class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer
     this.buffer.put(buffer)
   }
 
-  override fun readVarInt(): Int = ByteBufferBufferUtils.readVarInt(buffer)
+  override fun readVarInt(): Int = ByteBufferUtils.readVarInt(this)
 
-  override fun readVarLong(): Long = ByteBufferBufferUtils.readVarLong(buffer)
+  override fun readVarLong(): Long = ByteBufferUtils.readVarLong(this)
 
   override fun readInt8(): Byte = buffer.get()
 
@@ -223,4 +223,8 @@ class UnsafeByteBufferCodecBuffer(override var buffer: ByteBuffer) : CodecBuffer
       ByteBuffer.allocate(newSize)
     }
   }
+
+  override fun get(): Byte = readInt8()
+
+  override fun put(value: Byte): Unit = writeInt8(value)
 }

@@ -130,7 +130,8 @@ class TargetUtilsIndexService(
         javaVersion = it.compilerOptions.javaVersion.orEmpty(),
         javacOptions = it.compilerOptions.javacOpts,
         binaryOutputs = (it.outputs.classJars + it.generatedOutputs.classJars + it.outputs.iJars + it.generatedOutputs.iJars)
-          .map { ctx.pathsResolver.resolve(it) },
+          .map { ctx.pathsResolver.resolve(it) }
+          .toMutableList(),
       )
     }
     val kotlinData = KotlinSyncLanguage.getLangData(vertex)

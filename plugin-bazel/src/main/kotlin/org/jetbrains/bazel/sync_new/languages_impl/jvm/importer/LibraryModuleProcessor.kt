@@ -62,13 +62,13 @@ class LibraryModuleProcessor(
         resourceId = resourceId,
         label = syntheticLabel,
         dependencies = emptySet(),
-        interfaceJars = emptySet(),
+        interfaceJars = hashSetOf(),
         classJars = jvmData.outputs.classJars
           .map { ctx.pathsResolver.resolve(it) }
-          .toSet(),
+          .toHashSet(),
         sourceJars = jvmData.outputs.srcJars
           .map { ctx.pathsResolver.resolve(it) }
-          .toSet(),
+          .toHashSet(),
         isFromInternalTarget = true,
         isLowPriority = false,
       )

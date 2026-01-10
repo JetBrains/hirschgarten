@@ -32,6 +32,8 @@ import org.jetbrains.bazel.sync_new.index.SyncIndexService
 import org.jetbrains.bazel.sync_new.index.SyncIndexUpdaterProvider
 import org.jetbrains.bazel.sync_new.lang.SyncLanguagePlugin
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageService
+import org.jetbrains.bazel.sync_new.storage.BazelStorageService
+import org.jetbrains.bazel.sync_new.storage.CompactingStoreContext
 import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bsp.protocol.RawAspectTarget
 
@@ -103,8 +105,10 @@ class SyncExecutor(
       }
     }
 
-    withTask(project, "save_internal_stores", "Saving internal store") {
-      //(project.service<BazelStorageService>().context as? LifecycleStoreContext)?.save(force = true)
+    if (scope.isFullSync) {
+      withTask(project, "compact_internal_store", "Compacting internal store") {
+        (project.service<BazelStorageService>().context as? CompactingStoreContext)?.compact()
+      }
     }
 
     return SyncStatus.Success

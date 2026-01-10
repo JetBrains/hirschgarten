@@ -210,6 +210,9 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.syncVFSFileContributor"
                     interface="org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFileContributor"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.kryoRegistryExtension"
+                    interface="org.jetbrains.bazel.sync_new.codec.kryo.KryoRegistryExtension"
+                    dynamic="false"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
                     interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
                     dynamic="true"
@@ -460,6 +463,7 @@
     />
 
     <postStartupActivity implementation="org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSInitActivity"/>
+    <applicationService serviceImplementation="org.jetbrains.bazel.sync_new.codec.kryo.KryoRegistryService" preload="true"/>
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />

@@ -28,13 +28,13 @@ class GeneratedSourcesProcessor(
             dependencies = emptySet(),
             interfaceJars = jvmData.outputs.iJars
               .map { ctx.pathsResolver.resolve(it) }
-              .toSet(),
+              .toHashSet(),
             classJars = jvmData.outputs.classJars
               .map { ctx.pathsResolver.resolve(it) }
-              .toSet(),
+              .toHashSet(),
             sourceJars = jvmData.outputs.srcJars
               .map { ctx.pathsResolver.resolve(it) }
-              .toSet(),
+              .toHashSet(),
             isFromInternalTarget = true,
             isLowPriority = false
           )

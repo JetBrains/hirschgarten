@@ -203,5 +203,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module" module-name="intellij.libraries.rd.core" />
+    <orderEntry type="module" module-name="intellij.libraries.classgraph" />
   </component>
 </module>

@@ -163,6 +163,20 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     }
   }
 
+  override fun removeDependency(from: R, to: R) {
+    val fromId = getIdFromResourceId(from)
+    val toId = getIdFromResourceId(to)
+    if (fromId == EMPTY_ID || toId == EMPTY_ID) {
+      return
+    }
+    metadataStore.mutate {
+      val successors = it.id2Successors[fromId]
+      if (successors != null) {
+        successors.rem(toId)
+      }
+    }
+  }
+
   override fun getAllEntities(): Sequence<E> = resourceId2EntityStore.values().asClosingSequence()
 
   //override fun getAllEntities(): Sequence<E> {

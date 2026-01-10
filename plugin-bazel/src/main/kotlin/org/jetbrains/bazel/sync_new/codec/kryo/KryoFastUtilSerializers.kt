@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
 import it.unimi.dsi.fastutil.longs.LongList
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
@@ -31,6 +32,9 @@ fun Kryo.registerFastUtilSerializers() {
   register(IntArrayList::class.java, KryoIntArrayListSerializer)
   register(IntOpenHashSet::class.java, KryoIntOpenHashSetSerializer)
   register(Int2IntOpenHashMap::class.java, Int2IntOpenHashMapSerializer)
+
+  register(LongOpenHashSet::class.java, KryoLongSetSerializer)
+  register(Long2ObjectOpenHashMap::class.java, Long2ObjectMapSerializer)
 }
 
 object KryoLongListSerializer : Serializer<LongList>() {

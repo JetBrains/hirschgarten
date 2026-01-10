@@ -6,7 +6,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.codec.kryo.ClassTag
 import org.jetbrains.bazel.sync_new.codec.kryo.EnumTag
 import org.jetbrains.bazel.sync_new.codec.kryo.EnumTagged
@@ -22,7 +21,6 @@ import org.jetbrains.bazel.sync_new.index.syncIndexService
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.hash.hash
-import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 import org.jetbrains.bazel.sync_new.util.buildEnumSet
 import org.jetbrains.bazel.target.targetUtils
 import java.util.EnumSet
@@ -45,7 +43,7 @@ class TargetTreeIndexService(
   override suspend fun updateIndexes(ctx: SyncContext, diff: SyncDiff) {
     val (added, removed) = diff.split
     for (removed in removed) {
-      targetTreeIndex.invalidate(hashLabel(removed.label))
+      targetTreeIndex.invalidate(hash(removed.label))
     }
     for (added in added) {
       val target = added.getBuildTarget() ?: continue
@@ -64,14 +62,12 @@ class TargetTreeIndexService(
           }
         },
       )
-      targetTreeIndex.set(hashLabel(target.label), entry)
+      targetTreeIndex.set(hash(target.label), entry)
     }
 
     targetEntriesCached.drop()
     project.targetUtils.emitTargetListUpdate()
   }
-
-  private fun hashLabel(label: Label) = hash { putResolvedLabel(label.assumeResolved()) }
 
   fun getTargetTreeEntriesCached(): Sequence<TargetTreeEntry> = targetEntriesCached.value.asSequence()
 

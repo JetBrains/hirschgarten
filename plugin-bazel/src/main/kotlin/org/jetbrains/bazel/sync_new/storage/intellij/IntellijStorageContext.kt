@@ -6,6 +6,7 @@ import com.intellij.openapi.project.getProjectDataPath
 import org.jetbrains.bazel.sync_new.storage.KVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryStorageContext
+import org.jetbrains.bazel.sync_new.storage.util.FileUtils
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -44,7 +45,9 @@ internal class IntellijStorageContext(
     }
   }
 
-  override fun getSaveFile(): Path {
-    return project.getProjectDataPath("bazel-intellij-storage.dat")
+  override fun getStoreFile(storeName: String): Path {
+    return project.getProjectDataPath("bazel-intellij-storage")
+      .resolve("bazel_intellij_flat")
+      .resolve("${FileUtils.sanitize(storeName)}.dat")
   }
 }

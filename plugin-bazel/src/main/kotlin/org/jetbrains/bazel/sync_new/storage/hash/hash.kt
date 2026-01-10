@@ -7,7 +7,7 @@ import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
-inline fun hash(crossinline op: HashStream128.() -> Unit): HashValue128 {
+fun hash(op: HashStream128.() -> Unit): HashValue128 {
   return Hashing.xxh3_128().hashStream().apply(op).get()
 }
 

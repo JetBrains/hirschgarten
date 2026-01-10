@@ -28,6 +28,11 @@ interface IncrementalEntityStore<R : IncrementalResourceId, E : IncrementalEntit
   fun addDependency(from: R, to: R)
 
   /**
+   * Remove directed resource dependency
+   */
+  fun removeDependency(from: R, to: R)
+
+  /**
    * Get all dependants of the given resource id
    */
   fun getTransitiveDependants(resourceId: R): Sequence<R>
