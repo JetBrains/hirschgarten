@@ -113,7 +113,6 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
                 originId = "",
                 buildBeforeRun = true,
                 checkVisibility = true,
-                workingDirectory = project.rootDir.path,
                 arguments = emptyList(),
                 environmentVariables = emptyMap(),
                 additionalBazelParams = bazelParams.joinToString(" "),
