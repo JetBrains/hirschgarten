@@ -107,7 +107,7 @@ class JdepsAnalyzer(
       val vertexReferenceId = JvmResourceId.VertexReference(vertexId = vertexId)
       val jdepsTransitiveId = JvmResourceId.JdepsCache(vertexId = vertexId)
       storage.createEntity(jdepsTransitiveId) {
-        JvmModuleEntity.JdepsCache(resourceId = it, myJdeps = thisTargetResolvedJDeps)
+        JvmModuleEntity.JdepsCache(resourceId = it, myJdeps = thisTargetResolvedJDeps.toHashSet())
       }
 
       vertexId2JdepsCache.put(vertexId, thisTargetResolvedJDeps)
@@ -128,9 +128,9 @@ class JdepsAnalyzer(
             resourceId = it,
             label = label,
             dependencies = setOf(),
-            interfaceJars = setOf(),
-            classJars = setOf(jdep),
-            sourceJars = setOf(),
+            interfaceJars = hashSetOf(),
+            classJars = hashSetOf(jdep),
+            sourceJars = hashSetOf(),
             isFromInternalTarget = false,
             isLowPriority = false,
           )

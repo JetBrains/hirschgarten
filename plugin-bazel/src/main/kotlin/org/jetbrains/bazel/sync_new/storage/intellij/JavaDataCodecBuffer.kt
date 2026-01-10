@@ -3,6 +3,8 @@ package org.jetbrains.bazel.sync_new.storage.intellij
 import org.jetbrains.bazel.sync_new.codec.CodecContext
 import org.jetbrains.bazel.sync_new.codec.ReadableOnlyCodecBuffer
 import org.jetbrains.bazel.sync_new.codec.WritableOnlyCodecBuffer
+import org.jetbrains.bazel.sync_new.storage.util.ByteBufferCompat
+import org.jetbrains.bazel.sync_new.storage.util.ByteBufferUtils
 import java.io.DataInput
 import java.io.DataOutput
 import java.nio.ByteBuffer
@@ -10,7 +12,7 @@ import java.nio.ByteBuffer
 data object JavaDataCodecContext : CodecContext
 
 @JvmInline
-internal value class DataOutputCodecBuffer(val output: DataOutput) : WritableOnlyCodecBuffer {
+internal value class DataOutputCodecBuffer(val output: DataOutput) : WritableOnlyCodecBuffer, ByteBufferCompat {
   override val position: Int
     get() = error("not supported")
   override val size: Int
@@ -21,23 +23,23 @@ internal value class DataOutputCodecBuffer(val output: DataOutput) : WritableOnl
   }
 
   override fun writeVarInt(value: Int) {
-    DataStreamUtils.writeVarInt32(this.output, value)
+    ByteBufferUtils.writeVarInt(this, value)
   }
 
   override fun writeVarLong(value: Long) {
-    DataStreamUtils.writeVarInt64(this.output, value)
+    ByteBufferUtils.writeVarLong(this, value)
   }
 
   override fun writeInt8(value: Byte) {
-    output.writeByte(value.toInt())
+    this.put(value)
   }
 
   override fun writeInt32(value: Int) {
-    output.writeInt(value)
+    ByteBufferUtils.writeVarInt(this, value)
   }
 
   override fun writeInt64(value: Long) {
-    output.writeLong(value)
+    ByteBufferUtils.writeVarLong(this, value)
   }
 
   override fun writeBytes(bytes: ByteArray, offset: Int, length: Int) {
@@ -54,33 +56,41 @@ internal value class DataOutputCodecBuffer(val output: DataOutput) : WritableOnl
       output.write(bytes)
     }
   }
+
+  override fun get(): Byte {
+    error("not supported")
+  }
+
+  override fun put(value: Byte) {
+    output.writeByte(value.toInt())
+  }
 }
 
 @JvmInline
-internal value class DataInputCodecBuffer(val input: DataInput) : ReadableOnlyCodecBuffer {
+internal value class DataInputCodecBuffer(val input: DataInput) : ReadableOnlyCodecBuffer, ByteBufferCompat {
   override val position: Int
     get() = error("not supported")
   override val size: Int
     get() = Int.MAX_VALUE
 
   override fun readVarInt(): Int {
-    return DataStreamUtils.readVarInt32(input)
+    return ByteBufferUtils.readVarInt(this)
   }
 
   override fun readVarLong(): Long {
-    return DataStreamUtils.readVarInt64(input)
+    return ByteBufferUtils.readVarLong(this)
   }
 
   override fun readInt8(): Byte {
-    return input.readByte()
+    return get()
   }
 
   override fun readInt32(): Int {
-    return input.readInt()
+    return ByteBufferUtils.readInt(this)
   }
 
   override fun readInt64(): Long {
-    return input.readLong()
+    return ByteBufferUtils.readLong(this)
   }
 
   override fun readBytes(bytes: ByteArray, offset: Int, length: Int) {
@@ -91,5 +101,13 @@ internal value class DataInputCodecBuffer(val input: DataInput) : ReadableOnlyCo
     val array = ByteArray(size)
     input.readFully(array)
     return ByteBuffer.wrap(array)
+  }
+
+  override fun get(): Byte {
+    return input.readByte()
+  }
+
+  override fun put(value: Byte) {
+    error("not supported")
   }
 }

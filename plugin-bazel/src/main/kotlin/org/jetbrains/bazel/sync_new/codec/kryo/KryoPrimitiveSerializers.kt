@@ -30,10 +30,19 @@ import org.jetbrains.bazel.sync_new.graph.impl.BazelPath
 import java.nio.file.Path
 
 fun Kryo.registerPrimitiveSerializers() {
-  register(HashValue128::class.java, HashValue128Serializer)
-  addDefaultSerializer(Label::class.java, CodecKryoSerializer(LabelCodec))
-  addDefaultSerializer(BazelPath::class.java, CodecKryoSerializer(BazelPathCodec))
-  addDefaultSerializer(Path::class.java, CodecKryoSerializer(NIOPathCodec))
+  register(HashValue128::class.java, HashValue128Serializer, 1193690579)
+
+  addDefaultSerializer(Label::class.java, CodecKryoSerializer.of(LabelCodec))
+  register(ResolvedLabel::class.java, 2134527274)
+  register(RelativeLabel::class.java, 1243654471)
+  register(SyntheticLabel::class.java, 1243654471)
+
+  addDefaultSerializer(BazelPath::class.java, CodecKryoSerializer.of(BazelPathCodec))
+  register(BazelPath.Absolute::class.java, 950368927)
+  register(BazelPath.MainWorkspace::class.java, 1889420056)
+  register(BazelPath.ExternalWorkspace::class.java, 975726949)
+
+  addDefaultSerializer(Path::class.java, CodecKryoSerializer.of(NIOPathCodec))
 }
 
 object HashValue128Serializer : Serializer<HashValue128>() {
@@ -59,7 +68,9 @@ object HashValue128Serializer : Serializer<HashValue128>() {
 
 object KryoCodecContext : CodecContext
 
-class CodecKryoSerializer<T>(private val codec: Codec<T>) : Serializer<T>() {
+abstract class CodecKryoSerializer<T> : Serializer<T>() {
+  abstract val codec: Codec<T>
+
   override fun write(kryo: Kryo, output: Output, obj: T) {
     codec.encode(KryoCodecContext, KryoWriteCodecBuffer(output), obj)
   }
@@ -71,4 +82,16 @@ class CodecKryoSerializer<T>(private val codec: Codec<T>) : Serializer<T>() {
   ): T? {
     return codec.decode(KryoCodecContext, KryoReadCodecBuffer(input))
   }
+
+  companion object {
+    fun <T> of(codec: Codec<T>): CodecKryoSerializer<T> = object : CodecKryoSerializer<T>() {
+      override val codec: Codec<T> = codec
+    }
+  }
+}
+
+class KryoNIOPathSerializer : CodecKryoSerializer<Path>() {
+  override val codec: Codec<Path>
+    get() = NIOPathCodec
+
 }

@@ -1,10 +1,13 @@
 package org.jetbrains.bazel.sync_new.flow.index.target_utils
 
+import com.esotericsoftware.kryo.kryo5.serializers.CollectionSerializer.BindCollection
+import com.esotericsoftware.kryo.kryo5.serializers.FieldSerializer
 import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.codec.kryo.ClassTag
 import org.jetbrains.bazel.sync_new.codec.kryo.EnumTag
 import org.jetbrains.bazel.sync_new.codec.kryo.EnumTagged
+import org.jetbrains.bazel.sync_new.codec.kryo.KryoNIOPathSerializer
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTag
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTagged
 import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
@@ -30,6 +33,7 @@ internal class LegacyBuildTarget(
   val targetKind: LegacyTargetKind,
 
   @field:Tag(4)
+  @field:FieldSerializer.Bind(valueClass = Path::class, serializer = KryoNIOPathSerializer::class)
   val baseDirectory: Path,
 
   @field:Tag(5)
@@ -57,7 +61,8 @@ internal data class LegacyJvmTargetData(
   val javacOptions: List<String>,
 
   @field:Tag(4)
-  val binaryOutputs: List<Path>,
+  @field:BindCollection(elementClass = Path::class, elementSerializer = KryoNIOPathSerializer::class)
+  val binaryOutputs: MutableList<Path>,
 ) : LegacyBuildTargetData
 
 @Tagged

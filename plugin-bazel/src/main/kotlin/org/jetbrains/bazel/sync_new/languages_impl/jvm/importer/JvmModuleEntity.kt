@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.sync_new.languages_impl.jvm.importer
 
 import com.dynatrace.hash4j.hashing.HashValue128
+import com.esotericsoftware.kryo.kryo5.serializers.CollectionSerializer.BindCollection
+import com.esotericsoftware.kryo.kryo5.serializers.FieldSerializer.Bind
 import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.codec.kryo.ClassTag
+import org.jetbrains.bazel.sync_new.codec.kryo.KryoNIOPathSerializer
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTag
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTagged
 import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
@@ -13,7 +15,6 @@ import org.jetbrains.bazel.sync_new.lang.store.IncrementalResourceId
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.JvmToolchain
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.hash.putLabel
-import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 import java.nio.file.Path
 
 @SealedTagged
@@ -29,6 +30,7 @@ sealed interface JvmModuleEntity : IncrementalEntity {
     override val resourceId: Int,
 
     @field:Tag(2)
+    @field:Bind(valueClass = Path::class, serializer = KryoNIOPathSerializer::class)
     val baseDirectory: Path,
 
     @field:Tag(3)
@@ -41,7 +43,8 @@ sealed interface JvmModuleEntity : IncrementalEntity {
     val sources: List<JvmSourceItem>,
 
     @field:Tag(6)
-    val resources: List<Path>,
+    @field:BindCollection(elementClass = Path::class, elementSerializer = KryoNIOPathSerializer::class)
+    val resources: MutableList<Path>,
 
     @field:Tag(7)
     val legacyKotlinData: LegacyKotlinTargetData?,
@@ -66,13 +69,16 @@ sealed interface JvmModuleEntity : IncrementalEntity {
     val dependencies: Set<Label>,
 
     @field:Tag(4)
-    val interfaceJars: Set<Path>,
+    @field:BindCollection(elementClass = Path::class, elementSerializer = KryoNIOPathSerializer::class, )
+    val interfaceJars: HashSet<Path>,
 
     @field:Tag(5)
-    val classJars: Set<Path>,
+    @field:BindCollection(elementClass = Path::class, elementSerializer = KryoNIOPathSerializer::class, )
+    val classJars: HashSet<Path>,
 
     @field:Tag(6)
-    val sourceJars: Set<Path>,
+    @field:BindCollection(elementClass = Path::class, elementSerializer = KryoNIOPathSerializer::class, )
+    val sourceJars: HashSet<Path>,
 
     @field:Tag(7)
     val isFromInternalTarget: Boolean,
@@ -100,7 +106,8 @@ sealed interface JvmModuleEntity : IncrementalEntity {
     override val resourceId: Int,
 
     @field:Tag(2)
-    val myJdeps: Set<Path>,
+    @field:BindCollection(elementClass = Path::class, elementSerializer = KryoNIOPathSerializer::class)
+    val myJdeps: HashSet<Path>,
   ) : JvmModuleEntity
 
   @SealedTag(5)
@@ -120,6 +127,7 @@ sealed interface JvmModuleEntity : IncrementalEntity {
 @ClassTag(1812664773)
 data class JvmSourceItem(
   @field:Tag(1)
+  @field:Bind(valueClass = Path::class, serializer = KryoNIOPathSerializer::class)
   val path: Path,
 
   @field:Tag(2)
@@ -151,6 +159,7 @@ data class LegacyKotlinTargetData(
 @ClassTag(1561055026)
 data class LegacyJvmTargetData(
   @field:Tag(1)
+  @field:Bind(valueClass = Path::class, serializer = KryoNIOPathSerializer::class)
   val javaHome: Path?,
 
   @field:Tag(2)
@@ -160,7 +169,8 @@ data class LegacyJvmTargetData(
   val javacOpts: List<String>,
 
   @field:Tag(4)
-  val binaryOutputs: List<Path>,
+  @field:BindCollection(elementClass = Path::class, elementSerializer = KryoNIOPathSerializer::class)
+  val binaryOutputs: MutableList<Path>,
 
   @field:Tag(5)
   val toolchain: JvmToolchain?,

@@ -26,6 +26,10 @@ interface LifecycleStoreContext {
   fun save(force: Boolean = false)
 }
 
+interface CompactingStoreContext {
+  suspend fun compact()
+}
+
 inline fun <reified K : Any, reified V : Any> StorageContext.createKVStore(name: String, vararg hints: StorageHints): KVStoreBuilder<*, K, V> =
   createKVStore(name, K::class.java, V::class.java, *hints)
 

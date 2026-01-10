@@ -49,7 +49,7 @@ class SourceModuleProcessor(
         label = target.label,
         dependencies = computeDirectDependencies(ctx, target),
         sources = computeSources(ctx, jvmData),
-        resources = computeResources(ctx, target),
+        resources = computeResources(ctx, target).toMutableList(),
         legacyKotlinData = computeLegacyKotlinData(ctx, target),
         legacyJvmData = computeLegacyJvmData(ctx, jvmData),
       )
@@ -69,13 +69,13 @@ class SourceModuleProcessor(
         dependencies = computeDirectDependencies(ctx, target),
         interfaceJars = jvmData.outputs.iJars
           .map { ctx.pathsResolver.resolve(it) }
-          .toSet(),
+          .toHashSet(),
         classJars = jvmData.outputs.classJars
           .map { ctx.pathsResolver.resolve(it) }
-          .toSet(),
+          .toHashSet(),
         sourceJars = jvmData.outputs.srcJars
           .map { ctx.pathsResolver.resolve(it) }
-          .toSet(),
+          .toHashSet(),
         isFromInternalTarget = target.label.isMainWorkspace,
         isLowPriority = false,
       )
@@ -130,7 +130,8 @@ class SourceModuleProcessor(
       javaVersion = compilerOpts.javaVersion.orEmpty(),
       javacOpts = compilerOpts.javacOpts,
       binaryOutputs = (outputs.classJars + generatedOutputs.classJars + outputs.iJars + generatedOutputs.iJars)
-        .map { ctx.pathsResolver.resolve(it) },
+        .map { ctx.pathsResolver.resolve(it) }
+        .toMutableList(),
       toolchain = jvmData.toolchain,
     )
   }

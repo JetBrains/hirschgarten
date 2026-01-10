@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync_new.flow.hash_diff
 import com.dynatrace.hash4j.hashing.HashValue128
 import com.intellij.openapi.components.service
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.consistentLabels
@@ -16,7 +15,6 @@ import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
 import org.jetbrains.bazel.sync_new.storage.hash.hash
-import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 import org.jetbrains.bazel.sync_new.storage.set
 import org.jetbrains.bazel.sync_new.util.iterator
 
@@ -26,12 +24,12 @@ class SyncHasherProcessor {
 
     val newTarget2Hash = computeTargetHashes(ctx, diff.added + diff.changed)
     for (added in diff.added) {
-      target2Hash[hashLabel(added)] = newTarget2Hash[added] ?: continue
+      target2Hash[hash(added)] = newTarget2Hash[added] ?: continue
     }
 
     val newChanged = mutableSetOf<Label>()
     for (changed in diff.changed) {
-      val oldHash = target2Hash[hashLabel(changed)]
+      val oldHash = target2Hash[hash(changed)]
       if (oldHash == null) {
         newChanged.add(changed)
         continue
@@ -43,11 +41,11 @@ class SyncHasherProcessor {
     }
 
     for (changed in diff.changed) {
-      target2Hash[hashLabel(changed)] = newTarget2Hash[changed] ?: continue
+      target2Hash[hash(changed)] = newTarget2Hash[changed] ?: continue
     }
 
     for (removed in diff.removed) {
-      target2Hash.remove(hashLabel(removed))
+      target2Hash.remove(hash(removed))
     }
 
     for ((target, flags) in diff.flags) {
@@ -83,6 +81,4 @@ class SyncHasherProcessor {
       .map { it.rule }
       .associate { Label.parse(it.name) to BuildRuleProtoHasher.hash(it) }
   }
-
-  private fun hashLabel(label: Label) = hash { putResolvedLabel(label.assumeResolved()) }
 }

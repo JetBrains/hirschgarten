@@ -9,6 +9,7 @@ import org.jetbrains.bazel.sync_new.codec.kryo.ClassTag
 import org.jetbrains.bazel.sync_new.codec.kryo.EnumTag
 import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
 import org.jetbrains.bazel.sync_new.codec.kryo.EnumTagged
+import org.jetbrains.bazel.sync_new.codec.kryo.KryoNIOPathSerializer
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.TargetVertex
@@ -41,6 +42,7 @@ data class BazelTargetVertex(
   val targetData: Long2ObjectMap<SyncTargetData>,
 
   @field:Tag(7)
+  @field:Bind(valueClass = Path::class, serializer = KryoNIOPathSerializer::class)
   val baseDirectory: Path,
 
   @field:Tag(8)

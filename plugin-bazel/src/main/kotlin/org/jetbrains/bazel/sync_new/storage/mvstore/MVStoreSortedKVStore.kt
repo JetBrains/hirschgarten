@@ -60,7 +60,9 @@ open class MVStoreSortedKVStore<K, V>(
         override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision? {
           return if (existingValue == null) {
             MVMap.Decision.PUT
-          } else {
+          }
+          else {
+            result = existingValue
             MVMap.Decision.ABORT
           }
         }
@@ -82,18 +84,18 @@ open class MVStoreSortedKVStore<K, V>(
     map.operate(
       key, null,
       object : MVMap.DecisionMaker<V>() {
-        override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision {
-          if (providedValue == null) {
+        override fun decide(existingValue: V?, providedValue: V?): MVMap.Decision? {
+          result = op(key, existingValue)
+          if (result == null) {
             return MVMap.Decision.REMOVE
+          } else {
+            return MVMap.Decision.PUT
           }
-          return MVMap.Decision.PUT
         }
 
         override fun <T : V?> selectValue(existingValue: T?, providedValue: T?): T? {
           @Suppress("UNCHECKED_CAST")
-          val newValue = op(key, existingValue) as T
-          result = newValue
-          return newValue
+          return result as T?
         }
       },
     )
@@ -108,7 +110,15 @@ class MVStoreSortedKVStoreBuilder<K, V>(
   private val valueType: Class<V>,
 ) : BaseSortedKVStoreBuilder<MVStoreSortedKVStoreBuilder<K, V>, K, V>() {
   override fun build(): SortedKVStore<K, V> {
-    val comparator = keyComparator?.invoke() ?: error("Key comparator must be specified")
+    val comparator = keyComparator?.invoke() ?: run {
+      if (Comparable::class.java.isAssignableFrom(keyType)) {
+        @Suppress("UNCHECKED_CAST")
+        naturalOrder<Comparable<Any>>() as Comparator<K>
+      }
+      else {
+        MVStoreComparators.getFallbackComparator(keyType) ?: error("Key type must be Comparable or a comparator must be provided")
+      }
+    }
     val builder = MVMap.Builder<K, V>()
     builder.setKeyType(
       MVStoreOrderableDataType(

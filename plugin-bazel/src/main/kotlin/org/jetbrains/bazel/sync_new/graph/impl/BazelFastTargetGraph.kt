@@ -27,7 +27,6 @@ import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.getValue
 import org.jetbrains.bazel.sync_new.storage.hash.hash
-import org.jetbrains.bazel.sync_new.storage.hash.putResolvedLabel
 import org.jetbrains.bazel.sync_new.storage.set
 
 class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelTargetVertex, BazelTargetEdge, BazelTargetCompact> {
@@ -135,8 +134,11 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
   }
 
   override fun getVertexIdByLabel(label: Label): ID {
-    val hash = hash { putResolvedLabel(label as ResolvedLabel) }
-    return labelHash2VertexId.getInt(hash)
+    val hash = hash(label)
+    if (label.toString().contains("kt_lib")){
+      println("DDDDD ${hash}")
+    }
+    return labelHash2VertexId.getOrDefault(hash, EMPTY_ID)
   }
 
   override fun getLabelByVertexId(id: ID): Label? = id2Compact.get(id)?.label
@@ -175,11 +177,14 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
   }
 
   override fun addVertex(vertex: BazelTargetVertex) {
+    if (vertex.label.toString().contains("kt_lib")) {
+      print("ok1")
+    }
     id2Vertex.put(vertex.vertexId, vertex)
     id2Compact.put(vertex.vertexId, vertex.toTargetCompact())
     id2Successors.computeIfAbsent(vertex.vertexId) { IntArrayList() }
 
-    val labelHash = hash { putResolvedLabel(vertex.label as ResolvedLabel) }
+    val labelHash = hash(vertex.label)
     labelHash2VertexId.put(labelHash, vertex.vertexId)
   }
 
@@ -197,8 +202,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
     val vertex = id2Vertex.remove(key = id, useReturn = true) ?: return null
     id2Compact.remove(id)
 
-    val labelHash = hash { putResolvedLabel(vertex.label as ResolvedLabel) }
-    labelHash2VertexId.removeInt(labelHash)
+    labelHash2VertexId.removeInt(hash(vertex.label))
 
     val successorIds = id2Successors.get(vertex.vertexId)
     if (successorIds != null) {

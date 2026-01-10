@@ -17,21 +17,21 @@ class KotlinStdlibProcessor(
   private val stdlibSingletonLabel = Label.synthetic("rules_kotlin_kotlin-stdlibs")
 
   suspend fun computeKotlinStdlib(ctx: SyncContext, diff: SyncDiff) {
-    val (added, removed) = diff.split
+    val (added, _) = diff.split
     for (added in added) {
       val target = added.getBuildTarget() ?: continue
       val kotlinData = KotlinSyncLanguage.getLangData(target) ?: continue
       storage.createEntity(JvmResourceId.KotlinStdlib) { resourceId ->
         val classJars = kotlinData.stdlibJars.map { ctx.pathsResolver.resolve(it) }
-          .toSet()
+          .toHashSet()
         val inferredSourceJars = classJars
           .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
-          .toSet()
+          .toHashSet()
         JvmModuleEntity.LegacyLibraryModule(
           resourceId = resourceId,
           label = stdlibSingletonLabel,
           dependencies = emptySet(),
-          interfaceJars = emptySet(),
+          interfaceJars = hashSetOf(),
           classJars = classJars,
           sourceJars = inferredSourceJars,
           isFromInternalTarget = true,
@@ -74,6 +74,10 @@ class KotlinStdlibProcessor(
 
     // remove all stdlib dependencies
     for (label in allRoots) {
+      storage.removeDependency(
+        from = JvmResourceId.VertexReference(vertexId = graph.getVertexIdByLabel(label = label)),
+        to = JvmResourceId.KotlinStdlib,
+      )
       storage.modifyEntityTyped(JvmResourceId.VertexDeps(label = label)) { deps: JvmModuleEntity.VertexDeps ->
         if (stdlibSingletonLabel in deps.deps) {
           deps.copy(deps = deps.deps - stdlibSingletonLabel)
@@ -96,6 +100,7 @@ class KotlinStdlibProcessor(
         continue
       }
       val label = graph.getLabelByVertexId(target) ?: continue
+      storage.addDependency(JvmResourceId.VertexReference(vertexId = target), JvmResourceId.KotlinStdlib)
       storage.modifyEntityTyped(JvmResourceId.VertexDeps(label = label)) { entity: JvmModuleEntity.VertexDeps ->
         entity.copy(deps = entity.deps + stdlibSingletonLabel)
       }

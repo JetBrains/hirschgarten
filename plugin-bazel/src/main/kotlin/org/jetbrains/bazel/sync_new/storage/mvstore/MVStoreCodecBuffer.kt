@@ -24,7 +24,9 @@ value class MVStoreWriteCodecBuffer(
     get() = writeBuffer.capacity()
 
   override fun reserve(size: Int) {
-    WRITE_BUFFER_GROW_HANDLE.invokeExact(writeBuffer, size)
+    if (writeBuffer.buffer.remaining() < size) {
+      WRITE_BUFFER_GROW_HANDLE.invokeExact(writeBuffer, size)
+    }
   }
 
   override fun flip() {

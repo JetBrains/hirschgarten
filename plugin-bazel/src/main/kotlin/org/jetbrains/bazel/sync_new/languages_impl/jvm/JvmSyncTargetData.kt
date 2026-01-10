@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.sync_new.languages_impl.jvm
 
+import com.esotericsoftware.kryo.kryo5.serializers.FieldSerializer.Bind
 import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
 import org.jetbrains.bazel.sync_new.codec.kryo.ClassTag
 import org.jetbrains.bazel.sync_new.codec.kryo.EnumTag
 import org.jetbrains.bazel.sync_new.codec.kryo.EnumTagged
+import org.jetbrains.bazel.sync_new.codec.kryo.KryoNIOPathSerializer
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTag
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTagged
 import org.jetbrains.bazel.sync_new.codec.kryo.Tagged
@@ -48,6 +50,7 @@ data class JvmCompilerOptions(
   val javacOpts: List<String>,
 
   @field:Tag(3)
+  @field:Bind(valueClass = Path::class, serializer = KryoNIOPathSerializer::class)
   val javaHome: Path?,
 )
 
@@ -101,6 +104,7 @@ data class JvmToolchain(
   val kind: JvmToolchainKind,
 
   @field:Tag(2)
+  @field:Bind(valueClass = Path::class, serializer = KryoNIOPathSerializer::class)
   val javaHome: Path,
 )
 

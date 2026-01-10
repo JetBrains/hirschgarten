@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.sync_new.storage.hash
 
-import com.dynatrace.hash4j.hashing.HashSink
 import com.dynatrace.hash4j.hashing.HashStream128
-import com.dynatrace.hash4j.hashing.HashValue128
 import org.jetbrains.bazel.label.AllPackagesBeneath
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.AllRuleTargetsAndFiles
@@ -34,20 +32,21 @@ internal fun HashStream128.putLabel(label: Label) {
     is SyntheticLabel -> {
       putByte(3)
       hashLabelTarget(label.target)
-      hashLabelPackage(label.packagePath)
     }
   }
 }
 
-internal fun HashStream128.putResolvedLabel(label: ResolvedLabel) {
+private fun HashStream128.putResolvedLabel(label: ResolvedLabel) {
   hashLabelRepo(label.repo)
   hashLabelPackage(label.packagePath)
   hashLabelTarget(label.target)
 }
 
-private fun HashSink.hashLabelRepo(repo: RepoType) {
+private fun HashStream128.hashLabelRepo(repo: RepoType) {
   when (repo) {
-    Main -> putByte(0)
+    Main -> {
+      putByte(0)
+    }
     is Canonical -> {
       putByte(1)
       putByteArray(repo.repoName.toByteArray())
@@ -60,10 +59,15 @@ private fun HashSink.hashLabelRepo(repo: RepoType) {
   }
 }
 
-private fun HashSink.hashLabelPackage(packagePath: PackageType) {
+private fun HashStream128.hashLabelPackage(packagePath: PackageType) {
   when (packagePath) {
-    is AllPackagesBeneath -> putByte(0)
-    is Package -> putByte(1)
+    is AllPackagesBeneath -> {
+      putByte(0)
+    }
+
+    is Package -> {
+      putByte(1)
+    }
   }
   for (string in packagePath.pathSegments) {
     putByteArray(string.toByteArray())
@@ -71,11 +75,20 @@ private fun HashSink.hashLabelPackage(packagePath: PackageType) {
   putInt(packagePath.pathSegments.size)
 }
 
-private fun HashSink.hashLabelTarget(target: TargetType) {
+private fun HashStream128.hashLabelTarget(target: TargetType) {
   when (target) {
-    AmbiguousEmptyTarget -> putByte(0)
-    AllRuleTargets -> putByte(1)
-    AllRuleTargetsAndFiles -> putByte(2)
+    AmbiguousEmptyTarget -> {
+      putByte(0)
+    }
+
+    AllRuleTargets -> {
+      putByte(1)
+    }
+
+    AllRuleTargetsAndFiles -> {
+      putByte(2)
+    }
+
     is SingleTarget -> {
       putByte(3)
       putByteArray(target.targetName.toByteArray())
