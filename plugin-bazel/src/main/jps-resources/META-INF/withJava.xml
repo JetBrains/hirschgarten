@@ -10,7 +10,7 @@
       order="after BazelRepoMappingSyncHook, after TargetUtilsSyncHook, after DirectoriesSyncHook, before IndexAdditionalFilesSyncHook"
     />
 
-    <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
+    <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider" />
     <psiElementConfigurationLocator
       implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"
     />
@@ -18,21 +18,19 @@
     <bazelExperimentalSettingsProvider
       implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"
     />
-    <unresolvedImportChecker implementation="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
+    <unresolvedImportChecker implementation="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker" />
     <bazelCoverageClassNodeDecoratorPsiElementClassifier
       implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
-    <testLocatorProvider implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider"/>
-
+    <testLocatorProvider id="defaultJavaLocator" implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider" />
     <buildTargetLanguageInferenceContributor implementation="org.jetbrains.bazel.java.target.JavaBuildTargetLangInferenceContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.HotSwapTestBeforeRunTaskProvider"/>
-    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.HotSwapRunBeforeRunTaskProvider"/>
-    <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher"/>
-    <java.elementFinder implementation="org.jetbrains.bazel.java.search.BazelJavaClassFinder"/>
-    <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger"/>
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider"/>
+    <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher" />
+    <java.elementFinder implementation="org.jetbrains.bazel.java.search.BazelJavaClassFinder" />
+    <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger" />
 
     <projectService
       overrides="true"
@@ -43,6 +41,6 @@
       implementationClass="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor"
       language="JAVA"
     />
-    <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard"/>
+    <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard" />
   </extensions>
 </idea-plugin>

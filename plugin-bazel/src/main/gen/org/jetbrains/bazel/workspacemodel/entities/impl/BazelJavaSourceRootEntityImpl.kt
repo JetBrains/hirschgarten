@@ -9,7 +9,6 @@ import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
-import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.SoftLinkable
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -28,14 +27,12 @@ import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSourceRootEntityData) : BazelJavaSourceRootEntity, WorkspaceEntityBase(
-  dataSource) {
+internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSourceRootEntityData) : BazelJavaSourceRootEntity,
+                                                                                                      WorkspaceEntityBase(dataSource) {
 
   private companion object {
 
-
-    private val connections = listOf<ConnectionId>(
-    )
+    private val connections = listOf<ConnectionId>()
 
   }
 
@@ -44,7 +41,6 @@ internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSo
       readField("packageNameId")
       return dataSource.packageNameId
     }
-
   override val sourceRoots: List<VirtualFileUrl>
     get() {
       readField("sourceRoots")
@@ -62,8 +58,8 @@ internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSo
   }
 
 
-  internal class Builder(result: BazelJavaSourceRootEntityData?) : ModifiableWorkspaceEntityBase<BazelJavaSourceRootEntity, BazelJavaSourceRootEntityData>(
-    result), BazelJavaSourceRootEntityBuilder {
+  internal class Builder(result: BazelJavaSourceRootEntityData?) :
+    ModifiableWorkspaceEntityBase<BazelJavaSourceRootEntity, BazelJavaSourceRootEntityData>(result), BazelJavaSourceRootEntityBuilder {
     internal constructor() : this(BazelJavaSourceRootEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -76,16 +72,14 @@ internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSo
           error("Entity BazelJavaSourceRootEntity is already created in a different builder")
         }
       }
-
       this.diff = builder
       addToBuilder()
       this.id = getEntityData().createEntityId()
-      // After adding entity data to the builder, we need to unbind it and move the control over entity data to builder
-      // Builder may switch to snapshot at any moment and lock entity data to modification
+// After adding entity data to the builder, we need to unbind it and move the control over entity data to builder
+// Builder may switch to snapshot at any moment and lock entity data to modification
       this.currentEntityData = null
-
       index(this, "sourceRoots", this.sourceRoots)
-      // Process linked entities that are connected without a builder
+// Process linked entities that are connected without a builder
       processLinkedEntities(builder)
       checkInitialization() // TODO uncomment and check failed tests
     }
@@ -132,7 +126,6 @@ internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSo
         changedProperty.add("entitySource")
 
       }
-
     override var packageNameId: PackageNameId
       get() = getEntityData().packageNameId
       set(value) {
@@ -141,7 +134,6 @@ internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSo
         changedProperty.add("packageNameId")
 
       }
-
     private val sourceRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
       val _diff = diff
       if (_diff != null) index(this, "sourceRoots", value)
@@ -167,6 +159,7 @@ internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSo
 
     override fun getEntityClass(): Class<BazelJavaSourceRootEntity> = BazelJavaSourceRootEntity::class.java
   }
+
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
@@ -192,7 +185,7 @@ internal class BazelJavaSourceRootEntityData : WorkspaceEntityData<BazelJavaSour
   }
 
   override fun updateLinksIndex(prev: Set<SymbolicEntityId<*>>, index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
-    // TODO verify logic
+// TODO verify logic
     val mutablePreviousSet = HashSet(prev)
     val removedItem_packageNameId = mutablePreviousSet.remove(packageNameId)
     if (!removedItem_packageNameId) {
@@ -239,8 +232,7 @@ internal class BazelJavaSourceRootEntityData : WorkspaceEntityData<BazelJavaSour
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity") as EntityMetadata
   }
 
   override fun clone(): BazelJavaSourceRootEntityData {
@@ -255,8 +247,7 @@ internal class BazelJavaSourceRootEntityData : WorkspaceEntityData<BazelJavaSour
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return BazelJavaSourceRootEntity(packageNameId, sourceRoots, entitySource) {
-    }
+    return BazelJavaSourceRootEntity(packageNameId, sourceRoots, entitySource)
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {
@@ -267,9 +258,7 @@ internal class BazelJavaSourceRootEntityData : WorkspaceEntityData<BazelJavaSour
   override fun equals(other: Any?): Boolean {
     if (other == null) return false
     if (this.javaClass != other.javaClass) return false
-
     other as BazelJavaSourceRootEntityData
-
     if (this.entitySource != other.entitySource) return false
     if (this.packageNameId != other.packageNameId) return false
     if (this.sourceRoots != other.sourceRoots) return false
@@ -279,9 +268,7 @@ internal class BazelJavaSourceRootEntityData : WorkspaceEntityData<BazelJavaSour
   override fun equalsIgnoringEntitySource(other: Any?): Boolean {
     if (other == null) return false
     if (this.javaClass != other.javaClass) return false
-
     other as BazelJavaSourceRootEntityData
-
     if (this.packageNameId != other.packageNameId) return false
     if (this.sourceRoots != other.sourceRoots) return false
     return true

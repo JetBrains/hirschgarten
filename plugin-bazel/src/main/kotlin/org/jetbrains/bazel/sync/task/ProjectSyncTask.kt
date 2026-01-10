@@ -19,6 +19,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
+import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import com.intellij.util.containers.forEachLoggingErrors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -262,7 +263,7 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun postSync() {
     SyncStatusService.getInstance(project).finishSync()
     withContext(Dispatchers.EDT) {
-      ProjectView.getInstance(project).refresh()
+      ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
     }
   }
 }

@@ -21,6 +21,11 @@
     <psiElementConfigurationLocator
       implementation="org.jetbrains.bazel.kotlin.junit.KotlinPsiElementConfigurationLocator"
     />
+    <testLocatorProvider
+      id="kotlinShortNameLocator"
+      implementation="org.jetbrains.bazel.jvm.run.KotlinShortNameTestLocatorProvider"
+      order="before defaultJavaLocator"
+    />
     <buildTargetLanguageInferenceContributor implementation="org.jetbrains.bazel.kotlin.target.KotlinBuildTargetLangInferenceContributor"/>
   </extensions>
 

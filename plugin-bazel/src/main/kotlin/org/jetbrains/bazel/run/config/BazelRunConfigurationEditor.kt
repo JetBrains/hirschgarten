@@ -18,6 +18,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.util.textCompletion.TextFieldWithCompletion
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.target.targetUtils
@@ -42,7 +43,7 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
 
   private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addStateEditorFragment() {
     val handler = runConfiguration.handler ?: return
-    this.add(CommonParameterFragments.createHeader(handler.name))
+    this.add(CommonParameterFragments.createHeader(BazelPluginBundle.message("runconfig.header")))
     val stateEditor: SettingsEditor<BazelRunConfigurationState<*>> =
       handler.state.getEditor(
         runConfiguration,
@@ -50,7 +51,7 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
     Disposer.register(this@BazelRunConfigurationEditor, stateEditor)
 
     this.addSettingsEditorFragment(
-      object : SettingsFragmentInfo {
+      settingsFragmentInfo = object : SettingsFragmentInfo {
         override val settingsId: String = "bsp.state.editor"
         override val settingsName: String = "Handler settings"
         override val settingsGroup: String = "BSP"
@@ -59,12 +60,14 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
         override val settingsHint: String? = null
         override val settingsActionHint: String? = null
       },
-      { stateEditor.component },
-      { _, _ ->
-        stateEditor.resetFrom(handler.state)
+      createComponent = { stateEditor.component },
+      reset = { config, _ ->
+        val state = config.handler?.state ?: return@addSettingsEditorFragment
+        stateEditor.resetFrom(state)
       },
-      { _, _ ->
-        stateEditor.applyTo(handler.state)
+      apply = { config, _ ->
+        val state = config.handler?.state ?: return@addSettingsEditorFragment
+        stateEditor.applyTo(state)
       },
     )
   }

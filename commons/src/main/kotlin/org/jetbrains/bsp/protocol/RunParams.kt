@@ -10,7 +10,6 @@ data class RunParams(
   val checkVisibility: Boolean,
   val arguments: List<String>? = null,
   val environmentVariables: Map<String, String>? = null,
-  val workingDirectory: String? = null,
   val additionalBazelParams: String? = null,
   val pidDeferred: CompletableDeferred<Long?>? = null,
 )

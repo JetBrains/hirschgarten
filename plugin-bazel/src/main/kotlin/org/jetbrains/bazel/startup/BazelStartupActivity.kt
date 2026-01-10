@@ -6,7 +6,6 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.ui.EditorNotificationProvider
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
@@ -33,6 +32,18 @@ import kotlin.io.path.isDirectory
 private val log = logger<BazelStartupActivity>()
 
 /**
+ * Initializes the Bazel sync environment (TelemetryManager, ProcessSpawner, etc.).
+ * Must be called before running any sync operations.
+ */
+fun initializeBazelSyncEnvironment() {
+  ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
+  TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
+  BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
+  SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
+  FileUtil.provideFileUtil(FileUtilIntellij)
+}
+
+/**
  * Runs actions after the project has started up and the index is up to date.
  *
  * @see org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor for additional actions that
@@ -40,11 +51,7 @@ private val log = logger<BazelStartupActivity>()
  */
 class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
-    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
-    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-    BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
-    SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
-    FileUtil.provideFileUtil(FileUtilIntellij)
+    initializeBazelSyncEnvironment()
     log.info("Executing Bazel startup activity for project: $project")
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
     try {
@@ -67,7 +74,6 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   updateBazelFileTargetsWidget(project)
   project.serviceAsync<BazelWorkspace>().initialize()
-  disableUnableToFindJdkNotification(project)
 }
 
 private suspend fun resyncProjectIfNeeded(project: Project) {
@@ -109,18 +115,3 @@ private suspend fun bazelExecPathExists(project: Project): Boolean =
     .bazelExecPath
     ?.let { Path.of(it) }
     ?.isDirectory() == true
-
-// https://youtrack.jetbrains.com/issue/BAZEL-2598
-// TODO: remove once a proper API/fix exists on Docker side
-private fun disableUnableToFindJdkNotification(project: Project) {
-  val notificationProvider = EditorNotificationProvider.EP_NAME.findFirstSafe(project) {
-    it.javaClass.name == "com.intellij.cwm.plugin.java.rdserver.unattendedHost.editor.UnattendedHostJdkConfigurationNotificationProvider"
-  } ?: return
-  val disableNotificationMethod = try {
-    notificationProvider.javaClass.getDeclaredMethod("disableNotification", Project::class.java)
-  } catch (_: NoSuchMethodException) {
-    return
-  }
-  disableNotificationMethod.isAccessible = true
-  disableNotificationMethod.invoke(notificationProvider, project)
-}

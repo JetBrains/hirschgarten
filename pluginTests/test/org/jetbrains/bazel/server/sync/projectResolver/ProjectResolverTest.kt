@@ -11,19 +11,17 @@ import org.junit.jupiter.api.Test
 class ProjectResolverTest {
   @Test
   fun `should replace dependency labels from maven_project_jar to their corresponding java library`() {
-    val aProject = targetInfo("//a-project", emptyList(), "maven_project_jar")
-    val aLib = targetInfo("//a-lib", emptyList(), "java_library")
-    val b = targetInfo("//b", listOf("//a-project"), "java_test")
+    val aProject = targetInfo("@@//a-project", emptyList(), "maven_project_jar")
+    val aLib = targetInfo("@@//a-lib", emptyList(), "java_library")
+    val b = targetInfo("@@//b", listOf("@@//a-project"), "java_test")
     val rawTargetInfoMap = toIdToTargetInfoMap(aProject, aLib, b)
-    val repoMapping = RepoMappingDisabled
 
     val processedDependencies =
       ProjectResolver.processDependenciesList(
         b.toBuilder().dependenciesBuilderList,
         rawTargetInfoMap,
-        repoMapping,
       )
-    processedDependencies shouldContainExactlyInAnyOrder listOf(dependency("@//a-lib"))
+    processedDependencies shouldContainExactlyInAnyOrder listOf(dependency("@@//a-lib"))
   }
 
   private fun targetInfo(

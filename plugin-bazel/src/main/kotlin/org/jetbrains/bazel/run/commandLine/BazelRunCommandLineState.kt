@@ -36,7 +36,6 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
         checkVisibility = configuration.doVisibilityCheck,
         arguments = transformProgramArguments(runState.programArguments),
         environmentVariables = runState.env.envs,
-        workingDirectory = runState.workingDirectory,
         additionalBazelParams = runState.additionalBazelParams,
         pidDeferred = pidDeferred,
       )

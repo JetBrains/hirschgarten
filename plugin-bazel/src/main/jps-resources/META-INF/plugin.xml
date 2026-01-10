@@ -201,6 +201,14 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
+                    interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+                    dynamic="true"
+    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.syntheticRunTargetTemplateGenerator"
                     dynamic="true"
                     beanClass="com.intellij.lang.LanguageExtensionPoint">
@@ -225,6 +233,10 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <javaSourceRootPrefixContributor implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
+    <projectViewSectionProvider
+      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
+
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook" />
 
     <projectSyncHook
@@ -307,7 +319,7 @@
     <registryKey
       defaultValue="false"
       description="Build project on initial project sync"
-      key="bsp.build.project.on.sync"
+      key="bazel.build.project.on.sync"
     />
     <registryKey
       defaultValue="true"
@@ -323,11 +335,6 @@
       defaultValue="true"
       description="Shorten module/library names by hashing the first parts and retaining the others"
       key="bsp.shorten.module.library.names"
-    />
-    <registryKey
-      defaultValue="false"
-      description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
-      key="bsp.wrap.libraries.inside.modules"
     />
     <registryKey
       defaultValue="true"
@@ -428,10 +435,17 @@
       restartRequired="true"
     />
 
+    <registryKey
+      defaultValue="true"
+      description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overriden with a project view flag."
+      key="bazel.run.config.run.with.bazel"
+      restartRequired="false"
+    />
+
     <registryKey defaultValue="false"
-      description="Enable running non-binary bazel targets using synthetically generated targets"
-      key="bazel.run.synthetic.enable"
-      restartRequired="true"
+                 description="Enable running non-binary bazel targets using synthetically generated targets"
+                 key="bazel.run.synthetic.enable"
+                 restartRequired="true"
     />
     <registryKey defaultValue="false"
                  description="Disable bazel visibility checks when running syhthetic binary targets"
@@ -439,7 +453,6 @@
                  restartRequired="false"
     />
 
-    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider"/>
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />
@@ -565,7 +578,6 @@
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <projectPreInit implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectAndSyncStartupActivity"/>
-    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
     <notificationGroup
       displayType="BALLOON"
       id="BazelSlowPlugins"

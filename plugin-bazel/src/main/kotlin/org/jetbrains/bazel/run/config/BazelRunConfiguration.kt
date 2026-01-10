@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.run.config
 
+import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfiguration
@@ -42,8 +43,7 @@ class BazelRunConfiguration internal constructor(
   override fun checkConfiguration() {
     val utils = project.targetUtils
     val selectedTargets = targets.map {
-      val target = utils.getBuildTargetForLabel(it)
-        ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.found", it))
+      val target = utils.getBuildTargetForLabel(it) ?: return // skip validations when any target is missing
       if (!target.kind.isExecutable) throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.executable", it))
       target
     }
@@ -62,8 +62,14 @@ class BazelRunConfiguration internal constructor(
   }
 
   fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
+    if (newTargets == targets) return
     targets = newTargets
-    updateHandlerIfDifferentProvider(runHandlerProvider ?: RunHandlerProvider.getRunHandlerProvider(project, newTargets))
+    if (newTargets.isEmpty()) return
+    // `updateTargets` is called by the editor on each change. It must not fail, because it will spam with errors while editing
+    // `RunHandlerProvider.getRunHandlerProviderOrNull` is used as a workaround
+    val provider = runHandlerProvider ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, newTargets)
+    if (provider == null) return
+    updateHandlerIfDifferentProvider(provider)
   }
 
   fun updateRunProvider(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider) {
@@ -163,6 +169,19 @@ class BazelRunConfiguration internal constructor(
     val bspState = createBspElement() ?: return
     element.removeChildren(BSP_STATE_TAG)
     element.addContent(bspState)
+  }
+
+  /**
+   * HACK
+   * This method is called during deserialization of run tasks which happens AFTER the [BazelRunHandler]s are deserialized.
+   * So if the Bazel plugin uses a new logic for creating before run tasks in a newer version inside one of the handlers,
+   * it will be overruled by this deserialization unless we forcefully disable this.
+   * @see setBeforeRunTasksFromHandler
+   */
+  override fun setBeforeRunTasks(value: List<BeforeRunTask<*>>) {}
+
+  fun setBeforeRunTasksFromHandler(value: List<BeforeRunTask<*>>) {
+    super.setBeforeRunTasks(value)
   }
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =

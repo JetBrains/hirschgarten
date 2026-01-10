@@ -98,8 +98,7 @@ def create_struct(**kwargs):
 def update_sync_output_groups(groups_dict, key, new_set):
     """Updates all sync-relevant output groups associated with 'key'.
 
-    This is currently the [key] output group itself, together with [key]-outputs
-    and [key]-direct-deps.
+    [key] contains the output group itself and all transitive deps, whereas [key]-direct-outputs contains only direct outputs without deps
 
     Args:
       groups_dict: the output groups dict, from group name to artifact depset.
@@ -107,8 +106,7 @@ def update_sync_output_groups(groups_dict, key, new_set):
       new_set: a depset of artifacts to add to the output groups.
     """
     update_set_in_dict(groups_dict, key, new_set)
-    update_set_in_dict(groups_dict, key + "-outputs", new_set)
-    update_set_in_dict(groups_dict, key + "-direct-deps", new_set)
+    update_set_in_dict(groups_dict, key + "-direct-outputs", new_set)
 
 def update_set_in_dict(input_dict, key, other_set):
     """Updates depset in dict, merging it with another depset."""
@@ -293,11 +291,13 @@ def _is_valid_make_var(varname):
     return True
 
 
+EXPORT_DEPS = [
+    "exports",
+]
 
 COMPILE_DEPS = [
     "deps",
     "jars",
-    "exports",
     "associates",
     "embed", # from rules_go
     "compilers",  # From go_proto_library
@@ -315,4 +315,4 @@ RUNTIME_DEPS = [
     "runtime_deps",
 ]
 
-ALL_DEPS = COMPILE_DEPS + PRIVATE_COMPILE_DEPS + RUNTIME_DEPS
+ALL_DEPS = COMPILE_DEPS + PRIVATE_COMPILE_DEPS + RUNTIME_DEPS + EXPORT_DEPS

@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.openapi.application.PathManager
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
@@ -11,6 +11,7 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import kotlin.io.path.createDirectories
 import kotlin.io.path.writeLines
 
 interface HasProgramArguments {
@@ -36,10 +37,6 @@ interface HasEnvironment {
   val inheritedEnvironment: List<String>
 }
 
-interface HasWorkingDirectory {
-  var workingDirectory: Path?
-}
-
 interface HasMultipleTargets {
   // Will be added as `bazel <command> -- target1 target2 ...`
   val targets: MutableList<Label>
@@ -51,7 +48,8 @@ interface HasMultipleTargets {
     targets.forEach { excludableTarget ->
       if (excludableTarget.isIncluded()) {
         this.targets.add(excludableTarget.value)
-      } else {
+      }
+      else {
         this.excludedTargets.add(excludableTarget.value)
       }
     }
@@ -97,12 +95,10 @@ abstract class BazelCommand(val bazelBinary: String) {
     HasProgramArguments,
     HasEnvironment,
     HasSingleTarget,
-    HasWorkingDirectory,
     HasAdditionalBazelOptions {
     override val programArguments: MutableList<String> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
-    override var workingDirectory: Path? = null
     override val additionalBazelOptions: MutableList<String> = mutableListOf()
 
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
@@ -124,7 +120,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Build(private val bazelInfo: BazelInfo?, bazelBinary: String) :
+  class Build(bazelBinary: String) :
     BazelCommand(bazelBinary),
     HasEnvironment,
     HasMultipleTargets {
@@ -142,42 +138,39 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
-      if (bazelInfo == null) {
-        // it is just here for completeness + test
-        // should not ever reach here in production
-        commandLine.addAll(targetCommandLine())
-      } else {
-        val targetPatternFile = prepareTargetPatternFile(bazelInfo)
-        // https://bazel.build/reference/command-line-reference#flag--target_pattern_file
-        commandLine.add("--target_pattern_file=$targetPatternFile")
-        finishCallback = {
-          try {
-            Files.deleteIfExists(targetPatternFile)
-          } catch (e: IOException) {
-            log.warn("Failed to delete target pattern file", e)
-          }
+      val targetPatternFile = prepareTargetPatternFile()
+      // https://bazel.build/reference/command-line-reference#flag--target_pattern_file
+      commandLine.add("--target_pattern_file=$targetPatternFile")
+      finishCallback = {
+        try {
+          Files.deleteIfExists(targetPatternFile)
+        }
+        catch (e: IOException) {
+          log.warn("Failed to delete target pattern file", e)
         }
       }
 
       return BazelCommandExecutionDescriptor(commandLine, finishCallback)
     }
 
-    fun prepareTargetPatternFile(bazelInfo: BazelInfo): Path {
+    fun prepareTargetPatternFile(): Path {
       var targetPatternFile: Path? = null
       try {
-        val targetsDir = bazelInfo.dotBazelBsp().resolve("targets")
-        Files.createDirectories(targetsDir)
+        val tmpDir = PathManager.getTempDir().createDirectories()
+        Files.createDirectories(tmpDir)
 
-        targetPatternFile = Files.createTempFile(targetsDir, "targets-", "").also { it.toFile().deleteOnExit() }
+        targetPatternFile = Files.createTempFile(tmpDir, "targets-", "").also { it.toFile().deleteOnExit() }
 
         val targetsList = (targets.map { it.toString() } + excludedTargets.map { "-$it" })
 
         targetPatternFile.writeLines(targetsList, Charsets.UTF_8, StandardOpenOption.WRITE)
-      } catch (e: IOException) {
+      }
+      catch (e: IOException) {
         targetPatternFile?.let {
           try {
             Files.deleteIfExists(it)
-          } catch (deleteException: IOException) {
+          }
+          catch (deleteException: IOException) {
             throw IllegalStateException("Couldn't delete file after creation failure", deleteException)
           }
         }
@@ -267,7 +260,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     private val allowManualTargetsSync: Boolean,
     private val systemInfoProvider: SystemInfoProvider,
   ) : BazelCommand(bazelBinary),
-    HasMultipleTargets {
+      HasMultipleTargets {
     override val targets: MutableList<Label> = mutableListOf()
     override val excludedTargets: MutableList<Label> = mutableListOf()
 
@@ -289,7 +282,8 @@ abstract class BazelCommand(val bazelBinary: String) {
       val targetString = if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
       return if (allowManualTargetsSync) {
         targetString
-      } else {
+      }
+      else {
         excludeManualTargetsQueryString(targetString)
       }
     }
@@ -297,7 +291,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     private fun excludeManualTargetsQueryString(targetString: String): String =
       if (systemInfoProvider.isWindows) {
         "attr('tags', '^((?!manual).)*$', $targetString)"
-      } else {
+      }
+      else {
         "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"
       }
   }

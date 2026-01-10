@@ -2,8 +2,8 @@ package org.jetbrains.bazel.sync.task
 
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.registerOrReplaceServiceInstance
-import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook

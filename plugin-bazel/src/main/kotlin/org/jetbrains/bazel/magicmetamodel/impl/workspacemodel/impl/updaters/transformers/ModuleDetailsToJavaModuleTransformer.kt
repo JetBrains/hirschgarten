@@ -2,11 +2,8 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
-import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.utils.StringUtils
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
@@ -49,29 +46,22 @@ class ModuleDetailsToJavaModuleTransformer(
         kotlinAddendum = toKotlinAddendum(inputEntity),
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
-        runtimeDependencies = getRuntimeDependencies(inputEntity),
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
     return when (dummyModulesResult) {
       is JavaModuleToDummyJavaModulesTransformerHACK.DummyModulesToAdd -> {
         val dummyModules = dummyModulesResult.dummyModules
-        val dummyModuleDependencies =
-          if (BazelFeatureFlags.addDummyModuleDependencies) {
-            dummyModules.map { it.genericModuleInfo.name }
-          } else {
-            emptyList()
-          }
         val javaModuleWithDummyDependencies =
           javaModule.copy(
             genericModuleInfo =
               javaModule.genericModuleInfo.copy(
-                dependencies =
-                  javaModule.genericModuleInfo.dependencies + dummyModuleDependencies,
+                dependencies = javaModule.genericModuleInfo.dependencies,
               ),
           )
         listOf(javaModuleWithDummyDependencies) + dummyModules
       }
+
       is JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots -> {
         val javaModuleWithMergedSourceRoots =
           javaModule.copy(
@@ -96,7 +86,7 @@ class ModuleDetailsToJavaModuleTransformer(
         type = type,
         javacOptions = inputEntity.javacOptions,
         associates = toAssociates(inputEntity),
-        dependencies = inputEntity.dependencies.map { it.label },
+        dependencies = inputEntity.dependencies,
       )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
@@ -114,17 +104,14 @@ class ModuleDetailsToJavaModuleTransformer(
   private fun JvmBuildTarget?.toJdkName(): String? = this?.javaHome?.let { project.bazelProjectName.projectNameToJdkName(it) }
 
   private fun toKotlinAddendum(inputEntity: ModuleDetails): KotlinAddendum? {
-    val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
-    return if (kotlinBuildTarget != null) {
-      with(kotlinBuildTarget) {
-        KotlinAddendum(
-          languageVersion = languageVersion,
-          apiVersion = apiVersion,
-          kotlincOptions = kotlincOptions,
-        )
-      }
-    } else {
-      null
+    val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target) ?: return null
+    return with(kotlinBuildTarget) {
+      KotlinAddendum(
+        languageVersion = languageVersion,
+        apiVersion = apiVersion,
+        moduleName = moduleName,
+        kotlincOptions = kotlincOptions,
+      )
     }
   }
 
@@ -149,13 +136,10 @@ class ModuleDetailsToJavaModuleTransformer(
   private fun toAssociates(inputEntity: ModuleDetails): List<Label> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
     return kotlinBuildTarget
-      ?.associates
-      ?.distinct()
-      ?: emptyList()
+             ?.associates
+             ?.distinct()
+           ?: emptyList()
   }
-
-  private fun getRuntimeDependencies(inputEntity: ModuleDetails): List<String> =
-    inputEntity.dependencies.filter { it.isRuntime }.map { it.label.formatAsModuleName(project) }
 }
 
 fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"

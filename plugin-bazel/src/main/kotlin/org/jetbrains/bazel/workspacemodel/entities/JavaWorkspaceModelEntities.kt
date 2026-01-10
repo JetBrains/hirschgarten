@@ -22,15 +22,15 @@ data class JavaModule(
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
   val workspaceModelEntitiesFolderMarker: Boolean = false,
-  val runtimeDependencies: List<String> = emptyList(),
 ) : WorkspaceModelEntity(),
   Module {
   override fun getModuleName(): String = genericModuleInfo.name
 }
 
 data class KotlinAddendum(
-  val languageVersion: String,
-  val apiVersion: String,
+  val languageVersion: String?,
+  val apiVersion: String?,
+  val moduleName: String?,
   val kotlincOptions: List<String>,
 )
 

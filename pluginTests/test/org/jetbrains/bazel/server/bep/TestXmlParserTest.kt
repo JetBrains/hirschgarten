@@ -411,7 +411,7 @@ class TestXmlParserTest {
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldContain "expected:"
           details.errorType shouldNotBe null
-          details.errorContent shouldNotBe null
+          details.output shouldNotBe null
         }
 
         "sampleSkippedTest" -> {
@@ -965,6 +965,67 @@ WARNING: Delegated to the 'execute' command.
                    java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
                    java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
             """.trimIndent()
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `junit4 - output message and correct test status`(@TempDir tempDir: Path) {
+    val sampleContents = """
+<?xml version='1.0' encoding='UTF-8'?><testsuites><testsuite name="com.example.MyJunit4Test" tests="6" failures="0" errors="1" disabled="0" skipped="0" package=""><properties/><testcase name="testError" classname="com.example.MyJunit4Test" time="0.01"><error message="expected: &lt;mock label> but was: &lt;mock label1>" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: expected: <mock label> but was: <mock label1>
+	at org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
+	at org.junit.jupiter.api.AssertionUtils.failNotEqual(AssertionUtils.java:62)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1141)
+]]></error></testcase><testcase name="testSystemOut" classname="com.example.MyJunit4Test" time="0.01"><system-out><![CDATA[Hi from test!
+]]></system-out></testcase><testcase name="testAnother" classname="com.example.MyJunit4Test" time="0.01"/></testsuite></testsuites>
+    """.trimIndent()
+
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+
+    // when
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+
+    // then
+    client.taskStartCalls.size shouldBe 4
+
+    val expectedNames =
+      listOf(
+        "com.example.MyJunit4Test",
+        "testError",
+        "testSystemOut",
+        "testAnother",
+      )
+
+    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+
+    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+
+    testFinishes.forEach {
+      val data = (it.data as TestFinish)
+      when (data.displayName) {
+        "com.example.MyJunit4Test" -> {
+        }
+
+        "testError" -> {
+          data.status shouldBe TestStatus.FAILED
+          val details = (data.data as JUnitStyleTestCaseData)
+          details.errorMessage shouldBe "expected: <mock label> but was: <mock label1>"
+          details.output!!.split("\n".toRegex()).size shouldBe 7
+        }
+
+        "testSystemOut" -> {
+          data.status shouldBe TestStatus.PASSED
+          data.message shouldBe "Hi from test!\n"
+          val details = (data.data as JUnitStyleTestCaseData)
+          details.output shouldBe "Hi from test!\n"
+        }
+
+        "testAnother" -> {
+          data.status shouldBe TestStatus.PASSED
         }
       }
     }

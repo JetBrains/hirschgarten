@@ -19,6 +19,7 @@ import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.process.findAndKillProcesses
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -31,9 +32,9 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
-import org.junit.jupiter.api.BeforeEach
+import org.jetbrains.bazel.tests.ui.expandedTree
 import org.junit.jupiter.api.AfterEach
-import com.intellij.ide.starter.process.findAndKillProcesses
+import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
@@ -82,27 +83,13 @@ abstract class IdeStarterBaseProjectTest {
           }
         }
       }
+
+    expandedTree = false
   }
 
   @AfterEach
   fun tearDown() {
-    try {
-      // Kill Bazel server Java processes started for the test workspace
-      findAndKillProcesses(
-        message = "Killing Bazel server processes",
-        filter = java.util.function.Predicate { p ->
-          val hasServerJar = p.arguments.any { arg ->
-            arg.contains("A-server.jar") || arg.endsWith("/server.jar") || arg.endsWith("\\server.jar") || arg.endsWith("-server.jar")
-          }
-          val fromIdeTestsWorkspace = p.arguments.any { arg ->
-            arg.startsWith("--workspace_directory=") && (arg.contains("/ide-tests/") || arg.contains("\\ide-tests\\"))
-          }
-          hasServerJar && fromIdeTestsWorkspace
-        },
-      )
-    } catch (t: Throwable) {
-      System.err.println("Failed to find/kill Bazel server processes: ${t.message}")
-    }
+    killBazelProcesses()
   }
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
@@ -135,6 +122,28 @@ abstract class IdeStarterBaseProjectTest {
       addSystemProperty(IS_IN_IDE_STARTER_TEST, "true")
     }
     return this
+  }
+
+  companion object {
+    fun killBazelProcesses() {
+      try {
+        // Kill Bazel server Java processes started for the test workspace
+        findAndKillProcesses(
+          message = "Killing Bazel server processes",
+          filter = java.util.function.Predicate { p ->
+            val hasServerJar = p.arguments.any { arg ->
+              arg.contains("A-server.jar") || arg.endsWith("/server.jar") || arg.endsWith("\\server.jar") || arg.endsWith("-server.jar")
+            }
+            val fromIdeTestsWorkspace = p.arguments.any { arg ->
+              arg.startsWith("--workspace_directory=") && (arg.contains("/ide-tests/") || arg.contains("\\ide-tests\\"))
+            }
+            hasServerJar && fromIdeTestsWorkspace
+          },
+        )
+      } catch (t: Throwable) {
+        System.err.println("Failed to find/kill Bazel server processes: ${t.message}")
+      }
+    }
   }
 }
 

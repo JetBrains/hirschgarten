@@ -17,7 +17,7 @@ object BazelVersionWorkspaceResolver {
       ?: resolveFallbackBazelVersion()
 
   private fun resolveWorkspaceBazelVersionFile(workspace: Path): BazelVersionLiteral? =
-    workspace.resolve(Constants.BAZELISK_VERSION_FILE_NAME).readTextOrNull()?.toBazelVersionLiteral()
+    workspace.resolve(Constants.BAZEL_VERSION_FILE_NAME).readTextOrNull()?.toBazelVersionLiteral()
 
   private fun resolveBazelVersionEnvVariable(): BazelVersionLiteral? =
     EnvironmentUtil.getValue("USE_BAZEL_VERSION")?.toBazelVersionLiteral()
