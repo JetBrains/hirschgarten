@@ -293,7 +293,7 @@ private fun createCancelAction(
   job: Job?,
 ): () -> Unit =
   if (job != null) {
-    { job.cancel(CancellationException("File change processing was cancelled")) }
+    { job.cancel() }
   } else {
     {}
   }
