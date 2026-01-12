@@ -1,7 +1,0 @@
-baseProfile: empty
-inspections:
-  - group: ALL
-    ignore:
-      - "**/test/data/**"
-      - "**/test/resources/**"
-      - "**/testData/**"

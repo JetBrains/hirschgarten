@@ -1,0 +1,1 @@
+Package 'com.intellij.byteCodeViewer' is not found along with its class com.intellij.byteCodeViewer.BytecodeViewerClassFileFinder.

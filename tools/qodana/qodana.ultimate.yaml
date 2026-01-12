@@ -1,14 +1,39 @@
 version: "1.0"
 profile:
-  path: /data/project/plugins/bazel/tools/qodana/qodana.ultimate.profile.yaml
-include:
-  - name: QodanaSanity
-  - name: HighlightVisitorInternal
-  - name: UnresolvedPropertyKey
-exclude:
-  - name: All
-    paths:
-      - testData
+  base:
+    name: empty
+  groups:
+    - groupId: UltimateRegressions
+      inspections:
+        - QodanaSanity
+        - UnresolvedPropertyKey
+  inspections:
+    - group: UltimateRegressions
+      enabled: true
+      ignore:
+        - "**/test/data/**"
+        - "**/test/resources/**"
+        - "**/testData/**"
+        - "**/testdata/**"
+        - "**/TestResources/**"
+        - "**/*TestResources/**"
+        - "**/*.bash"
+        - "**/*.def"
+        - "**/*.ft"
+        - "**/*.http"
+        - "**/*.ignore"
+        - "**/*.json"
+        - "**/*.ndjson"
+        - "**/*.ps1"
+        - "**/*.rest"
+        - "**/*.rnc"
+        - "**/*.sh"
+        - "**/*.template"
+        - "**/*.toml"
+        - "**/*.vm"
+        - "**/*.yaml"
+        - "**/*.yml"
+        - "**/*.zsh"
 failureConditions:
   severityThresholds:
-    critical: 3950
+    critical: 100

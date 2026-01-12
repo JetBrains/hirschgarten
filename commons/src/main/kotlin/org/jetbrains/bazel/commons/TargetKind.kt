@@ -46,4 +46,6 @@ data class TargetKind(
   fun includesGo(): Boolean = languageClasses.contains(LanguageClass.GO)
 
   fun isJvmTarget(): Boolean = includesJava() || includesKotlin() || includesScala()
+
+  fun usesJpsExportSemantics(): Boolean = kindString == "jvm_library"
 }

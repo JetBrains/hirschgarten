@@ -14,7 +14,6 @@ import com.intellij.openapi.roots.impl.IdeaProjectModelModifier
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.pom.java.LanguageLevel
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -65,16 +64,15 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     asyncPromise {
       val labelToInsert = library.name?.let { libraryId -> project.targetUtils.getTargetForLibraryId(libraryId) }
       if (tryAddingModuleDependencyToBuildFile(from, labelToInsert)) {
-        if (BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled) {
-          // In this case we should actually depend on the library module, not the library itself
-          val libraryModuleName = checkNotNull(library.name).addLibraryModulePrefix()
-          val libraryModule = ModuleManager.getInstance(project).findModuleByName(libraryModuleName)
-          if (libraryModule != null) {
-            ideaProjectModelModifier.addModuleDependency(from, libraryModule, scope, true)?.await()
-            return@asyncPromise
-          } else {
-            log.warn("Can't find library module $libraryModuleName")
-          }
+        // We should actually depend on the library module, not the library itself
+        val libraryModuleName = checkNotNull(library.name).addLibraryModulePrefix()
+        val libraryModule = ModuleManager.getInstance(project).findModuleByName(libraryModuleName)
+        if (libraryModule != null) {
+          ideaProjectModelModifier.addModuleDependency(from, libraryModule, scope, true)?.await()
+          return@asyncPromise
+        }
+        else {
+          log.warn("Can't find library module $libraryModuleName")
         }
         ideaProjectModelModifier.addLibraryDependency(from, library, scope, true)?.await()
       } else {

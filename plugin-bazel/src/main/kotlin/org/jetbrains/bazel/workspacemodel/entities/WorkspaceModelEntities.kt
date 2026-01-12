@@ -47,12 +47,18 @@ This class holds basic module data that are not language-specific
 data class GenericModuleInfo(
   val name: String,
   val type: ModuleTypeId,
-  val dependencies: List<String>,
+  val dependencies: List<Dependency>,
   val kind: TargetKind,
   val associates: List<String> = listOf(),
   val isDummy: Boolean = false,
   val isLibraryModule: Boolean = false,
 ) : WorkspaceModelEntity()
+
+data class Dependency(
+  val id: String,
+  val isRuntimeOnly: Boolean = false,
+  val exported: Boolean = false,
+)
 
 interface Module {
   fun getModuleName(): String

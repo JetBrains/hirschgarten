@@ -13,7 +13,6 @@ import org.jetbrains.bazel.languages.bazelquery.completion.TargetCompletionsGene
 import org.jetbrains.bazel.languages.bazelquery.documentation.BazelQueryFunctionDocumentationTarget
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunction
 import org.jetbrains.bazel.languages.bazelquery.options.BazelQueryCommonOptions
-import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget
 import org.jetbrains.bazel.languages.bazelrc.documentation.flagToDocumentationMarkdownText
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.plugins.terminal.block.completion.spec.ShellCommandSpec
@@ -36,7 +35,11 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
     subcommands { context: ShellRuntimeContext ->
       if (context.project.isBazelProject) {
         subcommand("query") {
-          parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
+          parserOptions(
+            ShellCommandParserOptions.builder()
+              .optionArgSeparators(listOf("=", " "))
+              .build()
+          )
           description(BazelPluginBundle.message("bazelquery.query.description"))
 
           allOptions(context)
@@ -56,11 +59,11 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
 private fun ShellCommandContext.dummyArgs() {
   argument {
     displayName(BazelPluginBundle.message("bazelquery.query.option.description"))
-    isVariadic = true
-    isOptional = true
+    variadic()
+    optional()
     suggestions(
       ShellRuntimeDataGenerator { context ->
-        listOf(ShellCompletionSuggestion(name = context.typedPrefix, isHidden = true))
+        listOf(ShellCompletionSuggestion(context.typedPrefix) { hidden() })
       },
     )
   }
@@ -81,29 +84,30 @@ private fun ShellCommandContext.queryCompletion() {
         val suggestions: MutableList<ShellCompletionSuggestion> =
           targets
             .map { target ->
-              ShellCompletionSuggestion(
-                name = target,
-                icon = BazelPluginIcons.bazel,
-                prefixReplacementIndex = offset,
-                priority = targetPriority,
-              )
+              ShellCompletionSuggestion(target) {
+                icon(BazelPluginIcons.bazel)
+                prefixReplacementIndex(offset)
+                priority(targetPriority)
+              }
             }.toMutableList()
         suggestions.addAll(
           knownCommands.map {
-            ShellCompletionSuggestion(
-              name = "${it.name}()",
-              description = functionDescriptionHtml(it, context.project),
-              icon = BazelPluginIcons.bazel,
-              prefixReplacementIndex = offset,
-              insertValue = "${it.name}({cursor})",
-            )
+            ShellCompletionSuggestion("${it.name}()") {
+              description(functionDescriptionHtml(it, context.project))
+              icon(BazelPluginIcons.bazel)
+              prefixReplacementIndex(offset)
+              insertValue("${it.name}({cursor})")
+            }
           },
         )
 
         // Empty suggestion for the parser to consider quoted expression as valid argument, so flags will be suggested after the argument.
         // Inspired from ShellDataGenerators#getFileSuggestions.
         if (isStartAndEndWithQuote(context.typedPrefix)) {
-          val emptySuggestion = ShellCompletionSuggestion(name = "", prefixReplacementIndex = offset, isHidden = true)
+          val emptySuggestion = ShellCompletionSuggestion("") {
+            prefixReplacementIndex(offset)
+            hidden()
+          }
           suggestions.add(emptySuggestion)
         }
 
@@ -162,9 +166,9 @@ private fun ShellCommandContext.optionWithUnknownArgs(flag: Flag, project: Proje
   option("--${flag.option.name}") {
     description(flagDescriptionHtml(flag, project))
     argument {
-      isOptional = true
+      optional()
       suggestions {
-        listOf(ShellCompletionSuggestion(name = "", isHidden = true))
+        listOf(ShellCompletionSuggestion("") { hidden() })
       }
     }
   }
@@ -181,18 +185,18 @@ private fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, con
     argument {
       // Boolean flags can be provided as --<option> without any arguments, but not Tristate.
       if (flag is Flag.Boolean) {
-        isOptional = true
+        optional()
       }
       // Boolean and Tristate flags have these same arguments
       suggestions("true", "yes", "1", "false", "no", "0")
     }
-    exclusiveOn = listOf(falseFlag)
+    exclusiveOn(listOf(falseFlag))
   }
 
   // Both Boolean and Tristate can be negated with --no<option>
   option(falseFlag) {
     description(flagDescriptionHtml(flag, context.project))
-    exclusiveOn = listOf(trueFlag)
+    exclusiveOn(listOf(trueFlag))
   }
 }
 

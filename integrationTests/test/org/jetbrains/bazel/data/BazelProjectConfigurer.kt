@@ -41,17 +41,20 @@ object BazelProjectConfigurer {
 
   private fun createProjectViewFile(context: IDETestContext) {
     val projectView = context.resolvedProjectHome / "projectview.bazelproject"
-    val targets = System.getProperty("bazel.ide.starter.test.target.list")
-    val buildFlags = System.getProperty("bazel.ide.starter.test.build.flags")
+    // Check env vars first (for values with spaces), fall back to system properties
+    // argfile composer on TC doesn't handle spaces in VM options well
+    val targets = System.getenv("BAZEL_PERF_TARGET_LIST") ?: System.getProperty("bazel.ide.starter.test.target.list")
+    val buildFlags = System.getenv("BAZEL_PERF_BUILD_FLAGS") ?: System.getProperty("bazel.ide.starter.test.build.flags")
     if (projectView.exists() && targets == null && buildFlags == null) return
     projectView.writeText(createTargetsSection(targets) + "\n" + createBuildFlagsSection(buildFlags))
   }
 
-  private fun createTargetsSection(targets: String?) =
-    """
-    targets:
-      ${targets ?: "//..."}
-    """.trimIndent()
+  private fun createTargetsSection(targets: String?): String {
+    // we previously handled multiple labels on single line, but now we require no spaces between labels
+    val targetList = (targets ?: "//...").split(" ").filter { it.isNotBlank() }
+    val targetLines = targetList.joinToString("\n") { "  $it" }
+    return "targets:\n$targetLines"
+  }
 
   private fun createBuildFlagsSection(buildFlags: String?): String {
     if (buildFlags == null) return ""

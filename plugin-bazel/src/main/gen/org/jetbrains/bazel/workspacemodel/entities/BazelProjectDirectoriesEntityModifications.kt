@@ -6,7 +6,6 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
@@ -59,6 +58,10 @@ fun BazelProjectDirectoriesEntity(
   indexAdditionalFiles: List<VirtualFileUrl>,
   entitySource: EntitySource,
   init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
-): BazelProjectDirectoriesEntityBuilder =
-  BazelProjectDirectoriesEntityType(projectRoot, includedRoots, excludedRoots, indexAllFilesInIncludedRoots, indexAdditionalFiles,
-                                    entitySource, init)
+): BazelProjectDirectoriesEntityBuilder = BazelProjectDirectoriesEntityType(projectRoot,
+                                                                            includedRoots,
+                                                                            excludedRoots,
+                                                                            indexAllFilesInIncludedRoots,
+                                                                            indexAdditionalFiles,
+                                                                            entitySource,
+                                                                            init)

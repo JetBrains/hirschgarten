@@ -23,152 +23,199 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     var typeMetadata: StorageTypeMetadata
 
     typeMetadata = FinalClassMetadata.ClassMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
-                                                    properties = listOf(
-                                                      OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                                          name = "moduleName", valueType = primitiveTypeStringNotNullable,
-                                                                          withDefault = false),
-                                                      OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                                          name = "virtualFileUrl",
-                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(
-                                                                            isNullable = true, typeMetadata = FinalClassMetadata.KnownClass(
-                                                                              fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
-                                                                          withDefault = false)),
+                                                    properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                                            isKey = false,
+                                                                                            isOpen = false,
+                                                                                            name = "moduleName",
+                                                                                            valueType = primitiveTypeStringNotNullable,
+                                                                                            withDefault = false),
+                                                                        OwnPropertyMetadata(isComputable = false,
+                                                                                            isKey = false,
+                                                                                            isOpen = false,
+                                                                                            name = "virtualFileUrl",
+                                                                                            valueType = ValueTypeMetadata.SimpleType.CustomType(
+                                                                                              isNullable = true,
+                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
+                                                                                            withDefault = false)),
                                                     supertypes = listOf("com.intellij.platform.workspace.storage.EntitySource",
                                                                         "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource"))
 
     addMetadata(typeMetadata)
 
     typeMetadata = FinalClassMetadata.ObjectMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource",
-                                                     properties = listOf(
-                                                       OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                                           name = "virtualFileUrl",
-                                                                           valueType = ValueTypeMetadata.SimpleType.CustomType(
-                                                                             isNullable = true,
-                                                                             typeMetadata = FinalClassMetadata.KnownClass(
-                                                                               fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
-                                                                           withDefault = false)),
+                                                     properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                                             isKey = false,
+                                                                                             isOpen = false,
+                                                                                             name = "virtualFileUrl",
+                                                                                             valueType = ValueTypeMetadata.SimpleType.CustomType(
+                                                                                               isNullable = true,
+                                                                                               typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                 fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
+                                                                                             withDefault = false)),
                                                      supertypes = listOf("com.intellij.platform.workspace.storage.EntitySource",
                                                                          "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource"))
 
     addMetadata(typeMetadata)
 
     typeMetadata = FinalClassMetadata.ObjectMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
-                                                     properties = listOf(
-                                                       OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                                           name = "virtualFileUrl",
-                                                                           valueType = ValueTypeMetadata.SimpleType.CustomType(
-                                                                             isNullable = true,
-                                                                             typeMetadata = FinalClassMetadata.KnownClass(
-                                                                               fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
-                                                                           withDefault = false)),
+                                                     properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                                             isKey = false,
+                                                                                             isOpen = false,
+                                                                                             name = "virtualFileUrl",
+                                                                                             valueType = ValueTypeMetadata.SimpleType.CustomType(
+                                                                                               isNullable = true,
+                                                                                               typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                 fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
+                                                                                             withDefault = false)),
                                                      supertypes = listOf("com.intellij.platform.workspace.storage.EntitySource",
                                                                          "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource"))
 
     addMetadata(typeMetadata)
 
-    typeMetadata = FinalClassMetadata.ClassMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.NewSyncBazelEntitySource",
-                                                    properties = listOf(
-                                                      OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                                          name = "subsystem", valueType = primitiveTypeStringNotNullable,
-                                                                          withDefault = false),
-                                                      OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                                          name = "virtualFileUrl",
-                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(
-                                                                            isNullable = true, typeMetadata = FinalClassMetadata.KnownClass(
-                                                                              fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
-                                                                          withDefault = false)),
-                                                    supertypes = listOf("com.intellij.platform.workspace.storage.EntitySource"))
-
-    addMetadata(typeMetadata)
-
-    typeMetadata = FinalClassMetadata.ClassMetadata(
-      fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId", properties = listOf(
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "id", valueType = primitiveTypeIntNotNullable,
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "presentableName",
-                            valueType = primitiveTypeStringNotNullable, withDefault = false)),
-      supertypes = listOf("com.intellij.platform.workspace.storage.SymbolicEntityId"))
+    typeMetadata =
+      FinalClassMetadata.ClassMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
+                                       properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                               isKey = false,
+                                                                               isOpen = false,
+                                                                               name = "id",
+                                                                               valueType = primitiveTypeIntNotNullable,
+                                                                               withDefault = false),
+                                                           OwnPropertyMetadata(isComputable = false,
+                                                                               isKey = false,
+                                                                               isOpen = false,
+                                                                               name = "presentableName",
+                                                                               valueType = primitiveTypeStringNotNullable,
+                                                                               withDefault = false)),
+                                       supertypes = listOf("com.intellij.platform.workspace.storage.SymbolicEntityId"))
 
     addMetadata(typeMetadata)
 
     typeMetadata = FinalClassMetadata.ClassMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.PackageNameId",
-                                                    properties = listOf(
-                                                      OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                                          name = "packageName", valueType = primitiveTypeStringNotNullable,
-                                                                          withDefault = false),
-                                                      OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                                          name = "presentableName",
-                                                                          valueType = primitiveTypeStringNotNullable, withDefault = false)),
+                                                    properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                                            isKey = false,
+                                                                                            isOpen = false,
+                                                                                            name = "packageName",
+                                                                                            valueType = primitiveTypeStringNotNullable,
+                                                                                            withDefault = false),
+                                                                        OwnPropertyMetadata(isComputable = false,
+                                                                                            isKey = false,
+                                                                                            isOpen = false,
+                                                                                            name = "presentableName",
+                                                                                            valueType = primitiveTypeStringNotNullable,
+                                                                                            withDefault = false)),
                                                     supertypes = listOf("com.intellij.platform.workspace.storage.SymbolicEntityId"))
 
     addMetadata(typeMetadata)
 
     typeMetadata = EntityMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity",
                                   entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.BazelJavaSourceRootEntityData",
-                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"), properties = listOf(
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "entitySource",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                  fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "packageNameId",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.ClassMetadata(
-                                                                                  fqName = "org.jetbrains.bazel.workspacemodel.entities.PackageNameId",
-                                                                                  properties = listOf(
-                                                                                    OwnPropertyMetadata(isComputable = false, isKey = false,
-                                                                                                        isOpen = false,
-                                                                                                        name = "packageName",
-                                                                                                        valueType = primitiveTypeStringNotNullable,
-                                                                                                        withDefault = false),
-                                                                                    OwnPropertyMetadata(isComputable = false, isKey = false,
-                                                                                                        isOpen = false,
-                                                                                                        name = "presentableName",
-                                                                                                        valueType = primitiveTypeStringNotNullable,
-                                                                                                        withDefault = false)),
-                                                                                  supertypes = listOf(
-                                                                                    "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "sourceRoots",
-                            valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
-                              ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(
-                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
-                                                                            primitive = primitiveTypeListNotNullable),
-                            withDefault = false)), extProperties = listOf(), isAbstract = false)
+                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
+                                  properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "entitySource",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.EntitySource")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "packageNameId",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.ClassMetadata(
+                                                                                                                                fqName = "org.jetbrains.bazel.workspacemodel.entities.PackageNameId",
+                                                                                                                                properties = listOf(
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "packageName",
+                                                                                                                                    valueType = primitiveTypeStringNotNullable,
+                                                                                                                                    withDefault = false),
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "presentableName",
+                                                                                                                                    valueType = primitiveTypeStringNotNullable,
+                                                                                                                                    withDefault = false)),
+                                                                                                                                supertypes = listOf(
+                                                                                                                                  "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "sourceRoots",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                    typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                      fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
+                                                                                                                          primitive = primitiveTypeListNotNullable),
+                                                                          withDefault = false)),
+                                  extProperties = listOf(),
+                                  isAbstract = false)
 
     addMetadata(typeMetadata)
 
     typeMetadata = EntityMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity",
                                   entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.BazelProjectDirectoriesEntityData",
-                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"), properties = listOf(
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "entitySource",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                  fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "projectRoot",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                  fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "includedRoots",
-                            valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
-                              ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(
-                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
-                                                                            primitive = primitiveTypeListNotNullable), withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "excludedRoots",
-                            valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
-                              ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(
-                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
-                                                                            primitive = primitiveTypeListNotNullable), withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "indexAllFilesInIncludedRoots",
-                            valueType = primitiveTypeBooleanNotNullable, withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "indexAdditionalFiles",
-                            valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
-                              ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(
-                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
-                                                                            primitive = primitiveTypeListNotNullable),
-                            withDefault = false)), extProperties = listOf(), isAbstract = false)
+                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
+                                  properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "entitySource",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.EntitySource")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "projectRoot",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "includedRoots",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                    typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                      fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
+                                                                                                                          primitive = primitiveTypeListNotNullable),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "excludedRoots",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                    typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                      fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
+                                                                                                                          primitive = primitiveTypeListNotNullable),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "indexAllFilesInIncludedRoots",
+                                                                          valueType = primitiveTypeBooleanNotNullable,
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "indexAdditionalFiles",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                    typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                      fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
+                                                                                                                          primitive = primitiveTypeListNotNullable),
+                                                                          withDefault = false)),
+                                  extProperties = listOf(),
+                                  isAbstract = false)
 
     addMetadata(typeMetadata)
 
@@ -176,279 +223,381 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
                                   entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.CompiledSourceCodeInsideJarExcludeEntityData",
                                   supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity",
                                                       "com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId"),
-                                  properties = listOf(
-                                    OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "entitySource",
-                                                        valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                                            typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                                              fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                                                        withDefault = false),
-                                    OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                        name = "relativePathsInsideJarToExclude",
-                                                        valueType = ValueTypeMetadata.ParameterizedType(
-                                                          generics = listOf(primitiveTypeStringNotNullable),
-                                                          primitive = primitiveTypeSetNotNullable), withDefault = false),
-                                    OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false,
-                                                        name = "librariesFromInternalTargetsUrls",
-                                                        valueType = ValueTypeMetadata.ParameterizedType(
-                                                          generics = listOf(primitiveTypeStringNotNullable),
-                                                          primitive = primitiveTypeSetNotNullable), withDefault = false),
-                                    OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "excludeId",
-                                                        valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                                            typeMetadata = FinalClassMetadata.ClassMetadata(
-                                                                                                              fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
-                                                                                                              properties = listOf(
-                                                                                                                OwnPropertyMetadata(
-                                                                                                                  isComputable = false,
-                                                                                                                  isKey = false,
-                                                                                                                  isOpen = false,
-                                                                                                                  name = "id",
-                                                                                                                  valueType = primitiveTypeIntNotNullable,
-                                                                                                                  withDefault = false),
-                                                                                                                OwnPropertyMetadata(
-                                                                                                                  isComputable = false,
-                                                                                                                  isKey = false,
-                                                                                                                  isOpen = false,
-                                                                                                                  name = "presentableName",
-                                                                                                                  valueType = primitiveTypeStringNotNullable,
-                                                                                                                  withDefault = false)),
-                                                                                                              supertypes = listOf(
-                                                                                                                "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
-                                                        withDefault = false),
-                                    OwnPropertyMetadata(isComputable = true, isKey = false, isOpen = false, name = "symbolicId",
-                                                        valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                                            typeMetadata = FinalClassMetadata.ClassMetadata(
-                                                                                                              fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
-                                                                                                              properties = listOf(
-                                                                                                                OwnPropertyMetadata(
-                                                                                                                  isComputable = false,
-                                                                                                                  isKey = false,
-                                                                                                                  isOpen = false,
-                                                                                                                  name = "id",
-                                                                                                                  valueType = primitiveTypeIntNotNullable,
-                                                                                                                  withDefault = false),
-                                                                                                                OwnPropertyMetadata(
-                                                                                                                  isComputable = false,
-                                                                                                                  isKey = false,
-                                                                                                                  isOpen = false,
-                                                                                                                  name = "presentableName",
-                                                                                                                  valueType = primitiveTypeStringNotNullable,
-                                                                                                                  withDefault = false)),
-                                                                                                              supertypes = listOf(
-                                                                                                                "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
-                                                        withDefault = false)), extProperties = listOf(), isAbstract = false)
+                                  properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "entitySource",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.EntitySource")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "relativePathsInsideJarToExclude",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            primitiveTypeStringNotNullable),
+                                                                                                                          primitive = primitiveTypeSetNotNullable),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "librariesFromInternalTargetsUrls",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            primitiveTypeStringNotNullable),
+                                                                                                                          primitive = primitiveTypeSetNotNullable),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "excludeId",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.ClassMetadata(
+                                                                                                                                fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
+                                                                                                                                properties = listOf(
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "id",
+                                                                                                                                    valueType = primitiveTypeIntNotNullable,
+                                                                                                                                    withDefault = false),
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "presentableName",
+                                                                                                                                    valueType = primitiveTypeStringNotNullable,
+                                                                                                                                    withDefault = false)),
+                                                                                                                                supertypes = listOf(
+                                                                                                                                  "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = true,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "symbolicId",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.ClassMetadata(
+                                                                                                                                fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
+                                                                                                                                properties = listOf(
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "id",
+                                                                                                                                    valueType = primitiveTypeIntNotNullable,
+                                                                                                                                    withDefault = false),
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "presentableName",
+                                                                                                                                    valueType = primitiveTypeStringNotNullable,
+                                                                                                                                    withDefault = false)),
+                                                                                                                                supertypes = listOf(
+                                                                                                                                  "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
+                                                                          withDefault = false)),
+                                  extProperties = listOf(),
+                                  isAbstract = false)
 
     addMetadata(typeMetadata)
 
     typeMetadata = EntityMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity",
                                   entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.JvmBinaryJarsEntityData",
-                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"), properties = listOf(
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "entitySource",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                  fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                            withDefault = false), OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "jars",
-                                                                      valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
-                                                                        ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                                                  fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
-                                                                                                                      primitive = primitiveTypeListNotNullable),
-                                                                      withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "module",
-                            valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
-                                                                          entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
-                                                                          isChild = false, isNullable = false), withDefault = false)),
-                                  extProperties = listOf(
-                                    ExtPropertyMetadata(isComputable = false, isOpen = false, name = "jvmBinaryJarsEntity",
-                                                        receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
-                                                        valueType = ValueTypeMetadata.EntityReference(
-                                                          connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
-                                                          entityFqName = "org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity",
-                                                          isChild = true, isNullable = true), withDefault = false)), isAbstract = false)
+                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
+                                  properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "entitySource",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.EntitySource")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "jars",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                    typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                      fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
+                                                                                                                          primitive = primitiveTypeListNotNullable),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "module",
+                                                                          valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
+                                                                                                                        entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+                                                                                                                        isChild = false,
+                                                                                                                        isNullable = false),
+                                                                          withDefault = false)),
+                                  extProperties = listOf(ExtPropertyMetadata(isComputable = false,
+                                                                             isOpen = false,
+                                                                             name = "jvmBinaryJarsEntity",
+                                                                             receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+                                                                             valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
+                                                                                                                           entityFqName = "org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity",
+                                                                                                                           isChild = true,
+                                                                                                                           isNullable = true),
+                                                                             withDefault = false)),
+                                  isAbstract = false)
 
     addMetadata(typeMetadata)
 
     typeMetadata = EntityMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
                                   entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.LibraryCompiledSourceCodeInsideJarExcludeEntityData",
-                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"), properties = listOf(
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "entitySource",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                  fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "libraryId",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.ClassMetadata(
-                                                                                  fqName = "com.intellij.platform.workspace.jps.entities.LibraryId",
-                                                                                  properties = listOf(
-                                                                                    OwnPropertyMetadata(isComputable = false, isKey = false,
-                                                                                                        isOpen = false, name = "codeCache",
-                                                                                                        valueType = primitiveTypeIntNotNullable,
-                                                                                                        withDefault = false),
-                                                                                    OwnPropertyMetadata(isComputable = false, isKey = false,
-                                                                                                        isOpen = false, name = "name",
-                                                                                                        valueType = primitiveTypeStringNotNullable,
-                                                                                                        withDefault = false),
-                                                                                    OwnPropertyMetadata(isComputable = false, isKey = false,
-                                                                                                        isOpen = false,
-                                                                                                        name = "presentableName",
-                                                                                                        valueType = primitiveTypeStringNotNullable,
-                                                                                                        withDefault = false),
-                                                                                    OwnPropertyMetadata(isComputable = false, isKey = false,
-                                                                                                        isOpen = false, name = "tableId",
-                                                                                                        valueType = ValueTypeMetadata.SimpleType.CustomType(
-                                                                                                          isNullable = false,
-                                                                                                          typeMetadata = ExtendableClassMetadata.AbstractClassMetadata(
-                                                                                                            fqName = "com.intellij.platform.workspace.jps.entities.LibraryTableId",
-                                                                                                            subclasses = listOf(
-                                                                                                              FinalClassMetadata.ObjectMetadata(
-                                                                                                                fqName = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ProjectLibraryTableId",
-                                                                                                                properties = listOf(
-                                                                                                                  OwnPropertyMetadata(
-                                                                                                                    isComputable = false,
-                                                                                                                    isKey = false,
-                                                                                                                    isOpen = false,
-                                                                                                                    name = "level",
-                                                                                                                    valueType = primitiveTypeStringNotNullable,
-                                                                                                                    withDefault = false)),
-                                                                                                                supertypes = listOf(
-                                                                                                                  "com.intellij.platform.workspace.jps.entities.LibraryTableId",
-                                                                                                                  "java.io.Serializable")),
-                                                                                                              FinalClassMetadata.ClassMetadata(
-                                                                                                                fqName = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$GlobalLibraryTableId",
-                                                                                                                properties = listOf(
-                                                                                                                  OwnPropertyMetadata(
-                                                                                                                    isComputable = false,
-                                                                                                                    isKey = false,
-                                                                                                                    isOpen = false,
-                                                                                                                    name = "level",
-                                                                                                                    valueType = primitiveTypeStringNotNullable,
-                                                                                                                    withDefault = false)),
-                                                                                                                supertypes = listOf(
-                                                                                                                  "com.intellij.platform.workspace.jps.entities.LibraryTableId",
-                                                                                                                  "java.io.Serializable")),
-                                                                                                              FinalClassMetadata.ClassMetadata(
-                                                                                                                fqName = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ModuleLibraryTableId",
-                                                                                                                properties = listOf(
-                                                                                                                  OwnPropertyMetadata(
-                                                                                                                    isComputable = false,
-                                                                                                                    isKey = false,
-                                                                                                                    isOpen = false,
-                                                                                                                    name = "level",
-                                                                                                                    valueType = primitiveTypeStringNotNullable,
-                                                                                                                    withDefault = false),
-                                                                                                                  OwnPropertyMetadata(
-                                                                                                                    isComputable = false,
-                                                                                                                    isKey = false,
-                                                                                                                    isOpen = false,
-                                                                                                                    name = "moduleId",
-                                                                                                                    valueType = ValueTypeMetadata.SimpleType.CustomType(
-                                                                                                                      isNullable = false,
-                                                                                                                      typeMetadata = FinalClassMetadata.ClassMetadata(
-                                                                                                                        fqName = "com.intellij.platform.workspace.jps.entities.ModuleId",
-                                                                                                                        properties = listOf(
-                                                                                                                          OwnPropertyMetadata(
-                                                                                                                            isComputable = false,
-                                                                                                                            isKey = false,
-                                                                                                                            isOpen = false,
-                                                                                                                            name = "name",
-                                                                                                                            valueType = primitiveTypeStringNotNullable,
-                                                                                                                            withDefault = false),
-                                                                                                                          OwnPropertyMetadata(
-                                                                                                                            isComputable = false,
-                                                                                                                            isKey = false,
-                                                                                                                            isOpen = false,
-                                                                                                                            name = "presentableName",
-                                                                                                                            valueType = primitiveTypeStringNotNullable,
-                                                                                                                            withDefault = false)),
-                                                                                                                        supertypes = listOf(
-                                                                                                                          "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
-                                                                                                                    withDefault = false)),
-                                                                                                                supertypes = listOf(
-                                                                                                                  "com.intellij.platform.workspace.jps.entities.LibraryTableId",
-                                                                                                                  "java.io.Serializable"))),
-                                                                                                            supertypes = listOf(
-                                                                                                              "java.io.Serializable"))),
-                                                                                                        withDefault = false)),
-                                                                                  supertypes = listOf(
-                                                                                    "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "compiledSourceCodeInsideJarExcludeId",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.ClassMetadata(
-                                                                                  fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
-                                                                                  properties = listOf(
-                                                                                    OwnPropertyMetadata(isComputable = false, isKey = false,
-                                                                                                        isOpen = false, name = "id",
-                                                                                                        valueType = primitiveTypeIntNotNullable,
-                                                                                                        withDefault = false),
-                                                                                    OwnPropertyMetadata(isComputable = false, isKey = false,
-                                                                                                        isOpen = false,
-                                                                                                        name = "presentableName",
-                                                                                                        valueType = primitiveTypeStringNotNullable,
-                                                                                                        withDefault = false)),
-                                                                                  supertypes = listOf(
-                                                                                    "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
-                            withDefault = false)), extProperties = listOf(), isAbstract = false)
+                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
+                                  properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "entitySource",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.EntitySource")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "libraryId",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.ClassMetadata(
+                                                                                                                                fqName = "com.intellij.platform.workspace.jps.entities.LibraryId",
+                                                                                                                                properties = listOf(
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "codeCache",
+                                                                                                                                    valueType = primitiveTypeIntNotNullable,
+                                                                                                                                    withDefault = false),
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "name",
+                                                                                                                                    valueType = primitiveTypeStringNotNullable,
+                                                                                                                                    withDefault = false),
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "presentableName",
+                                                                                                                                    valueType = primitiveTypeStringNotNullable,
+                                                                                                                                    withDefault = false),
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "tableId",
+                                                                                                                                    valueType = ValueTypeMetadata.SimpleType.CustomType(
+                                                                                                                                      isNullable = false,
+                                                                                                                                      typeMetadata = ExtendableClassMetadata.AbstractClassMetadata(
+                                                                                                                                        fqName = "com.intellij.platform.workspace.jps.entities.LibraryTableId",
+                                                                                                                                        subclasses = listOf(
+                                                                                                                                          FinalClassMetadata.ObjectMetadata(
+                                                                                                                                            fqName = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ProjectLibraryTableId",
+                                                                                                                                            properties = listOf(
+                                                                                                                                              OwnPropertyMetadata(
+                                                                                                                                                isComputable = false,
+                                                                                                                                                isKey = false,
+                                                                                                                                                isOpen = false,
+                                                                                                                                                name = "level",
+                                                                                                                                                valueType = primitiveTypeStringNotNullable,
+                                                                                                                                                withDefault = false)),
+                                                                                                                                            supertypes = listOf(
+                                                                                                                                              "com.intellij.platform.workspace.jps.entities.LibraryTableId",
+                                                                                                                                              "java.io.Serializable")),
+                                                                                                                                          FinalClassMetadata.ClassMetadata(
+                                                                                                                                            fqName = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$GlobalLibraryTableId",
+                                                                                                                                            properties = listOf(
+                                                                                                                                              OwnPropertyMetadata(
+                                                                                                                                                isComputable = false,
+                                                                                                                                                isKey = false,
+                                                                                                                                                isOpen = false,
+                                                                                                                                                name = "level",
+                                                                                                                                                valueType = primitiveTypeStringNotNullable,
+                                                                                                                                                withDefault = false)),
+                                                                                                                                            supertypes = listOf(
+                                                                                                                                              "com.intellij.platform.workspace.jps.entities.LibraryTableId",
+                                                                                                                                              "java.io.Serializable")),
+                                                                                                                                          FinalClassMetadata.ClassMetadata(
+                                                                                                                                            fqName = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ModuleLibraryTableId",
+                                                                                                                                            properties = listOf(
+                                                                                                                                              OwnPropertyMetadata(
+                                                                                                                                                isComputable = false,
+                                                                                                                                                isKey = false,
+                                                                                                                                                isOpen = false,
+                                                                                                                                                name = "level",
+                                                                                                                                                valueType = primitiveTypeStringNotNullable,
+                                                                                                                                                withDefault = false),
+                                                                                                                                              OwnPropertyMetadata(
+                                                                                                                                                isComputable = false,
+                                                                                                                                                isKey = false,
+                                                                                                                                                isOpen = false,
+                                                                                                                                                name = "moduleId",
+                                                                                                                                                valueType = ValueTypeMetadata.SimpleType.CustomType(
+                                                                                                                                                  isNullable = false,
+                                                                                                                                                  typeMetadata = FinalClassMetadata.ClassMetadata(
+                                                                                                                                                    fqName = "com.intellij.platform.workspace.jps.entities.ModuleId",
+                                                                                                                                                    properties = listOf(
+                                                                                                                                                      OwnPropertyMetadata(
+                                                                                                                                                        isComputable = false,
+                                                                                                                                                        isKey = false,
+                                                                                                                                                        isOpen = false,
+                                                                                                                                                        name = "name",
+                                                                                                                                                        valueType = primitiveTypeStringNotNullable,
+                                                                                                                                                        withDefault = false),
+                                                                                                                                                      OwnPropertyMetadata(
+                                                                                                                                                        isComputable = false,
+                                                                                                                                                        isKey = false,
+                                                                                                                                                        isOpen = false,
+                                                                                                                                                        name = "presentableName",
+                                                                                                                                                        valueType = primitiveTypeStringNotNullable,
+                                                                                                                                                        withDefault = false)),
+                                                                                                                                                    supertypes = listOf(
+                                                                                                                                                      "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
+                                                                                                                                                withDefault = false)),
+                                                                                                                                            supertypes = listOf(
+                                                                                                                                              "com.intellij.platform.workspace.jps.entities.LibraryTableId",
+                                                                                                                                              "java.io.Serializable"))),
+                                                                                                                                        supertypes = listOf(
+                                                                                                                                          "java.io.Serializable"))),
+                                                                                                                                    withDefault = false)),
+                                                                                                                                supertypes = listOf(
+                                                                                                                                  "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "compiledSourceCodeInsideJarExcludeId",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.ClassMetadata(
+                                                                                                                                fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
+                                                                                                                                properties = listOf(
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "id",
+                                                                                                                                    valueType = primitiveTypeIntNotNullable,
+                                                                                                                                    withDefault = false),
+                                                                                                                                  OwnPropertyMetadata(
+                                                                                                                                    isComputable = false,
+                                                                                                                                    isKey = false,
+                                                                                                                                    isOpen = false,
+                                                                                                                                    name = "presentableName",
+                                                                                                                                    valueType = primitiveTypeStringNotNullable,
+                                                                                                                                    withDefault = false)),
+                                                                                                                                supertypes = listOf(
+                                                                                                                                  "com.intellij.platform.workspace.storage.SymbolicEntityId"))),
+                                                                          withDefault = false)),
+                                  extProperties = listOf(),
+                                  isAbstract = false)
 
     addMetadata(typeMetadata)
 
     typeMetadata = EntityMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity",
                                   entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.PackageMarkerEntityData",
-                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"), properties = listOf(
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "entitySource",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                  fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                            withDefault = false), OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "root",
-                                                                      valueType = ValueTypeMetadata.SimpleType.CustomType(
-                                                                        isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(
-                                                                          fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
-                                                                      withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "packagePrefix",
-                            valueType = primitiveTypeStringNotNullable, withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "module",
-                            valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_MANY,
-                                                                          entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
-                                                                          isChild = false, isNullable = false), withDefault = false)),
-                                  extProperties = listOf(
-                                    ExtPropertyMetadata(isComputable = false, isOpen = false, name = "packageMarkerEntities",
-                                                        receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
-                                                        valueType = ValueTypeMetadata.EntityReference(
-                                                          connectionType = ConnectionId.ConnectionType.ONE_TO_MANY,
-                                                          entityFqName = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity",
-                                                          isChild = true, isNullable = false), withDefault = false)), isAbstract = false)
+                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
+                                  properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "entitySource",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.EntitySource")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "root",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "packagePrefix",
+                                                                          valueType = primitiveTypeStringNotNullable,
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "module",
+                                                                          valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_MANY,
+                                                                                                                        entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+                                                                                                                        isChild = false,
+                                                                                                                        isNullable = false),
+                                                                          withDefault = false)),
+                                  extProperties = listOf(ExtPropertyMetadata(isComputable = false,
+                                                                             isOpen = false,
+                                                                             name = "packageMarkerEntities",
+                                                                             receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+                                                                             valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_MANY,
+                                                                                                                           entityFqName = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity",
+                                                                                                                           isChild = true,
+                                                                                                                           isNullable = false),
+                                                                             withDefault = false)),
+                                  isAbstract = false)
 
     addMetadata(typeMetadata)
 
     typeMetadata = EntityMetadata(fqName = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity",
                                   entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.ScalaAddendumEntityData",
-                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"), properties = listOf(
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "entitySource",
-                            valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
-                                                                                typeMetadata = FinalClassMetadata.KnownClass(
-                                                                                  fqName = "com.intellij.platform.workspace.storage.EntitySource")),
-                            withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "compilerVersion",
-                            valueType = primitiveTypeStringNotNullable, withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "scalacOptions",
-                            valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(primitiveTypeStringNotNullable),
-                                                                            primitive = primitiveTypeListNotNullable), withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "sdkClasspaths",
-                            valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
-                              ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(
-                                fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
-                                                                            primitive = primitiveTypeListNotNullable), withDefault = false),
-        OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "module",
-                            valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
-                                                                          entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
-                                                                          isChild = false, isNullable = false), withDefault = false)),
-                                  extProperties = listOf(
-                                    ExtPropertyMetadata(isComputable = false, isOpen = false, name = "scalaAddendumEntity",
-                                                        receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
-                                                        valueType = ValueTypeMetadata.EntityReference(
-                                                          connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
-                                                          entityFqName = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity",
-                                                          isChild = true, isNullable = true), withDefault = false)), isAbstract = false)
+                                  supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
+                                  properties = listOf(OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "entitySource",
+                                                                          valueType = ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                              typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                                fqName = "com.intellij.platform.workspace.storage.EntitySource")),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "compilerVersion",
+                                                                          valueType = primitiveTypeStringNotNullable,
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "scalacOptions",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            primitiveTypeStringNotNullable),
+                                                                                                                          primitive = primitiveTypeListNotNullable),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "sdkClasspaths",
+                                                                          valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(
+                                                                            ValueTypeMetadata.SimpleType.CustomType(isNullable = false,
+                                                                                                                    typeMetadata = FinalClassMetadata.KnownClass(
+                                                                                                                      fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))),
+                                                                                                                          primitive = primitiveTypeListNotNullable),
+                                                                          withDefault = false),
+                                                      OwnPropertyMetadata(isComputable = false,
+                                                                          isKey = false,
+                                                                          isOpen = false,
+                                                                          name = "module",
+                                                                          valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
+                                                                                                                        entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+                                                                                                                        isChild = false,
+                                                                                                                        isNullable = false),
+                                                                          withDefault = false)),
+                                  extProperties = listOf(ExtPropertyMetadata(isComputable = false,
+                                                                             isOpen = false,
+                                                                             name = "scalaAddendumEntity",
+                                                                             receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+                                                                             valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
+                                                                                                                           entityFqName = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity",
+                                                                                                                           isChild = true,
+                                                                                                                           isNullable = true),
+                                                                             withDefault = false)),
+                                  isAbstract = false)
 
     addMetadata(typeMetadata)
   }
@@ -473,13 +622,11 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.ModuleId", metadataHash = 369441961)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ProjectLibraryTableId",
                     metadataHash = 824092854)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.EntitySource", metadataHash = 823808617)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.EntitySource", metadataHash = 1674399842)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource", metadataHash = 1476524774)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource", metadataHash = -2119790393)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource", metadataHash = 633678949)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource", metadataHash = -1409629483)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.NewSyncBazelEntitySource", metadataHash = -155951867)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.SymbolicEntityId", metadataHash = -1960707427)
   }
-
 }

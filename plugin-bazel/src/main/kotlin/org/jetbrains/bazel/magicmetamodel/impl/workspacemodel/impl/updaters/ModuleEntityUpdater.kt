@@ -14,7 +14,6 @@ import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.containers.Interner
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
@@ -31,26 +30,30 @@ class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
   private val libraries: Map<String, Library>,
-  private val runtimeOnlyDependencies: Set<String> = emptySet(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
   override suspend fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addModuleEntity(builder: MutableEntityStorage, entityToAdd: GenericModuleInfo): ModuleEntity {
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
+    val usesJpsExportSemantics = entityToAdd.kind.usesJpsExportSemantics()
     val dependenciesFromEntity =
       entityToAdd.dependencies.map { dependency ->
-        val runtime = dependency in runtimeOnlyDependencies
-        val libraryDependency = libraries[dependency]
+        val runtime = dependency.isRuntimeOnly
+        val libraryDependency = libraries[dependency.id]
+        val exported = dependency.exported || !usesJpsExportSemantics
         if (libraryDependency != null) {
-          val exported = !libraryDependency.isLowPriority
-          if (BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled && !entityToAdd.isLibraryModule) {
-            toModuleDependencyItemModuleDependency(dependency.addLibraryModulePrefix(), exported, runtime)
+          if (!entityToAdd.isLibraryModule) {
+            toModuleDependencyItemModuleDependency(
+              dependency.id.addLibraryModulePrefix(),
+              exported && !libraryDependency.isLowPriority,
+              runtime,
+            )
           } else {
-            toLibraryDependency(dependency, exported = exported || entityToAdd.isLibraryModule, runtime)
+            toLibraryDependency(dependency.id, exported = true, runtime)
           }
         } else {
-          toModuleDependencyItemModuleDependency(dependency, runtime = runtime)
+          toModuleDependencyItemModuleDependency(dependency.id, exported = exported, runtime = runtime)
         }
       }
 

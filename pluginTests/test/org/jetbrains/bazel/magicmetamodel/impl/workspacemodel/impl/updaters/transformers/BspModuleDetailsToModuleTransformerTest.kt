@@ -12,6 +12,7 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.Dependency
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.DisplayName
@@ -70,8 +71,8 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Label.parse("@//target2"),
-            Label.parse("@//target3"),
+            DependencyLabel(Label.parse("@//target2")),
+            DependencyLabel(Label.parse("@//target3")),
           ),
       )
 
@@ -93,8 +94,8 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "target2.target2",
-            "target3.target3",
+            Dependency("target2.target2"),
+            Dependency("target3.target3"),
           ),
         kind =
           TargetKind(
@@ -142,9 +143,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         dependencies =
           listOf(
-            Label.parse("@maven//:test"),
-            Label.parse("@//target2"),
-            Label.parse("@//target3"),
+            DependencyLabel(Label.parse("@maven//:test")),
+            DependencyLabel(Label.parse("@//target2")),
+            DependencyLabel(Label.parse("@//target3")),
           ),
       )
 
@@ -166,9 +167,9 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "maven.test",
-            "target2.target2",
-            "target3.target3",
+            Dependency("maven.test"),
+            Dependency("target2.target2"),
+            Dependency("target3.target3"),
           ),
         associates =
           listOf(
@@ -218,8 +219,8 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Label.parse("//target2"),
-            Label.parse("//target3"),
+            DependencyLabel(Label.parse("//target2")),
+            DependencyLabel(Label.parse("//target3")),
           ),
       )
 
@@ -251,7 +252,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Label.parse("//target3"),
+            DependencyLabel(Label.parse("//target3")),
           ),
       )
 
@@ -274,8 +275,8 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "target2.target2",
-            "target3.target3",
+            Dependency("target2.target2"),
+            Dependency("target3.target3"),
           ),
         kind =
           TargetKind(
@@ -291,7 +292,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            "target3.target3",
+            Dependency("target3.target3"),
           ),
         kind =
           TargetKind(

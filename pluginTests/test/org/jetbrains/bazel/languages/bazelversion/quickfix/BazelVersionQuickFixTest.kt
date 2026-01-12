@@ -1,12 +1,11 @@
 package org.jetbrains.bazel.languages.bazelversion.quickfix
 
-import com.google.idea.testing.runfiles.Runfiles
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.ExtensionTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import io.kotest.common.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
@@ -14,7 +13,6 @@ import org.jetbrains.bazel.languages.bazelversion.psi.withNewVersionWhenPossible
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver
 import org.jetbrains.bazel.test.framework.BazelPathManager
-import kotlin.io.path.pathString
 
 class BazelVersionQuickFixTest : BasePlatformTestCase() {
   override fun getTestDataPath(): String =
