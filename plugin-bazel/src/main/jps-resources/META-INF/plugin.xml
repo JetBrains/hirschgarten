@@ -345,11 +345,6 @@
       key="bsp.shorten.module.library.names"
     />
     <registryKey
-      defaultValue="false"
-      description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
-      key="bsp.wrap.libraries.inside.modules"
-    />
-    <registryKey
       defaultValue="true"
       description="Execute second phase of the phased sync. `bsp.use.phased.sync` has to be enabled to use this flag. It should be used only for testing purposes."
       key="bsp.execute.second.phase.on.sync"
