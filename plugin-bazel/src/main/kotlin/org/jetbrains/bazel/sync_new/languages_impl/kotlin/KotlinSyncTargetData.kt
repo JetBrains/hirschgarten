@@ -26,4 +26,7 @@ data class KotlinSyncTargetData(
 
   @field:Tag(5)
   val stdlibJars: List<BazelPath>,
+
+  @field:Tag(6)
+  val moduleName: String?
 ) : SyncTargetData

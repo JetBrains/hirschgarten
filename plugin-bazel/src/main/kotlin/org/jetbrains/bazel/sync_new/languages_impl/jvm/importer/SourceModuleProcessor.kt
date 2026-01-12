@@ -118,6 +118,7 @@ class SourceModuleProcessor(
       apiVersion = language.apiVersion,
       kotlincOptions = language.kotlincOptions,
       associates = language.associates,
+      moduleName = language.moduleName,
     )
   }
 

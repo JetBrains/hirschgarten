@@ -22,8 +22,11 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.LinkOption
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
@@ -246,7 +249,7 @@ private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>)
     .eachCount()
 
 private fun sourceRootForParentDir(sourceRoot: JavaSourceRoot): JavaSourceRoot? {
-  if (sourceRoot.sourcePath.isDirectory()) return null
+  if (sourceRoot.sourcePath.isDirectory(LinkOption.NOFOLLOW_LINKS)) return null
   val sourceParent = sourceRoot.sourcePath.parent.pathString
   val sourceRootPath = Path(sourceParent)
   val packagePrefix = sourceRoot.packagePrefix

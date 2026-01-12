@@ -152,6 +152,9 @@ data class LegacyKotlinTargetData(
 
   @field:Tag(4)
   val associates: List<Label>,
+
+  @field:Tag(5)
+  val moduleName: String?,
 )
 
 // org.jetbrains.bsp.protocol.JvmBuildTarget

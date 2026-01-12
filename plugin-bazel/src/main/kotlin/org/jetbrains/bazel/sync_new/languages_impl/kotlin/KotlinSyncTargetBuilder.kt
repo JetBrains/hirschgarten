@@ -28,6 +28,7 @@ class KotlinSyncTargetBuilder : SyncLanguageDataBuilder<KotlinSyncTargetData> {
       associates = kotlinTarget.associatesList.map { Label.parse(it) },
       kotlincOptions = kotlinTarget.toKotlincOptArguments(ctx),
       stdlibJars = kotlinTarget.stdlibsList.map { BazelPath.fromFileLocation(it) },
+      moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() }
     )
   }
 
