@@ -2,7 +2,6 @@ package org.jetbrains.bazel.target.sync
 
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -14,8 +13,6 @@ private class TargetUtilsSyncHook : ProjectSyncHook {
       environment.resolver
         .getOrFetchResolvedWorkspace()
         .targets
-        .getTargets()
-        .toList()
     val targetUtilsDiff = environment.diff.targetUtilsDiff
     targetUtilsDiff.bspTargets = bspTargets
     targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets, withLowPrioritySharedSources = true)

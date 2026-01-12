@@ -16,6 +16,7 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.Tag
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -27,7 +28,6 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
@@ -111,7 +111,6 @@ class AspectBazelProjectMapper(
           dependencyGraph
             .allTargetsAtDepth(
               workspaceContext.importDepth,
-              rootTargets,
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
@@ -185,18 +184,6 @@ class AspectBazelProjectMapper(
           extraLibrariesFromJdeps.values.flatten().associateBy { it.label }
       }
 
-    val nonModuleTargetIds =
-      (removeDotBazelBspTarget(allTargets.keys) - librariesToImport.keys).toSet()
-    val nonModuleTargets =
-      createNonModuleTargets(
-        allTargets.filterKeys {
-          nonModuleTargetIds.contains(it) &&
-            isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
-        },
-        repoMapping,
-        workspaceContext,
-      )
-
     val extraLibraries = concatenateMaps(librariesFromDeps, extraLibrariesFromJdeps)
 
     val targets =
@@ -218,15 +205,20 @@ class AspectBazelProjectMapper(
 
     val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, highPrioritySources, repoMapping, dependencyGraph) }
     val nonModuleRawTargets = measure("create non module raw targets") {
+      val nonModuleTargets =
+        createNonModuleTargets(
+          allTargets,
+          dependencyGraph,
+          repoMapping,
+          workspaceContext,
+        )
       nonModuleTargets.map { it.toBuildTarget() }
     }
 
+    val workspaceTargets = rawTargets.associateByTo(mutableMapOf()) { target -> target.id }
+    nonModuleRawTargets.forEach { target -> workspaceTargets.putIfAbsent(target.id, target) }
     return BazelResolvedWorkspace(
-      targets =
-        BuildTargetCollection().apply {
-          addBuildTargets(rawTargets)
-          addNonModuleTargets(nonModuleRawTargets)
-        },
+      targets = workspaceTargets.values.toList(),
       libraries =
         librariesToImport.values.map {
           LibraryItem(
@@ -631,12 +623,23 @@ class AspectBazelProjectMapper(
   }
 
   private fun createNonModuleTargets(
-    targets: Map<Label, TargetInfo>,
+    allTargets: Map<Label, TargetInfo>,
+    dependencyGraph: DependencyGraph,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
-  ): List<NonModuleTarget> =
-    targets
-      .map { (label, targetInfo) ->
+  ): List<NonModuleTarget> {
+    val allTargetsAtDepth = dependencyGraph.allTargetsAtDepth(
+      workspaceContext.importDepth,
+      isExternalTarget = { false },
+      targetSupportsStrictDeps = { true },
+      isWorkspaceTarget = { true },  // Take everything, including non-workspace targets
+    ).targets.map { it.label() }
+
+    return allTargetsAtDepth
+      .filter { label -> isTargetTreatedAsInternal(label.assumeResolved(), repoMapping) }
+      .filter { label -> label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME }
+      .map { label ->
+        val targetInfo = allTargets.getValue(label)
         NonModuleTarget(
           label = label,
           tags = targetTagsResolver.resolveTags(targetInfo),
@@ -644,6 +647,7 @@ class AspectBazelProjectMapper(
           kindString = targetInfo.kind,
         )
       }
+  }
 
   private suspend fun createLibraries(
     workspaceContext: WorkspaceContext,
@@ -1022,11 +1026,6 @@ class AspectBazelProjectMapper(
       .distinct()
       .toList()
   }
-
-  private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
-    targets.filter {
-      it.isMainWorkspace && !it.packagePath.toString().startsWith(".bazelbsp")
-    }
 
   private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {
     val tags = tags.mapNotNull(BspMappings::toBspTag)
