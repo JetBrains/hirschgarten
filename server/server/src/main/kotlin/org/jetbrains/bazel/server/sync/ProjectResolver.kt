@@ -111,7 +111,7 @@ class ProjectResolver(
         val rawTargetsMap =
           targetInfoReader
             .readTargetMapFromAspectOutputs(aspectOutputs)
-        processTargetMap(rawTargetsMap, repoMapping)
+        processTargetMap(rawTargetsMap)
       }
     val rootTargets = aspectResult.bepOutput.rootTargets()
     return PartialBuildResult(
