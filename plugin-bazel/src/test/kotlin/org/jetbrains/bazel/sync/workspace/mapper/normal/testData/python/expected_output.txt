@@ -1,239 +1,151 @@
 BazelResolvedWorkspace(
-  targets=BuildTargetCollection(
-    buildTargets=[
-      RawBuildTarget(
-        id=@//lib/libA:libA,
-        tags=[
+  targets=[
+    RawBuildTarget(
+      id=@//lib/libA:libA,
+      tags=[
+        
+      ],
+      dependencies=[
+        @//lib/libB:libB
+      ],
+      kind=TargetKind(
+        kindString=py_library,
+        languageClasses=[
+          PYTHON
+        ],
+        ruleType=LIBRARY
+      ),
+      sources=[
+        SourceItem(
+          path=/tmp/test-workspace/lib/libA/src/bkng/lib/aaa/__init__.py,
+          generated=false,
+          jvmPackagePrefix=null
+        ),
+        SourceItem(
+          path=/tmp/test-workspace/lib/libA/src/bkng/lib/aaa/hello.py,
+          generated=false,
+          jvmPackagePrefix=null
+        )
+      ],
+      resources=[
+        
+      ],
+      baseDirectory=/tmp/test-workspace/lib/libA,
+      noBuild=false,
+      data=PythonBuildTarget(
+        version=PY3,
+        interpreter=/tmp/.cache/bazel/output_base/external/rules_python++python+python_3_11_x86_64-unknown-linux-gnu/bin/python3,
+        imports=[
+          src
+        ],
+        isCodeGenerator=false,
+        generatedSources=[
           
         ],
-        dependencies=[
-          @//lib/libB:libB
-        ],
-        kind=TargetKind(
-          kindString=py_library,
-          languageClasses=[
-            PYTHON
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          SourceItem(
-            path=/tmp/test-workspace/lib/libA/src/bkng/lib/aaa/__init__.py,
-            generated=false,
-            jvmPackagePrefix=null
-          ),
-          SourceItem(
-            path=/tmp/test-workspace/lib/libA/src/bkng/lib/aaa/hello.py,
-            generated=false,
-            jvmPackagePrefix=null
-          )
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/lib/libA,
-        noBuild=false,
-        data=PythonBuildTarget(
-          version=PY3,
-          interpreter=/tmp/.cache/bazel/output_base/external/rules_python++python+python_3_11_x86_64-unknown-linux-gnu/bin/python3,
-          imports=[
-            src
-          ],
-          isCodeGenerator=false,
-          generatedSources=[
-            
-          ],
-          sourceDependencies=[
-            
-          ]
-        ),
-        lowPrioritySharedSources=[
+        sourceDependencies=[
           
         ]
       ),
-      RawBuildTarget(
-        id=@//lib/libB:libB,
-        tags=[
-          
+      lowPrioritySharedSources=[
+        
+      ]
+    ),
+    RawBuildTarget(
+      id=@//lib/libB:libB,
+      tags=[
+        
+      ],
+      dependencies=[
+        
+      ],
+      kind=TargetKind(
+        kindString=py_library,
+        languageClasses=[
+          PYTHON
         ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=py_library,
-          languageClasses=[
-            PYTHON
-          ],
-          ruleType=LIBRARY
+        ruleType=LIBRARY
+      ),
+      sources=[
+        SourceItem(
+          path=/tmp/test-workspace/lib/libB/src/bkng/lib/bbb/__init__.py,
+          generated=false,
+          jvmPackagePrefix=null
         ),
-        sources=[
-          SourceItem(
-            path=/tmp/test-workspace/lib/libB/src/bkng/lib/bbb/__init__.py,
-            generated=false,
-            jvmPackagePrefix=null
-          ),
-          SourceItem(
-            path=/tmp/test-workspace/lib/libB/src/bkng/lib/bbb/hello.py,
-            generated=false,
-            jvmPackagePrefix=null
-          )
+        SourceItem(
+          path=/tmp/test-workspace/lib/libB/src/bkng/lib/bbb/hello.py,
+          generated=false,
+          jvmPackagePrefix=null
+        )
+      ],
+      resources=[
+        
+      ],
+      baseDirectory=/tmp/test-workspace/lib/libB,
+      noBuild=false,
+      data=PythonBuildTarget(
+        version=PY3,
+        interpreter=/tmp/.cache/bazel/output_base/external/rules_python++python+python_3_11_x86_64-unknown-linux-gnu/bin/python3,
+        imports=[
+          src
         ],
-        resources=[
+        isCodeGenerator=false,
+        generatedSources=[
           
         ],
-        baseDirectory=/tmp/test-workspace/lib/libB,
-        noBuild=false,
-        data=PythonBuildTarget(
-          version=PY3,
-          interpreter=/tmp/.cache/bazel/output_base/external/rules_python++python+python_3_11_x86_64-unknown-linux-gnu/bin/python3,
-          imports=[
-            src
-          ],
-          isCodeGenerator=false,
-          generatedSources=[
-            
-          ],
-          sourceDependencies=[
-            
-          ]
-        ),
-        lowPrioritySharedSources=[
+        sourceDependencies=[
           
         ]
       ),
-      RawBuildTarget(
-        id=@//main:main,
-        tags=[
+      lowPrioritySharedSources=[
+        
+      ]
+    ),
+    RawBuildTarget(
+      id=@//main:main,
+      tags=[
+        
+      ],
+      dependencies=[
+        @//lib/libA:libA
+      ],
+      kind=TargetKind(
+        kindString=py_binary,
+        languageClasses=[
+          PYTHON
+        ],
+        ruleType=BINARY
+      ),
+      sources=[
+        SourceItem(
+          path=/tmp/test-workspace/main/main.py,
+          generated=false,
+          jvmPackagePrefix=null
+        )
+      ],
+      resources=[
+        
+      ],
+      baseDirectory=/tmp/test-workspace/main,
+      noBuild=false,
+      data=PythonBuildTarget(
+        version=PY3,
+        interpreter=/tmp/.cache/bazel/output_base/external/rules_python++python+python_3_11_x86_64-unknown-linux-gnu/bin/python3,
+        imports=[
           
         ],
-        dependencies=[
-          @//lib/libA:libA
-        ],
-        kind=TargetKind(
-          kindString=py_binary,
-          languageClasses=[
-            PYTHON
-          ],
-          ruleType=BINARY
-        ),
-        sources=[
-          SourceItem(
-            path=/tmp/test-workspace/main/main.py,
-            generated=false,
-            jvmPackagePrefix=null
-          )
-        ],
-        resources=[
+        isCodeGenerator=false,
+        generatedSources=[
           
         ],
-        baseDirectory=/tmp/test-workspace/main,
-        noBuild=false,
-        data=PythonBuildTarget(
-          version=PY3,
-          interpreter=/tmp/.cache/bazel/output_base/external/rules_python++python+python_3_11_x86_64-unknown-linux-gnu/bin/python3,
-          imports=[
-            
-          ],
-          isCodeGenerator=false,
-          generatedSources=[
-            
-          ],
-          sourceDependencies=[
-            
-          ]
-        ),
-        lowPrioritySharedSources=[
-          
-        ]
-      )
-    ],
-    nonModuleTargets=[
-      RawBuildTarget(
-        id=@//lib/libA:libA,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=py_library,
-          languageClasses=[
-            
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/lib/libA,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
+        sourceDependencies=[
           
         ]
       ),
-      RawBuildTarget(
-        id=@//lib/libB:libB,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=py_library,
-          languageClasses=[
-            
-          ],
-          ruleType=LIBRARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/lib/libB,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      ),
-      RawBuildTarget(
-        id=@//main:main,
-        tags=[
-          
-        ],
-        dependencies=[
-          
-        ],
-        kind=TargetKind(
-          kindString=py_binary,
-          languageClasses=[
-            
-          ],
-          ruleType=BINARY
-        ),
-        sources=[
-          
-        ],
-        resources=[
-          
-        ],
-        baseDirectory=/tmp/test-workspace/main,
-        noBuild=false,
-        data=null,
-        lowPrioritySharedSources=[
-          
-        ]
-      )
-    ]
-  ),
+      lowPrioritySharedSources=[
+        
+      ]
+    )
+  ],
   libraries=[
     
   ],
