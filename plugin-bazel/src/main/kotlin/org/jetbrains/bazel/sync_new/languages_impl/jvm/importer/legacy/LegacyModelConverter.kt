@@ -166,6 +166,7 @@ class LegacyModelConverter(
       kotlincOptions = kotlinData.kotlincOptions,
       associates = kotlinData.associates,
       jvmBuildTarget = convertLegacyJvmData(jvmData),
+      moduleName = kotlinData.moduleName,
     )
   }
 }
