@@ -111,7 +111,7 @@ object IntListCodec {
 
   fun decode(ctx: CodecContext, buffer: CodecBuffer): IntList {
     val len = buffer.readVarInt()
-    val list = it.unimi.dsi.fastutil.ints.IntArrayList(len)
+    val list = IntArrayList(len)
     for (n in 0 until len) {
       list.add(buffer.readVarInt())
     }

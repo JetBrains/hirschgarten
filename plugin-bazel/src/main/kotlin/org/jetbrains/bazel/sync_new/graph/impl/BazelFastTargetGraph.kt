@@ -135,9 +135,6 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
 
   override fun getVertexIdByLabel(label: Label): ID {
     val hash = hash(label)
-    if (label.toString().contains("kt_lib")){
-      println("DDDDD ${hash}")
-    }
     return labelHash2VertexId.getOrDefault(hash, EMPTY_ID)
   }
 
