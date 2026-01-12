@@ -97,10 +97,20 @@ class ExecuteService(
     additionalProgramArguments: List<String>? = null,
     additionalOptions: List<String>? = null,
   ): RunResult {
+    if (params.buildBeforeRun) {
+      val targets = listOf(params.target)
+      val result = build(targets, params.originId)
+      if (result.isNotSuccess) {
+        return RunResult(statusCode = result.bazelStatus, originId = params.originId)
+      }
+    }
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         run(params.target) {
           options.add(BazelFlag.color(true))
+          if (!params.checkVisibility) {
+            options.add(BazelFlag.checkVisibility(false))
+          }
           additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }

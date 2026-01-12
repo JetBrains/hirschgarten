@@ -31,6 +31,8 @@ object BazelFeatureFlags {
   private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
   private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
   private const val FIND_IN_FILES_NON_INDEXABLE = "bazel.find.in.files.non.indexable"
+  private const val SYNTHETIC_RUN_ENABLE = "bazel.run.synthetic.enable"
+  private const val SYNTHETIC_RUN_DISABLE_VISIBILITY_CHECK = "bazel.run.synthetic.disable.visibility.check"
 
   @VisibleForTesting
   const val RUN_CONFIG_RUN_WITH_BAZEL = "bazel.run.config.run.with.bazel"
@@ -95,6 +97,12 @@ object BazelFeatureFlags {
 
   val runConfigRunWithBazel: Boolean
     get() = isEnabled(RUN_CONFIG_RUN_WITH_BAZEL)
+
+  val syntheticRunEnable: Boolean
+    get() = isEnabled(SYNTHETIC_RUN_ENABLE)
+
+  val syntheticRunDisableVisibilityCheck: Boolean
+    get() = isEnabled(SYNTHETIC_RUN_DISABLE_VISIBILITY_CHECK)
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->

@@ -7,11 +7,13 @@ import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.UnindexedFilesScannerExecutor
+import com.intellij.openapi.vfs.findDirectory
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -28,6 +30,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.connection.connection
@@ -117,8 +120,18 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
     saveAllFiles()
+    clearSyntheticTargets()
     project.serviceAsync<ProjectViewService>().forceReparseCurrentProjectViewFiles()
     project.serviceAsync<SyncStatusService>().startSync()
+  }
+
+  private suspend fun clearSyntheticTargets() {
+    writeAction {
+      project.rootDir.findDirectory(".bazelbsp")
+        ?.findDirectory("synthetic_targets")
+        ?.children
+        ?.forEach { it.delete(this) }
+    }
   }
 
   private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {
