@@ -12,6 +12,7 @@ class KotlinSyncWorkspaceImporter : SyncWorkspaceImporter {
     diff: SyncDiff,
     progress: SyncProgressReporter,
   ): SyncStatus {
+    // kotlin sync logic is handled by common JvmSyncWorkspaceImporter
     return SyncStatus.Success
   }
 }

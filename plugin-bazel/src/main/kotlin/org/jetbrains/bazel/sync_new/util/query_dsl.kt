@@ -1,9 +1,3 @@
 package org.jetbrains.bazel.sync_new.util
 
-interface QueryExpr {
-
-}
-
-fun query() {
-
-}
+// TODO: implement simple bazel query DSL for typesafe and predictable queries

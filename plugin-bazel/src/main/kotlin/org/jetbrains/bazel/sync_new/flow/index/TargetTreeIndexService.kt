@@ -18,7 +18,7 @@ import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetTag
 import org.jetbrains.bazel.sync_new.index.SyncIndexUpdater
 import org.jetbrains.bazel.sync_new.index.impl.createOne2OneIndex
 import org.jetbrains.bazel.sync_new.index.syncIndexService
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.util.buildEnumSet
@@ -30,7 +30,7 @@ class TargetTreeIndexService(
   private val project: Project,
 ) : SyncIndexUpdater {
   private val targetTreeIndex = project.syncIndexService.createOne2OneIndex("target2TargetTreeEntry") { name, ctx ->
-    ctx.createKVStore<HashValue128, TargetTreeEntry>(name, StorageHints.USE_IN_MEMORY)
+    ctx.createKVStore<HashValue128, TargetTreeEntry>(name, DefaultStorageHints.USE_IN_MEMORY)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofKryo() }
       .build()

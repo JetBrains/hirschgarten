@@ -95,14 +95,17 @@ class RocksdbKVStore<K : Any, V : Any>(
     when (val cached = cache.getIfPresent(key)) {
       is Value.Present<V> -> return cached.value
       Value.Tombstone -> return null
-      null -> {}
+      null -> {
+        /* noop */
+      }
     }
 
     // load from rocksdb
     val value = loadFromRocksdb(key)
     if (value == null) {
       cache.put(key, Value.Tombstone)
-    } else {
+    }
+    else {
       cache.put(key, Value.Present(value))
     }
     return value
@@ -235,7 +238,8 @@ class RocksdbKVStore<K : Any, V : Any>(
             // most recent dirty value
             val v = if (useValues) {
               d.value
-            } else {
+            }
+            else {
               null
             }
             nextEntry = Pair(k, v)

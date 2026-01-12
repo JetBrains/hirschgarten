@@ -10,7 +10,7 @@ import org.jetbrains.bazel.sync_new.codec.ofMutableSet
 import org.jetbrains.bazel.sync_new.codec.ofPath
 import org.jetbrains.bazel.sync_new.codec.ofSet
 import org.jetbrains.bazel.sync_new.storage.KVStore
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.storageContext
 import java.nio.file.Path
@@ -22,26 +22,26 @@ class SyncVFSStoreService(
 
   // BUILD file -> target
   internal val build2Targets: KVStore<HashValue128, Set<Label>> =
-    project.storageContext.createKVStore<HashValue128, Set<Label>>("bazel.sync.vfs.build2targets", StorageHints.USE_PAGED_STORE)
+    project.storageContext.createKVStore<HashValue128, Set<Label>>("bazel.sync.vfs.build2targets", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofSet(ofLabel()) }
       .build()
 
   // target -> BUILD file
   internal val target2Build: KVStore<HashValue128, Path> =
-    project.storageContext.createKVStore<HashValue128, Path>("bazel.sync.vfs.target2build", StorageHints.USE_PAGED_STORE)
+    project.storageContext.createKVStore<HashValue128, Path>("bazel.sync.vfs.target2build", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofPath() }
       .build()
 
   internal val source2Target: KVStore<HashValue128, Set<Label>> =
-    project.storageContext.createKVStore<HashValue128, Set<Label>>("bazel.sync.vfs.source2target", StorageHints.USE_PAGED_STORE)
+    project.storageContext.createKVStore<HashValue128, Set<Label>>("bazel.sync.vfs.source2target", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofSet(ofLabel()) }
       .build()
 
   internal val target2Source: KVStore<HashValue128, MutableSet<Path>> =
-    project.storageContext.createKVStore<HashValue128, MutableSet<Path>>("bazel.sync.vfs.target2source", StorageHints.USE_PAGED_STORE)
+    project.storageContext.createKVStore<HashValue128, MutableSet<Path>>("bazel.sync.vfs.target2source", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofMutableSet(ofPath()) }
       .build()

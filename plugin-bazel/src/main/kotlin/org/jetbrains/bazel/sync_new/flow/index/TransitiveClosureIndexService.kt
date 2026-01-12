@@ -10,22 +10,19 @@ import it.unimi.dsi.fastutil.ints.IntList
 import it.unimi.dsi.fastutil.ints.IntLists
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.ints.IntSet
-import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.codec.Int2ObjectOpenHashMapCodec
 import org.jetbrains.bazel.sync_new.codec.IntArrayCodec
 import org.jetbrains.bazel.sync_new.codec.IntOpenHashSetCodec
-import org.jetbrains.bazel.sync_new.codec.LongArrayCodec
 import org.jetbrains.bazel.sync_new.codec.versionedCodecOf
 import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.flow.SyncDiff
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetTag
 import org.jetbrains.bazel.sync_new.index.SyncIndexUpdater
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.mutate
 import org.jetbrains.bazel.sync_new.storage.storageContext
-import java.util.BitSet
 
 @Service(Service.Level.PROJECT)
 class TransitiveClosureIndexService(
@@ -35,14 +32,14 @@ class TransitiveClosureIndexService(
   private val transitiveClosure: FlatStorage<TransitiveClosure> =
     project.storageContext.createFlatStore<TransitiveClosure>(
       "target2ReverseTransitiveExecutableTargetIds",
-      StorageHints.USE_IN_MEMORY,
+      DefaultStorageHints.USE_IN_MEMORY,
     )
       .withCreator { TransitiveClosure() }
       .withCodec { TransitiveClosure.codec }
       .build()
 
   private val executableTargets: FlatStorage<IntOpenHashSet> =
-    project.storageContext.createFlatStore<IntOpenHashSet>("executableTargets", StorageHints.USE_IN_MEMORY)
+    project.storageContext.createFlatStore<IntOpenHashSet>("executableTargets", DefaultStorageHints.USE_IN_MEMORY)
       .withCreator { IntOpenHashSet() }
       .withCodec {
         versionedCodecOf(

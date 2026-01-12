@@ -20,7 +20,7 @@ import org.jetbrains.bazel.sync_new.lang.getLangData
 import org.jetbrains.bazel.sync_new.lang.hasLang
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.JvmSyncLanguage
 import org.jetbrains.bazel.sync_new.languages_impl.kotlin.KotlinSyncLanguage
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.hash.hash
@@ -37,7 +37,7 @@ class TargetUtilsIndexService(
 ) : SyncIndexUpdater {
 
   private val myGlobalTargetStorage =
-    project.storageContext.createFlatStore<GlobalTargetStorage>("bazel.sync.index.targetUtils.globalStorage", StorageHints.USE_IN_MEMORY)
+    project.storageContext.createFlatStore<GlobalTargetStorage>("bazel.sync.index.targetUtils.globalStorage", DefaultStorageHints.USE_IN_MEMORY)
       .withCreator { GlobalTargetStorage() }
       .withCodec { ofKryo() }
       .build()
@@ -45,7 +45,7 @@ class TargetUtilsIndexService(
   private val myLegacyTargetStorage =
     project.storageContext.createKVStore<HashValue128, LegacyBuildTarget>(
       "bazel.sync.index.targetUtils.targetStorage",
-      StorageHints.USE_PAGED_STORE,
+      DefaultStorageHints.USE_PAGED_STORE,
     )
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofKryo() }

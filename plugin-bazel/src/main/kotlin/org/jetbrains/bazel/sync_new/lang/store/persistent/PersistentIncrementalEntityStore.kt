@@ -18,7 +18,7 @@ import org.jetbrains.bazel.sync_new.lang.store.IncrementalResourceId
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
 import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.StorageContext
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.asClosingSequence
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.createKVStore
@@ -271,7 +271,7 @@ inline fun <reified R : IncrementalResourceId, reified E : IncrementalEntity> cr
       .build()
 
   override val resourceId2EntityStore: KVStore<Int, E> =
-    storageContext.createKVStore<Int, E>("bazel.sync.lang.entity_store.${name}.entities", StorageHints.USE_PAGED_STORE)
+    storageContext.createKVStore<Int, E>("bazel.sync.lang.entity_store.${name}.entities", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofInt() }
       .withValueCodec { entityCodec() }
       .build()
@@ -279,14 +279,14 @@ inline fun <reified R : IncrementalResourceId, reified E : IncrementalEntity> cr
   override val resourceHash2Id: KVStore<HashValue128, Int> =
     storageContext.createKVStore<HashValue128, Int>(
       "bazel.sync.lang.entity_store.${name}.resource_hash_to_id",
-      StorageHints.USE_IN_MEMORY,
+      DefaultStorageHints.USE_IN_MEMORY,
     )
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofInt() }
       .build()
 
   override val id2Resource: KVStore<Int, R> =
-    storageContext.createKVStore<Int, R>("bazel.sync.lang.entity_store.${name}.resources", StorageHints.USE_PAGED_STORE)
+    storageContext.createKVStore<Int, R>("bazel.sync.lang.entity_store.${name}.resources", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofInt() }
       .withValueCodec { resourceIdCodec() }
       .build()

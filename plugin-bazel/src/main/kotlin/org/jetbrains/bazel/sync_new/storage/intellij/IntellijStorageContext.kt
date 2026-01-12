@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import org.jetbrains.bazel.sync_new.storage.KVStoreBuilder
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryStorageContext
 import org.jetbrains.bazel.sync_new.storage.util.FileUtils
@@ -29,15 +30,22 @@ internal class IntellijStorageContext(
     keyType: Class<K>,
     valueType: Class<V>,
     vararg hints: StorageHints,
-  ): KVStoreBuilder<*, K, V> {
-    val file = project.getProjectDataPath("bazel_intellij_kv")
-      .resolve("$name.db")
-    Files.createDirectories(file.parent)
-    return IntellijPersistentMapKVStoreBuilder(
-      context = this,
-      file = file,
-    )
-  }
+  ): KVStoreBuilder<*, K, V> =
+    when {
+      DefaultStorageHints.USE_PAGED_STORE in hints -> {
+        val file = project.getProjectDataPath("bazel_intellij_kv")
+          .resolve("$name.db")
+
+        Files.createDirectories(file.parent)
+        IntellijPersistentMapKVStoreBuilder(
+          context = this,
+          file = file,
+        )
+      }
+
+      else -> super.createKVStore(name, keyType, valueType, *hints)
+    }
+
 
   internal fun register(store: IntellijPersistentMapKVStore<*, *>) {
     synchronized(storages) {

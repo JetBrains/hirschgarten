@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.storage.KVStore
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.storageContext
 
@@ -16,7 +16,7 @@ class SyncHasherService(
 ) {
   //  target label hash -> target hash
   internal val target2Hash: KVStore<HashValue128, HashValue128> =
-    project.storageContext.createKVStore<HashValue128, HashValue128>("bazel.sync.target2Hash", StorageHints.USE_PAGED_STORE)
+    project.storageContext.createKVStore<HashValue128, HashValue128>("bazel.sync.target2Hash", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofHash128() }
       .build()

@@ -17,13 +17,12 @@ import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.output
 import org.jetbrains.bazel.sync_new.connector.query
-import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.flow.SyncProgressReporter
 import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.SyncScope
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.storageContext
 
@@ -34,7 +33,7 @@ class SyncUniverseService(
   private val project: Project,
 ) {
   internal val universeState =
-    project.storageContext.createFlatStore<SyncUniverseState>("bazel.sync.universe.state", StorageHints.USE_IN_MEMORY)
+    project.storageContext.createFlatStore<SyncUniverseState>("bazel.sync.universe.state", DefaultStorageHints.USE_IN_MEMORY)
       .withCreator {
         SyncUniverseState(
           phase = SyncUniversePhase.BEFORE_FIRST_SYNC,

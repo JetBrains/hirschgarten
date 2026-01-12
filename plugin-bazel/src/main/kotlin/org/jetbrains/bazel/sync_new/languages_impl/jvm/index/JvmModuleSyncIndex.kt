@@ -8,7 +8,7 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.codec.ofLabel
 import org.jetbrains.bazel.sync_new.languages_impl.jvm.importer.legacy.LegacyImportData
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.storageContext
@@ -18,13 +18,13 @@ internal class JvmModuleSyncIndex(
   private val project: Project,
 ) {
   private val libraryId2VertexId =
-    project.storageContext.createKVStore<HashValue128, Label>("bazel.sync.jvm.libraryId2VertexId", StorageHints.USE_PAGED_STORE)
+    project.storageContext.createKVStore<HashValue128, Label>("bazel.sync.jvm.libraryId2VertexId", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofLabel() }
       .build()
 
   private val moduleId2VertexId =
-    project.storageContext.createKVStore<HashValue128, Label>("bazel.sync.jvm.moduleId2VertexId", StorageHints.USE_PAGED_STORE)
+    project.storageContext.createKVStore<HashValue128, Label>("bazel.sync.jvm.moduleId2VertexId", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofLabel() }
       .build()

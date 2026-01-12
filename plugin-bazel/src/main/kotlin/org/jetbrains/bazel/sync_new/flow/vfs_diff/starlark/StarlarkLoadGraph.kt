@@ -11,7 +11,7 @@ import org.jetbrains.bazel.sync_new.graph.SimpleGraphTraversalResult
 import org.jetbrains.bazel.sync_new.graph.SimpleGraphTraverser
 import org.jetbrains.bazel.sync_new.graph.SimpleGraphVisitor
 import org.jetbrains.bazel.sync_new.storage.KVStore
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.storageContext
 import java.nio.file.Path
@@ -25,7 +25,7 @@ class StarlarkLoadGraph(
       override val id2Vertex: KVStore<HashValue128, StarlarkFileNode> =
         project.storageContext.createKVStore<HashValue128, StarlarkFileNode>(
           "bazel.sync.vfs_diff.starlark.id2File",
-          StorageHints.USE_PAGED_STORE,
+          DefaultStorageHints.USE_PAGED_STORE,
         )
           .withKeyCodec { ofHash128() }
           .withValueCodec { ofKryo() }
@@ -34,7 +34,7 @@ class StarlarkLoadGraph(
       override val id2Successors: KVStore<HashValue128, Set<HashValue128>> =
         project.storageContext.createKVStore<HashValue128, Set<HashValue128>>(
           "bazel.sync.vfs_diff.starlark.id2Successors",
-          StorageHints.USE_PAGED_STORE,
+          DefaultStorageHints.USE_PAGED_STORE,
         )
           .withKeyCodec { ofHash128() }
           .withValueCodec { ofSet(ofHash128()) }
@@ -43,7 +43,7 @@ class StarlarkLoadGraph(
       override val id2Predecessors: KVStore<HashValue128, Set<HashValue128>> =
         project.storageContext.createKVStore<HashValue128, Set<HashValue128>>(
           "bazel.sync.vfs_diff.starlark.id2Predecessors",
-          StorageHints.USE_PAGED_STORE,
+          DefaultStorageHints.USE_PAGED_STORE,
         )
           .withKeyCodec { ofHash128() }
           .withValueCodec { ofSet(ofHash128()) }

@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.ints.IntLists
 import it.unimi.dsi.fastutil.ints.IntSet
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.sync_new.codec.Int2ObjectOpenHashMapCodec
 import org.jetbrains.bazel.sync_new.codec.IntArrayListCodec
 import org.jetbrains.bazel.sync_new.codec.Object2IntOpenHashMapCodec
@@ -21,7 +20,7 @@ import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.FastTargetGraph
 import org.jetbrains.bazel.sync_new.storage.StorageContext
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.asClosingSequence
 import org.jetbrains.bazel.sync_new.storage.createFlatStore
 import org.jetbrains.bazel.sync_new.storage.createKVStore
@@ -30,32 +29,32 @@ import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.set
 
 class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelTargetVertex, BazelTargetEdge, BazelTargetCompact> {
-  private val metadata = storage.createFlatStore<BazelGraphMetadata>("bazel.target.graph.metadata", StorageHints.USE_IN_MEMORY)
+  private val metadata = storage.createFlatStore<BazelGraphMetadata>("bazel.target.graph.metadata", DefaultStorageHints.USE_IN_MEMORY)
     .withCreator { BazelGraphMetadata() }
     .withCodec { ofKryo() }
     .build()
 
   private val id2Vertex =
-    storage.createKVStore<ID, BazelTargetVertex>("bazel.target.graph.id2vertex", StorageHints.USE_PAGED_STORE)
+    storage.createKVStore<ID, BazelTargetVertex>("bazel.target.graph.id2vertex", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofInt() }
       .withValueCodec { ofKryo() }
       .build()
 
   private val id2Edge =
-    storage.createKVStore<ID, BazelTargetEdge>("bazel.target.graph.id2edge", StorageHints.USE_PAGED_STORE)
+    storage.createKVStore<ID, BazelTargetEdge>("bazel.target.graph.id2edge", DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofInt() }
       .withValueCodec { ofKryo() }
       .build()
 
   private val id2Compact =
-    storage.createKVStore<ID, BazelTargetCompact>("bazel.target.graph.id2label", StorageHints.USE_IN_MEMORY)
+    storage.createKVStore<ID, BazelTargetCompact>("bazel.target.graph.id2label", DefaultStorageHints.USE_IN_MEMORY)
       .withKeyCodec { ofInt() }
       .withValueCodec { ofKryo() }
       .build()
 
   private val labelHash2VertexId by storage.createFlatStore<Object2IntOpenHashMap<HashValue128>>(
     "bazel.target.graph.labelHash2vertexId",
-    StorageHints.USE_IN_MEMORY,
+    DefaultStorageHints.USE_IN_MEMORY,
   )
     .withCreator { Object2IntOpenHashMap() }
     .withCodec {
@@ -74,7 +73,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
 
   private val edgeLink2EdgeId = storage.createKVStore<Long, Int>(
     "bazel.target.graph.edgeLink2EdgeId",
-    StorageHints.USE_PAGED_STORE,
+    DefaultStorageHints.USE_PAGED_STORE,
   )
     .withKeyCodec { ofLong() }
     .withValueCodec { ofInt() }
@@ -82,7 +81,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
 
   private val id2Successors by storage.createFlatStore<Int2ObjectOpenHashMap<IntArrayList>>(
     "bazel.target.graph.id2Successors",
-    StorageHints.USE_IN_MEMORY,
+    DefaultStorageHints.USE_IN_MEMORY,
   )
     .withCreator { Int2ObjectOpenHashMap() }
     .withCodec {
@@ -101,7 +100,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
 
   private val id2Predecessors by storage.createFlatStore<Int2ObjectOpenHashMap<IntArrayList>>(
     "bazel.target.graph.id2Predecessors",
-    StorageHints.USE_IN_MEMORY,
+    DefaultStorageHints.USE_IN_MEMORY,
   )
     .withCreator { Int2ObjectOpenHashMap() }
     .withCodec {

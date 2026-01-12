@@ -6,14 +6,8 @@ import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.util.Disposer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.sync_new.storage.FlatPersistentStore
 import org.jetbrains.bazel.sync_new.storage.FlatStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.KVStoreBuilder
@@ -21,17 +15,16 @@ import org.jetbrains.bazel.sync_new.storage.LifecycleStoreContext
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
 import org.jetbrains.bazel.sync_new.storage.SortedKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.StorageContext
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.util.FileChannelCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.FileUtils
-import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 
 open class InMemoryStorageContext(
@@ -53,27 +46,27 @@ open class InMemoryStorageContext(
   }
 
   override fun <K : Any, V : Any> createKVStore(
-    name: String,
-    keyType: Class<K>,
-    valueType: Class<V>,
-    vararg hints: StorageHints,
+      name: String,
+      keyType: Class<K>,
+      valueType: Class<V>,
+      vararg hints: StorageHints,
   ): KVStoreBuilder<*, K, V> {
     return InMemoryKVStoreBuilder(this, name)
   }
 
   override fun <K : Any, V : Any> createSortedKVStore(
-    name: String,
-    keyType: Class<K>,
-    valueType: Class<V>,
-    vararg hints: StorageHints,
+      name: String,
+      keyType: Class<K>,
+      valueType: Class<V>,
+      vararg hints: StorageHints,
   ): SortedKVStoreBuilder<*, K, V> {
     return InMemorySortedKVStoreBuilder(this, name)
   }
 
   override fun <T : Any> createFlatStore(
-    name: String,
-    type: Class<T>,
-    vararg hints: StorageHints,
+      name: String,
+      type: Class<T>,
+      vararg hints: StorageHints,
   ): FlatStoreBuilder<T> {
     return InMemoryFlatStoreBuilder(this, name)
   }
