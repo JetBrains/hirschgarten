@@ -17,7 +17,7 @@ import com.intellij.util.messages.MessageBusConnection
 import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
 import org.jetbrains.bazel.sync_new.codec.ofPath
 import org.jetbrains.bazel.sync_new.storage.KVStore
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.set
 import org.jetbrains.bazel.sync_new.storage.storageContext
@@ -32,7 +32,7 @@ class SyncVFSListener(
   // TODO: too many changes threshold
   // TODO: should I also persist this map???
   val file2State: KVStore<Path, SyncFileState> =
-    project.storageContext.createKVStore<Path, SyncFileState>("bazel.sync.vfs_diff.file2State", StorageHints.USE_IN_MEMORY)
+    project.storageContext.createKVStore<Path, SyncFileState>("bazel.sync.vfs_diff.file2State", DefaultStorageHints.USE_IN_MEMORY)
       .withKeyCodec { ofPath() }
       .withValueCodec { ofKryo() }
       .build()
@@ -113,33 +113,4 @@ class SyncVFSListener(
       }
     }
   }
-
-  //private fun processVFSEvent(event: VFileEvent) {
-  //  if (!event.isSupportedEvent()) {
-  //    return
-  //  }
-  //  val file = event.file ?: return
-  //  if (!file.isFile) {
-  //    return
-  //  }
-  //  if (!file.isBazelFile()) {
-  //    return
-  //  }
-  //  changed.add(file)
-  //}
-  //
-  //private fun VirtualFile.isBazelFile() = when {
-  //  name == "BUILD"
-  //    || name == "BUILD.bazel" -> true
-  //
-  //  extension == "bzl" -> true
-  //  else -> false
-  //}
-  //
-  //private fun VFileEvent.isSupportedEvent() = when (this) {
-  //  is VFileCreateEvent -> true
-  //  is VFileDeleteEvent -> true
-  //  is VFileContentChangeEvent -> true
-  //  else -> false
-  //}
 }

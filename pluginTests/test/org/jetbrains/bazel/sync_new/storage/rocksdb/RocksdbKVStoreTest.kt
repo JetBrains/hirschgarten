@@ -6,7 +6,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.sync_new.codec.ofInt
 import org.jetbrains.bazel.sync_new.codec.ofString
 import org.jetbrains.bazel.sync_new.storage.KVStore
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.asClosingSequence
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 
@@ -15,7 +15,7 @@ internal class RocksdbKVStoreTest : LightPlatformTestCase() {
   fun `test iterator does not return removed values`() {
     fun openStore(block: KVStore<Int, String>.() -> Unit) = openContext(
       builder = {
-        createKVStore<Int, String>("test_iterator_removed_values", StorageHints.USE_PAGED_STORE)
+        createKVStore<Int, String>("test_iterator_removed_values", DefaultStorageHints.USE_PAGED_STORE)
           .withKeyCodec { ofInt() }
           .withValueCodec { ofString() }
           .build()
@@ -47,7 +47,7 @@ internal class RocksdbKVStoreTest : LightPlatformTestCase() {
   fun `test iterator consistency simple`() {
     fun openStore(block: KVStore<Int, String>.() -> Unit) = openContext(
       builder = {
-        createKVStore<Int, String>("test_iterator_consistency_simple", StorageHints.USE_PAGED_STORE)
+        createKVStore<Int, String>("test_iterator_consistency_simple", DefaultStorageHints.USE_PAGED_STORE)
           .withKeyCodec { ofInt() }
           .withValueCodec { ofString() }
           .build()
@@ -78,7 +78,7 @@ internal class RocksdbKVStoreTest : LightPlatformTestCase() {
   fun `test iterator does not show removed values before flush`() {
     fun openStore(block: KVStore<Int, String>.() -> Unit) = openContext(
       builder = {
-        createKVStore<Int, String>("test_removed_before_flush", StorageHints.USE_PAGED_STORE)
+        createKVStore<Int, String>("test_removed_before_flush", DefaultStorageHints.USE_PAGED_STORE)
           .withKeyCodec { ofInt() }
           .withValueCodec { ofString() }
           .build()
@@ -112,7 +112,7 @@ internal class RocksdbKVStoreTest : LightPlatformTestCase() {
   fun `test remove and reinsert before flush`() {
     fun openStore(block: KVStore<Int, String>.() -> Unit) = openContext(
       builder = {
-        createKVStore<Int, String>("test_remove_reinsert_before_flush", StorageHints.USE_PAGED_STORE)
+        createKVStore<Int, String>("test_remove_reinsert_before_flush", DefaultStorageHints.USE_PAGED_STORE)
           .withKeyCodec { ofInt() }
           .withValueCodec { ofString() }
           .build()
@@ -150,7 +150,7 @@ internal class RocksdbKVStoreTest : LightPlatformTestCase() {
   fun `test iterator sees dirty deletes before flush`() {
     fun openStore(block: KVStore<Int, String>.() -> Unit) = openContext(
       builder = {
-        createKVStore<Int, String>("test_iterator_dirty_delete", StorageHints.USE_PAGED_STORE)
+        createKVStore<Int, String>("test_iterator_dirty_delete", DefaultStorageHints.USE_PAGED_STORE)
           .withKeyCodec { ofInt() }
           .withValueCodec { ofString() }
           .build()
@@ -178,7 +178,7 @@ internal class RocksdbKVStoreTest : LightPlatformTestCase() {
   fun `test heavy churn on single key`() {
     fun openStore(block: KVStore<Int, String>.() -> Unit) = openContext(
       builder = {
-        createKVStore<Int, String>("test_heavy_churn_single_key", StorageHints.USE_PAGED_STORE)
+        createKVStore<Int, String>("test_heavy_churn_single_key", DefaultStorageHints.USE_PAGED_STORE)
           .withKeyCodec { ofInt() }
           .withValueCodec { ofString() }
           .build()
@@ -218,7 +218,7 @@ internal class RocksdbKVStoreTest : LightPlatformTestCase() {
   fun `test many keys remove and restart`() {
     fun openStore(block: KVStore<Int, String>.() -> Unit) = openContext(
       builder = {
-        createKVStore<Int, String>("test_many_keys_remove_restart", StorageHints.USE_PAGED_STORE)
+        createKVStore<Int, String>("test_many_keys_remove_restart", DefaultStorageHints.USE_PAGED_STORE)
           .withKeyCodec { ofInt() }
           .withValueCodec { ofString() }
           .build()

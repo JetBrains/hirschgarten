@@ -62,7 +62,7 @@ class SyncTargetBuilder(
       .filter { it.isEnabled(ctx) }
       .map { bakeLanguagePlugin(ctx, it) }
       .toTypedArray()
-    return withContext(Dispatchers.IO) {
+    return withContext(Dispatchers.Default) {
       targets.map {
         async {
           it to buildTargetVertex(ctx, it, bakedPlugins)

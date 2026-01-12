@@ -2,23 +2,23 @@ package org.jetbrains.bazel.sync_new.storage
 
 interface StorageContext {
   fun <K : Any, V : Any> createKVStore(
-    name: String,
-    keyType: Class<K>,
-    valueType: Class<V>,
-    vararg hints: StorageHints,
+      name: String,
+      keyType: Class<K>,
+      valueType: Class<V>,
+      vararg hints: StorageHints,
   ): KVStoreBuilder<*, K, V>
 
   fun <K : Any, V : Any> createSortedKVStore(
-    name: String,
-    keyType: Class<K>,
-    valueType: Class<V>,
-    vararg hints: StorageHints,
+      name: String,
+      keyType: Class<K>,
+      valueType: Class<V>,
+      vararg hints: StorageHints,
   ): SortedKVStoreBuilder<*, K, V>
 
   fun <T : Any> createFlatStore(
-    name: String,
-    type: Class<T>,
-    vararg hints: StorageHints,
+      name: String,
+      type: Class<T>,
+      vararg hints: StorageHints,
   ): FlatStoreBuilder<T>
 }
 

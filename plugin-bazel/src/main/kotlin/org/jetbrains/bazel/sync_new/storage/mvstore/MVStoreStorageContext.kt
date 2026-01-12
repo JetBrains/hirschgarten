@@ -8,9 +8,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.util.io.mvstore.createOrResetMvStore
 import com.intellij.util.io.mvstore.openOrResetMap
 import org.h2.mvstore.MVMap
-import org.h2.mvstore.WriteBuffer
-import org.h2.mvstore.type.ByteArrayDataType
-import org.h2.mvstore.type.StringDataType
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
 import org.jetbrains.bazel.sync_new.codec.CodecContext
 import org.jetbrains.bazel.sync_new.storage.CompactingStoreContext
@@ -22,13 +19,13 @@ import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreWithModificationMarker
 import org.jetbrains.bazel.sync_new.storage.SortedKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.StorageContext
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryFlatStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemorySortedKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.util.FileChannelCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.FileUtils
-import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
@@ -68,12 +65,7 @@ class MVStoreStorageContext(
     vararg hints: StorageHints,
   ): KVStoreBuilder<*, K, V> =
     when {
-      //StorageHints.USE_PAGED_STORE in hints -> InMemoryKVStoreBuilder(
-      //  owner = this,
-      //  name = getInMemoryStoreName(name),
-      //)
-
-      StorageHints.USE_PAGED_STORE in hints -> MVStoreSortedKVStoreBuilder(
+      DefaultStorageHints.USE_PAGED_STORE in hints -> MVStoreSortedKVStoreBuilder(
         storageContext = this,
         name = getPageStoreName(name),
         keyType = keyType,
@@ -93,7 +85,7 @@ class MVStoreStorageContext(
     vararg hints: StorageHints,
   ): SortedKVStoreBuilder<*, K, V> =
     when {
-      StorageHints.USE_PAGED_STORE in hints -> MVStoreSortedKVStoreBuilder(
+      DefaultStorageHints.USE_PAGED_STORE in hints -> MVStoreSortedKVStoreBuilder(
         storageContext = this,
         name = getPageStoreName(name),
         keyType = keyType,

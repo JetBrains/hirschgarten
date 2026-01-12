@@ -3,6 +3,9 @@ package org.jetbrains.bazel.sync_new.storage.util
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeUnit
 
+/**
+  Bounded blocking object pool with deferred value initialization
+ */
 internal class BoundedBlockingObjectPool<T : Any>(
   private val maxSize: Int,
   private val creator: () -> T,

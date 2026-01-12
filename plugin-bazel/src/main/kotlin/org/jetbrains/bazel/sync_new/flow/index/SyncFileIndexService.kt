@@ -18,7 +18,7 @@ import org.jetbrains.bazel.sync_new.index.One2ManyIndex
 import org.jetbrains.bazel.sync_new.index.SyncIndexUpdater
 import org.jetbrains.bazel.sync_new.index.impl.createOne2ManyIndex
 import org.jetbrains.bazel.sync_new.index.syncIndexService
-import org.jetbrains.bazel.sync_new.storage.StorageHints
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import java.nio.file.Path
@@ -31,7 +31,7 @@ class SyncFileIndexService(
   private val file2TargetId: One2ManyIndex<HashValue128, Int> = project.syncIndexService.createOne2ManyIndex(
     "file2TargetIndex",
   ) { name, ctx ->
-    ctx.createKVStore<HashValue128, MutableSet<Int>>(name, StorageHints.USE_PAGED_STORE)
+    ctx.createKVStore<HashValue128, MutableSet<Int>>(name, DefaultStorageHints.USE_PAGED_STORE)
       .withKeyCodec { ofHash128() }
       .withValueCodec { ofMutableSet(ofInt()) }
       .build()

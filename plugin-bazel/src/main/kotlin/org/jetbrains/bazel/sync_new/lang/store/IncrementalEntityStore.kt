@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.sync_new.lang.store
 
+/**
+ * Resource management system for incremental entity storage and dependency tracking.
+ */
 interface IncrementalEntityStore<R : IncrementalResourceId, E : IncrementalEntity> {
   /**
    * Get or create an entity with unique resource id,

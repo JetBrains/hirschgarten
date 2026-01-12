@@ -12,6 +12,7 @@ import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreWithModificationMarker
 import org.jetbrains.bazel.sync_new.storage.SortedKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.StorageContext
+import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryFlatStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryKVStoreBuilder
@@ -209,7 +210,7 @@ class RocksdbStorageContext(
     valueType: Class<V>,
     vararg hints: StorageHints,
   ): KVStoreBuilder<*, K, V> = when {
-    StorageHints.USE_PAGED_STORE in hints -> RocksdbKVStoreBuilder(
+    DefaultStorageHints.USE_PAGED_STORE in hints -> RocksdbKVStoreBuilder(
       owner = this,
       name = name
     )
