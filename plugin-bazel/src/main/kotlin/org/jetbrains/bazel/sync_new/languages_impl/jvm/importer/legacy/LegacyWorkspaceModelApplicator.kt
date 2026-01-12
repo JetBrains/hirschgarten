@@ -120,6 +120,7 @@ class LegacyWorkspaceModelApplicator(
       bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
         val syncedTargetIdToTargetInfo =
           (projectDetails.targets).associateBy { it.id }
+        // TODO: this step could be done incrementally
         val targetIdToModuleEntityMap =
           TargetIdToModuleEntitiesMap(
             projectDetails = projectDetails,
