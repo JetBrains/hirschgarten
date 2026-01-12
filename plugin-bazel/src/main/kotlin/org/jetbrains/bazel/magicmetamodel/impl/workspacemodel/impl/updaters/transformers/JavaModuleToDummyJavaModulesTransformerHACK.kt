@@ -249,7 +249,7 @@ private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>)
     .eachCount()
 
 private fun sourceRootForParentDir(sourceRoot: JavaSourceRoot): JavaSourceRoot? {
-  if (sourceRoot.sourcePath.isDirectory(LinkOption.NOFOLLOW_LINKS)) return null
+  //if (sourceRoot.sourcePath.isDirectory(LinkOption.NOFOLLOW_LINKS)) return null
   val sourceParent = sourceRoot.sourcePath.parent.pathString
   val sourceRootPath = Path(sourceParent)
   val packagePrefix = sourceRoot.packagePrefix
