@@ -6,6 +6,8 @@ import org.jetbrains.bazel.label.Label
 data class RunParams(
   val target: Label,
   val originId: String,
+  val buildBeforeRun: Boolean,
+  val checkVisibility: Boolean,
   val arguments: List<String>? = null,
   val environmentVariables: Map<String, String>? = null,
   val additionalBazelParams: String? = null,
