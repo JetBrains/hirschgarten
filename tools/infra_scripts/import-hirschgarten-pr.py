@@ -1,37 +1,57 @@
 #!/usr/bin/env python3
 """
-import-hirschgarten-pr — fetch pr from jetbrains/hirschgarten, squash its *own* changes,
-rewrite paths, emit patch, apply to current branch, and narrate everything.
+import-hirschgarten-pr — fetch PR from jetbrains/hirschgarten via GitHub URLs,
+rewrite paths, emit patch, apply to current branch.
 
 usage:
     ./import-hirschgarten-pr.py 291
 """
 
-import argparse, json, os, re, subprocess, sys, urllib.request
+import argparse, json, re, subprocess, sys, urllib.request
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
-HIRSCH = "https://github.com/JetBrains/hirschgarten.git"
+REPO = "JetBrains/hirschgarten"
 
-# ---------- helpers ---------------------------------------------------------
-
-def sh(cmd: List[str], *, capture: bool = True, check: bool = True, env=None) -> str:
+def sh(cmd: List[str], *, capture: bool = True, check: bool = True) -> str:
     print(f"$ {' '.join(cmd)}", flush=True)
-    res = subprocess.run(cmd, text=True, capture_output=capture, check=check, env=env)
+    res = subprocess.run(cmd, text=True, capture_output=capture, check=check)
     if capture and res.stdout:
         print(res.stdout.rstrip(), flush=True)
     return res.stdout.strip() if capture else ""
 
-def pr_info(num: int) -> Tuple[Optional[str], str]:
-    url = f"https://api.github.com/repos/JetBrains/hirschgarten/pulls/{num}"
-    print(f"# hitting gh api: {url}")
-    try:
-        with urllib.request.urlopen(url) as r:
-            d = json.load(r)
-            return d["head"]["sha"], d["base"]["ref"]
-    except Exception as e:
-        print(f"# gh api failed ({e}); defaulting base to main")
-        return None, "main"
+def fetch_url(url: str) -> str:
+    print(f"# fetching {url}")
+    with urllib.request.urlopen(url) as r:
+        return r.read().decode()
+
+def get_author_info(num: int) -> Tuple[str, str]:
+    """Extract From: and Date: headers from first commit in .patch"""
+    patch = fetch_url(f"https://github.com/{REPO}/pull/{num}.patch")
+    author = None
+    date = None
+    for line in patch.splitlines():
+        if line.startswith("From:") and not author:
+            author = line
+        elif line.startswith("Date:") and not date:
+            date = line
+        if author and date:
+            break
+    return (
+        author or "From: Unknown <unknown@example.com>",
+        date or "Date: Thu, 1 Jan 1970 00:00:00 +0000"
+    )
+
+def get_aggregate_diff(num: int) -> str:
+    """Fetch aggregate diff from .diff endpoint"""
+    return fetch_url(f"https://github.com/{REPO}/pull/{num}.diff")
+
+def get_pr_title(num: int) -> str:
+    """Fetch PR title from GitHub API"""
+    url = f"https://api.github.com/repos/{REPO}/pulls/{num}"
+    print(f"# fetching {url}")
+    with urllib.request.urlopen(url) as r:
+        return json.load(r)["title"]
 
 def add_prefix(p: str, pre: str) -> str:
     return p if p.startswith(pre) or p == "/dev/null" else pre + p
@@ -55,68 +75,47 @@ def rewrite(patch: str, pre: str) -> str:
         out.append(ln)
     return "".join(out)
 
-# ---------- main ------------------------------------------------------------
-
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="squash pr, rewrite paths, apply patch")
+    ap = argparse.ArgumentParser(description="import PR from hirschgarten, rewrite paths, apply")
     ap.add_argument("pr", type=int)
     ap.add_argument("--prefix", default="plugins/bazel/")
-    ap.add_argument("--keep-pr", action="store_true")
+    ap.add_argument("--no-apply", action="store_true", help="generate patch without applying")
     a = ap.parse_args(argv)
 
-    pr_branch   = f"pr-{a.pr}"
-    base_branch = f"{pr_branch}-base"
-    tmp_branch  = f"{pr_branch}-squash-tmp"
+    print(f"# importing PR {a.pr} from {REPO}")
+    author, date = get_author_info(a.pr)
+    title = get_pr_title(a.pr)
+    diff = get_aggregate_diff(a.pr)
 
-    print(f"# fetch pr {a.pr}")
-    sh(["git","fetch",HIRSCH,f"pull/{a.pr}/head:{pr_branch}"], capture=False)
+    print(f"# rewriting paths with prefix {a.prefix}")
+    rewritten = rewrite(diff, a.prefix)
 
-    head_sha, base_ref = pr_info(a.pr)
+    patch_content = f"""From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+{author}
+{date}
+Subject: [PATCH] {title}
 
-    print(f"# fetch base ref {base_ref}")
-    sh(["git","fetch",HIRSCH,f"refs/heads/{base_ref}:{base_branch}"], capture=False)
+hirschgarten PR #{a.pr}
+---
+{rewritten}
+"""
 
-    # true base is the merge‑base, so merges from main inside the pr don’t bloat the diff
-    base_sha = sh(["git","merge-base",pr_branch,base_branch])
-    print(f"# using merge‑base {base_sha[:7]}")
+    patch_path = Path(f"pr-{a.pr}-bazel.patch").resolve()
+    patch_path.write_text(patch_content)
+    print(f"# patch written to {patch_path}")
 
-    # squash
-    sh(["git","checkout","-q","-B",tmp_branch,pr_branch], capture=False)
-    sh(["git","reset","--soft",base_sha], capture=False)
+    if a.no_apply:
+        print("# --no-apply specified, skipping git am")
+        return 0
 
-    commit_shas = sh(["git","rev-list","--reverse",f"{base_sha}..{pr_branch}"]).split()
-    if not commit_shas:
-        print("no commits to squash", file=sys.stderr); sys.exit(1)
-
-    author   = sh(["git","show","-s","--format=%an <%ae>",commit_shas[0]])
-    message  = "\n\n".join(sh(["git","show","-s","--format=%B",c]) for c in commit_shas).strip()
-    date     = sh(["git","show","-s","--format=%cI",commit_shas[-1]])
-    env = {**os.environ,"GIT_COMMITTER_DATE":date}
-
-    sh(["git","commit","--author",author,"-m",message,"--date",date], capture=False, env=env)
-
-    # patchify
-    raw  = sh(["git","format-patch","-1","--stdout"])
-    pat  = rewrite(raw,a.prefix)
-    ppth = Path(f"pr-{a.pr}-bazel.patch").resolve()
-    ppth.write_text(pat)
-    print(f"# patch written to {ppth}")
-
-    # cleanup tmp
-    sh(["git","checkout","-q","-"], capture=False)
-    sh(["git","branch","-D",tmp_branch], capture=False)
-    if not a.keep_pr:
-        sh(["git","branch","-D",pr_branch], capture=False)
-        sh(["git","branch","-D",base_branch], capture=False)
-
-    # apply
     print("# git am -3")
     try:
-        sh(["git","am","-3",str(ppth)], capture=False)
+        sh(["git", "am", "-3", str(patch_path)], capture=False)
         print("# applied ✔")
     except subprocess.CalledProcessError:
         print("# git am failed; fix then `git am --continue` or `--abort`", file=sys.stderr)
-        sys.exit(1)
+        return 1
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
