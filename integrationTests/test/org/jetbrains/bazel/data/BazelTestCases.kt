@@ -153,11 +153,11 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val NonModuleTargets = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "6cebc477be7c37074af51cc91b3b7602ff9b4d1e",
+        commitHash = "08d52230a504be0dcf681bb3e9f2c607344d1510",
         branchName = "main",
         relativePath = "nonModuleTargetsTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
-      )
+      ),
     )
 
     val RecoverDotBazelBsp = withBazelProject(
