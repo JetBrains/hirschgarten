@@ -18,13 +18,10 @@ import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.util.concurrency.annotations.RequiresBlockingContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toSet
+import kotlinx.coroutines.launch
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import java.util.function.Predicate
 import java.util.regex.Pattern
@@ -311,17 +308,18 @@ object StarlarkGlob {
       // (e.g., readdir calls). In order to optimize, we would need
       // to keep track of which patterns shared sub-patterns and which did not
       // (for example consider the glob [*/*.java, sub/*.java, */*.txt]).
-      return checkAndSplitPatterns(patterns)
-        .asFlow()
-        .flatMapMerge { splitPattern ->
-          reallyGlob(
-            base,
-            baseIsDirectory,
-            splitPattern,
-            0,
-          )
+      return channelFlow {
+        checkAndSplitPatterns(patterns).forEach { splitPattern ->
+          launch {
+            reallyGlob(
+              base,
+              baseIsDirectory,
+              splitPattern,
+              0,
+            )
+          }
         }
-        .toSet()
+      }.toSet()
     }
 
     /**
@@ -332,27 +330,27 @@ object StarlarkGlob {
      * reallyGlob base [x:xs] = union { reallyGlob(f, xs) | f results "base/x" }
     </pre> *
      */
-    fun reallyGlob(
+    suspend fun ProducerScope<VirtualFile>.reallyGlob(
       base: VirtualFile,
       baseIsDirectory: Boolean,
       patternParts: Array<String>,
       idx: Int,
-    ): Flow<VirtualFile> = channelFlow {
+    ) {
       checkCanceled()
       if (baseIsDirectory && !readAction { dirPred.test(base) }) {
-        return@channelFlow
+        return
       }
 
       if (idx == patternParts.size) { // Base case.
         if (!(excludeDirectories && baseIsDirectory)) {
           send(base)
         }
-        return@channelFlow
+        return
       }
 
       if (!baseIsDirectory) {
         // Nothing to find here.
-        return@channelFlow
+        return
       }
 
       val pattern = patternParts[idx]
@@ -360,12 +358,14 @@ object StarlarkGlob {
       // ** is special: it can match nothing at all.
       // For example, x/** matches x, **/y matches y, and x/**/y matches x/y.
       if ("**" == pattern) {
-        reallyGlob(
-          base,
-          baseIsDirectory,
-          patternParts,
-          idx + 1,
-        ).onEach { send(it) }.launchIn(this)
+        launch {
+          reallyGlob(
+            base,
+            baseIsDirectory,
+            patternParts,
+            idx + 1,
+          )
+        }
       }
 
       if (!pattern.contains("*") && !pattern.contains("?")) {
@@ -373,47 +373,53 @@ object StarlarkGlob {
         val (child, childIsDir, childIsFile) = readAction {
           val child = base.findChild(pattern) ?: return@readAction null
           Triple(child, child.isDirectory, child.isFile)
-        } ?: return@channelFlow
+        } ?: return
         if (!childIsDir && !childIsFile) {
           // The file is a dangling symlink, fifo, does not exist, etc.
-          return@channelFlow
+          return
         }
-        reallyGlob(
-          child,
-          childIsDir,
-          patternParts,
-          idx + 1,
-        ).onEach { send(it) }.launchIn(this)
-        return@channelFlow
+        launch {
+          reallyGlob(
+            child,
+            childIsDir,
+            patternParts,
+            idx + 1,
+          )
+        }
+        return
       }
 
       val childrenSnapshots = readAction {
         ProgressManager.checkCanceled()
         val children = getChildren(base) ?: return@readAction null
         children.map { child -> Triple(child, child.name, child.isDirectory) }
-      } ?: return@channelFlow
+      } ?: return
 
       for ((child, childName, childIsDir) in childrenSnapshots) {
         checkCanceled()
 
         if ("**" == pattern && childIsDir) {
           // Recurse without shifting the pattern.
-          reallyGlob(
-            child,
-            childIsDir,
-            patternParts,
-            idx,
-          ).onEach { send(it) }.launchIn(this)
-        }
-        if (matches(pattern, childName, cache)) {
-          // Recurse and consume one segment of the pattern.
-          if (childIsDir) {
+          launch {
             reallyGlob(
               child,
               childIsDir,
               patternParts,
-              idx + 1,
-            ).onEach { send(it) }.launchIn(this)
+              idx,
+            )
+          }
+        }
+        if (matches(pattern, childName, cache)) {
+          // Recurse and consume one segment of the pattern.
+          if (childIsDir) {
+            launch {
+              reallyGlob(
+                child,
+                childIsDir,
+                patternParts,
+                idx + 1,
+              )
+            }
           }
           else {
             // Instead of using an async call, just repeat the base case above.
