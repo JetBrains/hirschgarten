@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.entities
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
@@ -25,8 +26,10 @@ class DirectoriesLifecycleListener : SyncLifecycleListener {
   private val entitySource = NewSyncBazelEntitySource("directories")
 
   override suspend fun onPostSync(ctx: SyncContext, status: SyncStatus, progress: SyncProgressReporter) {
+    val wsm = WorkspaceModel.getInstance(ctx.project)
     val hasDirectoriesChanged = (ctx.session.universeChanges?.hasDirectoriesChanged ?: false)
-      || ctx.scope.isFullSync
+                                || ctx.scope.isFullSync
+                                || !wsm.currentSnapshot.entities<BazelProjectDirectoriesEntity>().any()
     if (!hasDirectoriesChanged) {
       return
     }
@@ -54,7 +57,7 @@ class DirectoriesLifecycleListener : SyncLifecycleListener {
       val newSnapshot = MutableEntityStorage.create()
       newSnapshot.addEntity(entity)
 
-      WorkspaceModel.getInstance(ctx.project).update("update bazel directories entity") { storage ->
+      wsm.update("update bazel directories entity") { storage ->
         storage.replaceBySource(
           sourceFilter = { it == entitySource },
           replaceWith = newSnapshot,
@@ -76,7 +79,7 @@ class DirectoriesLifecycleListener : SyncLifecycleListener {
     val includedRoots = includedDirs.map { IdeaVFSUtil.toVirtualFileUrl(it.toUri().toString(), virtualFileUrlManager) }
     val excludedRoots =
       excludedDirs.map { IdeaVFSUtil.toVirtualFileUrl(it.toUri().toString(), virtualFileUrlManager) } +
-        additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
+      additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
     return BazelProjectDirectoriesEntity(
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
