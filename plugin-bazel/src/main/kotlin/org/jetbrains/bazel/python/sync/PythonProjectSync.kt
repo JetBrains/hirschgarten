@@ -65,8 +65,8 @@ class PythonProjectSync : ProjectSyncHook {
     environment.withSubtask("Process Python targets") {
       // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
       val workspace = environment.resolver.getOrFetchResolvedWorkspace()
-      val targets = workspace.targets.getTargets()
-      val pythonTargets = targets.calculatePythonTargets().toList()
+      val targets = workspace.targets
+      val pythonTargets = targets.calculatePythonTargets()
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
@@ -94,7 +94,7 @@ class PythonProjectSync : ProjectSyncHook {
     }
   }
 
-  private fun Sequence<RawBuildTarget>.calculatePythonTargets(): Sequence<BuildTarget> =
+  private fun List<RawBuildTarget>.calculatePythonTargets(): List<BuildTarget> =
     this.filter {
       it.kind.languageClasses.contains(LanguageClass.PYTHON)
     }

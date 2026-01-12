@@ -29,7 +29,6 @@ import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -78,7 +77,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       BazelWorkspaceResolveServiceMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
-            targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
+            targets = pythonTestTargets.buildTargets,
           ),
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
@@ -122,7 +121,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       BazelWorkspaceResolveServiceMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
-            targets = BuildTargetCollection.ofBuildTargets(pythonTestTargets.buildTargets),
+            targets = pythonTestTargets.buildTargets,
           ),
       )
     val diff = AllProjectStructuresProvider(project).newDiff()

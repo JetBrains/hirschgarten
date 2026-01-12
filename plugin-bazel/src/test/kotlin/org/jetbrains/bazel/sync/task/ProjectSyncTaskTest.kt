@@ -20,7 +20,6 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
-import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.sync.workspace.EarlyBazelSyncProject
 import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveServiceMock
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
@@ -40,7 +39,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
       BazelWorkspaceResolveServiceMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
-            targets = BuildTargetCollection.ofBuildTargets(listOf()),
+            targets = listOf(),
           ),
         earlyBazelSyncProject = EarlyBazelSyncProject(mapOf(), false),
       ),

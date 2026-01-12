@@ -404,8 +404,8 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       ProjectDetails(
-        targetIds = targets.getTargetIDs().toList(),
-        targets = targets.getTargets().toSet(),
+        targetIds = targets.map { it.id },
+        targets = targets.toSet(),
         libraries = workspace.libraries,
         workspaceContext = workspaceContext,
       )
