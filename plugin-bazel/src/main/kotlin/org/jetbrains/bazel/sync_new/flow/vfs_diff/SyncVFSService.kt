@@ -41,7 +41,7 @@ class SyncVFSService(
   suspend fun resetAll() {
     project.service<SyncVFSStoreService>().invalidateAll()
     vfsState.modify { state -> state.copy(listenState = SyncVFSListenState.WAITING_FOR_FIRST_SYNC) }
-    vfsListener.ensureDisconnected()
+    vfsListener.ensureDetached()
     vfsListener.file2State.clear()
   }
 

@@ -116,7 +116,7 @@ class MVStoreSortedKVStoreBuilder<K, V>(
         naturalOrder<Comparable<Any>>() as Comparator<K>
       }
       else {
-        MVStoreComparators.getFallbackComparator(keyType) ?: error("Key type must be Comparable or a comparator must be provided")
+        MVStoreComparators.getFallbackComparator(keyType) ?: error("Key type must be Comparable or a comparator must be provided ${keyType}")
       }
     }
     val builder = MVMap.Builder<K, V>()
