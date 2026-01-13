@@ -2,7 +2,6 @@ package org.jetbrains.bazel.bazelrunner
 
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
-import org.jetbrains.bazel.bazelrunner.outputs.spawnProcessBlocking
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.commons.BazelInfo
@@ -135,13 +134,12 @@ class BazelRunner(
     return command
   }
 
-  fun runBazelCommand(
+  suspend fun runBazelCommand(
     command: BazelCommand,
     originId: String? = null,
     logProcessOutput: Boolean = true,
     serverPidFuture: CompletableFuture<Long>?,
     shouldLogInvocation: Boolean = true,
-    createdProcessIdDeferred: CompletableDeferred<Long?>? = null,
   ): BazelProcess {
     val executionDescriptor = command.buildExecutionDescriptor()
     val finishCallback = executionDescriptor.finishCallback
@@ -160,14 +158,13 @@ class BazelRunner(
 
     val process =
       processSpawner
-        .spawnProcessBlocking(
+        .spawnProcess(
           command = processArgs,
           environment = environment,
           redirectErrorStream = false,
           workDirectory = workspaceRoot.toString(),
           ptyTermSize = command.ptyTermSize,
         )
-    createdProcessIdDeferred?.complete(process.pid)
 
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
 

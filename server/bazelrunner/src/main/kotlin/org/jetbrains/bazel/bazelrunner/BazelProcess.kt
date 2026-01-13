@@ -19,7 +19,7 @@ class BazelProcess internal constructor(
   private val finishCallback: () -> Unit = {},
 ) {
   suspend fun waitAndGetResult(ensureAllOutputRead: Boolean = false): BazelProcessResult {
-    return try {
+    try {
       val stopwatch = Stopwatch.start()
       val outputProcessor: OutputProcessor =
         if (logger != null) {
