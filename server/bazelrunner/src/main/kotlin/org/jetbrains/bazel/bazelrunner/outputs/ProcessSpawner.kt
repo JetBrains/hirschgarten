@@ -41,23 +41,3 @@ interface ProcessSpawner {
     }
   }
 }
-
-/**
- * Spawns a process and waits for it to complete
- */
-fun ProcessSpawner.spawnProcessBlocking(
-  command: List<String>,
-  environment: Map<String, String>,
-  redirectErrorStream: Boolean,
-  workDirectory: String? = null,
-  ptyTermSize: TermSize? = null,
-): SpawnedProcess =
-  runBlocking {
-    spawnProcess(
-      command = command,
-      environment = environment,
-      redirectErrorStream = redirectErrorStream,
-      workDirectory = workDirectory,
-      ptyTermSize = ptyTermSize,
-    )
-  }
