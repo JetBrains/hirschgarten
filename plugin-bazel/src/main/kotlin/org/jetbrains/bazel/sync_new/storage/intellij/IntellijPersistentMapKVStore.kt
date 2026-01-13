@@ -79,10 +79,12 @@ internal class IntellijPersistentMapKVStore<K : Any, V : Any>(
   }
 
   override fun clear() {
+    val toRemove = mutableListOf<K>()
     map.processKeysWithExistingMapping {
-      map.remove(it)
+      toRemove.add(it)
       true
     }
+    toRemove.forEach { map.remove(it) }
   }
 
   override fun keys(): CloseableIterator<K> {

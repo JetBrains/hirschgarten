@@ -61,7 +61,7 @@ class SyncVFSListener(
     }
   }
 
-  internal fun ensureDisconnected() {
+  internal fun ensureDetached() {
     synchronized(this) {
       if (!attached) {
         return

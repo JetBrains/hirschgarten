@@ -38,14 +38,6 @@ object LegacyBazelFrontendBridge {
     return project.connection.runWithServer { server -> server.workspaceContext() }
   }
 
-  //suspend fun fetchAllTargets(project: Project, repoMapping: RepoMapping): List<RawAspectTarget> {
-  //  val params = WorkspaceBuildTargetParams(
-  //    selector = WorkspaceBuildTargetSelector.AllTargets
-  //  )
-  //  val result = project.connection.runWithServer { server -> server.workspaceBuildTargets(params) }
-  //  return result.targets.values.toList()
-  //}
-
   suspend fun fetchPartialTargets(
     project: Project,
     repoMapping: SyncRepoMapping,

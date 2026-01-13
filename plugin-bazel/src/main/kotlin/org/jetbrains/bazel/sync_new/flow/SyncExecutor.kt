@@ -48,7 +48,7 @@ class SyncExecutor(
 
     val syncStore = withTask(project, "sync_store_init", "Initializing sync store") {
       val store = project.service<SyncStoreService>()
-      if (scope is SyncScope.Full) {
+      if (scope.isFullSync) {
         store.syncMetadata.reset()
         store.targetGraph.clear()
         project.serviceAsync<SyncIndexService>().invalidateAll()
@@ -95,13 +95,13 @@ class SyncExecutor(
       updateInternalIndexes(ctx, diff)
     }
 
-    withTask(project, "update_workspace", "Updating workspace") {
+    val status = withTask(project, "update_workspace", "Updating workspace") {
       updateWorkspace(ctx, diff)
     }
 
     withTask(project, "sync_lifecycle_post_events", "Executing post-sync events") {
       for (listener in SyncLifecycleListener.ep.extensionList) {
-        listener.onPostSync(ctx, SyncStatus.Success, SyncProgressReporter(this))
+        listener.onPostSync(ctx, status, SyncProgressReporter(this))
       }
     }
 
@@ -111,7 +111,7 @@ class SyncExecutor(
       }
     }
 
-    return SyncStatus.Success
+    return status
   }
 
   private suspend fun updateInternalIndexes(ctx: SyncContext, diff: SyncDiff) {
@@ -134,23 +134,7 @@ class SyncExecutor(
     val vfsDiff = withTask("vfs_diff", "Computing VFS diff") {
       project.service<SyncVFSService>().computeVFSDiff(scope, universeDiff)
     }
-    val scopeDiff = when (scope) {
-      is SyncScope.Partial -> {
-        val changed = scope.targets.filterIsInstance<PartialTarget.ByLabel>()
-          .map { it.label }
-          .toSet()
-        SyncColdDiff(
-          changed = changed,
-          flags = HashMultimap.create<Label, SyncDiffFlags>().apply {
-            for (changed in changed) {
-              put(changed, SyncDiffFlags.FORCE_INVALIDATION)
-            }
-          },
-        )
-      }
-
-      else -> SyncColdDiff()
-    }
+    val scopeDiff = computeSyncScopeDiff(scope)
     val normalizer = SyncDiffNormalizer()
     val normalizedDiff = normalizer.normalize(listOf(vfsDiff, universeDiff, scopeDiff))
     val expandedDiff = withTask("expand_diff", "Computing dependency reachability") {
@@ -179,6 +163,26 @@ class SyncExecutor(
     }
   }
 
+  private fun computeSyncScopeDiff(scope: SyncScope): SyncColdDiff {
+    return when (scope) {
+      is SyncScope.Partial -> {
+        val changed = scope.targets.filterIsInstance<PartialTarget.ByLabel>()
+          .map { it.label }
+          .toSet()
+        SyncColdDiff(
+          changed = changed,
+          flags = HashMultimap.create<Label, SyncDiffFlags>().apply {
+            for (changed in changed) {
+              put(changed, SyncDiffFlags.FORCE_INVALIDATION)
+            }
+          },
+        )
+      }
+
+      else -> SyncColdDiff()
+    }
+  }
+
   private suspend fun SyncConsoleTask.updateTargetGraph(ctx: SyncContext, diff: SyncDiff) {
     val graph = ctx.graph
 
@@ -191,7 +195,7 @@ class SyncExecutor(
       .toList()
     val rawTargets = fetchRawAspects(ctx, targetsToFetch)
     // TODO: at this point we already had to invoke `bazel build`
-    //  that means we have in/out artifacts of each target
+    //  that means we should have in/out artifacts of each target
     //  from queries aren't able to detect ALL changed, after this step we should
     //   1. collect all in/out artifacts
     //   2. compare them to previous state
@@ -199,6 +203,11 @@ class SyncExecutor(
     //   4. update target graph ONLY with changed targets(for over vertices below should be only over changed targets)
     //  this step is OG plugin `artifact tracking` counterpart
     //  * this step should as lightweight as possible
+    //
+    //  !!! I've haven't tried to implement that due to language-specific targets not having unified way of expressing
+    //      in/out artifacts - topic to be discussed
+
+    // 1) remove removed targets
     for (target in diff.removed + diff.changed.map { it.old }) {
       val id = graph.getVertexIdByLabel(target.label)
       if (id != EMPTY_ID) {
@@ -209,6 +218,7 @@ class SyncExecutor(
       builder.buildAllChangedTargetVertices(ctx, rawTargets)
     }
     withTask("apply_diff", "Applying graph diff") {
+      // 2) add/replace changed targets from aspects
       for ((_, vertex) in vertices) {
         val existingVertexId = graph.getVertexIdByLabel(label = vertex.label)
 
@@ -222,6 +232,7 @@ class SyncExecutor(
         graph.addVertex(vertex)
       }
 
+      // 3) connect vertices
       for ((raw, vertex) in vertices) {
         for (dependency in raw.target.dependenciesList) {
           val toVertexId = graph.getVertexIdByLabel(dependency.label())
@@ -239,26 +250,29 @@ class SyncExecutor(
   private suspend fun SyncConsoleTask.updateWorkspace(
     ctx: SyncContext,
     diff: SyncDiff,
-  ) {
+  ): SyncStatus {
     val syncActivityName =
       BazelPluginBundle.message(
         "console.task.sync.activity.name",
         BazelPluginConstants.BAZEL_DISPLAY_NAME,
       )
     val saveAndSyncHandler = serviceAsync<SaveAndSyncHandler>()
+    var status: SyncStatus = SyncStatus.Success
     UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(syncActivityName) {
       saveAndSyncHandler.disableAutoSave().use {
         withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
           reportSequentialProgress {
-            executeWorkspaceImport(ctx, diff, this@updateWorkspace)
+            status = executeWorkspaceImport(ctx, diff, this@updateWorkspace)
           }
         }
       }
     }
     saveAndSyncHandler.scheduleProjectSave(project = project)
+    return status
   }
 
-  private suspend fun CoroutineScope.executeWorkspaceImport(ctx: SyncContext, diff: SyncDiff, console: SyncConsoleTask) {
+  private suspend fun executeWorkspaceImport(ctx: SyncContext, diff: SyncDiff, console: SyncConsoleTask): SyncStatus {
+    var status: SyncStatus = SyncStatus.Success
     for (plugin in SyncLanguagePlugin.ep.extensionList) {
       if (!plugin.isEnabled(ctx)) {
         continue
@@ -266,9 +280,11 @@ class SyncExecutor(
 
       console.withTask("importing_${plugin.language.name}", "Importing workspace - ${plugin.language.name}") {
         val importer = plugin.createWorkspaceImporter(ctx)
-        importer.execute(ctx, diff, SyncProgressReporter(this@withTask))
+        val importStatus = importer.execute(ctx, diff, SyncProgressReporter(this@withTask))
+        status = SyncStatus.reduce(status, importStatus)
       }
     }
+    return status
   }
 
   private suspend fun SyncConsoleTask.fetchRawAspects(ctx: SyncContext, targets: List<Label>): List<RawAspectTarget> {
