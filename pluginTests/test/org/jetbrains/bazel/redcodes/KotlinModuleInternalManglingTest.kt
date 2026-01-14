@@ -1,12 +1,12 @@
 package org.jetbrains.bazel.redcodes
 
-import org.jetbrains.bazel.test.framework.BazelSyncingTestCase
+import org.jetbrains.bazel.test.framework.BazelSyncCodeInsightTestCase
 
-class KotlinModuleInternalManglingTest : BazelSyncingTestCase() {
+class KotlinModuleInternalManglingTest : BazelSyncCodeInsightTestCase() {
 
   fun testNoErrors() {
-    copyToProjectRootFromTestData("redcodes/kotlin_module_internal_mangling")
-    performSync()
-    assertNoErrorsHighlighted(projectRootPath.resolve("B.java"))
+    myFixture.copyDirectoryToProject("redcodes/kotlin_module_internal_mangling", "")
+    myFixture.performBazelSync()
+    myFixture.testHighlighting("B.java")
   }
 }
