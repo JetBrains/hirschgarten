@@ -18,7 +18,10 @@ class AbuMagicAction :
     }
   }
 
-  private fun doStuff(project: Project, server: JoinedBuildServer) {
+  /** If server-side magic is needed - [org.jetbrains.bazel.server.sync.AbuMagicQuery] */
+  private suspend fun abuMagicQuery(server: JoinedBuildServer) = server.abuMagicQuery()
+
+  private suspend fun doStuff(project: Project, server: JoinedBuildServer) {
     // stuff to do
   }
 }

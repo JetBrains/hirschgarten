@@ -73,4 +73,6 @@ class BspServerApi(
     projectSyncService.workspaceTargetClasspathQuery(params)
 
   override suspend fun jvmToolchainInfoForTarget(target: Label) = projectSyncService.buildJvmToolchainInfoForTarget(target)
+
+  override suspend fun abuMagicQuery() = executeService.abuMagicQuery()
 }
