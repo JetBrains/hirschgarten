@@ -244,4 +244,6 @@ class ExecuteService(
     // Add to the beginning to make overriding possible
     command.options.addFirst(BazelFlag.testOutputStreamed())
   }
+
+  suspend fun abuMagicQuery() = AbuMagicQuery.doMagic(bazelRunner)
 }

@@ -42,4 +42,6 @@ interface JoinedBuildServer {
   suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath
 
   suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo
+
+  suspend fun abuMagicQuery()
 }
