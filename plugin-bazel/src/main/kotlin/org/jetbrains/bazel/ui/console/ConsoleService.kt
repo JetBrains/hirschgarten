@@ -5,6 +5,7 @@ import com.intellij.build.SyncViewManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
+import com.jediterm.core.util.TermSize
 import org.jetbrains.bazel.config.rootDir
 
 @Service(Service.Level.PROJECT)
@@ -29,6 +30,9 @@ class ConsoleService(project: Project) {
         project,
       )
   }
+
+  fun ptyTermSize(taskId: Any): TermSize? =
+    buildConsole.ptyTermSize(taskId) ?: syncConsole.ptyTermSize(taskId)
 
   companion object {
     fun getInstance(project: Project): ConsoleService = project.getService(ConsoleService::class.java)

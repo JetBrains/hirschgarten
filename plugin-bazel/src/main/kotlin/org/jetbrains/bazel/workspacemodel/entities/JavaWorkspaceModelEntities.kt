@@ -28,8 +28,9 @@ data class JavaModule(
 }
 
 data class KotlinAddendum(
-  val languageVersion: String,
-  val apiVersion: String,
+  val languageVersion: String?,
+  val apiVersion: String?,
+  val moduleName: String?,
   val kotlincOptions: List<String>,
 )
 

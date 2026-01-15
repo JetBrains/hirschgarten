@@ -1,5 +1,8 @@
 <idea-plugin>
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syntheticRunTargetTemplateGenerator language="JAVA"
+                                         implementationClass="org.jetbrains.bazel.java.run.JavaSyntheticRunTargetTemplateGenerator"/>
+
     <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
     <!-- IndexAdditionalFilesSyncHook iterates over all added instances of ModuleEntity, so it has to come after JvmSyncHook -->
     <projectSyncHook
@@ -20,6 +23,7 @@
       implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
     <testLocatorProvider id="defaultJavaLocator" implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider" />
+    <buildTargetLanguageInferenceContributor implementation="org.jetbrains.bazel.java.target.JavaBuildTargetLangInferenceContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

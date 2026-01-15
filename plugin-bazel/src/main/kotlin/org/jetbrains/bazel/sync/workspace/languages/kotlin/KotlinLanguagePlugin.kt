@@ -21,9 +21,10 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
     }
     val kotlinTarget = target.kotlinTargetInfo
     return KotlinBuildTarget(
-      languageVersion = kotlinTarget.languageVersion,
-      apiVersion = kotlinTarget.apiVersion,
+      languageVersion = kotlinTarget.languageVersion.takeIf { it.isNotBlank() },
+      apiVersion = kotlinTarget.apiVersion.takeIf { it.isNotBlank() },
       associates = kotlinTarget.associatesList.map { Label.parse(it) },
+      moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() },
       kotlincOptions = kotlinTarget.toKotlincOptArguments(),
       jvmBuildTarget = javaLanguagePlugin.createBuildTargetData(context, target),
     )
