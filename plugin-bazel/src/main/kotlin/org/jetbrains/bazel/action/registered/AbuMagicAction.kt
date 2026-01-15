@@ -22,6 +22,7 @@ class AbuMagicAction :
   private suspend fun abuMagicQuery(server: JoinedBuildServer) = server.abuMagicQuery()
 
   private suspend fun doStuff(project: Project, server: JoinedBuildServer) {
+    abuMagicQuery(server)
     // stuff to do
   }
 }

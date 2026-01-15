@@ -245,5 +245,5 @@ class ExecuteService(
     command.options.addFirst(BazelFlag.testOutputStreamed())
   }
 
-  suspend fun abuMagicQuery() = AbuMagicQuery.doMagic(bazelRunner)
+  suspend fun abuMagicQuery() = AbuMagicQuery.doMagic(bazelRunner, workspaceContext)
 }
