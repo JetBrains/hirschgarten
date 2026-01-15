@@ -52,7 +52,9 @@ class InMemoryFlatStore<T>(
 
   override fun set(value: T) {
     VALUE_HANDLE.setVolatile(this, value)
-    init = true
+    if (value != null) {
+      init = true
+    }
     wasModified = true
   }
 

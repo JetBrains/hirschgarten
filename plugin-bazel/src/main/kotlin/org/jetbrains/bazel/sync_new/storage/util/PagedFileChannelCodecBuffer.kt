@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
-internal class FileChannelCodecBuffer(val channel: FileChannel) : CodecBuffer, ByteBufferCompat {
+class PagedFileChannelCodecBuffer(val channel: FileChannel) : CodecBuffer, ByteBufferCompat {
   companion object {
     private const val PAGE_SIZE = 32L * 1024 * 1024 // 32mb
     private const val PAGE_SHIFT = 25 // 2^25 = 32mb

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.flow
 
+import com.dynatrace.hash4j.hashing.HashValue128
 import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
@@ -14,10 +15,9 @@ import java.nio.file.Path
 
 @Tagged
 @ClassTag(2034668847)
-class SyncMetadata(
-
-  //@field:Tag(1)
-  //val repoMapping: SyncRepoMapping = DisabledSyncRepoMapping,
+data class SyncMetadata(
+  @field:Tag(1)
+  val configHash: HashValue128,
 )
 
 @SealedTagged

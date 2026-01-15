@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
 import org.jetbrains.bazel.sync_new.flow.PartialTarget
 import org.jetbrains.bazel.sync_new.flow.SyncScope
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncConsoleTask
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.processor.SyncVFSChangeProcessor
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
@@ -45,7 +46,7 @@ class SyncVFSService(
     vfsListener.file2State.clear()
   }
 
-  suspend fun computeVFSDiff(scope: SyncScope, universeDiff: SyncColdDiff): SyncColdDiff {
+  suspend fun computeVFSDiff(scope: SyncScope, task: SyncConsoleTask, universeDiff: SyncColdDiff): SyncColdDiff {
     val isFirstSync = vfsState.get().listenState == SyncVFSListenState.WAITING_FOR_FIRST_SYNC
     val ctx = SyncVFSContext(
       project = project,
@@ -56,6 +57,7 @@ class SyncVFSService(
       isFirstSync = isFirstSync,
       universeDiff = universeDiff,
       flags = project.service(),
+      task = task,
     )
     if (isFirstSync) {
       vfsState.modify { state -> state.copy(listenState = SyncVFSListenState.LISTENING_VFS) }
@@ -79,12 +81,10 @@ class SyncVFSService(
   }
 
   private fun consumeWatcherFileChanges(): Map<SyncFileState, List<SyncVFSFile>> {
-    val changes = vfsListener.file2State.iterator().use {
-      it.asSequence()
+    val changes = vfsListener.file2State.entries()
         .map { (k, v) -> v to SyncFileClassifier.classify(k.resolveSymlinks()) }
         .groupBy({ (k, _) -> k }, { (_, v) -> v })
         .toMap()
-    }
     vfsListener.file2State.clear()
     return changes
   }

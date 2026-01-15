@@ -3,10 +3,15 @@ package org.jetbrains.bazel.sync_new.storage.rocksdb
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.RemovalCause
+import com.intellij.openapi.components.service
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.storage.BaseKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.CloseableIterator
+import org.jetbrains.bazel.sync_new.storage.ImplicitCloseableIterator
 import org.jetbrains.bazel.sync_new.storage.KVStore
+import org.jetbrains.bazel.sync_new.storage.RefCloser
+import org.jetbrains.bazel.sync_new.storage.asClosingSequence
+import org.jetbrains.bazel.sync_new.storage.util.RefCleanerService
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferObjectPool
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
@@ -23,6 +28,7 @@ import java.util.concurrent.locks.StampedLock
 
 class RocksdbKVStore<K : Any, V : Any>(
   private val db: RocksDB,
+  private val refCleaner: RefCleanerService,
   internal val cfHandle: ColumnFamilyHandle,
   internal val keyCodec: Codec<K>,
   internal val valueCodec: Codec<V>,
@@ -184,16 +190,20 @@ class RocksdbKVStore<K : Any, V : Any>(
     }
   }
 
-  override fun keys(): CloseableIterator<K> = createIter(useValues = false) { k, _ -> k }
+  override fun keys(): Sequence<K> = createIter(useValues = false, closer = refCleaner) { k, _ -> k }
+    .asClosingSequence()
 
-  override fun values(): CloseableIterator<V> = createIter(useValues = true) { _, v -> v!! }
+  override fun values(): Sequence<V> = createIter(useValues = true, closer = refCleaner) { _, v -> v!! }
+    .asClosingSequence()
 
-  override fun iterator(): CloseableIterator<Pair<K, V>> = createIter(useValues = true) { k, v -> Pair(k, v!!) }
+  override fun entries(): Sequence<Pair<K, V>> = createIter(useValues = true, closer = refCleaner) { k, v -> Pair(k, v!!) }
+    .asClosingSequence()
 
   private inline fun <T> createIter(
     useValues: Boolean,
+    closer: RefCloser,
     crossinline transform: (k: K, v: V?) -> T,
-  ): CloseableIterator<T> = object : CloseableIterator<T> {
+  ): CloseableIterator<out T> = object : ImplicitCloseableIterator<T, RocksIterator>(closer) {
 
     // snapshot of dirty overlay at iterator creation time
     // this allows to keep copy-on-write like semantics
@@ -201,8 +211,15 @@ class RocksdbKVStore<K : Any, V : Any>(
     private val dirtyKeysIter: Iterator<Map.Entry<K, Dirty<V>>> = dirtySnapshot.entries.iterator()
 
     private val yielded = HashSet<K>() // keys already returned
-    private var dbIter: RocksIterator? = null
     private var nextEntry: Pair<K, V?>? = null
+    private var dbIter: RocksIterator = db.newIterator(cfHandle, SEQ_READ_OPTIONS)
+
+    init {
+      dbIter.seekToFirst()
+    }
+
+    override val handle: RocksIterator
+      get() = dbIter
 
     override fun hasNext(): Boolean {
       if (nextEntry != null) {
@@ -218,10 +235,6 @@ class RocksdbKVStore<K : Any, V : Any>(
       val (k, v) = nextEntry!!
       nextEntry = null
       return transform(k, v)
-    }
-
-    override fun close() {
-      dbIter?.close()
     }
 
     // incremental iterator implementation
@@ -253,14 +266,7 @@ class RocksdbKVStore<K : Any, V : Any>(
         }
       }
 
-      // overlay cache with rocksdb persistance layer
-      if (dbIter == null) {
-        val it = db.newIterator(cfHandle, SEQ_READ_OPTIONS)
-        it.seekToFirst()
-        dbIter = it
-      }
-
-      val it = dbIter!!
+      val it = dbIter
       while (it.isValid) {
         val keyBuf = UnsafeByteBufferCodecBuffer.from(it.key())
         val k = keyCodec.decode(UnsafeCodecContext, keyBuf)
@@ -463,6 +469,7 @@ class RocksdbKVStoreBuilder<K : Any, V : Any>(
       keyCodec = keyCodec ?: error("Key codec must be specified"),
       valueCodec = valueCodec ?: error("Value codec must be specified"),
       flushQueue = owner.flushQueue,
+      refCleaner = owner.project.service<RefCleanerService>(),
     )
   }
 

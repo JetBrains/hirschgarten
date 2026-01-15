@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncConsoleTask
 import org.jetbrains.bazel.sync_new.flow.SyncScope
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
 import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
@@ -20,13 +21,13 @@ class SyncExpandService(
       .withCreator { SyncReachabilityGraph() }
       .build()
 
-  suspend fun expandDependencyDiff(scope: SyncScope, diff: SyncColdDiff): SyncColdDiff {
+  suspend fun expandDependencyDiff(scope: SyncScope, task: SyncConsoleTask, diff: SyncColdDiff): SyncColdDiff {
     val ctx = SyncExpandContext(
       project = project,
       service = this,
-      scope = scope
+      scope = scope,
     )
-    return SyncExpandProcessor().process(ctx, diff)
+    return SyncExpandProcessor().process(ctx, task, diff)
   }
 
   fun isWithinUniverseScope(target: Label): Boolean {

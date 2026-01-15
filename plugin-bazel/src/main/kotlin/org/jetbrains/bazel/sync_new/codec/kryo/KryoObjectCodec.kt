@@ -43,7 +43,7 @@ import kotlin.collections.emptyMap
 import kotlin.collections.emptySet
 
 
-private val kryoPool = object : Pool<Kryo>(
+val kryoPool: Pool<Kryo> = object : Pool<Kryo>(
   /* threadSafe = */ true,
   /* softReferences = */ false,
   /* maximumCapacity = */ 32,
@@ -85,7 +85,12 @@ private val kryoPool = object : Pool<Kryo>(
     registerDefaultSerializers(kryo)
 
     for (registered in service<KryoRegistryService>().registeredTypes) {
-      kryo.register(registered.type, registered.serialId)
+      val serialId = registered.serialId
+      if (serialId > 0) {
+        kryo.register(registered.type, serialId)
+      } else {
+        kryo.register(registered.type)
+      }
     }
 
     return kryo
@@ -166,7 +171,7 @@ private inline fun <reified T : Any> Kryo.registerSingletonSerializer(crossinlin
   register(value.javaClass).instantiator = ObjectInstantiator { value }
 }
 
-private inline fun <T> useKryo(crossinline block: (kryo: Kryo) -> T): T {
+inline fun <T> useKryo(crossinline block: (kryo: Kryo) -> T): T {
   val kryo = kryoPool.obtain()
   try {
     return block(kryo)

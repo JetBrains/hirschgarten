@@ -38,7 +38,7 @@ class StarlarkLoadTrackerService(
     if (!ctx.universeDiff.hasChanged) {
       return SyncFileDiff()
     }
-    val connector = project.service<BazelConnectorService>().ofLegacyTask()
+    val connector = project.service<BazelConnectorService>().ofSyncTask(ctx.task)
     val universeState = project.service<SyncUniverseService>().universe
     val universeExpr = (ctx.universeDiff.added + ctx.universeDiff.removed)
       .joinToString(separator = " + ") { it.toString() }

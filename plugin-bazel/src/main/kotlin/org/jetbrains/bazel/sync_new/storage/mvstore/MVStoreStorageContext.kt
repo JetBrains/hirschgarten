@@ -17,14 +17,12 @@ import org.jetbrains.bazel.sync_new.storage.KVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.LifecycleStoreContext
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreWithModificationMarker
-import org.jetbrains.bazel.sync_new.storage.SortedKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.StorageContext
 import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryFlatStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryKVStoreBuilder
-import org.jetbrains.bazel.sync_new.storage.in_memory.InMemorySortedKVStoreBuilder
-import org.jetbrains.bazel.sync_new.storage.util.FileChannelCodecBuffer
+import org.jetbrains.bazel.sync_new.storage.util.PagedFileChannelCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.FileUtils
 import java.nio.channels.FileChannel
 import java.nio.file.Files
@@ -75,26 +73,7 @@ class MVStoreStorageContext(
       else -> InMemoryKVStoreBuilder(
         owner = this,
         name = getInMemoryStoreName(name),
-      )
-    }
-
-  override fun <K : Any, V : Any> createSortedKVStore(
-    name: String,
-    keyType: Class<K>,
-    valueType: Class<V>,
-    vararg hints: StorageHints,
-  ): SortedKVStoreBuilder<*, K, V> =
-    when {
-      DefaultStorageHints.USE_PAGED_STORE in hints -> MVStoreSortedKVStoreBuilder(
-        storageContext = this,
-        name = getPageStoreName(name),
-        keyType = keyType,
-        valueType = valueType,
-      )
-
-      else -> InMemorySortedKVStoreBuilder(
-        owner = this,
-        name = getInMemoryStoreName(name),
+        disposable = disposable,
       )
     }
 
@@ -201,7 +180,7 @@ internal class FileFlatStoreRWHandler(
   fun write(op: CodecBuffer.() -> Unit) {
     try {
       channel.position(0)
-      val buffer = FileChannelCodecBuffer(channel)
+      val buffer = PagedFileChannelCodecBuffer(channel)
       op(buffer)
       buffer.flush()
       channel.truncate(buffer.size.toLong())
@@ -212,7 +191,7 @@ internal class FileFlatStoreRWHandler(
 
   fun read(op: CodecBuffer.() -> Unit) {
     channel.position(0)
-    val buffer = FileChannelCodecBuffer(channel)
+    val buffer = PagedFileChannelCodecBuffer(channel)
     op(buffer)
   }
 }

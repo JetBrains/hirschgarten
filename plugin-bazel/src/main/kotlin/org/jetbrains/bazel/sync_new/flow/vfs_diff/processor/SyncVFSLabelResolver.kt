@@ -4,7 +4,6 @@ import com.intellij.openapi.components.service
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.consistentLabels
@@ -72,7 +71,7 @@ object SyncVFSLabelResolver {
       .groupBy { it.repoName }
 
     val sourceMapping = mutableMapOf<Path, MutableSet<Label>>()
-    val connector = ctx.project.service<BazelConnectorService>().ofLegacyTask()
+    val connector = ctx.project.service<BazelConnectorService>().ofSyncTask(ctx.task)
     for ((repo, sources) in sourcesByRepo) {
       val repoRoot = sources.first().repoRoot
       val sourcePaths = sources.filter { it.path.startsWith(repoRoot) }

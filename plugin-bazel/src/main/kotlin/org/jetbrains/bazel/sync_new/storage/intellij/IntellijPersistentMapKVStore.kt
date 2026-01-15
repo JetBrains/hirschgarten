@@ -87,31 +87,31 @@ internal class IntellijPersistentMapKVStore<K : Any, V : Any>(
     toRemove.forEach { map.remove(it) }
   }
 
-  override fun keys(): CloseableIterator<K> {
+  override fun keys(): Sequence<K> {
     val result = mutableListOf<K>()
     map.processKeysWithExistingMapping {
       result.add(it);
       true
     }
-    return result.asSequence().asCloseableIterator()
+    return result.asSequence()
   }
 
-  override fun values(): CloseableIterator<V> {
+  override fun values(): Sequence<V> {
     val result = mutableListOf<V>()
     map.processKeysWithExistingMapping {
       result.add(map.get(it))
       true
     }
-    return result.asSequence().asCloseableIterator()
+    return result.asSequence()
   }
 
-  override fun iterator(): CloseableIterator<Pair<K, V>> {
+  override fun entries(): Sequence<Pair<K, V>> {
     val result = mutableListOf<Pair<K, V>>()
     map.processKeysWithExistingMapping {
       result.add(Pair(it, map.get(it)))
       true
     }
-    return result.asSequence().asCloseableIterator()
+    return result.asSequence()
   }
 
   override fun computeIfAbsent(key: K, op: (k: K) -> V): V? {

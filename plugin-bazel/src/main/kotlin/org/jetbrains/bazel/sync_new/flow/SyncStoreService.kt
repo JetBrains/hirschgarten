@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync_new.flow
 
+import com.dynatrace.hash4j.hashing.HashValue128
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync_new.codec.kryo.ofKryo
@@ -15,7 +16,11 @@ class SyncStoreService(
 ) {
   val syncMetadata: FlatStorage<SyncMetadata> =
     project.storageContext.createFlatStore<SyncMetadata>("bazel.sync.syncMetadata", DefaultStorageHints.USE_IN_MEMORY)
-      .withCreator { SyncMetadata() }
+      .withCreator {
+        SyncMetadata(
+          configHash = HashValue128(0, 0)
+        )
+      }
       .withCodec { ofKryo() }
       .build()
 
