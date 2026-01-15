@@ -26,7 +26,6 @@ suspend fun startServer(
   val bazelRunner = BazelRunner(bspClientLogger, bspServer.workspaceRoot)
   bspServer.verifyBazelVersion(bazelRunner, workspaceContext)
   val bazelInfo = bspServer.createBazelInfo(bazelRunner, workspaceContext)
-  bazelRunner.bazelInfo = bazelInfo
   val bazelPathsResolver = BazelPathsResolver(bazelInfo)
   val compilationManager =
     BazelBspCompilationManager(project, bazelRunner, bazelPathsResolver, client, bspServer.workspaceRoot)
