@@ -23,18 +23,19 @@ object SearchUtils {
    * https://github.com/bazelbuild/starlark/blob/6dd78ee3a66820a8b7571239946466cc702b209e/spec.md#name-binding-and-variables
    */
   fun searchInFile(element: PsiElement, processor: Processor<StarlarkElement>) {
-    var element: PsiElement? = element
-    while (element != null) {
-      val scopeRoot = findScopeRoot(element) ?: return
+    var current: PsiElement? = element
+    while (current != null) {
+      val scopeRoot = findScopeRoot(current) ?: return
       if (!processBindingsInScope(
           scopeRoot,
+          element = element,
           processor = processor,
-          elementIsScopeRoot = true,
+          isScopeRoot = true,
         )
       ) {
         return
       }
-      element = scopeRoot.parent
+      current = scopeRoot.parent
     }
   }
 
@@ -46,6 +47,10 @@ object SearchUtils {
       else ->
         when (val parent = element.parent) {
           null -> null
+          is StarlarkForStatement -> {
+            // For-loop is scope root only when coming from its body (statement list)
+            if (element is StarlarkStatementList) parent else findScopeRoot(parent)
+          }
           is StarlarkCompExpression -> {
             // In a comprehension, the first 'for' resolves using the scope that contains the
             // comprehension, while all later 'for's resolve within the comprehension's scope.
@@ -66,41 +71,44 @@ object SearchUtils {
     }
 
   private fun processBindingsInScope(
+    scopeRoot: PsiElement,
     element: PsiElement,
     processor: Processor<StarlarkElement>,
-    elementIsScopeRoot: Boolean = false,
+    isScopeRoot: Boolean = false,
   ): Boolean =
-    when (element) {
-      is StarlarkFile -> element.searchInLoads(processor) && element.children.all { processBindingsInScope(it, processor) }
+    when (scopeRoot) {
+      is StarlarkFile -> scopeRoot.searchInLoads(processor) && scopeRoot.children.all { processBindingsInScope(it, element, processor) }
 
       is StarlarkCallable ->
-        if (elementIsScopeRoot) {
-          element.searchInParameters(processor) &&
+        if (isScopeRoot) {
+          scopeRoot.searchInParameters(processor) &&
             (
-              element !is StarlarkFunctionDeclaration ||
+              scopeRoot !is StarlarkFunctionDeclaration ||
                 processBindingsInScope(
-                  element.getStatementList(),
+                  scopeRoot.getStatementList(),
+                  element,
                   processor,
                 )
             )
         } else {
-          element !is StarlarkFunctionDeclaration || processor.process(element)
+          scopeRoot !is StarlarkFunctionDeclaration || processor.process(scopeRoot)
         }
 
       is StarlarkStatementContainer ->
-        element
+        scopeRoot
           .getStatementLists()
-          .all { processBindingsInScope(it, processor) } &&
+          .all { processBindingsInScope(it, element, processor) } &&
           (
-            element !is StarlarkForStatement ||
-              element.searchInLoopVariables(
-                processor,
-              )
+            scopeRoot !is StarlarkForStatement ||
+              // Add loop variables only if this is the scope root (searching from inside
+              // this for-loop) or if element is textually after this for-loop
+              (isScopeRoot || element.textOffset > scopeRoot.textRange.endOffset) &&
+                scopeRoot.searchInLoopVariables(processor)
           )
 
-      is StarlarkCompExpression -> element.searchInComprehension(processor)
-      is StarlarkStatementList -> element.children.all { processBindingsInScope(it, processor) }
-      is StarlarkAssignmentStatement -> element.check(processor)
+      is StarlarkCompExpression -> scopeRoot.searchInComprehension(processor)
+      is StarlarkStatementList -> scopeRoot.children.all { processBindingsInScope(it, element, processor) }
+      is StarlarkAssignmentStatement -> scopeRoot.check(processor)
       else -> true
     }
 
