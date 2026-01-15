@@ -125,4 +125,8 @@ open class BuildServerMock(
     JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
+
+  override suspend fun abuMagicQuery() {
+    TODO("not implemented")
+  }
 }

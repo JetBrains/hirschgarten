@@ -276,5 +276,5 @@ class ExecuteService(
     return runWithBepServer(command, originId, shouldLogInvocation = shouldLogInvocation)
   }
 
-  suspend fun abuMagicQuery() = AbuMagicQuery.doMagic(bazelRunner)
+  suspend fun abuMagicQuery() = AbuMagicQuery.doMagic(bazelRunner, workspaceContext)
 }
