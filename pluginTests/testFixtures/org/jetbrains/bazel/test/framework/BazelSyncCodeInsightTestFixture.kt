@@ -1,15 +1,11 @@
 package org.jetbrains.bazel.test.framework
 
 import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.components.service
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
-import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.diagnostic.telemetry.NoopTelemetryManager
 import com.intellij.platform.diagnostic.telemetry.Scope
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.testFramework.fixtures.TempDirTestFixture
@@ -25,7 +21,6 @@ import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
 import org.jetbrains.bazel.startup.IntellijBidirectionalMap
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
 interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
@@ -47,7 +42,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
   override fun setUp() {
     super.setUp()
     testDataPath = BazelPathManager.testDataRoot.pathString
-    project.bazelProjectProperties.rootDir = tempDirPath.toVirtualFile()
+    project.bazelProjectProperties.rootDir = virtualFileOf(tempDirPath)
     BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
     TelemetryManager.provideNoopTelemetryManager()
     ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
@@ -70,13 +65,6 @@ class BazelSyncCodeInsightTestFixtureImpl(
       super.tearDown()
     }
   }
-
-  private fun String.toVirtualFile() = project
-    .service<WorkspaceModel>()
-    .getVirtualFileUrlManager()
-    .let { Path(this).toVirtualFileUrl(it) }
-    .virtualFile
-    .let(::checkNotNull)
 }
 
 private fun TelemetryManager.Companion.provideNoopTelemetryManager() {

@@ -9,5 +9,6 @@ public class B {
     a.getProperty$a_module();
     a.setProperty$a_module("");
     a.method$a_module(1);
+    a.method$wrong_module(1)
   }
 }
