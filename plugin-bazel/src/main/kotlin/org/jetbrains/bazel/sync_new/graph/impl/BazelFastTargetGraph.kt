@@ -118,9 +118,9 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
     .build()
 
   override val vertices: Sequence<BazelTargetVertex>
-    get() = id2Vertex.values().asClosingSequence()
+    get() = id2Vertex.values()
   override val edges: Sequence<BazelTargetEdge>
-    get() = id2Edge.values().asClosingSequence()
+    get() = id2Edge.values()
 
   override fun getVertexById(id: ID): BazelTargetVertex? = id2Vertex.get(id)
 
@@ -139,7 +139,7 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
 
   override fun getLabelByVertexId(id: ID): Label? = id2Compact.get(id)?.label
   override fun getVertexCompactById(id: ID): BazelTargetCompact? = id2Compact.get(id)
-  override fun getAllVertexCompacts(): Sequence<BazelTargetCompact> = id2Compact.values().asClosingSequence()
+  override fun getAllVertexCompacts(): Sequence<BazelTargetCompact> = id2Compact.values()
 
   override fun getEdgeById(id: ID): BazelTargetEdge? = id2Edge.get(id)
 
@@ -173,9 +173,6 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
   }
 
   override fun addVertex(vertex: BazelTargetVertex) {
-    if (vertex.label.toString().contains("kt_lib")) {
-      print("ok1")
-    }
     id2Vertex.put(vertex.vertexId, vertex)
     id2Compact.put(vertex.vertexId, vertex.toTargetCompact())
     id2Successors.computeIfAbsent(vertex.vertexId) { IntArrayList() }
@@ -204,7 +201,10 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
     if (successorIds != null) {
       for (n in successorIds.indices) {
         val successor = successorIds.getInt(n)
-        id2Predecessors.remove(successor, vertex.vertexId)
+        val predecessors = id2Predecessors.get(successor)
+        if (predecessors != null) {
+          predecessors.rem(vertex.vertexId);
+        }
         val link = removeLinksBetween(vertex.vertexId, successor)
         if (link != EMPTY_ID) {
           id2Edge.remove(link)
@@ -216,7 +216,10 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
     if (predecessorIds != null) {
       for (n in predecessorIds.indices) {
         val predecessor = predecessorIds.getInt(n)
-        id2Successors.remove(predecessor, vertex.vertexId)
+        val successors = id2Successors.remove(predecessor)
+        if (successors != null) {
+          successors.rem(vertex.vertexId)
+        }
         val link = removeLinksBetween(predecessor, vertex.vertexId)
         if (link != EMPTY_ID) {
           id2Edge.remove(link)
@@ -234,8 +237,14 @@ class BazelFastTargetGraph(val storage: StorageContext) : FastTargetGraph<BazelT
     id: ID,
   ): BazelTargetEdge? {
     val edge = id2Edge.remove(key = id, useReturn = true) ?: return null
-    id2Successors.remove(edge.from, edge.to)
-    id2Predecessors.remove(edge.to, edge.from)
+    val successors = id2Successors.get(edge.from)
+    if (successors != null) {
+      successors.rem(edge.to)
+    }
+    val predecessors = id2Predecessors.get(edge.to)
+    if (predecessors != null) {
+      predecessors.rem(edge.from)
+    }
 
     edgeLink2EdgeId.remove(packEdgeLink(edge.from, edge.to))
     return edge

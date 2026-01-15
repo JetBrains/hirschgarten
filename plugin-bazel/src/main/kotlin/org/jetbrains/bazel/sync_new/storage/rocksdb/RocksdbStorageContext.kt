@@ -10,13 +10,11 @@ import org.jetbrains.bazel.sync_new.storage.KVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.LifecycleStoreContext
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreWithModificationMarker
-import org.jetbrains.bazel.sync_new.storage.SortedKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.StorageContext
 import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.StorageHints
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryFlatStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.in_memory.InMemoryKVStoreBuilder
-import org.jetbrains.bazel.sync_new.storage.in_memory.InMemorySortedKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeByteBufferCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import org.rocksdb.AbstractComparator
@@ -215,15 +213,8 @@ class RocksdbStorageContext(
       name = name
     )
 
-    else -> InMemoryKVStoreBuilder(owner = this, name = name)
+    else -> InMemoryKVStoreBuilder(owner = this, name = name, disposable = disposable)
   }
-
-  override fun <K : Any, V : Any> createSortedKVStore(
-    name: String,
-    keyType: Class<K>,
-    valueType: Class<V>,
-    vararg hints: StorageHints,
-  ): SortedKVStoreBuilder<*, K, V> = InMemorySortedKVStoreBuilder(owner = this, name = name)
 
   override fun <T : Any> createFlatStore(
     name: String,

@@ -18,7 +18,7 @@ abstract class PersistentDirectedGraph<ID, V> : SimpleDirectedGraph<V> {
   fun getVertexById(id: ID): V? = id2Vertex[id]
 
   override val vertices: Sequence<V>
-    get() = id2Vertex.values().asClosingSequence()
+    get() = id2Vertex.values()
 
   override fun getSuccessors(vertex: V): Sequence<V> {
     val vertexId = getVertexId(vertex)

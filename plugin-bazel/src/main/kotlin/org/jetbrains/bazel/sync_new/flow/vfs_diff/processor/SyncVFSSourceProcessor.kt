@@ -5,7 +5,6 @@ import com.intellij.openapi.components.service
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.QueryArgs
@@ -160,7 +159,7 @@ class SyncVFSSourceProcessor {
   }
 
   suspend fun runSourceMapQuery(ctx: SyncVFSContext, builder: QueryArgs.() -> Unit): Map<Path, Set<Label>> {
-    val connector = ctx.project.service<BazelConnectorService>().ofLegacyTask()
+    val connector = ctx.project.service<BazelConnectorService>().ofSyncTask(ctx.task)
     val result = connector.query {
       defaults()
       keepGoing()

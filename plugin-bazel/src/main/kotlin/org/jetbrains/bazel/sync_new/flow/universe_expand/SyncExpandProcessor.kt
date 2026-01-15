@@ -13,11 +13,12 @@ import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncConsoleTask
 import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
 import org.jetbrains.bazel.sync_new.util.plus
 
 class SyncExpandProcessor {
-  suspend fun process(ctx: SyncExpandContext, diff: SyncColdDiff): SyncColdDiff {
+  suspend fun process(ctx: SyncExpandContext, task: SyncConsoleTask, diff: SyncColdDiff): SyncColdDiff {
     if (ctx.scope.isFullSync) {
       ctx.service.graph.reset()
     }
@@ -55,7 +56,7 @@ class SyncExpandProcessor {
       graph.removeUniverseVertex(removed)
     }
 
-    val directDependencies = runDepsQuery(ctx, diff.added + diff.changed)
+    val directDependencies = runDepsQuery(ctx, task, diff.added + diff.changed)
 
     // clear outgoing edges for changed nodes to remove stale dependencies
     for (changed in diff.changed) {
@@ -114,11 +115,11 @@ class SyncExpandProcessor {
   }
 
   // <target> -> <direct dependencies>
-  suspend fun runDepsQuery(ctx: SyncExpandContext, targets: Collection<Label>): Map<Label, Set<Label>> {
+  suspend fun runDepsQuery(ctx: SyncExpandContext, task: SyncConsoleTask, targets: Collection<Label>): Map<Label, Set<Label>> {
     if (targets.isEmpty()) {
       return emptyMap()
     }
-    val connector = ctx.project.service<BazelConnectorService>().ofLegacyTask()
+    val connector = ctx.project.service<BazelConnectorService>().ofSyncTask(task)
     val result = connector.query {
       defaults()
       keepGoing()

@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync_new.storage
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 /**
  * CloseableIterator is an iterator that can be closed, ensuring resources are released properly.
  *
@@ -23,14 +25,6 @@ fun <T> CloseableIterator<T>.asClosingSequence(): Sequence<T> = sequence {
   }
 }
 
-fun <T, U> CloseableIterator<T>.mapCloseable(func: (op: T) -> U): CloseableIterator<U> = object : CloseableIterator<U> {
-  override fun next(): U = func(this@mapCloseable.next())
-
-  override fun hasNext(): Boolean = this@mapCloseable.hasNext()
-
-  override fun close() = this@mapCloseable.close()
-}
-
 fun <T> Iterator<T>.asCloseable(): CloseableIterator<T> = object : CloseableIterator<T> {
   override fun next(): T = this@asCloseable.next()
   override fun hasNext(): Boolean = this@asCloseable.hasNext()
@@ -40,3 +34,33 @@ fun <T> Iterator<T>.asCloseable(): CloseableIterator<T> = object : CloseableIter
 }
 
 fun <T> Sequence<T>.asCloseableIterator(): CloseableIterator<T> = iterator().asCloseable()
+
+interface RefCloser {
+  fun register(obj: Any, closer: () -> Unit)
+}
+
+abstract class ImplicitCloseableIterator<V, H : AutoCloseable?>(closer: RefCloser): CloseableIterator<V> {
+  private val guard = AtomicBoolean(false)
+
+  abstract val handle: H
+
+  init {
+    // not using lambda to avoid implicit captures
+    closer.register(this, CaptureCloseHandler(handle, guard))
+  }
+
+  override fun close() {
+    if (guard.compareAndSet(false, true)) {
+      handle?.close()
+    }
+  }
+
+}
+
+private class CaptureCloseHandler(val closeable: AutoCloseable?, val guard: AtomicBoolean) : () -> Unit {
+  override fun invoke() {
+    if (guard.compareAndSet(false, true)) {
+      closeable?.close()
+    }
+  }
+}

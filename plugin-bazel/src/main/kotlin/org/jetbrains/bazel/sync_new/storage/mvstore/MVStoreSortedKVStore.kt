@@ -1,14 +1,12 @@
 package org.jetbrains.bazel.sync_new.storage.mvstore
 
 import org.h2.mvstore.MVMap
-import org.jetbrains.bazel.sync_new.storage.BaseSortedKVStoreBuilder
-import org.jetbrains.bazel.sync_new.storage.CloseableIterator
-import org.jetbrains.bazel.sync_new.storage.SortedKVStore
-import org.jetbrains.bazel.sync_new.storage.asCloseable
+import org.jetbrains.bazel.sync_new.storage.BaseKVStoreBuilder
+import org.jetbrains.bazel.sync_new.storage.KVStore
 
 open class MVStoreSortedKVStore<K, V>(
   private val map: MVMap<K, V>,
-) : SortedKVStore<K, V> {
+) : KVStore<K, V> {
   override fun get(key: K): V? = map[key]
   override fun put(key: K, value: V) {
     map[key] = value
@@ -22,33 +20,21 @@ open class MVStoreSortedKVStore<K, V>(
     map.clear()
   }
 
-  override fun keys(): CloseableIterator<K> = map.cursor(null).asCloseable()
+  override fun keys(): Sequence<K> = map.cursor(null).asSequence()
 
-  override fun values(): CloseableIterator<V> = object : CloseableIterator<V> {
+  override fun values(): Sequence<V> = sequence {
     val cursor = map.cursor(null)
-    override fun next(): V {
+    while (cursor.hasNext()) {
       cursor.next()
-      return cursor.value
-    }
-
-    override fun hasNext(): Boolean = cursor.hasNext()
-
-    override fun close() {
-
+      yield(cursor.value)
     }
   }
 
-  override fun iterator(): CloseableIterator<Pair<K, V>> = object : CloseableIterator<Pair<K, V>> {
+  override fun entries(): Sequence<Pair<K, V>> = sequence {
     val cursor = map.cursor(null)
-    override fun next(): Pair<K, V> {
+    while (cursor.hasNext()) {
       cursor.next()
-      return cursor.key to cursor.value
-    }
-
-    override fun hasNext(): Boolean = cursor.hasNext()
-
-    override fun close() {
-
+      yield(Pair(cursor.key, cursor.value))
     }
   }
 
@@ -88,7 +74,8 @@ open class MVStoreSortedKVStore<K, V>(
           result = op(key, existingValue)
           if (result == null) {
             return MVMap.Decision.REMOVE
-          } else {
+          }
+          else {
             return MVMap.Decision.PUT
           }
         }
@@ -108,15 +95,16 @@ class MVStoreSortedKVStoreBuilder<K, V>(
   private val name: String,
   private val keyType: Class<K>,
   private val valueType: Class<V>,
-) : BaseSortedKVStoreBuilder<MVStoreSortedKVStoreBuilder<K, V>, K, V>() {
-  override fun build(): SortedKVStore<K, V> {
-    val comparator = keyComparator?.invoke() ?: run {
+) : BaseKVStoreBuilder<MVStoreSortedKVStoreBuilder<K, V>, K, V>() {
+  override fun build(): KVStore<K, V> {
+    val comparator = run {
       if (Comparable::class.java.isAssignableFrom(keyType)) {
         @Suppress("UNCHECKED_CAST")
         naturalOrder<Comparable<Any>>() as Comparator<K>
       }
       else {
-        MVStoreComparators.getFallbackComparator(keyType) ?: error("Key type must be Comparable or a comparator must be provided ${keyType}")
+        MVStoreComparators.getFallbackComparator(keyType)
+        ?: error("Key type must be Comparable or a comparator must be provided ${keyType}")
       }
     }
     val builder = MVMap.Builder<K, V>()

@@ -222,13 +222,7 @@ internal abstract class StorageContextKVStoreTest : StorageContextContractTest()
         put(data[1].first, data[1].second)
         put(data[2].first, data[2].second)
 
-        val entries = mutableListOf<Pair<K, V>>()
-        iterator().use { iter ->
-          while (iter.hasNext()) {
-            entries.add(iter.next())
-          }
-        }
-        
+        val entries = entries().toList()
         entries.toSet().shouldBe(data.toSet())
       }
     }
@@ -239,13 +233,7 @@ internal abstract class StorageContextKVStoreTest : StorageContextContractTest()
   fun <K : Any, V : Any> `test iterate over empty store`(testCase: KVStoreTestCase<K, V>, hints: Array<StorageHints>) {
     useContext("test iterate over empty store", testCase, hints) {
       open {
-        val entries = mutableListOf<Pair<K, V>>()
-        iterator().use { iter ->
-          while (iter.hasNext()) {
-            entries.add(iter.next())
-          }
-        }
-        
+        val entries = entries().toList()
         entries.shouldBe(emptyList())
       }
     }
@@ -261,13 +249,7 @@ internal abstract class StorageContextKVStoreTest : StorageContextContractTest()
         put(data[1].first, data[1].second)
         put(data[2].first, data[2].second)
 
-        val keys = mutableListOf<K>()
-        keys().use { iter ->
-          while (iter.hasNext()) {
-            keys.add(iter.next())
-          }
-        }
-
+        val keys = keys().toList()
         keys.toSet().shouldBe(data.map { it.first }.toSet())
       }
     }
@@ -283,13 +265,7 @@ internal abstract class StorageContextKVStoreTest : StorageContextContractTest()
         put(data[1].first, data[1].second)
         put(data[2].first, data[2].second)
 
-        val values = mutableListOf<V>()
-        values().use { iter ->
-          while (iter.hasNext()) {
-            values.add(iter.next())
-          }
-        }
-
+        val values = values().toList()
         values.toSet().shouldBe(data.map { it.second }.toSet())
       }
     }

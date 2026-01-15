@@ -1,21 +1,27 @@
 package org.jetbrains.bazel.sync_new.codec.kryo
 
-import com.intellij.ide.ApplicationActivity
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.extensions.ExtensionPointName
 import io.github.classgraph.ClassGraph
+import org.jetbrains.annotations.TestOnly
 
 class KryoRegistryService {
-  val registeredTypes: List<RegisteredType>
+  companion object {
+    @TestOnly
+    var disableClassDiscovery: Boolean = false
+  }
+
+  val registeredTypes: MutableList<RegisteredType> = mutableListOf()
 
   init {
-    registeredTypes = discoverRegisteredTypes()
+    if (!disableClassDiscovery) {
+      registeredTypes.addAll(discoverRegisteredTypes())
+    }
   }
 
   fun discoverRegisteredTypes(): List<RegisteredType> {
     val extraClassLoaders = KryoRegistryExtension.ep.extensionList
       .flatMap { it.extraClassLoaders }
-    val thisClassLoader = KryoStartupActivity::class.java.classLoader
+    val thisClassLoader = KryoRegistryService::class.java.classLoader
     val classGraph = ClassGraph()
       .enableAnnotationInfo()
       .ignoreParentClassLoaders()
@@ -37,15 +43,14 @@ class KryoRegistryService {
       result
     }
   }
+
+  fun registerType(type: Class<*>) {
+    val serialId = type.getAnnotation(ClassTag::class.java)?.serialId ?: -1
+    registeredTypes += RegisteredType(type = type, serialId = serialId)
+  }
 }
 
 data class RegisteredType(val type: Class<*>, val serialId: Int)
-
-class KryoStartupActivity : ApplicationActivity {
-  override suspend fun execute() {
-
-  }
-}
 
 interface KryoRegistryExtension {
   /**

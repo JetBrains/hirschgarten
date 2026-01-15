@@ -14,7 +14,7 @@ class PersistentStoreOne2OneIndex<K, V>(
   val store: KVStore<K, V>,
 ) : One2OneIndex<K, V>, Disposable {
   override val values: Sequence<V>
-    get() = store.values().asClosingSequence()
+    get() = store.values()
 
   init {
     owner.register(this)

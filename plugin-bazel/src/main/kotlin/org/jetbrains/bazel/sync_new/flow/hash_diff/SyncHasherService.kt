@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync_new.codec.ofHash128
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncConsoleTask
 import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.createKVStore
@@ -21,11 +22,11 @@ class SyncHasherService(
       .withValueCodec { ofHash128() }
       .build()
 
-  suspend fun computeHashDiff(diff: SyncColdDiff): SyncColdDiff {
+  suspend fun computeHashDiff(diff: SyncColdDiff, task: SyncConsoleTask): SyncColdDiff {
     val ctx = SyncHasherContext(
       project = project,
       service = this,
     )
-    return SyncHasherProcessor().process(ctx, diff)
+    return SyncHasherProcessor().process(ctx, task, diff)
   }
 }

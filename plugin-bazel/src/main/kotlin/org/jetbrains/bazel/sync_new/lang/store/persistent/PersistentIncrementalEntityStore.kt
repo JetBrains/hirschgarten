@@ -177,7 +177,7 @@ abstract class PersistentIncrementalEntityStore<R : IncrementalResourceId, E : I
     }
   }
 
-  override fun getAllEntities(): Sequence<E> = resourceId2EntityStore.values().asClosingSequence()
+  override fun getAllEntities(): Sequence<E> = resourceId2EntityStore.values()
 
   //override fun getAllEntities(): Sequence<E> {
   //  return id2Resource.keys()

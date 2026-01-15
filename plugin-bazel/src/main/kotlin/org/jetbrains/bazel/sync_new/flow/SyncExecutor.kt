@@ -10,7 +10,6 @@ import com.intellij.openapi.project.UnindexedFilesScannerExecutor
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.util.concurrency.ThreadingAssertions
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -46,15 +45,29 @@ class SyncExecutor(
   suspend fun execute(scope: SyncScope): SyncStatus {
     ThreadingAssertions.assertBackgroundThread()
 
-    val syncStore = withTask(project, "sync_store_init", "Initializing sync store") {
-      val store = project.service<SyncStoreService>()
-      if (scope.isFullSync) {
-        store.syncMetadata.reset()
-        store.targetGraph.clear()
+    val store = withTask(project, "sync_store_init", "Initializing sync store") {
+      project.service<SyncStoreService>()
+    }
+
+    val newWorkspaceHash = SyncConfig.hashWorkspaceConfig(project)
+    val requireFullSync = newWorkspaceHash != store.syncMetadata.get().configHash
+    store.syncMetadata.modify { it.copy(configHash = newWorkspaceHash) }
+
+    return if (requireFullSync) {
+      _execute(SyncScope.Full(build = scope.build))
+    } else {
+      _execute(scope)
+    }
+  }
+
+  private suspend fun _execute(scope: SyncScope): SyncStatus {
+    val syncStore = project.service<SyncStoreService>()
+    if (scope.isFullSync) {
+      withTask(project, "sync_clear_storage", "Clearing storage") {
+        syncStore.targetGraph.clear()
         project.serviceAsync<SyncIndexService>().invalidateAll()
         project.service<SyncVFSService>().resetAll()
       }
-      store
     }
     withTask(project, "warmup_server", "Warming up server") {
       // force server to start
@@ -129,16 +142,16 @@ class SyncExecutor(
 
   private suspend fun SyncConsoleTask.computeSyncDiff(ctx: SyncContext, scope: SyncScope): SyncDiff {
     val universeDiff = withTask("universe_diff", "Computing universe diff") {
-      project.service<SyncUniverseService>().computeUniverseDiff(ctx, scope, SyncProgressReporter(this@withTask))
+      project.service<SyncUniverseService>().computeUniverseDiff(ctx, SyncProgressReporter(this@withTask))
     }
     val vfsDiff = withTask("vfs_diff", "Computing VFS diff") {
-      project.service<SyncVFSService>().computeVFSDiff(scope, universeDiff)
+      project.service<SyncVFSService>().computeVFSDiff(scope, this@withTask, universeDiff)
     }
     val scopeDiff = computeSyncScopeDiff(scope)
     val normalizer = SyncDiffNormalizer()
     val normalizedDiff = normalizer.normalize(listOf(vfsDiff, universeDiff, scopeDiff))
     val expandedDiff = withTask("expand_diff", "Computing dependency reachability") {
-      project.service<SyncExpandService>().expandDependencyDiff(scope, normalizedDiff)
+      project.service<SyncExpandService>().expandDependencyDiff(scope, this@withTask, normalizedDiff)
     }
     val useHasher = when {
       ctx.scope.isFullSync -> true
@@ -147,7 +160,7 @@ class SyncExecutor(
     }
     val coldDiff = if (useHasher) {
       withTask("hash_diff", "Computing hash diff") {
-        project.service<SyncHasherService>().computeHashDiff(expandedDiff)
+        project.service<SyncHasherService>().computeHashDiff(expandedDiff, this@withTask)
       }
     }
     else {
@@ -203,9 +216,9 @@ class SyncExecutor(
     //   4. update target graph ONLY with changed targets(for over vertices below should be only over changed targets)
     //  this step is OG plugin `artifact tracking` counterpart
     //  * this step should as lightweight as possible
-    //
     //  !!! I've haven't tried to implement that due to language-specific targets not having unified way of expressing
     //      in/out artifacts - topic to be discussed
+    //  with this logic implemented query diff could be decoupled from target graph diff
 
     // 1) remove removed targets
     for (target in diff.removed + diff.changed.map { it.old }) {

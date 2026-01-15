@@ -1,37 +1,33 @@
 package org.jetbrains.bazel.sync_new.storage.in_memory
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
 import org.jetbrains.bazel.sync_new.codec.CodecContext
 import org.jetbrains.bazel.sync_new.storage.BaseKVStoreBuilder
-import org.jetbrains.bazel.sync_new.storage.BaseSortedKVStoreBuilder
-import org.jetbrains.bazel.sync_new.storage.CloseableIterator
 import org.jetbrains.bazel.sync_new.storage.FlatPersistentStore
 import org.jetbrains.bazel.sync_new.storage.KVStore
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreWithModificationMarker
-import org.jetbrains.bazel.sync_new.storage.SortedKVStore
-import org.jetbrains.bazel.sync_new.storage.asCloseable
-import org.jetbrains.bazel.sync_new.storage.asCloseableIterator
-import java.util.NavigableMap
-import java.util.SortedMap
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
-import java.util.concurrent.ConcurrentSkipListMap
 
 open class InMemoryKVStore<K, V>(
   private val owner: PersistentStoreOwner,
   override val name: String,
   private val keyCodec: Codec<K>,
   private val valueCodec: Codec<V>,
-  protected val map: ConcurrentMap<K, V> = ConcurrentHashMap(),
+  private val disposable: Disposable,
 ) : KVStore<K, V>, FlatPersistentStore, PersistentStoreWithModificationMarker, Disposable {
   companion object {
     const val CODEC_VERSION: Int = 1
   }
 
+  protected val map: ConcurrentMap<K, V> = ConcurrentHashMap()
+
   init {
+    Disposer.register(disposable, this)
     owner.register(this)
   }
 
@@ -57,11 +53,10 @@ open class InMemoryKVStore<K, V>(
     wasModified = true
   }
 
-  override fun keys(): CloseableIterator<K> = map.keys.iterator().asCloseable()
-  override fun values(): CloseableIterator<V> = map.values.iterator().asCloseable()
-  override fun iterator(): CloseableIterator<Pair<K, V>> = map.asSequence()
+  override fun keys(): Sequence<K> = map.keys.iterator().asSequence()
+  override fun values(): Sequence<V> = map.values.iterator().asSequence()
+  override fun entries(): Sequence<Pair<K, V>> = map.asSequence()
     .map { it.key to it.value }
-    .asCloseableIterator()
 
   override fun computeIfAbsent(key: K, op: (k: K) -> V): V? {
     val value = map.computeIfAbsent(key, op)
@@ -92,11 +87,7 @@ open class InMemoryKVStore<K, V>(
     for (n in 0 until size) {
       val key = keyCodec.decode(ctx, buffer)
       val value = valueCodec.decode(ctx, buffer)
-      if (key != null && value != null) {
-        map[key] = value
-      } else {
-        println()
-      }
+      map[key] = value
     }
   }
 
@@ -112,6 +103,7 @@ open class InMemoryKVStore<K, V>(
 class InMemoryKVStoreBuilder<K, V>(
   private val owner: PersistentStoreOwner,
   private val name: String,
+  private val disposable: Disposable,
 ) : BaseKVStoreBuilder<InMemoryKVStoreBuilder<K, V>, K, V>() {
   override fun build(): KVStore<K, V> {
     val store = InMemoryKVStore(
@@ -119,38 +111,8 @@ class InMemoryKVStoreBuilder<K, V>(
       name = name,
       keyCodec = keyCodec ?: error("Key codec must be specified"),
       valueCodec = valueCodec ?: error("Value codec must be specified"),
+      disposable = disposable,
     )
     return store
   }
-}
-
-open class InMemorySortedKVStore<K, V>(
-  owner: PersistentStoreOwner,
-  name: String,
-  keyCodec: Codec<K>,
-  valueCodec: Codec<V>,
-  private val comparator: Comparator<K>,
-) : InMemoryKVStore<K, V>(
-  owner = owner,
-  name = name,
-  keyCodec = keyCodec,
-  valueCodec = valueCodec,
-  map = ConcurrentSkipListMap(comparator),
-), SortedKVStore<K, V> {
-  protected val sortedMap: SortedMap<K, V>
-    get() = map as NavigableMap<K, V>
-}
-
-class InMemorySortedKVStoreBuilder<K, V>(
-  private val owner: PersistentStoreOwner,
-  private val name: String,
-) :
-  BaseSortedKVStoreBuilder<InMemorySortedKVStoreBuilder<K, V>, K, V>() {
-  override fun build(): SortedKVStore<K, V> = InMemorySortedKVStore(
-    owner = owner,
-    name = name,
-    keyCodec = keyCodec ?: error("Key codec must be specified"),
-    valueCodec = valueCodec ?: error("Value codec must be specified"),
-    comparator = keyComparator?.invoke() ?: error("Comparator must be specified"),
-  )
 }

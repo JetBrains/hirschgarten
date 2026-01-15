@@ -35,7 +35,7 @@ class SyncVFSBuildFileProcessor {
     )
 
     val connector = ctx.project.service<BazelConnectorService>()
-      .ofLegacyTask()
+      .ofSyncTask(ctx.task)
 
     val targets = if (buildLabels.isEmpty()) {
       emptyMap()

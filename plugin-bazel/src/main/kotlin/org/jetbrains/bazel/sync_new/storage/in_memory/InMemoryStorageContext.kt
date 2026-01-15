@@ -13,11 +13,9 @@ import org.jetbrains.bazel.sync_new.storage.FlatStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.KVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.LifecycleStoreContext
 import org.jetbrains.bazel.sync_new.storage.PersistentStoreOwner
-import org.jetbrains.bazel.sync_new.storage.SortedKVStoreBuilder
 import org.jetbrains.bazel.sync_new.storage.StorageContext
-import org.jetbrains.bazel.sync_new.storage.DefaultStorageHints
 import org.jetbrains.bazel.sync_new.storage.StorageHints
-import org.jetbrains.bazel.sync_new.storage.util.FileChannelCodecBuffer
+import org.jetbrains.bazel.sync_new.storage.util.PagedFileChannelCodecBuffer
 import org.jetbrains.bazel.sync_new.storage.util.FileUtils
 import org.jetbrains.bazel.sync_new.storage.util.UnsafeCodecContext
 import java.nio.channels.FileChannel
@@ -51,16 +49,7 @@ open class InMemoryStorageContext(
       valueType: Class<V>,
       vararg hints: StorageHints,
   ): KVStoreBuilder<*, K, V> {
-    return InMemoryKVStoreBuilder(this, name)
-  }
-
-  override fun <K : Any, V : Any> createSortedKVStore(
-      name: String,
-      keyType: Class<K>,
-      valueType: Class<V>,
-      vararg hints: StorageHints,
-  ): SortedKVStoreBuilder<*, K, V> {
-    return InMemorySortedKVStoreBuilder(this, name)
+    return InMemoryKVStoreBuilder(this, name, disposable)
   }
 
   override fun <T : Any> createFlatStore(
@@ -85,7 +74,7 @@ open class InMemoryStorageContext(
           try {
             val storeFile = getStoreFileChannel(storeName)
             storeFile.channel.position(0)
-            val buffer = FileChannelCodecBuffer(storeFile.channel)
+            val buffer = PagedFileChannelCodecBuffer(storeFile.channel)
             store.write(UnsafeCodecContext, buffer)
             buffer.flush()
             storeFile.channel.truncate(buffer.size.toLong())
@@ -114,7 +103,7 @@ open class InMemoryStorageContext(
       if (storeFile.path.exists() && Files.size(storeFile.path) > 0) {
         try {
           storeFile.channel.position(0)
-          val buffer = FileChannelCodecBuffer(storeFile.channel)
+          val buffer = PagedFileChannelCodecBuffer(storeFile.channel)
           store.read(
             ctx = UnsafeCodecContext,
             buffer = buffer,

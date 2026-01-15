@@ -1,12 +1,13 @@
 package org.jetbrains.bazel.sync_new.storage.util
 
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.PriorityBlockingQueue
 import java.util.concurrent.TimeUnit
 
 /**
   Bounded blocking object pool with deferred value initialization
  */
-internal class BoundedBlockingObjectPool<T : Any>(
+class BoundedBlockingObjectPool<T : Any>(
   private val maxSize: Int,
   private val creator: () -> T,
 ) {
@@ -15,7 +16,7 @@ internal class BoundedBlockingObjectPool<T : Any>(
     data class Hot<T>(val eager: T) : Value<T>
   }
 
-  private val queue = ArrayBlockingQueue<Value<T>>(maxSize)
+  private val queue = PriorityBlockingQueue<Value<T>>(maxSize, compareByDescending<Value<T>> { it is Value.Hot })
 
   init {
     // TODO: use not-synchronized lazy
@@ -30,6 +31,7 @@ internal class BoundedBlockingObjectPool<T : Any>(
       queue.poll(time, unit)
     }
     return when (value) {
+      null -> null
       is Value.Cold -> value.lazy.value
       is Value.Hot -> value.eager
     }

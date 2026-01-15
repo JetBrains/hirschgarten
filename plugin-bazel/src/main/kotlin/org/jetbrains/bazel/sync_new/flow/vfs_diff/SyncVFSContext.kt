@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncConsoleTask
 import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.SyncScope
 
@@ -15,5 +16,6 @@ class SyncVFSContext(
   val scope: SyncScope,
   val isFirstSync: Boolean,
   val universeDiff: SyncColdDiff,
-  val flags: SyncFlagsService
+  val flags: SyncFlagsService,
+  val task: SyncConsoleTask
 )

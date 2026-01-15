@@ -13,16 +13,17 @@ import org.jetbrains.bazel.sync_new.connector.query
 import org.jetbrains.bazel.sync_new.connector.unwrap
 import org.jetbrains.bazel.sync_new.connector.unwrapProtos
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncConsoleTask
 import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
 import org.jetbrains.bazel.sync_new.storage.hash.hash
 import org.jetbrains.bazel.sync_new.storage.set
 import org.jetbrains.bazel.sync_new.util.iterator
 
 class SyncHasherProcessor {
-  suspend fun process(ctx: SyncHasherContext, diff: SyncColdDiff): SyncColdDiff {
+  suspend fun process(ctx: SyncHasherContext, task: SyncConsoleTask, diff: SyncColdDiff): SyncColdDiff {
     val target2Hash = ctx.service.target2Hash
 
-    val newTarget2Hash = computeTargetHashes(ctx, diff.added + diff.changed)
+    val newTarget2Hash = computeTargetHashes(ctx, task, diff.added + diff.changed)
     for (added in diff.added) {
       target2Hash[hash(added)] = newTarget2Hash[added] ?: continue
     }
@@ -62,11 +63,11 @@ class SyncHasherProcessor {
 
   }
 
-  private suspend fun computeTargetHashes(ctx: SyncHasherContext, targets: Collection<Label>): Map<Label, HashValue128> {
+  private suspend fun computeTargetHashes(ctx: SyncHasherContext, task: SyncConsoleTask, targets: Collection<Label>): Map<Label, HashValue128> {
     if (targets.isEmpty()) {
       return emptyMap()
     }
-    val connector = ctx.project.service<BazelConnectorService>().ofLegacyTask()
+    val connector = ctx.project.service<BazelConnectorService>().ofSyncTask(task)
     val query = targets.joinToString(separator = " + ") { it.toString() }
     val result = connector.query {
       defaults()
@@ -75,7 +76,6 @@ class SyncHasherProcessor {
       output(QueryOutput.PROTO)
       query(query)
     }
-    // TODO: maybe parallelize
     return result.unwrap().unwrapProtos()
       .filter { it.hasRule() }
       .map { it.rule }
