@@ -128,14 +128,4 @@ class BazelBspServer(
       )
     return ProjectProvider(projectResolver, firstPhaseProjectResolver)
   }
-
-  suspend fun verifyBazelVersion(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext) {
-    val command = bazelRunner.buildBazelCommand(workspaceContext) { version {} }
-    bazelRunner
-      .runBazelCommand(command, serverPidFuture = null)
-      .waitAndGetResult(true)
-      .also {
-        if (it.isNotSuccess) error("Querying Bazel version failed.\n${it.stderrLines.joinToString("\n")}")
-      }
-  }
 }
