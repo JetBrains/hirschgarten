@@ -11,9 +11,9 @@ import com.intellij.platform.diagnostic.telemetry.Scope
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
+import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
+import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
-import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.trace.Tracer
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
@@ -33,53 +33,50 @@ interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
   fun performBazelSync()
 }
 
-fun BazelSyncCodeInsightTestFixture(name: String): BazelSyncCodeInsightTestFixture {
-  val projectBuilder = IdeaTestFixtureFactory
-    .getFixtureFactory()
-    .createFixtureBuilder(name)
-  return object : CodeInsightTestFixtureImpl(projectBuilder.fixture, TempDirTestFixtureImpl()),
-                  BazelSyncCodeInsightTestFixture {
+class BazelSyncCodeInsightTestFixtureImpl(
+  projectFixture: IdeaProjectTestFixture,
+  tempDirTestFixture: TempDirTestFixture,
+) : CodeInsightTestFixtureImpl(projectFixture, tempDirTestFixture), BazelSyncCodeInsightTestFixture {
 
-    override fun performBazelSync() {
-      runWithModalProgressBlocking(project, "Syncing project...") {
-        ProjectSyncTask(project).sync(SecondPhaseSync, true)
-      }
+  override fun performBazelSync() {
+    runWithModalProgressBlocking(project, "Syncing project...") {
+      ProjectSyncTask(project).sync(SecondPhaseSync, true)
     }
+  }
 
-    override fun setUp() {
-      super.setUp()
-      testDataPath = BazelPathManager.testDataRoot.pathString
-      project.bazelProjectProperties.rootDir = tempDirPath.toVirtualFile()
-      BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
-      TelemetryManager.provideNoopTelemetryManager()
-      ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
-      VfsRootAccess.allowRootAccess(project, "/private/var/tmp/")
-    }
+  override fun setUp() {
+    super.setUp()
+    testDataPath = BazelPathManager.testDataRoot.pathString
+    project.bazelProjectProperties.rootDir = tempDirPath.toVirtualFile()
+    BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
+    TelemetryManager.provideNoopTelemetryManager()
+    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
+    VfsRootAccess.allowRootAccess(project, "/private/var/tmp/")
+  }
 
-    override fun tearDown() {
-      try {
-        project.bazelProjectProperties.rootDir = null
-        WriteAction.runAndWait<Throwable> {
-          ProjectJdkTable.getInstance().apply {
-            allJdks.forEach(this::removeJdk)
-          }
+  override fun tearDown() {
+    try {
+      project.bazelProjectProperties.rootDir = null
+      WriteAction.runAndWait<Throwable> {
+        ProjectJdkTable.getInstance().apply {
+          allJdks.forEach(this::removeJdk)
         }
       }
-      catch (e: Throwable) {
-        addSuppressedException(e)
-      }
-      finally {
-        super.tearDown()
-      }
     }
-
-    private fun String.toVirtualFile() = project
-      .service<WorkspaceModel>()
-      .getVirtualFileUrlManager()
-      .let { Path(this).toVirtualFileUrl(it) }
-      .virtualFile
-      .let(::checkNotNull)
+    catch (e: Throwable) {
+      addSuppressedException(e)
+    }
+    finally {
+      super.tearDown()
+    }
   }
+
+  private fun String.toVirtualFile() = project
+    .service<WorkspaceModel>()
+    .getVirtualFileUrlManager()
+    .let { Path(this).toVirtualFileUrl(it) }
+    .virtualFile
+    .let(::checkNotNull)
 }
 
 private fun TelemetryManager.Companion.provideNoopTelemetryManager() {

@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.redcodes
 
-import org.jetbrains.bazel.test.framework.BazelSyncCodeInsightTestCase
+import org.jetbrains.bazel.test.framework.BazelSyncCodeInsightFixtureTestCase
 
-class KotlinModuleInternalManglingTest : BazelSyncCodeInsightTestCase() {
+class KotlinModuleInternalManglingTest : BazelSyncCodeInsightFixtureTestCase() {
 
   fun testNoErrors() {
     myFixture.copyDirectoryToProject("redcodes/kotlin_module_internal_mangling", "")

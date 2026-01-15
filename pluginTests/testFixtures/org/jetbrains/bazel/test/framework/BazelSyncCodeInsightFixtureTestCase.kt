@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.test.framework
 
 import com.intellij.testFramework.UsefulTestCase
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
+import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 
 /**
  * Base class for tests that require a sync.
@@ -11,14 +13,20 @@ import com.intellij.testFramework.UsefulTestCase
  * - Sync operations require real filesystem access.
  * - Reproducing redcode issues often involves multiple modules, which are only allowed in heavy tests.
  */
-abstract class BazelSyncCodeInsightTestCase : UsefulTestCase() {
+abstract class BazelSyncCodeInsightFixtureTestCase : UsefulTestCase() {
 
   protected lateinit var myFixture: BazelSyncCodeInsightTestFixture
     private set
 
   override fun setUp() {
     super.setUp()
-    myFixture = BazelSyncCodeInsightTestFixture(name = javaClass.getName() + "." + name)
+    val projectBuilder = IdeaTestFixtureFactory
+      .getFixtureFactory()
+      .createFixtureBuilder(javaClass.getName() + "." + name)
+    myFixture = BazelSyncCodeInsightTestFixtureImpl(
+      projectFixture = projectBuilder.fixture,
+      tempDirTestFixture = TempDirTestFixtureImpl(),
+    )
     myFixture.setUp()
   }
 
