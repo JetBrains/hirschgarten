@@ -33,7 +33,9 @@ abstract class LocalJvmRunnerAction(
   text: () -> String,
   icon: Icon? = null,
   private val isDebugMode: Boolean = false,
-) : BaseRunnerAction(listOf(targetInfo), text, icon, isDebugMode) {
+) : BaseRunnerAction(text, icon, isDebugMode) {
+  override fun getBuildTargets(project: Project): List<BuildTarget> = listOf(targetInfo)
+
   abstract suspend fun getEnvironment(project: Project): JvmEnvironmentItem?
 
   override suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings? {

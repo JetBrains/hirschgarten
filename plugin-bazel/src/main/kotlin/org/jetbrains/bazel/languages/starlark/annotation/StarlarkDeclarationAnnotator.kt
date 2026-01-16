@@ -53,7 +53,11 @@ class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
 
   private fun PsiElement.isTopLevelFunction() = this is StarlarkFunctionDeclaration && isTopLevel()
 
-  private fun isNotUsage(element: PsiElement) = element.parent.reference?.resolve() == null
+  private fun isNotUsage(element: PsiElement): Boolean {
+    // StarlarkTargetExpression is always a declaration (assignment target, loop variable)
+    if (element.parent is StarlarkTargetExpression) return true
+    return element.parent.reference?.resolve() == null
+  }
 
   private fun AnnotationHolder.annotateUnused(element: PsiElement, name: String) =
     newAnnotation(

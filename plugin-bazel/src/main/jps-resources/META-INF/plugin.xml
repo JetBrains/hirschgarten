@@ -213,8 +213,20 @@
                     interface="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver"
                     dynamic="true"
     />
-
+    <extensionPoint qualifiedName="org.jetbrains.bazel.syntheticRunTargetTemplateGenerator"
+                    dynamic="true"
+                    beanClass="com.intellij.lang.LanguageExtensionPoint">
+      <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
+    </extensionPoint>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.buildTargetLanguageInferenceContributor"
+                    interface="org.jetbrains.bazel.target.lang.BuildTargetLangInferenceContributor"
+                    dynamic="true"/>
   </extensionPoints>
+
+  <projectListeners>
+    <listener topic="com.intellij.execution.ExecutionListener"
+              class="org.jetbrains.bazel.run.synthetic.SyntheticRunExecutionListener"/>
+  </projectListeners>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
@@ -436,10 +448,28 @@
       key="bazel.run.config.run.with.bazel"
       restartRequired="false"
     />
+    <registryKey
+      defaultValue="true"
+      description="If true, IDEA will run Bazel commands in a pseudo-terminal, providing more rich formatting and progress reporting"
+      key="bazel.use.pty"
+      restartRequired="true"
+    />
+
+    <registryKey defaultValue="false"
+                 description="Enable running non-binary bazel targets using synthetically generated targets"
+                 key="bazel.run.synthetic.enable"
+                 restartRequired="true"
+    />
+    <registryKey defaultValue="false"
+                 description="Disable bazel visibility checks when running syhthetic binary targets"
+                 key="bazel.run.synthetic.disable.visibility.check"
+                 restartRequired="false"
+    />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider"/>
 
     <projectService
       serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"

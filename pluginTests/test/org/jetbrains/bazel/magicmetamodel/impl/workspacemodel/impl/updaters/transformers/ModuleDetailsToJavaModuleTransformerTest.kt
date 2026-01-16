@@ -4,7 +4,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
@@ -143,8 +142,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library",
-            ruleType = RuleType.LIBRARY,
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
       )
@@ -165,7 +164,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         rootType = SourceRootTypeId("java-resource"),
       )
 
-    val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion, javacOptions = emptyList())
+    val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion, javacOptions = listOf("opt1", "opt2", "opt3"))
 
     val expectedJavaModule =
       JavaModule(
@@ -197,8 +196,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         kotlincOptions = listOf(),
         associates =
           listOf(
-            Label.parse("//target4"),
-            Label.parse("//target5"),
+            Label.parse("module4"),
+            Label.parse("module5"),
           ),
         jvmBuildTarget =
           JvmBuildTarget(
@@ -243,7 +242,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         jvmBinaryJars = emptyList(),
       )
 
-    val targetsMap = listOf(buildTargetId.toString(), "module2", "module3").toDefaultTargetsMap()
+    val targetsMap = listOf(buildTargetId.toString(), "module2", "module3", "module4", "module5").toDefaultTargetsMap()
 
     // when
     val javaModule =
@@ -266,13 +265,13 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         associates =
           listOf(
-            "//target4",
-            "//target5",
+            "module4.module4",
+            "module5.module5",
           ),
         kind =
           TargetKind(
-            kindString = "java_library",
-            ruleType = RuleType.LIBRARY,
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
       )
@@ -293,8 +292,13 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           KotlinAddendum(
             languageVersion = kotlinBuildTarget.languageVersion,
             apiVersion = kotlinBuildTarget.apiVersion,
+            moduleName = kotlinBuildTarget.moduleName,
             kotlincOptions = kotlinBuildTarget.kotlincOptions,
           ),
+        javaAddendum = JavaAddendum(
+          languageVersion = javaVersion,
+          javacOptions = emptyList(),
+        ),
       )
 
     validateJavaModule(javaModule, expectedJavaModule)
@@ -498,8 +502,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library",
-            ruleType = RuleType.LIBRARY,
+            kindString = "java_test",
+            ruleType = RuleType.TEST,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
       )
@@ -701,18 +705,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
   }
 
   private fun validateJavaModule(actual: JavaModule, expected: JavaModule) {
-    validateModule(actual.genericModuleInfo, expected.genericModuleInfo)
-
-    actual.baseDirContentRoot shouldBe expected.baseDirContentRoot
-    actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
-    actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
-    actual.jvmJdkName shouldBe expected.jvmJdkName
-  }
-
-  private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {
-    actual.name shouldBe expected.name
-    actual.type shouldBe expected.type
-    actual.dependencies shouldBe expected.dependencies
+    actual shouldBe expected
   }
 }
 

@@ -17,8 +17,6 @@ import org.jetbrains.bazel.languages.starlark.lexer.StarlarkIndentingLexer
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 
 class StarlarkParserDefinition : ParserDefinition {
-  private val file = IFileElementType(StarlarkLanguage)
-
   override fun createLexer(project: Project?): Lexer = StarlarkIndentingLexer()
 
   override fun createParser(project: Project?): PsiParser = StarlarkParser()
@@ -35,3 +33,5 @@ class StarlarkParserDefinition : ParserDefinition {
 
   override fun createFile(viewProvider: FileViewProvider): PsiFile = StarlarkFile(viewProvider)
 }
+
+private val file = IFileElementType(StarlarkLanguage)

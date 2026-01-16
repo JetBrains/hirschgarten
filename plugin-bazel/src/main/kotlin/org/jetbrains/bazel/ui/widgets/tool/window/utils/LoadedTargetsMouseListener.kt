@@ -14,12 +14,15 @@ import com.intellij.psi.PsiElement
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetUtils
 import org.jetbrains.bazel.runnerAction.BazelRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
+import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
@@ -191,6 +194,14 @@ fun DefaultActionGroup.fillWithEligibleActions(
     )
   }
 
+  if (BazelFeatureFlags.syntheticRunEnable) {
+    if (target.kind.ruleType == RuleType.LIBRARY) {
+      if (callerPsiElement != null) {
+        addSyntheticRunActions(target, callerPsiElement, includeTargetNameInText, canBeDebugged)
+      }
+    }
+  }
+
   if (project.bazelJVMProjectSettings.enableLocalJvmActions && kind.isJvmTarget()) {
     if (kind.ruleType == RuleType.BINARY) {
       addAction(RunWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
@@ -205,6 +216,35 @@ fun DefaultActionGroup.fillWithEligibleActions(
     }
   }
   return this
+}
+
+private fun DefaultActionGroup.addSyntheticRunActions(
+  target: BuildTarget,
+  element: PsiElement,
+  includeTargetNameInText: Boolean,
+  canBeDebugged: Boolean,
+) {
+  val language = element.language
+  for (generator in SyntheticRunTargetUtils.getTemplateGenerators(target, language)) {
+      val action = RunSyntheticTargetAction(
+        target = target,
+        isDebugAction = false,
+        includeTargetNameInText = includeTargetNameInText,
+        templateGenerator = generator,
+        targetElement = element,
+      )
+      addAction(action)
+      if (canBeDebugged) {
+        val action = RunSyntheticTargetAction(
+          target = target,
+          isDebugAction = true,
+          includeTargetNameInText = includeTargetNameInText,
+          templateGenerator = generator,
+          targetElement = element,
+        )
+        addAction(action)
+      }
+    }
 }
 
 private fun DefaultActionGroup.addLocalJvmTestActions(

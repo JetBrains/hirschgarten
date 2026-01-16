@@ -17,8 +17,6 @@ import org.jetbrains.bazel.languages.bazelquery.lexer.BazelQueryLexer
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFile
 
 class BazelQueryParserDefinition : ParserDefinition {
-  private val file = IFileElementType(BazelQueryLanguage)
-
   override fun createLexer(project: Project?): Lexer = BazelQueryLexer()
 
   override fun createParser(project: Project?): PsiParser =
@@ -38,3 +36,5 @@ class BazelQueryParserDefinition : ParserDefinition {
 
   override fun createFile(viewProvider: FileViewProvider): PsiFile = BazelQueryFile(viewProvider)
 }
+
+private val file = IFileElementType(BazelQueryLanguage)

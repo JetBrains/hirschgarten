@@ -37,6 +37,9 @@ class BazelRunConfiguration internal constructor(
   var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
 
+  var doVisibilityCheck: Boolean = true
+    private set
+
   override fun checkConfiguration() {
     val utils = project.targetUtils
     val selectedTargets = targets.map {
@@ -67,6 +70,15 @@ class BazelRunConfiguration internal constructor(
     val provider = runHandlerProvider ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, newTargets)
     if (provider == null) return
     updateHandlerIfDifferentProvider(provider)
+  }
+
+  fun updateRunProvider(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider) {
+    targets = newTargets
+    updateHandler(runHandlerProvider)
+  }
+
+  fun disableVisibilityCheck() {
+    doVisibilityCheck = false
   }
 
   private var handlerProvider: RunHandlerProvider? = null
@@ -145,6 +157,8 @@ class BazelRunConfiguration internal constructor(
       val newProvider = RunHandlerProvider.getRunHandlerProvider(project, this.targets)
       updateHandlerIfDifferentProvider(newProvider)
     }
+
+    doVisibilityCheck = bspElement.getAttributeValue(CHECK_VISIBILITY_ATTR)?.toBoolean() ?: true
   }
 
   // TODO: ideally we'd use an existing serialization mechanism like https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html
@@ -190,6 +204,8 @@ class BazelRunConfiguration internal constructor(
       val handlerState = Element(HANDLER_STATE_TAG)
       handler.state.writeExternal(handlerState)
       addContent(handlerState)
+
+      setAttribute(CHECK_VISIBILITY_ATTR, doVisibilityCheck.toString())
     }
   }
 
@@ -198,6 +214,7 @@ class BazelRunConfiguration internal constructor(
     private const val BSP_STATE_TAG = "bsp-state"
     private const val HANDLER_STATE_TAG = "handler-state"
     private const val HANDLER_PROVIDER_ATTR = "handler-provider-id"
+    private const val CHECK_VISIBILITY_ATTR = "check-visibility"
 
     // Used in BazelRerunFailedTestsAction
     public val BAZEL_RUN_CONFIGURATION_KEY = Key.create<BazelRunConfiguration>("BAZEL_RUN_CONFIGURATION_KEY")
