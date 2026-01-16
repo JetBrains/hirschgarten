@@ -79,9 +79,6 @@ internal abstract class StorageContextKVStoreTest : StorageContextContractTest()
     block: KVStoreTestContext<K, V>.() -> Unit,
   ) {
     val ctx = KVStoreTestContext(name, testCase, hints)
-    ctx.open {
-      clear()
-    }
     block(ctx)
   }
 
