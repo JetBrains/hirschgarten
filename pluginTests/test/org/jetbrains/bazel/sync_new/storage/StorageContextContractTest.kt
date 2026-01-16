@@ -5,15 +5,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.testFramework.LightPlatformTestCase
+import com.intellij.testFramework.junit5.fixture.TestFixtures
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.runBlocking
 
+@TestFixtures
 internal abstract class StorageContextContractTest {
-  companion object {
-    private val tempDir = tempPathFixture()
-    private val project = projectFixture(tempDir, openAfterCreation = true)
-  }
+  private val tempDir = tempPathFixture()
+  private val project = projectFixture(tempDir, openAfterCreation = true)
 
   protected abstract fun createStorageContext(project: Project, disposable: Disposable): StorageContext
 
