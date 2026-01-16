@@ -33,6 +33,10 @@ class BazelSyncCodeInsightTestFixtureImpl(
   tempDirTestFixture: TempDirTestFixture,
 ) : CodeInsightTestFixtureImpl(projectFixture, tempDirTestFixture), BazelSyncCodeInsightTestFixture {
 
+  init {
+    testDataPath = BazelPathManager.testProjectsRoot.pathString
+  }
+
   override fun performBazelSync() {
     runWithModalProgressBlocking(project, "Syncing project...") {
       ProjectSyncTask(project).sync(SecondPhaseSync, true)
@@ -41,7 +45,6 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override fun setUp() {
     super.setUp()
-    testDataPath = BazelPathManager.testDataRoot.pathString
     project.bazelProjectProperties.rootDir = virtualFileOf(tempDirPath)
     BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
     TelemetryManager.provideNoopTelemetryManager()
