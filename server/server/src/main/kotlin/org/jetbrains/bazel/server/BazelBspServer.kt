@@ -9,7 +9,6 @@ import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.BazelServices
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
-import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
@@ -23,6 +22,7 @@ import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
 
 class BazelBspServer(
@@ -34,12 +34,22 @@ class BazelBspServer(
   fun bspServerData(
     bspClientLogger: BspClientLogger,
     bazelRunner: BazelRunner,
-    compilationManager: BazelBspCompilationManager,
+    workspaceRoot: Path,
+    client: JoinedBuildClient,
     bazelInfo: BazelInfo,
     workspaceContext: WorkspaceContext,
     featureFlags: FeatureFlags,
     bazelPathsResolver: BazelPathsResolver,
   ): BazelServices {
+    val executeService =
+      ExecuteService(
+        project = project,
+        workspaceRoot = workspaceRoot,
+        client = client,
+        bazelRunner = bazelRunner,
+        workspaceContext = workspaceContext,
+        bazelPathsResolver = bazelPathsResolver,
+      )
     val projectProvider =
       createProjectProvider(
         bspInfo = bspInfo,
@@ -48,7 +58,7 @@ class BazelBspServer(
         featureFlags = featureFlags,
         bazelRunner = bazelRunner,
         bazelPathsResolver = bazelPathsResolver,
-        compilationManager = compilationManager,
+        executeService = executeService,
         bspClientLogger = bspClientLogger,
       )
     val bspProjectMapper =
@@ -59,15 +69,6 @@ class BazelBspServer(
     val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper()
     val projectSyncService =
       ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo, workspaceContext)
-    val executeService =
-      ExecuteService(
-        project = project,
-        compilationManager = compilationManager,
-        projectProvider = projectProvider,
-        bazelRunner = bazelRunner,
-        workspaceContext = workspaceContext,
-        bazelPathsResolver = bazelPathsResolver,
-      )
 
     return BazelServices(
       projectSyncService,
@@ -87,7 +88,7 @@ class BazelBspServer(
     featureFlags: FeatureFlags,
     bazelRunner: BazelRunner,
     bazelPathsResolver: BazelPathsResolver,
-    compilationManager: BazelBspCompilationManager,
+    executeService: ExecuteService,
     bspClientLogger: BspClientLogger,
   ): ProjectProvider {
     val aspectsResolver =
@@ -97,7 +98,7 @@ class BazelBspServer(
 
     val bazelBspAspectsManager =
       BazelBspAspectsManager(
-        bazelBspCompilationManager = compilationManager,
+        executeService = executeService,
         aspectsResolver = aspectsResolver,
         bazelRelease = bazelInfo.release,
       )

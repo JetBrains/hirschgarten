@@ -14,6 +14,7 @@ import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.io.IOException
@@ -40,7 +41,7 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
 data class RulesetLanguage(val rulesetName: String?, val language: Language)
 
 class BazelBspAspectsManager(
-  private val bazelBspCompilationManager: BazelBspCompilationManager,
+  private val executeService: ExecuteService,
   private val aspectsResolver: InternalAspectsResolver,
   private val bazelRelease: BazelRelease,
 ) {
@@ -217,12 +218,11 @@ class BazelBspAspectsManager(
 
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags + syncFlags
 
-    return bazelBspCompilationManager
+    return executeService
       .buildTargetsWithBep(
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
         originId = originId,
-        environment = emptyList(),
         shouldLogInvocation = shouldLogInvocation,
         workspaceContext = workspaceContext,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }

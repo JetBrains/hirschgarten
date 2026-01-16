@@ -437,7 +437,7 @@
 
     <registryKey
       defaultValue="true"
-      description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overriden with a project view flag."
+      description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overridden with a project view flag."
       key="bazel.run.config.run.with.bazel"
       restartRequired="false"
     />
@@ -445,6 +445,12 @@
       defaultValue="true"
       description="If true, IDEA will run Bazel commands in a pseudo-terminal, providing more rich formatting and progress reporting"
       key="bazel.use.pty"
+      restartRequired="true"
+    />
+    <registryKey
+      defaultValue="false"
+      description="If true, IDEA will terminate Bazel server daemon if the bazel process was cancelled"
+      key="bazel.kill.server.on.cancel"
       restartRequired="true"
     />
 

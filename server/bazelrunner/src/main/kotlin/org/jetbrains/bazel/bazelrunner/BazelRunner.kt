@@ -131,7 +131,6 @@ class BazelRunner(
     command: BazelCommand,
     originId: String? = null,
     logProcessOutput: Boolean = true,
-    serverPidFuture: CompletableFuture<Long>? = null,
     shouldLogInvocation: Boolean = true,
   ): BazelProcess {
     val executionDescriptor = command.buildExecutionDescriptor()
@@ -160,7 +159,6 @@ class BazelRunner(
     return BazelProcess(
       process,
       outputLogger,
-      serverPidFuture,
       finishCallback,
     )
   }

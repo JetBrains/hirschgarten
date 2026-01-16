@@ -13,14 +13,15 @@ import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.io.path.deleteExisting
 
-class BepReader(private val bepServer: BepServer) {
+class BepReader(val bepServer: BepServer) {
   val eventFile =
     Files.createTempFile("bazel-bep-output", null).toFile().also {
       it.setFilePermissions()
     }
-  val serverPid = CompletableFuture<Long>()
+  val serverPid = AtomicLong(0)
 
   private val bazelBuildFinished: AtomicBoolean = AtomicBoolean(false)
   private val logger: Logger = LoggerFactory.getLogger(BepReader::class.java)
@@ -70,8 +71,8 @@ class BepReader(private val bepServer: BepServer) {
   }
 
   private fun setServerPid(event: BuildEventStreamProtos.BuildEvent) {
-    if (event.hasStarted() && !serverPid.isDone) {
-      serverPid.complete(event.started.serverPid)
+    if (event.hasStarted()) {
+      serverPid.compareAndSet(0, event.started.serverPid)
     }
   }
 

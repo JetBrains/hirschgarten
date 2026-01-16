@@ -7,7 +7,6 @@ import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.BazelBspServer
 import org.jetbrains.bazel.server.bsp.BspServerApi
 import org.jetbrains.bazel.server.bsp.info.BspInfo
-import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -26,13 +25,12 @@ suspend fun startServer(
   val bazelRunner = BazelRunner(bspClientLogger, bspServer.workspaceRoot)
   val bazelInfo = bspServer.createBazelInfo(bazelRunner, workspaceContext)
   val bazelPathsResolver = BazelPathsResolver(bazelInfo)
-  val compilationManager =
-    BazelBspCompilationManager(project, bazelRunner, bazelPathsResolver, client, bspServer.workspaceRoot)
   val services =
     bspServer.bspServerData(
       bspClientLogger,
       bazelRunner,
-      compilationManager,
+      bspServer.workspaceRoot,
+      client,
       bazelInfo,
       workspaceContext,
       featureFlags,
