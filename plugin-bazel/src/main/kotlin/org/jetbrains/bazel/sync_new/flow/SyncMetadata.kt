@@ -18,6 +18,9 @@ import java.nio.file.Path
 data class SyncMetadata(
   @field:Tag(1)
   val configHash: HashValue128,
+
+  @field:Tag(2)
+  val bazelVersion: String?,
 )
 
 @SealedTagged
