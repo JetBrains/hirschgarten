@@ -102,7 +102,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
       commandToRun.options.add(flag.value)
     }
 
-    val startedProcess = bazelRunner.runBazelCommand(commandToRun, serverPidFuture = null)
+    val startedProcess = bazelRunner.runBazelCommand(commandToRun)
     currentProcessCancelled.set(false)
     currentProcess.set(startedProcess)
   }

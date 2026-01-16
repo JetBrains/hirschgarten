@@ -4,9 +4,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
-import org.jetbrains.bazel.startup.IntellijSpawnedProcess
-import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -16,15 +13,10 @@ import kotlin.coroutines.cancellation.CancellationException
 private val isWindows = System.getProperty("os.name").lowercase().contains("windows")
 
 class OutputProcessorTest {
-  @Before
-  fun setUp() {
-    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
-  }
-
   @Test
   fun `cancelling waitForExit kills the process`() {
     val process = startHangingProcess()
-    val proc = AsyncOutputProcessor(IntellijSpawnedProcess(process), OutputCollector())
+    val proc = AsyncOutputProcessor(process, OutputCollector())
 
     process.isAlive shouldBe true
     shouldThrow<CancellationException> {
@@ -46,7 +38,7 @@ class OutputProcessorTest {
     val process = startHangingProcess()
     val serverProcess = startHangingProcess()
     val serverPidFuture = CompletableFuture.completedFuture(serverProcess.pid())
-    val proc = AsyncOutputProcessor(IntellijSpawnedProcess(process), OutputCollector())
+    val proc = AsyncOutputProcessor(process, OutputCollector())
 
     process.isAlive shouldBe true
     serverProcess.isAlive shouldBe true
@@ -71,7 +63,7 @@ class OutputProcessorTest {
     val process = startQuickProcess()
     val serverProcess = startHangingProcess()
     val serverPidFuture = CompletableFuture.completedFuture(serverProcess.pid())
-    val proc = AsyncOutputProcessor(IntellijSpawnedProcess(process), OutputCollector())
+    val proc = AsyncOutputProcessor(process, OutputCollector())
 
     serverProcess.isAlive shouldBe true
     val exitCode =

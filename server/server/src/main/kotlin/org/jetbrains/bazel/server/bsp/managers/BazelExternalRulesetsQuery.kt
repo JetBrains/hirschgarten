@@ -88,7 +88,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
             }
           }
 
-        runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
+        runBazelCommand(command, logProcessOutput = false)
           .waitAndGetResult(ensureAllOutputRead = true)
           .let { result ->
             if (result.isNotSuccess) {
@@ -147,8 +147,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
         .runBazelCommand(
           command,
           originId = originId,
-          logProcessOutput = false,
-          serverPidFuture = null,
+          logProcessOutput = false
         ).waitAndGetResult(ensureAllOutputRead = true)
         .let { result ->
           if (result.isNotSuccess) {

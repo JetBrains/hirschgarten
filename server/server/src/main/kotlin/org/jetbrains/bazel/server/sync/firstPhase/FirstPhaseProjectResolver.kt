@@ -32,7 +32,7 @@ class FirstPhaseProjectResolver(
           }
         }
 
-      val bazelProcess = bazelRunner.runBazelCommand(command, serverPidFuture = null, logProcessOutput = false, originId = originId)
+      val bazelProcess = bazelRunner.runBazelCommand(command, logProcessOutput = false, originId = originId)
       val inputStream = bazelProcess.process.inputStream
 
       val targets = generateSequence { Target.parseDelimitedFrom(inputStream) }

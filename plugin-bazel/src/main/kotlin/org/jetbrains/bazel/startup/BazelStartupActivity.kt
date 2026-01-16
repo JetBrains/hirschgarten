@@ -9,14 +9,10 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
-import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
-import org.jetbrains.bazel.commons.FileUtil
-import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
-import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
@@ -31,17 +27,6 @@ import kotlin.io.path.isDirectory
 private val log = logger<BazelStartupActivity>()
 
 /**
- * Initializes the Bazel sync environment (TelemetryManager, ProcessSpawner, etc.).
- * Must be called before running any sync operations.
- */
-fun initializeBazelSyncEnvironment() {
-  ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
-  TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-  SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
-  FileUtil.provideFileUtil(FileUtilIntellij)
-}
-
-/**
  * Runs actions after the project has started up and the index is up to date.
  *
  * @see org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor for additional actions that
@@ -49,7 +34,6 @@ fun initializeBazelSyncEnvironment() {
  */
 class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
-    initializeBazelSyncEnvironment()
     log.info("Executing Bazel startup activity for project: $project")
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
     try {

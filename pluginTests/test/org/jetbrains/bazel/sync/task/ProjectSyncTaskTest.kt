@@ -4,7 +4,6 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPreSyncHook
@@ -12,10 +11,7 @@ import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
-import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.server.connection.BazelServerService
-import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
-import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -55,10 +51,6 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
       ),
       disposable,
     )
-
-    // Initialize ProcessSpawner and TelemetryManager
-    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
-    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
 
     // pre-sync hooks
     val preSyncHook = TestProjectPreSyncHook()

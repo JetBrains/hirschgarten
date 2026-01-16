@@ -15,6 +15,7 @@
  */
 package org.jetbrains.bazel.commons
 
+import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.ConsistentCopyVisibility
@@ -76,8 +77,7 @@ data class WorkspacePath private constructor(private val path: Path) {
     private const val BAZEL_COMPONENT_SEPARATOR = '/'
 
     private fun normalizePathSeparator(relativePath: String): String {
-      val systemInfoProvider = SystemInfoProvider.getInstance()
-      return if (systemInfoProvider.isWindows) relativePath.replace('\\', BAZEL_COMPONENT_SEPARATOR) else relativePath
+      return if (SystemInfo.isWindows) relativePath.replace('\\', BAZEL_COMPONENT_SEPARATOR) else relativePath
     }
 
     private fun validateAndCreatePath(relativePath: String): Path {

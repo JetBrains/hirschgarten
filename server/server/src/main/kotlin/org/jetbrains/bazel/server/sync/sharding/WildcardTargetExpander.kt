@@ -98,7 +98,7 @@ object WildcardTargetExpander {
       }
     val queryResult =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null, shouldLogInvocation = false)
+        .runBazelCommand(command, logProcessOutput = false, shouldLogInvocation = false)
         .waitAndGetResult(ensureAllOutputRead = true)
     return ExpandedTargetsResult(
       singleTargets = queryResult.stdoutLines.mapTo(LinkedHashSet()) { Label.parse(it) },
