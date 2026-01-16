@@ -37,6 +37,7 @@ import org.rocksdb.ReusedSynchronisationType
 import org.rocksdb.RocksDB
 import org.rocksdb.WriteOptions
 import java.nio.ByteBuffer
+import java.nio.file.Files
 import kotlin.io.path.absolutePathString
 
 class RocksdbStorageContext(
@@ -128,6 +129,7 @@ class RocksdbStorageContext(
       )
 
     val dbPath = project.getProjectDataPath("bazel-rocksdb.db")
+    Files.createDirectories(dbPath.parent)
     val familyNames = RocksDB.listColumnFamilies(options, dbPath.absolutePathString()).ifEmpty { listOf(RocksDB.DEFAULT_COLUMN_FAMILY) }
     val cfDescriptors = familyNames.map { ColumnFamilyDescriptor(it, ColumnFamilyOptions()) }
     val cfHandles = mutableListOf<ColumnFamilyHandle>()
