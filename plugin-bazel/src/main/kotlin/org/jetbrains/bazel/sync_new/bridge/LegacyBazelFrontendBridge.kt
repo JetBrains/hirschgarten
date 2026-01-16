@@ -18,7 +18,6 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsParams
 object LegacyBazelFrontendBridge {
   suspend fun fetchRepoMapping(project: Project): SyncRepoMapping {
     val mapping = project.connection.runWithServer { server -> server.workspaceComputeBazelRepoMapping() }.repoMapping
-    // apparentRepoNameToCanonicalName
     return when (mapping) {
       is BzlmodRepoMapping -> {
         val apparentToCanonical = BidirectionalMap<String, String>()
