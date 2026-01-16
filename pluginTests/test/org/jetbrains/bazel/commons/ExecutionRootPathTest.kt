@@ -9,21 +9,11 @@ import java.nio.file.Path
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
-import org.jetbrains.bazel.startup.FileUtilIntellij
-import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
-import org.junit.jupiter.api.BeforeAll
 import org.mockito.Mockito
 
 class ExecutionRootPathTest {
 
   companion object {
-    @BeforeAll
-    @JvmStatic
-    fun setup() {
-      SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
-      FileUtil.provideFileUtil(FileUtilIntellij)
-    }
-
     private fun createMockDirectory(path: String): Path {
       val org = Path.of(path)
       val spy: Path = Mockito.spy(org)

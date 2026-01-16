@@ -124,7 +124,7 @@ class ExecuteService(
           originId = params.originId,
           serverPidFuture = bepReader.serverPid,
         ).also {
-          params.pidDeferred?.complete(it.process.pid)
+          params.pidDeferred?.complete(it.process.pid())
         }.waitAndGetResult()
       }
     return RunResult(statusCode = bazelProcessResult.bazelStatus, originId = params.originId)

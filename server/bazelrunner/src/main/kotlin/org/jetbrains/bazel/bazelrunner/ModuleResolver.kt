@@ -105,7 +105,7 @@ class ModuleResolver(
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command, serverPidFuture = null)
+        .runBazelCommand(command)
         .waitAndGetResult(true)
     return moduleOutputParser.parseShowRepoResults(processResult)
   }
@@ -131,7 +131,7 @@ class ModuleResolver(
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command, serverPidFuture = null)
+        .runBazelCommand(command)
         .waitAndGetResult(true)
 
     if (processResult.isNotSuccess) {

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -13,7 +14,6 @@ import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
-import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
@@ -298,7 +298,7 @@ class ProjectResolver(
         buildBazelCommand(workspaceContext) {
           shutDown()
         }
-      runBazelCommand(command, serverPidFuture = null)
+      runBazelCommand(command)
         .waitAndGetResult()
     }
   }
@@ -309,7 +309,7 @@ class ProjectResolver(
         buildBazelCommand(workspaceContext) {
           run(gazelleTarget)
         }
-      runBazelCommand(command, serverPidFuture = null)
+      runBazelCommand(command)
         .waitAndGetResult()
     }
   }

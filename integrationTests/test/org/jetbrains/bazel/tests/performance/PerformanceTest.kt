@@ -33,9 +33,6 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openBspToolWindow
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
-import org.jetbrains.bazel.performance.telemetry.TelemetryManager
-import org.jetbrains.bazel.startup.IntellijTelemetryManager
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -71,11 +68,6 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
       isReusable = true,
       configureProjectBeforeUse = BazelProjectConfigurer::configureProjectBeforeUse,
     )
-  }
-
-  @BeforeEach
-  fun setUp() {
-    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
   }
 
   @Test

@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.util.SystemInfo
 import com.jediterm.core.util.TermSize
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -133,7 +133,6 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
 
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
-      var finishCallback: () -> Unit = {}
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
@@ -144,16 +143,18 @@ abstract class BazelCommand(val bazelBinary: String) {
       val targetPatternFile = prepareTargetPatternFile()
       // https://bazel.build/reference/command-line-reference#flag--target_pattern_file
       commandLine.add("--target_pattern_file=$targetPatternFile")
-      finishCallback = {
-        try {
-          Files.deleteIfExists(targetPatternFile)
-        }
-        catch (e: IOException) {
-          log.warn("Failed to delete target pattern file", e)
-        }
-      }
 
-      return BazelCommandExecutionDescriptor(commandLine, finishCallback)
+      return BazelCommandExecutionDescriptor(
+        commandLine,
+        finishCallback = {
+          try {
+            Files.deleteIfExists(targetPatternFile)
+          }
+          catch (e: IOException) {
+            log.warn("Failed to delete target pattern file", e)
+          }
+        },
+      )
     }
 
     fun prepareTargetPatternFile(): Path {
@@ -261,7 +262,6 @@ abstract class BazelCommand(val bazelBinary: String) {
   class Query(
     bazelBinary: String,
     private val allowManualTargetsSync: Boolean,
-    private val systemInfoProvider: SystemInfoProvider,
   ) : BazelCommand(bazelBinary),
       HasMultipleTargets {
     override val targets: MutableList<Label> = mutableListOf()
@@ -292,7 +292,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
 
     private fun excludeManualTargetsQueryString(targetString: String): String =
-      if (systemInfoProvider.isWindows) {
+      if (SystemInfo.isWindows) {
         "attr('tags', '^((?!manual).)*$', $targetString)"
       }
       else {

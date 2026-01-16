@@ -6,14 +6,9 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.commons.FileUtil
-import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.startup.FileUtilIntellij
-import org.jetbrains.bazel.startup.IntellijSystemInfoProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.junit.jupiter.api.Assertions.fail
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import kotlin.io.path.Path
@@ -85,13 +80,6 @@ fun splitOfTargetPattern(cmds : List<String>) : Pair<List<String>, List<String>>
 }
 
 class BazelRunnerBuilderTest {
-  @BeforeEach
-  fun beforeEach() {
-    // Initialize providers for tests
-    SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
-    FileUtil.provideFileUtil(FileUtilIntellij)
-  }
-
   @Test
   fun `most bare bones build without targets`() {
     val command =
