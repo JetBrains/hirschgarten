@@ -143,7 +143,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="rocksdb.rocksdbjni" level="project" />
-    <orderEntry type="library" name="esotericsoftware.kryo.kryo6" level="project" />
     <orderEntry type="library" name="esotericsoftware.kryo.kryo5" level="project" />
     <orderEntry type="module-library">
       <library>
