@@ -48,6 +48,7 @@ import kotlin.time.Duration.Companion.minutes
  * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/performance --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
  * ```
  */
+// @PerformanceUnitTest
 class PerformanceTest : IdeStarterBaseProjectTest() {
   private fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
