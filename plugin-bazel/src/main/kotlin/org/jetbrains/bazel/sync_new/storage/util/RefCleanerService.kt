@@ -47,7 +47,7 @@ class RefCleanerService : RefCloser, Disposable {
   private fun task() {
     while (running && !Thread.interrupted()) {
       try {
-        val ref = refQueue.remove() as? CloseableRef
+        val ref = refQueue.remove(100) as? CloseableRef
         if (ref != null) {
           ref.closer()
           synchronized(refs) {
