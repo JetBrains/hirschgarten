@@ -2,7 +2,8 @@ package org.jetbrains.bazel.bazelrunner
 
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
-import org.jetbrains.bazel.bazelrunner.outputs.spawnProcessBlocking
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
@@ -15,17 +16,10 @@ import kotlin.io.path.pathString
 
 /**
  * Runs Bazel commands with proper repository configuration.
- *
- * @param bazelInfo Required for determining correct repository injection method.
- *                  When bazelInfo is available, BazelRunner can choose between
- *                  --inject_repository (newer, preferred) vs --override_repository (fallback)
- *                  based on Bazel version and bzlmod support. Without bazelInfo,
- *                  repository injection may fail in newer Bazel versions.
  */
 class BazelRunner(
   private val bspClientLogger: BspClientLogger?,
   val workspaceRoot: Path,
-  var bazelInfo: BazelInfo? = null,
 ) {
   companion object {
     private val LOGGER = LoggerFactory.getLogger(BazelRunner::class.java)
@@ -104,15 +98,23 @@ class BazelRunner(
     val commandBuilder = CommandBuilder(workspaceContext)
     val command = doBuild(commandBuilder)
 
-    // These options are the same as in Google's Bazel plugin for IntelliJ
-    // They make the output suitable for display in the console
-    command.options.addAll(
-      listOf(
-        "--curses=no",
-        "--color=yes",
-        "--noprogress_in_terminal_title",
-      ),
-    )
+    if (command.ptyTermSize != null) {
+      command.options.addAll(
+        listOf(
+          curses(true),
+          color(true),
+        ),
+      )
+    }
+    else {
+      command.options.addAll(
+        listOf(
+          curses(false),
+          color(true),
+          "--noprogress_in_terminal_title",
+        ),
+      )
+    }
 
     inheritProjectviewOptionsOverride?.let {
       commandBuilder.inheritWorkspaceOptions = it
@@ -125,13 +127,12 @@ class BazelRunner(
     return command
   }
 
-  fun runBazelCommand(
+  suspend fun runBazelCommand(
     command: BazelCommand,
     originId: String? = null,
     logProcessOutput: Boolean = true,
     serverPidFuture: CompletableFuture<Long>?,
     shouldLogInvocation: Boolean = true,
-    createdProcessIdDeferred: CompletableDeferred<Long?>? = null,
   ): BazelProcess {
     val executionDescriptor = command.buildExecutionDescriptor()
     val finishCallback = executionDescriptor.finishCallback
@@ -150,13 +151,13 @@ class BazelRunner(
 
     val process =
       processSpawner
-        .spawnProcessBlocking(
+        .spawnProcess(
           command = processArgs,
           environment = environment,
           redirectErrorStream = false,
           workDirectory = workspaceRoot.toString(),
+          ptyTermSize = command.ptyTermSize,
         )
-    createdProcessIdDeferred?.complete(process.pid)
 
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
 

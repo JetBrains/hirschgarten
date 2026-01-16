@@ -89,7 +89,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
   // Starts a process which evaluates a given query.
   // Result is valid for one call of waitAndGetResult() and another evaluation cannot be called
   // before a result of previous is received.
-  fun orderEvaluation(command: String, flags: List<BazelFlag>) {
+  suspend fun orderEvaluation(command: String, flags: List<BazelFlag>) {
     if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
 
     val commandToRun =

@@ -16,7 +16,6 @@ object BazelJarBuildTarget {
     listOf(
       "intellij.bazel.commons",
       "intellij.bazel.protobuf",
-      "intellij.bazel.server",
       "intellij.bazel.kotlin.k2",
     )
 

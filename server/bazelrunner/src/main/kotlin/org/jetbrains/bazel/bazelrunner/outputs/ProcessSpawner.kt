@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
+import com.jediterm.core.util.TermSize
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -11,6 +12,7 @@ interface ProcessSpawner {
     environment: Map<String, String>,
     redirectErrorStream: Boolean,
     workDirectory: String?,
+    ptyTermSize: TermSize?,
   ): SpawnedProcess
 
   /**
@@ -39,21 +41,3 @@ interface ProcessSpawner {
     }
   }
 }
-
-/**
- * Spawns a process and waits for it to complete
- */
-fun ProcessSpawner.spawnProcessBlocking(
-  command: List<String>,
-  environment: Map<String, String>,
-  redirectErrorStream: Boolean,
-  workDirectory: String? = null,
-): SpawnedProcess =
-  runBlocking {
-    spawnProcess(
-      command = command,
-      environment = environment,
-      redirectErrorStream = redirectErrorStream,
-      workDirectory = workDirectory,
-    )
-  }
