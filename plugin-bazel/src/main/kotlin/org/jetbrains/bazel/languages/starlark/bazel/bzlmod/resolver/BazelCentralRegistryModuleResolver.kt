@@ -49,46 +49,46 @@ class BazelCentralRegistryModuleResolver : BazelModuleResolver {
 
   private suspend fun fetchModuleNamesFromRegistry(): List<String>? =
     try {
-      withContext(Dispatchers.IO) {
-        val json = performHttpRequest(githubApiUrl)
-        gson
-          .fromJson(json, Array<GitHubContent>::class.java)
-          // Note: the GitHub endpoint can return various item types (dir, file, symlink, submodule).
-          // Modules are directories, so we explicitly filter only type == "dir".
-          .filter { it.type == "dir" }
-          .map { it.name }
-          .sorted()
-      }
-    } catch (_: IOException) {
+      val json = performHttpRequest(githubApiUrl)
+      gson
+        .fromJson(json, Array<GitHubContent>::class.java)
+        // Note: the GitHub endpoint can return various item types (dir, file, symlink, submodule).
+        // Modules are directories, so we explicitly filter only type == "dir".
+        .filter { it.type == "dir" }
+        .map { it.name }
+        .sorted()
+    } catch (e: IOException) {
+      log.warn(StarlarkBundle.message("bzlmod.warning.fetching.module.names", e))
       null
     }
 
   private suspend fun fetchModuleVersionsFromRegistry(moduleName: String): List<String>? =
     try {
-      withContext(Dispatchers.IO) {
-        val url = "$githubApiUrl/$moduleName/metadata.json"
-        val json = performHttpRequest(url)
-        val file = gson.fromJson(json, GitHubFileContent::class.java)
-        val decoded =
-          if (file.content != null && file.encoding == "base64") {
-            String(Base64.getMimeDecoder().decode(file.content))
-          } else {
-            log.warn(StarlarkBundle.message("bzlmod.warning.encoding", moduleName))
-            return@withContext null
-          }
-        val metadata = gson.fromJson(decoded, ModuleMetadata::class.java)
-        metadata.versions?.toList()?.reversed()
-      }
-    } catch (_: IOException) {
+      val url = "$githubApiUrl/$moduleName/metadata.json"
+      val json = performHttpRequest(url)
+      val file = gson.fromJson(json, GitHubFileContent::class.java)
+      val decoded =
+        if (file.content != null && file.encoding == "base64") {
+          String(Base64.getMimeDecoder().decode(file.content))
+        } else {
+          log.warn(StarlarkBundle.message("bzlmod.warning.encoding", moduleName))
+          return null
+        }
+      val metadata = gson.fromJson(decoded, ModuleMetadata::class.java)
+      metadata.versions?.toList()?.reversed()
+    } catch (e: IOException) {
+      log.warn(StarlarkBundle.message("bzlmod.warning.fetching.module.versions", moduleName, e))
       null
     }
 
-  private fun performHttpRequest(url: String): String =
-    HttpRequests
-      .request(url)
-      .accept("application/vnd.github.v3+json")
-      .productNameAsUserAgent()
-      .readString()
+  private suspend fun performHttpRequest(url: String): String =
+    withContext(Dispatchers.IO) {
+      HttpRequests
+        .request(url)
+        .accept("application/vnd.github.v3+json")
+        .productNameAsUserAgent()
+        .readString()
+    }
 
   companion object {
     const val ID: String = "bcr"

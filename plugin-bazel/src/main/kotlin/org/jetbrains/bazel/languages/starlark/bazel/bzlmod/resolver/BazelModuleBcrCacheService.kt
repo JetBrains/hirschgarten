@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import kotlin.collections.component1
 import kotlin.collections.component2
 
@@ -42,35 +43,8 @@ class BazelModuleBcrCacheService(private val coroutineScope: CoroutineScope) :
   internal val cache: AsyncCache<String, CachedValue> =
     Caffeine
       .newBuilder()
-      .expireAfter(
-        object : Expiry<String, CachedValue> {
-          private fun getDuration(value: CachedValue): Long =
-            when (value) {
-              is CachedValue.Found -> (value.lastUpdated + CACHE_EVICTION_TIME) - System.nanoTime()
-              is CachedValue.Unavailable -> 0.0
-            } as Long
-
-          override fun expireAfterCreate(
-            key: String,
-            value: CachedValue,
-            currentTime: Long,
-          ): Long = getDuration(value)
-
-          override fun expireAfterUpdate(
-            key: String,
-            value: CachedValue,
-            currentTime: Long,
-            currentDuration: Long,
-          ): Long = getDuration(value)
-
-          override fun expireAfterRead(
-            key: String,
-            value: CachedValue,
-            currentTime: Long,
-            currentDuration: Long,
-          ): Long = currentDuration
-        },
-      ).executor { command -> ApplicationManager.getApplication().executeOnPooledThread(command) }
+      .expireAfter(expiry)
+      .executor { command -> ApplicationManager.getApplication().executeOnPooledThread(command) }
       .buildAsync()
 
   override fun getState(): CacheState =
@@ -115,7 +89,7 @@ class BazelModuleBcrCacheService(private val coroutineScope: CoroutineScope) :
    */
   private fun loadAsync(supplier: suspend () -> List<String>?): CompletableFuture<CachedValue> =
     coroutineScope.future {
-      supplier()?.let { CachedValue.Found(it, System.nanoTime()) }
+      supplier()?.let { CachedValue.Found(it, System.currentTimeMillis()) }
         ?: CachedValue.Unavailable
     }
 
@@ -124,7 +98,41 @@ class BazelModuleBcrCacheService(private val coroutineScope: CoroutineScope) :
   }
 
   companion object {
-    // 12h in nanoseconds
-    private const val CACHE_EVICTION_TIME = 12L * 60 * 60 * 1_000_000_000
+    private val CACHE_EVICTION_TIME = TimeUnit.HOURS.toMillis(12L)
+
+    /**
+     * Object to expire cached values after 12 hours.
+     * Does not reset between ide sessions.
+     */
+    private val expiry = object : Expiry<String, CachedValue> {
+      override fun expireAfterCreate(
+        key: String,
+        value: CachedValue,
+        currentTime: Long,
+      ): Long = getDuration(value)
+
+      override fun expireAfterUpdate(
+        key: String,
+        value: CachedValue,
+        currentTime: Long,
+        currentDuration: Long,
+      ): Long = getDuration(value)
+
+      override fun expireAfterRead(
+        key: String,
+        value: CachedValue,
+        currentTime: Long,
+        currentDuration: Long,
+      ): Long = currentDuration
+    }
+
+    private fun getDuration(value: CachedValue): Long = when (value) {
+      is CachedValue.Found -> {
+        val remaining = value.lastUpdated + CACHE_EVICTION_TIME - System.currentTimeMillis()
+        if (remaining <= 0) 0L
+        else TimeUnit.MILLISECONDS.toNanos(remaining)
+      }
+      is CachedValue.Unavailable -> 0L
+    }
   }
 }
