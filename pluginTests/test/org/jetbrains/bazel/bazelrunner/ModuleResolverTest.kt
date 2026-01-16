@@ -28,7 +28,7 @@ class ModuleResolverTest {
     shouldThrow<IllegalStateException> {
       moduleOutputParser.parseShowRepoResults(result)
     }.also {
-      it.message shouldBe "Failed to resolve module from bazel info. Bazel Info output:\n'$stderr\n'"
+      it.message shouldBe "Failed to resolve module from bazel info. Bazel Info output:\n'$stderr'"
     }
   }
 

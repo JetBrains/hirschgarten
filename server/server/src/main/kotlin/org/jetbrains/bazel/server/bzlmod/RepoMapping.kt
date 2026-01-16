@@ -5,7 +5,6 @@ import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.commons.BazelInfo
-import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -77,14 +76,9 @@ suspend fun calculateRepoMapping(
     moduleCanonicalNameToPath[canonicalName] = repoPath
   }
 
-  val apparentRepoNameToCanonicalName =
-    BidirectionalMap
-      .getTypedInstance<String, String>()
-      .apply { putAll(moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName) }
-
   return BzlmodRepoMapping(
     moduleCanonicalNameToLocalPath,
-    apparentRepoNameToCanonicalName,
+    moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
     moduleCanonicalNameToPath,
   )
 }

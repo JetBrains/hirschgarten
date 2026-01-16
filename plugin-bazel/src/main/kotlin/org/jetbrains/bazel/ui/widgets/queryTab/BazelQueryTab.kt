@@ -375,8 +375,14 @@ class BazelQueryTab(private val project: Project) : JPanel() {
 
     showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.in.progress"))
 
-    queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
-    SwingUtilities.invokeLater { setButtonsPanelToCancel() }
+    BazelCoroutineService
+      .getInstance(project)
+      .start {
+        queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
+      }.invokeOnCompletion {
+        SwingUtilities.invokeLater { setButtonsPanelToCancel() }
+      }
+
     var commandResults: BazelProcessResult? = null
     BazelCoroutineService
       .getInstance(project)

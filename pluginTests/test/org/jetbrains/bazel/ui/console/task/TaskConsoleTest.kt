@@ -10,10 +10,12 @@ import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
 import io.kotest.matchers.maps.shouldContainExactly
 import org.jetbrains.bazel.action.SuspendableAction
@@ -49,8 +51,12 @@ private data class TestableDiagnosticEvent(
     message,
   )
 
-private class MockProgressEventListener : BuildProgressListener {
+private class MockProgressEventListener(parent: Disposable) : BuildProgressListener, Disposable {
   val events: MutableMap<Any, List<TestableEvent>> = mutableMapOf()
+
+  init {
+    Disposer.register(parent, this)
+  }
 
   override fun onEvent(buildId: Any, event: BuildEvent) {
     addEvent(buildId, sanitizeEvent(event))
@@ -90,6 +96,8 @@ private class MockProgressEventListener : BuildProgressListener {
           eventToSanitize.message,
         )
     }
+
+  override fun dispose() {}
 }
 
 class TestTaskConsole(
@@ -109,12 +117,12 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
   @Test
   fun `should start the task, start 3 subtasks, put 2 messages and for each subtask and finish the task (the happy path)`() {
     // given
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
     // when
     val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
-    taskConsole.addMessage("task before start", "message before start - should be omitted")
+    taskConsole.addMessage("task before start", "message before start - should be omitted\n")
 
     taskConsole.startTask("task", "Task", "Testing...")
 
@@ -124,12 +132,12 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     taskConsole.finishSubtask("subtask 1", "Subtask 1 finished")
 
     taskConsole.startSubtask("task", "subtask 2", "Starting subtask 2")
-    taskConsole.addMessage("subtask 2", "message 3")
-    taskConsole.addMessage("subtask 2", "message 4")
+    taskConsole.addMessage("subtask 2", "message 3\n")
+    taskConsole.addMessage("subtask 2", "message 4\n")
 
     taskConsole.startSubtask("task", "subtask 3", "Starting subtask 3")
-    taskConsole.addMessage("subtask 3", "message 5")
-    taskConsole.addMessage("subtask 3", "message 6")
+    taskConsole.addMessage("subtask 3", "message 5\n")
+    taskConsole.addMessage("subtask 3", "message 6\n")
 
     taskConsole.finishSubtask("subtask 2", "Subtask 2 finished")
     taskConsole.finishSubtask("subtask 3", "Subtask 3 finished")
@@ -167,7 +175,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should start multiple processes and finish them`() {
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
 
     // when
@@ -203,7 +211,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should ignore invalid Task events`() {
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
 
     // when
@@ -228,28 +236,28 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should display messages correctly`() {
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
 
     // when
     val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
-    taskConsole.addMessage("task", "Message 0") // should be omitted - task not yet started
+    taskConsole.addMessage("task", "Message 0\n") // should be omitted - task not yet started
 
     taskConsole.startTask("task", "Task 1", "Task started")
     taskConsole.startSubtask("task", "subtask", "Subtask started")
 
     taskConsole.addMessage("task", "Message 1\n")
-    taskConsole.addMessage("task", "Message 2") // should add new line at the end
-    taskConsole.addMessage("subtask", "Message 3") // should send a copy the message to the subtask's parent
-    taskConsole.addMessage("nonexistent-task", "Message 4") // should be omitted - no such task
+    taskConsole.addMessage("task", "Message 2\n") // should add new line at the end
+    taskConsole.addMessage("subtask", "Message 3\n") // should send a copy the message to the subtask's parent
+    taskConsole.addMessage("nonexistent-task", "Message 4\n") // should be omitted - no such task
     taskConsole.addMessage("task", "") // should be omitted - empty message
     taskConsole.addMessage("task", "   \n  \t  ") // should be omitted - blank message
 
     taskConsole.finishSubtask("subtask", "Subtask finished")
     taskConsole.finishTask("task", "Task finished")
 
-    taskConsole.addMessage("task", "Message 7") // should be omitted - task already finished
+    taskConsole.addMessage("task", "Message 7\n") // should be omitted - task already finished
 
     // then
     buildProcessListener.events shouldContainExactly
@@ -279,7 +287,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
         "/home/directory/project/src/test/Start.kt"
       }
 
-    val diagnosticListener = MockProgressEventListener()
+    val diagnosticListener = MockProgressEventListener(disposable)
     val taskConsole = TestTaskConsole(diagnosticListener, basePath, project)
 
     // when
@@ -356,7 +364,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should finish subtasks when their root task is finished`() {
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
 
     // when
@@ -365,16 +373,16 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     taskConsole.startTask("root", "Root task", "Root started")
     taskConsole.startSubtask("root", "child", "Child")
     taskConsole.startSubtask("child", "grandchild", "Grandchild")
-    taskConsole.addMessage("child", "Message 1")
-    taskConsole.addMessage("grandchild", "Message 2")
+    taskConsole.addMessage("child", "Message 1\n")
+    taskConsole.addMessage("grandchild", "Message 2\n")
     taskConsole.finishTask("root", "Root finished")
 
     // starting a different root task, under similar ID
     taskConsole.startTask("root", "Root task", "Root started")
 
     // messages should not be sent - the children's root task has been finished
-    taskConsole.addMessage("child", "Message 3")
-    taskConsole.addMessage("grandchild", "Message 4")
+    taskConsole.addMessage("child", "Message 3\n")
+    taskConsole.addMessage("grandchild", "Message 4\n")
 
     taskConsole.finishTask("root", "Root finished")
 
@@ -402,7 +410,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should start and finish nested subtasks`() {
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
 
     // when
@@ -436,7 +444,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should send nested subtask's messages to all its ancestors`() {
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
 
     // when
@@ -446,9 +454,9 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     taskConsole.startSubtask("subtask1", "subtask2", "Subtask 2 started")
     taskConsole.startSubtask("subtask2", "subtask3", "Subtask 3 started")
 
-    taskConsole.addMessage("subtask3", "Message 1")
-    taskConsole.addMessage("subtask1", "Message 2")
-    taskConsole.addMessage("root", "Message 3")
+    taskConsole.addMessage("subtask3", "Message 1\n")
+    taskConsole.addMessage("subtask1", "Message 2\n")
+    taskConsole.addMessage("root", "Message 3\n")
 
     taskConsole.finishSubtask("subtask3", "Subtask 3 finished")
     taskConsole.finishSubtask("subtask2", "Subtask 2 finished")
@@ -481,7 +489,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should finish subtasks when any of their ancestor subtasks is finished`() {
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
 
     // when
@@ -491,16 +499,16 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     taskConsole.startSubtask("root", "subtask1", "Subtask 1")
     taskConsole.startSubtask("subtask1", "subtask2", "Subtask 2")
     taskConsole.startSubtask("subtask2", "subtask3", "Subtask 3")
-    taskConsole.addMessage("subtask2", "Message 1")
-    taskConsole.addMessage("subtask3", "Message 2")
+    taskConsole.addMessage("subtask2", "Message 1\n")
+    taskConsole.addMessage("subtask3", "Message 2\n")
     taskConsole.finishSubtask("subtask1", "Subtask 1")
 
     // starting a different ancestor subtask, under similar ID
     taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
 
     // messages should not be sent - the children's ancestor subtask has been finished
-    taskConsole.addMessage("subtask2", "Message 3")
-    taskConsole.addMessage("subtask3", "Message 4")
+    taskConsole.addMessage("subtask2", "Message 3\n")
+    taskConsole.addMessage("subtask3", "Message 4\n")
 
     taskConsole.finishSubtask("subtask1", "Subtask 1 finished")
     taskConsole.finishTask("root", "Root finished")
@@ -534,7 +542,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
   @Test
   fun `should finish subtasks with starting message if a new message is not provided`() {
     // given
-    val buildProcessListener = MockProgressEventListener()
+    val buildProcessListener = MockProgressEventListener(disposable)
     val basePath = "/project/"
 
     // when

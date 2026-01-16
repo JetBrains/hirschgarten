@@ -143,6 +143,7 @@ private class ScriptPathBuildTargetTask(
          * Environment variables are not written into the generated run script by Bazel, so they are handled by [runWithScriptPath].
          */
         environmentVariables = null,
+        checkVisibility = true,
       )
     return server.buildTargetRun(params).statusCode
   }

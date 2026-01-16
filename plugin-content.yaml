@@ -3,12 +3,11 @@
   - name: intellij.bazel.plugin
   - name: intellij.bazel.commons
   - name: intellij.bazel.protobuf
-  - name: intellij.bazel.server
 - name: lib/jackson-dataformat-xml.jar
   library: jackson-dataformat-xml
   files:
   - name: $MAVEN_REPOSITORY$/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2/jackson-dataformat-xml-2.jar
-  reason: <- intellij.bazel.server
+  reason: <- intellij.bazel.plugin
 - name: lib/modules/intellij.bazel.kotlin.k2.jar
   contentModules:
   - name: intellij.bazel.kotlin.k2

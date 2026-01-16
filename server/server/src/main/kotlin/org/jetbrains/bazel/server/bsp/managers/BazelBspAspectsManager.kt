@@ -2,8 +2,6 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
-import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
-import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bazel.commons.BazelInfo
@@ -213,8 +211,6 @@ class BazelBspAspectsManager(
         aspect(aspectsResolver.resolveLabel(aspect)),
         outputGroups(outputGroups),
         keepGoing(),
-        color(true),
-        curses(false),
       )
     val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
     val syncFlags = workspaceContext.syncFlags

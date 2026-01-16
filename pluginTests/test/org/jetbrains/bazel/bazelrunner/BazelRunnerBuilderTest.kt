@@ -74,7 +74,7 @@ val mockBazelInfo =
   )
 
 val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot)
-val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelInfo)
+val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot)
 
 fun splitOfTargetPattern(cmds : List<String>) : Pair<List<String>, List<String>> {
   cmds.indexOf("--") shouldBe -1

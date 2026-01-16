@@ -1,30 +1,30 @@
 package org.jetbrains.bazel.languages.starlark.globbing
 
 import com.google.common.base.Splitter
-import com.google.common.base.Throwables
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.collect.Lists
-import com.google.common.collect.Ordering
-import com.google.common.collect.Sets
-import com.google.common.util.concurrent.ForwardingListenableFuture
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.SettableFuture
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.checkCanceled
+import com.intellij.openapi.progress.runBlockingCancellable
+import com.intellij.openapi.project.ProjectLocator
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
-import java.io.IOException
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Future
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicReference
+import com.intellij.platform.ide.progress.ModalTaskOwner
+import com.intellij.platform.ide.progress.TaskCancellation
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import com.intellij.util.concurrency.annotations.RequiresBlockingContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
-import kotlin.concurrent.Volatile
 
 /**
  * Implementation of a subset of UNIX-style file globbing, expanding "*" and "?" as wildcards, but
@@ -37,18 +37,6 @@ import kotlin.concurrent.Volatile
  * Largely copied from old Bazel plugin's UnixGlob.java
  */
 object StarlarkGlob {
-  @Throws(IOException::class, InterruptedException::class)
-  private fun globInternal(
-    base: VirtualFile,
-    patterns: MutableCollection<String>,
-    excludeDirectories: Boolean,
-    dirPred: Predicate<VirtualFile>,
-    threadPool: ThreadPoolExecutor?,
-  ): Set<VirtualFile> {
-    val visitor = if (threadPool == null) GlobVisitor() else GlobVisitor(threadPool)
-    return visitor.glob(base, patterns, excludeDirectories, dirPred)
-  }
-
   /**
    * Checks that each pattern is valid, splits it into segments and checks that each segment
    * contains only valid wildcards.
@@ -71,7 +59,8 @@ object StarlarkGlob {
   fun matches(pattern: String, str: String): Boolean =
     try {
       matches(pattern, str, null)
-    } catch (_: PatternSyntaxException) {
+    }
+    catch (_: PatternSyntaxException) {
       false
     }
 
@@ -151,7 +140,8 @@ object StarlarkGlob {
             if (len > i + 2 && pattern[i + 2] == '/') {
               // We have '**/' -- skip the '/'.
               toIncrement = 2
-            } else if (len == i + 2 && i > 0 && pattern[i - 1] == '/') {
+            }
+            else if (len == i + 2 && i > 0 && pattern[i - 1] == '/') {
               // We have '/**' -- remove the '/'.
               regexp.delete(regexp.length - 1, regexp.length)
             }
@@ -180,13 +170,7 @@ object StarlarkGlob {
     private val patterns: MutableList<String> = ArrayList()
     private val excludes: MutableList<String> = ArrayList()
     private var excludeDirectories = false
-    private var pathFilter: Predicate<VirtualFile>
-    private var threadPool: ThreadPoolExecutor? = null
-
-    /** Creates a glob builder with the given base path.  */
-    init {
-      this.pathFilter = Predicate { file: VirtualFile? -> true }
-    }
+    private var pathFilter: Predicate<VirtualFile> = Predicate { true }
 
     /**
      * Adds a pattern to include to the glob builder.
@@ -229,16 +213,6 @@ object StarlarkGlob {
     }
 
     /**
-     * Sets the threadpool to use for parallel glob evaluation. If unset, evaluation is done
-     * in-thread.
-     */
-    @Suppress("unused")
-    fun setThreadPool(pool: ThreadPoolExecutor?): Builder {
-      this.threadPool = pool
-      return this
-    }
-
-    /**
      * If set, the given predicate is called for every directory encountered. If it returns false,
      * the corresponding item is not returned in the output and directories are not traversed
      * either.
@@ -250,45 +224,43 @@ object StarlarkGlob {
 
     /**
      * Executes the glob.
-     *
-     * @throws InterruptedException if the thread is interrupted.
      */
-    @Throws(IOException::class, InterruptedException::class)
+    @RequiresBlockingContext
     fun glob(): List<VirtualFile> {
-      val included = globInternal(base, patterns, excludeDirectories, pathFilter, threadPool)
-      val excluded = globInternal(base, excludes, excludeDirectories, pathFilter, threadPool)
-      val files = included - excluded
-      return Ordering
-        .from(Comparator.comparing(VirtualFile::getPath))
-        .immutableSortedCopy<VirtualFile>(files.toList())
-    }
-  }
+      if (!base.exists() || patterns.isEmpty()) {
+        return emptyList()
+      }
 
-  /** Adapts the result of the glob visitation as a Future.  */
-  private class GlobFuture(private val visitor: GlobVisitor) : ForwardingListenableFuture<MutableSet<VirtualFile>>() {
-    private val delegate: SettableFuture<MutableSet<VirtualFile>> = SettableFuture.create()
+      // If called on EDT, use modal progress to avoid freezing the UI completely.
+      if (ApplicationManager.getApplication().isDispatchThread) {
+        val project = ProjectLocator.getInstance().guessProjectForFile(base)
+        val owner = project?.let { ModalTaskOwner.project(it) } ?: ModalTaskOwner.guess()
+        return runWithModalProgressBlocking(
+          owner,
+          StarlarkBundle.message("progress.globbing"),
+          TaskCancellation.cancellable(),
+        ) {
+          globSuspend()
+        }
+      }
 
-    @Throws(InterruptedException::class, ExecutionException::class)
-    override fun get(): MutableSet<VirtualFile> = super.get()
-
-    override fun delegate(): ListenableFuture<MutableSet<VirtualFile>> = delegate
-
-    fun setException(exception: IOException) {
-      delegate.setException(exception)
-    }
-
-    fun set(paths: MutableSet<VirtualFile>) {
-      delegate.set(paths)
+      return runBlockingCancellable {
+        globSuspend()
+      }
     }
 
-    override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
-      // Best-effort interrupt of the in-flight visitation.
-      visitor.cancel()
-      return true
-    }
+    suspend fun globSuspend(): List<VirtualFile> {
+      if (!base.exists() || patterns.isEmpty()) {
+        return emptyList()
+      }
+      checkCanceled()
 
-    fun markCanceled() {
-      super.cancel(true)
+      val included = GlobVisitor(excludeDirectories, pathFilter)
+        .globAsync(base, patterns)
+      val excluded = GlobVisitor(excludeDirectories, pathFilter)
+        .globAsync(base, excludes)
+
+      return (included - excluded).sortedBy { it.path }
     }
   }
 
@@ -296,9 +268,10 @@ object StarlarkGlob {
    * GlobVisitor executes a glob using parallelism, which is useful when the glob() requires many
    * readdir() calls on high latency filesystems.
    */
-  private class GlobVisitor(private val executor: ThreadPoolExecutor? = null) {
-    // These collections are used across workers and must therefore be thread-safe.
-    private val results: MutableSet<VirtualFile> = Sets.newConcurrentHashSet()
+  private class GlobVisitor(
+    private val excludeDirectories: Boolean,
+    private val dirPred: Predicate<VirtualFile>,
+  ) {
     private val cache: Cache<String, Pattern> =
       CacheBuilder
         .newBuilder()
@@ -307,13 +280,7 @@ object StarlarkGlob {
             override fun load(wildcard: String): Pattern = makePatternFromWildcard(wildcard)
           },
         )
-
-    private val result: GlobFuture = GlobFuture(this)
-    private val pendingOps = AtomicLong(0)
-    private val failure = AtomicReference<IOException?>()
-
-    @Volatile
-    private var canceled = false
+    private val results: MutableSet<VirtualFile> = ConcurrentHashMap.newKeySet()
 
     /**
      * Performs wildcard globbing: returns the sorted list of filenames that match any of `patterns` relative to `base`. Directories are traversed if and only if they match
@@ -330,127 +297,28 @@ object StarlarkGlob {
      * exclude pattern segment contains `**` or if any include pattern segment
      * contains `**` but not equal to it.
      */
-    @Throws(IOException::class, InterruptedException::class)
-    fun glob(
+    suspend fun globAsync(
       base: VirtualFile,
       patterns: Collection<String>,
-      excludeDirectories: Boolean,
-      dirPred: Predicate<VirtualFile>,
     ): Set<VirtualFile> {
-      try {
-        return globAsync(base, patterns, excludeDirectories, dirPred).get()!!
-      } catch (e: ExecutionException) {
-        val cause = e.cause
-        if (cause != null) {
-          Throwables.throwIfInstanceOf(cause, IOException::class.java)
-        }
-        throw RuntimeException(e)
-      }
-    }
-
-    @Throws(IOException::class)
-    fun globAsync(
-      base: VirtualFile,
-      patterns: Collection<String>,
-      excludeDirectories: Boolean,
-      dirPred: Predicate<VirtualFile>,
-    ): Future<MutableSet<VirtualFile>> {
-      if (!base.exists() || patterns.isEmpty()) {
-        return Futures.immediateFuture(mutableSetOf())
-      }
-      val baseIsDirectory = base.isDirectory
+      val baseIsDirectory = readAction { base.isDirectory }
 
       // We do a dumb loop, even though it will likely duplicate work
       // (e.g., readdir calls). In order to optimize, we would need
       // to keep track of which patterns shared sub-patterns and which did not
       // (for example consider the glob [*/*.java, sub/*.java, */*.txt]).
-      pendingOps.incrementAndGet()
-      try {
-        for (splitPattern in checkAndSplitPatterns(patterns)) {
-          queueGlob(
-            base,
-            baseIsDirectory,
-            splitPattern,
-            0,
-            excludeDirectories,
-            results,
-            cache,
-            dirPred,
-          )
-        }
-      } finally {
-        decrementAndCheckDone()
-      }
-
-      return result
-    }
-
-    @Throws(IOException::class)
-    fun queueGlob(
-      base: VirtualFile,
-      baseIsDirectory: Boolean,
-      patternParts: Array<String>,
-      idx: Int,
-      excludeDirectories: Boolean,
-      results: MutableCollection<VirtualFile>,
-      cache: Cache<String, Pattern>,
-      dirPred: Predicate<VirtualFile>,
-    ) {
-      enqueue {
-        try {
-          reallyGlob(
-            base,
-            baseIsDirectory,
-            patternParts,
-            idx,
-            excludeDirectories,
-            results,
-            cache,
-            dirPred,
-          )
-        } catch (e: IOException) {
-          failure.set(e)
-        }
-      }
-    }
-
-    fun enqueue(r: Runnable) {
-      pendingOps.incrementAndGet()
-
-      val wrapped =
-        Runnable {
-          try {
-            if (!canceled && failure.get() == null) {
-              r.run()
-            }
-          } finally {
-            decrementAndCheckDone()
+      return coroutineScope {
+        checkAndSplitPatterns(patterns).forEach { splitPattern ->
+          launch {
+            reallyGlob(
+              base,
+              baseIsDirectory,
+              splitPattern,
+              0,
+            )
           }
         }
-
-      if (executor == null) {
-        wrapped.run()
-      } else {
-        executor.execute(wrapped)
-      }
-    }
-
-    fun cancel() {
-      this.canceled = true
-    }
-
-    fun decrementAndCheckDone() {
-      if (pendingOps.decrementAndGet() == 0L) {
-        // We get to 0 iff we are done all the relevant work. This is because we always increment
-        // the pending ops count as we're enqueuing, and don't decrement until the task is complete
-        // (which includes accounting for any additional tasks that one enqueues).
-        if (canceled) {
-          result.markCanceled()
-        } else if (failure.get() != null) {
-          result.setException(failure.get()!!)
-        } else {
-          result.set(results)
-        }
+        results
       }
     }
 
@@ -460,21 +328,16 @@ object StarlarkGlob {
      * <pre>
      * reallyGlob base []     = { base }
      * reallyGlob base [x:xs] = union { reallyGlob(f, xs) | f results "base/x" }
-     </pre> *
+    </pre> *
      */
-    @Throws(IOException::class)
-    fun reallyGlob(
+    suspend fun CoroutineScope.reallyGlob(
       base: VirtualFile,
       baseIsDirectory: Boolean,
       patternParts: Array<String>,
       idx: Int,
-      excludeDirectories: Boolean,
-      results: MutableCollection<VirtualFile>,
-      cache: Cache<String, Pattern>,
-      dirPred: Predicate<VirtualFile>,
     ) {
-      ProgressManager.checkCanceled()
-      if (baseIsDirectory && !dirPred.test(base)) {
+      checkCanceled()
+      if (baseIsDirectory && !readAction { dirPred.test(base) }) {
         return
       }
 
@@ -495,76 +358,70 @@ object StarlarkGlob {
       // ** is special: it can match nothing at all.
       // For example, x/** matches x, **/y matches y, and x/**/y matches x/y.
       if ("**" == pattern) {
-        queueGlob(
-          base,
-          baseIsDirectory,
-          patternParts,
-          idx + 1,
-          excludeDirectories,
-          results,
-          cache,
-          dirPred,
-        )
+        launch {
+          reallyGlob(
+            base,
+            baseIsDirectory,
+            patternParts,
+            idx + 1,
+          )
+        }
       }
 
       if (!pattern.contains("*") && !pattern.contains("?")) {
-        val child = base.findChild(pattern)
-        if (child == null) return
-        val childIsDir = child.isDirectory
-        if (!childIsDir && !child.isFile) {
+        checkCanceled()
+        val (child, childIsDir, childIsFile) = readAction {
+          val child = base.findChild(pattern) ?: return@readAction null
+          Triple(child, child.isDirectory, child.isFile)
+        } ?: return
+        if (!childIsDir && !childIsFile) {
           // The file is a dangling symlink, fifo, does not exist, etc.
           return
         }
-
-        queueGlob(
-          child,
-          childIsDir,
-          patternParts,
-          idx + 1,
-          excludeDirectories,
-          results,
-          cache,
-          dirPred,
-        )
+        launch {
+          reallyGlob(
+            child,
+            childIsDir,
+            patternParts,
+            idx + 1,
+          )
+        }
         return
       }
 
-      val children = getChildren(base)
-      if (children == null) {
-        return
-      }
-      for (child in children) {
-        val childIsDir = child.isDirectory
+      val childrenSnapshots = readAction {
+        ProgressManager.checkCanceled()
+        val children = getChildren(base) ?: return@readAction null
+        children.map { child -> Triple(child, child.name, child.isDirectory) }
+      } ?: return
 
-        if ("**" == pattern) {
+      for ((child, childName, childIsDir) in childrenSnapshots) {
+        checkCanceled()
+
+        if ("**" == pattern && childIsDir) {
           // Recurse without shifting the pattern.
-          if (childIsDir) {
-            queueGlob(
+          launch {
+            reallyGlob(
               child,
               childIsDir,
               patternParts,
               idx,
-              excludeDirectories,
-              results,
-              cache,
-              dirPred,
             )
           }
         }
-        if (matches(pattern, child.name, cache)) {
+        if (matches(pattern, childName, cache)) {
           // Recurse and consume one segment of the pattern.
           if (childIsDir) {
-            queueGlob(
-              child,
-              childIsDir,
-              patternParts,
-              idx + 1,
-              excludeDirectories,
-              results,
-              cache,
-              dirPred,
-            )
-          } else {
+            launch {
+              reallyGlob(
+                child,
+                childIsDir,
+                patternParts,
+                idx + 1,
+              )
+            }
+          }
+          else {
             // Instead of using an async call, just repeat the base case above.
             if (idx + 1 == patternParts.size) {
               results.add(child)

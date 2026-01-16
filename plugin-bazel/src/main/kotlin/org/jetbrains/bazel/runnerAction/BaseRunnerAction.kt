@@ -22,7 +22,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
 public abstract class BaseRunnerAction(
-  private val buildTargets: List<BuildTarget>,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
@@ -33,13 +32,15 @@ public abstract class BaseRunnerAction(
   ) {
   protected abstract suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings?
 
+  protected abstract fun getBuildTargets(project: Project): List<BuildTarget>
+
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     doPerformAction(project)
   }
 
   suspend fun doPerformAction(project: Project) {
     try {
-      val settings = getRunnerSettings(project, buildTargets) ?: return
+      val settings = getRunnerSettings(project, this.getBuildTargets(project)) ?: return
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
       val executor = getExecutor()
       val runner = ProgramRunner.getRunner(executor.id, settings.configuration)

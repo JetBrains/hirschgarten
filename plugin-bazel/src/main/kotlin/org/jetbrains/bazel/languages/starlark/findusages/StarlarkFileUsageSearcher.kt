@@ -90,24 +90,14 @@ class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParamete
     val excludeArgument = arguments.filterIsInstance<StarlarkNamedArgumentExpression>().firstOrNull { it.name == "exclude" }
     val excludePatterns = excludeArgument?.let { extractPatterns(it) } ?: emptyList()
 
-    return try {
-      if (globBuilder
-        .addPatterns(includePatterns)
-        .addExcludes(excludePatterns)
-        .glob()
-        .contains(file.virtualFile)
-      ) {
-        PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file)
-      } else {
-        null
-      }
-    } catch (e: IOException) {
-      Logger.getInstance(StarlarkGlob::class.java).warn(e.message)
-      null
-    } catch (_: InterruptedException) {
-      Thread.currentThread().interrupt()
-      null
+    val files = globBuilder
+      .addPatterns(includePatterns)
+      .addExcludes(excludePatterns)
+      .glob()
+    if (!files.contains(file.virtualFile)) {
+      return null
     }
+    return PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file)
   }
 
   private fun buildNewLabelContent(oldContent: String, newFilename: String): String {

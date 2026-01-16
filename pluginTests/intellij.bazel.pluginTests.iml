@@ -33,7 +33,6 @@
     <orderEntry type="module" module-name="intellij.android.jps.model" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.commons" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.server" scope="TEST" />
     <orderEntry type="module" module-name="intellij.devkit.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.go.frontback" scope="TEST" />
     <orderEntry type="module" module-name="intellij.go.impl" scope="TEST" />
@@ -175,5 +174,6 @@
     <orderEntry type="library" scope="TEST" name="grpc-stub" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.test" />
     <orderEntry type="library" name="esotericsoftware.kryo.kryo5" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.jediterm.core" />
   </component>
 </module>

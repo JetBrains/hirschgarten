@@ -4,8 +4,10 @@ import com.google.common.base.Throwables.getStackTraceAsString
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.FilePosition
+import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.EventResult
 import com.intellij.build.events.MessageEvent
+import com.intellij.build.events.OutputBuildEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.FileMessageEventImpl
 import com.intellij.build.events.impl.FinishBuildEventImpl
@@ -15,14 +17,24 @@ import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
+import com.intellij.terminal.TerminalExecutionConsole
+import com.intellij.terminal.TerminalExecutionConsoleBuilder
+import com.jediterm.core.util.TermSize
+import com.jediterm.terminal.TtyConnector
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.sync.status.SyncStatusListener
@@ -44,6 +56,7 @@ abstract class TaskConsole(
   protected val tasksInProgress: MutableList<Any> = mutableListOf()
   private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
   private val subtaskMessageMap: MutableMap<Any, String> = linkedMapOf()
+  private val taskPtyTerminalMap: MutableMap<Any, TerminalExecutionConsole> = linkedMapOf()
 
   /**
    * Displays start of a task in this console.
@@ -83,14 +96,14 @@ abstract class TaskConsole(
   ) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
     taskDescriptor.isActivateToolWindowWhenAdded = true
-    addRedoActionToTheDescriptor(taskDescriptor, redoAction)
-    addCancelActionToTheDescriptor(taskId, taskDescriptor, cancelAction)
-
+    addRedoActionToDescriptor(taskDescriptor, redoAction)
+    addCancelActionToDescriptor(taskId, taskDescriptor, cancelAction)
+    addPtyToDescriptor(taskId, taskDescriptor)
     val startEvent = StartBuildEventImpl(taskDescriptor, message)
     taskView.onEvent(taskId, startEvent)
   }
 
-  private fun addCancelActionToTheDescriptor(
+  private fun addCancelActionToDescriptor(
     taskId: Any,
     taskDescriptor: DefaultBuildDescriptor,
     doCancelAction: () -> Unit,
@@ -99,9 +112,53 @@ abstract class TaskConsole(
     taskDescriptor.withAction(cancelAction)
   }
 
-  private fun addRedoActionToTheDescriptor(taskDescriptor: DefaultBuildDescriptor, redoAction: (suspend () -> Unit)? = null) {
+  private fun addRedoActionToDescriptor(taskDescriptor: DefaultBuildDescriptor, redoAction: (suspend () -> Unit)? = null) {
     val action = calculateRedoAction(redoAction)
     taskDescriptor.withAction(action)
+  }
+
+  private fun addPtyToDescriptor(taskId: Any, taskDescriptor: DefaultBuildDescriptor) {
+    if (!BazelFeatureFlags.usePty) return
+    val consoleDelegate = TerminalExecutionConsoleBuilder(project).build()
+    val console = object : ConsoleView by consoleDelegate, BuildProgressListener {
+      override fun onEvent(buildId: Any, event: BuildEvent) {
+        if (event is OutputBuildEvent) {
+          consoleDelegate.print(event.message, ConsoleViewContentType.getConsoleViewType(event.outputType))
+        }
+      }
+    }
+    taskPtyTerminalMap[taskId] = consoleDelegate
+
+    val contentDescriptor = RunContentDescriptor(console, null, consoleDelegate.component, null)
+    Disposer.register(contentDescriptor, consoleDelegate)
+    Disposer.register(taskView as Disposable, contentDescriptor)
+
+    // TerminalExecutionConsoleBuilder expects a ProcessHandler, so we provide a stub because we handle process interaction in the server.
+    // See https://github.com/bazelbuild/intellij/pull/7001/files
+    val ttyConnector = object : TtyConnector, Disposable {
+      init {
+        Disposer.register(contentDescriptor, this)
+      }
+
+      private var connected: Boolean = true
+      override fun dispose() {
+        connected = false
+      }
+
+      override fun read(buf: CharArray?, offset: Int, length: Int): Int = 0
+      override fun write(bytes: ByteArray?) = Unit
+      override fun write(string: String?) = Unit
+      override fun isConnected(): Boolean = connected
+      override fun waitFor(): Int = 0
+      override fun ready(): Boolean = true
+      override fun getName(): String = ""
+      override fun close() = Unit
+      override fun resize(termSize: TermSize) = Unit
+    }
+
+    consoleDelegate.terminalWidget.createTerminalSession(ttyConnector)
+    consoleDelegate.terminalWidget.start()
+    taskDescriptor.withContentDescriptor { contentDescriptor }
   }
 
   protected abstract fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction
@@ -142,6 +199,7 @@ abstract class TaskConsole(
     finishChildrenSubtasks(taskId, result)
     tasksInProgress.remove(taskId)
     subtaskParentMap.entries.removeAll { it.value.rootTask == taskId }
+    taskPtyTerminalMap.remove(taskId)
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
     taskView.onEvent(taskId, event)
   }
@@ -335,6 +393,14 @@ abstract class TaskConsole(
     }
   }
 
+  private val DEFAULT_PTY_TERM_SIZE = TermSize(80, 24)
+
+  @Synchronized
+  fun ptyTermSize(taskId: Any): TermSize? {
+    val terminal = taskPtyTerminalMap[taskId] ?: return null
+    return terminal.terminalWidget.terminalPanel.terminalSizeFromComponent ?: DEFAULT_PTY_TERM_SIZE
+  }
+
   private val defaultTaskIds =
     listOf(
       BASE_PROJECT_SYNC_SUBTASK_ID,
@@ -345,9 +411,8 @@ abstract class TaskConsole(
   private fun getDefaultTaskId() = defaultTaskIds.firstOrNull { tasksInProgress.contains(it) }
 
   private fun doAddMessage(taskId: Any, message: String) {
-    val messageToSend = prepareTextToPrint(message)
-    sendMessageEvent(taskId, messageToSend)
-    sendMessageToAncestors(taskId, messageToSend)
+    sendMessageEvent(taskId, message)
+    sendMessageToAncestors(taskId, message)
   }
 
   private fun sendMessageToAncestors(taskId: Any, message: String): Unit =

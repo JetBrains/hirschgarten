@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.logger
 
-import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.MessageType
@@ -14,16 +13,8 @@ data class BspClientLogger(private val bspClient: JoinedBuildClient, private val
     log(MessageType.ERROR, errorMessage)
   }
 
-  fun message(format: String, vararg args: Any?) {
-    message(String.format(format, *args))
-  }
-
   fun message(message: String) {
     log(MessageType.LOG, message)
-  }
-
-  fun warn(format: String, vararg args: Any?) {
-    warn(String.format(format, *args))
   }
 
   fun warn(message: String) {
@@ -34,16 +25,18 @@ data class BspClientLogger(private val bspClient: JoinedBuildClient, private val
     bspClient.onBuildPublishDiagnostics(event)
   }
 
-  private fun log(messageType: MessageType, message: String) {
-    if (message.trim { it <= ' ' }.isNotEmpty()) {
-      val params = LogMessageParams(messageType, message = message, originId = originId)
-      bspClient.onBuildLogMessage(params)
-    }
+  fun messageWithoutNewLine(message: String) {
+    log(MessageType.LOG, message, addNewLine = false)
   }
 
-  fun logDuration(description: String, duration: Duration) {
-    if (duration >= LOG_OPERATION_THRESHOLD) {
-      message("Task '%s' completed in %s", description, Format.duration(duration))
+  private fun log(messageType: MessageType, message: String, addNewLine: Boolean = true) {
+    val messageWithNewLine = if (addNewLine && !message.endsWith('\n')) {
+      message + '\n'
     }
+    else {
+      message
+    }
+    val params = LogMessageParams(messageType, message = messageWithNewLine, originId = originId)
+    bspClient.onBuildLogMessage(params)
   }
 }

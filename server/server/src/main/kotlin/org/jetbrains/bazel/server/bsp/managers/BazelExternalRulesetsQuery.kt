@@ -4,8 +4,6 @@ import com.google.gson.JsonObject
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BidirectionalMap
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.AllRuleTargets
@@ -59,7 +57,6 @@ class BazelExternalRulesetsQueryImpl(
           isBzlModEnabled,
           bspClientLogger,
           workspaceContext,
-          repoMapping,
         ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             originId,
@@ -136,7 +133,6 @@ class BazelBzlModExternalRulesetsQueryImpl(
   private val isBzlModEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
-  private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   private val gson = bazelGson
 
@@ -146,8 +142,6 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
-    val apparelRepoNameToCanonicalName =
-      (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap.getTypedInstance()
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(
@@ -177,19 +171,16 @@ class BazelBzlModExternalRulesetsQueryImpl(
 
     return try {
       val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
-      val directDeps = graph.getAllDirectRulesetDependencies()
+      val directDependencyNames = graph.getAllDirectRulesetDependencyNames()
       val indirectDeps =
         rootRulesToNeededTransitiveRules
-          .filterKeys { it in directDeps }
-          .filter { it.value.any { transitiveDep -> graph.isIncludedTransitively(it.key, transitiveDep) } }
-          .values
-          .flatten()
+          .filterKeys { it in directDependencyNames }
+          .flatMap { it.value.flatMap { transitiveDep -> graph.includedByDirectDeps(it.key, transitiveDep) } }
 
-      fun toApparentName(canonicalRepoName: String) = apparelRepoNameToCanonicalName.getKeysByValue(canonicalRepoName)?.firstOrNull()
-      // this is important as bzlmod graph outputs canonical names, without the "+" or "~" to the end.
-      // i.e., @@rules_scala+ will be represented as rules_scala
-      // [BAZEL-2109](https://youtrack.jetbrains.com/issue/BAZEL-2109)
-      return (directDeps + indirectDeps).map { toApparentName("$it~") ?: toApparentName("$it+") ?: it }.distinct()
+      val directDepsApparentNames = graph.dependencies.map { it.apparentName }
+      val indirectDepsApparentNames = indirectDeps.map { it.apparentName }
+
+      return (directDepsApparentNames + indirectDepsApparentNames).distinct()
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()
@@ -203,20 +194,11 @@ class BazelBzlModExternalRulesetsQueryImpl(
 
 private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderr}"
 
-data class BzlmodDependency(val key: String, val dependencies: List<BzlmodDependency>) {
-  /**
-   * Extract dependency name from bzlmod dependency, where the raw format is `<DEP_NAME>@<DEP_VERSION>`.
-   *
-   * There were some issues with (empty) bzlmod projects and android, so the automatic mechanism ignores it.
-   * Use `enabled_rules` to enable `rules_android` instead.
-   */
-  fun toDependencyName(): String = key.substringBefore('@')
-}
+data class BzlmodDependency(val key: String, val name: String, val apparentName: String, val dependencies: List<BzlmodDependency>)
 
 data class BzlmodGraph(val dependencies: List<BzlmodDependency>) {
-  fun getAllDirectRulesetDependencies() = dependencies.map { it.toDependencyName() }
+  fun getAllDirectRulesetDependencyNames() = dependencies.map { it.name }
 
-  fun isIncludedTransitively(rootRulesetName: String, transitiveRulesetName: String): Boolean =
-    dependencies.find { it.toDependencyName() == rootRulesetName }?.dependencies?.any { it.toDependencyName() == transitiveRulesetName } ==
-      true
+  fun includedByDirectDeps(rootRulesetName: String, transitiveRulesetName: String): List<BzlmodDependency> =
+    dependencies.find { it.name == rootRulesetName }?.dependencies?.filter { it.name == transitiveRulesetName } ?: emptyList()
 }

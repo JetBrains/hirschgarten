@@ -24,7 +24,9 @@ class DiagnosticsParserImpl : DiagnosticsParser {
   }
 
   private fun prepareOutput(bazelOutput: String, target: Label): Output {
-    val lines = bazelOutput.lines()
+    val lines = bazelOutput.lines().map { line ->
+      line.replace(AnsiEscapeCode, "")
+    }
     val relevantLines = lines.filterNot { line -> IgnoredLines.any { it.matches(line) } }
     return Output(relevantLines, target)
   }
@@ -79,5 +81,6 @@ class DiagnosticsParserImpl : DiagnosticsParser {
         "^$".toRegex(),
         "Use --sandbox_debug to see verbose messages from the sandbox".toRegex(),
       )
+    private val AnsiEscapeCode = "\\u001B\\[[\\d;]*[^\\d;]".toRegex()
   }
 }

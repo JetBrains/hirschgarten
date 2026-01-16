@@ -8,6 +8,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syntheticRunTargetTemplateGenerator language="kotlin" implementationClass="org.jetbrains.bazel.kotlin.run.KotlinSyntheticRunTargetTemplateGenerator"/>
     <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook" />
     <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider" />
@@ -25,6 +26,7 @@
       implementation="org.jetbrains.bazel.jvm.run.KotlinShortNameTestLocatorProvider"
       order="before defaultJavaLocator"
     />
+    <buildTargetLanguageInferenceContributor implementation="org.jetbrains.bazel.kotlin.target.KotlinBuildTargetLangInferenceContributor"/>
     <syncVFSFileContributor implementation="org.jetbrains.bazel.sync_new.languages_impl.kotlin.vfs.KotlinSyncVFSFileContributor"/>
     <syncLanguagePlugin implementation="org.jetbrains.bazel.sync_new.languages_impl.kotlin.KotlinSyncLanguagePlugin"/>
   </extensions>
