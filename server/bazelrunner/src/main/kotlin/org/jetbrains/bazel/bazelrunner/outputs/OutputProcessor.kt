@@ -7,7 +7,6 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import kotlin.coroutines.cancellation.CancellationException
@@ -91,16 +90,18 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
     executorService.submit(runnable).also { runningProcessors.add(it) }
   }
 
-  suspend fun waitForExit(serverPidFuture: CompletableFuture<Long>?): Int =
+  suspend fun waitForExit(killProcessTreeOnCancel: Boolean): Int =
     coroutineScope {
       try {
         return@coroutineScope process.awaitExit()
       } catch (e: CancellationException) {
-        OSProcessUtil.killProcessTree(process)
-        OSProcessUtil.killProcess(process)
-        if (serverPidFuture?.isDone == true) {
-          val pid = serverPidFuture.get()
-          OSProcessUtil.killProcess(pid.toInt())
+        try {
+          if (killProcessTreeOnCancel) {
+            OSProcessUtil.killProcessTree(process)
+          } else {
+            OSProcessUtil.killProcess(process)
+          }
+        } catch (_: Throwable) {
         }
         throw e
       } finally {

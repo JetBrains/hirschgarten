@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Test
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -23,9 +22,7 @@ class OutputProcessorTest {
       runBlocking {
         // Add timeout to prevent test hanging indefinitely
         withTimeout(1000) {
-          proc.waitForExit(
-            null,
-          )
+          proc.waitForExit(false)
         }
       }
     }
@@ -34,51 +31,37 @@ class OutputProcessorTest {
   }
 
   @Test
-  fun `cancelling waitForExit kills the server process too`() {
+  fun `cancelling waitForExit kills the process tree`() {
     val process = startHangingProcess()
-    val serverProcess = startHangingProcess()
-    val serverPidFuture = CompletableFuture.completedFuture(serverProcess.pid())
     val proc = AsyncOutputProcessor(process, OutputCollector())
 
     process.isAlive shouldBe true
-    serverProcess.isAlive shouldBe true
     shouldThrow<CancellationException> {
       runBlocking {
         // Add timeout to prevent test hanging indefinitely
         withTimeout(1000) {
-          proc.waitForExit(
-            serverPidFuture,
-          )
+          proc.waitForExit(true)
         }
       }
     }
     process.waitFor(1, TimeUnit.SECONDS) shouldBe true
     process.isAlive shouldBe false
-    serverProcess.waitFor(1, TimeUnit.SECONDS) shouldBe true
-    serverProcess.isAlive shouldBe false
   }
 
   @Test
   fun `successful waitForExit returns exit code and does not kill the server`() {
     val process = startQuickProcess()
-    val serverProcess = startHangingProcess()
-    val serverPidFuture = CompletableFuture.completedFuture(serverProcess.pid())
     val proc = AsyncOutputProcessor(process, OutputCollector())
 
-    serverProcess.isAlive shouldBe true
     val exitCode =
       runBlocking {
         // Add timeout to prevent test hanging indefinitely
         withTimeout(1000) {
-          proc.waitForExit(
-            serverPidFuture,
-          )
+          proc.waitForExit(false)
         }
       }
     exitCode shouldBe 0
     process.isAlive shouldBe false
-    serverProcess.isAlive shouldBe true
-    serverProcess.destroyForcibly()
   }
 
   fun startProcess(windowsCommand: List<String>, unixCommand: List<String>): Process {
@@ -96,7 +79,11 @@ class OutputProcessorTest {
       .start()
   }
 
-  fun startQuickProcess(): Process = startProcess(listOf("cmd", "/c", "echo hello"), listOf("sh", "-c", "echo hello"))
+  fun startQuickProcess(): Process =
+    startProcess(
+      listOf("cmd", "/c", "echo hello"),
+      listOf("sh", "-c", "echo hello")
+    )
 
   fun startHangingProcess(): Process =
     startProcess(
