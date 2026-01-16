@@ -28,6 +28,7 @@ import org.jetbrains.bazel.sync_new.connector.QueryResult.Labels
 import org.jetbrains.bazel.sync_new.connector.QueryResult.Proto
 import org.jetbrains.bazel.sync_new.connector.QueryResult.StreamedProto
 import java.io.InputStream
+import java.io.PipedOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.coroutines.cancellation.CancellationException
@@ -88,7 +89,8 @@ class LegacyBazelConnectorImpl(
       withContext(Dispatchers.IO) { Files.writeString(queryFile, query.text) }
       builder.add("query_file", argValueOf(queryFile))
       builder.onExit { withContext(Dispatchers.IO) { Files.deleteIfExists(queryFile) } }
-    } else {
+    }
+    else {
       builder.add(Arg.Positional(value = argValueOf(query.text), last = true))
     }
 
@@ -102,7 +104,8 @@ class LegacyBazelConnectorImpl(
         if (!failure.isRecoverable) {
           withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
           Failure(failure)
-        } else {
+        }
+        else {
           val result = outputFile.inputStream()
             .buffered()
             .use { stream -> Build.QueryResult.parseFrom(stream) }
@@ -120,7 +123,8 @@ class LegacyBazelConnectorImpl(
         if (!failure.isRecoverable) {
           withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
           Failure(failure)
-        } else {
+        }
+        else {
           val flow = flow {
             while (true) {
               emit(Build.Target.parseDelimitedFrom(outputFileStream))
@@ -144,7 +148,8 @@ class LegacyBazelConnectorImpl(
         if (!failure.isRecoverable) {
           withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
           Failure(failure)
-        } else {
+        }
+        else {
           val labels = withContext(Dispatchers.IO) { Files.readAllLines(outputFile) }
             .map { Label.parse(it) }
           withContext(Dispatchers.IO) { Files.deleteIfExists(outputFile) }
@@ -155,6 +160,48 @@ class LegacyBazelConnectorImpl(
         }
       }
     }
+  }
+
+  override suspend fun info(
+    startup: StartupOptions.() -> Unit,
+    args: InfoArgs.() -> Unit,
+  ): BazelResult<InfoResult> {
+    val builder = object : CmdBuilder(), InfoArgs {}
+
+    builder.executable = executable
+    startup(builder)
+    builder.add(argValueOf("info"))
+    args(builder)
+
+    val (process, failure) = spawn(builder = builder, capture = false)
+    if (!failure.isRecoverable) {
+      return Failure(failure)
+    }
+
+    val parts = process.inputStream.reader(charset = Charsets.UTF_8)
+      .buffered()
+      .use { reader ->
+        reader.readLines()
+          .mapNotNull { line ->
+            val (first, second) = line.split(":", limit = 2).also {
+              if (it.size != 2) {
+                return@mapNotNull null
+              }
+            }
+            return@mapNotNull Pair(first, second)
+          }
+      }
+    val properties = parts.mapNotNull { (name, content) ->
+      when (name) {
+        "release" -> {
+          val splits = content.trim().split(' ', limit = 3)
+          InfoProperty.Release(splits[0], splits[1], splits.getOrNull(2))
+        }
+
+        else -> null
+      }
+    }
+    return Success(InfoResult(properties))
   }
 
   private suspend fun spawn(
@@ -179,7 +226,8 @@ class LegacyBazelConnectorImpl(
 
     val code = try {
       process.awaitExit()
-    } catch (e: CancellationException) {
+    }
+    catch (e: CancellationException) {
       OSProcessUtil.killProcessTree(process)
       OSProcessUtil.killProcess(process)
       throw e
@@ -232,7 +280,8 @@ private open class CmdBuilder : StartupOptions, Args {
     when (it) {
       is Arg.Named -> if (it.name == name) {
         it.value
-      } else {
+      }
+      else {
         null
       }
 
@@ -251,7 +300,8 @@ private open class CmdBuilder : StartupOptions, Args {
       is Value.VBool ->
         if (this.value) {
           "--$arg"
-        } else {
+        }
+        else {
           "--no$arg"
         }
 

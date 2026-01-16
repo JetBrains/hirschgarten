@@ -49,11 +49,15 @@ class SyncExecutor(
       project.service<SyncStoreService>()
     }
 
-    val newWorkspaceHash = SyncConfig.hashWorkspaceConfig(project)
-    val requireFullSync = newWorkspaceHash != store.syncMetadata.get().configHash
-    store.syncMetadata.modify { it.copy(configHash = newWorkspaceHash) }
-
-    return if (requireFullSync) {
+    val status = withTask(project, "compute_resync_state", "Computing resync state") {
+      val status = SyncResyncProcessor(project).computeResyncState(this@withTask)
+      if (status == SyncResyncState.FORCE_RESYNC) {
+        val console = project.service<ConsoleService>().syncConsole
+        console.addMessage("Forcing resync due to configuration change")
+      }
+      status
+    }
+    return if (status == SyncResyncState.FORCE_RESYNC) {
       _execute(SyncScope.Full(build = scope.build))
     } else {
       _execute(scope)

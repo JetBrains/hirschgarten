@@ -40,3 +40,16 @@ fun QueryArgs.consistentLabels(): Unit = add("consistent_labels", argValueOf(tru
 fun QueryArgs.universeScope(scope: List<String>) = add("universe_scope", argValueOf(scope.joinToString(separator = ",")))
 fun QueryArgs.noOrderOutput(): Unit = add("order_output", argValueOf("no"))
 
+interface InfoArgs : Args
+
+fun InfoArgs.release(): Unit = add(Arg.Positional(argValueOf("release"), last = true))
+fun InfoArgs.workspace(): Unit = add(Arg.Positional(argValueOf("workspace"), last = true))
+
+data class InfoResult(
+  val properties: List<InfoProperty>
+)
+
+sealed interface InfoProperty {
+  data class Release(val type: String, val version: String, val commit: String?) : InfoProperty
+}
+
