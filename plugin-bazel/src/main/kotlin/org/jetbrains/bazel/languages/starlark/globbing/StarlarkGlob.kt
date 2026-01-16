@@ -17,12 +17,11 @@ import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.util.concurrency.annotations.RequiresBlockingContext
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.ProducerScope
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.toSet
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
@@ -281,6 +280,7 @@ object StarlarkGlob {
             override fun load(wildcard: String): Pattern = makePatternFromWildcard(wildcard)
           },
         )
+    private val results: MutableSet<VirtualFile> = ConcurrentHashMap.newKeySet()
 
     /**
      * Performs wildcard globbing: returns the sorted list of filenames that match any of `patterns` relative to `base`. Directories are traversed if and only if they match
@@ -297,7 +297,6 @@ object StarlarkGlob {
      * exclude pattern segment contains `**` or if any include pattern segment
      * contains `**` but not equal to it.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun globAsync(
       base: VirtualFile,
       patterns: Collection<String>,
@@ -308,7 +307,7 @@ object StarlarkGlob {
       // (e.g., readdir calls). In order to optimize, we would need
       // to keep track of which patterns shared sub-patterns and which did not
       // (for example consider the glob [*/*.java, sub/*.java, */*.txt]).
-      return channelFlow {
+      return coroutineScope {
         checkAndSplitPatterns(patterns).forEach { splitPattern ->
           launch {
             reallyGlob(
@@ -319,7 +318,8 @@ object StarlarkGlob {
             )
           }
         }
-      }.toSet()
+        results
+      }
     }
 
     /**
@@ -330,7 +330,7 @@ object StarlarkGlob {
      * reallyGlob base [x:xs] = union { reallyGlob(f, xs) | f results "base/x" }
     </pre> *
      */
-    suspend fun ProducerScope<VirtualFile>.reallyGlob(
+    suspend fun CoroutineScope.reallyGlob(
       base: VirtualFile,
       baseIsDirectory: Boolean,
       patternParts: Array<String>,
@@ -343,7 +343,7 @@ object StarlarkGlob {
 
       if (idx == patternParts.size) { // Base case.
         if (!(excludeDirectories && baseIsDirectory)) {
-          send(base)
+          results.add(base)
         }
         return
       }
@@ -424,7 +424,7 @@ object StarlarkGlob {
           else {
             // Instead of using an async call, just repeat the base case above.
             if (idx + 1 == patternParts.size) {
-              send(child)
+              results.add(child)
             }
           }
         }
