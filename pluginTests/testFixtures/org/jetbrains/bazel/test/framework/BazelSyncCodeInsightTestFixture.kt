@@ -12,6 +12,8 @@ import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.trace.Tracer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.performance.BSP_SCOPE
@@ -37,7 +39,9 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override fun performBazelSync() {
     runWithModalProgressBlocking(project, "Syncing project...") {
-      ProjectSyncTask(project).sync(SecondPhaseSync, true)
+      withContext(Dispatchers.Default) {
+        ProjectSyncTask(project).sync(SecondPhaseSync, true)
+      }
     }
   }
 
