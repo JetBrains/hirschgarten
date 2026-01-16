@@ -249,7 +249,7 @@ class AspectBazelProjectMapper(
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
         createLibrary(
-          Label.parse(target.id + "_output_jars"),
+          Label.parse(target.id + "internal_ij_output_jars"),
           target,
           onlyOutputJars = true,
           containsInternalJars = true,
