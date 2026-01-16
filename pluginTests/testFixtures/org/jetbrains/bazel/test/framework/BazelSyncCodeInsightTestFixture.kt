@@ -13,12 +13,10 @@ import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.trace.Tracer
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
-import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.performance.BSP_SCOPE
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
-import org.jetbrains.bazel.startup.IntellijBidirectionalMap
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import kotlin.io.path.pathString
@@ -46,7 +44,6 @@ class BazelSyncCodeInsightTestFixtureImpl(
   override fun setUp() {
     super.setUp()
     project.bazelProjectProperties.rootDir = virtualFileOf(tempDirPath)
-    BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
     TelemetryManager.provideNoopTelemetryManager()
     ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
     VfsRootAccess.allowRootAccess(project, "/private/var/tmp/")
