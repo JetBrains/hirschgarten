@@ -20,6 +20,8 @@ import com.esotericsoftware.kryo.kryo5.util.DefaultInstantiatorStrategy
 import com.esotericsoftware.kryo.kryo5.util.Pool
 import com.intellij.openapi.components.service
 import com.intellij.util.containers.BidirectionalMap
+import com.intellij.util.text.SemVer
+import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.sync_new.codec.Codec
 import org.jetbrains.bazel.sync_new.codec.CodecBuffer
 import org.jetbrains.bazel.sync_new.codec.CodecBuilder
@@ -83,6 +85,7 @@ val kryoPool: Pool<Kryo> = object : Pool<Kryo>(
     kryo.registerFastUtilSerializers()
 
     registerDefaultSerializers(kryo)
+    registerCustomTypes(kryo)
 
     for (registered in service<KryoRegistryService>().registeredTypes) {
       val serialId = registered.serialId
@@ -138,6 +141,22 @@ val kryoPool: Pool<Kryo> = object : Pool<Kryo>(
     kryo.registerSingletonSerializer { emptyList<Any>() }
     kryo.registerSingletonSerializer { emptyMap<Any, Any>() }
     kryo.registerSingletonSerializer { emptySet<Any>() }
+  }
+
+  private fun registerCustomTypes(kryo: Kryo) {
+    val types = listOf(
+      // bazel version
+      BazelVersionLiteral::class.java,
+      BazelVersionLiteral.Special::class.java,
+      BazelVersionLiteral.Forked::class.java,
+      BazelVersionLiteral.Latest::class.java,
+      BazelVersionLiteral.Other::class.java,
+      BazelVersionLiteral.Specific::class.java,
+
+      // platform semver
+      SemVer::class.java,
+    )
+    types.forEach { kryo.register(it) }
   }
 
 }

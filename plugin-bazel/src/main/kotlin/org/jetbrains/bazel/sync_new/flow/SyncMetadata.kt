@@ -2,11 +2,8 @@ package org.jetbrains.bazel.sync_new.flow
 
 import com.dynatrace.hash4j.hashing.HashValue128
 import com.esotericsoftware.kryo.kryo5.serializers.TaggedFieldSerializer.Tag
-import com.google.common.collect.BiMap
-import com.google.common.collect.HashBiMap
-import com.google.common.collect.HashMultimap
-import com.google.common.collect.Multimap
 import com.intellij.util.containers.BidirectionalMap
+import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.sync_new.codec.kryo.ClassTag
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTag
 import org.jetbrains.bazel.sync_new.codec.kryo.SealedTagged
@@ -19,8 +16,8 @@ data class SyncMetadata(
   @field:Tag(1)
   val configHash: HashValue128,
 
-  @field:Tag(2)
-  val bazelVersion: String?,
+  @field:Tag(3)
+  val bazelVersion: BazelVersionLiteral?,
 )
 
 @SealedTagged

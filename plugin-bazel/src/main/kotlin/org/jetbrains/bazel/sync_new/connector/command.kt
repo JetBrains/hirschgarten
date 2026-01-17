@@ -4,6 +4,7 @@ import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 
 interface BuildArgs : Args
 
@@ -50,6 +51,6 @@ data class InfoResult(
 )
 
 sealed interface InfoProperty {
-  data class Release(val type: String, val version: String, val commit: String?) : InfoProperty
+  data class Release(val type: String, val version: BazelVersionLiteral, val commit: String?) : InfoProperty
 }
 
