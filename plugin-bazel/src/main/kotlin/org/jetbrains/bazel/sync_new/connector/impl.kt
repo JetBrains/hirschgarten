@@ -21,6 +21,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
+import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.sync_new.connector.BazelResult.Failure
 import org.jetbrains.bazel.sync_new.connector.BazelResult.Success
@@ -195,7 +197,8 @@ class LegacyBazelConnectorImpl(
       when (name) {
         "release" -> {
           val splits = content.trim().split(' ', limit = 3)
-          InfoProperty.Release(splits[0], splits[1], splits.getOrNull(2))
+          val version = splits[1].toBazelVersionLiteral() ?: BazelVersionLiteral.Other(splits[1])
+          InfoProperty.Release(splits[0], version, splits.getOrNull(2))
         }
 
         else -> null
