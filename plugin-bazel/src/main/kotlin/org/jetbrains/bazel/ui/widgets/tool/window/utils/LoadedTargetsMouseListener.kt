@@ -123,15 +123,16 @@ abstract class LoadedTargetsMouseListener(private val project: Project) : PopupH
 
   private fun onDoubleClick() {
     getSelectedBuildTarget()?.also {
+      val target = project.targetUtils.getBuildTargetForLabel(it.label) ?: return@also
       when {
         it.isTestable -> TestTargetAction(
           project = project,
-          targetInfos = listOfNotNull(project.targetUtils.getBuildTargetForLabel(it.label)),
+          targetInfos = listOf(target),
         ).prepareAndPerform(project)
 
         it.isExecutable -> RunTargetAction(
           project,
-          targetInfo = project.targetUtils.getBuildTargetForLabel(it.label)
+          targetInfo = target
         ).prepareAndPerform(project)
         !it.noBuild -> BuildTargetAction.buildTarget(project, it.label)
       }

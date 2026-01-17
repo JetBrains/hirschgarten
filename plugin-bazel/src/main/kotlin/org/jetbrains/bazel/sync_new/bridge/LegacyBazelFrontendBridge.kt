@@ -61,7 +61,7 @@ object LegacyBazelFrontendBridge {
     return when (repoMapping) {
       is BzlmodSyncRepoMapping -> BzlmodRepoMapping(
         canonicalRepoNameToLocalPath = repoMapping.canonicalRepoNameToLocalPath,
-        apparentRepoNameToCanonicalName = org.jetbrains.bazel.commons.BidirectionalMap.getTypedInstance<String, String>()
+        apparentRepoNameToCanonicalName = BidirectionalMap<String, String>()
           .apply { putAll(repoMapping.apparentToCanonical) },
         canonicalRepoNameToPath = repoMapping.canonicalToPath,
       )
