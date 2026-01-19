@@ -29,6 +29,7 @@ import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSService
 import org.jetbrains.bazel.sync_new.graph.EMPTY_ID
 import org.jetbrains.bazel.sync_new.index.SyncIndexService
 import org.jetbrains.bazel.sync_new.index.SyncIndexUpdaterProvider
+import org.jetbrains.bazel.sync_new.internal.InternalsBridgeService
 import org.jetbrains.bazel.sync_new.lang.SyncLanguagePlugin
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageService
 import org.jetbrains.bazel.sync_new.storage.BazelStorageService
@@ -71,6 +72,7 @@ class SyncExecutor(
         syncStore.targetGraph.clear()
         project.serviceAsync<SyncIndexService>().invalidateAll()
         project.service<SyncVFSService>().resetAll()
+        project.service<InternalsBridgeService>().clear()
       }
     }
     withTask(project, "warmup_server", "Warming up server") {

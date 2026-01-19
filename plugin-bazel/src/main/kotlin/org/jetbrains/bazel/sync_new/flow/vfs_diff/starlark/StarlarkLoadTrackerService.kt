@@ -28,7 +28,7 @@ class StarlarkLoadTrackerService(
   val project: Project,
 ) {
   val starlarkLoadGraph: StarlarkLoadGraph = StarlarkLoadGraph(project)
-  val starlarkParser: StarlarkFileParser = StarlarkFileParser()
+  val starlarkParser: StarlarkFileParser = StarlarkFileParser(project)
 
   // TODO: correctly handle removed BUILD files
   suspend fun computeStarlarkDiffFromUniverseDiff(ctx: SyncVFSContext): SyncFileDiff {
