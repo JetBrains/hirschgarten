@@ -18,8 +18,9 @@ class SyncStoreService(
     project.storageContext.createFlatStore<SyncMetadata>("bazel.sync.syncMetadata", DefaultStorageHints.USE_IN_MEMORY)
       .withCreator {
         SyncMetadata(
-          configHash = HashValue128(0, 0),
-          bazelVersion = null
+          workspaceConfigHash = HashValue128(0, 0),
+          bazelVersion = null,
+          syncConfigHash = HashValue128(0, 0),
         )
       }
       .withCodec { ofKryo() }

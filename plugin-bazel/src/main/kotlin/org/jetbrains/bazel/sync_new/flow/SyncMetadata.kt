@@ -14,10 +14,13 @@ import java.nio.file.Path
 @ClassTag(2034668847)
 data class SyncMetadata(
   @field:Tag(1)
-  val configHash: HashValue128,
+  val workspaceConfigHash: HashValue128,
 
   @field:Tag(3)
   val bazelVersion: BazelVersionLiteral?,
+
+  @field:Tag(4)
+  val syncConfigHash: HashValue128,
 )
 
 @SealedTagged
