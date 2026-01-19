@@ -10,9 +10,9 @@ import kotlin.io.path.absolutePathString
 
 class StarlarkFileParser(private val project: Project) {
   // TODO: handle multiple bazel versions compat
-  fun parse(content: String, path: Path): StarlarkParsedFile {
+  fun parse(content: String, path: Path): StarlarkParsedFile? {
     val bridge = project.service<InternalsBridgeService>().bridge
-    val parsed = bridge.createStarlarkParser().parse(content, path.absolutePathString())
+    val parsed = bridge.createStarlarkParser().parse(content, path.absolutePathString()) ?: return null
     val loads = parsed.stmts.filterIsInstance<StarlarkSyntaxStmt.LoadStmt>()
       .mapNotNull { Label.parseOrNull(it.import) }
     return StarlarkParsedFile(
