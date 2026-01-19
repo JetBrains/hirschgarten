@@ -15,6 +15,11 @@ object BazelPathManager {
       .resolve("testData")
   }
 
+  val testProjectsRoot: Path by lazy {
+    testSourceRoot
+      .resolve("testProjects")
+  }
+
   fun getTestFixture(path: String) = getTestFixturePath(path).toString()
   fun getTestFixturePath(path: String): Path = testDataRoot.resolve(path)
 }
