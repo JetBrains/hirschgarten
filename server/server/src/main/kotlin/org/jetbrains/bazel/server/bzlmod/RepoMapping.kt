@@ -38,8 +38,16 @@ suspend fun calculateRepoMapping(
       return RepoMappingDisabled
     }
 
+  fun coveredByMap(
+    repositoryNames: List<String>,
+    mapping: Map<String,String>
+  ) = repositoryNames.all { mapping.containsKey(it) }
+
   val moduleApparentNameToCanonicalNameForNeededTransitiveRules =
-    rootRulesToNeededTransitiveRules.keys
+    rootRulesToNeededTransitiveRules.filter {
+      !coveredByMap(it.value, moduleApparentNameToCanonicalName)
+    }
+      .keys
       .mapNotNull { moduleApparentNameToCanonicalName[it] }
       .map { moduleResolver.getRepoMapping(it) }
       .reduceOrNull { acc, map -> acc + map }
