@@ -5,7 +5,7 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.RepoMappingDisabled
-import org.jetbrains.bazel.commons.orLatestSupported
+import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
@@ -106,7 +106,7 @@ open class BuildServerMock(
         outputBase = Paths.get(""),
         workspaceRoot = Paths.get(""),
         bazelBin = Path("bazel-bin"),
-        release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
+        release = BazelRelease.fromReleaseString("release 6.0.0").orFallbackVersion(),
         false,
         true,
         emptyList(),
