@@ -99,7 +99,7 @@ maven.install(
         "org.mockito:mockito-core:5.19.0",
         "com.github.javaparser:javaparser-core:3.27.0",
         "com.google.protobuf:protobuf-java:3.24.4",
-        "org.ow2.asm:asm:9.8",
+        "org.ow2.asm:asm:9.9",
         "info.picocli:picocli:4.7.7",
     ],
     fail_if_repin_required = True,
