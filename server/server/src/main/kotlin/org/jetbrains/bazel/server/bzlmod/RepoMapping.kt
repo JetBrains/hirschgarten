@@ -14,7 +14,10 @@ import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInterna
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-val rootRulesToNeededTransitiveRules = mapOf("rules_kotlin" to listOf("rules_java"))
+val rootRulesToNeededTransitiveRules = mapOf(
+  "rules_kotlin" to listOf("rules_java"),
+  "rules_scala" to listOf("rules_java"),
+)
 
 suspend fun calculateRepoMapping(
   workspaceContext: WorkspaceContext,
