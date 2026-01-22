@@ -7,6 +7,7 @@ import org.jetbrains.bazel.bazelrunner.outputs.SyncOutputProcessor
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.Stopwatch
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.logger.bazelLogger
 import java.time.Duration
@@ -36,7 +37,7 @@ class BazelProcess internal constructor(
           }
         }
 
-      val exitCode = outputProcessor.waitForExit(serverPidFuture)
+      val exitCode = outputProcessor.waitForExit(serverPidFuture, BazelFeatureFlags.killServerOnCancel)
       val duration = stopwatch.stop()
       logCompletion(exitCode, duration)
       return BazelProcessResult(outputProcessor.stdoutCollector, outputProcessor.stderrCollector, BazelStatus.fromExitCode(exitCode))

@@ -89,17 +89,21 @@ abstract class OutputProcessor(private val process: SpawnedProcess, vararg logge
     executorService.submit(runnable).also { runningProcessors.add(it) }
   }
 
-  suspend fun waitForExit(serverPidFuture: CompletableFuture<Long>?): Int =
+  suspend fun waitForExit(serverPidFuture: CompletableFuture<Long>?, killServerOnCancel: Boolean): Int =
     coroutineScope {
       try {
         return@coroutineScope process.awaitExit()
       } catch (e: CancellationException) {
         val processSpawner = ProcessSpawner.getInstance()
-        processSpawner.killProcessTree(process)
-        processSpawner.killProcess(process)
-        if (serverPidFuture?.isDone == true) {
-          val pid = serverPidFuture.get()
-          processSpawner.killProcess(pid.toInt())
+        if (killServerOnCancel) {
+          processSpawner.killProcessTree(process)
+          processSpawner.killProcess(process)
+          if (serverPidFuture?.isDone == true) {
+            val pid = serverPidFuture.get()
+            processSpawner.killProcess(pid.toInt())
+          }
+        } else {
+          processSpawner.killProcess(process)
         }
         throw e
       } finally {

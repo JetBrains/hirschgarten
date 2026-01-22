@@ -430,6 +430,12 @@
       key="bazel.use.pty"
       restartRequired="true"
     />
+    <registryKey
+      defaultValue="false"
+      description="If true, IDEA will terminate Bazel server daemon if the bazel process was cancelled"
+      key="bazel.kill.server.on.cancel"
+      restartRequired="true"
+    />
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />
