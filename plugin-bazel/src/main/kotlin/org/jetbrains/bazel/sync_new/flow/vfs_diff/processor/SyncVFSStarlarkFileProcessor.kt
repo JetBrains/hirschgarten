@@ -106,7 +106,12 @@ class SyncVFSStarlarkFileProcessor {
         return@async if (it.path.notExists()) {
           null
         } else {
-          starlarkParser.parse(it.path.readText(), it.path) to kind
+          val parsed = starlarkParser.parse(it.path.readText(), it.path)
+          if (parsed == null) {
+            null
+          } else {
+            parsed to kind
+          }
         }
       }
     }
