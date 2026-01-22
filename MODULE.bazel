@@ -89,7 +89,7 @@ maven.install(
         "org.apache.httpcomponents:httpclient:4.5.14",
         "org.slf4j:slf4j-api:2.0.17",
         "org.apache.velocity:velocity-engine-core:2.4.1",
-        "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
+        "org.jetbrains.kotlin:kotlin-stdlib:2.2.21",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0",
         "org.junit.jupiter:junit-jupiter:5.13.4",
         "org.junit.platform:junit-platform-console:1.13.4",
