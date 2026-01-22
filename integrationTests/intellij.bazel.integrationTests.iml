@@ -22,6 +22,7 @@
     <orderEntry type="module" module-name="intellij.bazel.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.protoeditor" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.core" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.testFramework.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.starter.driver" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.jshell" scope="TEST" />
