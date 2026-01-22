@@ -31,7 +31,7 @@ suspend fun calculateRepoMapping(
   val moduleApparentNameToCanonicalName =
     try {
       // empty string is the name of the root module
-      moduleResolver.getRepoMapping("")
+      moduleResolver.getRepoMappings(listOf("")).get("").orEmpty()
     }
     catch (e: Exception) {
       bspClientLogger.error(e.toString())
@@ -40,7 +40,7 @@ suspend fun calculateRepoMapping(
 
   fun coveredByMap(
     repositoryNames: List<String>,
-    mapping: Map<String,String>
+    mapping: Map<String, String>,
   ) = repositoryNames.all { mapping.containsKey(it) }
 
   val moduleApparentNameToCanonicalNameForNeededTransitiveRules =
@@ -49,7 +49,9 @@ suspend fun calculateRepoMapping(
     }
       .keys
       .mapNotNull { moduleApparentNameToCanonicalName[it] }
-      .map { moduleResolver.getRepoMapping(it) }
+      .let {
+        moduleResolver.getRepoMappings(it)
+      }.values
       .reduceOrNull { acc, map -> acc + map }
       .orEmpty()
 
