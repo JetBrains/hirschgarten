@@ -73,6 +73,7 @@ private class PackageMarkerEntityListener : BulkFileListener {
       includeContentNonIndexableSets = true,
       includeExternalSets = false,
       includeExternalSourceSets = false,
+      includeExternalNonIndexableSets = false,
       includeCustomKindSets = false,
       customDataClass = ModuleRelatedRootData::class.java,
     )?.data
