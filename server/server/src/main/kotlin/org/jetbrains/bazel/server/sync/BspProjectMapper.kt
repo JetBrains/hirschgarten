@@ -51,10 +51,15 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     )
   }
 
+  private data class ProjectDirs(
+    val included: Set<Path>,
+    val excluded: Set<Path>,
+  )
+
   private suspend fun getProjectDirs(
     workspaceRoot: Path,
     workspaceContext: WorkspaceContext
-  ): Pair<Set<Path>, Set<Path>> {
+  ): ProjectDirs {
     val included = mutableSetOf<Path>()
     val excluded = mutableSetOf<Path>()
 
@@ -103,7 +108,10 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     excluded.removePresentIn(includedFromTargets, excludedFromTargets)
     includedFromTargets.removePresentIn(excludedFromTargets)
 
-    return (included + includedFromTargets + includedAdditionally to excluded + excludedFromTargets + excludedAdditionally)
+    return ProjectDirs(
+      included = included + includedFromTargets + includedAdditionally,
+      excluded = excluded + excludedFromTargets + excludedAdditionally,
+    )
   }
 
   private fun MutableSet<Path>.removePresentIn(vararg higherPrioritySets: Set<Path>) {
