@@ -31,15 +31,9 @@ data class SplitDiff(
   val removed: Set<TargetReference>,
 )
 
-interface SyncTargetDiff {
-  val added: Set<Label>
-  val removed: Set<Label>
-  val changed: Set<Label>
-}
-
 // SyncColdDiff only take into account 'flat' target changes
 //  it does not include dependencies, also include only label changes no target data
-class SyncColdDiff(
+data class SyncColdDiff(
   val added: Set<Label> = emptySet(),
   val removed: Set<Label> = emptySet(),
   val changed: Set<Label> = emptySet(),

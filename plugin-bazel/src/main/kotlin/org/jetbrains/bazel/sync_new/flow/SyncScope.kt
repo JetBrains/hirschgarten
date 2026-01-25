@@ -12,6 +12,9 @@ sealed interface SyncScope {
 
   val isFullSync: Boolean
     get() = this is Full
+
+  val isPartial: Boolean
+    get() = this is Partial
 }
 
 sealed interface PartialTarget {

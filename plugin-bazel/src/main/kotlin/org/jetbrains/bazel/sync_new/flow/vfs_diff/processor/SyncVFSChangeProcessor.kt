@@ -1,7 +1,10 @@
 package org.jetbrains.bazel.sync_new.flow.vfs_diff.processor
 
+import com.google.common.collect.HashMultimap
 import com.intellij.openapi.components.service
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
+import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
 import org.jetbrains.bazel.sync_new.flow.plus
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncFileDiff
@@ -9,6 +12,7 @@ import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.WildcardFileDiff
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.plus
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.starlark.StarlarkLoadTrackerService
+import org.jetbrains.bazel.sync_new.util.plus
 
 class SyncVFSChangeProcessor {
   suspend fun processBulk(ctx: SyncVFSContext, diff: SyncFileDiff): SyncColdDiff {
@@ -23,7 +27,13 @@ class SyncVFSChangeProcessor {
     val sourceFiles = filterDiff<SyncVFSFile.SourceFile>(diff)
     val sourceFilesDiff = SyncVFSSourceProcessor().process(ctx, sourceFiles)
 
-    return buildFilesDiff + sourceFilesDiff
+    val diff = buildFilesDiff + sourceFilesDiff
+    if (ctx.scope.isPartial) {
+      val flags = HashMultimap.create<Label, SyncDiffFlags>()
+      diff.changed.forEach { flags.put(it, SyncDiffFlags.FORCE_INVALIDATION) }
+      return diff.copy(flags = diff.flags + flags)
+    }
+    return diff
   }
 
   private inline fun <reified T : SyncVFSFile> filterDiff(diff: SyncFileDiff): WildcardFileDiff<T> {
