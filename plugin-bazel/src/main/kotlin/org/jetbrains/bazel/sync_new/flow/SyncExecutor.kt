@@ -21,6 +21,7 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
+import org.jetbrains.bazel.sync_new.bridge.LegacySyncTargetInfo
 import org.jetbrains.bazel.sync_new.flow.hash_diff.SyncHasherService
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
@@ -306,7 +307,7 @@ class SyncExecutor(
     return status
   }
 
-  private suspend fun SyncConsoleTask.fetchRawAspects(ctx: SyncContext, targets: List<Label>): List<RawAspectTarget> {
+  private suspend fun SyncConsoleTask.fetchRawAspects(ctx: SyncContext, targets: List<Label>): List<LegacySyncTargetInfo> {
     if (targets.isEmpty()) {
       return listOf()
     }

@@ -1,11 +1,12 @@
 package org.jetbrains.bazel.sync_new.flow
 
+import org.jetbrains.bazel.sync_new.bridge.LegacySyncTargetInfo
 import org.jetbrains.bazel.sync_new.graph.impl.BazelTargetTag
 import org.jetbrains.bsp.protocol.RawAspectTarget
 import java.util.EnumSet
 
 class SyncTagsBuilder {
-  fun build(raw: RawAspectTarget): EnumSet<BazelTargetTag> {
+  fun build(raw: LegacySyncTargetInfo): EnumSet<BazelTargetTag> {
     val tags = EnumSet.noneOf(BazelTargetTag::class.java)
     val target = raw.target
     when {

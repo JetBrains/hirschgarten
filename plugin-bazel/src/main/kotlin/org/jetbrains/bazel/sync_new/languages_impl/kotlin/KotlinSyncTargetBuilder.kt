@@ -2,10 +2,10 @@ package org.jetbrains.bazel.sync_new.languages_impl.kotlin
 
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync_new.bridge.LegacySyncTargetInfo
 import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.graph.impl.BazelPath
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageDataBuilder
-import org.jetbrains.bsp.protocol.RawAspectTarget
 import kotlin.collections.plus
 
 class KotlinSyncTargetBuilder : SyncLanguageDataBuilder<KotlinSyncTargetData> {
@@ -14,8 +14,8 @@ class KotlinSyncTargetBuilder : SyncLanguageDataBuilder<KotlinSyncTargetData> {
   }
 
   override suspend fun buildTargetData(
-    ctx: SyncContext,
-    target: RawAspectTarget,
+      ctx: SyncContext,
+      target: LegacySyncTargetInfo,
   ): KotlinSyncTargetData? {
     val target = target.target
     if (!target.hasKotlinTargetInfo()) {

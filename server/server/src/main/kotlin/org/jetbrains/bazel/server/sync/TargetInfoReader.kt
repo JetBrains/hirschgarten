@@ -10,6 +10,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.reader
 
 class TargetInfoReader(private val bspClientLogger: BspClientLogger?) {
@@ -33,6 +34,7 @@ class TargetInfoReader(private val bspClientLogger: BspClientLogger?) {
 
   private fun readFromFile(file: Path): TargetInfo? {
     val builder = TargetInfo.newBuilder()
+      .setSource(file.absolutePathString())
     val parser =
       TextFormat.Parser
         .newBuilder()

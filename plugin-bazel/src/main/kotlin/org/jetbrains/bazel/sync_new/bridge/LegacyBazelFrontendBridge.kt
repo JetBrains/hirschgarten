@@ -14,6 +14,7 @@ import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawAspectTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildPartialTargetsParams
+import java.nio.file.Path
 
 object LegacyBazelFrontendBridge {
   suspend fun fetchRepoMapping(project: Project): SyncRepoMapping {
@@ -42,7 +43,7 @@ object LegacyBazelFrontendBridge {
     repoMapping: SyncRepoMapping,
     targets: List<Label>,
     build: Boolean,
-  ): List<RawAspectTarget> {
+  ): List<LegacySyncTargetInfo> {
     val params = WorkspaceBuildPartialTargetsParams(
       targets = targets,
       repoMapping = toLegacyRepoMapping(repoMapping),
@@ -50,7 +51,7 @@ object LegacyBazelFrontendBridge {
     )
     val result = project.connection.runWithServer { server -> server.workspaceBuildTargetsPartial(params) }
     return result.targets.values
-      .map { RawAspectTarget(it) }
+      .map { LegacySyncTargetInfo(target = it, source = Path.of(it.source)) }
   }
 
   suspend fun fetchBazelPathsResolver(project: Project): BazelPathsResolver {

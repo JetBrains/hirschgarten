@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaS
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourcePatternEval
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourceRootPattern
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROEnable
+import org.jetbrains.bazel.sync_new.bridge.LegacySyncTargetInfo
 import org.jetbrains.bazel.sync_new.flow.SyncContext
 import org.jetbrains.bazel.sync_new.graph.impl.BazelPath
 import org.jetbrains.bazel.sync_new.graph.impl.PRIORITY_NORMAL
@@ -18,7 +19,6 @@ import org.jetbrains.bazel.sync_new.graph.impl.resolve
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageDataBuilder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmPrefixSourceFile
-import org.jetbrains.bsp.protocol.RawAspectTarget
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -46,8 +46,8 @@ class JvmSyncTargetBuilder : SyncLanguageDataBuilder<JvmSyncTargetData> {
   }
 
   override suspend fun buildTargetData(
-    ctx: SyncContext,
-    target: RawAspectTarget,
+      ctx: SyncContext,
+      target: LegacySyncTargetInfo,
   ): JvmSyncTargetData? {
     val target = target.target
     if (!target.hasJvmTargetInfo()) {

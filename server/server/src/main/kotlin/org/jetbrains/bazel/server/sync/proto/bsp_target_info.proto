@@ -104,6 +104,7 @@ message ProtobufSourceMapping {
 message TargetInfo {
   string id = 10;
   string kind = 20;
+  string source = 25;
   repeated string tags = 30;
   repeated Dependency dependencies = 40;
   repeated FileLocation sources = 50;

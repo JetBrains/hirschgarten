@@ -13,7 +13,7 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.label.label
-import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync_new.bridge.LegacySyncTargetInfo
 import org.jetbrains.bazel.sync_new.flow.universe_expand.SyncExpandService
 import org.jetbrains.bazel.sync_new.graph.ID
 import org.jetbrains.bazel.sync_new.graph.impl.BazelGenericTargetData
@@ -29,7 +29,6 @@ import org.jetbrains.bazel.sync_new.lang.SyncLanguageDataBuilder
 import org.jetbrains.bazel.sync_new.lang.SyncLanguageDetector
 import org.jetbrains.bazel.sync_new.lang.SyncLanguagePlugin
 import org.jetbrains.bazel.sync_new.lang.SyncTargetData
-import org.jetbrains.bsp.protocol.RawAspectTarget
 import kotlin.collections.set
 import kotlin.to
 
@@ -57,7 +56,7 @@ class SyncTargetBuilder(
     )
   }
 
-  suspend fun buildAllChangedTargetVertices(ctx: SyncContext, targets: Collection<RawAspectTarget>): List<Pair<RawAspectTarget, BazelTargetVertex>> {
+  suspend fun buildAllChangedTargetVertices(ctx: SyncContext, targets: Collection<LegacySyncTargetInfo>): List<Pair<LegacySyncTargetInfo, BazelTargetVertex>> {
     val bakedPlugins = SyncLanguagePlugin.ep.extensionList
       .filter { it.isEnabled(ctx) }
       .map { bakeLanguagePlugin(ctx, it) }
@@ -71,7 +70,7 @@ class SyncTargetBuilder(
     }
   }
 
-  private suspend fun buildTargetVertex(ctx: SyncContext, raw: RawAspectTarget, plugins: Array<BakedLanguagePlugin<*>>): BazelTargetVertex {
+  private suspend fun buildTargetVertex(ctx: SyncContext, raw: LegacySyncTargetInfo, plugins: Array<BakedLanguagePlugin<*>>): BazelTargetVertex {
     val genericData = buildGeneralTargetData(raw)
     val targetData = Long2ObjectOpenHashMap<SyncTargetData>()
     val languageTags = LongOpenHashSet()
@@ -107,7 +106,7 @@ class SyncTargetBuilder(
     )
   }
 
-  private fun buildGeneralTargetData(raw: RawAspectTarget): BazelGenericTargetData {
+  private fun buildGeneralTargetData(raw: LegacySyncTargetInfo): BazelGenericTargetData {
     return BazelGenericTargetData(
       tags = tagsBuilder.build(raw),
       directDependencies = buildDependencyList(raw),
@@ -117,12 +116,12 @@ class SyncTargetBuilder(
     )
   }
 
-  private fun buildDependencyList(raw: RawAspectTarget): List<BazelTargetDependency> {
+  private fun buildDependencyList(raw: LegacySyncTargetInfo): List<BazelTargetDependency> {
     return raw.target.dependenciesList
       .map { BazelTargetDependency(it.label()) }
   }
 
-  private fun buildSourceList(raw: RawAspectTarget): List<BazelTargetSourceFile> {
+  private fun buildSourceList(raw: LegacySyncTargetInfo): List<BazelTargetSourceFile> {
     return raw.target.sourcesList
       .map {
         BazelTargetSourceFile(
@@ -132,7 +131,7 @@ class SyncTargetBuilder(
       }
   }
 
-  private fun buildResourceList(raw: RawAspectTarget): List<BazelTargetResourceFile> {
+  private fun buildResourceList(raw: LegacySyncTargetInfo): List<BazelTargetResourceFile> {
     return raw.target.resourcesList
       .map {
         BazelTargetResourceFile(
