@@ -211,7 +211,7 @@ class BepServer(
       if (progress.stderr.isNotEmpty() && originId != null) {
         val events =
           diagnosticsService.extractDiagnostics(
-            progress.stderr,
+            progress.stderr.lines(),
             SyntheticLabel(AllRuleTargets),
             originId,
             isCommandLineFormattedOutput = true,
@@ -349,7 +349,7 @@ class BepServer(
     if (stdErrText.isNotEmpty()) {
       val events =
         diagnosticsService.extractDiagnostics(
-          stdErrText,
+          stdErrText.lines(),
           targetLabel,
           originId,
         )

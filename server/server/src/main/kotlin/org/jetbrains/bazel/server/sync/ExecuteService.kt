@@ -133,7 +133,7 @@ class ExecuteService(
 
         bazelRunner.runBazelCommand(command, originId = params.originId)
           .also {
-            params.pidDeferred?.complete(it.process.pid())
+            params.pidDeferred?.complete(it.pid)
           }
           .waitAndGetResult()
       }
@@ -219,7 +219,7 @@ class ExecuteService(
           .runBazelCommand(
             command,
             originId = params.originId
-          ).waitAndGetResult(true)
+          ).waitAndGetResult()
       }
 
     return TestResult(statusCode = result.bazelStatus, originId = params.originId)
@@ -245,7 +245,7 @@ class ExecuteService(
         }
       bazelRunner
         .runBazelCommand(command, originId = originId)
-        .waitAndGetResult(true)
+        .waitAndGetResult()
     }
   }
 
@@ -275,7 +275,7 @@ class ExecuteService(
       val result =
         bazelRunner
           .runBazelCommand(command, originId = originId, shouldLogInvocation = shouldLogInvocation)
-          .waitAndGetResult(true)
+          .waitAndGetResult()
       BepBuildResult(result, bepReader.bepServer.bepOutput)
     }
   }

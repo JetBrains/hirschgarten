@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 class ModuleResolverTest {
   fun makeOutputCollector(lines: String): OutputCollector =
     OutputCollector().also {
-      lines.lines().forEach(it::onNextLine)
+      it.append(lines.toByteArray(Charsets.UTF_8))
     }
 
   val moduleOutputParser = ModuleOutputParser()

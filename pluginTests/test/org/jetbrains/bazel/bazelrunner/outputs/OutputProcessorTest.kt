@@ -15,7 +15,7 @@ class OutputProcessorTest {
   @Test
   fun `cancelling waitForExit kills the process`() {
     val process = startHangingProcess()
-    val proc = AsyncOutputProcessor(process, OutputCollector())
+    val proc = OutputProcessor(process)
 
     process.isAlive shouldBe true
     shouldThrow<CancellationException> {
@@ -33,7 +33,7 @@ class OutputProcessorTest {
   @Test
   fun `cancelling waitForExit kills the process tree`() {
     val process = startHangingProcess()
-    val proc = AsyncOutputProcessor(process, OutputCollector())
+    val proc = OutputProcessor(process)
 
     process.isAlive shouldBe true
     shouldThrow<CancellationException> {
@@ -51,7 +51,7 @@ class OutputProcessorTest {
   @Test
   fun `successful waitForExit returns exit code and does not kill the server`() {
     val process = startQuickProcess()
-    val proc = AsyncOutputProcessor(process, OutputCollector())
+    val proc = OutputProcessor(process)
 
     val exitCode =
       runBlocking {

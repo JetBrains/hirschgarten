@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -10,14 +11,13 @@ import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.bsp.utils.readXML
-import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
+import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
@@ -89,7 +89,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
           }
 
         runBazelCommand(command, logProcessOutput = false)
-          .waitAndGetResult(ensureAllOutputRead = true)
+          .waitAndGetResult()
           .let { result ->
             if (result.isNotSuccess) {
               val queryFailedMessage = getQueryFailedMessage(result)
@@ -97,7 +97,16 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
               log.warn(queryFailedMessage)
               null
             } else {
-              result.stdout.readXML(log)?.calculateEligibleRules()
+              try {
+                DocumentBuilderFactory
+                  .newInstance()
+                  .newDocumentBuilder()
+                  .parse(result.stdout.inputStream())
+                  .calculateEligibleRules()
+              } catch (e: Exception) {
+                log?.error("Failed to parse string to xml", e)
+                null
+              }
             }
           }.orEmpty()
       }
@@ -148,7 +157,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
           command,
           originId = originId,
           logProcessOutput = false
-        ).waitAndGetResult(ensureAllOutputRead = true)
+        ).waitAndGetResult()
         .let { result ->
           if (result.isNotSuccess) {
             val queryFailedMessage = getQueryFailedMessage(result)
@@ -159,13 +168,18 @@ class BazelBzlModExternalRulesetsQueryImpl(
                 val target = SyntheticLabel(AllRuleTargets)
                 val diagnostics =
                   DiagnosticsService(workspaceRoot)
-                    .extractDiagnostics(result.stderr, target, originId!!, isCommandLineFormattedOutput = true)
+                    .extractDiagnostics(result.stderrLines, target, originId!!, isCommandLineFormattedOutput = true)
                 diagnostics.forEach { bspClientLogger.publishDiagnostics(it) }
               }
             log.warn(queryFailedMessage)
           }
           // best effort to parse the output even when there are errors
-          result.stdout.toJson(log)
+          try {
+            JsonParser.parseReader(result.stdout.inputStream().reader())
+          } catch (e: Exception) {
+            log?.error("Failed to parse string to json", e)
+            null
+          }
         } as? JsonObject
 
     return try {
@@ -194,7 +208,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
   }
 }
 
-private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderr}"
+private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderrLines.joinToString("\n")}"
 
 data class BzlmodDependency(val key: String, val name: String, val apparentName: String, val dependencies: List<BzlmodDependency>)
 

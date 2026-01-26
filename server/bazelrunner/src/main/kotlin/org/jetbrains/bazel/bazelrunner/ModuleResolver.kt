@@ -1,9 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.commons.gson.bazelGson
-import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import kotlin.collections.set
 
 sealed interface ShowRepoResult {
   val name: String
@@ -80,7 +78,7 @@ class ModuleOutputParser {
   fun parseShowRepoResults(bazelProcessResult: BazelProcessResult): Map<String, ShowRepoResult?> {
     if (bazelProcessResult.isNotSuccess) {
       // If the exit code is not 0, bazel prints the error message to stderr
-      error("Failed to resolve module from bazel info. Bazel Info output:\n'${bazelProcessResult.stderr}'")
+      error("Failed to resolve module from bazel info. Bazel Info output:\n'${bazelProcessResult.stderrLines.joinToString("\n")}'")
     }
 
     return splitInfoGroups(bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }
@@ -106,7 +104,7 @@ class ModuleResolver(
     val processResult =
       bazelRunner
         .runBazelCommand(command)
-        .waitAndGetResult(true)
+        .waitAndGetResult()
     return moduleOutputParser.parseShowRepoResults(processResult)
   }
 
@@ -133,18 +131,18 @@ class ModuleResolver(
     val processResult =
       bazelRunner
         .runBazelCommand(command)
-        .waitAndGetResult(true)
+        .waitAndGetResult()
 
     if (processResult.isNotSuccess) {
       // dumpRepoMapping was added in Bazel 7.1.0, so it's going to fail with 7.0.0: https://github.com/bazelbuild/bazel/issues/20972
-      error("dumpRepoMapping failed with output: ${processResult.stdout}")
+      error("dumpRepoMapping failed with output: ${processResult.stdoutLines.joinToString("\n")}")
     }
-    @Suppress("UNCHECKED_CAST")
-    return processResult.stdoutLines.map {
-      it.toJson().let {
-        it.let { gson.fromJson(it, Map::class.java) } as? Map<String, String>
-        ?: error("Failed to parse repo mapping from bazel. Bazel output:\n$it")
-      }
-    }.zip(canonicalRepoNames).associate { (map, canonicalRepoName) -> canonicalRepoName to map }
+    try {
+      return processResult.stdoutLines.map { line ->
+        gson.fromJson<Map<String, String>>(line, Map::class.java)
+      }.zip(canonicalRepoNames).associate { (map, canonicalRepoName) -> canonicalRepoName to map }
+    } catch (ex: Throwable) {
+      throw Error("Failed to parse repo mapping from bazel. Bazel output:\n${processResult.stdoutLines.joinToString("\n")}", ex)
+    }
   }
 }

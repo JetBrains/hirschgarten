@@ -6,7 +6,6 @@ import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -89,7 +88,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
   // Starts a process which evaluates a given query.
   // Result is valid for one call of waitAndGetResult() and another evaluation cannot be called
   // before a result of previous is received.
-  suspend fun orderEvaluation(command: String, flags: List<BazelFlag>) {
+  fun orderEvaluation(command: String, flags: List<BazelFlag>) {
     if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
 
     val commandToRun =
@@ -112,7 +111,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
     val retrievedProcess = currentProcess.get()
     if (retrievedProcess != null) { // Cancellation might be called before UI changes state but after the process is finished
       if (currentProcessCancelled.compareAndSet(false, true)) {
-        retrievedProcess.process.destroy() // it seems like it calls SIGTERM
+        retrievedProcess.destroy() // it seems like it calls SIGTERM
       }
     }
   }
@@ -123,7 +122,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
     return if (retrievedProcess != null) {
       val result = retrievedProcess.waitAndGetResult()
       currentProcess.set(null)
-      retrievedProcess.process.destroy()
+      retrievedProcess.destroy()
       if (currentProcessCancelled.get()) null else result
       // There exists an exit code in bazel (8) which would result with .bazelStatus in return value being BazelStatus.CANCEL,
       // but with SIGTERM being called on the process return value is 143, which results in BazelStatus.FATAL_ERROR.

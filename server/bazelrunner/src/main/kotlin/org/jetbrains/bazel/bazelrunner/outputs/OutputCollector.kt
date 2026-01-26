@@ -1,15 +1,18 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-class OutputCollector : OutputHandler {
-  private val lines = mutableListOf<String>()
-  private val stringBuilder = StringBuilder()
+import java.io.ByteArrayOutputStream
 
-  override fun onNextLine(line: String) {
-    lines.add(line.removeSuffix("\n").removeSuffix("\r"))
-    stringBuilder.append(line)
+class OutputCollector {
+  private val raw = ByteArrayOutputStream()
+
+  fun append(byte: Int) {
+    raw.write(byte)
   }
 
-  fun lines(): List<String> = lines.toList()
+  fun append(bytes: ByteArray, offset: Int = 0, length: Int = bytes.size) {
+    raw.write(bytes, offset, length)
+  }
 
-  fun output(): String = stringBuilder.toString()
+  fun raw(): ByteArray = raw.toByteArray()
+  fun lines(): List<String> = raw().toString(Charsets.UTF_8).lines()
 }

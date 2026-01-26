@@ -18,11 +18,11 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
-import org.jetbrains.bazel.sync.workspace.EarlyBazelSyncProject
 import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveServiceMock
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bsp.protocol.BazelProject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -47,7 +47,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
           BazelResolvedWorkspace(
             targets = listOf(),
           ),
-        earlyBazelSyncProject = EarlyBazelSyncProject(mapOf(), false),
+        bazelProject = BazelProject(mapOf(), false),
       ),
       disposable,
     )

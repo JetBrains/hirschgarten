@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.bazelrunner
 
-import org.jetbrains.bazel.bazelrunner.outputs.AsyncOutputProcessor
 import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
-import org.jetbrains.bazel.bazelrunner.outputs.SyncOutputProcessor
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.Stopwatch
@@ -12,27 +10,20 @@ import org.jetbrains.bazel.logger.bazelLogger
 import java.time.Duration
 
 class BazelProcess internal constructor(
-  val process: Process,
+  private val process: Process,
   private val logger: BspClientLogger? = null,
   private val finishCallback: () -> Unit = {},
 ) {
-  suspend fun waitAndGetResult(ensureAllOutputRead: Boolean = false): BazelProcessResult {
+  val pid: Long get() = process.pid()
+
+  suspend fun waitAndGetResult(): BazelProcessResult {
     try {
       val stopwatch = Stopwatch.start()
-      val outputProcessor: OutputProcessor =
-        if (logger != null) {
-          if (ensureAllOutputRead) {
-            SyncOutputProcessor(process, logger::messageWithoutNewLine)
-          } else {
-            AsyncOutputProcessor(process, logger::messageWithoutNewLine)
-          }
-        } else {
-          if (ensureAllOutputRead) {
-            SyncOutputProcessor(process, LOGGER::info)
-          } else {
-            AsyncOutputProcessor(process, LOGGER::info)
-          }
-        }
+      val outputProcessor =
+        OutputProcessor(
+          process,
+          if (logger != null) logger::messageWithoutNewLine else LOGGER::info,
+        )
 
       val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelFeatureFlags.killServerOnCancel)
       val duration = stopwatch.stop()
@@ -41,6 +32,10 @@ class BazelProcess internal constructor(
     } finally {
       finishCallback()
     }
+  }
+
+  fun destroy() {
+    process.destroy()
   }
 
   private fun logCompletion(exitCode: Int, duration: Duration) {

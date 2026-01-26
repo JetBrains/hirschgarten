@@ -6,6 +6,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import java.nio.file.Path
+import kotlin.collections.joinToString
 
 object InverseSourcesQuery {
   suspend fun inverseSourcesQuery(
@@ -74,7 +75,7 @@ object InverseSourcesQuery {
       null
     } else {
       throw RuntimeException(
-        "Could not find file. Bazel query failed:\n command:\n${command.buildExecutionDescriptor().command}\nstderr:\n${fileLabelResult.stderr}\nstdout:\n${fileLabelResult.stdout}",
+        "Could not find file. Bazel query failed:\n command:\n${command.buildExecutionDescriptor().command}\nstderr:\n${fileLabelResult.stderrLines.joinToString("\n")}\nstdout:\n${fileLabelResult.stdoutLines.joinToString("\n")}",
       )
     }
   }

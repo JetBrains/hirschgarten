@@ -28,10 +28,10 @@ object JvmToolchainQuery {
     val cqueryResult =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false)
-        .waitAndGetResult(ensureAllOutputRead = true)
+        .waitAndGetResult()
     if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for jvm toolchain info")
     try {
-      val classpaths = Gson().fromJson(cqueryResult.stdout, JvmToolchainInfo::class.java)
+      val classpaths = Gson().fromJson(cqueryResult.stdout.inputStream().reader(), JvmToolchainInfo::class.java)
       return classpaths
     } catch (e: JsonSyntaxException) {
       // sometimes Bazel returns two values to a query when multiple configurations apply to a target
@@ -60,7 +60,7 @@ object JvmToolchainQuery {
     val aqueryResult =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false)
-        .waitAndGetResult(ensureAllOutputRead = true)
+        .waitAndGetResult()
     if (aqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for jvm toolchain info")
 
     return parseJavaHomeAndToolchainPathFromAquery(aqueryResult.stdout)
@@ -70,9 +70,9 @@ object JvmToolchainQuery {
    * Extract java_home, toolchain_path, and jvm_opts from aquery result.
    * Uses -jar as delimiter: everything before -jar are JVM options, everything after are compiler options.
    */
-  private fun parseJavaHomeAndToolchainPathFromAquery(stdout: String): JvmToolchainInfo {
+  private fun parseJavaHomeAndToolchainPathFromAquery(stdout: ByteArray): JvmToolchainInfo {
     val gson = Gson()
-    val jsonObject = gson.fromJson(stdout, JsonObject::class.java)
+    val jsonObject = gson.fromJson(stdout.inputStream().reader(), JsonObject::class.java)
     val actions = jsonObject.getAsJsonArray("actions")
 
     if (actions.isEmpty) {

@@ -32,26 +32,22 @@ class FirstPhaseProjectResolver(
           }
         }
 
-      val bazelProcess = bazelRunner.runBazelCommand(command, logProcessOutput = false, originId = originId)
-      val inputStream = bazelProcess.process.inputStream
+      val bazelResult =
+        bazelRunner
+          .runBazelCommand(command, logProcessOutput = false, originId = originId)
+          .waitAndGetResult()
 
-      val targets = generateSequence { Target.parseDelimitedFrom(inputStream) }
+      val targets = generateSequence { Target.parseDelimitedFrom(bazelResult.stdout.inputStream()) }
       val modules = targets.associateBy { Label.parse(it.rule.name) }
 
-      val repoMapping =
-        calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+      val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
 
-      val project =
-        PhasedSyncProject(
-          workspaceRoot = workspaceRoot,
-          bazelRelease = bazelInfo.release,
-          modules = modules,
-          repoMapping = repoMapping,
-          workspaceContext = workspaceContext,
-        )
-
-      bazelProcess.waitAndGetResult(true)
-
-      project
+      PhasedSyncProject(
+        workspaceRoot = workspaceRoot,
+        bazelRelease = bazelInfo.release,
+        modules = modules,
+        repoMapping = repoMapping,
+        workspaceContext = workspaceContext,
+      )
     }
 }

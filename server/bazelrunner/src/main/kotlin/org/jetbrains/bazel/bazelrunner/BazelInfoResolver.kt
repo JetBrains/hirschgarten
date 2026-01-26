@@ -24,7 +24,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
     val processResult =
       bazelRunner
         .runBazelCommand(command)
-        .waitAndGetResult(true)
+        .waitAndGetResult()
     if (processResult.isNotSuccess) error("Querying bazel info failed.\n${processResult.stderrLines.joinToString("\n")}")
     return parseBazelInfo(processResult)
   }

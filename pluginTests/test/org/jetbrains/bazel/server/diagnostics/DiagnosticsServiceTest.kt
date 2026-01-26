@@ -1163,5 +1163,5 @@ class DiagnosticsServiceTest {
     buildTarget: Label,
     isCommandLineFormattedOutput: Boolean = false,
   ): List<PublishDiagnosticsParams> =
-    DiagnosticsService(workspacePath).extractDiagnostics(output, buildTarget, "originId", isCommandLineFormattedOutput)
+    DiagnosticsService(workspacePath).extractDiagnostics(output.lines(), buildTarget, "originId", isCommandLineFormattedOutput)
 }
