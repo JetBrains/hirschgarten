@@ -178,8 +178,11 @@ class BazelBzlModExternalRulesetsQueryImpl(
 
       val directDepsApparentNames = graph.dependencies.map { it.apparentName }
       val indirectDepsApparentNames = indirectDeps.map { it.apparentName }
-
-      return (directDepsApparentNames + indirectDepsApparentNames).distinct()
+      val moduleName = graph.name?.ifEmpty { null }
+      // We include the current module name to handle the edge case for the rules_kotlin repository.
+      // In this scenario, the Bazel module does not declare a dependency on rules_kotlin because the module itself *is* rules_kotlin.
+      // Without this, Kotlin support would not be enabled in this case, causing redcodes in the IDE.
+      return (directDepsApparentNames + indirectDepsApparentNames + listOfNotNull(moduleName)).distinct()
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()
@@ -195,7 +198,10 @@ private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel q
 
 data class BzlmodDependency(val key: String, val name: String, val apparentName: String, val dependencies: List<BzlmodDependency>)
 
-data class BzlmodGraph(val dependencies: List<BzlmodDependency>) {
+data class BzlmodGraph(
+  val name: String?,
+  val dependencies: List<BzlmodDependency>,
+) {
   fun getAllDirectRulesetDependencyNames() = dependencies.map { it.name }
 
   fun includedByDirectDeps(rootRulesetName: String, transitiveRulesetName: String): List<BzlmodDependency> =
