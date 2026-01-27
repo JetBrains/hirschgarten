@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner
 
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
@@ -74,14 +75,35 @@ class ModuleOutputParser {
     }
   }
 
-  // TODO: keep track of https://github.com/bazelbuild/bazel/issues/21617
-  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult): Map<String, ShowRepoResult?> {
+  fun parseJsonRepoDescription(jsonText: String): Map<String, ShowRepoResult?> {
+    if (jsonText.isEmpty()) return emptyMap() // ignore empty lines that might be included in the output
+
+    try {
+      val description = bazelGson.fromJson<JsonProto.Repository>(jsonText, JsonProto.Repository::class.java)
+      if (description.canonicalName == null) return emptyMap() // Nothing we can do with that repository
+      val key = description.moduleKey ?: description.canonicalName
+      if (description.repoRuleName != "local_repository") {
+        return mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText))
+      }
+      val pathValues = description.attribute.filter { it.name == "path" }.map { it.stringValue }.filterNotNull()
+      if (pathValues.isEmpty()) return mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText))
+      return mapOf(key to ShowRepoResult.LocalRepository(description.canonicalName, pathValues.last()))
+    }
+    catch (ex: Throwable) {
+      throw Error("Failed to parse repository json description: $jsonText", ex)
+    }
+  }
+
+  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult, isJson: Boolean): Map<String, ShowRepoResult?> {
     if (bazelProcessResult.isNotSuccess) {
       // If the exit code is not 0, bazel prints the error message to stderr
       error("Failed to resolve module from bazel info. Bazel Info output:\n'${bazelProcessResult.stderrLines.joinToString("\n")}'")
     }
-
-    return splitInfoGroups(bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }
+    if (!isJson) {
+      return splitInfoGroups(bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }
+    }
+    // The output is new-line-delimited JSON, i.e., each line is a JSON description of one repository.
+    return bazelProcessResult.stdoutLines.map { parseJsonRepoDescription(it) }.reduce { acc, result -> acc + result }
   }
 }
 
@@ -93,11 +115,15 @@ class ModuleResolver(
   /**
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
-  suspend fun resolveModule(moduleNames: List<String>): Map<String, ShowRepoResult?> {
+  suspend fun resolveModule(moduleNames: List<String>, bazelInfo: BazelInfo): Map<String, ShowRepoResult?> {
     if (moduleNames.isEmpty()) return emptyMap() // avoid bazel call if no information is needed
+    val json_output = bazelInfo.release.major >= 9
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         showRepo {
+          if (json_output) {
+            options.add("--output=streamed_jsonproto")
+          }
           options.addAll(moduleNames)
         }
       }
@@ -105,7 +131,7 @@ class ModuleResolver(
       bazelRunner
         .runBazelCommand(command)
         .waitAndGetResult()
-    return moduleOutputParser.parseShowRepoResults(processResult)
+    return moduleOutputParser.parseShowRepoResults(processResult, json_output)
   }
 
   val gson = bazelGson
@@ -141,8 +167,15 @@ class ModuleResolver(
       return processResult.stdoutLines.map { line ->
         gson.fromJson<Map<String, String>>(line, Map::class.java)
       }.zip(canonicalRepoNames).associate { (map, canonicalRepoName) -> canonicalRepoName to map }
-    } catch (ex: Throwable) {
+    }
+    catch (ex: Throwable) {
       throw Error("Failed to parse repo mapping from bazel. Bazel output:\n${processResult.stdoutLines.joinToString("\n")}", ex)
     }
   }
+}
+
+class JsonProto {
+  // Class representations of the relevant parts of some messages from https://github.com/bazelbuild/bazel/blob/master/src/main/protobuf/build.proto
+  data class Attribute(val name: String, val stringValue: String?)
+  data class Repository(val moduleKey: String?, val canonicalName: String?, val repoRuleName: String?, val attribute: List<Attribute>)
 }
