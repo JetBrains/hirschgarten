@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory
 import java.io.BufferedInputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermission
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.io.path.deleteExisting
@@ -18,7 +17,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class BepReader(val bepServer: BepServer) {
   val eventFile: Path =
     Files.createTempFile("bazel-bep-output", null).toAbsolutePath().also {
-      Files.setPosixFilePermissions(it, setOf(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE))
+      it.setFilePermissions()
     }
   val serverPid = AtomicLong(0)
 
@@ -72,5 +71,12 @@ class BepReader(val bepServer: BepServer) {
   companion object {
     private val logger: Logger = LoggerFactory.getLogger(BepReader::class.java)
     private val PollInterval = 10.milliseconds
+
+    private fun Path.setFilePermissions() {
+      with(toFile()) {
+        setReadable(true, true)
+        setWritable(true, true)
+      }
+    }
   }
 }
