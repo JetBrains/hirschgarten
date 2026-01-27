@@ -18,7 +18,7 @@ import kotlin.io.path.writer
 fun CodeInsightTestFixture.checkHighlighting(
   path: String,
 ) {
-  openFileInEditor(virtualFileOf("$tempDirPath/$path"))
+  configureFromTempProjectFile(path)
   checkHighlighting()
 }
 
