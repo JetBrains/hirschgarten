@@ -20,6 +20,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 class JavaLanguagePlugin(
   private val bazelPathsResolver: BazelPathsResolver,
@@ -71,6 +72,13 @@ class JavaLanguagePlugin(
       mainClass = mainClass,
       jvmArgs = jvmTarget.jvmFlagsList,
       programArgs = jvmTarget.argsList,
+      resourceStripPrefix = when {
+        jvmTarget.hasResourceStripPrefix() -> jvmTarget
+          .resourceStripPrefix
+          .ifEmpty { null }
+          ?.let { bazelPathsResolver.resolve(Path(it)) }
+        else -> null
+      }
     )
   }
 

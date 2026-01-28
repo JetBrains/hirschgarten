@@ -37,6 +37,7 @@ message JvmTargetInfo {
   repeated string args = 9;
   repeated FileLocation jdeps = 10;
   bool has_api_generating_plugins = 12;
+  optional string resource_strip_prefix = 13;
 }
 
 message JavaToolchainInfo {

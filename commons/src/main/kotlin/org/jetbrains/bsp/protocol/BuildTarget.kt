@@ -88,6 +88,7 @@ data class JvmBuildTarget(
   val mainClass: String? = null,
   val jvmArgs: List<String> = listOf(),
   val programArgs: List<String> = listOf(),
+  val resourceStripPrefix: Path? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(5)

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ExcludeUrlEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
@@ -15,14 +16,20 @@ class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: Wo
     val contentRootEntities =
       entitiesToAdd
         .asSequence()
-        .map { it.path }
-        .map { it.toResolvedVirtualFileUrl(virtualFileManager) }
         .map {
+          val url = it.path.toResolvedVirtualFileUrl(virtualFileManager)
           ContentRootEntity(
-            url = it,
+            url = url,
             excludedPatterns = emptyList(),
             entitySource = entitySource,
-          )
+          ).apply {
+            excludedUrls = it.excluded.map { file ->
+              ExcludeUrlEntity(
+                url = file.toResolvedVirtualFileUrl(virtualFileManager),
+                entitySource = entitySource,
+              )
+            }
+          }
         }.toList()
 
     val updatedModuleEntity =
