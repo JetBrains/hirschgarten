@@ -10,7 +10,7 @@ import org.jetbrains.bazel.test.framework.checkHighlighting
 class KotlinModuleInternalManglingTest : BazelSyncCodeInsightFixtureTestCase() {
 
   fun testHighlighting() = runBlocking {
-    myFixture.copyDirectoryToProject("redcodes/kotlin_module_internal_mangling", "")
+    myFixture.copyBazelTestProject("redcodes/kotlin_module_internal_mangling")
     myFixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       myFixture.checkHighlighting("B.java")
