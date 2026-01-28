@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage", "SameParameterValue")
 
-package org.jetbrains.bazel.workspace
+package org.jetbrains.bazel.workspace.fileEvents
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -57,11 +57,11 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 
-class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
-  private val target1 = Label.parse("//src:target1")
-  private val target2 = Label.parse("//src:target2")
-  private val target3 = Label.parse("//src/package:target3")
-  private val target4 = Label.parse("//src:target4")
+class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
+  private val target1 = Label.parse(TARGET1)
+  private val target2 = Label.parse(TARGET2)
+  private val target3 = Label.parse(TARGET3)
+  private val target4 = Label.parse(TARGET4)
   private val requestor = this
   private lateinit var inverseSourcesServer: InverseSourcesServer
 
@@ -98,7 +98,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
-  fun `source file rename`() {
+  fun `source file rename with extension change`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
     createEvent(file).process().assertNotNullAndAwait()
 
@@ -108,14 +108,39 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
       target4 to false,
     )
 
+    runTestWriteAction { file.rename(requestor, "aaa.kt") }
+    renameEvent(file, "aaa.java", "aaa.kt").process().assertNotNullAndAwait()
+
+    file.assertFileBelongsToTargets(
+      target1 to false,
+      target2 to false,
+      target4 to true,
+    )
+  }
+
+  @Test
+  fun `source file rename without extension change`() {
+    val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
+    createEvent(file).process().assertNotNullAndAwait()
+    inverseSourcesServer.called = false // file creation processing is just for technical purposes
+
+    file.assertFileBelongsToTargets(
+      target1 to true,
+      target2 to true,
+    )
+
     runTestWriteAction { file.rename(requestor, "bbb.java") }
+
+    file.toVirtualFileUrl(virtualFileUrlManager).belongsToTarget(target1).shouldBeFalse()
+    file.toVirtualFileUrl(virtualFileUrlManager).belongsToTarget(target2).shouldBeFalse()
+
     renameEvent(file, "aaa.java", "bbb.java").process().assertNotNullAndAwait()
 
     file.assertFileBelongsToTargets(
       target1 to true,
-      target2 to false,
-      target4 to true,
+      target2 to true,
     )
+    inverseSourcesServer.called.shouldBeFalse()
   }
 
   @Test
@@ -128,17 +153,14 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     file.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
-      target3 to false,
     )
 
     val moveEvent = moveEvent(file, pack)
     runTestWriteAction { file.move(requestor, pack) }
     moveEvent.process().assertNotNullAndAwait()
-
     file.assertFileBelongsToTargets(
       target1 to false,
       target2 to true,
-      target3 to true,
     )
   }
 
@@ -186,6 +208,47 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     file.assertFileBelongsToTargets(
       target1 to false,
       target2 to false,
+    )
+  }
+
+  @Test
+  fun `multiple simultaneous file events should be processed`() {
+    val src = project.rootDir.createDirectory("src")
+    val pack = src.createDirectory("package")
+
+    val fileCreated = src.createFile("bbb", "java")
+    val fileMoved = src.createFile("aaa", "java")
+    createEvent(fileMoved).process().assertNotNullAndAwait()
+
+    fileMoved.assertFileBelongsToTargets(
+      target1 to true,
+      target2 to true,
+      target3 to false,
+    )
+    fileCreated.assertFileBelongsToTargets(
+      target1 to false,
+      target4 to false,
+    )
+
+    val moveEvent = moveEvent(fileMoved, pack)
+    runTestWriteAction { fileMoved.move(requestor, pack) }
+
+    // the first and the last events should be ignored, but should not cause ignoring the two middle events
+    processEvents(
+      contentChangeEvent(fileMoved),
+      createEvent(fileCreated),
+      moveEvent,
+      encodingChangeEvent(fileCreated),
+    ).assertNotNullAndAwait()
+
+    fileMoved.assertFileBelongsToTargets(
+      target1 to false,
+      target2 to true,
+      target3 to true,
+    )
+    fileCreated.assertFileBelongsToTargets(
+      target1 to true,
+      target4 to true,
     )
   }
 
@@ -367,7 +430,11 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   private fun contentChangeEvent(file: VirtualFile) = VFileContentChangeEvent(requestor, file, 0, 0)
 
-  private fun VFileEvent.process(): Job? = AssignFileToModuleListener().afterSingleFileEvent(this)[project.locationHash]
+  private fun VFileEvent.process(): Job? = processEvents(this)
+
+  private fun processEvents(vararg events: VFileEvent): Job? =
+    BazelFileEventListener().process(events.toList())[project.locationHash]
+    //AssignFileToModuleListener().process(events.toList())[project.locationHash]
 
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     this.toVirtualFileUrl(virtualFileUrlManager).assertFileBelongsToTargets(*expectedBelongingStatus)
@@ -375,8 +442,11 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   private fun VirtualFileUrl.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     expectedBelongingStatus.forEach { (target, shouldBeAdded) ->
-      doesModuleContainFile(target, this).shouldBe(shouldBeAdded)
-      this.belongsToTarget(target).shouldBe(shouldBeAdded)
+      // separate variables help with debugging
+      val projectModel = doesModuleContainFile(target, this)
+      val ourModel = this.belongsToTarget(target)
+      projectModel.shouldBe(shouldBeAdded)
+      ourModel.shouldBe(shouldBeAdded)
     }
   }
 
@@ -421,9 +491,10 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
 
   private val inverseSourcesData =
     mapOf(
-      "src/aaa.java" to listOf("//src:target1", "//src:target2"),
-      "src/package/aaa.java" to listOf("//src/package:target3", "//src:target2"),
-      "src/bbb.java" to listOf("//src:target1", "//src:target4"),
+      "src/aaa.java" to listOf(TARGET1, TARGET2),
+      "src/package/aaa.java" to listOf(TARGET3, TARGET2),
+      "src/bbb.java" to listOf(TARGET1, TARGET4),
+      "src/aaa.kt" to listOf(TARGET4),
     ).mapValues { it.value.map { target -> Label.parse(target) } }
 
   private val connection =
@@ -438,11 +509,10 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     called = true
-    val relativePath =
-      inverseSourcesParams.textDocument.path
-        .relativeTo(projectBasePath)
-        .toString()
-    return InverseSourcesResult(inverseSourcesData.getOrDefault(relativePath, emptyList()))
+    val results = inverseSourcesParams.files.associateWith {
+      inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
+    }
+    return InverseSourcesResult(results)
   }
 }
 
@@ -460,7 +530,7 @@ private class BlockedServerSimulator(private val rendezvous: Channel<*>) : Build
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     rendezvous.receive()
-    return InverseSourcesResult(emptyList())
+    return InverseSourcesResult(emptyMap())
   }
 }
 
@@ -468,3 +538,8 @@ private fun Job?.assertNotNullAndAwait() {
   this.shouldNotBeNull()
   runBlocking { join() }
 }
+
+private const val TARGET1 = "//src:target1"
+private const val TARGET2 = "//src:target2"
+private const val TARGET3 = "//src/package:target3"
+private const val TARGET4 = "//src:target4"
