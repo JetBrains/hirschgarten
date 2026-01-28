@@ -364,7 +364,5 @@ abstract class BazelCommand(val bazelBinary: String) {
 
   class ModDumpRepoMapping(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "dump_repo_mapping"))
 
-  class FileQuery(bazelBinary: String, filePath: String) : SimpleCommand(bazelBinary, listOf("query", filePath))
-
   class QueryExpression(bazelBinary: String, expression: String) : SimpleCommand(bazelBinary, listOf("query", expression))
 }

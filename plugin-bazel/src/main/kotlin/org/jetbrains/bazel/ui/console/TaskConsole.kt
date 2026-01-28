@@ -74,6 +74,7 @@ abstract class TaskConsole(
     message: String,
     cancelAction: () -> Unit = {},
     redoAction: (suspend () -> Unit)? = null,
+    showConsole: ShowConsole = ShowConsole.ALWAYS,
   ): Unit =
     doUnlessTaskInProgress(taskId) {
       tasksInProgress.add(taskId)
@@ -83,6 +84,7 @@ abstract class TaskConsole(
         message,
         cancelAction,
         redoAction,
+        showConsole,
       )
     }
 
@@ -92,9 +94,23 @@ abstract class TaskConsole(
     message: String,
     cancelAction: () -> Unit,
     redoAction: (suspend () -> Unit)?,
+    showConsole: ShowConsole,
   ) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
-    taskDescriptor.isActivateToolWindowWhenAdded = true
+    when (showConsole) {
+      ShowConsole.ALWAYS -> {
+        taskDescriptor.isActivateToolWindowWhenAdded = true
+        taskDescriptor.isActivateToolWindowWhenFailed = true
+      }
+      ShowConsole.ON_FAIL -> {
+        taskDescriptor.isActivateToolWindowWhenAdded = false
+        taskDescriptor.isActivateToolWindowWhenFailed = true
+      }
+      ShowConsole.NEVER -> {
+        taskDescriptor.isActivateToolWindowWhenAdded = false
+        taskDescriptor.isActivateToolWindowWhenFailed = false
+      }
+    }
     addRedoActionToDescriptor(taskDescriptor, redoAction)
     addCancelActionToDescriptor(taskId, taskDescriptor, cancelAction)
     addPtyToDescriptor(taskId, taskDescriptor)
@@ -480,6 +496,12 @@ abstract class TaskConsole(
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+  }
+
+  enum class ShowConsole {
+    ALWAYS,
+    ON_FAIL,
+    NEVER,
   }
 }
 
