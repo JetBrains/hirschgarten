@@ -42,7 +42,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
 
   data class DummyModulesToAdd(val dummyModules: List<JavaModule>) : Result
 
-  data class MergedRoots(val mergedSourceRoots: List<JavaSourceRoot>, val mergedResourceRoots: List<ResourceRoot>?) : Result
+  data class MergedRoots(val mergedSourceRoots: List<JavaSourceRoot>) : Result
 
   fun transform(inputEntity: JavaModule): Result {
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
@@ -58,11 +58,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
           sourceRootsForParentDirs,
         )
       if (mergedSourceRoots != null) {
-        val mergedResourceRoots = tryMergeResources(inputEntity.resourceRoots)
-        return MergedRoots(
-          mergedSourceRoots = mergedSourceRoots + irrelevantSourceRoots,
-          mergedResourceRoots = mergedResourceRoots,
-        )
+        return MergedRoots(mergedSourceRoots = mergedSourceRoots + irrelevantSourceRoots)
       }
     }
     val dummySourceRoots =
@@ -147,25 +143,6 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
    * This can cause red code, e.g., on https://github.com/bazelbuild/bazel
    */
   private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargetWithoutLowPrioritySharedSources[this]?.size ?: 0) > 1
-
-  private fun tryMergeResources(resourceRoots: List<ResourceRoot>): List<ResourceRoot>? {
-    if (resourceRoots.isEmpty()) return emptyList()
-    val rootType = resourceRoots.first().rootType
-
-    val resourceRootPaths = resourceRoots.map { it.resourcePath }
-    val resourceRootPathSet = resourceRootPaths.toSet()
-    val commonAncestor = resourceRootPaths.commonAncestor()?.takeIf { it.isDirectory() }
-
-    if (commonAncestor != null && !mergedRootsCoverNewFiles(listOf(commonAncestor), resourceRootPathSet)) {
-      return listOf(ResourceRoot(commonAncestor, rootType))
-    }
-
-    val parentDirectories = resourceRootPaths.map { it.parent }.toSet().filterPathsThatDontContainEachOther()
-    if (!mergedRootsCoverNewFiles(parentDirectories, resourceRootPathSet)) {
-      return parentDirectories.map { ResourceRoot(it, rootType) }
-    }
-    return null
-  }
 
   /**
    * @param relevantExtensions consider new files only with the specified extensions, or `null` to consider all new files

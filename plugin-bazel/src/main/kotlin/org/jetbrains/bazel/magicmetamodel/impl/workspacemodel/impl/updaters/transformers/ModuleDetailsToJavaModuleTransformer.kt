@@ -64,10 +64,7 @@ class ModuleDetailsToJavaModuleTransformer(
 
       is JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots -> {
         val javaModuleWithMergedSourceRoots =
-          javaModule.copy(
-            sourceRoots = dummyModulesResult.mergedSourceRoots,
-            resourceRoots = dummyModulesResult.mergedResourceRoots ?: javaModule.resourceRoots,
-          )
+          javaModule.copy(sourceRoots = dummyModulesResult.mergedSourceRoots)
         listOf(javaModuleWithMergedSourceRoots)
       }
     }

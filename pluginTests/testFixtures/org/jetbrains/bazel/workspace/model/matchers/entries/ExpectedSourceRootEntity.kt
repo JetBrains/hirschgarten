@@ -57,4 +57,5 @@ private fun toExpectedContentRootEntity(expected: ExpectedSourceRootEntity): Exp
   ExpectedContentRootEntity(
     url = expected.contentRootEntity.url,
     parentModuleEntity = expected.parentModuleEntity,
+    excludedUrls = expected.contentRootEntity.excludedUrls,
   )
