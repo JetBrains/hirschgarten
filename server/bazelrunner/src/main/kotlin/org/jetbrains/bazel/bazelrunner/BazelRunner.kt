@@ -181,14 +181,6 @@ class BazelRunner(
     if (environment.isNotEmpty()) {
       commandLine.withEnvironment(environment)
     }
-    // Ensure HOME/USERPROFILE is set (Bazelisk requires it to determine its cache directory)
-    val userHome = System.getProperty("user.home")
-    if (commandLine.environment["HOME"] == null) {
-      commandLine.withEnvironment("HOME", userHome)
-    }
-    if (commandLine.environment["USERPROFILE"] == null) {
-      commandLine.withEnvironment("USERPROFILE", userHome)
-    }
 
     commandLine.withRedirectErrorStream(false)
     return commandLine.createProcess()
