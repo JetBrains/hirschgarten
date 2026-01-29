@@ -55,7 +55,7 @@ data class BazelRelease(val major: Int, val minor: Int = 0) {
   fun deprecated(): String? {
     if (major < OLDEST_SUPPORTED_MAJOR) return "Bazel major version $major is deprecated; the oldest supported version is $OLDEST_SUPPORTED_MAJOR.${MINIMAL_MINOR_VERSION[OLDEST_SUPPORTED_MAJOR] ?: 0}."
 
-    if (minor < MINIMAL_MINOR_VERSION[major] ?: 0) return "Bazel-$major versions older than $major.${MINIMAL_MINOR_VERSION[major] ?: 0} are unsupported."
+    if (minor < (MINIMAL_MINOR_VERSION[major] ?: 0)) return "Bazel-$major versions older than $major.${MINIMAL_MINOR_VERSION[major] ?: 0} are unsupported."
 
     return null
   }

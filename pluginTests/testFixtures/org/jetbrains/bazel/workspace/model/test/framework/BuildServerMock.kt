@@ -98,18 +98,19 @@ open class BuildServerMock(
 
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
+  override val bazelInfo =
+    BazelInfo(
+      execRoot = Paths.get(""),
+      outputBase = Paths.get(""),
+      workspaceRoot = Paths.get(""),
+      bazelBin = Path("bazel-bin"),
+      release = BazelRelease.fromReleaseString("release 6.0.0").orFallbackVersion(),
+      false,
+      true,
+      emptyList(),
+    )
+
   override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult {
-    val bazelInfo =
-      BazelInfo(
-        execRoot = Paths.get(""),
-        outputBase = Paths.get(""),
-        workspaceRoot = Paths.get(""),
-        bazelBin = Path("bazel-bin"),
-        release = BazelRelease.fromReleaseString("release 6.0.0").orFallbackVersion(),
-        false,
-        true,
-        emptyList(),
-      )
     return WorkspaceBazelPathsResult("/path/to/bazel-bin", "/path/to/bazel-out/exec", BazelPathsResolver(bazelInfo))
   }
 
