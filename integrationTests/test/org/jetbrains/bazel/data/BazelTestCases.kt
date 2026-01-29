@@ -143,7 +143,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val ExternalRepoResolve = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "cc8120484e09df881e2e41aa19a2de4a27791dc4",
+        commitHash = "aefb5e4a3c606e67304eab2ace525b1872e92ba6",
         branchName = "main",
         relativePath = "starlarkResolveTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
