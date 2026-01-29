@@ -24,7 +24,7 @@ suspend fun startServer(
   val bspClientLogger = BspClientLogger(client)
   val bazelRunner = BazelRunner(bspClientLogger, bspServer.workspaceRoot)
   val bazelInfo = bspServer.createBazelInfo(bazelRunner, workspaceContext)
-  bazelInfo.release.deprecated()?.let { bspClientLogger.warn(it + " Sync might give incomplete results.") }
+  bazelInfo.release.deprecated()?.let { bspClientLogger.warn(it +" Sync might give incomplete results." )}
   val bazelPathsResolver = BazelPathsResolver(bazelInfo)
   val services =
     bspServer.bspServerData(
@@ -43,6 +43,7 @@ suspend fun startServer(
       services.executeService,
       workspaceContext,
       bazelPathsResolver,
+      bazelInfo,
     )
   return bspServerApi
 }

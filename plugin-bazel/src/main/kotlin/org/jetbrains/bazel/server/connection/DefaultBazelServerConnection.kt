@@ -11,6 +11,7 @@ import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.ui.console.ConsoleService
+import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildServer

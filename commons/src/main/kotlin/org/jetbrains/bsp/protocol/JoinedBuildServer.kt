@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -8,6 +9,8 @@ data class BazelProject(val targets: Map<Label, BspTargetInfo.TargetInfo>, val h
 
 interface JoinedBuildServer {
   suspend fun runSync(build: Boolean, originId: String): BazelProject
+
+  val bazelInfo: BazelInfo
 
   suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult
 

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bsp
 
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.sync.ExecuteService
@@ -34,7 +35,9 @@ class BspServerApi(
   private val executeService: ExecuteService,
   val workspaceContext: WorkspaceContext,
   val bazelPathsResolver: BazelPathsResolver,
+  override val bazelInfo: BazelInfo,
 ) : JoinedBuildServer {
+
   override suspend fun runSync(build: Boolean, originId: String): BazelProject = projectSyncService.runSync(build, originId)
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult =
