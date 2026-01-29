@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.projectview.action
 
-import android.databinding.tool.ext.mapEach
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -64,9 +63,11 @@ abstract class ProjectViewDirectoriesActionTestCase(
     val bazelProjectView = bazelProjectView
     runWithModalProgressBlocking(project, "Syncing project view...") {
       val (includes, excludes) = writeAction {
-        bazelProjectView.directories
-          .partition { it.isIncluded() }
-          .mapEach { part -> part.map { root.findOrCreateDirectory(it.value.pathString) } }
+        val (includedDirs, excludedDirs) = bazelProjectView.directories.partition { it.isIncluded() }
+        Pair(
+          includedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
+          excludedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
+        )
       }
       val entity = BazelProjectDirectoriesEntity(
         projectRoot = root.toVirtualFileUrl(manager),
