@@ -7,6 +7,7 @@ import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.fileLogger
@@ -33,6 +34,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
@@ -77,16 +79,19 @@ class ProjectSyncTask(private val project: Project) {
           doSync(syncScope, buildProject)
 
           project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BazelPluginBundle.message("console.task.sync.success"))
-        } catch (e: CancellationException) {
+        }
+        catch (e: CancellationException) {
           project.syncConsole.finishTask(
             PROJECT_SYNC_TASK_ID,
             BazelPluginBundle.message("console.task.sync.cancelled"),
             SkippedResultImpl(),
           )
           throw e
-        } catch (_: SyncAlreadyInProgressException) {
+        }
+        catch (_: SyncAlreadyInProgressException) {
           syncAlreadyInProgress = true
-        } catch (_: SyncPartialFailureException) {
+        }
+        catch (_: SyncPartialFailureException) {
           project.syncConsole.addWarnMessage(
             PROJECT_SYNC_TASK_ID,
             BazelPluginBundle.message("console.task.sync.partialsuccess"),
@@ -96,19 +101,22 @@ class ProjectSyncTask(private val project: Project) {
             BazelPluginBundle.message("console.task.sync.partialsuccess"),
             SuccessResultImpl(true),
           )
-        } catch (_: SyncFatalFailureException) {
+        }
+        catch (_: SyncFatalFailureException) {
           project.syncConsole.finishTask(
             PROJECT_SYNC_TASK_ID,
             BazelPluginBundle.message("console.task.sync.fatalfailure"),
             FailureResultImpl(),
           )
-        } catch (e: Exception) {
+        }
+        catch (e: Exception) {
           project.syncConsole.finishTask(
             PROJECT_SYNC_TASK_ID,
             BazelPluginBundle.message("console.task.sync.failed"),
             FailureResultImpl(e),
           )
-        } finally {
+        }
+        finally {
           if (!syncAlreadyInProgress) {
             postSync()
           }
@@ -123,6 +131,12 @@ class ProjectSyncTask(private val project: Project) {
     clearSyntheticTargets()
     project.serviceAsync<ProjectViewService>().forceReparseCurrentProjectViewFiles()
     project.serviceAsync<SyncStatusService>().startSync()
+
+    BazelServerService.getInstance(project).connection.runWithServer {
+      it.bazelInfo.release.deprecated()?.let {
+        project.syncConsole.addWarnMessage(null, it + " Sync might give incomplete results.")
+      }
+    }
   }
 
   private suspend fun clearSyntheticTargets() {
@@ -225,7 +239,8 @@ class ProjectSyncTask(private val project: Project) {
 
           if (bazelProject.hasError) {
             SyncResultStatus.PARTIAL_SUCCESS
-          } else {
+          }
+          else {
             SyncResultStatus.SUCCESS
           }
         }
@@ -286,7 +301,8 @@ fun <Result> CoroutineScope.asyncQuery(queryName: String, doQuery: suspend () ->
 suspend fun <Result> query(queryName: String, doQuery: suspend () -> Result): Result =
   try {
     withContext(Dispatchers.IO) { doQuery() }
-  } catch (e: Exception) {
+  }
+  catch (e: Exception) {
     when (e) {
       is CancellationException -> fileLogger().info("Query $queryName is cancelled")
       else -> fileLogger().warn("Query $queryName failed", e)

@@ -133,10 +133,11 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
       ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo, workspaceContext)
 
     return BspServerApi(
-        projectSyncService,
-        executeService,
-        workspaceContext,
-        bazelPathsResolver,
-      )
+      projectSyncService = projectSyncService,
+      executeService = executeService,
+      workspaceContext = workspaceContext,
+      bazelPathsResolver = bazelPathsResolver,
+      bazelInfo = bazelInfo,
+    )
   }
 }
