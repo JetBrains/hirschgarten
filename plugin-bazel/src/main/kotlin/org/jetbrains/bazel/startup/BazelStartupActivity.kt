@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.startup
 
 import com.intellij.find.impl.FindInProjectUtil
-import com.intellij.ide.util.gotoByName.GOTO_FILE_SEARCH_IN_NON_INDEXABLE
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -77,7 +76,6 @@ private fun executeOnSyncedProject(project: Project) {
   // Only enable searching after all the excludes from the project view are applied
   if (!BazelFeatureFlags.findInFilesNonIndexable) return
   project.putUserData(FindInProjectUtil.FIND_IN_FILES_SEARCH_IN_NON_INDEXABLE, true)
-  project.putUserData(GOTO_FILE_SEARCH_IN_NON_INDEXABLE, true)
 }
 
 /**
