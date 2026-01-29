@@ -384,11 +384,6 @@
     />
     <registryKey
       defaultValue="false"
-      description="Enable a custom class finder for Java instead of &quot;dummy&quot; modules"
-      key="bazel.enable.custom.java.class.finder"
-    />
-    <registryKey
-      defaultValue="false"
       description="Create fake module on project import"
       key="bazel.create.fake.module.on.project.import"
       />
@@ -506,10 +501,6 @@
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
     />
-    <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"
-    />
-    <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider" />
     <moduleType
       id="BAZEL_DUMMY_MODULE_TYPE"
       implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"

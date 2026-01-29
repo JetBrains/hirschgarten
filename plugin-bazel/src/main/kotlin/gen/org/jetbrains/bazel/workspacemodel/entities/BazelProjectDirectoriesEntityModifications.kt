@@ -58,10 +58,12 @@ fun BazelProjectDirectoriesEntity(
   indexAdditionalFiles: List<VirtualFileUrl>,
   entitySource: EntitySource,
   init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
-): BazelProjectDirectoriesEntityBuilder = BazelProjectDirectoriesEntityType(projectRoot,
-                                                                            includedRoots,
-                                                                            excludedRoots,
-                                                                            indexAllFilesInIncludedRoots,
-                                                                            indexAdditionalFiles,
-                                                                            entitySource,
-                                                                            init)
+): BazelProjectDirectoriesEntityBuilder = BazelProjectDirectoriesEntityType(
+  projectRoot,
+  includedRoots,
+  excludedRoots,
+  indexAllFilesInIncludedRoots,
+  indexAdditionalFiles,
+  entitySource,
+  init,
+)

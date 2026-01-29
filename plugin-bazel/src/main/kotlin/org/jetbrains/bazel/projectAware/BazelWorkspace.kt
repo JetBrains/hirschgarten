@@ -18,7 +18,6 @@ import com.intellij.util.ui.tree.TreeUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.workspace.unregisterProjectExcludesIgnoredFileProvider
 
 @Service(Service.Level.PROJECT)
 class BazelWorkspace(val project: Project) : Disposable {
@@ -27,7 +26,6 @@ class BazelWorkspace(val project: Project) : Disposable {
   @Synchronized
   fun initialize() {
     if (!initialized) {
-      unregisterProjectExcludesIgnoredFileProvider()
       BazelProjectAware.initialize(this)
       BazelProjectModuleBuildTasksTracker.initialize(this)
       BspExternalServicesSubscriber(project).subscribe()

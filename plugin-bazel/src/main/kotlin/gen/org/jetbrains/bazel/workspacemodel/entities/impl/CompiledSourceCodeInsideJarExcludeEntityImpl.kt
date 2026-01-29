@@ -293,10 +293,12 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return CompiledSourceCodeInsideJarExcludeEntity(relativePathsInsideJarToExclude,
-                                                    librariesFromInternalTargetsUrls,
-                                                    excludeId,
-                                                    entitySource)
+    return CompiledSourceCodeInsideJarExcludeEntity(
+      relativePathsInsideJarToExclude,
+      librariesFromInternalTargetsUrls,
+      excludeId,
+      entitySource,
+    )
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {
