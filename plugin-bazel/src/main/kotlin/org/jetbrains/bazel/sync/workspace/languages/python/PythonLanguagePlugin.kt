@@ -62,6 +62,8 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       isCodeGenerator = pythonTarget.isCodeGenerator,
       generatedSources = pythonTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
       sourceDependencies = sourceDependencies,
+      mainFile = pythonTarget.main?.let { bazelPathsResolver.resolve(it) },
+      mainModule = pythonTarget.mainModule
     )
   }
 

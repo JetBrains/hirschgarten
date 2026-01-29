@@ -40,6 +40,8 @@ class BazelGsonTest {
             false,
             listOf(),
             listOf(),
+            Path.of("/base/dir/main.py"),
+            null
           ),
       )
 
