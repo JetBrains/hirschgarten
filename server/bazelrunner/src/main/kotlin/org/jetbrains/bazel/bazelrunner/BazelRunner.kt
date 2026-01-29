@@ -181,6 +181,10 @@ class BazelRunner(
     if (environment.isNotEmpty()) {
       commandLine.withEnvironment(environment)
     }
+    // Ensure HOME is set (Bazelisk requires it to determine its cache directory)
+    if (commandLine.environment["HOME"] == null) {
+      commandLine.withEnvironment("HOME", System.getProperty("user.home"))
+    }
 
     commandLine.withRedirectErrorStream(false)
     return commandLine.createProcess()
