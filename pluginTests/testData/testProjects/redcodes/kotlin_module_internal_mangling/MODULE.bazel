@@ -1,4 +1,4 @@
-bazel_dep(name = "rules_kotlin", version = "2.0.0")
+bazel_dep(name = "rules_kotlin", version = "2.2.2")
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.0.1")
 
 toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
