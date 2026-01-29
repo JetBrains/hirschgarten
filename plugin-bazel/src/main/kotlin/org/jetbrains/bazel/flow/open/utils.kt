@@ -28,13 +28,15 @@ fun getProjectViewPath(
   projectRootDir: Path,
   path: Path,
 ): Path? {
-  fun calculateProjectViewFilePath(directory: Path): Path =
-    ProjectViewFileUtils.calculateProjectViewFilePath(
-      projectRootDir = projectRootDir.refreshAndFindVirtualDirectory()!!,
+  fun calculateProjectViewFilePath(directory: Path): Path? {
+    val virtualDirectory = projectRootDir.refreshAndFindVirtualDirectory() ?: return null
+    return ProjectViewFileUtils.calculateProjectViewFilePath(
+      projectRootDir = virtualDirectory,
       projectViewPath = null,
       overwrite = true,
       format = directory.relativeTo(projectRootDir).toString(),
     )
+  }
 
   return when {
     path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> path
@@ -111,7 +113,12 @@ private fun Path.getBuildFileForPackageDirectory(): Path? {
 }
 
 fun Project.initProperties(projectRootDir: Path) {
-  initProperties(projectRootDir.refreshAndFindVirtualDirectory()!!)
+  val virtualFile = projectRootDir.refreshAndFindVirtualDirectory()
+  if (virtualFile != null) {
+    initProperties(virtualFile)
+  } else {
+    thisLogger().warn("Unable to initialize project properties for project root directory: $projectRootDir")
+  }
 }
 
 fun Project.initProperties(projectRootDir: VirtualFile) {

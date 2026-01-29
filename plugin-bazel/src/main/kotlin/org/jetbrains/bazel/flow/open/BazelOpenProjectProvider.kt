@@ -19,8 +19,7 @@ internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
   // intentionally overriding the visibility to `public` from `protected` in [AbstractOpenProjectProvider]
   // should work vice versa: ExternalSystemUnlinkedProjectAware.EP_NAME.findFirstSafe { it.systemId == systemId }
   public override fun isProjectFile(file: VirtualFile): Boolean =
-    file.isFile &&
-    file.name in (Constants.BUILD_FILE_NAMES + Constants.WORKSPACE_FILE_NAMES)
+    file.isFile && file.name in (Constants.WORKSPACE_FILE_NAMES)
 
   @Suppress("RedundantVisibilityModifier")
   public override suspend fun linkProject(projectFile: VirtualFile, project: Project) {
