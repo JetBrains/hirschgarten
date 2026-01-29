@@ -13,7 +13,6 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import com.intellij.workspaceModel.core.fileIndex.impl.JvmPackageRootDataInternal
 import com.intellij.workspaceModel.core.fileIndex.impl.ModuleRelatedRootData
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.target.targetUtils
@@ -23,7 +22,6 @@ import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 
 private class PackageMarkerEntityListener : BulkFileListener {
   override fun after(events: List<VFileEvent>) {
-    if (!BazelFeatureFlags.fbsrSupportedInPlatform) return
     for (event in events) {
       processEvent(event)
     }

@@ -21,7 +21,6 @@ object BazelFeatureFlags {
   private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
   private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
   private const val SHUTDOWN_BEFORE_SHARD_BUILD = "bazel.shutdown.before.shard.build"
-  private const val ENABLE_BAZEL_JAVA_CLASS_FINDER = "bazel.enable.custom.java.class.finder"
   private const val MERGE_SOURCE_ROOTS = "bazel.merge.source.roots"
 
   @VisibleForTesting
@@ -54,11 +53,7 @@ object BazelFeatureFlags {
 
   val executeSecondPhaseOnSync: Boolean
     get() = isEnabled(EXECUTE_SECOND_PHASE_ON_SYNC)
-
-  // File-based source root problems fixed here: https://youtrack.jetbrains.com/issue/IDEA-371097
-  val fbsrSupportedInPlatform: Boolean
-    get() = true
-
+  
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
 
@@ -70,9 +65,6 @@ object BazelFeatureFlags {
 
   val shutDownBeforeShardBuild: Boolean
     get() = isEnabled(SHUTDOWN_BEFORE_SHARD_BUILD)
-
-  val enableBazelJavaClassFinder: Boolean
-    get() = isEnabled(ENABLE_BAZEL_JAVA_CLASS_FINDER)
 
   val mergeSourceRoots: Boolean
     get() = isEnabled(MERGE_SOURCE_ROOTS)

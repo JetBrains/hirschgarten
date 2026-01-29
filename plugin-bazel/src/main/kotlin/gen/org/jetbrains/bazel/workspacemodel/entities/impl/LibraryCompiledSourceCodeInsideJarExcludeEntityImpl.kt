@@ -58,7 +58,8 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
 
   internal class Builder(result: LibraryCompiledSourceCodeInsideJarExcludeEntityData?) :
     ModifiableWorkspaceEntityBase<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityData>(
-      result), LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder {
+      result,
+    ), LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder {
     internal constructor() : this(LibraryCompiledSourceCodeInsideJarExcludeEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {

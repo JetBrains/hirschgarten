@@ -14,13 +14,11 @@ class JavaSourceEntityUpdater(
   workspaceModelEntitiesFolderMarker: Boolean = false,
 ) : WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, JavaSourceRootPropertiesEntity> {
   private val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig, workspaceModelEntitiesFolderMarker)
-  private val bazelJavaSourceRootEntityUpdater = BazelJavaSourceRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
   override suspend fun addEntities(
     entitiesToAdd: List<JavaSourceRoot>,
     parentModuleEntity: ModuleEntity,
   ): List<JavaSourceRootPropertiesEntity> {
-    bazelJavaSourceRootEntityUpdater.addEntities(entitiesToAdd)
     val sourceRootEntities =
       sourceEntityUpdater.addEntities(
         entitiesToAdd.map { entityToAdd ->

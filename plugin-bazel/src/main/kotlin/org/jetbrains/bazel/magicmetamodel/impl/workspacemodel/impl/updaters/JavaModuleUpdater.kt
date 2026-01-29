@@ -54,7 +54,7 @@ class JavaModuleWithSourcesUpdater(
       scalaAddendumEntityUpdater.addEntity(it, moduleEntity)
     }
 
-    if (entityToAdd.genericModuleInfo.isDummy && BazelFeatureFlags.fbsrSupportedInPlatform) {
+    if (entityToAdd.genericModuleInfo.isDummy) {
       packageMarkerEntityUpdater.addEntities(entityToAdd.sourceRoots, moduleEntity)
     } else {
       val javaSourceEntityUpdater =

@@ -51,8 +51,10 @@ fun CompiledSourceCodeInsideJarExcludeEntity(
   excludeId: CompiledSourceCodeInsideJarExcludeId,
   entitySource: EntitySource,
   init: (CompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit)? = null,
-): CompiledSourceCodeInsideJarExcludeEntityBuilder = CompiledSourceCodeInsideJarExcludeEntityType(relativePathsInsideJarToExclude,
-                                                                                                  librariesFromInternalTargetsUrls,
-                                                                                                  excludeId,
-                                                                                                  entitySource,
-                                                                                                  init)
+): CompiledSourceCodeInsideJarExcludeEntityBuilder = CompiledSourceCodeInsideJarExcludeEntityType(
+  relativePathsInsideJarToExclude,
+  librariesFromInternalTargetsUrls,
+  excludeId,
+  entitySource,
+  init,
+)

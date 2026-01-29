@@ -8,7 +8,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
 import org.jetbrains.bazel.utils.allAncestorsSequence
@@ -69,23 +68,24 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     val dummySourceRoots =
       if (buildFileDirectory == null) {
         mergedSourceRootVotes
-      } else {
+      }
+      else {
         mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(limit = null)
       }.keys.toList()
     return DummyModulesToAdd(
       dummySourceRoots
-        .zip(calculateDummyJavaModuleNames(dummySourceRoots, projectBasePath))
-        .mapNotNull {
+        .map { root ->
           calculateDummyJavaSourceModule(
-            name = it.second,
-            sourceRoot = it.first,
+            name = calculateDummyJavaModuleName(root.sourcePath, projectBasePath),
+            sourceRoot = root,
             javaModule = inputEntity,
           )
         }.distinctBy { it.genericModuleInfo.name },
     )
   }
 
-  private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in Constants.JVM_LANGUAGES_EXTENSIONS || this.sourcePath.isDirectory()
+  private fun JavaSourceRoot.isRelevant(): Boolean =
+    this.sourcePath.extension in Constants.JVM_LANGUAGES_EXTENSIONS || this.sourcePath.isDirectory()
 
   private fun tryMergeSources(
     sourceRoots: List<JavaSourceRoot>,
@@ -178,7 +178,8 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     for (mergedRoot in mergedRoots) {
       val childrenStream = try {
         Files.walk(mergedRoot)
-      } catch (_: NoSuchFileException) {
+      }
+      catch (_: NoSuchFileException) {
         return true
       }
       childrenStream.use { children ->
@@ -200,37 +201,29 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     name: String,
     sourceRoot: JavaSourceRoot,
     javaModule: JavaModule,
-  ) = if (name.isEmpty()) {
-    null
-  } else {
-    JavaModule(
-      genericModuleInfo =
-        GenericModuleInfo(
-          name = name,
-          type = ModuleTypeId(BazelDummyModuleType.ID),
-          kind =
-            TargetKind(
-              kindString = "java_library",
-              ruleType = RuleType.LIBRARY,
-              languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
-            ),
-          dependencies =
-            if (!BazelFeatureFlags.fbsrSupportedInPlatform) {
-              javaModule.genericModuleInfo.dependencies
-            } else {
-              emptyList()
-            },
-          isDummy = true,
-        ),
-      baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),
-      // For some reason allowing dummy modules to be JAVA_TEST_SOURCE_ROOT_TYPE causes red code on https://github.com/bazelbuild/bazel
-      sourceRoots = listOf(sourceRoot.copy(rootType = JAVA_SOURCE_ROOT_TYPE)),
-      resourceRoots = emptyList(),
-      jvmJdkName = javaModule.jvmJdkName,
-      kotlinAddendum = javaModule.kotlinAddendum,
-      javaAddendum = javaModule.javaAddendum,
-    )
-  }
+  ) = JavaModule(
+    genericModuleInfo =
+      GenericModuleInfo(
+        name = name,
+        type = ModuleTypeId(BazelDummyModuleType.ID),
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
+          ),
+        dependencies = emptyList(),
+        isDummy = true,
+      ),
+    baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),
+    // For some reason allowing dummy modules to be JAVA_TEST_SOURCE_ROOT_TYPE causes red code on https://github.com/bazelbuild/bazel
+    sourceRoots = listOf(sourceRoot.copy(rootType = JAVA_SOURCE_ROOT_TYPE)),
+    resourceRoots = emptyList(),
+    jvmJdkName = javaModule.jvmJdkName,
+    kotlinAddendum = javaModule.kotlinAddendum,
+    javaAddendum = javaModule.javaAddendum,
+  )
+
 }
 
 /**
@@ -239,7 +232,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
 private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>): Map<JavaSourceRoot, Int> =
   sourceRoots
     .asSequence()
-    .filter { root -> !root.generated && !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(root) }
+    .filter { root -> !root.generated }
     .mapNotNull {
       sourceRootForParentDir(it)
     }.groupingBy { it }
@@ -281,9 +274,6 @@ private fun Iterable<Pair<JavaSourceRoot, Int>>.sumUpVotes(): Map<JavaSourceRoot
   return result
 }
 
-private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<JavaSourceRoot>, projectBasePath: Path): List<String> =
-  dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it.sourcePath, projectBasePath) }
-
 fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
   val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()
   val absoluteProjectBasePath = projectBasePath.toAbsolutePath().toString()
@@ -301,6 +291,7 @@ private const val IJ_DUMMY_MODULE_PREFIX = "_aux.synthetic"
 fun String.addIntelliJDummyPrefix(): String =
   if (isBlank()) {
     IJ_DUMMY_MODULE_PREFIX
-  } else {
+  }
+  else {
     "$IJ_DUMMY_MODULE_PREFIX.$this"
   }
