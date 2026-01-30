@@ -3,6 +3,8 @@
 
 # Hirschgarten Project
 
+a test change #0
+
 The Hirschgarten project aims to bring a new approach for Bazel support to IntelliJ IDEA users.
 
 The primary product is the **[Bazel plugin](https://plugins.jetbrains.com/plugin/22977)**, 
