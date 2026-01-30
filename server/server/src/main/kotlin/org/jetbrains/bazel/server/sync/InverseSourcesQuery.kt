@@ -86,11 +86,11 @@ object InverseSourcesQuery {
       .joinToString(separator = ",")
 
   private suspend fun BazelCommand.runAndParse(bazelRunner: BazelRunner, originId: String?): List<Build.Target> {
-    val bazelProcess = bazelRunner.runBazelCommand(this, logProcessOutput = true, originId = originId)
-    val result = bazelProcess.waitAndGetResult()
-    val stream = result.stdout.inputStream()
-    val processOutput = generateSequence { Build.Target.parseDelimitedFrom(stream) }
-    return processOutput.toList()
+    val bazelProcess = bazelRunner.runBazelCommand(this, logProcessOutput = true, originId = originId, serverPidFuture = null)
+    val inputStream = bazelProcess.process.inputStream
+    val processOutput = generateSequence { Build.Target.parseDelimitedFrom(inputStream) }.toList()
+    bazelProcess.waitAndGetResult(true)
+    return processOutput
   }
 
   private fun Collection<Build.Target>.getSourcesPathLabelMap(): Map<Path, Label> =
