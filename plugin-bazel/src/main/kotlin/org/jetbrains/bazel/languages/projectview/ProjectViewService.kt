@@ -5,6 +5,7 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.progress.runBlockingCancellable
+import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -70,7 +71,7 @@ class ProjectViewService(private val project: Project) {
   }
 
   private fun parseProjectView(projectViewPath: VirtualFile): ProjectView {
-    return runBlockingCancellable {
+    return runBlockingMaybeCancellable {
       parseProjectViewAsync(projectViewPath) ?: getDefaultProjectView()
     }
   }
