@@ -95,11 +95,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.projectAware.ProjectAwareExtension"
-      qualifiedName="org.jetbrains.bazel.projectAwareExtension"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.run.config.RunConfigurationExtensionManager"
       qualifiedName="org.jetbrains.bazel.runConfigurationExtension"
     />
@@ -301,7 +296,6 @@
       implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
       order="last"
     />
-    <projectAwareExtension implementation="org.jetbrains.bazel.flow.open.BazelProjectAwareExtension" />
 
     <additionalProjectTaskRunnerProvider implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
@@ -612,7 +606,7 @@
 
     <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
-      implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"
+      implementationClass="org.jetbrains.bazel.projectAware.BazelExternalSystemIconProvider"
       key="bazel"
     />
     <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier" />
