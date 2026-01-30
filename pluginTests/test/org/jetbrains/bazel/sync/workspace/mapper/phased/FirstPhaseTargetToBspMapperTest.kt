@@ -40,7 +40,6 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
     debugFlags = emptyList(),
     bazelBinary = Path("bazel"),
     allowManualTargetsSync = allowManualTargetsSync,
-    dotBazelBspDirPath = Path(".bazelbsp"),
     importDepth = -1,
     enabledRules = emptyList(),
     ideJavaHomeOverride = Path("java_home"),

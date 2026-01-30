@@ -39,10 +39,6 @@ data class WorkspaceContext(
    */
   val allowManualTargetsSync: Boolean,
   /**
-   * Path to the `.bazelbsp` dir in the project root
-   */
-  val dotBazelBspDirPath: Path,
-  /**
    * Parameter determining targets importing depth
    */
   val importDepth: Int,

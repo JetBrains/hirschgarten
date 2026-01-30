@@ -36,9 +36,6 @@ interface JoinedBuildServer {
 
   suspend fun workspaceContext(): WorkspaceContext
 
-  // TODO: implement language-specific global build metadata exchange
-  suspend fun jvmToolchainInfo(): JvmToolchainInfo
-
   suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath
 
   suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo
