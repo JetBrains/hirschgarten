@@ -23,6 +23,7 @@ import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import kotlin.io.path.pathString
 
 class BazelProjectAware(private val workspace: BazelWorkspace) : ExternalSystemProjectAware {
   override val projectId: ExternalSystemProjectId = getBazelProjectId(workspace.project.rootDir)
@@ -101,7 +102,8 @@ private suspend fun calculateBazelConfigFiles(project: Project): Set<String> {
     FilenameIndex.processFilesByNames(LOCAL_CONFIG_FILES, true, searchScope, null) { localFiles.add(it); true }
   }
 
-  return (globalFiles + localFiles + listOf(projectView)).mapNotNull { it?.path }.toSet()
+  val configFilePaths = (globalFiles + localFiles).mapNotNull { it?.path }.toSet()
+  return configFilePaths + setOfNotNull(projectView?.pathString)
 }
 
 private fun getBazelProjectId(projectPath: VirtualFile): ExternalSystemProjectId =
