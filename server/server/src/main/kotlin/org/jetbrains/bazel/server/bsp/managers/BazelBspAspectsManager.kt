@@ -2,8 +2,6 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
-import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
-import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bazel.commons.BazelInfo
@@ -14,15 +12,16 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.exists
+import kotlin.io.path.invariantSeparatorsPathString
 
 data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
   val isFailure: Boolean
@@ -42,7 +41,7 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
 data class RulesetLanguage(val rulesetName: String?, val language: Language)
 
 class BazelBspAspectsManager(
-  private val bazelBspCompilationManager: BazelBspCompilationManager,
+  private val executeService: ExecuteService,
   private val aspectsResolver: InternalAspectsResolver,
   private val bazelRelease: BazelRelease,
 ) {
@@ -158,8 +157,6 @@ class BazelBspAspectsManager(
       Constants.CORE_BZL + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve(Constants.CORE_BZL),
       mapOf(
-        "isPropagateExportsFromDepsEnabled" to
-          featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
         "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
       ),
     )
@@ -171,7 +168,7 @@ class BazelBspAspectsManager(
         is BzlmodRepoMapping -> {
           repoMapping.canonicalRepoNameToLocalPath
             .map { (key, value) ->
-              "\"${key.dropWhile { it == '@' }}\": \"${value.toString().replace("\\", "/")}\""
+              "\"${key.dropWhile { it == '@' }}\": \"${value.invariantSeparatorsPathString}\""
             }.joinToString(",\n", "{\n", "\n}")
         }
 
@@ -215,20 +212,17 @@ class BazelBspAspectsManager(
         aspect(aspectsResolver.resolveLabel(aspect)),
         outputGroups(outputGroups),
         keepGoing(),
-        color(true),
-        curses(false),
       )
     val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
     val syncFlags = workspaceContext.syncFlags
 
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags + syncFlags
 
-    return bazelBspCompilationManager
+    return executeService
       .buildTargetsWithBep(
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
         originId = originId,
-        environment = emptyList(),
         shouldLogInvocation = shouldLogInvocation,
         workspaceContext = workspaceContext,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }

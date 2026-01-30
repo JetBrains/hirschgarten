@@ -886,6 +886,12 @@ public final class BspTargetInfo {
      * @return The dependencyType.
      */
     org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType getDependencyType();
+
+    /**
+     * <code>bool exported = 3;</code>
+     * @return The exported.
+     */
+    boolean getExported();
   }
   /**
    * Protobuf type {@code bazelbsp.Dependency}
@@ -1089,6 +1095,17 @@ public final class BspTargetInfo {
       return result == null ? org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.UNRECOGNIZED : result;
     }
 
+    public static final int EXPORTED_FIELD_NUMBER = 3;
+    private boolean exported_ = false;
+    /**
+     * <code>bool exported = 3;</code>
+     * @return The exported.
+     */
+    @java.lang.Override
+    public boolean getExported() {
+      return exported_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -1109,6 +1126,9 @@ public final class BspTargetInfo {
       if (dependencyType_ != org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.COMPILE.getNumber()) {
         output.writeEnum(2, dependencyType_);
       }
+      if (exported_ != false) {
+        output.writeBool(3, exported_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1124,6 +1144,10 @@ public final class BspTargetInfo {
       if (dependencyType_ != org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType.COMPILE.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, dependencyType_);
+      }
+      if (exported_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(3, exported_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -1143,6 +1167,8 @@ public final class BspTargetInfo {
       if (!getId()
           .equals(other.getId())) return false;
       if (dependencyType_ != other.dependencyType_) return false;
+      if (getExported()
+          != other.getExported()) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -1158,6 +1184,9 @@ public final class BspTargetInfo {
       hash = (53 * hash) + getId().hashCode();
       hash = (37 * hash) + DEPENDENCY_TYPE_FIELD_NUMBER;
       hash = (53 * hash) + dependencyType_;
+      hash = (37 * hash) + EXPORTED_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getExported());
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1291,6 +1320,7 @@ public final class BspTargetInfo {
         bitField0_ = 0;
         id_ = "";
         dependencyType_ = 0;
+        exported_ = false;
         return this;
       }
 
@@ -1329,6 +1359,9 @@ public final class BspTargetInfo {
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
           result.dependencyType_ = dependencyType_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.exported_ = exported_;
         }
       }
 
@@ -1384,6 +1417,9 @@ public final class BspTargetInfo {
         if (other.dependencyType_ != 0) {
           setDependencyTypeValue(other.getDependencyTypeValue());
         }
+        if (other.getExported() != false) {
+          setExported(other.getExported());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -1420,6 +1456,11 @@ public final class BspTargetInfo {
                 bitField0_ |= 0x00000002;
                 break;
               } // case 16
+              case 24: {
+                exported_ = input.readBool();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -1558,6 +1599,38 @@ public final class BspTargetInfo {
       public Builder clearDependencyType() {
         bitField0_ = (bitField0_ & ~0x00000002);
         dependencyType_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private boolean exported_ ;
+      /**
+       * <code>bool exported = 3;</code>
+       * @return The exported.
+       */
+      @java.lang.Override
+      public boolean getExported() {
+        return exported_;
+      }
+      /**
+       * <code>bool exported = 3;</code>
+       * @param value The exported to set.
+       * @return This builder for chaining.
+       */
+      public Builder setExported(boolean value) {
+
+        exported_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool exported = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearExported() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        exported_ = false;
         onChanged();
         return this;
       }
@@ -10619,6 +10692,18 @@ public final class BspTargetInfo {
      */
     org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
         int index);
+
+    /**
+     * <code>string module_name = 700;</code>
+     * @return The moduleName.
+     */
+    java.lang.String getModuleName();
+    /**
+     * <code>string module_name = 700;</code>
+     * @return The bytes for moduleName.
+     */
+    com.google.protobuf.ByteString
+        getModuleNameBytes();
   }
   /**
    * Protobuf type {@code bazelbsp.KotlinTargetInfo}
@@ -10641,6 +10726,7 @@ public final class BspTargetInfo {
           com.google.protobuf.LazyStringArrayList.emptyList();
       stdlibs_ = java.util.Collections.emptyList();
       kotlincPluginInfos_ = java.util.Collections.emptyList();
+      moduleName_ = "";
     }
 
     @java.lang.Override
@@ -10897,6 +10983,45 @@ public final class BspTargetInfo {
       return kotlincPluginInfos_.get(index);
     }
 
+    public static final int MODULE_NAME_FIELD_NUMBER = 700;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object moduleName_ = "";
+    /**
+     * <code>string module_name = 700;</code>
+     * @return The moduleName.
+     */
+    @java.lang.Override
+    public java.lang.String getModuleName() {
+      java.lang.Object ref = moduleName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        moduleName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string module_name = 700;</code>
+     * @return The bytes for moduleName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getModuleNameBytes() {
+      java.lang.Object ref = moduleName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        moduleName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -10928,6 +11053,9 @@ public final class BspTargetInfo {
       }
       for (int i = 0; i < kotlincPluginInfos_.size(); i++) {
         output.writeMessage(600, kotlincPluginInfos_.get(i));
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(moduleName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 700, moduleName_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -10968,6 +11096,9 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(600, kotlincPluginInfos_.get(i));
       }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(moduleName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(700, moduleName_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -10995,6 +11126,8 @@ public final class BspTargetInfo {
           .equals(other.getStdlibsList())) return false;
       if (!getKotlincPluginInfosList()
           .equals(other.getKotlincPluginInfosList())) return false;
+      if (!getModuleName()
+          .equals(other.getModuleName())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -11026,6 +11159,8 @@ public final class BspTargetInfo {
         hash = (37 * hash) + KOTLINC_PLUGIN_INFOS_FIELD_NUMBER;
         hash = (53 * hash) + getKotlincPluginInfosList().hashCode();
       }
+      hash = (37 * hash) + MODULE_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getModuleName().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -11177,6 +11312,7 @@ public final class BspTargetInfo {
           kotlincPluginInfosBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000020);
+        moduleName_ = "";
         return this;
       }
 
@@ -11245,6 +11381,9 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000008) != 0)) {
           kotlincOpts_.makeImmutable();
           result.kotlincOpts_ = kotlincOpts_;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.moduleName_ = moduleName_;
         }
       }
 
@@ -11374,6 +11513,11 @@ public final class BspTargetInfo {
             }
           }
         }
+        if (!other.getModuleName().isEmpty()) {
+          moduleName_ = other.moduleName_;
+          bitField0_ |= 0x00000040;
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -11448,6 +11592,11 @@ public final class BspTargetInfo {
                 }
                 break;
               } // case 4802
+              case 5602: {
+                moduleName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 5602
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -12310,6 +12459,78 @@ public final class BspTargetInfo {
         }
         return kotlincPluginInfosBuilder_;
       }
+
+      private java.lang.Object moduleName_ = "";
+      /**
+       * <code>string module_name = 700;</code>
+       * @return The moduleName.
+       */
+      public java.lang.String getModuleName() {
+        java.lang.Object ref = moduleName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          moduleName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string module_name = 700;</code>
+       * @return The bytes for moduleName.
+       */
+      public com.google.protobuf.ByteString
+          getModuleNameBytes() {
+        java.lang.Object ref = moduleName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          moduleName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string module_name = 700;</code>
+       * @param value The moduleName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModuleName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        moduleName_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string module_name = 700;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearModuleName() {
+        moduleName_ = getDefaultInstance().getModuleName();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string module_name = 700;</code>
+       * @param value The bytes for moduleName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModuleNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        moduleName_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -12459,6 +12680,33 @@ public final class BspTargetInfo {
      */
     org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
         int index);
+
+    /**
+     * <code>.bazelbsp.FileLocation main = 6;</code>
+     * @return Whether the main field is set.
+     */
+    boolean hasMain();
+    /**
+     * <code>.bazelbsp.FileLocation main = 6;</code>
+     * @return The main.
+     */
+    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getMain();
+    /**
+     * <code>.bazelbsp.FileLocation main = 6;</code>
+     */
+    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getMainOrBuilder();
+
+    /**
+     * <code>string main_module = 7;</code>
+     * @return The mainModule.
+     */
+    java.lang.String getMainModule();
+    /**
+     * <code>string main_module = 7;</code>
+     * @return The bytes for mainModule.
+     */
+    com.google.protobuf.ByteString
+        getMainModuleBytes();
   }
   /**
    * Protobuf type {@code bazelbsp.PythonTargetInfo}
@@ -12477,6 +12725,7 @@ public final class BspTargetInfo {
       imports_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
       generatedSources_ = java.util.Collections.emptyList();
+      mainModule_ = "";
     }
 
     @java.lang.Override
@@ -12654,6 +12903,71 @@ public final class BspTargetInfo {
       return generatedSources_.get(index);
     }
 
+    public static final int MAIN_FIELD_NUMBER = 6;
+    private org.jetbrains.bazel.info.BspTargetInfo.FileLocation main_;
+    /**
+     * <code>.bazelbsp.FileLocation main = 6;</code>
+     * @return Whether the main field is set.
+     */
+    @java.lang.Override
+    public boolean hasMain() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>.bazelbsp.FileLocation main = 6;</code>
+     * @return The main.
+     */
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getMain() {
+      return main_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : main_;
+    }
+    /**
+     * <code>.bazelbsp.FileLocation main = 6;</code>
+     */
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getMainOrBuilder() {
+      return main_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : main_;
+    }
+
+    public static final int MAIN_MODULE_FIELD_NUMBER = 7;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object mainModule_ = "";
+    /**
+     * <code>string main_module = 7;</code>
+     * @return The mainModule.
+     */
+    @java.lang.Override
+    public java.lang.String getMainModule() {
+      java.lang.Object ref = mainModule_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        mainModule_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string main_module = 7;</code>
+     * @return The bytes for mainModule.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getMainModuleBytes() {
+      java.lang.Object ref = mainModule_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        mainModule_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -12682,6 +12996,12 @@ public final class BspTargetInfo {
       }
       for (int i = 0; i < generatedSources_.size(); i++) {
         output.writeMessage(5, generatedSources_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeMessage(6, getMain());
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(mainModule_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, mainModule_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -12715,6 +13035,13 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, generatedSources_.get(i));
       }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, getMain());
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(mainModule_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, mainModule_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -12743,6 +13070,13 @@ public final class BspTargetInfo {
           != other.getIsCodeGenerator()) return false;
       if (!getGeneratedSourcesList()
           .equals(other.getGeneratedSourcesList())) return false;
+      if (hasMain() != other.hasMain()) return false;
+      if (hasMain()) {
+        if (!getMain()
+            .equals(other.getMain())) return false;
+      }
+      if (!getMainModule()
+          .equals(other.getMainModule())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -12771,6 +13105,12 @@ public final class BspTargetInfo {
         hash = (37 * hash) + GENERATED_SOURCES_FIELD_NUMBER;
         hash = (53 * hash) + getGeneratedSourcesList().hashCode();
       }
+      if (hasMain()) {
+        hash = (37 * hash) + MAIN_FIELD_NUMBER;
+        hash = (53 * hash) + getMain().hashCode();
+      }
+      hash = (37 * hash) + MAIN_MODULE_FIELD_NUMBER;
+      hash = (53 * hash) + getMainModule().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -12903,6 +13243,7 @@ public final class BspTargetInfo {
                 .alwaysUseFieldBuilders) {
           getInterpreterFieldBuilder();
           getGeneratedSourcesFieldBuilder();
+          getMainFieldBuilder();
         }
       }
       @java.lang.Override
@@ -12925,6 +13266,12 @@ public final class BspTargetInfo {
           generatedSourcesBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
+        main_ = null;
+        if (mainBuilder_ != null) {
+          mainBuilder_.dispose();
+          mainBuilder_ = null;
+        }
+        mainModule_ = "";
         return this;
       }
 
@@ -12987,6 +13334,15 @@ public final class BspTargetInfo {
         }
         if (((from_bitField0_ & 0x00000008) != 0)) {
           result.isCodeGenerator_ = isCodeGenerator_;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.main_ = mainBuilder_ == null
+              ? main_
+              : mainBuilder_.build();
+          to_bitField0_ |= 0x00000002;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.mainModule_ = mainModule_;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -13082,6 +13438,14 @@ public final class BspTargetInfo {
             }
           }
         }
+        if (other.hasMain()) {
+          mergeMain(other.getMain());
+        }
+        if (!other.getMainModule().isEmpty()) {
+          mainModule_ = other.mainModule_;
+          bitField0_ |= 0x00000040;
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -13144,6 +13508,18 @@ public final class BspTargetInfo {
                 }
                 break;
               } // case 42
+              case 50: {
+                input.readMessage(
+                    getMainFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 50
+              case 58: {
+                mainModule_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 58
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -13735,6 +14111,199 @@ public final class BspTargetInfo {
           generatedSources_ = null;
         }
         return generatedSourcesBuilder_;
+      }
+
+      private org.jetbrains.bazel.info.BspTargetInfo.FileLocation main_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> mainBuilder_;
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       * @return Whether the main field is set.
+       */
+      public boolean hasMain() {
+        return ((bitField0_ & 0x00000020) != 0);
+      }
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       * @return The main.
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getMain() {
+        if (mainBuilder_ == null) {
+          return main_ == null ? org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : main_;
+        } else {
+          return mainBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       */
+      public Builder setMain(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+        if (mainBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          main_ = value;
+        } else {
+          mainBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       */
+      public Builder setMain(
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+        if (mainBuilder_ == null) {
+          main_ = builderForValue.build();
+        } else {
+          mainBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       */
+      public Builder mergeMain(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+        if (mainBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) != 0) &&
+            main_ != null &&
+            main_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
+            getMainBuilder().mergeFrom(value);
+          } else {
+            main_ = value;
+          }
+        } else {
+          mainBuilder_.mergeFrom(value);
+        }
+        if (main_ != null) {
+          bitField0_ |= 0x00000020;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       */
+      public Builder clearMain() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        main_ = null;
+        if (mainBuilder_ != null) {
+          mainBuilder_.dispose();
+          mainBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getMainBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getMainFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getMainOrBuilder() {
+        if (mainBuilder_ != null) {
+          return mainBuilder_.getMessageOrBuilder();
+        } else {
+          return main_ == null ?
+              org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance() : main_;
+        }
+      }
+      /**
+       * <code>.bazelbsp.FileLocation main = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          getMainFieldBuilder() {
+        if (mainBuilder_ == null) {
+          mainBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+                  getMain(),
+                  getParentForChildren(),
+                  isClean());
+          main_ = null;
+        }
+        return mainBuilder_;
+      }
+
+      private java.lang.Object mainModule_ = "";
+      /**
+       * <code>string main_module = 7;</code>
+       * @return The mainModule.
+       */
+      public java.lang.String getMainModule() {
+        java.lang.Object ref = mainModule_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          mainModule_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string main_module = 7;</code>
+       * @return The bytes for mainModule.
+       */
+      public com.google.protobuf.ByteString
+          getMainModuleBytes() {
+        java.lang.Object ref = mainModule_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          mainModule_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string main_module = 7;</code>
+       * @param value The mainModule to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMainModule(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        mainModule_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string main_module = 7;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearMainModule() {
+        mainModule_ = getDefaultInstance().getMainModule();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string main_module = 7;</code>
+       * @param value The bytes for mainModule to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMainModuleBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        mainModule_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -21938,76 +22507,78 @@ java.lang.String defaultValue) {
       "_info.proto\022\010bazelbsp\"s\n\014FileLocation\022\025\n" +
       "\rrelative_path\030\001 \001(\t\022\021\n\tis_source\030\002 \001(\010\022" +
       "\023\n\013is_external\030\003 \001(\010\022$\n\034root_execution_p" +
-      "ath_fragment\030\004 \001(\t\"\202\001\n\nDependency\022\n\n\002id\030" +
+      "ath_fragment\030\004 \001(\t\"\224\001\n\nDependency\022\n\n\002id\030" +
       "\001 \001(\t\022<\n\017dependency_type\030\002 \001(\0162#.bazelbs" +
-      "p.Dependency.DependencyType\"*\n\016Dependenc" +
-      "yType\022\013\n\007COMPILE\020\000\022\013\n\007RUNTIME\020\001\"\226\001\n\nJvmO" +
-      "utputs\022+\n\013binary_jars\030\001 \003(\0132\026.bazelbsp.F" +
-      "ileLocation\022.\n\016interface_jars\030\002 \003(\0132\026.ba" +
-      "zelbsp.FileLocation\022+\n\013source_jars\030\003 \003(\013" +
-      "2\026.bazelbsp.FileLocation\"\365\001\n\rJvmTargetIn" +
-      "fo\022\"\n\004jars\030\001 \003(\0132\024.bazelbsp.JvmOutputs\022," +
-      "\n\016generated_jars\030\002 \003(\0132\024.bazelbsp.JvmOut" +
-      "puts\022\022\n\njavac_opts\030\006 \003(\t\022\021\n\tjvm_flags\030\007 " +
-      "\003(\t\022\022\n\nmain_class\030\010 \001(\t\022\014\n\004args\030\t \003(\t\022%\n" +
-      "\005jdeps\030\n \003(\0132\026.bazelbsp.FileLocation\022\"\n\032" +
-      "has_api_generating_plugins\030\014 \001(\010\"\250\001\n\021Jav" +
-      "aToolchainInfo\022\026\n\016source_version\030\001 \001(\t\022\026" +
-      "\n\016target_version\030\002 \001(\t\022)\n\tjava_home\030\003 \001(" +
-      "\0132\026.bazelbsp.FileLocation\0228\n\030boot_classp" +
-      "ath_java_home\030\004 \001(\0132\026.bazelbsp.FileLocat" +
-      "ion\"<\n\017JavaRuntimeInfo\022)\n\tjava_home\030\001 \001(" +
-      "\0132\026.bazelbsp.FileLocation\"\217\001\n\017ScalaTarge" +
-      "tInfo\022\023\n\013scalac_opts\030\001 \003(\t\0222\n\022compiler_c" +
-      "lasspath\030\002 \003(\0132\026.bazelbsp.FileLocation\0223" +
-      "\n\023scalatest_classpath\030\003 \003(\0132\026.bazelbsp.F" +
-      "ileLocation\"?\n\023KotlincPluginOption\022\021\n\tpl" +
-      "ugin_id\030d \001(\t\022\025\n\014option_value\030\310\001 \001(\t\"\200\001\n" +
-      "\021KotlincPluginInfo\022+\n\013plugin_jars\030d \003(\0132" +
-      "\026.bazelbsp.FileLocation\022>\n\026kotlinc_plugi" +
-      "n_options\030\310\001 \003(\0132\035.bazelbsp.KotlincPlugi" +
-      "nOption\"\324\001\n\020KotlinTargetInfo\022\030\n\020language" +
-      "_version\030d \001(\t\022\024\n\013api_version\030\310\001 \001(\t\022\023\n\n" +
-      "associates\030\254\002 \003(\t\022\025\n\014kotlinc_opts\030\220\003 \003(\t" +
-      "\022(\n\007stdlibs\030\364\003 \003(\0132\026.bazelbsp.FileLocati" +
-      "on\022:\n\024kotlinc_plugin_infos\030\330\004 \003(\0132\033.baze" +
-      "lbsp.KotlincPluginInfo\"\257\001\n\020PythonTargetI" +
+      "p.Dependency.DependencyType\022\020\n\010exported\030" +
+      "\003 \001(\010\"*\n\016DependencyType\022\013\n\007COMPILE\020\000\022\013\n\007" +
+      "RUNTIME\020\001\"\226\001\n\nJvmOutputs\022+\n\013binary_jars\030" +
+      "\001 \003(\0132\026.bazelbsp.FileLocation\022.\n\016interfa" +
+      "ce_jars\030\002 \003(\0132\026.bazelbsp.FileLocation\022+\n" +
+      "\013source_jars\030\003 \003(\0132\026.bazelbsp.FileLocati" +
+      "on\"\365\001\n\rJvmTargetInfo\022\"\n\004jars\030\001 \003(\0132\024.baz" +
+      "elbsp.JvmOutputs\022,\n\016generated_jars\030\002 \003(\013" +
+      "2\024.bazelbsp.JvmOutputs\022\022\n\njavac_opts\030\006 \003" +
+      "(\t\022\021\n\tjvm_flags\030\007 \003(\t\022\022\n\nmain_class\030\010 \001(" +
+      "\t\022\014\n\004args\030\t \003(\t\022%\n\005jdeps\030\n \003(\0132\026.bazelbs" +
+      "p.FileLocation\022\"\n\032has_api_generating_plu" +
+      "gins\030\014 \001(\010\"\250\001\n\021JavaToolchainInfo\022\026\n\016sour" +
+      "ce_version\030\001 \001(\t\022\026\n\016target_version\030\002 \001(\t" +
+      "\022)\n\tjava_home\030\003 \001(\0132\026.bazelbsp.FileLocat" +
+      "ion\0228\n\030boot_classpath_java_home\030\004 \001(\0132\026." +
+      "bazelbsp.FileLocation\"<\n\017JavaRuntimeInfo" +
+      "\022)\n\tjava_home\030\001 \001(\0132\026.bazelbsp.FileLocat" +
+      "ion\"\217\001\n\017ScalaTargetInfo\022\023\n\013scalac_opts\030\001" +
+      " \003(\t\0222\n\022compiler_classpath\030\002 \003(\0132\026.bazel" +
+      "bsp.FileLocation\0223\n\023scalatest_classpath\030" +
+      "\003 \003(\0132\026.bazelbsp.FileLocation\"?\n\023Kotlinc" +
+      "PluginOption\022\021\n\tplugin_id\030d \001(\t\022\025\n\014optio" +
+      "n_value\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022+\n\013" +
+      "plugin_jars\030d \003(\0132\026.bazelbsp.FileLocatio" +
+      "n\022>\n\026kotlinc_plugin_options\030\310\001 \003(\0132\035.baz" +
+      "elbsp.KotlincPluginOption\"\352\001\n\020KotlinTarg" +
+      "etInfo\022\030\n\020language_version\030d \001(\t\022\024\n\013api_" +
+      "version\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014k" +
+      "otlinc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026.b" +
+      "azelbsp.FileLocation\022:\n\024kotlinc_plugin_i" +
+      "nfos\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo" +
+      "\022\024\n\013module_name\030\274\005 \001(\t\"\352\001\n\020PythonTargetI" +
       "nfo\022+\n\013interpreter\030\001 \001(\0132\026.bazelbsp.File" +
       "Location\022\017\n\007version\030\002 \001(\t\022\017\n\007imports\030\003 \003" +
       "(\t\022\031\n\021is_code_generator\030\004 \001(\010\0221\n\021generat" +
       "ed_sources\030\005 \003(\0132\026.bazelbsp.FileLocation" +
-      "\"\322\001\n\014GoTargetInfo\022\023\n\013import_path\030\001 \001(\t\022-" +
-      "\n\rsdk_home_path\030\002 \001(\0132\026.bazelbsp.FileLoc" +
-      "ation\0221\n\021generated_sources\030\003 \003(\0132\026.bazel" +
-      "bsp.FileLocation\0223\n\023generated_libraries\030" +
-      "\004 \003(\0132\026.bazelbsp.FileLocation\022\026\n\016library" +
-      "_labels\030\005 \003(\t\"N\n\022ProtobufTargetInfo\0228\n\017s" +
-      "ource_mappings\030\003 \003(\0132\037.bazelbsp.Protobuf" +
-      "SourceMapping\"X\n\025ProtobufSourceMapping\022\023" +
-      "\n\013import_path\030\001 \001(\t\022*\n\nproto_file\030\002 \001(\0132" +
-      "\026.bazelbsp.FileLocation\"\274\006\n\nTargetInfo\022\n" +
-      "\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*" +
-      "\n\014dependencies\030( \003(\0132\024.bazelbsp.Dependen" +
-      "cy\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.FileLocat" +
-      "ion\0221\n\021generated_sources\0303 \003(\0132\026.bazelbs" +
-      "p.FileLocation\022)\n\tresources\030< \003(\0132\026.baze" +
-      "lbsp.FileLocation\022*\n\003env\030F \003(\0132\035.bazelbs" +
-      "p.TargetInfo.EnvEntry\022\023\n\013env_inherit\030P \003" +
-      "(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspace_name" +
-      "\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132\027.bazel" +
-      "bsp.JvmTargetInfo\0229\n\023java_toolchain_info" +
-      "\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainInfo\0225\n\021" +
-      "java_runtime_info\030\270\027 \001(\0132\031.bazelbsp.Java" +
-      "RuntimeInfo\0225\n\021scala_target_info\030\240\037 \001(\0132" +
-      "\031.bazelbsp.ScalaTargetInfo\0227\n\022kotlin_tar" +
-      "get_info\030\3306 \001(\0132\032.bazelbsp.KotlinTargetI" +
-      "nfo\0227\n\022python_target_info\030\300> \001(\0132\032.bazel" +
-      "bsp.PythonTargetInfo\022/\n\016go_target_info\030\340" +
-      "] \001(\0132\026.bazelbsp.GoTargetInfo\022;\n\024protobu" +
-      "f_target_info\030\260m \001(\0132\034.bazelbsp.Protobuf" +
-      "TargetInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005v" +
-      "alue\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel.in" +
-      "fob\006proto3"
+      "\022$\n\004main\030\006 \001(\0132\026.bazelbsp.FileLocation\022\023" +
+      "\n\013main_module\030\007 \001(\t\"\322\001\n\014GoTargetInfo\022\023\n\013" +
+      "import_path\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\013" +
+      "2\026.bazelbsp.FileLocation\0221\n\021generated_so" +
+      "urces\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023g" +
+      "enerated_libraries\030\004 \003(\0132\026.bazelbsp.File" +
+      "Location\022\026\n\016library_labels\030\005 \003(\t\"N\n\022Prot" +
+      "obufTargetInfo\0228\n\017source_mappings\030\003 \003(\0132" +
+      "\037.bazelbsp.ProtobufSourceMapping\"X\n\025Prot" +
+      "obufSourceMapping\022\023\n\013import_path\030\001 \001(\t\022*" +
+      "\n\nproto_file\030\002 \001(\0132\026.bazelbsp.FileLocati" +
+      "on\"\274\006\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 " +
+      "\001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\0132" +
+      "\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(\0132\026" +
+      ".bazelbsp.FileLocation\0221\n\021generated_sour" +
+      "ces\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\tres" +
+      "ources\030< \003(\0132\026.bazelbsp.FileLocation\022*\n\003" +
+      "env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntry" +
+      "\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001(" +
+      "\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_target_" +
+      "info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229\n\023" +
+      "java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp.Ja" +
+      "vaToolchainInfo\0225\n\021java_runtime_info\030\270\027 " +
+      "\001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021scala_" +
+      "target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTarge" +
+      "tInfo\0227\n\022kotlin_target_info\030\3306 \001(\0132\032.baz" +
+      "elbsp.KotlinTargetInfo\0227\n\022python_target_" +
+      "info\030\300> \001(\0132\032.bazelbsp.PythonTargetInfo\022" +
+      "/\n\016go_target_info\030\340] \001(\0132\026.bazelbsp.GoTa" +
+      "rgetInfo\022;\n\024protobuf_target_info\030\260m \001(\0132" +
+      "\034.bazelbsp.ProtobufTargetInfo\032*\n\010EnvEntr" +
+      "y\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org" +
+      ".jetbrains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -22024,7 +22595,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_Dependency_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_Dependency_descriptor,
-        new java.lang.String[] { "Id", "DependencyType", });
+        new java.lang.String[] { "Id", "DependencyType", "Exported", });
     internal_static_bazelbsp_JvmOutputs_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_bazelbsp_JvmOutputs_fieldAccessorTable = new
@@ -22072,13 +22643,13 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_KotlinTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_KotlinTargetInfo_descriptor,
-        new java.lang.String[] { "LanguageVersion", "ApiVersion", "Associates", "KotlincOpts", "Stdlibs", "KotlincPluginInfos", });
+        new java.lang.String[] { "LanguageVersion", "ApiVersion", "Associates", "KotlincOpts", "Stdlibs", "KotlincPluginInfos", "ModuleName", });
     internal_static_bazelbsp_PythonTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_PythonTargetInfo_descriptor,
-        new java.lang.String[] { "Interpreter", "Version", "Imports", "IsCodeGenerator", "GeneratedSources", });
+        new java.lang.String[] { "Interpreter", "Version", "Imports", "IsCodeGenerator", "GeneratedSources", "Main", "MainModule", });
     internal_static_bazelbsp_GoTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_bazelbsp_GoTargetInfo_fieldAccessorTable = new

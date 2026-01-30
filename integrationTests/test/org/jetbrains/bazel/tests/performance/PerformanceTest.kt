@@ -17,6 +17,7 @@ import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.openapi.util.BuildNumber
+import com.intellij.testFramework.PerformanceUnitTest
 import com.intellij.tools.ide.metrics.collector.OpenTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
@@ -27,25 +28,25 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.driver.execute
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.execute
+import org.jetbrains.bazel.ideStarter.openBspToolWindow
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
-import org.jetbrains.bazel.performance.telemetry.TelemetryManager
-import org.jetbrains.bazel.startup.IntellijTelemetryManager
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * ```sh
  * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/performance --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
  * ```
  */
+@PerformanceUnitTest
 class PerformanceTest : IdeStarterBaseProjectTest() {
   private fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
@@ -58,7 +59,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
     }
     val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
     val commitHash = System.getProperty("bazel.ide.starter.test.commit.hash").orEmpty()
-    val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "main"
+    val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "252"
     val projectHomeRelativePath: String? = System.getProperty("bazel.ide.starter.test.project.home.relative.path")
 
     return GitProjectInfo(
@@ -71,32 +72,27 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
     )
   }
 
-  @BeforeEach
-  fun setUp() {
-    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-  }
-
   @Test
   fun openBazelProject() {
-    val context = createContext("performance", IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
+    val projectName = System.getenv("BAZEL_PERF_PROJECT_NAME") ?: "performance"
+    val context = createContext(projectName, IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
     val startResult =
       context
         .runIdeWithDriver(runTimeout = timeout)
         .useDriverAndCloseIde {
           ideFrame {
             step("Collect performance metrics during Bazel sync") {
-              execute {
-                it.startRecordingMaxMemory().
-                takeScreenshot("startSync").
-                waitForBazelSync().
-                recordMemory("bsp.used.after.sync.mb").
-                openBspToolWindow().
-                takeScreenshot("openBspToolWindow").
-                stopRecordingMaxMemory().
-                waitForSmartMode().
-                recordMemory("bsp.used.after.indexing.mb")
-              }
+              execute { startRecordingMaxMemory() }
+              execute { takeScreenshot("startSync") }
+              execute { openBspToolWindow() }
+              execute { takeScreenshot("openBspToolWindow") }
+              execute { waitForBazelSync() }
+              execute { recordMemory("bsp.used.after.sync.mb") }
+              execute { stopRecordingMaxMemory() }
+              execute { waitForSmartMode() }
+              execute { recordMemory("bsp.used.after.indexing.mb") }
             }
+            waitForIndicators(10.minutes)
           }
         }
 
@@ -112,7 +108,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
     check(spans.size > 1) { "No spans received" }
     check(meters.size > 1) { "No performance metrics received" }
 
-    startResult.publishPerformanceMetrics(metrics = spans + meters)
+    startResult.publishPerformanceMetrics(projectName = projectName, metrics = spans + meters)
   }
 }
 

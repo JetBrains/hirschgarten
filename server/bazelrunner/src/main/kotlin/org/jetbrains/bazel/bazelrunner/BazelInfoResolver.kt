@@ -2,7 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.orLatestSupported
+import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Paths
 
@@ -23,8 +23,9 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command, serverPidFuture = null)
-        .waitAndGetResult(true)
+        .runBazelCommand(command)
+        .waitAndGetResult()
+    if (processResult.isNotSuccess) error("Querying bazel info failed.\n${processResult.stderrLines.joinToString("\n")}")
     return parseBazelInfo(processResult)
   }
 
@@ -45,7 +46,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
 
     val bazelReleaseVersion =
       BazelRelease.fromReleaseString(extract(RELEASE))
-        ?: bazelRunner.workspaceRoot?.let { BazelRelease.fromBazelVersionFile(it) }.orLatestSupported()
+        ?: bazelRunner.workspaceRoot?.let { BazelRelease.fromBazelVersionFile(it) }.orFallbackVersion()
 
     val starlarkSemantics = parseStarlarkSemantics(extract(STARLARK_SEMANTICS), bazelReleaseVersion)
 
@@ -81,17 +82,19 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
         "enable_workspace=false" in starlarkSemantics -> false
         else -> bazelReleaseVersion.major <= 7
       }
+    val autoloadsDisabled = "incompatible_disable_autoloads_in_main_repo=true" in starlarkSemantics
 
     // https://github.com/bazelbuild/bazel/issues/23043
     // https://bazel.build/reference/command-line-reference#flag--incompatible_autoload_externally
-    val externalAutoloads =
+    val externalAutoloads = if (autoloadsDisabled) emptyList()
+    else (
       parseExternalAutoloads(starlarkSemantics) ?: when (bazelReleaseVersion.major) {
         // Bazel 8 autoloads several rules by default to ease migration.
         // This can be turned off via e.g. --incompatible_autoload_externally=""
         8 -> listOf("rules_python", "rules_java", "rules_android")
         // Bazel 9 and higher will not autoload rules by default; Bazel 7 had bundled rules instead of autoloading.
         else -> emptyList()
-      }
+      })
 
     return StarlarkSemantics(
       isBzlModEnabled = isBzlModEnabled,

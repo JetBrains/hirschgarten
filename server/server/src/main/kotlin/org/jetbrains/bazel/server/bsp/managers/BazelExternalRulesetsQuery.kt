@@ -1,25 +1,23 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BidirectionalMap
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.bsp.utils.readXML
-import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
+import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
@@ -59,7 +57,6 @@ class BazelExternalRulesetsQueryImpl(
           isBzlModEnabled,
           bspClientLogger,
           workspaceContext,
-          repoMapping,
         ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             originId,
@@ -91,8 +88,8 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
             }
           }
 
-        runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-          .waitAndGetResult(ensureAllOutputRead = true)
+        runBazelCommand(command, logProcessOutput = false)
+          .waitAndGetResult()
           .let { result ->
             if (result.isNotSuccess) {
               val queryFailedMessage = getQueryFailedMessage(result)
@@ -100,7 +97,16 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
               log.warn(queryFailedMessage)
               null
             } else {
-              result.stdout.readXML(log)?.calculateEligibleRules()
+              try {
+                DocumentBuilderFactory
+                  .newInstance()
+                  .newDocumentBuilder()
+                  .parse(result.stdout.inputStream())
+                  .calculateEligibleRules()
+              } catch (e: Exception) {
+                log?.error("Failed to parse string to xml", e)
+                null
+              }
             }
           }.orEmpty()
       }
@@ -136,7 +142,6 @@ class BazelBzlModExternalRulesetsQueryImpl(
   private val isBzlModEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
-  private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   private val gson = bazelGson
 
@@ -146,16 +151,13 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
-    val apparelRepoNameToCanonicalName =
-      (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap.getTypedInstance()
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(
           command,
           originId = originId,
-          logProcessOutput = false,
-          serverPidFuture = null,
-        ).waitAndGetResult(ensureAllOutputRead = true)
+          logProcessOutput = false
+        ).waitAndGetResult()
         .let { result ->
           if (result.isNotSuccess) {
             val queryFailedMessage = getQueryFailedMessage(result)
@@ -166,30 +168,35 @@ class BazelBzlModExternalRulesetsQueryImpl(
                 val target = SyntheticLabel(AllRuleTargets)
                 val diagnostics =
                   DiagnosticsService(workspaceRoot)
-                    .extractDiagnostics(result.stderr, target, originId!!, isCommandLineFormattedOutput = true)
+                    .extractDiagnostics(result.stderrLines, target, originId!!, isCommandLineFormattedOutput = true)
                 diagnostics.forEach { bspClientLogger.publishDiagnostics(it) }
               }
             log.warn(queryFailedMessage)
           }
           // best effort to parse the output even when there are errors
-          result.stdout.toJson(log)
+          try {
+            JsonParser.parseReader(result.stdout.inputStream().reader())
+          } catch (e: Exception) {
+            log?.error("Failed to parse string to json", e)
+            null
+          }
         } as? JsonObject
 
     return try {
       val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
-      val directDeps = graph.getAllDirectRulesetDependencies()
+      val directDependencyNames = graph.getAllDirectRulesetDependencyNames()
       val indirectDeps =
         rootRulesToNeededTransitiveRules
-          .filterKeys { it in directDeps }
-          .filter { it.value.any { transitiveDep -> graph.isIncludedTransitively(it.key, transitiveDep) } }
-          .values
-          .flatten()
+          .filterKeys { it in directDependencyNames }
+          .flatMap { it.value.flatMap { transitiveDep -> graph.includedByDirectDeps(it.key, transitiveDep) } }
 
-      fun toApparentName(canonicalRepoName: String) = apparelRepoNameToCanonicalName.getKeysByValue(canonicalRepoName)?.firstOrNull()
-      // this is important as bzlmod graph outputs canonical names, without the "+" or "~" to the end.
-      // i.e., @@rules_scala+ will be represented as rules_scala
-      // [BAZEL-2109](https://youtrack.jetbrains.com/issue/BAZEL-2109)
-      return (directDeps + indirectDeps).map { toApparentName("$it~") ?: toApparentName("$it+") ?: it }.distinct()
+      val directDepsApparentNames = graph.dependencies.map { it.apparentName }
+      val indirectDepsApparentNames = indirectDeps.map { it.apparentName }
+      val moduleName = graph.name?.ifEmpty { null }
+      // We include the current module name to handle the edge case for the rules_kotlin repository.
+      // In this scenario, the Bazel module does not declare a dependency on rules_kotlin because the module itself *is* rules_kotlin.
+      // Without this, Kotlin support would not be enabled in this case, causing redcodes in the IDE.
+      return (directDepsApparentNames + indirectDepsApparentNames + listOfNotNull(moduleName)).distinct()
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()
@@ -201,22 +208,16 @@ class BazelBzlModExternalRulesetsQueryImpl(
   }
 }
 
-private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderr}"
+private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderrLines.joinToString("\n")}"
 
-data class BzlmodDependency(val key: String, val dependencies: List<BzlmodDependency>) {
-  /**
-   * Extract dependency name from bzlmod dependency, where the raw format is `<DEP_NAME>@<DEP_VERSION>`.
-   *
-   * There were some issues with (empty) bzlmod projects and android, so the automatic mechanism ignores it.
-   * Use `enabled_rules` to enable `rules_android` instead.
-   */
-  fun toDependencyName(): String = key.substringBefore('@')
-}
+data class BzlmodDependency(val key: String, val name: String, val apparentName: String, val dependencies: List<BzlmodDependency>)
 
-data class BzlmodGraph(val dependencies: List<BzlmodDependency>) {
-  fun getAllDirectRulesetDependencies() = dependencies.map { it.toDependencyName() }
+data class BzlmodGraph(
+  val name: String?,
+  val dependencies: List<BzlmodDependency>,
+) {
+  fun getAllDirectRulesetDependencyNames() = dependencies.map { it.name }
 
-  fun isIncludedTransitively(rootRulesetName: String, transitiveRulesetName: String): Boolean =
-    dependencies.find { it.toDependencyName() == rootRulesetName }?.dependencies?.any { it.toDependencyName() == transitiveRulesetName } ==
-      true
+  fun includedByDirectDeps(rootRulesetName: String, transitiveRulesetName: String): List<BzlmodDependency> =
+    dependencies.find { it.name == rootRulesetName }?.dependencies?.filter { it.name == transitiveRulesetName } ?: emptyList()
 }

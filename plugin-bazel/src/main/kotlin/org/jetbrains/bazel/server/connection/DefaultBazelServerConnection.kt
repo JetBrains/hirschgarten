@@ -10,13 +10,10 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.server.client.BazelClient
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import java.nio.file.Path
-import java.nio.file.attribute.FileTime
 
 private data class ConnectionResetConfig(val featureFlags: FeatureFlags, val configurationHash: HashCode)
 
@@ -32,6 +29,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
       val workspaceContextProvider = project.service<WorkspaceContextProvider>()
       val workspaceContext = workspaceContextProvider.readWorkspaceContext()
       startServer(
+        project,
         bspClient,
         workspaceRoot = workspaceRoot,
         workspaceContext = workspaceContext,
@@ -77,7 +75,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
       // to pick up any project view changes
       val workspaceContextProvider = project.service<WorkspaceContextProvider>()
       val workspaceContext = workspaceContextProvider.readWorkspaceContext()
-      server = startServer(bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
+      server = startServer(project, bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
     }
 
     return task(server)
@@ -88,7 +86,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
       log.info("Resetting Bazel server")
       val workspaceContextProvider = project.service<WorkspaceContextProvider>()
       val workspaceContext = workspaceContextProvider.readWorkspaceContext()
-      server = startServer(bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
+      server = startServer(project, bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
     }
   }
 }

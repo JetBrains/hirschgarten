@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.workspace.packageMarker
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
@@ -12,7 +14,9 @@ import com.intellij.workspaceModel.core.fileIndex.impl.JvmPackageRootDataInterna
 import com.intellij.workspaceModel.core.fileIndex.impl.ModuleRelatedRootData
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.workspace.getRelatedProjects
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
@@ -73,3 +77,21 @@ private class PackageMarkerEntityListener : BulkFileListener {
       customDataClass = ModuleRelatedRootData::class.java,
     )?.data
 }
+
+fun getRelatedProjects(file: VirtualFile): List<Project> =
+  ProjectManager // ProjectLocator::getProjectsForFile only recognizes files already added to content roots
+    .getInstance()
+    .openProjects
+    .filter { projectIsBazelAndContainsFile(it, file) }
+
+private fun projectIsBazelAndContainsFile(project: Project, file: VirtualFile): Boolean {
+  val rootDir =
+    try {
+      project.rootDir
+    } catch (_: IllegalStateException) {
+      return false
+    }
+  return project.isBazelProject && VfsUtil.isAncestor(rootDir, file, false) && project.hasAnyTargets()
+}
+
+private fun Project.hasAnyTargets(): Boolean = this.targetUtils.allTargets().any()

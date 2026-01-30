@@ -6,7 +6,6 @@ import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -102,7 +101,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
       commandToRun.options.add(flag.value)
     }
 
-    val startedProcess = bazelRunner.runBazelCommand(commandToRun, serverPidFuture = null)
+    val startedProcess = bazelRunner.runBazelCommand(commandToRun)
     currentProcessCancelled.set(false)
     currentProcess.set(startedProcess)
   }
@@ -112,7 +111,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
     val retrievedProcess = currentProcess.get()
     if (retrievedProcess != null) { // Cancellation might be called before UI changes state but after the process is finished
       if (currentProcessCancelled.compareAndSet(false, true)) {
-        retrievedProcess.process.destroy() // it seems like it calls SIGTERM
+        retrievedProcess.destroy() // it seems like it calls SIGTERM
       }
     }
   }
@@ -123,7 +122,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
     return if (retrievedProcess != null) {
       val result = retrievedProcess.waitAndGetResult()
       currentProcess.set(null)
-      retrievedProcess.process.destroy()
+      retrievedProcess.destroy()
       if (currentProcessCancelled.get()) null else result
       // There exists an exit code in bazel (8) which would result with .bazelStatus in return value being BazelStatus.CANCEL,
       // but with SIGTERM being called on the process return value is 143, which results in BazelStatus.FATAL_ERROR.

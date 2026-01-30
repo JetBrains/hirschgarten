@@ -1,9 +1,10 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.util.SystemInfo
+import com.jediterm.core.util.TermSize
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -11,6 +12,7 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import kotlin.io.path.createDirectories
 import kotlin.io.path.writeLines
 
 interface HasProgramArguments {
@@ -47,7 +49,8 @@ interface HasMultipleTargets {
     targets.forEach { excludableTarget ->
       if (excludableTarget.isIncluded()) {
         this.targets.add(excludableTarget.value)
-      } else {
+      }
+      else {
         this.excludedTargets.add(excludableTarget.value)
       }
     }
@@ -74,6 +77,8 @@ abstract class BazelCommand(val bazelBinary: String) {
 
   // See https://bazel.build/reference/command-line-reference#options-common-to-all-commands and command-specific options
   val options: MutableList<String> = mutableListOf(BazelFlag.toolTag())
+
+  var ptyTermSize: TermSize? = null
 
   abstract fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor
 
@@ -118,7 +123,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Build(private val bazelInfo: BazelInfo?, bazelBinary: String) :
+  class Build(bazelBinary: String) :
     BazelCommand(bazelBinary),
     HasEnvironment,
     HasMultipleTargets {
@@ -128,7 +133,6 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
 
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
-      var finishCallback: () -> Unit = {}
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
@@ -136,42 +140,41 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
-      if (bazelInfo == null) {
-        // it is just here for completeness + test
-        // should not ever reach here in production
-        commandLine.addAll(targetCommandLine())
-      } else {
-        val targetPatternFile = prepareTargetPatternFile(bazelInfo)
-        // https://bazel.build/reference/command-line-reference#flag--target_pattern_file
-        commandLine.add("--target_pattern_file=$targetPatternFile")
+      val targetPatternFile = prepareTargetPatternFile()
+      // https://bazel.build/reference/command-line-reference#flag--target_pattern_file
+      commandLine.add("--target_pattern_file=$targetPatternFile")
+
+      return BazelCommandExecutionDescriptor(
+        commandLine,
         finishCallback = {
           try {
             Files.deleteIfExists(targetPatternFile)
-          } catch (e: IOException) {
+          }
+          catch (e: IOException) {
             log.warn("Failed to delete target pattern file", e)
           }
-        }
-      }
-
-      return BazelCommandExecutionDescriptor(commandLine, finishCallback)
+        },
+      )
     }
 
-    fun prepareTargetPatternFile(bazelInfo: BazelInfo): Path {
+    fun prepareTargetPatternFile(): Path {
       var targetPatternFile: Path? = null
       try {
-        val targetsDir = bazelInfo.dotBazelBsp().resolve("targets")
-        Files.createDirectories(targetsDir)
+        val tmpDir = PathManager.getTempDir().createDirectories()
+        Files.createDirectories(tmpDir)
 
-        targetPatternFile = Files.createTempFile(targetsDir, "targets-", "").also { it.toFile().deleteOnExit() }
+        targetPatternFile = Files.createTempFile(tmpDir, "targets-", "").also { it.toFile().deleteOnExit() }
 
         val targetsList = (targets.map { it.toString() } + excludedTargets.map { "-$it" })
 
         targetPatternFile.writeLines(targetsList, Charsets.UTF_8, StandardOpenOption.WRITE)
-      } catch (e: IOException) {
+      }
+      catch (e: IOException) {
         targetPatternFile?.let {
           try {
             Files.deleteIfExists(it)
-          } catch (deleteException: IOException) {
+          }
+          catch (deleteException: IOException) {
             throw IllegalStateException("Couldn't delete file after creation failure", deleteException)
           }
         }
@@ -259,9 +262,8 @@ abstract class BazelCommand(val bazelBinary: String) {
   class Query(
     bazelBinary: String,
     private val allowManualTargetsSync: Boolean,
-    private val systemInfoProvider: SystemInfoProvider,
   ) : BazelCommand(bazelBinary),
-    HasMultipleTargets {
+      HasMultipleTargets {
     override val targets: MutableList<Label> = mutableListOf()
     override val excludedTargets: MutableList<Label> = mutableListOf()
 
@@ -283,15 +285,17 @@ abstract class BazelCommand(val bazelBinary: String) {
       val targetString = if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
       return if (allowManualTargetsSync) {
         targetString
-      } else {
+      }
+      else {
         excludeManualTargetsQueryString(targetString)
       }
     }
 
     private fun excludeManualTargetsQueryString(targetString: String): String =
-      if (systemInfoProvider.isWindows) {
+      if (SystemInfo.isWindows) {
         "attr('tags', '^((?!manual).)*$', $targetString)"
-      } else {
+      }
+      else {
         "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"
       }
   }
@@ -344,8 +348,6 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Version(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("version"))
-
   class Info(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("info"))
 
   class Clean(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("clean"))
@@ -359,8 +361,6 @@ abstract class BazelCommand(val bazelBinary: String) {
   class ModShowRepo(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "show_repo"))
 
   class ModDumpRepoMapping(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "dump_repo_mapping"))
-
-  class FileQuery(bazelBinary: String, filePath: String) : SimpleCommand(bazelBinary, listOf("query", filePath))
 
   class QueryExpression(bazelBinary: String, expression: String) : SimpleCommand(bazelBinary, listOf("query", expression))
 }

@@ -377,6 +377,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
 
     queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
     SwingUtilities.invokeLater { setButtonsPanelToCancel() }
+
     var commandResults: BazelProcessResult? = null
     BazelCoroutineService
       .getInstance(project)
@@ -388,7 +389,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
             showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.cancelled"))
           } else {
             if (commandResults!!.isSuccess) {
-              val res = commandResults!!.stdout
+              val res = commandResults!!.stdout.toString(Charsets.UTF_8)
               if (res.isEmpty()) {
                 showInConsole(BazelPluginBundle.message("bazel.toolwindow.tab.query.output.nothing"))
               } else {
@@ -400,7 +401,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
                 }
               }
             } else {
-              showInConsole("Command execution failed:\n" + commandResults!!.stderr)
+              showInConsole("Command execution failed:\n" + commandResults!!.stderrLines.joinToString("\n"))
             }
           }
 

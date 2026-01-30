@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.target
 
 import com.dynatrace.hash4j.hashing.HashValue128
+import com.intellij.openapi.diagnostic.logger
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
 import org.h2.mvstore.WriteBuffer
@@ -23,6 +24,8 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.util.EnumSet
 import kotlin.io.path.invariantSeparatorsPathString
+
+private val LOG = logger<PartialBuildTarget>()
 
 internal fun WriteBuffer.writeString(value: String) {
   if (value.isEmpty()) {
@@ -206,10 +209,15 @@ private fun writeTargetKind(kind: TargetKind, buffer: WriteBuffer) {
 private fun readTargetKind(buffer: ByteBuffer): TargetKind {
   val kindString = buffer.readString()
   val languageClasses = EnumSet.noneOf(LanguageClass::class.java)
-  repeat(readVarInt(buffer)) {
-    val languageClass = LanguageClass.fromSerialId(buffer.get().toInt())
+  val languageClassCount = readVarInt(buffer)
+  repeat(languageClassCount) {
+    val serialId = buffer.get().toInt()
+    val languageClass = LanguageClass.fromSerialId(serialId)
     if (languageClass != null) {
       languageClasses.add(languageClass)
+    } else {
+      // BAZEL-2292: Log unknown serialIds to diagnose potential database corruption
+      LOG.debug("Unknown LanguageClass serialId $serialId for kind '$kindString' - possible database corruption")
     }
   }
   val ruleType = RuleType.entries[buffer.get().toInt()]

@@ -205,7 +205,28 @@
                     interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bzlmodResolver"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.syntheticRunTargetTemplateGenerator"
+                    dynamic="true"
+                    beanClass="com.intellij.lang.LanguageExtensionPoint">
+      <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
+    </extensionPoint>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.buildTargetLanguageInferenceContributor"
+                    interface="org.jetbrains.bazel.target.lang.BuildTargetLangInferenceContributor"
+                    dynamic="true"/>
   </extensionPoints>
+
+  <projectListeners>
+    <listener topic="com.intellij.execution.ExecutionListener"
+              class="org.jetbrains.bazel.run.synthetic.SyntheticRunExecutionListener"/>
+  </projectListeners>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
@@ -287,6 +308,8 @@
 
     <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
 
+    <bzlmodResolver implementation="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.resolver.BazelCentralRegistryModuleResolver"/>
+
     <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
 
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
@@ -318,11 +341,6 @@
       defaultValue="true"
       description="Shorten module/library names by hashing the first parts and retaining the others"
       key="bsp.shorten.module.library.names"
-    />
-    <registryKey
-      defaultValue="false"
-      description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
-      key="bsp.wrap.libraries.inside.modules"
     />
     <registryKey
       defaultValue="true"
@@ -423,9 +441,40 @@
       restartRequired="true"
     />
 
+    <registryKey
+      defaultValue="true"
+      description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overridden with a project view flag."
+      key="bazel.run.config.run.with.bazel"
+      restartRequired="false"
+    />
+    <registryKey
+      defaultValue="true"
+      description="If true, IDEA will run Bazel commands in a pseudo-terminal, providing more rich formatting and progress reporting"
+      key="bazel.use.pty"
+      restartRequired="true"
+    />
+    <registryKey
+      defaultValue="false"
+      description="If true, IDEA will terminate Bazel server daemon if the bazel process was cancelled"
+      key="bazel.kill.server.on.cancel"
+      restartRequired="true"
+    />
+
+    <registryKey defaultValue="false"
+                 description="Enable running non-binary bazel targets using synthetically generated targets"
+                 key="bazel.run.synthetic.enable"
+                 restartRequired="true"
+    />
+    <registryKey defaultValue="false"
+                 description="Disable bazel visibility checks when running syhthetic binary targets"
+                 key="bazel.run.synthetic.disable.visibility.check"
+                 restartRequired="false"
+    />
+
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker" />
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor" />
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer" />
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider"/>
 
     <projectService
       serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
@@ -548,7 +597,6 @@
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider" />
     <projectOpenProcessor implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor" />
     <projectPreInit implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectAndSyncStartupActivity"/>
-    <postStartupActivity implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels" />
     <notificationGroup
       displayType="BALLOON"
       id="BazelSlowPlugins"
@@ -664,6 +712,10 @@
     />
     <completion.contributor
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
+      language="Starlark"
+    />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelDepCompletionContributor"
       language="Starlark"
     />
     <completion.contributor
@@ -1000,12 +1052,17 @@
       <reference id="Bazel.AddToProjectViewDirectoriesAction"/>
       <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction"/>
     </group>
+
+    <action
+      id="Bazel.RefreshBcrModules"
+      class="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.RefreshBcrModulesAction"
+    />
   </actions>
 
   <applicationListeners>
     <listener
-      class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
-      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+      class="org.jetbrains.bazel.workspace.fileEvents.BazelFileEventListener"
+      topic="com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable"
     />
     <listener
       class="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityListener"

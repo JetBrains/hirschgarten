@@ -55,22 +55,3 @@ object TargetIdToModuleEntitiesMap {
     }
   }
 }
-
-@TestOnly
-fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
-  associateBy(
-    keySelector = { Label.parse(it) },
-    valueTransform = {
-      PartialBuildTarget(
-        id = Label.parse(it),
-        tags = listOf(),
-        kind =
-          TargetKind(
-            kindString = "java_library",
-            ruleType = RuleType.LIBRARY,
-            languageClasses = emptySet(),
-          ),
-        baseDirectory = Path("base/dir"),
-      )
-    },
-  )

@@ -15,6 +15,7 @@
  */
 package org.jetbrains.bazel.commons
 
+import com.intellij.openapi.util.io.FileUtil
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -26,8 +27,6 @@ import kotlin.io.path.absolute
  */
 data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
   constructor(path: String) : this(Path(path))
-
-  constructor(file: File) : this(file.toPath())
 
   val isAbsolute: Boolean
     get() = absoluteOrRelativePath.isAbsolute
@@ -131,8 +130,7 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
       possibleChildPath: String,
       strict: Boolean,
     ): Boolean {
-      val fileUtil = FileUtil.getInstance()
-      return fileUtil.isAncestor(possibleParentPath, possibleChildPath, strict)
+      return FileUtil.isAncestor(possibleParentPath, possibleChildPath, strict)
     }
   }
 }

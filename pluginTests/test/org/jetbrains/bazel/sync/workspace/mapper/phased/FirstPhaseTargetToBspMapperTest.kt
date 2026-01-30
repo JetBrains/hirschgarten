@@ -10,7 +10,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.commons.orLatestSupported
+import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
@@ -93,7 +93,7 @@ class FirstPhaseTargetToBspMapperTest {
         outputBase = Paths.get(""),
         workspaceRoot = workspaceRoot,
         bazelBin = Path("bazel-bin"),
-        release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
+        release = BazelRelease.fromReleaseString("release 6.0.0").orFallbackVersion(),
         false,
         true,
         emptyList(),
@@ -217,7 +217,7 @@ class FirstPhaseTargetToBspMapperTest {
       val result: BazelResolvedWorkspace = mapper.resolveWorkspace(context, project)
 
       // then: update expected build targets as per the new merged behavior
-      result.targets.getTargets().toList() shouldContainExactlyInAnyOrder
+      result.targets shouldContainExactlyInAnyOrder
         listOf(
           // target1: unchanged
           RawBuildTarget(
@@ -418,9 +418,7 @@ class FirstPhaseTargetToBspMapperTest {
       // then
       val strings =
         result.targets
-          .getTargets()
           .map { it.id.toString() }
-          .toList()
       strings shouldContainExactlyInAnyOrder
         listOf(
           "@//target1",

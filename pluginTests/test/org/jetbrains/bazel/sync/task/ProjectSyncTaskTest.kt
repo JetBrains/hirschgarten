@@ -2,9 +2,8 @@ package org.jetbrains.bazel.sync.task
 
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.registerOrReplaceServiceInstance
-import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPreSyncHook
@@ -12,22 +11,18 @@ import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
-import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.server.connection.BazelServerService
-import org.jetbrains.bazel.startup.GenericCommandLineProcessSpawner
-import org.jetbrains.bazel.startup.IntellijTelemetryManager
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
-import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
-import org.jetbrains.bazel.sync.workspace.EarlyBazelSyncProject
 import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveServiceMock
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bsp.protocol.BazelProject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -50,16 +45,12 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
       BazelWorkspaceResolveServiceMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
-            targets = BuildTargetCollection.ofBuildTargets(listOf()),
+            targets = listOf(),
           ),
-        earlyBazelSyncProject = EarlyBazelSyncProject(mapOf(), false),
+        bazelProject = BazelProject(mapOf(), false),
       ),
       disposable,
     )
-
-    // Initialize ProcessSpawner and TelemetryManager
-    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
-    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
 
     // pre-sync hooks
     val preSyncHook = TestProjectPreSyncHook()

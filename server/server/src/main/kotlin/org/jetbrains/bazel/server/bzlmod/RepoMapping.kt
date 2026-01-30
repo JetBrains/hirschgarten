@@ -5,7 +5,6 @@ import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.commons.BazelInfo
-import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -15,7 +14,10 @@ import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInterna
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-val rootRulesToNeededTransitiveRules = mapOf("rules_kotlin" to listOf("rules_java"))
+val rootRulesToNeededTransitiveRules = mapOf(
+  "rules_kotlin" to listOf("rules_java"),
+  "rules_scala" to listOf("rules_java"),
+)
 
 suspend fun calculateRepoMapping(
   workspaceContext: WorkspaceContext,
@@ -31,29 +33,40 @@ suspend fun calculateRepoMapping(
   val moduleApparentNameToCanonicalName =
     try {
       // empty string is the name of the root module
-      moduleResolver.getRepoMapping("")
-    } catch (e: Exception) {
+      moduleResolver.getRepoMappings(listOf("")).get("").orEmpty()
+    }
+    catch (e: Exception) {
       bspClientLogger.error(e.toString())
       return RepoMappingDisabled
     }
 
+  fun coveredByMap(
+    repositoryNames: List<String>,
+    mapping: Map<String, String>,
+  ) = repositoryNames.all { mapping.containsKey(it) }
+
   val moduleApparentNameToCanonicalNameForNeededTransitiveRules =
-    rootRulesToNeededTransitiveRules.keys
+    rootRulesToNeededTransitiveRules.filter {
+      !coveredByMap(it.value, moduleApparentNameToCanonicalName)
+    }
+      .keys
       .mapNotNull { moduleApparentNameToCanonicalName[it] }
-      .map { moduleResolver.getRepoMapping(it) }
+      .let {
+        moduleResolver.getRepoMappings(it)
+      }.values
       .reduceOrNull { acc, map -> acc + map }
       .orEmpty()
 
-  for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
+  moduleResolver.resolveModule(workspaceContext.externalRepositoriesTreatedAsInternal, bazelInfo).forEach { externalRepo, showRepoResult ->
     try {
-      val showRepoResult = moduleResolver.resolveModule(externalRepo)
       when (showRepoResult) {
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
         else -> {
           bspClientLogger.warn("Tried to import external module $externalRepo, but it was not `local_path_override`: $showRepoResult")
         }
       }
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       bspClientLogger.error(e.toString())
     }
   }
@@ -68,21 +81,17 @@ suspend fun calculateRepoMapping(
     val repoPath =
       if (localPath != null) {
         bazelInfo.workspaceRoot.resolve(localPath)
-      } else {
+      }
+      else {
         // See https://bazel.build/external/overview#directory-layout
         bazelInfo.outputBase.resolve("external").resolve(canonicalName)
       }
     moduleCanonicalNameToPath[canonicalName] = repoPath
   }
 
-  val apparentRepoNameToCanonicalName =
-    BidirectionalMap
-      .getTypedInstance<String, String>()
-      .apply { putAll(moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName) }
-
   return BzlmodRepoMapping(
     moduleCanonicalNameToLocalPath,
-    apparentRepoNameToCanonicalName,
+    moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
     moduleCanonicalNameToPath,
   )
 }

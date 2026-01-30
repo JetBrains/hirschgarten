@@ -22,7 +22,6 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.relativeToOrNull
 
 class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo: BspInfo) {
   fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
@@ -155,10 +154,7 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     )
 
   suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    val documentRelativePath =
-      inverseSourcesParams.textDocument.path
-        .relativeToOrNull(project.workspaceRoot) ?: throw RuntimeException("File path outside of project root")
-    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext)
+    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, project.workspaceRoot, bazelRunner, project.workspaceContext)
   }
 
   suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo =
@@ -183,13 +179,13 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
           options.addAll(extraOptions)
         }
       }
-      val process = bazelRunner.runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-      val result = process.waitAndGetResult(ensureAllOutputRead = true)
+      val process = bazelRunner.runBazelCommand(command, logProcessOutput = false)
+      val result = process.waitAndGetResult()
 
       if (result.isNotSuccess) {
         throw RuntimeException("bazel query failed: ${result.stderr}")
       }
-      return result.stdout
+      return result.stdout.decodeToString()
     }
   }
 }

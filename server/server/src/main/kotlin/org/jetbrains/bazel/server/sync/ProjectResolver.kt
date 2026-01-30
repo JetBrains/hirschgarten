@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -8,13 +9,11 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetCollection
-import org.jetbrains.bazel.commons.canonicalize
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
-import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
@@ -75,7 +74,7 @@ class ProjectResolver(
           val rawTargetsMap =
             targetInfoReader
               .readTargetMapFromAspectOutputs(aspectOutputs)
-          processTargetMap(rawTargetsMap, repoMapping)
+          processTargetMap(rawTargetsMap)
         }
 
       val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
@@ -299,7 +298,7 @@ class ProjectResolver(
         buildBazelCommand(workspaceContext) {
           shutDown()
         }
-      runBazelCommand(command, serverPidFuture = null)
+      runBazelCommand(command)
         .waitAndGetResult()
     }
   }
@@ -310,7 +309,7 @@ class ProjectResolver(
         buildBazelCommand(workspaceContext) {
           run(gazelleTarget)
         }
-      runBazelCommand(command, serverPidFuture = null)
+      runBazelCommand(command)
         .waitAndGetResult()
     }
   }
@@ -351,20 +350,16 @@ class ProjectResolver(
     private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
 
     @JvmStatic
-    fun processTargetMap(targetMap: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, TargetInfo> =
+    fun processTargetMap(targetMap: Map<Label, TargetInfo>): Map<Label, TargetInfo> =
       targetMap
-        .map { (k, v) ->
-          // TODO: make sure we canonicalize everything
-          //  (https://youtrack.jetbrains.com/issue/BAZEL-1597/Make-sure-all-labels-in-the-server-are-canonicalized)
-          //  also, this can be done in a more efficient way
-          //  maybe we can do it in the aspect with some flag or something
-          val label = k.canonicalize(repoMapping)
+        .map { (_, v) ->
+          // our target-information already contains labels in canonical form
+          val label = Label.parse(v.id)
           label to
             v
               .toBuilder()
               .apply {
-                id = label.toString()
-                val processedDependencies = processDependenciesList(dependenciesBuilderList, targetMap, repoMapping)
+                val processedDependencies = processDependenciesList(dependenciesBuilderList, targetMap)
                 clearDependencies()
                 addAllDependencies(processedDependencies)
               }.build()
@@ -374,7 +369,6 @@ class ProjectResolver(
     fun processDependenciesList(
       dependenciesBuilderList: List<BspTargetInfo.Dependency.Builder>,
       targets: Map<Label, TargetInfo>,
-      repoMapping: RepoMapping,
     ): List<BspTargetInfo.Dependency> {
       val projectSuffix = "-project"
       return dependenciesBuilderList.map { dependency ->
@@ -382,19 +376,16 @@ class ProjectResolver(
           .apply {
             // canonicalize the dependency id
             val label = Label.parse(id)
-            val canonicalizedLabel = label.canonicalize(repoMapping)
-            val canonicalizedId = canonicalizedLabel.toString()
 
             // Replace dependencies from maven_project_jar with their java_library counterparts
             // this is to support the macro java_export from rules_jvm_external
             // refer to its definition for more context: https://github.com/bazel-contrib/rules_jvm_external/blob/935db476ba732576a1f868b092301ce1bc44fe72/private/rules/java_export.bzl#L8
-            // use the original label here instead of canonicalized label as `targets` is still in the original form
             val target = targets[label]
             id =
-              if (target?.kind == "maven_project_jar" && canonicalizedId.endsWith(projectSuffix)) {
-                canonicalizedId.dropLast(projectSuffix.length) + "-lib"
+              if (target?.kind == "maven_project_jar" && id.endsWith(projectSuffix)) {
+                id.dropLast(projectSuffix.length) + "-lib"
               } else {
-                canonicalizedId
+                id
               }
           }.build()
       }

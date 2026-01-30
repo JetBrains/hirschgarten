@@ -8,17 +8,21 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetUtils
 import org.jetbrains.bazel.runnerAction.BazelRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
+import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
@@ -32,6 +36,8 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
+
+private val LOG = logger<LoadedTargetsMouseListener>()
 
 abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
   abstract fun isPointSelectable(point: Point): Boolean
@@ -137,15 +143,26 @@ fun DefaultActionGroup.fillWithEligibleActions(
   testExecutableArguments: List<String> = emptyList(),
   callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
+  val kind = target.kind
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
-  if (target.kind.ruleType == RuleType.BINARY) {
+  // BAZEL-2292: Diagnostic logging to investigate disappearing debug gutter icons
+  if (!canBeDebugged && (kind.ruleType == RuleType.BINARY || kind.ruleType == RuleType.TEST)) {
+    LOG.info(
+      "Debug not available for target ${target.id}: " +
+        "kind=${kind.kindString}, " +
+        "languageClasses=${kind.languageClasses}, " +
+        "ruleType=${kind.ruleType}, " +
+        "isJvmTarget=${kind.isJvmTarget()}",
+    )
+  }
+  if (kind.ruleType == RuleType.BINARY) {
     addAction(RunTargetAction(project, target, includeTargetNameInText = includeTargetNameInText))
     if (canBeDebugged) {
       addAction(RunTargetAction(project, target, isDebugAction = true, includeTargetNameInText = includeTargetNameInText))
     }
   }
 
-  if (target.kind.ruleType == RuleType.TEST) {
+  if (kind.ruleType == RuleType.TEST) {
     addAction(
       TestTargetAction(
         project,
@@ -177,12 +194,20 @@ fun DefaultActionGroup.fillWithEligibleActions(
     )
   }
 
-  if (project.bazelJVMProjectSettings.enableLocalJvmActions && target.kind.isJvmTarget()) {
-    if (target.kind.ruleType == RuleType.BINARY) {
+  if (BazelFeatureFlags.syntheticRunEnable) {
+    if (target.kind.ruleType == RuleType.LIBRARY) {
+      if (callerPsiElement != null) {
+        addSyntheticRunActions(target, callerPsiElement, includeTargetNameInText, canBeDebugged)
+      }
+    }
+  }
+
+  if (project.bazelJVMProjectSettings.enableLocalJvmActions && kind.isJvmTarget()) {
+    if (kind.ruleType == RuleType.BINARY) {
       addAction(RunWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
       addAction(RunWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
-    if (target.kind.ruleType == RuleType.TEST) {
+    if (kind.ruleType == RuleType.TEST) {
       if (callerPsiElement != null) { // called from gutter
         addLocalJvmTestActions(project, target, includeTargetNameInText, callerPsiElement)
       } else if (!project.bazelJVMProjectSettings.useIntellijTestRunner) { // called from target tree widget
@@ -191,6 +216,35 @@ fun DefaultActionGroup.fillWithEligibleActions(
     }
   }
   return this
+}
+
+private fun DefaultActionGroup.addSyntheticRunActions(
+  target: BuildTarget,
+  element: PsiElement,
+  includeTargetNameInText: Boolean,
+  canBeDebugged: Boolean,
+) {
+  val language = element.language
+  for (generator in SyntheticRunTargetUtils.getTemplateGenerators(target, language)) {
+      val action = RunSyntheticTargetAction(
+        target = target,
+        isDebugAction = false,
+        includeTargetNameInText = includeTargetNameInText,
+        templateGenerator = generator,
+        targetElement = element,
+      )
+      addAction(action)
+      if (canBeDebugged) {
+        val action = RunSyntheticTargetAction(
+          target = target,
+          isDebugAction = true,
+          includeTargetNameInText = includeTargetNameInText,
+          templateGenerator = generator,
+          targetElement = element,
+        )
+        addAction(action)
+      }
+    }
 }
 
 private fun DefaultActionGroup.addLocalJvmTestActions(

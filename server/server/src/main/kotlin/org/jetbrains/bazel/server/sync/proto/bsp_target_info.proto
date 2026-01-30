@@ -19,6 +19,7 @@ message Dependency {
 
   string id = 1;
   DependencyType dependency_type = 2;
+  bool exported = 3;
 }
 
 message JvmOutputs {
@@ -72,6 +73,7 @@ message KotlinTargetInfo {
   repeated string kotlinc_opts = 400;
   repeated FileLocation stdlibs = 500;
   repeated KotlincPluginInfo kotlinc_plugin_infos = 600;
+  string module_name = 700;
 }
 
 message PythonTargetInfo {
@@ -80,6 +82,8 @@ message PythonTargetInfo {
   repeated string imports = 3;
   bool is_code_generator = 4;
   repeated FileLocation generated_sources = 5;
+  FileLocation main = 6;
+  string main_module = 7;
 }
 
 message GoTargetInfo {

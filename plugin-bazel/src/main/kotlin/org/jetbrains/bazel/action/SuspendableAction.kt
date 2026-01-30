@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.action
 
 import com.intellij.ide.impl.isTrusted
+import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -57,7 +58,7 @@ abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
   }
 
   private fun doUpdate(project: Project, e: AnActionEvent) {
-    if (project.isTrusted()) {
+    if (TrustedProjects.isProjectTrusted(project)) {
       e.presentation.isVisible = project.isBazelProject
       if (project.isBazelProject) {
         update(project, e)

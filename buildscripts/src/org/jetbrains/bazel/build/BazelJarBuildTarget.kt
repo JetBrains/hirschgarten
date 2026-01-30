@@ -16,7 +16,6 @@ object BazelJarBuildTarget {
     listOf(
       "intellij.bazel.commons",
       "intellij.bazel.protobuf",
-      "intellij.bazel.server",
       "intellij.bazel.kotlin.k2",
     )
 
@@ -49,7 +48,7 @@ object BazelJarBuildTarget {
               val module =
                 context.projectModel.project.findModuleByName(moduleName)
                   ?: error("Module '$moduleName' not found")
-              moduleOutputAsSource(context, module)
+              moduleOutputAsSource(module, outputProvider = context.outputProvider)
             },
         )
         jarFile

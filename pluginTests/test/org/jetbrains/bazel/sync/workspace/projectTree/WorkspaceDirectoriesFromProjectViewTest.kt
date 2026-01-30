@@ -5,9 +5,10 @@ import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.bazelrunner.BazelProcess
+import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
-import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -22,6 +23,9 @@ import org.jetbrains.bazel.server.model.Project
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.`when`
 import java.nio.file.Path
 import java.nio.file.Files
 import kotlin.io.path.createDirectories
@@ -38,8 +42,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
   override fun setUp() {
     super.setUp()
     workspaceRoot = createTempDirectory("workspace")
-    ProcessSpawner.provideProcessSpawner(TestProcessSpawner())
-    bazelRunner = BazelRunner(null, workspaceRoot, null)
+    bazelRunner = createMockBazelRunner()
     bspInfo = object : BspInfo(workspaceRoot) {
       override val bazelBspDir: Path
         get() = workspaceRoot.resolve(".bazelbsp")
@@ -461,43 +464,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     )
   }
 
-  private class TestProcessSpawner : ProcessSpawner {
-    override suspend fun spawnProcess(
-      command: List<String>,
-      environment: Map<String, String>,
-      redirectErrorStream: Boolean,
-      workDirectory: String?
-    ): SpawnedProcess {
-      val cmd = command.joinToString(" ")
-      val stdout = when {
-        cmd.contains(" query ") && cmd.contains("buildfiles(set(") -> mockBuildfilesOutput(workDirectory)
-        else -> ""
-      }
-      return CompletedSpawnedProcess(stdout, "", 0)
-    }
+  private fun createMockBazelRunner(): BazelRunner {
+    val realRunner = BazelRunner(null, workspaceRoot)
+    val runner = spy(realRunner)
 
-    override fun killProcessTree(process: SpawnedProcess): Boolean = true
-    override fun killProcess(process: SpawnedProcess) {}
-    override fun killProcess(pid: Int) {}
-
-    private class CompletedSpawnedProcess(
-      private val out: String,
-      private val err: String,
-      private val code: Int
-    ) : SpawnedProcess {
-      override val pid: Long get() = 0L
-      override val inputStream: java.io.InputStream get() = out.byteInputStream()
-      override val errorStream: java.io.InputStream get() = err.byteInputStream()
-      override val isAlive: Boolean get() = false
-      override fun waitFor(timeout: Int, unit: java.util.concurrent.TimeUnit): Boolean = true
-      override fun waitFor(): Int = code
-      override suspend fun awaitExit(): Int = code
-      override fun destroy() {}
-    }
-
-    private fun mockBuildfilesOutput(workDir: String?): String {
-      if (workDir == null) return ""
-      val root = Path.of(workDir)
+    fun mockBuildfilesOutput(): String {
+      val root = workspaceRoot
       val lines = mutableListOf<String>()
 
       fun addIfExists(rel: String) {
@@ -512,5 +484,19 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
       return lines.joinToString("\n")
     }
+
+    val result = mock(BazelProcessResult::class.java)
+    `when`(result.isNotSuccess).thenReturn(false)
+    `when`(result.stdout).thenAnswer { mockBuildfilesOutput().toByteArray() }
+    `when`(result.stderr).thenReturn(ByteArray(0))
+
+    val process = mock(BazelProcess::class.java)
+    runBlocking {
+      `when`(process.waitAndGetResult()).thenReturn(result)
+    }
+
+    BazelRunnerSpyStubbingHelper.stubRunBazelCommand(runner, process)
+
+    return runner
   }
 }

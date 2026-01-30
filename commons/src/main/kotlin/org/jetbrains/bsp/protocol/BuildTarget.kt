@@ -46,10 +46,11 @@ sealed interface BuildTargetData
 
 @ClassDiscriminator(1)
 public data class KotlinBuildTarget(
-  val languageVersion: String,
-  val apiVersion: String,
+  val languageVersion: String?,
+  val apiVersion: String?,
   val kotlincOptions: List<String>,
   val associates: List<Label>,
+  val moduleName: String? = null,
   var jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
@@ -63,6 +64,8 @@ data class PythonBuildTarget(
   val isCodeGenerator: Boolean,
   val generatedSources: List<Path>,
   val sourceDependencies: List<Path> = listOf(),
+  val mainFile: Path? = null,
+  val mainModule: String? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(3)

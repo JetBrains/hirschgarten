@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -16,6 +17,7 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.Tag
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -24,10 +26,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.performance.bspTracer
-import org.jetbrains.bazel.performance.telemetry.useWithScope
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.BuildTargetCollection
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
@@ -111,7 +111,6 @@ class AspectBazelProjectMapper(
           dependencyGraph
             .allTargetsAtDepth(
               workspaceContext.importDepth,
-              rootTargets,
               isExternalTarget = { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) },
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
@@ -164,7 +163,7 @@ class AspectBazelProjectMapper(
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
-        createLibraries(workspaceContext, targetsAsLibraries, repoMapping) +
+        createLibraries(workspaceContext, targetsAsLibraries) +
           librariesFromDeps.values
             .flatten()
             .distinct()
@@ -184,18 +183,6 @@ class AspectBazelProjectMapper(
         librariesFromDepsAndTargets +
           extraLibrariesFromJdeps.values.flatten().associateBy { it.label }
       }
-
-    val nonModuleTargetIds =
-      (removeDotBazelBspTarget(allTargets.keys) - librariesToImport.keys).toSet()
-    val nonModuleTargets =
-      createNonModuleTargets(
-        allTargets.filterKeys {
-          nonModuleTargetIds.contains(it) &&
-            isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
-        },
-        repoMapping,
-        workspaceContext,
-      )
 
     val extraLibraries = concatenateMaps(librariesFromDeps, extraLibrariesFromJdeps)
 
@@ -218,15 +205,20 @@ class AspectBazelProjectMapper(
 
     val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, highPrioritySources, repoMapping, dependencyGraph) }
     val nonModuleRawTargets = measure("create non module raw targets") {
+      val nonModuleTargets =
+        createNonModuleTargets(
+          allTargets,
+          dependencyGraph,
+          repoMapping,
+          workspaceContext,
+        )
       nonModuleTargets.map { it.toBuildTarget() }
     }
 
+    val workspaceTargets = rawTargets.associateByTo(mutableMapOf()) { target -> target.id }
+    nonModuleRawTargets.forEach { target -> workspaceTargets.putIfAbsent(target.id, target) }
     return BazelResolvedWorkspace(
-      targets =
-        BuildTargetCollection().apply {
-          addBuildTargets(rawTargets)
-          addNonModuleTargets(nonModuleRawTargets)
-        },
+      targets = workspaceTargets.values.toList(),
       libraries =
         librariesToImport.values.map {
           LibraryItem(
@@ -236,7 +228,7 @@ class AspectBazelProjectMapper(
             jars = it.outputs.toList(),
             sourceJars = it.sources.toList(),
             mavenCoordinates = it.mavenCoordinates,
-            isFromInternalTarget = it.isFromInternalTarget,
+            containsInternalJars = it.containsInternalJars,
             isLowPriority = it.isLowPriority,
           )
         },
@@ -282,7 +274,7 @@ class AspectBazelProjectMapper(
           Label.parse(target.id + "_output_jars"),
           target,
           onlyOutputJars = true,
-          isInternalTarget = true,
+          containsInternalJars = true,
         )?.let { library ->
           target.label() to listOf(library)
         }
@@ -634,12 +626,23 @@ class AspectBazelProjectMapper(
   }
 
   private fun createNonModuleTargets(
-    targets: Map<Label, TargetInfo>,
+    allTargets: Map<Label, TargetInfo>,
+    dependencyGraph: DependencyGraph,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
-  ): List<NonModuleTarget> =
-    targets
-      .map { (label, targetInfo) ->
+  ): List<NonModuleTarget> {
+    val allTargetsAtDepth = dependencyGraph.allTargetsAtDepth(
+      workspaceContext.importDepth,
+      isExternalTarget = { false },
+      targetSupportsStrictDeps = { true },
+      isWorkspaceTarget = { true },  // Take everything, including non-workspace targets
+    ).targets.map { it.label() }
+
+    return allTargetsAtDepth
+      .filter { label -> isTargetTreatedAsInternal(label.assumeResolved(), repoMapping) }
+      .filter { label -> label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME }
+      .map { label ->
+        val targetInfo = allTargets.getValue(label)
         NonModuleTarget(
           label = label,
           tags = targetTagsResolver.resolveTags(targetInfo),
@@ -647,11 +650,11 @@ class AspectBazelProjectMapper(
           kindString = targetInfo.kind,
         )
       }
+  }
 
   private suspend fun createLibraries(
     workspaceContext: WorkspaceContext,
     targets: Map<Label, TargetInfo>,
-    repoMapping: RepoMapping,
   ): Map<Label, Library> =
     withContext(Dispatchers.Default) {
       targets
@@ -662,7 +665,7 @@ class AspectBazelProjectMapper(
               label = targetId,
               targetInfo = targetInfo,
               onlyOutputJars = false,
-              isInternalTarget = isTargetTreatedAsInternal(targetId.assumeResolved(), repoMapping),
+              containsInternalJars = targetInfo.containsAnyInternalJars(),
             )?.let { library ->
               targetId to library
             }
@@ -672,12 +675,16 @@ class AspectBazelProjectMapper(
         .toMap()
     }
 
+  private fun TargetInfo.containsAnyInternalJars() = jvmTargetInfo.jarsList.any { jars ->
+    jars.sourceJarsList.any { !it.isExternal } && jars.binaryJarsList.any { !it.isExternal }
+  }
+
   private fun createLibrary(
     workspaceContext: WorkspaceContext,
     label: Label,
     targetInfo: TargetInfo,
     onlyOutputJars: Boolean,
-    isInternalTarget: Boolean,
+    containsInternalJars: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
     val rawSources = getSourceJarPaths(targetInfo);
@@ -715,7 +722,7 @@ class AspectBazelProjectMapper(
       dependencies = targetInfo.dependenciesList.map { it.toDependencyLabel() },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
-      isFromInternalTarget = isInternalTarget,
+      containsInternalJars = containsInternalJars,
     )
   }
 
@@ -925,6 +932,7 @@ class AspectBazelProjectMapper(
     DependencyLabel(
       label = label(),
       isRuntime = dependencyType == BspTargetInfo.Dependency.DependencyType.RUNTIME,
+      exported = exported,
     )
 
   private fun List<Library>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.label) }
@@ -1021,11 +1029,6 @@ class AspectBazelProjectMapper(
       .distinct()
       .toList()
   }
-
-  private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
-    targets.filter {
-      it.isMainWorkspace && !it.packagePath.toString().startsWith(".bazelbsp")
-    }
 
   private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {
     val tags = tags.mapNotNull(BspMappings::toBspTag)

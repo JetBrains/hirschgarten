@@ -12,6 +12,7 @@ import com.intellij.openapi.util.io.FileUtilRt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider.Task
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
@@ -102,7 +103,7 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
 
   override fun getId(): Key<Task> = PROVIDER_ID
 
-  override fun getName(): String = PROVIDER_NAME
+  override fun getName(): String = BazelPluginBundle.message("console.task.build.title")
 
   class Task : BeforeRunTask<Task>(PROVIDER_ID)
 }
@@ -139,9 +140,10 @@ private class ScriptPathBuildTargetTask(
         arguments = programArguments?.let { transformProgramArguments(it) }.orEmpty() + additionalProgramArguments.orEmpty(),
         additionalBazelParams = (scriptPathParam + coroutineDebugParams + additionalBazelParams).joinToString(" "),
         /**
-         * Environment variables are not written into the generated run script by Bazel, so they are handled by [JvmDebuggableCommandLineState].
+         * Environment variables are not written into the generated run script by Bazel, so they are handled by [runWithScriptPath].
          */
         environmentVariables = null,
+        checkVisibility = true,
       )
     return server.buildTargetRun(params).statusCode
   }
