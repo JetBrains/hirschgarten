@@ -64,6 +64,8 @@ data class PythonBuildTarget(
   val isCodeGenerator: Boolean,
   val generatedSources: List<Path>,
   val sourceDependencies: List<Path> = listOf(),
+  val mainFile: Path? = null,
+  val mainModule: String? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(3)

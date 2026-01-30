@@ -84,6 +84,12 @@ def files_to_list(source):
     else:
         return files.to_list()
 
+def get_main_file_location(ctx):
+    return file_location(getattr(ctx.rule.file, 'main', None))
+
+def get_main_module(ctx):
+    return getattr(ctx.rule.attr, 'main_module', None)
+
 def extract_python_info(target, ctx, output_groups, **kwargs):
     if not py_info_in_target(target):
         return None, None
@@ -166,6 +172,8 @@ def extract_python_info(target, ctx, output_groups, **kwargs):
         version = getattr(provider, "python_version", None),
         imports = imports,
         is_code_generator = is_code_generator,
-        generated_sources= [file_location(f) for f in generated_sources]
+        generated_sources= [file_location(f) for f in generated_sources],
+        main = get_main_file_location(ctx),
+        main_module = get_main_module(ctx),
     )
     return dict(python_target_info = python_target_info), None
