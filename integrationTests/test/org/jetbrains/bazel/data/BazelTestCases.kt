@@ -173,7 +173,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val RunAllTestsAction = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "599425b1bc7b525e13849c64aa3ecc12880568b0",
+        commitHash = "9c7f0107d2ec68e09ce30a0e289b79c7a82513fc",
         branchName = "main",
         relativePath = "runAllTests",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
