@@ -10,7 +10,7 @@ import org.jetbrains.bazel.target.targetUtils
 class CheckTargetsInTargetWidget(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
     val project = context.project
-    val loadedTargets = project.targetUtils.allTargets().toSet()
+    val loadedTargets = project.targetUtils.allTargets()
     val expectedTargets =
       setOf(
         Label.parse("//java:binary"),
@@ -20,7 +20,7 @@ class CheckTargetsInTargetWidget(text: String, line: Int) : PlaybackCommandCorou
         Label.parse("//kotlin:library"),
         Label.parse("//kotlin:test"),
       )
-    check(loadedTargets == expectedTargets) { "Expected targets: $expectedTargets, actual: $loadedTargets" }
+    check(loadedTargets.toSet() == expectedTargets) { "Expected targets: $expectedTargets, actual: $loadedTargets" }
   }
 
   companion object {
