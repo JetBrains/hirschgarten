@@ -89,17 +89,9 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
         }
 
         step("Check that parent environment variables are passed to run targets (BAZEL-2761)") {
-          val homeValue = System.getenv("HOME")
-          val userProfileValue = System.getenv("USERPROFILE")
-
-          val homeFound = homeValue != null &&
-            runCatching { consoleView.waitContainsText("PARENT_ENV_HOME=$homeValue", timeout = 5.seconds) }.isSuccess
-          val userProfileFound = userProfileValue != null &&
-            runCatching { consoleView.waitContainsText("PARENT_ENV_USERPROFILE=$userProfileValue", timeout = 5.seconds) }.isSuccess
-
-          check(homeFound || userProfileFound) {
-            "Parent environment variables not passed: neither HOME nor USERPROFILE found in output"
-          }
+          // IDE receives HOME from System.getProperty("user.home") via IdeStarterBaseProjectTest.patchPathVariable()
+          val homeValue = System.getProperty("user.home")
+          consoleView.waitContainsText("PARENT_ENV_HOME=$homeValue", timeout = 5.seconds)
         }
       }
     }
