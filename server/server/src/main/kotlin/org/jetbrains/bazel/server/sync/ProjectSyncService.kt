@@ -82,13 +82,8 @@ class ProjectSyncService(
   }
 
   suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return InverseSourcesResult(emptyList())
+    val project = projectProvider.get() as? AspectSyncProject ?: return InverseSourcesResult(emptyMap())
     return bspMapper.inverseSources(project, inverseSourcesParams)
-  }
-
-  suspend fun buildJvmToolchainInfo(): JvmToolchainInfo {
-    val project = projectProvider.get()
-    return bspMapper.jvmBuilderParams(project)
   }
 
   suspend fun buildJvmToolchainInfoForTarget(target: Label): JvmToolchainInfo {

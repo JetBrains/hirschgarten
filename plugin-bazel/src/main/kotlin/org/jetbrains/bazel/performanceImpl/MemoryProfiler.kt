@@ -12,7 +12,6 @@ import com.intellij.platform.diagnostic.telemetry.exporters.RollingFileSupplier
 import com.intellij.platform.diagnostic.telemetry.exporters.meters.TelemetryMeterJsonExporter
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import com.sun.management.GarbageCollectionNotificationInfo
-import org.jetbrains.bazel.performance.BSP_SCOPE
 import java.lang.Thread.sleep
 import java.lang.management.ManagementFactory
 import java.util.concurrent.atomic.AtomicLong

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -10,14 +11,13 @@ import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.bsp.utils.readXML
-import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
+import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
@@ -88,8 +88,8 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
             }
           }
 
-        runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-          .waitAndGetResult(ensureAllOutputRead = true)
+        runBazelCommand(command, logProcessOutput = false)
+          .waitAndGetResult()
           .let { result ->
             if (result.isNotSuccess) {
               val queryFailedMessage = getQueryFailedMessage(result)
@@ -97,7 +97,16 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
               log.warn(queryFailedMessage)
               null
             } else {
-              result.stdout.readXML(log)?.calculateEligibleRules()
+              try {
+                DocumentBuilderFactory
+                  .newInstance()
+                  .newDocumentBuilder()
+                  .parse(result.stdout.inputStream())
+                  .calculateEligibleRules()
+              } catch (e: Exception) {
+                log?.error("Failed to parse string to xml", e)
+                null
+              }
             }
           }.orEmpty()
       }
@@ -147,9 +156,8 @@ class BazelBzlModExternalRulesetsQueryImpl(
         .runBazelCommand(
           command,
           originId = originId,
-          logProcessOutput = false,
-          serverPidFuture = null,
-        ).waitAndGetResult(ensureAllOutputRead = true)
+          logProcessOutput = false
+        ).waitAndGetResult()
         .let { result ->
           if (result.isNotSuccess) {
             val queryFailedMessage = getQueryFailedMessage(result)
@@ -160,13 +168,18 @@ class BazelBzlModExternalRulesetsQueryImpl(
                 val target = SyntheticLabel(AllRuleTargets)
                 val diagnostics =
                   DiagnosticsService(workspaceRoot)
-                    .extractDiagnostics(result.stderr, target, originId!!, isCommandLineFormattedOutput = true)
+                    .extractDiagnostics(result.stderrLines, target, originId!!, isCommandLineFormattedOutput = true)
                 diagnostics.forEach { bspClientLogger.publishDiagnostics(it) }
               }
             log.warn(queryFailedMessage)
           }
           // best effort to parse the output even when there are errors
-          result.stdout.toJson(log)
+          try {
+            JsonParser.parseReader(result.stdout.inputStream().reader())
+          } catch (e: Exception) {
+            log?.error("Failed to parse string to json", e)
+            null
+          }
         } as? JsonObject
 
     return try {
@@ -179,8 +192,11 @@ class BazelBzlModExternalRulesetsQueryImpl(
 
       val directDepsApparentNames = graph.dependencies.map { it.apparentName }
       val indirectDepsApparentNames = indirectDeps.map { it.apparentName }
-
-      return (directDepsApparentNames + indirectDepsApparentNames).distinct()
+      val moduleName = graph.name?.ifEmpty { null }
+      // We include the current module name to handle the edge case for the rules_kotlin repository.
+      // In this scenario, the Bazel module does not declare a dependency on rules_kotlin because the module itself *is* rules_kotlin.
+      // Without this, Kotlin support would not be enabled in this case, causing redcodes in the IDE.
+      return (directDepsApparentNames + indirectDepsApparentNames + listOfNotNull(moduleName)).distinct()
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()
@@ -192,11 +208,14 @@ class BazelBzlModExternalRulesetsQueryImpl(
   }
 }
 
-private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderr}"
+private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderrLines.joinToString("\n")}"
 
 data class BzlmodDependency(val key: String, val name: String, val apparentName: String, val dependencies: List<BzlmodDependency>)
 
-data class BzlmodGraph(val dependencies: List<BzlmodDependency>) {
+data class BzlmodGraph(
+  val name: String?,
+  val dependencies: List<BzlmodDependency>,
+) {
   fun getAllDirectRulesetDependencyNames() = dependencies.map { it.name }
 
   fun includedByDirectDeps(rootRulesetName: String, transitiveRulesetName: String): List<BzlmodDependency> =

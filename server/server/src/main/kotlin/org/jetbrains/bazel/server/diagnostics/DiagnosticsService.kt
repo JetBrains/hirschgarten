@@ -10,13 +10,13 @@ class DiagnosticsService(
   private val mapper: DiagnosticBspMapper = DiagnosticBspMapper(workspaceRoot),
 ) {
   fun extractDiagnostics(
-    bazelOutput: String,
+    bazelOutputLines: List<String>,
     targetLabel: Label,
     originId: String,
     isCommandLineFormattedOutput: Boolean = false,
     onlyFromParsedOutput: Boolean = false,
   ): List<PublishDiagnosticsParams> {
-    val parsedDiagnostics = parser.parse(bazelOutput, targetLabel, isCommandLineFormattedOutput, onlyFromParsedOutput)
+    val parsedDiagnostics = parser.parse(bazelOutputLines, targetLabel, isCommandLineFormattedOutput, onlyFromParsedOutput)
     val events = mapper.createDiagnostics(parsedDiagnostics, originId)
     return events
   }

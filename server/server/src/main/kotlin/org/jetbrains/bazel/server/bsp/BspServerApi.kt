@@ -66,8 +66,6 @@ class BspServerApi(
 
   override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
 
-  override suspend fun jvmToolchainInfo() = projectSyncService.buildJvmToolchainInfo()
-
   override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath =
     projectSyncService.workspaceTargetClasspathQuery(params)
 

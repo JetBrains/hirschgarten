@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.buildTask
 
-import com.intellij.ide.impl.isTrusted
+import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.toPromise
@@ -23,8 +23,8 @@ import org.jetbrains.concurrency.Promise
 class BazelProjectTaskRunner : ProjectTaskRunner() {
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
     project.isBazelProject &&
-      project.isTrusted() &&
-      canRun(projectTask)
+    TrustedProjects.isProjectTrusted(project) &&
+    canRun(projectTask)
 
   override fun canRun(projectTask: ProjectTask): Boolean =
     when (projectTask) {

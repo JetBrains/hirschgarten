@@ -1,3 +1,4 @@
+load("//${bspPath}/aspects:rules/java/java_info.bzl", "get_java_info")
 load("//${bspPath}/aspects:utils/utils.bzl", "file_location", "is_external", "map", "update_sync_output_groups")
 
 SCALA_COMPILER_NAMES = [
@@ -37,8 +38,8 @@ def find_scalac_classpath(runfiles):
 def extract_scalatest_classpath(rule_attr):
     def extract_from_attr(attr):
         attr_value = getattr(rule_attr, attr, None)
-        if attr_value != None and JavaInfo in attr_value:
-            jars = getattr(attr_value[JavaInfo], "full_compile_jars", depset()).to_list()
+        if attr_value != None and get_java_info(attr_value) != None:
+            jars = getattr(get_java_info(attr_value), "full_compile_jars", depset()).to_list()
             return map(file_location, jars)
         return []
 

@@ -6,7 +6,7 @@ import org.jetbrains.bazel.commons.constants.Constants.VERSION
 object BazelFlag {
   @JvmStatic fun runUnder(command: String) = arg("run_under", command)
 
-  @JvmStatic fun color(enabled: Boolean) = arg("color", if (enabled) "yes" else "no")
+  @JvmStatic fun color(enabled: Boolean) = yesNoArg("color", enabled)
 
   @JvmStatic fun keepGoing() = flag("keep_going")
 
@@ -25,7 +25,7 @@ object BazelFlag {
       enabled.toString(),
     )
 
-  @JvmStatic fun curses(enabled: Boolean): String = arg("curses", if (enabled) "yes" else "no")
+  @JvmStatic fun curses(enabled: Boolean): String = yesNoArg("curses", enabled)
 
   @JvmStatic fun enableWorkspace(enabled: Boolean = true): String = arg("enable_workspace", enabled.toString())
 
@@ -55,7 +55,24 @@ object BazelFlag {
 
   @JvmStatic fun checkVisibility(enabled: Boolean): String = arg("check_visibility", enabled.toString())
 
+  @JvmStatic fun orderOutput(enabled: Boolean): String = yesNoArg("order_output", enabled)
+
+  @JvmStatic fun universeScope(scope: String): String = arg("universe_scope", scope)
+
+  @JvmStatic fun consistentLabels(enabled: Boolean): String = arg("consistent_labels", enabled.toString())
+
+  private fun yesNoArg(name: String, enable: Boolean) = arg(name, if (enable) "yes" else "no")
+
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
 
   private fun flag(name: String) = "--$name"
+
+  object OutputFormat {
+    @JvmStatic fun json() = outputFlag("json")
+    @JvmStatic fun xml() = outputFlag("xml")
+    @JvmStatic fun proto() = outputFlag("proto")
+    @JvmStatic fun streamed_proto() = outputFlag("streamed_proto")
+
+    private fun outputFlag(format: String) = arg("output", format)
+  }
 }

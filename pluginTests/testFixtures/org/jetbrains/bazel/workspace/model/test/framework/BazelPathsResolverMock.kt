@@ -3,7 +3,7 @@ package org.jetbrains.bazel.workspace.model.test.framework
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.orLatestSupported
+import org.jetbrains.bazel.commons.orFallbackVersion
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
@@ -16,7 +16,7 @@ object BazelPathsResolverMock {
         outputBase = Paths.get(""),
         workspaceRoot = workspaceRoot,
         bazelBin = Path("bazel-bin"),
-        release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
+        release = BazelRelease.fromReleaseString("release 6.0.0").orFallbackVersion(),
         false,
         true,
         emptyList(),

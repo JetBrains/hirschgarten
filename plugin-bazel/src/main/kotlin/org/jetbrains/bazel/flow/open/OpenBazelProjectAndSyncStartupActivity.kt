@@ -2,6 +2,7 @@ package org.jetbrains.bazel.flow.open
 
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -36,7 +37,12 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
 
     // todo duplicates org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor.calculateOpenProjectTask
     val path = storeDescriptor.projectIdentityFile
-    val projectRootDir = findProjectFolderFromFile(path)!!
+    val projectRootDir = findProjectFolderFromFile(path)
+    if (projectRootDir == null) {
+      logger.warn("Unable to find project root directory for Bazel project: ${project.name}")
+      return
+    }
+
     project.initProperties(projectRootDir)
 
     val projectViewPath = getProjectViewPath(projectRootDir, path)
@@ -61,3 +67,5 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
     return !isGoogleBazelPluginEnabled && externalProjectPath.endsWith(".ijwb")
   }
 }
+
+private val logger = Logger.getInstance(OpenBazelProjectAndSyncStartupActivity::class.java)

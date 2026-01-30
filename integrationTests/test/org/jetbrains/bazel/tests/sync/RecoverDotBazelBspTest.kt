@@ -45,7 +45,14 @@ class RecoverDotBazelBspTest : IdeStarterBaseProjectTest() {
                 buildView.getAllTexts().any {
                   it.text.contains(BazelPluginBundle.message("console.task.sync.success"))
                 },
-              ) { "Build view does not contain success sync text" }
+              ) {
+                buildString {
+                  appendLine("Build view does not contain success sync text:")
+                  buildView.getAllTexts().forEach {
+                    appendLine(it.text)
+                  }
+                }
+              }
             } catch (e: Exception) {
               assert(e is WaitForException) { "Unknown exception: ${e.message}" }
             }

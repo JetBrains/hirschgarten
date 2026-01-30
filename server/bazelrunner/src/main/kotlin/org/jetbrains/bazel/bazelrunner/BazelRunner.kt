@@ -1,17 +1,17 @@
 package org.jetbrains.bazel.bazelrunner
 
-import kotlinx.coroutines.CompletableDeferred
-import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.configurations.PtyCommandLine
+import com.jediterm.core.util.TermSize
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
-import org.jetbrains.bazel.commons.BazelInfo
-import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
+import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
 /**
@@ -25,7 +25,7 @@ class BazelRunner(
     private val LOGGER = LoggerFactory.getLogger(BazelRunner::class.java)
   }
 
-  inner class CommandBuilder(workspaceContext: WorkspaceContext) {
+  class CommandBuilder(workspaceContext: WorkspaceContext) {
     private val bazelBinary = workspaceContext.bazelBinary?.pathString ?: "bazel"
     var inheritWorkspaceOptions = false
 
@@ -34,8 +34,6 @@ class BazelRunner(
     fun shutDown(builder: BazelCommand.ShutDown.() -> Unit = {}) = BazelCommand.ShutDown(bazelBinary).apply { builder() }
 
     fun info(builder: BazelCommand.Info.() -> Unit = {}) = BazelCommand.Info(bazelBinary).apply { builder() }
-
-    fun version(builder: BazelCommand.Version.() -> Unit = {}) = BazelCommand.Version(bazelBinary).apply { builder() }
 
     fun run(target: Label, builder: BazelCommand.Run.() -> Unit = {}) =
       BazelCommand.Run(bazelBinary, target).apply { builder() }.also { inheritWorkspaceOptions = true }
@@ -52,11 +50,13 @@ class BazelRunner(
     ) = BazelCommand.ModDumpRepoMapping(bazelBinary).apply { builder() }
 
     fun query(allowManualTargetsSync: Boolean = true, builder: BazelCommand.Query.() -> Unit = {}) =
-      BazelCommand.Query(bazelBinary, allowManualTargetsSync, SystemInfoProvider.getInstance()).apply { builder() }
+      BazelCommand.Query(bazelBinary, allowManualTargetsSync).apply { builder() }
 
-    /** Special version of `query` for asking Bazel about a file instead of a target */
-    fun fileQuery(filePath: Path, builder: BazelCommand.FileQuery.() -> Unit = {}) =
-      BazelCommand.FileQuery(bazelBinary, filePath.toString()).apply { builder() }
+    /** Special version of `query` for asking Bazel about files instead of a target */
+    fun fileQuery(filePaths: List<Path>, builder: BazelCommand.QueryExpression.() -> Unit = {}): BazelCommand.QueryExpression {
+      val fileString = filePaths.joinToString(prefix = "set(", separator = " ", postfix = ")")
+      return queryExpression(fileString, builder)
+    }
 
     /** Purest form of `query`, asking for exact string to execute instead of `Label`s */
     fun queryExpression(expression: String, builder: BazelCommand.QueryExpression.() -> Unit = {}) =
@@ -127,18 +127,16 @@ class BazelRunner(
     return command
   }
 
-  suspend fun runBazelCommand(
+  fun runBazelCommand(
     command: BazelCommand,
     originId: String? = null,
     logProcessOutput: Boolean = true,
-    serverPidFuture: CompletableFuture<Long>?,
     shouldLogInvocation: Boolean = true,
   ): BazelProcess {
     val executionDescriptor = command.buildExecutionDescriptor()
     val finishCallback = executionDescriptor.finishCallback
     val processArgs = executionDescriptor.command
 
-    val processSpawner = ProcessSpawner.getInstance()
     var environment = emptyMap<String, String>()
 
     // Run needs to be handled separately because the resulting process is not run in the sandbox
@@ -149,25 +147,45 @@ class BazelRunner(
       logInvocation(processArgs, null, null, originId, shouldLogInvocation = shouldLogInvocation)
     }
 
-    val process =
-      processSpawner
-        .spawnProcess(
-          command = processArgs,
-          environment = environment,
-          redirectErrorStream = false,
-          workDirectory = workspaceRoot.toString(),
-          ptyTermSize = command.ptyTermSize,
-        )
+    val process = spawnProcess(
+      command = processArgs,
+      environment = environment,
+      workDirectory = workspaceRoot.toString(),
+      ptyTermSize = command.ptyTermSize,
+    )
 
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
 
     return BazelProcess(
       process,
       outputLogger,
-      serverPidFuture,
       finishCallback,
     )
   }
+
+  private fun spawnProcess(
+    command: List<String>,
+    environment: Map<String, String>,
+    workDirectory: String?,
+    ptyTermSize: TermSize?,
+  ): Process {
+    val commandLine = if (ptyTermSize != null) {
+      PtyCommandLine(command).withConsoleMode(false).withInitialColumns(ptyTermSize.columns).withInitialRows(ptyTermSize.rows)
+    }
+    else {
+      GeneralCommandLine(command)
+    }
+    if (workDirectory != null) {
+      commandLine.withWorkingDirectory(Path(workDirectory))
+    }
+    if (environment.isNotEmpty()) {
+      commandLine.withEnvironment(environment)
+    }
+
+    commandLine.withRedirectErrorStream(false)
+    return commandLine.createProcess()
+  }
+
 
   private fun envToString(environment: Map<String, String>): String = environment.entries.joinToString(" ") { "${it.key}=${it.value}" }
 

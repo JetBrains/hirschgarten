@@ -1,10 +1,9 @@
 package org.jetbrains.bazel.languages.projectview
 
-import com.google.common.hash.HashCode
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.progress.runBlockingCancellable
+import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -29,7 +28,7 @@ class ProjectViewService(private val project: Project) {
    * Gets the current ProjectView, parsing it if necessary.
    * Uses caching with file modification time checking for efficiency.
    */
-  fun getProjectView(): ProjectView {
+  suspend fun getProjectView(): ProjectView {
     var projectViewPath = findProjectViewPath()
 
     if (projectViewPath == null || !projectViewPath.exists()) {
@@ -47,11 +46,13 @@ class ProjectViewService(private val project: Project) {
       return getDefaultProjectView()
     }
 
-    return parseProjectView(projectViewPath)
+    return parseProjectViewAsync(projectViewPath) ?: getDefaultProjectView()
   }
 
   private val cachedProjectViewComputable = SyncCache.SyncCacheComputable {
-    getProjectView()
+    runBlockingMaybeCancellable {
+      getProjectView()
+    }
   }
 
   /**
@@ -69,23 +70,16 @@ class ProjectViewService(private val project: Project) {
       ?: rootDir.findFileByRelativePath(".bazelbsp/.bazelproject")
   }
 
-  private fun parseProjectView(projectViewPath: VirtualFile): ProjectView {
-    return runBlockingCancellable {
-      parseProjectViewAsync(projectViewPath) ?: getDefaultProjectView()
-    }
-  }
-
   private suspend fun parseProjectViewAsync(projectViewPath: VirtualFile): ProjectView? = readAction {
-    val psi = PsiManager.getInstance(project).findFile(projectViewPath) as? ProjectViewPsiFile
-      ?: return@readAction null
-    return@readAction ProjectView.fromProjectViewPsiFile(psi)
+    (PsiManager.getInstance(project).findFile(projectViewPath) as? ProjectViewPsiFile)
+      ?.let { ProjectView.fromProjectViewPsiFile(it) }
   }
 
-  private fun getDefaultProjectView(): ProjectView {
+  private suspend fun getDefaultProjectView(): ProjectView = readAction  {
     val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir)
     val psiFile = PsiFileFactory.getInstance(project)
       .createFileFromText(".bazelproject", ProjectViewLanguage, content) as ProjectViewPsiFile
-    return ProjectView.fromProjectViewPsiFile(psiFile)
+    ProjectView.fromProjectViewPsiFile(psiFile)
   }
 
   suspend fun forceReparseCurrentProjectViewFiles() {
@@ -97,8 +91,6 @@ class ProjectViewService(private val project: Project) {
         .reparseFiles(imports + projectViewPath, false)
     }
   }
-
-  fun getProjectViewConfigurationHash(): HashCode = ProjectViewHasher.hash(getProjectView())
 
   companion object {
     @JvmStatic

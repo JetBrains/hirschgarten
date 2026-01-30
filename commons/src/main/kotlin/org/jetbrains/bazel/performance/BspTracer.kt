@@ -1,13 +1,16 @@
 package org.jetbrains.bazel.performance
 
+import com.intellij.platform.diagnostic.telemetry.Scope
+import com.intellij.platform.diagnostic.telemetry.TelemetryManager
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.trace.Tracer
-import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 
-const val BSP_SCOPE = "bsp"
+const val BSP_SCOPE: String = "bsp"
 
-val telemetryManager: TelemetryManager by lazy { TelemetryManager.getInstance() }
+private val bspScope = Scope(BSP_SCOPE)
 
-val bspTracer: Tracer by lazy { telemetryManager.getTracer() }
+@JvmField
+val bspTracer: Tracer = TelemetryManager.getTracer(bspScope)
 
-val bspMeter: Meter by lazy { telemetryManager.getMeter() }
+@JvmField
+val bspMeter: Meter = TelemetryManager.getMeter(bspScope)

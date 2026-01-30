@@ -7,6 +7,7 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.autolink.ExternalSystemProjectLinkListener
 import com.intellij.openapi.externalSystem.autolink.ExternalSystemUnlinkedProjectAware
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
@@ -14,6 +15,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -69,9 +71,16 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
           .findFileByPath(externalProjectPath)
           ?.children
           ?.firstOrNull { isBuildFile(project, it) }
-      }?.toNioPath()!!
+      }?.toNioPathOrNull()
 
-      closeAndReopenAsBazelProject(project, file)
+      if (file != null) {
+        closeAndReopenAsBazelProject(project, file)
+      } else {
+        log.warn("Unable to find Bazel project file for $externalProjectPath")
+        return@launch
+      }
+
+
     }
   }
 
@@ -89,6 +98,8 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   }
 
 }
+
+private val log = logger<BazelUnlinkedProjectAware>()
 
 /**
  * Application-level coroutine scope service for operations that must survive project closure.

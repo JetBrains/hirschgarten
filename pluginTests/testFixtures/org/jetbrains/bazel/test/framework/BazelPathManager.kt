@@ -16,7 +16,7 @@ object BazelPathManager {
   }
 
   val testProjectsRoot: Path by lazy {
-    testSourceRoot
+    testDataRoot
       .resolve("testProjects")
   }
 

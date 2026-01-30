@@ -8,6 +8,7 @@ import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.projectImport.ProjectOpenProcessor
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
@@ -29,6 +30,8 @@ val BUILD_FILE_GLOB: String = Constants.BUILD_FILE_NAMES.joinToString(
  * Refrain from using [VirtualFile.getChildren] as it causes performance issues in large projects, such as [BAZEL-1717](https://youtrack.jetbrains.com/issue/BAZEL-1717)
  */
 internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
+  // Deprecated in ProjectOpenProcessor superclass
+  @Deprecated("Use openProjectAsync instead", replaceWith = ReplaceWith("openProjectAsync(virtualFile, projectToClose, forceOpenInNewFrame)"), level = DeprecationLevel.ERROR)
   override fun doOpenProject(
     virtualFile: VirtualFile,
     projectToClose: Project?,
@@ -36,7 +39,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
   ): Project? {
     log.info("Opening project :$virtualFile")
     val (projectStoreBaseDir, options) =
-      calculateOpenProjectTask(virtualFile, forceOpenInNewFrame, projectToClose)
+      calculateOpenProjectTask(virtualFile, forceOpenInNewFrame, projectToClose) ?: return null
 
     return ProjectManagerEx
       .getInstanceEx()
@@ -50,7 +53,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
   ): Project? {
     log.info("Opening asynchronously project :$virtualFile")
     val (projectStoreBaseDir, options) =
-      calculateOpenProjectTask(virtualFile, forceOpenInNewFrame, projectToClose)
+      calculateOpenProjectTask(virtualFile, forceOpenInNewFrame, projectToClose) ?: return null
 
     return ProjectManagerEx
       .getInstanceEx()
@@ -61,21 +64,28 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
     virtualFile: VirtualFile,
     forceOpenInNewFrame: Boolean,
     projectToClose: Project?,
-  ): Pair<Path, OpenProjectTask> {
+  ): Pair<Path, OpenProjectTask>? {
     // todo why do we even need to calculate the project root dir?
     // todo refactor
 
-    val path = virtualFile.toNioPath()
-    val (projectRootDir, projectViewPath) = if (path.workspaceFile != null) {
-      Pair(path, null)
-    }
-    else {
-      val projectRootDir = findProjectFolderFromFile(path)!!
-      val projectViewPath = getProjectViewPath(projectRootDir, path)
-      Pair(projectRootDir, projectViewPath)
+    val path = virtualFile.toNioPathOrNull() ?: return null
+
+    val (projectRootDir, projectViewPath) =
+      if (path.workspaceFile != null) {
+        path to null
+      } else {
+        val projectRootDir = findProjectFolderFromFile(path)
+        val projectViewPath = projectRootDir?.let { getProjectViewPath(it, path) }
+        projectRootDir to projectViewPath
+      }
+
+    val projectStoreBaseDir = projectViewPath ?: path.workspaceFile
+    if (projectStoreBaseDir == null || projectRootDir == null) {
+      log.warn("Unable to open Bazel project at ${virtualFile.presentableUrl}")
+      return null
     }
 
-    return (projectViewPath ?: projectRootDir.workspaceFile!!) to
+    return (projectStoreBaseDir) to
       OpenProjectTask {
         runConfigurators = true
         isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode

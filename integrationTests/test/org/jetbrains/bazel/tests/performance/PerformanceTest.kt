@@ -17,6 +17,7 @@ import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.openapi.util.BuildNumber
+import com.intellij.testFramework.PerformanceUnitTest
 import com.intellij.tools.ide.metrics.collector.OpenTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
@@ -33,9 +34,6 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openBspToolWindow
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
-import org.jetbrains.bazel.performance.telemetry.TelemetryManager
-import org.jetbrains.bazel.startup.IntellijTelemetryManager
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -48,7 +46,7 @@ import kotlin.time.Duration.Companion.minutes
  * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/performance --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
  * ```
  */
-// @PerformanceUnitTest
+@PerformanceUnitTest
 class PerformanceTest : IdeStarterBaseProjectTest() {
   private fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
@@ -72,11 +70,6 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
       isReusable = true,
       configureProjectBeforeUse = BazelProjectConfigurer::configureProjectBeforeUse,
     )
-  }
-
-  @BeforeEach
-  fun setUp() {
-    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
   }
 
   @Test

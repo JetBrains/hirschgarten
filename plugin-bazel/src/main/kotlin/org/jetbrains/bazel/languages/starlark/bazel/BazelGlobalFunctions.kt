@@ -62,31 +62,25 @@ class DefaultBazelGlobalFunctionProvider : StarlarkGlobalFunctionProvider {
 
 class BazelGlobalFunctions {
   companion object {
-    val globalFunctions: Map<String, BazelGlobalFunction> =
-      StarlarkGlobalFunctionProvider.extensionPoint.extensionList
-        .flatMap {
-          it.functions
-        }.associateBy { it.name }
+    // These properties read from the extension point dynamically to support test isolation.
+    // Extension points can be masked/replaced during tests, so caching the initial value
+    // would cause subsequent tests to see stale data.
+    val globalFunctions: Map<String, BazelGlobalFunction>
+      get() = StarlarkGlobalFunctionProvider.extensionPoint.extensionList
+        .flatMap { it.functions }
+        .associateBy { it.name }
 
-    val buildGlobalFunctions: Map<String, BazelGlobalFunction> =
-      globalFunctions.filter {
-        it.value.environment.contains(Environment.BUILD)
-      }
+    val buildGlobalFunctions: Map<String, BazelGlobalFunction>
+      get() = globalFunctions.filter { it.value.environment.contains(Environment.BUILD) }
 
-    val moduleGlobalFunctions: Map<String, BazelGlobalFunction> =
-      globalFunctions.filter {
-        it.value.environment.contains(Environment.MODULE)
-      }
+    val moduleGlobalFunctions: Map<String, BazelGlobalFunction>
+      get() = globalFunctions.filter { it.value.environment.contains(Environment.MODULE) }
 
-    val extensionGlobalFunctions: Map<String, BazelGlobalFunction> =
-      globalFunctions.filter {
-        it.value.environment.contains(Environment.BZL)
-      }
+    val extensionGlobalFunctions: Map<String, BazelGlobalFunction>
+      get() = globalFunctions.filter { it.value.environment.contains(Environment.BZL) }
 
-    val starlarkGlobalFunctions: Map<String, BazelGlobalFunction> =
-      globalFunctions.filter {
-        it.value.environment.containsAll(Environment.entries)
-      }
+    val starlarkGlobalFunctions: Map<String, BazelGlobalFunction>
+      get() = globalFunctions.filter { it.value.environment.containsAll(Environment.entries) }
 
     fun getFunctionByName(name: String): BazelGlobalFunction? = globalFunctions[name]
   }

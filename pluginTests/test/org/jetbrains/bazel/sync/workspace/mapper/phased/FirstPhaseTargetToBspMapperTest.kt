@@ -10,7 +10,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.commons.orLatestSupported
+import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
@@ -40,7 +40,6 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
     debugFlags = emptyList(),
     bazelBinary = Path("bazel"),
     allowManualTargetsSync = allowManualTargetsSync,
-    dotBazelBspDirPath = Path(".bazelbsp"),
     importDepth = -1,
     enabledRules = emptyList(),
     ideJavaHomeOverride = Path("java_home"),
@@ -93,7 +92,7 @@ class FirstPhaseTargetToBspMapperTest {
         outputBase = Paths.get(""),
         workspaceRoot = workspaceRoot,
         bazelBin = Path("bazel-bin"),
-        release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
+        release = BazelRelease.fromReleaseString("release 6.0.0").orFallbackVersion(),
         false,
         true,
         emptyList(),
