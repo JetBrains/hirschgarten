@@ -28,7 +28,7 @@ import kotlin.time.Duration.Companion.minutes
  */
 class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
   @Test
-  fun openBazelProject() {
+  fun `quick fix should add module and library dependencies to BUILD file`() {
     createContext("bazelProjectModelModifier", IdeaBazelCases.BazelProjectModelModifier)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

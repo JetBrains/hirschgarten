@@ -36,7 +36,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 class FastBuildTest : IdeStarterBaseProjectTest() {
   @Test
-  fun openBazelProject() {
+  fun `fast build hotswap should apply code changes during debug`() {
     createContext("fastbuild", IdeaBazelCases.FastBuild)
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
       .withBazelFeatureFlag(BazelFeatureFlags.FAST_BUILD_ENABLED)

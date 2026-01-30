@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openBazelProject() {
+  fun `imported run configurations should execute and show build diagnostics`() {
     createContext("importRunConfigurationsSyncHook", IdeaBazelCases.ImportRunConfigurationsSyncHook).runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {
         syncBazelProject(buildAndSync = true)

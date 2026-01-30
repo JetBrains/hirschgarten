@@ -27,7 +27,7 @@ import kotlin.time.Duration.Companion.minutes
  */
 class CompiledSourceCodeInsideJarExcludeTest : IdeStarterBaseProjectTest() {
   @Test
-  fun openBazelProject() {
+  fun `navigation should resolve to source file not compiled jar`() {
     createContext("compiledSourceCodeInsideJarExclude", IdeaBazelCases.CompiledSourceCodeInsideJarExclude)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
