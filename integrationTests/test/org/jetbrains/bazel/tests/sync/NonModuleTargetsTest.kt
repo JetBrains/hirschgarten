@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.minutes
 class NonModuleTargetsTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openBazelProject() {
+  fun `non-module targets should be synced and visible in project`() {
     createContext("nonModuleTargets", IdeaBazelCases.NonModuleTargets)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

@@ -24,7 +24,7 @@ class BazelProjectOpenProcessorStarterTest : IdeStarterBaseProjectTest() {
 
   @Disabled("current project open behavior breaks this test")
   @Test
-  fun openBazelProject() {
+  fun `project open processor should handle Bazel project correctly`() {
     createContext("bazelProjectOpenProcessorStarter", IdeaBazelCases.BazelProjectOpenProcessorStarter)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

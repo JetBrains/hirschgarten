@@ -22,7 +22,7 @@ import kotlin.time.Duration.Companion.seconds
 class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openProject() {
+  fun `JetBrains test runner should execute tests and show results tree`() {
     createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
       .setRunConfigRunWithBazel(false)
       .runIdeWithDriver(runTimeout = timeout)
@@ -33,7 +33,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
         step("open TestKotlin.kt and run TestKotlin.` interesting#test `") {
           execute { openFile("TestKotlin.kt") }
-          clickTestGutterOnLine(8)
+          clickTestGutterOnLine(11)
 
           verifyTestStatus(
             listOf("1 test passed"),
@@ -43,7 +43,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
         step("run the same again to check that it is NOT cached because we use --script_path in this test") {
           execute { openFile("TestKotlin.kt") }
-          clickTestGutterOnLine(8)
+          clickTestGutterOnLine(11)
 
           verifyTestStatus(
             listOf("1 test passed"),
@@ -53,10 +53,10 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
         step("open TestJava.java and run the whole class") {
           execute { openFile("TestJava.java") }
-          clickTestGutterOnLine(6, testTimeout = 15.seconds)
+          clickTestGutterOnLine(14, testTimeout = 15.seconds)
 
           verifyTestStatus(
-            listOf("3 tests failed", ", 2 passed"),
+            listOf("3 tests failed,", " 2 passed"),
             listOf(
               "JUnit Jupiter",
               "TestJava",
@@ -91,10 +91,10 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
         step("Run parametrized test via gutter") {
           execute { openFile("TestJava.java") }
-          clickTestGutterOnLine(9)
+          clickTestGutterOnLine(17)
 
           verifyTestStatus(
-            listOf("1 test failed", ", 1 passed"),
+            listOf("1 test failed,", " 1 passed"),
             listOf(
               "JUnit Jupiter",
               "TestJava",
@@ -132,7 +132,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun checkTestCaching() {
+  fun `test results should be cached when running with Bazel`() {
     createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
       // This is required for Bazel test caching!
       .setRunConfigRunWithBazel(true)
@@ -144,7 +144,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
           step("open TestKotlin.kt and run TestKotlin.` interesting#test `") {
             execute { openFile("TestKotlin.kt") }
-            clickTestGutterOnLine(8)
+            clickTestGutterOnLine(11)
 
             verifyTestStatus(
               listOf("1 test passed"),
@@ -154,7 +154,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
           step("run the same again to check that it's cached") {
             execute { openFile("TestKotlin.kt") }
-            clickTestGutterOnLine(8)
+            clickTestGutterOnLine(11)
 
             verifyTestStatus(
               listOf("1 test passed"),
