@@ -15,7 +15,7 @@ class JavaResourcesTest : BazelSyncCodeInsightFixtureTestCase() {
   fun testHighlighting() = runBlocking {
     myFixture.setupJdk(IdeaTestUtil.getMockJdk21())
     myFixture.enableInspections(InvalidPropertyKeyInspection())
-    myFixture.copyDirectoryToProject("redcodes/java_resources", "")
+    myFixture.copyBazelTestProject("redcodes/java_resources")
     myFixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       myFixture.checkHighlighting("module/src/main/java/com/example/Module.java")
