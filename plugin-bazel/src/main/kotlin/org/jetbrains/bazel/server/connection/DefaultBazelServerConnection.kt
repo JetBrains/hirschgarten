@@ -1,92 +1,142 @@
 package org.jetbrains.bazel.server.connection
 
-import com.google.common.hash.HashCode
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
+import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
+import org.jetbrains.bazel.logger.BspClientLogger
+import org.jetbrains.bazel.server.bsp.BspServerApi
+import org.jetbrains.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
+import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
+import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
+import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.client.BazelClient
+import org.jetbrains.bazel.server.sync.BspProjectMapper
+import org.jetbrains.bazel.server.sync.ExecuteService
+import org.jetbrains.bazel.server.sync.ProjectProvider
+import org.jetbrains.bazel.server.sync.ProjectResolver
+import org.jetbrains.bazel.server.sync.ProjectSyncService
+import org.jetbrains.bazel.server.sync.TargetInfoReader
+import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
+import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.ui.console.ConsoleService
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-
-private data class ConnectionResetConfig(val featureFlags: FeatureFlags, val configurationHash: HashCode)
-
-private val log = logger<DefaultBazelServerConnection>()
+import java.util.concurrent.atomic.AtomicReference
 
 class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
-  private val bspClient = createBspClient()
   private val workspaceRoot = project.rootDir.toNioPath()
-  private var connectionResetConfig = generateNewConnectionResetConfig()
-  private val environmentCreator = EnvironmentCreator(workspaceRoot)
-  private var server =
-    runBlocking {
-      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
-      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
-      startServer(
-        project,
-        bspClient,
-        workspaceRoot = workspaceRoot,
-        workspaceContext = workspaceContext,
-        featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
-      )
-    }
+  private val environmentCreator = EnvironmentCreator(workspaceRoot).also {
+    it.create()
+  }
+  private val server = AtomicReference<BspServerApi?>(null)
 
-  init {
+  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T {
+    return task(getServer())
+  }
+
+  private suspend fun getServer(): BspServerApi {
+    // ensure `.bazelbsp` directory exists and functions
     environmentCreator.create()
-  }
 
-  private fun generateNewConnectionResetConfig(): ConnectionResetConfig {
-    val workspaceContextProvider = project.service<WorkspaceContextProvider>()
-    return ConnectionResetConfig(
-      featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
-      configurationHash = workspaceContextProvider.getConfigurationHash(),
+    val workspaceContext = ProjectViewToWorkspaceContextConverter.convert(
+      projectView = ProjectViewService.getInstance(project).getProjectView(),
+      workspaceRoot = project.rootDir.toNioPath(),
     )
+    var server = this.server.get()
+    if (server == null ||
+        project.service<BazelVersionCheckerService>().updateCurrentVersion() ||
+        server.workspaceContext != workspaceContext) {
+      server = createServer(workspaceContext)
+      this.server.set(server)
+    }
+    return server
   }
 
-  private fun createBspClient(): BazelClient {
+  private suspend fun createServer(workspaceContext: WorkspaceContext): BspServerApi {
     val consoleService = ConsoleService.getInstance(project)
-
-    return BazelClient(
+    val client = BazelClient(
       consoleService.syncConsole,
       consoleService.buildConsole,
       project,
     )
-  }
+    val bspInfo = BspInfo(workspaceRoot)
+    val bspClientLogger = BspClientLogger(client)
+    val bazelRunner = BazelRunner(bspClientLogger, workspaceRoot)
+    val bazelInfo = BazelInfoResolver(bazelRunner).resolveBazelInfo(workspaceContext)
+    bazelInfo.release.deprecated()?.let { bspClientLogger.warn(it + " Sync might give incomplete results.") }
+    val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
-  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T {
-    // ensure `.bazelbsp` directory exists and functions
-    environmentCreator.create()
+    val executeService =
+      ExecuteService(
+        project = project,
+        workspaceRoot = workspaceRoot,
+        client = client,
+        bazelRunner = bazelRunner,
+        workspaceContext = workspaceContext,
+        bazelPathsResolver = bazelPathsResolver,
+      )
 
-    // reset server if needed
-    resetServerIfNeeded()
+    val aspectsResolver =
+      InternalAspectsResolver(
+        bspInfo = bspInfo,
+      )
 
-    // update connection reset config if needed
-    val newConnectionResetConfig = generateNewConnectionResetConfig()
+    val bazelBspAspectsManager =
+      BazelBspAspectsManager(
+        executeService = executeService,
+        aspectsResolver = aspectsResolver,
+        bazelRelease = bazelInfo.release,
+      )
+    val bazelToolchainManager = BazelToolchainManager()
+    val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
+    val targetInfoReader = TargetInfoReader(bspClientLogger)
 
-    if (newConnectionResetConfig != connectionResetConfig) {
-      connectionResetConfig = newConnectionResetConfig
-      // Server now receives pre-parsed WorkspaceContext, so we need to restart the server
-      // to pick up any project view changes
-      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
-      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
-      server = startServer(project, bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
-    }
+    val projectResolver =
+      ProjectResolver(
+        bazelBspAspectsManager = bazelBspAspectsManager,
+        bazelToolchainManager = bazelToolchainManager,
+        bazelBspLanguageExtensionsGenerator = bazelBspLanguageExtensionsGenerator,
+        workspaceContext = workspaceContext,
+        featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
+        targetInfoReader = targetInfoReader,
+        bazelInfo = bazelInfo,
+        bazelRunner = bazelRunner,
+        bazelPathsResolver = bazelPathsResolver,
+        bspClientLogger = bspClientLogger,
+      )
+    val firstPhaseProjectResolver =
+      FirstPhaseProjectResolver(
+        workspaceRoot = workspaceRoot,
+        bazelRunner = bazelRunner,
+        workspaceContext = workspaceContext,
+        bazelInfo = bazelInfo,
+        bspClientLogger = bspClientLogger,
+      )
+    val projectProvider = ProjectProvider(projectResolver, firstPhaseProjectResolver)
 
-    return task(server)
-  }
+    val bspProjectMapper =
+      BspProjectMapper(
+        bazelRunner = bazelRunner,
+        bspInfo = bspInfo,
+      )
+    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper()
+    val projectSyncService =
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo, workspaceContext)
 
-  private suspend fun resetServerIfNeeded() {
-    if (project.service<BazelVersionCheckerService>().updateCurrentVersion()) {
-      log.info("Resetting Bazel server")
-      val workspaceContextProvider = project.service<WorkspaceContextProvider>()
-      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
-      server = startServer(project, bspClient, workspaceRoot, workspaceContext, connectionResetConfig.featureFlags)
-    }
+    return BspServerApi(
+        projectSyncService,
+        executeService,
+        workspaceContext,
+        bazelPathsResolver,
+      )
   }
 }

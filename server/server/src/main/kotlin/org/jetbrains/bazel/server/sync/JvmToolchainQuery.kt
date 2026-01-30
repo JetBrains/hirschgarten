@@ -11,39 +11,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 
 object JvmToolchainQuery {
-  suspend fun jvmToolchainQuery(
-    bspInfo: BspInfo,
-    bazelRunner: BazelRunner,
-    workspaceContext: WorkspaceContext,
-  ): JvmToolchainInfo {
-    val target = Label.parse("@bazel_tools//tools/jdk:current_java_toolchain")
-    val queryFile = bspInfo.bazelBspDir.resolve("aspects/toolchain_query.bzl")
-    val command =
-      bazelRunner.buildBazelCommand(workspaceContext = workspaceContext, inheritProjectviewOptionsOverride = true) {
-        cquery {
-          targets.add(target)
-          options.addAll(listOf("--starlark:file=$queryFile", "--output=starlark"))
-        }
-      }
-    val cqueryResult =
-      bazelRunner
-        .runBazelCommand(command, logProcessOutput = false)
-        .waitAndGetResult()
-    if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for jvm toolchain info")
-    try {
-      val classpaths = Gson().fromJson(cqueryResult.stdout.inputStream().reader(), JvmToolchainInfo::class.java)
-      return classpaths
-    } catch (e: JsonSyntaxException) {
-      // sometimes Bazel returns two values to a query when multiple configurations apply to a target
-      return if (cqueryResult.stdoutLines.size > 1) {
-        val allOpts = cqueryResult.stdoutLines.map { Gson().fromJson(it, JvmToolchainInfo::class.java) }
-        allOpts.first()
-      } else {
-        throw e
-      }
-    }
-  }
-
   suspend fun jvmToolchainQueryForTarget(
     bspInfo: BspInfo,
     bazelRunner: BazelRunner,

@@ -39,7 +39,6 @@ val mockContext =
     debugFlags = emptyList(),
     bazelBinary = Path("bazel"),
     allowManualTargetsSync = true,
-    dotBazelBspDirPath = Path(".bazelbsp"),
     importDepth = 2,
     enabledRules = listOf("rule1", "rule2"),
     ideJavaHomeOverride = Path("java_home"),

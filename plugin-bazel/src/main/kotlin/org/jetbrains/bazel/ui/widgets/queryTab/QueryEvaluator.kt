@@ -65,7 +65,6 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
         debugFlags = emptyList(),
         bazelBinary = null,
         allowManualTargetsSync = false,
-        dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp"),
         importDepth = 1,
         enabledRules = emptyList(),
         ideJavaHomeOverride = null,

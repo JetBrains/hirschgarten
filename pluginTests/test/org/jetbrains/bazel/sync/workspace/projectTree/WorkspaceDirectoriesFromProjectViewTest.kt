@@ -403,7 +403,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
   private fun createFromProjectView(projectView: ProjectView): Project {
     val workspaceContext = ProjectViewToWorkspaceContextConverter
-      .convert(projectView, bspInfo.bazelBspDir, workspaceRoot)
+      .convert(projectView, workspaceRoot)
 
     return createFakeProject(
       directories = workspaceContext.directories,
@@ -436,7 +436,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         debugFlags = emptyList(),
         bazelBinary = Path.of("bazel"),
         allowManualTargetsSync = false,
-        dotBazelBspDirPath = bspInfo.bazelBspDir,
         importDepth = -1,
         enabledRules = emptyList(),
         ideJavaHomeOverride = Path.of("java_home"),

@@ -54,7 +54,6 @@ open class BuildServerMock(
       debugFlags = emptyList(),
       bazelBinary = Path("bazel"),
       allowManualTargetsSync = true,
-      dotBazelBspDirPath = Path(".bazelbsp"),
       importDepth = -1,
       enabledRules = emptyList(),
       ideJavaHomeOverride = Path("java_home"),
@@ -117,8 +116,6 @@ open class BuildServerMock(
   override suspend fun workspaceName(): WorkspaceNameResult = WorkspaceNameResult("_main")
 
   override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
-
-  override suspend fun jvmToolchainInfo() = JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
 
   override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath =
     wrapInFuture(jvmClasspathResult)

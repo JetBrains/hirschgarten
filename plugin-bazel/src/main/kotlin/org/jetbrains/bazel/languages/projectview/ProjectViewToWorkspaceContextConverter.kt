@@ -32,7 +32,6 @@ private val log = logger<ProjectViewToWorkspaceContextConverter>()
 object ProjectViewToWorkspaceContextConverter {
   fun convert(
     projectView: ProjectView,
-    dotBazelBspDirPath: Path,
     workspaceRoot: Path,
   ): WorkspaceContext {
     val dirs = createDirectoriesFromProjectView(projectView, workspaceRoot)
@@ -51,7 +50,6 @@ object ProjectViewToWorkspaceContextConverter {
       bazelBinary = projectView.bazelBinary?.let { workspaceRoot.resolve(it) }
         ?: resolveBazelBinary(workspaceRoot),
       allowManualTargetsSync = projectView.allowManualTargetsSync,
-      dotBazelBspDirPath = dotBazelBspDirPath,
       importDepth = projectView.importDepth,
       enabledRules = projectView.enabledRules,
       ideJavaHomeOverride = projectView.ideJavaHomeOverride,
