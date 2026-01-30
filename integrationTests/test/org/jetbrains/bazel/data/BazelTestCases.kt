@@ -11,7 +11,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val FastBuild = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "599425b1bc7b525e13849c64aa3ecc12880568b0",
+        commitHash = "2f0fe4c086dac9ab844542cc18525478e253d416",
         branchName = "main",
         relativePath = "fastBuildTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
