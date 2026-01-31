@@ -49,6 +49,10 @@ register_toolchains(
   }
 
   private fun runBazelClean(context: IDETestContext) {
+    if (System.getenv("TEST_TMPDIR") != null) {
+      return
+    }
+
     val exitCode =
       ProcessBuilder("bazel", "clean", "--expunge")
         .directory(context.resolvedProjectHome.toFile())
