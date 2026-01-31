@@ -3,7 +3,9 @@ package org.jetbrains.bazel.sync_new.flow
 import com.dynatrace.hash4j.hashing.HashValue128
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.languages.projectview.ProjectViewWorkspaceContextProvider
+import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.connector.BazelConnectorService
 import org.jetbrains.bazel.sync_new.connector.InfoProperty
@@ -58,8 +60,10 @@ internal class SyncResyncProcessor(private val project: Project) {
   }
 
   fun hashWorkspaceConfig(project: Project): HashValue128 = hash {
-    val workspaceContext = ProjectViewWorkspaceContextProvider.getInstance(project)
-      .readWorkspaceContext()
+    val workspaceContext = ProjectViewToWorkspaceContextConverter.convert(
+      projectView = ProjectViewService.getInstance(project).getCachedProjectView(),
+      workspaceRoot = project.rootDir.toNioPath(),
+    )
 
     putByte(1) // mark
     putNullable(workspaceContext.bazelBinary) { putString(it.absolutePathString()) }
@@ -71,9 +75,7 @@ internal class SyncResyncProcessor(private val project: Project) {
   fun hashSyncConfig(project: Project): HashValue128 = hash {
     val flags = project.service<SyncFlagsService>()
 
-    // mark
-    putByte(1)
-
+    putByte(1) // mark
     putBoolean(flags.useOptimizedInverseSourceQuery)
     putBoolean(flags.useSkyQueryForInverseSourceQueries)
     putBoolean(flags.useFastSource2Label)

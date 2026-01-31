@@ -23,6 +23,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.syncFlags
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.sync_new.connector.BazelResult.Failure
 import org.jetbrains.bazel.sync_new.connector.BazelResult.Success
@@ -55,6 +57,7 @@ class LegacyBazelConnectorImpl(
     val builder = object : CmdBuilder(), BuildArgs {}
 
     builder.executable = executable
+    builder.addDefaults()
     startup(builder)
     builder.add(argValueOf("build"))
     args(builder)
@@ -81,6 +84,7 @@ class LegacyBazelConnectorImpl(
     val builder = object : CmdBuilder(), QueryArgs {}
 
     builder.executable = executable
+    builder.addDefaults()
     startup(builder)
     builder.add(argValueOf("query"))
     args(builder)
@@ -171,6 +175,7 @@ class LegacyBazelConnectorImpl(
     val builder = object : CmdBuilder(), InfoArgs {}
 
     builder.executable = executable
+    builder.addDefaults()
     startup(builder)
     builder.add(argValueOf("info"))
     args(builder)
@@ -264,6 +269,14 @@ class LegacyBazelConnectorImpl(
     logger.info(content)
   }
 
+  private fun CmdBuilder.addDefaults() {
+    val syncFlags = ProjectViewService.getInstance(project)
+      .getCachedProjectView().syncFlags
+    for (flag in syncFlags) {
+      add(Arg.Positional(value = argValueOf(flag), last = false))
+    }
+  }
+
 }
 
 private open class CmdBuilder : StartupOptions, Args {
@@ -348,6 +361,7 @@ private open class CmdBuilder : StartupOptions, Args {
         else -> null
       }
     }
+
     val lastArgs = args.mapNotNull {
       when (it) {
         is Arg.Positional if it.last -> it.value.toStringValue()

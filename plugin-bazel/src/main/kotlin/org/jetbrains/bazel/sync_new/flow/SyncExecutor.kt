@@ -19,6 +19,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync_new.SyncFlagsService
 import org.jetbrains.bazel.sync_new.bridge.LegacyBazelFrontendBridge
 import org.jetbrains.bazel.sync_new.bridge.LegacySyncTargetInfo
@@ -46,6 +47,8 @@ class SyncExecutor(
 
   suspend fun execute(scope: SyncScope): SyncStatus {
     ThreadingAssertions.assertBackgroundThread()
+
+    SyncCache.getInstance(project).clear()
 
     val store = withTask(project, "sync_store_init", "Initializing sync store") {
       project.service<SyncStoreService>()
