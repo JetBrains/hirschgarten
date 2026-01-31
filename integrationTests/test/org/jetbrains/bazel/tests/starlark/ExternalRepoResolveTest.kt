@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.minutes
 class ExternalRepoResolveTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openBazelProject() {
+  fun `navigate to external repo symbols should resolve correctly`() {
     createContext("externalRepoResolve", IdeaBazelCases.ExternalRepoResolve)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

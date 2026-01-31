@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.minutes
 class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun checkImportStatements() {
+  fun `Python files should have no red code after sync`() {
     createContext("simplePython", PyCharmBazelCases.SimplePython)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

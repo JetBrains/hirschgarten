@@ -22,7 +22,7 @@ import kotlin.time.Duration.Companion.minutes
 class BazelCoverageTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openBazelProject() {
+  fun `run test with coverage and verify results`() {
     createContext("bazelCoverage", IdeaBazelCases.BazelCoverage)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

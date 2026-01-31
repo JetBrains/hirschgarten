@@ -38,7 +38,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 class HotSwapTest : IdeStarterBaseProjectTest() {
   @Test
-  fun openBazelProject() {
+  fun `hotswap should reload modified code during debug session`() {
     val startResult =
       createContext("hotSwap", IdeaBazelCases.HotSwap)
         .runIdeWithDriver(runTimeout = timeout)

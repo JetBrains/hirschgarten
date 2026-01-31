@@ -28,7 +28,7 @@ import kotlin.time.Duration.Companion.seconds
 class ReopenWithoutResyncTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openProject() {
+  fun `reopening project should not trigger resync`() {
     val commands =
       CommandChain()
         .takeScreenshot("startSync")
