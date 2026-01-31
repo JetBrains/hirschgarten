@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.minutes
 class ProtobufResolveTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun testProfobufResolve() {
+  fun `protobuf imports should resolve without red code`() {
     createContext("protobufResolve", IdeaBazelCases.ProtobufResolve)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

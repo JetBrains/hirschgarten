@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.minutes
 class RunLineMarkerTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openProject() {
+  fun `run line markers should persist after project reopen`() {
     val fileName = "SimpleKotlinTest.kt"
     createContext("runLineMarker", IdeaBazelCases.RunLineMarker).runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       verifyRunLineMarkerText(fileName)
