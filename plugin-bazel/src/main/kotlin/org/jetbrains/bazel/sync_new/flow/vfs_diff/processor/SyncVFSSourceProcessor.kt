@@ -11,6 +11,7 @@ import org.jetbrains.bazel.sync_new.connector.QueryArgs
 import org.jetbrains.bazel.sync_new.connector.QueryOutput
 import org.jetbrains.bazel.sync_new.connector.consistentLabels
 import org.jetbrains.bazel.sync_new.connector.defaults
+import org.jetbrains.bazel.sync_new.connector.experimentalGraphlessQuery
 import org.jetbrains.bazel.sync_new.connector.keepGoing
 import org.jetbrains.bazel.sync_new.connector.noOrderOutput
 import org.jetbrains.bazel.sync_new.connector.output
@@ -66,7 +67,8 @@ class SyncVFSSourceProcessor {
     val contributors = SyncVFSFileContributor.ep.extensionList
     val changedSources = if (ctx.scope.build) {
       diff.changed
-    } else {
+    }
+    else {
       diff.changed.filter { file ->
         contributors.any {
           it.doesFileChangeInvalidateTarget(ctx.project, file.path)
@@ -83,7 +85,8 @@ class SyncVFSSourceProcessor {
         ctx.storage.target2Source.compute(hash(target)) { _, v ->
           if (v == null) {
             mutableSetOf()
-          } else {
+          }
+          else {
             v.add(source)
             v
           }
@@ -102,59 +105,82 @@ class SyncVFSSourceProcessor {
     if (sources.isEmpty()) {
       return emptyMap()
     }
-    if (!ctx.flags.useOptimizedInverseSourceQuery) {
-      return runFullInverseSourceQuery(ctx, sources)
+    val labels = SyncVFSLabelResolver.resolveSourceFileLabels(ctx, sources)
+      .flatMap { it.value }
+    if (labels.isEmpty()) {
+      return emptyMap()
     }
-    val sourceMap = runNarrowInverseSourceQuery(ctx, sources)
-    return when {
-      // consistency check
-      sourceMap.keys.containsAll(sources) -> sourceMap
-      else -> runFullInverseSourceQuery(ctx, sources)
+    if (!ctx.flags.useOptimizedInverseSourceQuery) {
+      return runFullInverseSourceQuery(ctx, labels)
+    }
+
+    val ops = listOf(
+      suspend { runDirectInverseSourceQuery(ctx, labels) },
+      suspend { runNarrowInverseSourceQuery(ctx, labels) },
+      suspend { runFullInverseSourceQuery(ctx, labels) },
+    )
+
+    var result: Map<Path, Set<Label>> = mapOf()
+
+    // try each query, in case of incomplete result widen query scope
+    for (op in ops) {
+      result = op()
+      if (result.keys.containsAll(sources)) {
+        // result is complete
+        break
+      }
+    }
+
+    // at this point we tried all queries, return whatever we have
+    return result.filterKeys { it in sources }
+  }
+
+  suspend fun runDirectInverseSourceQuery(ctx: SyncVFSContext, sources: Collection<Label>): Map<Path, Set<Label>> {
+    return runSourceMapQuery(ctx) {
+      consistentLabels()
+      noOrderOutput()
+      experimentalGraphlessQuery()
+      query("same_pkg_direct_rdeps(${sources.joinToString(separator = " + ") { it.toString() }})")
     }
   }
 
-  suspend fun runNarrowInverseSourceQuery(ctx: SyncVFSContext, sources: Collection<Path>): Map<Path, Set<Label>> {
-    // TODO: properly handle resolveFullLabel failure
-    val sourceLabels = SyncVFSLabelResolver.resolveSourceFileLabels(ctx, sources)
-      .flatMap { it.value }
-    if (sourceLabels.isEmpty()) {
-      return emptyMap()
-    }
+  suspend fun runNarrowInverseSourceQuery(ctx: SyncVFSContext, sources: Collection<Label>): Map<Path, Set<Label>> {
     val uniquePredecessorLabels = mutableSetOf<Label>()
-    for (label in sourceLabels) {
+    for (label in sources) {
       uniquePredecessorLabels += label.assumeResolved().copy(target = AllRuleTargets)
     }
 
     // query: rdeps(<unique packages>, <source files as labels>)
-    val rdepsExpr = sourceLabels.joinToString(separator = " + ") { it.toString() }
+    val rdepsExpr = sources.joinToString(separator = " + ") { it.toString() }
     val rdepsUniverse = uniquePredecessorLabels.joinToString(separator = " ") { it.toString() }
 
     return runSourceMapQuery(ctx) {
       consistentLabels()
+      noOrderOutput()
       if (ctx.flags.useSkyQueryForInverseSourceQueries) {
-        noOrderOutput()
         universeScope(uniquePredecessorLabels.map { it.toString() })
+      }
+      else {
+        experimentalGraphlessQuery()
       }
       query("rdeps(set($rdepsUniverse), $rdepsExpr, 1)")
     }
   }
 
-  suspend fun runFullInverseSourceQuery(ctx: SyncVFSContext, sources: Collection<Path>): Map<Path, Set<Label>> {
-    val sourceLabels = SyncVFSLabelResolver.resolveSourceFileLabels(ctx, sources)
-      .flatMap { it.value }
-    if (sourceLabels.isEmpty()) {
-      return emptyMap()
-    }
+  suspend fun runFullInverseSourceQuery(ctx: SyncVFSContext, sources: Collection<Label>): Map<Path, Set<Label>> {
     val universe = ctx.project.service<SyncUniverseService>().universe
-    val rdepsExpr = sourceLabels.joinToString(separator = " + ") { it.toString() }
+    val rdepsExpr = sources.joinToString(separator = " + ") { it.toString() }
     val rdepsUniverse = SyncUniverseQuery.createUniverseQuery(universe.importState.patterns)
     return runSourceMapQuery(ctx) {
       consistentLabels()
+      noOrderOutput()
       if (ctx.flags.useSkyQueryForInverseSourceQueries) {
-        noOrderOutput()
         universeScope(SyncUniverseQuery.createSkyQueryUniverseScope(universe.importState.patterns))
       }
-      query("rdeps($rdepsUniverse, $rdepsExpr, 1)")
+      else {
+        experimentalGraphlessQuery()
+      }
+      query("rdeps($rdepsUniverse, $rdepsExpr)")
     }
   }
 

@@ -17,7 +17,7 @@ class SyncFlagsService private constructor(private val project: Project) {
 
   // TODO: move to settings UI
   val useOptimizedInverseSourceQuery: Boolean = true
-  val useSkyQueryForInverseSourceQueries: Boolean = true
+  val useSkyQueryForInverseSourceQueries: Boolean = false
   val useFastSource2Label: Boolean = true
   val useFileChangeBasedInvalidation: Boolean = true
   val disallowLegacyFullTargetGraphMaterialization: Boolean = true
