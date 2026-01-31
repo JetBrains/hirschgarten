@@ -10,7 +10,7 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -27,7 +27,7 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
+          syncBazelProjectCloseDialog()
           waitForIndicators(10.minutes)
 
           step("check no red node in main/main.py") {
