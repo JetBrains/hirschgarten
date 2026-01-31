@@ -2,6 +2,7 @@ package org.jetbrains.bazel.tests.sync
 
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -15,13 +16,18 @@ import kotlin.time.Duration.Companion.minutes
 
 class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
 
+  private fun configureProjectWithHermeticCcToolchain(context: IDETestContext) {
+    BazelProjectConfigurer.configureProjectBeforeUse(context)
+    BazelProjectConfigurer.addHermeticCcToolchain(context)
+  }
+
   private fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
     if (localProjectPath != null) {
       return LocalProjectInfo(
         projectDir = Path.of(localProjectPath),
         isReusable = true,
-        configureProjectBeforeUse = BazelProjectConfigurer::configureProjectBeforeUse,
+        configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
       )
     }
     val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
@@ -35,7 +41,7 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
       branchName = branchName,
       projectHomeRelativePath = { if (projectHomeRelativePath != null) it.resolve(projectHomeRelativePath) else it },
       isReusable = true,
-      configureProjectBeforeUse = BazelProjectConfigurer::configureProjectBeforeUse,
+      configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
     )
   }
 
