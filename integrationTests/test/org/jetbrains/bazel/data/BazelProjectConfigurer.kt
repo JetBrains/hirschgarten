@@ -29,6 +29,25 @@ object BazelProjectConfigurer {
     }
   }
 
+  fun addHermeticCcToolchain(context: IDETestContext) {
+    val moduleFile = context.resolvedProjectHome / "MODULE.bazel"
+    if (!moduleFile.exists()) return
+
+    val toolchainConfig = """
+
+bazel_dep(name = "hermetic_cc_toolchain", version = "4.0.1")
+
+toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
+use_repo(toolchains, "zig_sdk")
+
+register_toolchains(
+    "@zig_sdk//toolchain/...",
+    "@zig_sdk//libc_aware/toolchain/...",
+)
+"""
+    moduleFile.toFile().appendText(toolchainConfig)
+  }
+
   private fun runBazelClean(context: IDETestContext) {
     val exitCode =
       ProcessBuilder("bazel", "clean", "--expunge")
