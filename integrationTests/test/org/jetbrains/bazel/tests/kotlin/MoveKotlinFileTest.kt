@@ -25,7 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openBazelProject() {
+  fun `move Kotlin file to subpackage should update imports`() {
     createContext("MoveFilesTest", IdeaBazelCases.MoveKotlinFile)
       .applyVMOptionsPatch {
         skipRefactoringDialogs()

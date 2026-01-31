@@ -27,7 +27,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class BytecodeViewerTest : IdeStarterBaseProjectTest() {
   @Test
-  fun testBytecodeViewer() {
+  fun `bytecode viewer should display compiled class bytecode`() {
     createContext("bytecode_viewer", IdeaBazelCases.BytecodeViewer)
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")

@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.minutes
  */
 class DisabledKotlinPluginTest : IdeStarterBaseProjectTest() {
   @Test
-  fun openBazelProject() {
+  fun `sync should work with Kotlin plugin disabled`() {
     createContext("disabledKotlinPlugin", IdeaBazelCases.DisabledKotlinPlugin)
       .withDisabledPlugins(setOf("org.jetbrains.kotlin"))
       .runIdeWithDriver(runTimeout = timeout)
