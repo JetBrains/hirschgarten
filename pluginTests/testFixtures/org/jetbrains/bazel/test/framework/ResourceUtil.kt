@@ -10,7 +10,6 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.toPath
-import kotlin.jvm.javaClass
 
 object ResourceUtil {
   @OptIn(ExperimentalPathApi::class)

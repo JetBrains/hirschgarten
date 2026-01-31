@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
-import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.FlagListSection
 

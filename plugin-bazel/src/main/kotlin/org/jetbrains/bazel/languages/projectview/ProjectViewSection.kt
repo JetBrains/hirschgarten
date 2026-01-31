@@ -5,9 +5,7 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import java.nio.file.Path
 import kotlin.io.path.exists
 

@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROPatterns
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
-import kotlin.text.startsWith
 
 private class JavaProjectViewSourceRootPatternContributor : JavaSourceRootPatternContributor {
 

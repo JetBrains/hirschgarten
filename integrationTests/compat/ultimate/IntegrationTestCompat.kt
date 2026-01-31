@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.test.compat
 
-import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.runner.AdditionalModulesForDevBuildServer
 import com.intellij.ide.starter.extended.plugins.asExtended
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.ProjectInfoSpec
+import com.intellij.ide.starter.runner.AdditionalModulesForDevBuildServer
 
 object IntegrationTestCompat {
   val requiredModules = arrayOf("intellij.bazel.plugin", "intellij.protoeditor")

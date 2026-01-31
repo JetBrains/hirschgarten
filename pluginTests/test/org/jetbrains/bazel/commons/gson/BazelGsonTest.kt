@@ -3,8 +3,8 @@ package org.jetbrains.bazel.commons.gson
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.DependencyLabel
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Assertions.assertEquals

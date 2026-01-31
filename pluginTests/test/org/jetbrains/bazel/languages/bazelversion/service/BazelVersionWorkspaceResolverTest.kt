@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.bazelversion.service
 
-import com.google.idea.testing.runfiles.Runfiles
 import com.intellij.util.text.SemVer
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.test.framework.BazelPathManager

@@ -14,7 +14,6 @@ import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.createSmartPointer
-import kotlinx.datetime.format.parse
 import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 

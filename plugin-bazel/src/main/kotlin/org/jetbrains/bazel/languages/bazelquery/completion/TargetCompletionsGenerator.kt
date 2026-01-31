@@ -5,8 +5,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import java.nio.file.Path
-import kotlin.text.removePrefix
-import kotlin.text.startsWith
 
 class TargetCompletionsGenerator(private val project: Project) {
   private val separator = "/"

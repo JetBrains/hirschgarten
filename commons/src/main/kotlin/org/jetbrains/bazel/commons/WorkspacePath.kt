@@ -18,7 +18,6 @@ package org.jetbrains.bazel.commons
 import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.ConsistentCopyVisibility
 import kotlin.io.path.Path
 
 /**

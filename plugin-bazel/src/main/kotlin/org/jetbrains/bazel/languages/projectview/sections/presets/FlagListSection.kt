@@ -6,7 +6,6 @@ import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
-import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection.Companion.COMMAND
 
 abstract class FlagListSection(private val command: String) : ListSection<List<String>>() {
   final override val completionProvider = FlagCompletionProvider(command)

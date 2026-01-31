@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.action
 
-import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction

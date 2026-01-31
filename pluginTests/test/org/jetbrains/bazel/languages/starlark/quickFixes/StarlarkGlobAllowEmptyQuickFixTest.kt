@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.quickFixes
 
-import com.google.idea.testing.runfiles.Runfiles
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.config.isBazelProject
@@ -10,7 +9,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import kotlin.io.path.pathString
 
 @RunWith(JUnit4::class)
 class StarlarkGlobAllowEmptyQuickFixTest : BasePlatformTestCase() {

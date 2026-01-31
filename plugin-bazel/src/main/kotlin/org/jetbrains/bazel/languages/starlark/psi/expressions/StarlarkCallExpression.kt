@@ -3,7 +3,6 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 import com.intellij.lang.ASTNode
 import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolService
-import com.intellij.openapi.components.service
 import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.sync.projectResolver
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label

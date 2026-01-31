@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sync.projectStructure.workspaceModel
 
-import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel

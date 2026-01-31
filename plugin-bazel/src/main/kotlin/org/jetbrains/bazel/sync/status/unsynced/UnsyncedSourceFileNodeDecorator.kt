@@ -14,7 +14,6 @@ import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import java.awt.Color
-import kotlin.collections.contains
 
 private val RELATED_UNSYNCED_SOURCE_TYPES = setOf(SourceType.GO)
 

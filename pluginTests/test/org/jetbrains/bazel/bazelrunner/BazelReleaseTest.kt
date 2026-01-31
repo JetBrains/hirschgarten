@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.testFramework.assertions.Assertions.assertThat
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.jetbrains.bazel.commons.orFallbackVersion

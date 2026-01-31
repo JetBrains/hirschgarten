@@ -2,7 +2,6 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import org.jetbrains.bazel.commons.Tag
 import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 private val bazelTagToTagMapping =
   mapOf(

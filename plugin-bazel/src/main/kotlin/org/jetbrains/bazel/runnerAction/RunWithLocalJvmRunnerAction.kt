@@ -3,12 +3,9 @@ package org.jetbrains.bazel.runnerAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
-import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 
 class RunWithLocalJvmRunnerAction(
   project: Project,

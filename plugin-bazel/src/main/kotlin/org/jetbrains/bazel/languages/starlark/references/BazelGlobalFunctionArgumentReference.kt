@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.model.Symbol
 import com.intellij.model.psi.PsiSymbolReference
-import com.intellij.openapi.components.service
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.startOffset

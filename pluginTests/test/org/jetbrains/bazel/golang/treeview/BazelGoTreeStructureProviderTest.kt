@@ -21,7 +21,6 @@ import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.SyntheticLibraryElementNode
 import com.intellij.lang.FileASTNode
 import com.intellij.mock.MockVirtualFile
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
@@ -40,7 +39,6 @@ import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory.Companion.fileTo
 import org.jetbrains.bazel.golang.sync.GO_EXTERNAL_LIBRARY_ROOT_NAME
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.libraries.BazelExternalSyntheticLibrary
-import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

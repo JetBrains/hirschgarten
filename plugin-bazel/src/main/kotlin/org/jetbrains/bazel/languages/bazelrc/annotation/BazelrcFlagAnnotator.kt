@@ -20,7 +20,6 @@ import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 import org.jetbrains.bazel.languages.bazelrc.quickfix.DeleteFlagUseFix
 import org.jetbrains.bazel.languages.bazelrc.quickfix.RenameFlagNameFix
-import kotlin.text.Regex
 
 val flagTokenPattern =
   psiElement(BazelrcTokenTypes.FLAG)

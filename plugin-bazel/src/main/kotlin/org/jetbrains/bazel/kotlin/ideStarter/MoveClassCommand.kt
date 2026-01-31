@@ -3,25 +3,18 @@ package org.jetbrains.bazel.kotlin.ideStarter
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
-import com.intellij.openapi.vfs.resolveFromRootOrRelative
 import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.refactoring.BaseRefactoringProcessor
 import com.intellij.refactoring.move.MoveHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.performanceImpl.resolveFromRelativeOrRoot
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
-import java.util.concurrent.CountDownLatch
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 internal class MoveClassCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {

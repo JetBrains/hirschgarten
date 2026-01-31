@@ -10,7 +10,6 @@ import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
-import java.util.concurrent.CompletableFuture
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 

@@ -29,11 +29,12 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.vfs.encoding.EncodingManager;
 import com.intellij.openapi.vfs.encoding.EncodingManagerImpl;
 import com.intellij.util.pico.DefaultPicoContainer;
+import org.picocontainer.PicoContainer;
+
 import java.io.File;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import org.picocontainer.PicoContainer;
 
 /** Test utilities. */
 public final class TestUtils {

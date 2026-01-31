@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.libraries
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import com.intellij.openapi.roots.SyntheticLibrary
-import com.intellij.util.WaitFor
 import java.nio.file.Path
 
 /**

@@ -2,7 +2,6 @@ package org.jetbrains.bazel.protobuf
 
 import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel

@@ -1,12 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.commenter
 
-import com.google.idea.testing.runfiles.Runfiles
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.openapi.vfs.readText
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.test.framework.BazelPathManager
-import kotlin.io.path.pathString
 
 class ProjectViewCommenterTest : BasePlatformTestCase() {
   override fun getTestDataPath(): String =

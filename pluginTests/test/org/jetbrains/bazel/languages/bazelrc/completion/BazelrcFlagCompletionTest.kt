@@ -7,7 +7,6 @@ import org.jetbrains.bazel.languages.bazelrc.fixtures.BazelrcCompletionTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import kotlin.collections.flatMap
 
 @RunWith(JUnit4::class)
 class BazelrcFlagCompletionTest : BazelrcCompletionTestCase() {

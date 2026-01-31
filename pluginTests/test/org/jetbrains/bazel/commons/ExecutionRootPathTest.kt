@@ -1,15 +1,15 @@
 package org.jetbrains.bazel.commons
 
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.ExecutionRootPath.Companion.createAncestorRelativePath
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import java.nio.file.Files
 import java.nio.file.Path
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.nulls.shouldBeNull
-import io.kotest.matchers.nulls.shouldNotBeNull
-import org.mockito.Mockito
 
 class ExecutionRootPathTest {
 

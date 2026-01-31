@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel
 
 import org.jetbrains.bazel.label.DependencyLabel
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sync.workspace.languages.sro
 
-import com.intellij.platform.util.progress.reportProgressScope
 import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver

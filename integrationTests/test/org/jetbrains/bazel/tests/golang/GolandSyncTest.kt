@@ -16,8 +16,6 @@ import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
 import org.junit.jupiter.api.Test
-import kotlin.collections.forEach
-import kotlin.collections.listOf
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 

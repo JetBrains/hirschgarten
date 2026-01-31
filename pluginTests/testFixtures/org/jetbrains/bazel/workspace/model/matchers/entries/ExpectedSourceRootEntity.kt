@@ -7,9 +7,9 @@ import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntityBuilde
 import com.intellij.java.workspace.entities.javaResourceRoots
 import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ContentRootEntityBuilder
-import com.intellij.platform.workspace.jps.entities.SourceRootEntityBuilder
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootEntityBuilder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.workspace.model.matchers.shouldContainExactlyInAnyOrder
 

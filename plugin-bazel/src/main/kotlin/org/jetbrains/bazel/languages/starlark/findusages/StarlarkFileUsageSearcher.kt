@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
 import com.intellij.openapi.application.QueryExecutorBase
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
@@ -25,7 +24,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
-import java.io.IOException
 
 class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParameters>(true) {
   override fun processQuery(params: SearchParameters, processor: Processor<in PsiReference>) {

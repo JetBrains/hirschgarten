@@ -26,8 +26,8 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.`when`
-import java.nio.file.Path
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.createTempDirectory

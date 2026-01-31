@@ -1,11 +1,9 @@
 package org.jetbrains.bazel.languages.bazelrc.fixtures
 
-import com.google.idea.testing.runfiles.Runfiles
 import com.intellij.platform.testFramework.core.FileComparisonFailedError
 import com.intellij.testFramework.ParsingTestCase
 import org.jetbrains.bazel.languages.bazelrc.parser.BazelrcParserDefinition
 import org.jetbrains.bazel.test.framework.BazelPathManager
-import kotlin.io.path.pathString
 
 abstract class BazelrcParsingTestCase(baseDir: String, val dumpTree: Boolean = false) :
   ParsingTestCase(baseDir, "bazelrc", BazelrcParserDefinition()) {

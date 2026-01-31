@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.bazelquery.completion
 
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.languages.bazelquery.fixtures.BazelQueryCompletionTestCase
-import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

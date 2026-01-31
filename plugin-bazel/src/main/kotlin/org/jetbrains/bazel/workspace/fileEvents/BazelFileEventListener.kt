@@ -47,7 +47,6 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import java.nio.file.Path
 import java.util.UUID
-import kotlin.collections.plus
 import kotlin.io.path.extension
 import kotlin.io.path.name
 
