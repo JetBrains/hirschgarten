@@ -45,7 +45,7 @@ class SyncExecutor(
 
   private val logger = logger<SyncExecutor>()
 
-  suspend fun execute(scope: SyncScope): SyncStatus {
+  suspend fun execute(spec: SyncSpec, scope: SyncScope): SyncStatus {
     ThreadingAssertions.assertBackgroundThread()
 
     SyncCache.getInstance(project).clear()
@@ -63,13 +63,13 @@ class SyncExecutor(
       status
     }
     return if (status == SyncResyncState.FORCE_RESYNC) {
-      _execute(SyncScope.Full(build = scope.build))
+      _execute(spec, SyncScope.Full(build = scope.build))
     } else {
-      _execute(scope)
+      _execute(spec, scope)
     }
   }
 
-  private suspend fun _execute(scope: SyncScope): SyncStatus {
+  private suspend fun _execute(spec: SyncSpec, scope: SyncScope): SyncStatus {
     val syncStore = project.service<SyncStoreService>()
     if (scope.isFullSync) {
       withTask(project, "sync_clear_storage", "Clearing storage") {
@@ -85,6 +85,7 @@ class SyncExecutor(
     }
     val ctx = SyncContext(
       project = project,
+      spec = spec,
       scope = scope,
       graph = syncStore.targetGraph,
       syncExecutor = this,
@@ -155,7 +156,7 @@ class SyncExecutor(
       project.service<SyncUniverseService>().computeUniverseDiff(ctx, SyncProgressReporter(this@withTask))
     }
     val vfsDiff = withTask("vfs_diff", "Computing VFS diff") {
-      project.service<SyncVFSService>().computeVFSDiff(scope, this@withTask, universeDiff)
+      project.service<SyncVFSService>().computeVFSDiff(ctx.spec, scope, this@withTask, universeDiff)
     }
     val scopeDiff = computeSyncScopeDiff(scope)
     val normalizer = SyncDiffNormalizer()

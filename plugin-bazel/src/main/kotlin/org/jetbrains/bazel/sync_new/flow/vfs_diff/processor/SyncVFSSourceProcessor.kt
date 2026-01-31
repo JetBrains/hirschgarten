@@ -23,6 +23,7 @@ import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseQuery
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.SyncDiffFlags
+import org.jetbrains.bazel.sync_new.flow.index.SyncFileIndexService
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSContext
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFile
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.SyncVFSFileContributor
@@ -76,7 +77,7 @@ class SyncVFSSourceProcessor {
       }
     }
     val sources = (diff.added + changedSources).map { it.path }
-    for ((source, targets) in runInverseSourceQuery(ctx, sources)) {
+    for ((source, targets) in computeInverseSourceMapping(ctx, sources)) {
       for (target in targets) {
         if (ctx.flags.useFileChangeBasedInvalidation || ctx.scope.build) {
           flags.put(target, SyncDiffFlags.FORCE_INVALIDATION)
@@ -101,6 +102,26 @@ class SyncVFSSourceProcessor {
     )
   }
 
+  suspend fun computeInverseSourceMapping(ctx: SyncVFSContext, sources: Collection<Path>): Map<Path, Set<Label>> {
+    if (!ctx.spec.useCachedFile2TargetMapping) {
+      return runInverseSourceQuery(ctx, sources)
+    }
+    val sourcesSet = sources.toHashSet()
+    val existingMappings = mutableMapOf<Path, Set<Label>>()
+    for (source in sources) {
+      val targets = ctx.project.service<SyncFileIndexService>()
+        .getTargetLabelsBySourceFile(source).toHashSet()
+      if (targets.isNotEmpty()) {
+        existingMappings[source] = targets
+      }
+    }
+    val unresolvedMappings = sourcesSet - existingMappings.keys
+    if (unresolvedMappings.isEmpty()) {
+      return existingMappings
+    }
+    return existingMappings + runInverseSourceQuery(ctx, unresolvedMappings)
+  }
+
   suspend fun runInverseSourceQuery(ctx: SyncVFSContext, sources: Collection<Path>): Map<Path, Set<Label>> {
     if (sources.isEmpty()) {
       return emptyMap()
@@ -114,11 +135,18 @@ class SyncVFSSourceProcessor {
       return runFullInverseSourceQuery(ctx, labels)
     }
 
-    val ops = listOf(
-      suspend { runDirectInverseSourceQuery(ctx, labels) },
-      suspend { runNarrowInverseSourceQuery(ctx, labels) },
-      suspend { runFullInverseSourceQuery(ctx, labels) },
-    )
+    val ops = if (ctx.scope.isFullSync) {
+      listOf(
+        suspend { runFullInverseSourceQuery(ctx, labels) },
+      )
+    }
+    else {
+      listOf(
+        suspend { runDirectInverseSourceQuery(ctx, labels) },
+        suspend { runNarrowInverseSourceQuery(ctx, labels) },
+        suspend { runFullInverseSourceQuery(ctx, labels) },
+      )
+    }
 
     var result: Map<Path, Set<Label>> = mapOf()
 

@@ -66,10 +66,14 @@ class SyncUniverseService(
         )
       }
 
-      val targets = progress.task.withTask("querying_universe_targets", "Querying universe targets") {
-        computeTargets(connector, universe)
+      return if (ctx.spec.skipUniverseDiff) {
+        SyncColdDiff()
+      } else {
+        val targets = progress.task.withTask("querying_universe_targets", "Querying universe targets") {
+          computeTargets(connector, universe)
+        }
+        SyncColdDiff(added = targets)
       }
-      return SyncColdDiff(added = targets)
     }
 
     val oldImportState = state.importState
@@ -77,7 +81,8 @@ class SyncUniverseService(
 
     // import scope changed
     // compute target diff
-    val diff = if (oldImportState.patterns != newImportState.patterns) {
+    val diff = if (oldImportState.patterns != newImportState.patterns
+                   && !ctx.spec.skipUniverseDiff) {
       progress.task.withTask("querying_universe_targets", "Querying universe targets") {
         computeUniverseDiff(connector, oldImportState, newImportState)
       }

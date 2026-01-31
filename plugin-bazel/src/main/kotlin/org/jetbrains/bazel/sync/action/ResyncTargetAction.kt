@@ -16,6 +16,7 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.sync_new.flow.PartialTarget
 import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
 import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.flow.SyncSpec
 import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 
 // TODO: refactor this action to use DataContext and don't use constructor with parameters
@@ -24,7 +25,7 @@ class ResyncTargetAction private constructor(private val targetId: Label) :
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     if (project.isNewSyncEnabled) {
       val scope = SyncScope.Partial(targets = listOf(PartialTarget.ByLabel(targetId)))
-      project.service<SyncBridgeService>().sync(scope)
+      project.service<SyncBridgeService>().sync(spec = SyncSpec(), scope = scope)
     } else {
       val syncScope = PartialProjectSync(targetsToSync = listOf(targetId))
       ProjectSyncTask(project).sync(syncScope = syncScope, buildProject = false)

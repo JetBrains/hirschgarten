@@ -9,6 +9,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
 import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.flow.SyncSpec
 import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 import org.jetbrains.bazel.ui.console.isBuildInProgress
 
@@ -16,7 +17,7 @@ class IncrementalSyncAction : SuspendableAction({ BazelPluginBundle.message("inc
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     if (project.isNewSyncEnabled) {
       project.service<SyncBridgeService>()
-        .sync(scope = SyncScope.Incremental())
+        .sync(spec = SyncSpec(), scope = SyncScope.Incremental())
     }
   }
 

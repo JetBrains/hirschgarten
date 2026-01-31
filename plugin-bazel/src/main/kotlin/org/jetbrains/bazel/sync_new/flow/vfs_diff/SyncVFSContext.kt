@@ -7,15 +7,17 @@ import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.SyncConsoleTask
 import org.jetbrains.bazel.sync_new.flow.SyncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.flow.SyncSpec
 
 class SyncVFSContext(
   val project: Project,
   val storage: SyncVFSStoreService,
   val repoMapping: SyncRepoMapping,
   val pathsResolver: BazelPathsResolver,
+  val spec: SyncSpec,
   val scope: SyncScope,
   val isFirstSync: Boolean,
   val universeDiff: SyncColdDiff,
   val flags: SyncFlagsService,
-  val task: SyncConsoleTask
+  val task: SyncConsoleTask,
 )

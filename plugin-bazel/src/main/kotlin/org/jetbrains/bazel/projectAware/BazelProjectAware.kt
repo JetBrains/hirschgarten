@@ -26,6 +26,7 @@ import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
 import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.flow.SyncSpec
 import org.jetbrains.bazel.sync_new.isNewSyncEnabled
 
 class BazelProjectAware(private val workspace: BazelWorkspace) : ExternalSystemProjectAware {
@@ -45,7 +46,7 @@ class BazelProjectAware(private val workspace: BazelWorkspace) : ExternalSystemP
         val project = workspace.project
         if (project.isNewSyncEnabled) {
           project.service<SyncBridgeService>()
-            .sync(scope = SyncScope.Incremental())
+            .sync(spec = SyncSpec(), scope = SyncScope.Incremental())
         } else {
           ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
         }

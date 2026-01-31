@@ -11,6 +11,7 @@ import org.jetbrains.bazel.sync_new.flow.PartialTarget
 import org.jetbrains.bazel.sync_new.flow.SyncScope
 import org.jetbrains.bazel.sync_new.flow.SyncColdDiff
 import org.jetbrains.bazel.sync_new.flow.SyncConsoleTask
+import org.jetbrains.bazel.sync_new.flow.SyncSpec
 import org.jetbrains.bazel.sync_new.flow.universe.syncRepoMapping
 import org.jetbrains.bazel.sync_new.flow.vfs_diff.processor.SyncVFSChangeProcessor
 import org.jetbrains.bazel.sync_new.storage.FlatStorage
@@ -46,7 +47,7 @@ class SyncVFSService(
     vfsListener.file2State.clear()
   }
 
-  suspend fun computeVFSDiff(scope: SyncScope, task: SyncConsoleTask, universeDiff: SyncColdDiff): SyncColdDiff {
+  suspend fun computeVFSDiff(spec: SyncSpec, scope: SyncScope, task: SyncConsoleTask, universeDiff: SyncColdDiff): SyncColdDiff {
     val isFirstSync = vfsState.get().listenState == SyncVFSListenState.WAITING_FOR_FIRST_SYNC
     val ctx = SyncVFSContext(
       project = project,
@@ -54,6 +55,7 @@ class SyncVFSService(
       repoMapping = project.syncRepoMapping,
       pathsResolver = LegacyBazelFrontendBridge.fetchBazelPathsResolver(project),
       scope = scope,
+      spec = spec,
       isFirstSync = isFirstSync,
       universeDiff = universeDiff,
       flags = project.service(),
@@ -63,7 +65,11 @@ class SyncVFSService(
       vfsState.modify { state -> state.copy(listenState = SyncVFSListenState.LISTENING_VFS) }
       vfsListener.ensureAttached()
     }
-    val watcherChanges = consumeWatcherFileChanges()
+    val watcherChanges = if (spec.skipImplicitFileChanges) {
+      mapOf()
+    } else {
+      consumeWatcherFileChanges()
+    }
     val changedFiles = when (scope) {
       is SyncScope.Partial -> {
         scope.targets.filterIsInstance<PartialTarget.ByFile>()
@@ -82,9 +88,9 @@ class SyncVFSService(
 
   private fun consumeWatcherFileChanges(): Map<SyncFileState, List<SyncVFSFile>> {
     val changes = vfsListener.file2State.entries()
-        .map { (k, v) -> v to SyncFileClassifier.classify(k.resolveSymlinks()) }
-        .groupBy({ (k, _) -> k }, { (_, v) -> v })
-        .toMap()
+      .map { (k, v) -> v to SyncFileClassifier.classify(k.resolveSymlinks()) }
+      .groupBy({ (k, _) -> k }, { (_, v) -> v })
+      .toMap()
     vfsListener.file2State.clear()
     return changes
   }
@@ -95,7 +101,8 @@ class SyncVFSService(
     }
     return try {
       this.toRealPath()
-    } catch (_: IOException) {
+    }
+    catch (_: IOException) {
       this
     }
   }

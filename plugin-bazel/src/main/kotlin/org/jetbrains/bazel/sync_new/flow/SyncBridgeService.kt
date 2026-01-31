@@ -33,9 +33,9 @@ class SyncBridgeService(
     )
   }
 
-  suspend fun sync(scope: SyncScope) {
+  suspend fun sync(spec: SyncSpec, scope: SyncScope) {
     withConsole(
-      redo = { sync(scope) },
+      redo = { sync(spec, scope) },
       after = {
         SyncStatusService.getInstance(project).finishSync()
         withContext(Dispatchers.EDT) {
@@ -48,7 +48,7 @@ class SyncBridgeService(
         }
         project.serviceAsync<ProjectViewService>().forceReparseCurrentProjectViewFiles()
         project.serviceAsync<SyncStatusService>().startSync()
-        val result = executor.execute(scope)
+        val result = executor.execute(spec, scope)
         when (result) {
           SyncStatus.Failure -> throw SyncFatalFailureException()
           SyncStatus.PartialFailure -> throw SyncPartialFailureException()

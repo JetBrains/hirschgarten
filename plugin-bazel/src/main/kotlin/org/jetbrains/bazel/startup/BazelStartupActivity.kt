@@ -19,6 +19,7 @@ import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.sync_new.flow.SyncBridgeService
 import org.jetbrains.bazel.sync_new.flow.SyncScope
+import org.jetbrains.bazel.sync_new.flow.SyncSpec
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniversePhase
 import org.jetbrains.bazel.sync_new.flow.universe.SyncUniverseService
 import org.jetbrains.bazel.sync_new.isNewSyncEnabled
@@ -70,7 +71,8 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
     } else {
       log.info("Running Bazel sync task")
       if (project.isNewSyncEnabled) {
-        project.serviceAsync<SyncBridgeService>().sync(scope = SyncScope.Full(build = BazelFeatureFlags.isBuildProjectOnSyncEnabled))
+        project.serviceAsync<SyncBridgeService>()
+          .sync(spec = SyncSpec(), scope = SyncScope.Full(build = BazelFeatureFlags.isBuildProjectOnSyncEnabled))
       } else {
         ProjectSyncTask(project).sync(
           syncScope = SecondPhaseSync,
