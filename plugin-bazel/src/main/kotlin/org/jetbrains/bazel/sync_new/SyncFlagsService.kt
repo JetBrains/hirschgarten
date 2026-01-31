@@ -22,8 +22,10 @@ class SyncFlagsService private constructor(private val project: Project) {
   val useFileChangeBasedInvalidation: Boolean = true
   val disallowLegacyFullTargetGraphMaterialization: Boolean = true
 
-  val useTargetHasher: Boolean = settings.useTargetHasher
-  val isEnabled: Boolean = isFeatureEnabled && settings.enableIncrementalSync
+  val useTargetHasher: Boolean
+    get() = settings.useTargetHasher
+  val isEnabled: Boolean
+    get() = isFeatureEnabled && settings.enableIncrementalSync
 }
 
 internal val Project.isNewSyncEnabled: Boolean
