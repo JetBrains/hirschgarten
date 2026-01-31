@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 class CoroutineDebugTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun testCoroutineDebug() {
+  fun `coroutine debugger should show async stack traces`() {
     createContext("coroutineDebug", IdeaBazelCases.CoroutineDebug)
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
       .runIdeWithDriver(runTimeout = timeout)

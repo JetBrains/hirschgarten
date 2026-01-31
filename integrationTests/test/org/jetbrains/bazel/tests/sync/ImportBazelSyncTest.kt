@@ -40,7 +40,7 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun importBazelProject() {
+  fun `large Bazel project should sync successfully`() {
     val context = createContext("bazel-sync", IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
     context
       .runIdeWithDriver(runTimeout = timeout)

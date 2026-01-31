@@ -28,7 +28,7 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
 
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
-  fun testTestResultsTree(runConfigRunWithBazel: Boolean) {
+  fun `test results tree should display passed tests correctly`(runConfigRunWithBazel: Boolean) {
     val fileName = "SimpleKotlinTest.kt"
 
     createContext("testTargetActionResultsTree", IdeaBazelCases.TestTargetActionResultsTree)

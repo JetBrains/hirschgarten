@@ -22,7 +22,7 @@ class LabelAllTabSESplitUiTest : IdeStarterBaseProjectTest() {
   private val elements = listOf("//python:binary")
 
   @Test
-  fun testHasResultsInAllTab() {
+  fun `search everywhere should show Bazel labels when contributor enabled`() {
     createContext("labelAllTabSESplit", IdeaBazelCases.LabelAllTabSESplit).enableSplitSearchEverywhere()
       .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
         ideFrame {
@@ -42,7 +42,7 @@ class LabelAllTabSESplitUiTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun testHasNoResultsInAllTab() {
+  fun `search everywhere should hide Bazel labels when contributor disabled`() {
     createContext("labelAllTabSESplit", IdeaBazelCases.LabelAllTabSESplit).enableSplitSearchEverywhere()
       .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
         ideFrame {

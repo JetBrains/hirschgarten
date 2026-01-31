@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.minutes
 class RecoverDotBazelBspTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openProject() {
+  fun `resync should recover after deleting bazelbsp directory`() {
     val context = createContext("recoverDotBazelBsp", IdeaBazelCases.RecoverDotBazelBsp)
     context
       .runIdeWithDriver(runTimeout = timeout)

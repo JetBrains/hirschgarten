@@ -35,7 +35,7 @@ abstract class PyCharmBaseTest : IdeStarterBaseProjectTest() {
 class PyCharmOpenProjectTest : PyCharmBaseTest() {
 
   @Test
-  fun openBazelProject() {
+  fun `Python run line markers should be available after sync`() {
     runPyCharmTest {
       ideFrame {
         syncBazelProjectCloseDialog()
@@ -56,7 +56,7 @@ class PyCharmOpenProjectTest : PyCharmBaseTest() {
 class PyCharmOpenProjectWithTestFileTest : PyCharmBaseTest() {
 
   @Test
-  fun openBazelProjectWithTestFile() {
+  fun `Python test line markers should be available for test files`() {
     runPyCharmTest {
       ideFrame {
         syncBazelProjectCloseDialog()
@@ -77,7 +77,7 @@ class PyCharmOpenProjectWithTestFileTest : PyCharmBaseTest() {
 class PyCharmImportStatementsTest : PyCharmBaseTest() {
 
   @Test
-  fun checkImportStatements() {
+  fun `Python import statements should resolve correctly`() {
     runPyCharmTest {
       ideFrame {
         syncBazelProjectCloseDialog()

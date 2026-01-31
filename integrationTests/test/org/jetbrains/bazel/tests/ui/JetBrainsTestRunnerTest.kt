@@ -22,7 +22,7 @@ import kotlin.time.Duration.Companion.seconds
 class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun openProject() {
+  fun `JetBrains test runner should execute tests and show results tree`() {
     createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
       .setRunConfigRunWithBazel(false)
       .runIdeWithDriver(runTimeout = timeout)
@@ -132,7 +132,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun checkTestCaching() {
+  fun `test results should be cached when running with Bazel`() {
     createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
       // This is required for Bazel test caching!
       .setRunConfigRunWithBazel(true)
