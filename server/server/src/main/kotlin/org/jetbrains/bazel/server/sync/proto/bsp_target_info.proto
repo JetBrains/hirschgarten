@@ -82,6 +82,8 @@ message PythonTargetInfo {
   repeated string imports = 3;
   bool is_code_generator = 4;
   repeated FileLocation generated_sources = 5;
+  FileLocation main = 6;
+  string main_module = 7;
 }
 
 message GoTargetInfo {

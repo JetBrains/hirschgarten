@@ -95,11 +95,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.projectAware.ProjectAwareExtension"
-      qualifiedName="org.jetbrains.bazel.projectAwareExtension"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.run.config.RunConfigurationExtensionManager"
       qualifiedName="org.jetbrains.bazel.runConfigurationExtension"
     />
@@ -221,6 +216,10 @@
                     interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bzlmodResolver"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver"
+                    dynamic="true"
+    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.syntheticRunTargetTemplateGenerator"
                     dynamic="true"
                     beanClass="com.intellij.lang.LanguageExtensionPoint">
@@ -318,12 +317,13 @@
       implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
       order="last"
     />
-    <projectAwareExtension implementation="org.jetbrains.bazel.flow.open.BazelProjectAwareExtension" />
 
     <additionalProjectTaskRunnerProvider implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
 
     <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
+
+    <bzlmodResolver implementation="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.resolver.BazelCentralRegistryModuleResolver"/>
 
     <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
 
@@ -458,7 +458,7 @@
 
     <registryKey
       defaultValue="true"
-      description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overriden with a project view flag."
+      description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overridden with a project view flag."
       key="bazel.run.config.run.with.bazel"
       restartRequired="false"
     />
@@ -466,6 +466,12 @@
       defaultValue="true"
       description="If true, IDEA will run Bazel commands in a pseudo-terminal, providing more rich formatting and progress reporting"
       key="bazel.use.pty"
+      restartRequired="true"
+    />
+    <registryKey
+      defaultValue="false"
+      description="If true, IDEA will terminate Bazel server daemon if the bazel process was cancelled"
+      key="bazel.kill.server.on.cancel"
       restartRequired="true"
     />
 
@@ -606,10 +612,6 @@
       serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"
       serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
     />
-    <projectService
-      serviceImplementation="org.jetbrains.bazel.languages.projectview.ProjectViewWorkspaceContextProvider"
-      serviceInterface="org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider"
-    />
 
     <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider" />
 
@@ -631,7 +633,7 @@
 
     <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
-      implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"
+      implementationClass="org.jetbrains.bazel.projectAware.BazelExternalSystemIconProvider"
       key="bazel"
     />
     <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier" />
@@ -731,6 +733,10 @@
     />
     <completion.contributor
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"
+      language="Starlark"
+    />
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelDepCompletionContributor"
       language="Starlark"
     />
     <completion.contributor
@@ -1079,12 +1085,17 @@
       <reference id="Bazel.AddToProjectViewDirectoriesAction"/>
       <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction"/>
     </group>
+
+    <action
+      id="Bazel.RefreshBcrModules"
+      class="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.RefreshBcrModulesAction"
+    />
   </actions>
 
   <applicationListeners>
     <listener
-      class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
-      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+      class="org.jetbrains.bazel.workspace.fileEvents.BazelFileEventListener"
+      topic="com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable"
     />
     <listener
       class="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityListener"

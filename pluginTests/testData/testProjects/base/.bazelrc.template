@@ -1,0 +1,3 @@
+startup --output_user_root=${outputUserRoot}
+build --disk_cache=${diskCache}
+build --repository_cache=${repoCache}

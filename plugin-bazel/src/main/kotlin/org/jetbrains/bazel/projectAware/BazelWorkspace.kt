@@ -55,7 +55,6 @@ class BspExternalServicesSubscriber(private val project: Project) {
       VirtualFileManager.VFS_CHANGES,
       object : BulkFileListener {
         override fun after(events: MutableList<out VFileEvent>) {
-          if (shouldNotifyOnEvents(events)) BazelProjectAware.notify(project)
           if (shouldRefreshProjectView(events)) {
             BazelCoroutineService.getInstance(project).start {
               withContext(Dispatchers.EDT) {
@@ -66,20 +65,6 @@ class BspExternalServicesSubscriber(private val project: Project) {
         }
       },
     )
-  }
-
-  private fun shouldNotifyOnEvents(events: List<VFileEvent>): Boolean {
-    val projectAwareExtension = ProjectAwareExtension.ep.extensionList.firstOrNull() ?: return false
-    val projectFileIndex = ProjectFileIndex.getInstance(project)
-    return events.any {
-      it.file?.let { vFile ->
-        projectFileIndex.isInContent(vFile) &&
-          (
-            vFile.name in projectAwareExtension.eligibleConfigFileNames ||
-              projectAwareExtension.eligibleConfigFileExtensions.contains(vFile.extension)
-          )
-      } == true
-    }
   }
 
   private fun shouldRefreshProjectView(events: List<VFileEvent>): Boolean =

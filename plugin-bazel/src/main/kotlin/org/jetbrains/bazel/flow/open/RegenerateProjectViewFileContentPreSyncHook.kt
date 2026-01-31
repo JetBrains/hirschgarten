@@ -14,10 +14,11 @@ class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
     var projectViewPath = project.bazelProjectSettings.projectViewPath
     if (projectViewPath?.isFile == true) return
 
-    projectViewPath = ProjectViewFileUtils.calculateProjectViewFilePath(
-      projectRootDir = project.rootDir,
-      projectViewPath = projectViewPath?.toNioPathOrNull(),
-    ).refreshAndFindVirtualFile()!!
+    projectViewPath =
+      ProjectViewFileUtils.calculateProjectViewFilePath(
+        projectRootDir = project.rootDir,
+        projectViewPath = projectViewPath?.toNioPathOrNull(),
+      ).refreshAndFindVirtualFile() ?: return
     project.bazelProjectSettings = project.bazelProjectSettings
       .withNewProjectViewPath(projectViewPath)
 

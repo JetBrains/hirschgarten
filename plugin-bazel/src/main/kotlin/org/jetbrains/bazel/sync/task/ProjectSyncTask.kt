@@ -4,8 +4,8 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.ide.SaveAndSyncHandler
-import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
@@ -61,7 +61,7 @@ class ProjectSyncTask(private val project: Project) {
     if (project.isNewSyncEnabled) {
       error("sync V2 is enabled, ProjectSyncTask should not be used")
     }
-    if (project.isTrusted()) {
+    if (TrustedProjects.isProjectTrusted(project)) {
       bspTracer.spanBuilder("bsp.sync.project.ms").setAttribute("project.name", project.name).useWithScope {
         var syncAlreadyInProgress = false
         try {

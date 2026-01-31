@@ -4,7 +4,7 @@ import org.jetbrains.bazel.label.Label
 
 interface DiagnosticsParser {
   fun parse(
-    bazelOutput: String,
+    bazelOutputLines: List<String>,
     target: Label,
     isCommandLineFormattedOutput: Boolean = false,
     onlyFromParsedOutput: Boolean = false,
@@ -13,18 +13,18 @@ interface DiagnosticsParser {
 
 class DiagnosticsParserImpl : DiagnosticsParser {
   override fun parse(
-    bazelOutput: String,
+    bazelOutputLines: List<String>,
     target: Label,
     isCommandLineFormattedOutput: Boolean,
     onlyFromParsedOutput: Boolean,
   ): List<Diagnostic> {
-    val output = prepareOutput(bazelOutput, target)
+    val output = prepareOutput(bazelOutputLines, target)
     val diagnostics = collectDiagnostics(output, isCommandLineFormattedOutput, onlyFromParsedOutput)
     return deduplicate(diagnostics)
   }
 
-  private fun prepareOutput(bazelOutput: String, target: Label): Output {
-    val lines = bazelOutput.lines().map { line ->
+  private fun prepareOutput(bazelOutputLines: List<String>, target: Label): Output {
+    val lines = bazelOutputLines.map { line ->
       line.replace(AnsiEscapeCode, "")
     }
     val relevantLines = lines.filterNot { line -> IgnoredLines.any { it.matches(line) } }

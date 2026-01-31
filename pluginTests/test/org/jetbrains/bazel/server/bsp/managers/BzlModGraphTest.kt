@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.gson.bazelGson
-import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -17,7 +17,7 @@ class BzlModGraphTest {
     val s = "{}"
 
     // when
-    val parsedJson = s.toJson() as? JsonObject
+    val parsedJson = JsonParser.parseString(s) as? JsonObject
     val parsedBzlModGraph = gson.fromJson(parsedJson, BzlmodGraph::class.java)
 
     // then
@@ -77,7 +77,7 @@ class BzlModGraphTest {
       """.trimIndent()
 
     // when
-    val parsedJson = s.toJson() as? JsonObject
+    val parsedJson = JsonParser.parseString(s) as? JsonObject
     val parsedBzlModGraph = gson.fromJson(parsedJson, BzlmodGraph::class.java)
 
     // then

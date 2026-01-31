@@ -14,7 +14,10 @@ import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInterna
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-val rootRulesToNeededTransitiveRules = mapOf("rules_kotlin" to listOf("rules_java"))
+val rootRulesToNeededTransitiveRules = mapOf(
+  "rules_kotlin" to listOf("rules_java"),
+  "rules_scala" to listOf("rules_java"),
+)
 
 suspend fun calculateRepoMapping(
   workspaceContext: WorkspaceContext,
@@ -30,21 +33,31 @@ suspend fun calculateRepoMapping(
   val moduleApparentNameToCanonicalName =
     try {
       // empty string is the name of the root module
-      moduleResolver.getRepoMapping("")
+      moduleResolver.getRepoMappings(listOf("")).get("").orEmpty()
     }
     catch (e: Exception) {
       bspClientLogger.error(e.toString())
       return RepoMappingDisabled
     }
 
+  fun coveredByMap(
+    repositoryNames: List<String>,
+    mapping: Map<String, String>,
+  ) = repositoryNames.all { mapping.containsKey(it) }
+
   val moduleApparentNameToCanonicalNameForNeededTransitiveRules =
-    rootRulesToNeededTransitiveRules.keys
+    rootRulesToNeededTransitiveRules.filter {
+      !coveredByMap(it.value, moduleApparentNameToCanonicalName)
+    }
+      .keys
       .mapNotNull { moduleApparentNameToCanonicalName[it] }
-      .map { moduleResolver.getRepoMapping(it) }
+      .let {
+        moduleResolver.getRepoMappings(it)
+      }.values
       .reduceOrNull { acc, map -> acc + map }
       .orEmpty()
 
-  moduleResolver.resolveModule(workspaceContext.externalRepositoriesTreatedAsInternal).forEach { externalRepo, showRepoResult ->
+  moduleResolver.resolveModule(workspaceContext.externalRepositoriesTreatedAsInternal, bazelInfo).forEach { externalRepo, showRepoResult ->
     try {
       when (showRepoResult) {
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)

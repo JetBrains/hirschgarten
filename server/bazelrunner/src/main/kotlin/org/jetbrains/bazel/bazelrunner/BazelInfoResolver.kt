@@ -2,7 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.orLatestSupported
+import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Paths
 
@@ -23,8 +23,8 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command, serverPidFuture = null)
-        .waitAndGetResult(true)
+        .runBazelCommand(command)
+        .waitAndGetResult()
     if (processResult.isNotSuccess) error("Querying bazel info failed.\n${processResult.stderrLines.joinToString("\n")}")
     return parseBazelInfo(processResult)
   }
@@ -46,7 +46,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
 
     val bazelReleaseVersion =
       BazelRelease.fromReleaseString(extract(RELEASE))
-        ?: bazelRunner.workspaceRoot?.let { BazelRelease.fromBazelVersionFile(it) }.orLatestSupported()
+        ?: bazelRunner.workspaceRoot?.let { BazelRelease.fromBazelVersionFile(it) }.orFallbackVersion()
 
     val starlarkSemantics = parseStarlarkSemantics(extract(STARLARK_SEMANTICS), bazelReleaseVersion)
 

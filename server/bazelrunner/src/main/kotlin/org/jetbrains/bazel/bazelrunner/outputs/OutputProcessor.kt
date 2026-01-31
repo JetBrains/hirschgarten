@@ -1,34 +1,38 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
+import com.intellij.execution.process.OSProcessUtil
+import com.intellij.util.io.awaitExit
 import kotlinx.coroutines.coroutineScope
+import org.slf4j.LoggerFactory
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
-abstract class OutputProcessor(private val process: SpawnedProcess, vararg loggers: OutputHandler) {
+class OutputProcessor(private val process: Process, vararg loggers: OutputHandler) {
   val stdoutCollector = OutputCollector()
   val stderrCollector = OutputCollector()
 
   private val executorService = Executors.newCachedThreadPool()
-  protected val runningProcessors = mutableListOf<Future<*>>()
+  private val runningProcessors = mutableListOf<Future<*>>()
 
   init {
-    start(process.inputStream, stdoutCollector, *loggers)
-    start(process.errorStream, stderrCollector, *loggers)
+    start(CollectableInputStream(process.inputStream, stdoutCollector), *loggers)
+    start(CollectableInputStream(process.errorStream, stderrCollector), *loggers)
   }
 
-  protected open fun shutdown() {
+  private fun shutdown() {
+    // Process is terminated here and stdout/stderr are closed already, Read buffered leftovers
+    runningProcessors.forEach {
+      it.get(1, TimeUnit.MINUTES) // Output handles should not be _that_ heavy after process is terminated
+    }
     executorService.shutdown()
   }
 
-  protected abstract fun isRunning(): Boolean
-
-  protected fun start(inputStream: InputStream, vararg handlers: OutputHandler) {
+  private fun start(inputStream: InputStream, vararg handlers: OutputHandler) {
     val runnable =
       Runnable {
         try {
@@ -73,37 +77,62 @@ abstract class OutputProcessor(private val process: SpawnedProcess, vararg logge
               else {
                 continue
               }
-              if (isRunning()) {
-                handlers.forEach { it.onNextLine(line) }
-              } else {
-                break
-              }
+              handlers.forEach { it.onNextLine(line) }
             }
           }
-        } catch (e: IOException) {
+        } catch (e: Throwable) {
           if (Thread.currentThread().isInterrupted) return@Runnable
-          throw RuntimeException(e)
+          logger.error("Error processing output", e)
         }
       }
 
     executorService.submit(runnable).also { runningProcessors.add(it) }
   }
 
-  suspend fun waitForExit(serverPidFuture: CompletableFuture<Long>?): Int =
+  suspend fun waitForExit(killProcessTreeOnCancel: Boolean): Int =
     coroutineScope {
       try {
         return@coroutineScope process.awaitExit()
       } catch (e: CancellationException) {
-        val processSpawner = ProcessSpawner.getInstance()
-        processSpawner.killProcessTree(process)
-        processSpawner.killProcess(process)
-        if (serverPidFuture?.isDone == true) {
-          val pid = serverPidFuture.get()
-          processSpawner.killProcess(pid.toInt())
+        try {
+          if (killProcessTreeOnCancel) {
+            OSProcessUtil.killProcessTree(process)
+          } else {
+            OSProcessUtil.killProcess(process)
+          }
+        } catch (_: Throwable) {
         }
         throw e
       } finally {
         shutdown()
       }
     }
+
+  private class CollectableInputStream(val delegate: InputStream,
+                                       val collector: OutputCollector): InputStream() {
+
+    override fun close() {
+      delegate.close()
+    }
+
+    override fun read(): Int {
+      return delegate.read()
+        .also { if (it != -1) collector.append(it) }
+    }
+
+    override fun read(b: ByteArray, off: Int, len: Int): Int {
+      return delegate.read(b, off, len).also {
+        if (it > 0) collector.append(b, off, it)
+      }
+    }
+
+    override fun available(): Int {
+      return delegate.available()
+    }
+  }
+
+
+  companion object {
+    private val logger = LoggerFactory.getLogger(OutputProcessor::class.java)
+  }
 }
