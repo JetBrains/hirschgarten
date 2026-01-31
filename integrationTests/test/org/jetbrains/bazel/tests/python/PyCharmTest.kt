@@ -7,10 +7,12 @@ import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.xQuery
+import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.openFile
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
@@ -18,6 +20,7 @@ import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * ```sh
@@ -40,9 +43,11 @@ class PyCharmOpenProjectTest : PyCharmBaseTest() {
       ideFrame {
         syncBazelProjectCloseDialog()
         waitForIndicators(10.minutes)
+        execute { waitForSmartMode() }
 
         step("Open file") {
           execute { openFile("python/bin.py") }
+          wait(5.seconds) // Wait for Python plugin to register breakpoint types
         }
 
         step("Verify run line marker text") {
@@ -61,9 +66,11 @@ class PyCharmOpenProjectWithTestFileTest : PyCharmBaseTest() {
       ideFrame {
         syncBazelProjectCloseDialog()
         waitForIndicators(10.minutes)
+        execute { waitForSmartMode() }
 
         step("Open test file") {
           execute { openFile("python/test.py") }
+          wait(5.seconds) // Wait for Python plugin to register breakpoint types
         }
 
         step("Verify run line marker text") {
@@ -82,6 +89,7 @@ class PyCharmImportStatementsTest : PyCharmBaseTest() {
       ideFrame {
         syncBazelProjectCloseDialog()
         waitForIndicators(10.minutes)
+        execute { waitForSmartMode() }
 
         step("Open main.py and navigate to bbb") {
           execute { openFile("python/main/main.py") }
