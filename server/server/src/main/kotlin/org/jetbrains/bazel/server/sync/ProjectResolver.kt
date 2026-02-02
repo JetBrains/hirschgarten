@@ -324,18 +324,6 @@ class ProjectResolver(
       "Reading aspect output paths",
     ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
 
-  suspend fun getAspectOutputPaths(
-    build: Boolean = false,
-    requestedTargetsToSync: List<Label>? = null,
-    phasedSyncProject: PhasedSyncProject? = null,
-    originId: String? = null,
-  ): Set<Path> =
-    bspTracer.spanBuilder("Get aspect output paths").useWithScope {
-      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, originId)
-      val aspectResult = buildAspectResult.second
-      return@useWithScope extractAspectOutputPaths(aspectResult)
-    }
-
   companion object {
     private const val ASPECT_NAME = "bsp_target_info_aspect"
     private const val BSP_INFO_OUTPUT_GROUP = "bsp-target-info"
