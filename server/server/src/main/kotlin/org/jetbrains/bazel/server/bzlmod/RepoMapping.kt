@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.bzlmod
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.commons.BazelInfo
@@ -28,7 +27,7 @@ suspend fun calculateRepoMapping(
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
   }
-  val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser(), workspaceContext)
+  val moduleResolver = ModuleResolver(bazelRunner, workspaceContext)
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
   val moduleApparentNameToCanonicalName =
     try {
