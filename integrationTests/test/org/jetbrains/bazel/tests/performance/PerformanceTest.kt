@@ -48,13 +48,18 @@ import kotlin.time.Duration.Companion.minutes
  */
 @PerformanceUnitTest
 class PerformanceTest : IdeStarterBaseProjectTest() {
+  private fun configureProjectWithHermeticCcToolchain(context: IDETestContext) {
+    BazelProjectConfigurer.configureProjectBeforeUse(context)
+    BazelProjectConfigurer.addHermeticCcToolchain(context)
+  }
+
   private fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
     if (localProjectPath != null) {
       return LocalProjectInfo(
         projectDir = Path.of(localProjectPath),
         isReusable = true,
-        configureProjectBeforeUse = BazelProjectConfigurer::configureProjectBeforeUse,
+        configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
       )
     }
     val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
@@ -68,12 +73,12 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
       branchName = branchName,
       projectHomeRelativePath = { if (projectHomeRelativePath != null) it.resolve(projectHomeRelativePath) else it },
       isReusable = true,
-      configureProjectBeforeUse = BazelProjectConfigurer::configureProjectBeforeUse,
+      configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
     )
   }
 
   @Test
-  fun openBazelProject() {
+  fun `sync performance metrics should be collected during project import`() {
     val projectName = System.getenv("BAZEL_PERF_PROJECT_NAME") ?: "performance"
     val context = createContext(projectName, IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
     val startResult =
