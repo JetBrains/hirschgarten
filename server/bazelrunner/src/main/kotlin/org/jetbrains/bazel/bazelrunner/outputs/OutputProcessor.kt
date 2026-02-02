@@ -12,7 +12,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
-class OutputProcessor(private val process: Process, vararg loggers: OutputHandler) {
+class OutputProcessor(private val process: Process, handler: OutputHandler? = null) {
   val stdoutCollector = OutputCollector()
   val stderrCollector = OutputCollector()
 
@@ -20,8 +20,8 @@ class OutputProcessor(private val process: Process, vararg loggers: OutputHandle
   private val runningProcessors = mutableListOf<Future<*>>()
 
   init {
-    start(CollectableInputStream(process.inputStream, stdoutCollector), *loggers)
-    start(CollectableInputStream(process.errorStream, stderrCollector), *loggers)
+    start(CollectableInputStream(process.inputStream, stdoutCollector), handler)
+    start(CollectableInputStream(process.errorStream, stderrCollector), handler)
   }
 
   private fun shutdown() {
@@ -32,7 +32,7 @@ class OutputProcessor(private val process: Process, vararg loggers: OutputHandle
     executorService.shutdown()
   }
 
-  private fun start(inputStream: InputStream, vararg handlers: OutputHandler) {
+  private fun start(inputStream: InputStream, handler: OutputHandler?) {
     val runnable =
       Runnable {
         try {
@@ -77,7 +77,7 @@ class OutputProcessor(private val process: Process, vararg loggers: OutputHandle
               else {
                 continue
               }
-              handlers.forEach { it.onNextLine(line) }
+              handler?.onNextLine(line)
             }
           }
         } catch (e: Throwable) {
