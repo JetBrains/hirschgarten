@@ -1,13 +1,12 @@
 package org.jetbrains.bazel.run.config
 
-import com.intellij.compiler.options.CompileStepBeforeRun
+import com.intellij.execution.ui.BeforeRunComponent
 import com.intellij.execution.ui.BeforeRunFragment
 import com.intellij.execution.ui.CommonParameterFragments
 import com.intellij.execution.ui.CommonTags
 import com.intellij.execution.ui.RunConfigurationFragmentedEditor
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.execution.ui.SettingsEditorFragmentType
-import com.intellij.openapi.externalSystem.service.execution.configuration.addBeforeRunFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addSettingsEditorFragment
@@ -34,12 +33,17 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
   ) {
   override fun createRunFragments(): List<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
-      addBeforeRunFragment(CompileStepBeforeRun.ID)
-      addAll(BeforeRunFragment.createGroup())
       add(CommonTags.parallelRun())
+      addBeforeRunFragment()
       addBspTargetFragment()
       addStateEditorFragment()
     }
+
+  private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addBeforeRunFragment() {
+    val beforeRunComponent = BeforeRunComponent(this@BazelRunConfigurationEditor)
+    add(BeforeRunFragment.createBeforeRun(beforeRunComponent, null))
+    addAll(BeforeRunFragment.createGroup())
+  }
 
   private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addStateEditorFragment() {
     val handler = runConfiguration.handler ?: return
