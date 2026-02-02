@@ -4,14 +4,21 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
+import org.jetbrains.bazel.bazelrunner.ModuleResolver
+import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
@@ -26,6 +33,9 @@ import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
+import kotlin.collections.orEmpty
+import kotlin.collections.reduceOrNull
+import kotlin.io.path.Path
 
 class IllegalTargetsSizeException(message: String) : Exception(message)
 
@@ -77,12 +87,36 @@ class ProjectResolver(
           processTargetMap(rawTargetsMap)
         }
 
+      val newRepoMapping = when(repoMapping) {
+        is RepoMappingDisabled -> RepoMappingDisabled
+        is BzlmodRepoMapping -> {
+          // If we discovered new repositories in the transitive dependencies, verify if some of
+          // them are local repositories and update our mapping to local paths accordingly.
+          // Additionally, for those newly discovered local repositories, update the path to
+          // point to the source tree (rather than the output map).
+          val involvedRepos = targets.keys.mapNotNull {(it as? ResolvedLabel)?.repo as? Canonical}.distinct()
+          val needsPath = involvedRepos.filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
+          val extraRepositoryDescriptions = ModuleResolver(bazelRunner,  workspaceContext).resolveModules(needsPath.map { it.toString()}, bazelInfo)
+          val extraPaths = extraRepositoryDescriptions.map { (name, description) -> when(description) {
+            is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
+            else -> mapOf()
+          } }.reduceOrNull { acc, map -> acc + map }
+            .orEmpty()
+          val extraPathsResolved = extraPaths.mapValues { (_, path) -> bazelInfo.workspaceRoot.resolve(path) }
+          BzlmodRepoMapping(
+            repoMapping.canonicalRepoNameToLocalPath + extraPaths,
+            repoMapping.apparentRepoNameToCanonicalName,
+            repoMapping.canonicalRepoNameToPath + extraPathsResolved)
+        }
+      }
+
+
       val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
       val rootTargets = aspectResult.bepOutput.rootTargets()
       return@useWithScope AspectSyncProject(
         workspaceRoot = bazelInfo.workspaceRoot,
         bazelRelease = bazelInfo.release,
-        repoMapping = repoMapping,
+        repoMapping = newRepoMapping,
         workspaceContext = workspaceContext,
         workspaceName = workspaceName,
         hasError = aspectResult.isFailure,
