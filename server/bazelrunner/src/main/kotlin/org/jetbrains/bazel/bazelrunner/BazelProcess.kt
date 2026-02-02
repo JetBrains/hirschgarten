@@ -6,7 +6,6 @@ import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.Stopwatch
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.logger.bazelLogger
 import java.time.Duration
 
 class BazelProcess internal constructor(
@@ -22,7 +21,7 @@ class BazelProcess internal constructor(
       val outputProcessor =
         OutputProcessor(
           process,
-          if (logger != null) logger::messageWithoutNewLine else LOGGER::info,
+          if (logger != null) logger::messageWithoutNewLine else null,
         )
 
       val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelFeatureFlags.killServerOnCancel)
@@ -40,9 +39,5 @@ class BazelProcess internal constructor(
 
   private fun logCompletion(exitCode: Int, duration: Duration) {
     logger?.message("\nCommand completed in ${Format.duration(duration)} (exit code $exitCode)")
-  }
-
-  companion object {
-    private val LOGGER = bazelLogger<BazelProcess>()
   }
 }
