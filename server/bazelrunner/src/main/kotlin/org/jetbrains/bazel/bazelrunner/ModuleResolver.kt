@@ -109,9 +109,10 @@ class ModuleOutputParser {
 
 class ModuleResolver(
   private val bazelRunner: BazelRunner,
-  private val moduleOutputParser: ModuleOutputParser,
   private val workspaceContext: WorkspaceContext,
 ) {
+  private val moduleOutputParser = ModuleOutputParser()
+
   /**
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
