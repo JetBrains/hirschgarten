@@ -53,7 +53,7 @@ class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElem
         else -> {
           val processor = StarlarkResolveProcessor(mutableListOf(), it)
           SearchUtils.searchInFile(it, processor)
-          processor.result.firstOrNull()
+          processor.getBestMatch()
         }
       }
     }

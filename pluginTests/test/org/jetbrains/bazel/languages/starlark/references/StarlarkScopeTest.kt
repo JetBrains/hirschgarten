@@ -63,13 +63,14 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to nested assignments in module block`() {
+    // Resolves to the latest assignment before the reference
     verifyTargetOfReferenceAtCaret(
       """
       if 1 != 2:
-          <target>foo = 2
+          foo = 2
       else:
           foo = 3
-      foo = 4
+      <target>foo = 4
       <caret>foo
       """.trimIndent(),
     )
@@ -77,15 +78,16 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to nested assignments in function block`() {
+    // Resolves to the latest assignment before the reference
     verifyTargetOfReferenceAtCaret(
       """
       foo = 1
       def bar():
           if 1 != 2:
-              <target>foo = 2
+              foo = 2
           else:
               foo = 3
-          foo = 4
+          <target>foo = 4
           return <caret>foo
       """.trimIndent(),
     )
@@ -93,17 +95,18 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to deeply nested assignments in module block`() {
+    // Resolves to the latest assignment before the reference
     verifyTargetOfReferenceAtCaret(
       """
       if 1 != 2:
           baz()
           if 3 != 4:
               for i in range(10):
-                  <target>foo = 2
+                  foo = 2
           else:
               foo = 3
           foo = 4
-      foo = 5
+      <target>foo = 5
       <caret>foo
       """.trimIndent(),
     )
@@ -111,6 +114,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to deeply nested assignments in function block`() {
+    // Resolves to the latest assignment before the reference
     verifyTargetOfReferenceAtCaret(
       """
       foo = 1
@@ -119,11 +123,11 @@ class StarlarkScopeTest : BasePlatformTestCase() {
               baz()
               if 3 != 4:
                   for i in range(10):
-                      <target>foo = 2
+                      foo = 2
               else:
                   foo = 3
               foo = 4
-          foo = 5
+          <target>foo = 5
           return <caret>foo
       """.trimIndent(),
     )
@@ -442,6 +446,64 @@ class StarlarkScopeTest : BasePlatformTestCase() {
           if x > 0
           for <target>k, v in [(1, 2), (3, 4)]
       }
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `reassignment in conditional resolves to latest binding`() {
+    // Resolves to the latest assignment before the reference
+    verifyTargetOfReferenceAtCaret(
+      """
+      def foo():
+          runfiles = create_runfiles()
+          if some_condition:
+              runfiles = runfiles.merge(other)
+          <target>runfiles = runfiles.merge(more)
+          return <caret>runfiles
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `reassignment rhs resolves to previous binding`() {
+    // RHS reference resolves to the latest binding before that point
+    verifyTargetOfReferenceAtCaret(
+      """
+      def foo():
+          <target>runfiles = create_runfiles()
+          if some_condition:
+              runfiles = <caret>runfiles.merge(other)
+          return runfiles
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `second reassignment rhs resolves to conditional binding`() {
+    // RHS resolves to the latest binding before it (inside the conditional)
+    verifyTargetOfReferenceAtCaret(
+      """
+      def foo():
+          runfiles = create_runfiles()
+          if some_condition:
+              <target>runfiles = runfiles.merge(other)
+          runfiles = <caret>runfiles.merge(more)
+          return runfiles
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `chained reassignments resolve to previous binding`() {
+    // Each RHS resolves to the binding immediately before it
+    verifyTargetOfReferenceAtCaret(
+      """
+      def foo():
+          value = initial()
+          <target>value = transform1(value)
+          value = transform2(<caret>value)
+          return value
       """.trimIndent(),
     )
   }
