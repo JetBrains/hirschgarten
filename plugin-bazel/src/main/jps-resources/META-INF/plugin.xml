@@ -1017,8 +1017,8 @@
 
   <applicationListeners>
     <listener
-      class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
-      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+      class="org.jetbrains.bazel.workspace.fileEvents.BazelFileEventListener"
+      topic="com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable"
     />
     <listener
       class="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityListener"
