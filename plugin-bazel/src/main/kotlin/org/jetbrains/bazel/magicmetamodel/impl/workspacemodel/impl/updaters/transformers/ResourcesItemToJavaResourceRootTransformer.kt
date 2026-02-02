@@ -21,7 +21,7 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
     val sourcesSet = inputEntity.sources.mapTo(mutableSetOf()) { it.path }
     if (stripPrefixes.isEmpty()) return rootsForResourcesWithoutPrefix(inputEntity.resources, rootType)
     val result = stripPrefixes.fold(MergeResult(leftovers = inputEntity.resources.toSet())) { acc, it ->
-      acc.mergeUsing(it, sourcesSet)
+      acc.mergeUsing(stripPrefix = it, sourcesSet = sourcesSet)
     }
     return result
       .merged
@@ -38,7 +38,8 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
 
   private fun MergeResult.mergeUsing(stripPrefix: Path, sourcesSet: Set<Path>): MergeResult {
     val stripPrefixAncestors = setOf(stripPrefix)
-    if (leftovers.none { it.isUnder(stripPrefixAncestors) }) return this
+    val newLeftovers = leftovers.filterNotTo(mutableSetOf()) { it.isUnder(stripPrefixAncestors) }
+    if (leftovers.size == newLeftovers.size) return this
     return MergeResult(
       merged = merged + MergedPath(
         path = stripPrefix,
@@ -46,7 +47,7 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
           .filter { it !in sourcesSet && it !in leftovers }
           .toList(),
       ),
-      leftovers = leftovers.filterNotTo(mutableSetOf()) { it.isUnder(stripPrefixAncestors) },
+      leftovers = newLeftovers,
     )
   }
 
@@ -91,8 +92,9 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
   private fun List<Path>.findSrcWithResourcesGrandchildPrefixes() = mapNotNullTo(mutableSetOf()) {
     val segments = it.toList()
     for (i in 0..<segments.size - 2) {
-      if (segments.getOrNull(i)?.name == "src" && segments.getOrNull(i + 2)?.name == "resources") {
-        return@mapNotNullTo it.root?.resolve(it.subpath(0, i + 3))
+      if (segments[i].name == "src" && segments[i + 2].name == "resources") {
+        val prefix = it.subpath(0, i + 3)
+        return@mapNotNullTo it.root?.resolve(prefix) ?: prefix
       }
     }
     null
