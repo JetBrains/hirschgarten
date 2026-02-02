@@ -115,7 +115,7 @@ class ModuleResolver(
   /**
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
-  suspend fun resolveModule(moduleNames: List<String>, bazelInfo: BazelInfo): Map<String, ShowRepoResult?> {
+  suspend fun resolveModules(moduleNames: List<String>, bazelInfo: BazelInfo): Map<String, ShowRepoResult?> {
     if (moduleNames.isEmpty()) return emptyMap() // avoid bazel call if no information is needed
     val json_output = bazelInfo.release.major >= 9
     val command =

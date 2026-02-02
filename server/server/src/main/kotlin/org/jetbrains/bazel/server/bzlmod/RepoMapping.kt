@@ -57,7 +57,7 @@ suspend fun calculateRepoMapping(
       .reduceOrNull { acc, map -> acc + map }
       .orEmpty()
 
-  moduleResolver.resolveModule(workspaceContext.externalRepositoriesTreatedAsInternal, bazelInfo).forEach { externalRepo, showRepoResult ->
+  moduleResolver.resolveModules(workspaceContext.externalRepositoriesTreatedAsInternal, bazelInfo).forEach { externalRepo, showRepoResult ->
     try {
       when (showRepoResult) {
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
