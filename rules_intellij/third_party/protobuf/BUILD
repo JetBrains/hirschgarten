@@ -14,7 +14,7 @@ java_library(
     name = "protoedit_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2025.3": ["@protoedit_2025_3//:protoedit"],
+        "intellij-2026.1": ["@protoedit_2026_1//:protoedit"],
         "default": [],
     }),
 )

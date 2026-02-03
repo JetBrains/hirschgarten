@@ -1,7 +1,7 @@
 try-import %workspace%/.ci.bazelrc
 try-import %workspace%/.user.bazelrc
 
-build --define=ij_product=intellij-2025.3
+build --define=ij_product=intellij-2026.1
 build --java_language_version=21 --java_runtime_version=21
 build --tool_java_language_version=21 --tool_java_runtime_version=21
 
@@ -68,7 +68,8 @@ common --noexperimental_check_output_files
 common --experimental_rule_extension_api
 
 # https://github.com/protocolbuffers/protobuf/issues/16944#issuecomment-2530220696
-build --host_cxxopt=-std=c++14 --cxxopt=-std=c++14
+common --host_cxxopt=-std=c++20 --cxxopt=-std=c++20
+common --host_macos_minimum_os=14 --macos_minimum_os=14
 
 common --symlink_prefix=out/bazel-
 
@@ -80,3 +81,6 @@ common --action_env=ANDROID_SDK_HOME=
 
 # Required to use the prebuilt protoc
 common --incompatible_enable_proto_toolchain_resolution
+common --strict_proto_deps=off
+#common --@protobuf//bazel/flags:allow_nonstandard_protoc
+common --@protobuf//bazel/toolchains:allow_nonstandard_protoc

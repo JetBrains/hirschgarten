@@ -1,3 +1,4 @@
+"""
 load("//:versions.bzl", "BENCHMARK_BUILD_NUMBER", "GO_BENCHMARK_BUILD_NUMBER", "PY_BENCHMARK_BUILD_NUMBER")
 load("//rules/testing:commons.bzl", "INTELLIJ_JVM_FLAGS", "kt_test_suite")
 
@@ -41,3 +42,4 @@ def kt_integration_test_suite(name, srcs, deps = [], **kwargs):
         ] + java_props,
         **kwargs
     )
+"""

@@ -12,9 +12,9 @@ java_library(
     name = "code_with_me_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2025.3": [
-            "@code_with_me_2025_3//jar",
-            "@code_with_me_split_2025_3//jar",
+        "intellij-2026.1": [
+            "@code_with_me_2026_1//jar",
+            "@code_with_me_split_2026_1//jar",
         ],
         "default": [],
     }),

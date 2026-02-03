@@ -1,9 +1,7 @@
 derive_targets_from_directories: true
 
 targets:
-  //commons/...
-  //plugin-bazel/...
-  //tools/format
+  //:plugin-bazel-debug
 
 directories:
   .

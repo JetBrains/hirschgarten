@@ -10,7 +10,7 @@ java_library(
     name = "devkit_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2025.3": ["@devkit_2025_3//:devkit"],
+        "intellij-2026.1": ["@devkit_2026_1//:devkit"],
         "default": [],
     }),
 )

@@ -19,6 +19,7 @@
 # Description:
 #
 # Plugin source jars for IntelliJ CE, accessed remotely.
+load("@rules_java//java:java_import.bzl", "java_import")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -26,12 +27,10 @@ java_import(
     name = "sdk",
     jars = glob([
             "lib/*.jar",
-            "lib/modules/*.jar"
         ]
     ),
     tags = ["intellij-provided-by-sdk"],
-    srcjar = "@intellij_ce_2025_3_sources//jar",
-    deps = ["@maven//:com_google_errorprone_error_prone_annotations"],
+    srcjar = "@intellij_ce_2026_1_sources//jar",
 )
 
 java_import(
