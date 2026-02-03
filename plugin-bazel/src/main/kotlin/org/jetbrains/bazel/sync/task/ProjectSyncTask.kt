@@ -131,12 +131,6 @@ class ProjectSyncTask(private val project: Project) {
     clearSyntheticTargets()
     project.serviceAsync<ProjectViewService>().forceReparseCurrentProjectViewFiles()
     project.serviceAsync<SyncStatusService>().startSync()
-
-    BazelServerService.getInstance(project).connection.runWithServer {
-      it.bazelInfo.release.deprecated()?.let {
-        project.syncConsole.addWarnMessage(null, it + " Sync might give incomplete results.")
-      }
-    }
   }
 
   private suspend fun clearSyntheticTargets() {
@@ -160,6 +154,11 @@ class ProjectSyncTask(private val project: Project) {
         withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
           reportSequentialProgress {
             executePreSyncHooks(it)
+            BazelServerService.getInstance(project).connection.runWithServer {
+              it.bazelInfo.release.deprecated()?.let {
+                project.syncConsole.addWarnMessage(null, it + " Sync might give incomplete results.")
+              }
+            }
             val syncResult = executeSyncHooks(it, syncScope, buildProject)
             executePostSyncHooks(it)
             when (syncResult) {
