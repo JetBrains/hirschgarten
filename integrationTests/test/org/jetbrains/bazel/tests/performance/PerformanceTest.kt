@@ -34,7 +34,8 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openBspToolWindow
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Files
@@ -48,13 +49,18 @@ import kotlin.time.Duration.Companion.minutes
  */
 @PerformanceUnitTest
 class PerformanceTest : IdeStarterBaseProjectTest() {
+  private fun configureProjectWithHermeticCcToolchain(context: IDETestContext) {
+    BazelProjectConfigurer.configureProjectBeforeUse(context)
+    BazelProjectConfigurer.addHermeticCcToolchain(context)
+  }
+
   private fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
     if (localProjectPath != null) {
       return LocalProjectInfo(
         projectDir = Path.of(localProjectPath),
         isReusable = true,
-        configureProjectBeforeUse = BazelProjectConfigurer::configureProjectBeforeUse,
+        configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
       )
     }
     val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
@@ -68,47 +74,51 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
       branchName = branchName,
       projectHomeRelativePath = { if (projectHomeRelativePath != null) it.resolve(projectHomeRelativePath) else it },
       isReusable = true,
-      configureProjectBeforeUse = BazelProjectConfigurer::configureProjectBeforeUse,
+      configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
     )
   }
 
-  @Test
-  fun openBazelProject() {
+  @TestFactory
+  fun `sync performance metrics should be collected during project import`(): List<DynamicTest> {
     val projectName = System.getenv("BAZEL_PERF_PROJECT_NAME") ?: "performance"
-    val context = createContext(projectName, IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
-    val startResult =
-      context
-        .runIdeWithDriver(runTimeout = timeout)
-        .useDriverAndCloseIde {
-          ideFrame {
-            step("Collect performance metrics during Bazel sync") {
-              execute { startRecordingMaxMemory() }
-              execute { takeScreenshot("startSync") }
-              execute { openBspToolWindow() }
-              execute { takeScreenshot("openBspToolWindow") }
-              execute { waitForBazelSync() }
-              execute { recordMemory("bsp.used.after.sync.mb") }
-              execute { stopRecordingMaxMemory() }
-              execute { waitForSmartMode() }
-              execute { recordMemory("bsp.used.after.indexing.mb") }
+    return listOf(
+      DynamicTest.dynamicTest("sync performance - $projectName") {
+        val context = createContext(projectName, IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
+        val startResult =
+          context
+            .runIdeWithDriver(runTimeout = timeout)
+            .useDriverAndCloseIde {
+              ideFrame {
+                step("Collect performance metrics during Bazel sync") {
+                  execute { startRecordingMaxMemory() }
+                  execute { takeScreenshot("startSync") }
+                  execute { openBspToolWindow() }
+                  execute { takeScreenshot("openBspToolWindow") }
+                  execute { waitForBazelSync() }
+                  execute { recordMemory("bsp.used.after.sync.mb") }
+                  execute { stopRecordingMaxMemory() }
+                  execute { waitForSmartMode() }
+                  execute { recordMemory("bsp.used.after.indexing.mb") }
+                }
+                waitForIndicators(10.minutes)
+              }
             }
-            waitForIndicators(10.minutes)
+
+        val spans = OpenTelemetrySpanCollector(SpanFilter.nameEquals("bsp.sync.project.ms")).collect(startResult.runContext.logsDir)
+
+        val meters =
+          StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
+            it.name.startsWith("bsp.")
+          }.collect(startResult.runContext).map {
+            PerformanceMetrics.Metric.newCounter(it.id.name, it.value)
           }
-        }
 
-    val spans = OpenTelemetrySpanCollector(SpanFilter.nameEquals("bsp.sync.project.ms")).collect(startResult.runContext.logsDir)
+        check(spans.size > 1) { "No spans received" }
+        check(meters.size > 1) { "No performance metrics received" }
 
-    val meters =
-      StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
-        it.name.startsWith("bsp.")
-      }.collect(startResult.runContext).map {
-        PerformanceMetrics.Metric.newCounter(it.id.name, it.value)
+        startResult.publishPerformanceMetrics(projectName = projectName, metrics = spans + meters)
       }
-
-    check(spans.size > 1) { "No spans received" }
-    check(meters.size > 1) { "No performance metrics received" }
-
-    startResult.publishPerformanceMetrics(projectName = projectName, metrics = spans + meters)
+    )
   }
 }
 
