@@ -31,13 +31,7 @@ object BazelProjectConfigurer {
 
   fun addHermeticCcToolchain(context: IDETestContext) {
     val moduleFile = context.resolvedProjectHome / "MODULE.bazel"
-    val workspaceFile = context.resolvedProjectHome / "WORKSPACE"
-    val workspaceBzlFile = context.resolvedProjectHome / "WORKSPACE.bazel"
-
-    when {
-      moduleFile.exists() -> {
-        val toolchainConfig = """
-
+    val toolchainConfig = """
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.1.0")
 
 toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
@@ -48,36 +42,10 @@ register_toolchains(
     "@zig_sdk//libc_aware/toolchain/...",
 )
 """
-        moduleFile.toFile().appendText(toolchainConfig)
-      }
-      workspaceFile.exists() || workspaceBzlFile.exists() -> {
-        val targetFile = if (workspaceBzlFile.exists()) workspaceBzlFile else workspaceFile
-        val toolchainConfig = """
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-HERMETIC_CC_TOOLCHAIN_VERSION = "v4.1.0"
-
-http_archive(
-    name = "hermetic_cc_toolchain",
-    sha256 = "65b9f964ffc733bbe8559ff5497a887bbd384fee1d7592f355633d655f0dff4a",
-    urls = [
-        "https://mirror.bazel.build/github.com/uber/hermetic_cc_toolchain/releases/download/{0}/hermetic_cc_toolchain-{0}.tar.gz".format(HERMETIC_CC_TOOLCHAIN_VERSION),
-        "https://github.com/uber/hermetic_cc_toolchain/releases/download/{0}/hermetic_cc_toolchain-{0}.tar.gz".format(HERMETIC_CC_TOOLCHAIN_VERSION),
-    ],
-)
-
-load("@hermetic_cc_toolchain//toolchain:defs.bzl", zig_toolchains = "toolchains")
-
-zig_toolchains()
-
-register_toolchains(
-    "@zig_sdk//toolchain/...",
-    "@zig_sdk//libc_aware/toolchain/...",
-)
-"""
-        targetFile.toFile().appendText(toolchainConfig)
-      }
+    if (moduleFile.exists()) {
+      moduleFile.toFile().appendText("\n$toolchainConfig")
+    } else {
+      moduleFile.writeText(toolchainConfig)
     }
   }
 
