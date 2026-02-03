@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
 import org.jetbrains.bazel.languages.fixtures.LexerTestCase
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ProjectViewLexerTest : LexerTestCase() {
   sealed interface Section {

@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.bazelrc.lexer
 
 import org.jetbrains.bazel.languages.fixtures.LexerTestCase
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class BazelrcQuotingLexerTest : LexerTestCase() {
   @Test

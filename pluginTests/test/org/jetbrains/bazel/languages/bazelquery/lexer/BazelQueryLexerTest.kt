@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.bazelquery.lexer
 
 import org.jetbrains.bazel.languages.fixtures.LexerTestCase
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class BazelQueryLexerTest : LexerTestCase() {
   // just target test

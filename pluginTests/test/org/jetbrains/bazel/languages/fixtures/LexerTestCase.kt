@@ -2,19 +2,14 @@ package org.jetbrains.bazel.languages.fixtures
 
 import com.intellij.lexer.Lexer
 import com.intellij.psi.tree.IElementType
-import com.intellij.testFramework.PlatformLiteFixture
+import com.intellij.testFramework.junit5.TestApplication
 import io.kotest.assertions.withClue
 import io.kotest.matchers.string.shouldHaveLength
 import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.fail
 
-@RunWith(JUnit4::class)
-abstract class LexerTestCase : PlatformLiteFixture() {
-  override fun setUp() {
-    super.setUp()
-    initApplication()
-  }
+@TestApplication
+abstract class LexerTestCase {
 
   open fun doLexerTest(
     code: String,
@@ -58,7 +53,7 @@ abstract class LexerTestCase : PlatformLiteFixture() {
             idx++
           }
 
-          if (idx < expectedTokens.size) fail("Not enough tokens")
+          if (idx < expectedTokens.size) fail<Unit>("Not enough tokens")
         }
       }
     }
