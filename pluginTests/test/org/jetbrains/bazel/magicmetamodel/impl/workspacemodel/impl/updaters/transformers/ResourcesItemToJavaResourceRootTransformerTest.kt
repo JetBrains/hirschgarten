@@ -222,7 +222,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     javaResources shouldHaveSingleElement ResourceRoot(
       resourcePath = resourcesDir,
       rootType = SourceRootTypeId("java-resource"),
-      excluded = emptyList(),
     )
   }
 
@@ -241,7 +240,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     javaResources shouldHaveSingleElement ResourceRoot(
       resourcePath = resourcesDir,
       rootType = SourceRootTypeId("java-resource"),
-      excluded = emptyList(),
     )
   }
 
@@ -267,7 +265,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     javaResources shouldHaveSingleElement ResourceRoot(
       resourcePath = resourcesDir,
       rootType = SourceRootTypeId("java-test-resource"),
-      excluded = emptyList(),
     )
   }
 
@@ -287,7 +284,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     javaResources shouldHaveSingleElement ResourceRoot(
       resourcePath = javaDir,
       rootType = SourceRootTypeId("java-resource"),
-      excluded = emptyList(),
     )
   }
 
@@ -320,32 +316,9 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     javaResources shouldHaveSingleElement ResourceRoot(
       resourcePath = kotlinDir,
       rootType = SourceRootTypeId("java-resource"),
-      excluded = emptyList(),
     )
   }
-
-  @Test
-  fun `should merge resources under strip prefix and exclude non-resource files`() {
-    // given
-    val resourcesDir = projectBasePath.resolve("src/main/resources").createDirectories()
-    val resourceFile1 = resourcesDir.resolve("config.properties").createFile()
-    val resourceFile2 = resourcesDir.resolve("messages.properties").createFile()
-    // Create a file that exists in the directory but is NOT in the resources list
-    val nonResourceFile = resourcesDir.resolve("excluded.txt").createFile()
-
-    val buildTarget = createRawBuildTarget(resources = listOf(resourceFile1, resourceFile2))
-
-    // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
-
-    // then
-    javaResources shouldHaveSingleElement ResourceRoot(
-      resourcePath = resourcesDir,
-      rootType = SourceRootTypeId("java-resource"),
-      excluded = listOf(nonResourceFile),
-    )
-  }
-
+  
   @Test
   fun `should handle multiple strip prefixes from different heuristics`() {
     // given
@@ -365,83 +338,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       ResourceRoot(
         resourcePath = srcMainResources,
         rootType = SourceRootTypeId("java-resource"),
-        excluded = emptyList(),
       ),
       ResourceRoot(
         resourcePath = javaDir,
         rootType = SourceRootTypeId("java-resource"),
-        excluded = emptyList(),
       ),
-    )
-  }
-
-  @Test
-  fun `should exclude multiple non-resource files with standard directory`() {
-    // given
-    val resourcesDir = projectBasePath.resolve("src/main/resources").createDirectories()
-    val resourceFile = resourcesDir.resolve("config.properties").createFile()
-    val excludedFile1 = resourcesDir.resolve("excluded1.txt").createFile()
-    val excludedFile2 = resourcesDir.resolve("excluded2.txt").createFile()
-
-    val buildTarget = createRawBuildTarget(resources = listOf(resourceFile))
-
-    // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
-
-    // then
-    javaResources.size shouldBe 1
-    javaResources[0].resourcePath shouldBe resourcesDir
-    javaResources[0].rootType shouldBe SourceRootTypeId("java-resource")
-    javaResources[0].excluded shouldContainExactlyInAnyOrder listOf(excludedFile1, excludedFile2)
-  }
-
-  @Test
-  fun `should exclude files when using explicit resourceStripPrefix`() {
-    // given
-    val resourcesDir = projectBasePath.resolve("custom/resources").createDirectories()
-    val resourceFile = resourcesDir.resolve("included.properties").createFile()
-    val excludedFile = resourcesDir.resolve("excluded.txt").createFile()
-
-    val buildTarget = createRawBuildTarget(
-      resources = listOf(resourceFile),
-      data = JvmBuildTarget(
-        javaVersion = "17",
-        resourceStripPrefix = resourcesDir,
-      ),
-    )
-
-    // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
-
-    // then
-    javaResources shouldHaveSingleElement ResourceRoot(
-      resourcePath = resourcesDir,
-      rootType = SourceRootTypeId("java-resource"),
-      excluded = listOf(excludedFile),
-    )
-  }
-
-  @Test
-  fun `should not exclude source files located under resource root`() {
-    // given
-    val resourcesDir = projectBasePath.resolve("src/main/java").createDirectories()
-    val resourceFile = resourcesDir.resolve("config.properties").createFile()
-    val excludedResourceFile = resourcesDir.resolve("excluded.properties").createFile()
-    val sourceFile = resourcesDir.resolve("Foo.java").createFile()
-
-    val buildTarget = createRawBuildTarget(
-      resources = listOf(resourceFile),
-      sources = listOf(SourceItem(path = sourceFile, generated = false)),
-    )
-
-    // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
-
-    // then
-    javaResources shouldHaveSingleElement ResourceRoot(
-      resourcePath = resourcesDir,
-      rootType = SourceRootTypeId("java-resource"),
-      excluded = listOf(excludedResourceFile),
     )
   }
 
@@ -487,7 +388,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     javaResources shouldHaveSingleElement ResourceRoot(
       resourcePath = resourcesDir,
       rootType = SourceRootTypeId("java-resource"),
-      excluded = emptyList(),
     )
   }
 
@@ -511,7 +411,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       ResourceRoot(
         resourcePath = resourcesDir,
         rootType = SourceRootTypeId("java-resource"),
-        excluded = emptyList(),
       ),
       ResourceRoot(
         resourcePath = outsideFile,

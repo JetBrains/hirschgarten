@@ -12,7 +12,7 @@ java_library(
     srcs = glob(["src/main/java/**/*"]),
     deps = [":annotations_import"],
     visibility = ["//visibility:public"],
-    resources = glob(["src/main/resources/**/*"], exclude = ["src/main/resources/messages/ExcludedBundle.properties"]),
+    resources = glob(["src/main/resources/**/*"]),
     runtime_deps = [
       ":foo-res",
       ":bar-res"
@@ -21,12 +21,12 @@ java_library(
 
 java_library(
   name = "foo-res",
-  resources = glob(["src/main/foo-res/**/*"], exclude = ["src/main/foo-res/messages/ExcludedFooBundle.properties"]),
+  resources = glob(["src/main/foo-res/**/*"]),
   resource_strip_prefix = "module/src/main/foo-res",
 )
 
 java_library(
   name = "bar-res",
-  resources = glob(["src/main/bar-res/**/*"], exclude = ["src/main/bar-res/messages/ExcludedBarBundle.properties"]),
+  resources = glob(["src/main/bar-res/**/*"]),
   resource_strip_prefix = "module/src/main/bar-res",
 )

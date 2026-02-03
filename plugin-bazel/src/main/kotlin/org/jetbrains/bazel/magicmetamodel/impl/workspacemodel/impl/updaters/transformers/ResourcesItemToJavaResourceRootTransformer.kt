@@ -11,21 +11,19 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.name
-import kotlin.io.path.walk
 
 class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, ResourceRoot> {
 
   override fun transform(inputEntity: RawBuildTarget): List<ResourceRoot> {
     val rootType = inputEntity.inferRootType()
     val stripPrefixes = extractStripPrefixes(inputEntity)
-    val sourcesSet = inputEntity.sources.mapTo(mutableSetOf()) { it.path }
     if (stripPrefixes.isEmpty()) return rootsForResourcesWithoutPrefix(inputEntity.resources, rootType)
     val result = stripPrefixes.fold(MergeResult(leftovers = inputEntity.resources.toSet())) { acc, it ->
-      acc.mergeUsing(stripPrefix = it, sourcesSet = sourcesSet)
+      acc.mergeUsing(stripPrefix = it)
     }
     return result
       .merged
-      .map { ResourceRoot(resourcePath = it.path, rootType = rootType, excluded = it.excluded) }
+      .map { ResourceRoot(resourcePath = it, rootType = rootType) }
       .plus(rootsForResourcesWithoutPrefix(result.leftovers.toList(), rootType))
   }
 
@@ -36,17 +34,12 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
     rootType: SourceRootTypeId
   ): List<ResourceRoot> = resources.map { ResourceRoot(resourcePath = it, rootType = rootType) }
 
-  private fun MergeResult.mergeUsing(stripPrefix: Path, sourcesSet: Set<Path>): MergeResult {
+  private fun MergeResult.mergeUsing(stripPrefix: Path): MergeResult {
     val stripPrefixAncestors = setOf(stripPrefix)
     val newLeftovers = leftovers.filterNotTo(mutableSetOf()) { it.isUnder(stripPrefixAncestors) }
     if (leftovers.size == newLeftovers.size) return this
     return MergeResult(
-      merged = merged + MergedPath(
-        path = stripPrefix,
-        excluded = stripPrefix.walk()
-          .filter { it !in sourcesSet && it !in leftovers }
-          .toList(),
-      ),
+      merged = merged.plusElement(stripPrefix),
       leftovers = newLeftovers,
     )
   }
@@ -80,13 +73,8 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
     if (kind.ruleType == RuleType.TEST) JAVA_TEST_RESOURCE_ROOT_TYPE else JAVA_RESOURCE_ROOT_TYPE
 
   private data class MergeResult(
-    val merged: List<MergedPath> = emptyList(),
+    val merged: List<Path> = emptyList(),
     val leftovers: Set<Path> = emptySet(),
-  )
-
-  private data class MergedPath(
-    val path: Path,
-    val excluded: List<Path>,
   )
 
   private fun List<Path>.findSrcWithResourcesGrandchildPrefixes() = mapNotNullTo(mutableSetOf()) {

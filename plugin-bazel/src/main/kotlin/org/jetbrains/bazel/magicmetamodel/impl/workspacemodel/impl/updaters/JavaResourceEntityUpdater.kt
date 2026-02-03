@@ -41,7 +41,6 @@ class JavaResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: W
       entitiesToAdd.map { entityToAdd ->
         ContentRoot(
           path = entityToAdd.resourcePath,
-          excluded = entityToAdd.excluded,
         )
       }
 

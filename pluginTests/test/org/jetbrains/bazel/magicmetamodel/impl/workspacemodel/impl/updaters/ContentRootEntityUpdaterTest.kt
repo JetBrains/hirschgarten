@@ -3,7 +3,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
-import com.intellij.platform.workspace.jps.entities.ExcludeUrlEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -26,38 +25,6 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
     contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
-  }
-
-  @Test
-  fun `should add one content root to the workspace model with excluded files`() {
-    // given
-    val contentPath = Path("/root/dir/example/resource/File.txt")
-    val excludedPath = Path("/root/dir/example/resource/File2.txt")
-    val contentRoot =
-      ContentRoot(
-        path = contentPath,
-        excluded = listOf(excludedPath),
-      )
-
-    // when
-    runTestWriteAction {
-      contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
-    }
-
-    // then
-    val expectedContentRootEntity =
-      ExpectedContentRootEntity(
-        url = contentPath.toVirtualFileUrl(virtualFileUrlManager),
-        parentModuleEntity = parentModuleEntity,
-        excludedUrls = listOf(
-          ExcludeUrlEntity(
-            url = excludedPath.toVirtualFileUrl(virtualFileUrlManager),
-            entitySource = parentModuleEntity.entitySource,
-          ),
-        ),
-      )
-
-    loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedContentRootEntity)
   }
 
   @Test
