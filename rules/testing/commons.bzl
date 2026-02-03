@@ -1,3 +1,4 @@
+"""
 load("@contrib_rules_jvm//java/private:create_jvm_test_suite.bzl", "create_jvm_test_suite")
 load("@contrib_rules_jvm//java/private:junit5.bzl", "java_junit5_test")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
@@ -166,3 +167,4 @@ def kt_test_suite(name, srcs, test_suffixes = ["Test.kt"], deps = [], runtime_de
         size = size,
         **kwargs
     )
+"""

@@ -8,181 +8,46 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 
 bazel_dep(
     name = "rules_kotlin",
-    version = "2.1.9",
-)
-single_version_override(
-    module_name = "rules_kotlin",
-    patch_strip = 1,
-    patches = [
-        "//rules_intellij/third_party/kotlin/patches:strip_stdlib.patch",
-        "//rules_intellij/third_party/kotlin/patches:support_new_kotlin_versions.patch",
-    ],
+    version = "2.2.2",
 )
 
 register_toolchains(
     "//:kotlin_toolchain",
 )
 
-# Required by rules_jvm_external since version 6.3
-bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.14.0")
-bazel_dep(name = "rules_jvm_external", version = "6.8")
-bazel_dep(name = "aspect_rules_js", version = "2.5.0")
-bazel_dep(name = "contrib_rules_jvm", version = "0.30.0")
+# rules_kotlin depends on rules_android
+bazel_dep(name = "rules_android", version = "0.7.1")
+remote_android_extensions = use_extension(
+    "@rules_android//bzlmod_extensions:android_extensions.bzl",
+    "remote_android_tools_extensions")
+use_repo(remote_android_extensions, "android_tools")
 
-npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
-npm.npm_translate_lock(
-    name = "npm",
-    data = ["//:package.json"],
-    npmrc = "//:.npmrc",
-    pnpm_lock = "//:pnpm-lock.yaml",
-    public_hoist_packages = {
-        "typescript-eslint": [""],
-    },
-    update_pnpm_lock = True,
-    verify_node_modules_ignored = "//:.bazelignore",
-)
-use_repo(npm, "npm")
+android_sdk_repository_extension = use_extension("@rules_android//rules/android_sdk_repository:rule.bzl", "android_sdk_repository_extension")
+use_repo(android_sdk_repository_extension, "androidsdk")
 
-pnpm = use_extension("@aspect_rules_js//npm:extensions.bzl", "pnpm")
+register_toolchains("@androidsdk//:sdk-toolchain", "@androidsdk//:all")
 
-# Allows developers to use the matching pnpm version, for example:
-# bazel run -- @pnpm --dir /home/runner/work/rules_js/rules_js install
-use_repo(pnpm, "pnpm")
+
+bazel_dep(name = "rules_java", version = "9.3.0")
+bazel_dep(name = "rules_jvm_external", version = "6.9")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
+bazel_dep(name = "googleapis-java", version = "1.0.0")
+bazel_dep(name = "googleapis-grpc-java", version = "1.0.0")
+bazel_dep(name = "googleapis", version = "0.0.0-20250730-f6801ce4")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
-        "com.fasterxml.jackson.core:jackson-databind:2.20.0",
         "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.20.0",
-        "com.fasterxml.jackson.module:jackson-module-kotlin:2.20.0",
-        "com.google.auto.value:auto-value-annotations:1.11.0",
-        "com.google.auto.value:auto-value:1.11.0",
-        "com.google.flogger:flogger:0.9",
-        "com.google.flogger:flogger-system-backend:0.9",
-        "com.googlecode.java-diff-utils:diffutils:1.3.0",
-        "com.google.code.findbugs:jsr305:3.0.2",
-        "com.google.code.gson:gson:2.13.1",
-        "com.google.errorprone:error_prone_annotations:2.41.0",
-        "com.google.guava:guava:33.3.1-jre",
-        "com.google.truth:truth:1.4.4",
-        "com.google.truth.extensions:truth-java8-extension:1.4.4",
-        "com.google.j2objc:j2objc-annotations:3.1",
-        "com.google.guava:failureaccess:1.0.3",
-        "org.hamcrest:hamcrest-core:3.0",
-        "org.jetbrains:annotations:26.0.2",
-        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:252.25557.131",
-        "com.jetbrains.intellij.tools:ide-metrics-collector:252.25557.131",
-        "com.jetbrains.intellij.tools:ide-starter-driver:252.25557.131",
-        "com.jetbrains.intellij.tools:ide-starter-junit5:252.25557.131",
-        "com.jetbrains.intellij.tools:ide-starter-squashed:252.25557.131",
-        "commons-io:commons-io:jar:2.20.0",
-        "io.grpc:grpc-protobuf:1.75.0",
-        "io.grpc:grpc-stub:1.75.0",
-        "io.kotest:kotest-assertions-api-jvm:5.9.1",
-        "io.kotest:kotest-assertions-core-jvm:5.9.1",
-        "io.kotest:kotest-assertions-shared-jvm:5.9.1",
-        "io.kotest:kotest-common-jvm:5.9.1",
-        "junit:junit:4.13.2",
-        "org.opentest4j:opentest4j:1.3.0",
-        "net.java.dev.jna:jna:5.17.0",
-        "org.apache.httpcomponents:httpclient:4.5.14",
-        "org.slf4j:slf4j-api:2.0.17",
-        "org.apache.velocity:velocity-engine-core:2.4.1",
-        "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
-        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0",
-        "org.junit.jupiter:junit-jupiter:5.13.4",
-        "org.junit.platform:junit-platform-console:1.13.4",
-        "org.junit.platform:junit-platform-suite-api:1.13.4",
-        "org.junit.platform:junit-platform-suite-engine:1.13.4",
-        "org.kodein.di:kodein-di:7.26.1",
-        "org.mockito:mockito-core:5.19.0",
-        "com.github.javaparser:javaparser-core:3.27.0",
         "com.google.protobuf:protobuf-java:3.24.4",
-        "org.ow2.asm:asm:9.8",
-        "info.picocli:picocli:4.7.7",
-    ],
-    fail_if_repin_required = True,
-    fetch_sources = True,
-    generate_compat_repositories = True,
-    known_contributing_modules = [
-        "bazel_worker_java",
-        "grpc-java",
-        "hirschgarten",
     ],
     lock_file = "//:maven_install.json",
     repositories = [
         "https://cache-redirector.jetbrains.com/maven-central",
-        "https://cache-redirector.jetbrains.com/intellij-dependencies",
-        "https://www.jetbrains.com/intellij-repository/releases",
-        "https://www.jetbrains.com/intellij-repository/snapshots",
-    ],
+    ]
 )
-maven.artifact(
-    testonly = True,
-    artifact = "junit-vintage-engine",
-    group = "org.junit.vintage",
-    version = "5.13.4",
-)
-maven.artifact(
-    artifact = "kotlinx-coroutines-core",
-    group = "org.jetbrains.kotlinx",
-    neverlink = True,
-    version = "1.10.2",
-)
-maven.artifact(
-    artifact = "kotlinx-coroutines-core-jvm",
-    group = "org.jetbrains.kotlinx",
-    neverlink = True,
-    version = "1.10.2",
-)
-maven.artifact(
-    name = "server_maven",
-    artifact = "kotlinx-coroutines-core",
-    group = "org.jetbrains.kotlinx",
-    version = "1.9.0",
-)
-maven.artifact(
-    name = "server_maven",
-    artifact = "kotlinx-coroutines-core-jvm",
-    group = "org.jetbrains.kotlinx",
-    version = "1.9.0",
-)
-maven.artifact(
-    name = "server_maven",
-    artifact = "kotlinx-coroutines-test",
-    group = "org.jetbrains.kotlinx",
-    version = "1.9.0",
-)
-use_repo(
-    maven,
-    "com_google_guava_failureaccess",
-    "com_google_guava_guava",
-    "com_google_j2objc_j2objc_annotations",
-    "maven",
-    "server_maven",
-    auto_value = "com_google_auto_value_auto_value",
-    auto_value_annotations = "com_google_auto_value_auto_value_annotations",
-    diffutils = "com_googlecode_java_diff_utils_diffutils",
-    error_prone_annotations = "com_google_errorprone_error_prone_annotations",
-    flogger = "com_google_flogger_flogger",
-    flogger_system_backend = "com_google_flogger_flogger_system_backend",
-    gson = "com_google_code_gson_gson",
-    hamcrest = "org_hamcrest_hamcrest_core",
-    jetbrains_annotations = "org_jetbrains_annotations",
-    jna = "net_java_dev_jna_jna",
-    jsr305_annotations = "com_google_code_findbugs_jsr305",
-    junit = "junit_junit",
-    mockito = "org_mockito_mockito_core",
-    truth = "com_google_truth_truth",
-    truth8 = "com_google_truth_extensions_truth_java8_extension",
-)
-
-bazel_dep(name = "bazel_skylib", version = "1.8.1")
-bazel_dep(name = "aspect_bazel_lib", version = "2.20.0")
-bazel_dep(name = "googleapis-java", version = "1.0.0")
-bazel_dep(name = "googleapis-grpc-java", version = "1.0.0")
-bazel_dep(name = "googleapis", version = "0.0.0-20250730-f6801ce4")
+use_repo(maven, "maven")
 
 switched_rules = use_extension("@googleapis//:extensions.bzl", "switched_rules")
 switched_rules.use_languages(
@@ -190,15 +55,15 @@ switched_rules.use_languages(
     java = True,
 )
 
-bazel_dep(name = "rules_apple", version = "3.20.1")
+bazel_dep(name = "rules_apple", version = "4.3.3")
 
 # Needed because googleapis transitively pulls in a broken version
 single_version_override(
     module_name = "rules_apple",
-    version = "3.17.1",
+    version = "4.3.3",
 )
 
-bazel_dep(name = "rules_shell", version = "0.6.0")
+bazel_dep(name = "rules_shell", version = "0.6.1")
 
 # NB: this must come BEFORE bazel_dep(name = "protobuf") because they register the from-source toolchain,
 # and the first registration wins.
@@ -211,99 +76,34 @@ protoc.toolchain(
 )
 
 bazel_dep(name = "rules_proto", version = "7.1.0")
-bazel_dep(name = "protobuf", version = "29.5")
-bazel_dep(name = "rules_cc", version = "0.2.0")
-bazel_dep(name = "rules_python", version = "1.5.3")
-bazel_dep(name = "platforms", version = "1.0.0")
-
-# Needed for codecanvas
-python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
-python.toolchain(
-    ignore_root_user_error = True,
-    is_default = True,
-    python_version = "3.12",
-)
-
-bazel_dep(
-    name = "aspect_rules_lint",
-    dev_dependency = True,
-)
-single_version_override(
-    module_name = "aspect_rules_lint",
-    patch_strip = 1,
-    patches = [
-        "tools/format/use-ktlint.patch",
-    ],
-    version = "1.6.0",
-)
-
-http_jar(
-    name = "ktlint",
-    integrity = "sha256-tZagXwk2ThmXtkQVJoOvEv71iUTzrPq994Bx9aSQ65g=",
-    url = "https://github.com/pinterest/ktlint/releases/download/1.7.1/ktlint",
-)
-
-http_jar(
-    name = "google_java_format",
-    integrity = "sha256-MjQufBtGAPgN80cdpGrugBLT4URdXqG+H7cSibB8xzU=",
-    url = "https://github.com/google/google-java-format/releases/download/v1.28.0/google-java-format-1.28.0-all-deps.jar",
-)
-
-bazel_dep(
-    name = "buildifier_prebuilt",
-    version = "8.2.0.2",
-    dev_dependency = True,
-)
-bazel_dep(
-    name = "rules_buf",
-    version = "0.4.0",
-    dev_dependency = True,
-)
-
-bazel_dep(
-    name = "stardoc",
-    version = "0.8.0",
-)
-
-buf = use_extension("@rules_buf//buf:extensions.bzl", "buf")
-use_repo(buf, "rules_buf_toolchains")
-
+bazel_dep(name = "protobuf", version = "33.5")
+bazel_dep(name = "rules_cc", version = "0.2.14")
+bazel_dep(name = "rules_python", version = "1.8.3")
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.33.2",
+    version = "0.37.1",
     dev_dependency = True,
 )
-
-bazel_binaries = use_extension(
-    "@rules_bazel_integration_test//:extensions.bzl",
-    "bazel_binaries",
-    dev_dependency = True,
-)
-bazel_binaries.download(version = "8.0.0")
-bazel_binaries.download(version = "7.4.0")
-bazel_binaries.download(version = "6.4.0")
-use_repo(
-    bazel_binaries,
-    "bazel_binaries",
-    "bazel_binaries_bazelisk",
-    "build_bazel_bazel_6_4_0",
-    "build_bazel_bazel_7_4_0",
-    "build_bazel_bazel_8_0_0",
-)
-
+bazel_dep(name = "rules_foreign_cc", version = "0.15.1")
+bazel_dep(name = "abseil-cpp", version = "20260107.0")
+bazel_dep(name = "grpc-java", version = "1.78.0")
 # IJ SDK
 
 # Any SDK version
 
 DEVKIT_BUILD_FILE = """
+load("@rules_java//java:java_import.bzl", "java_import")
+
 java_import(
     name = "devkit",
-    jars = ["devkit/lib/devkit.jar"],
+    jars = glob(["devkit/lib/*.jar", "devkit/lib/modules/*.jar"]),
     visibility = ["//visibility:public"],
 )
 """
 
 _PYTHON_CE_BUILD_FILE = """
+load("@rules_java//java:java_import.bzl", "java_import")
+
 java_import(
     name = "python",
     jars = glob(["python-ce/lib/*.jar", "python-ce/lib/modules/*.jar"]),
@@ -317,6 +117,8 @@ filegroup(
 """
 
 _GO_BUILD_FILE = """
+load("@rules_java//java:java_import.bzl", "java_import")
+
 java_import(
     name = "go",
     jars = glob(["go-plugin/lib/*.jar", "go-plugin/lib/modules/*.jar"]),
@@ -325,6 +127,8 @@ java_import(
 """
 
 _PROTOEDIT_BUILD_FILE = """
+load("@rules_java//java:java_import.bzl", "java_import")
+
 java_import(
     name = "protoedit",
     jars = glob(["protoeditor/lib/*.jar"]),
@@ -332,123 +136,125 @@ java_import(
 )
 """
 
-# SDK 253
+# SDK 261
 
-SDK_253_BASE_VERSION = "253.28294"
+SDK_261_BASE_VERSION = "261.17801"
 
-SDK_253_INTELLIJ_VERSION = SDK_253_BASE_VERSION + ".334"
+SDK_261_INTELLIJ_REPO_VERSION = SDK_261_BASE_VERSION + ".55"
 
-SDK_253_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
+SDK_261_INTELLIJ_VERSION = SDK_261_INTELLIJ_REPO_VERSION + "-EAP"
 
-SDK_253_PLUGIN_REPOSITORY_VERSION = SDK_253_BASE_VERSION + ".169"
+SDK_261_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
 
-IC_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+SDK_261_PLUGIN_REPOSITORY_VERSION = SDK_261_BASE_VERSION + ".55"
 
-IC_253_SHA = "536eb6fdfa214291717af78507d2575ddf37017a9274d81d8b21333906bdd155"
+IC_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
+
+IC_261_SHA = "0f1bac1a5e22d6c67d985ad3f11b263451885d8abe2fe37655ef7dbac5fc58e7"
 
 http_archive(
-    name = "intellij_ce_2025_3",
-    build_file = "//rules_intellij/intellij_platform_sdk:BUILD.idea253",
-    sha256 = IC_253_SHA,
-    url = IC_253_URL,
+    name = "intellij_ce_2026_1",
+    build_file = "//rules_intellij/intellij_platform_sdk:BUILD.idea261",
+    sha256 = IC_261_SHA,
+    url = IC_261_URL,
 )
 
-IC_253_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+IC_261_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
 
-IC_253_SOURCES_SHA = "9f52126011a155fba5528cbaa9cb909540b4b0b8a303a554ff1f32638e3714e8"
+IC_261_SOURCES_SHA = "39c184320dabfd102b1f2073813318e72bd7e8354a310e6dc528d68e183a3c90"
 
 http_jar(
-    name = "intellij_ce_2025_3_sources",
-    sha256 = IC_253_SOURCES_SHA,
-    url = IC_253_SOURCES_URL,
+    name = "intellij_ce_2026_1_sources",
+    sha256 = IC_261_SOURCES_SHA,
+    url = IC_261_SOURCES_URL,
 )
 
-DEVKIT_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
+DEVKIT_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_261_PLUGIN_REPOSITORY_VERSION, SDK_261_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_253_SHA = "1eabcf7230deb3d019eff0fc46c8045af78bc796eec8abee5c73bad1c708995f"
+DEVKIT_261_SHA = "76a72f792271cabd3f5df863ed537709d9db08a546b9be20dc7d43114fcbcae2"
 
 http_archive(
-    name = "devkit_2025_3",
+    name = "devkit_2026_1",
     build_file_content = DEVKIT_BUILD_FILE,
-    sha256 = DEVKIT_253_SHA,
-    url = DEVKIT_253_URL,
+    sha256 = DEVKIT_261_SHA,
+    url = DEVKIT_261_URL,
 )
 
-PYTHON_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+PYTHON_PLUGIN_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-PYTHON_PLUGIN_253_SHA = "c7f13984d9bcd9a7ed3a8243e1f414157c4c57b788211494696bdf8a5598b99c"
+PYTHON_PLUGIN_261_SHA = "0402eecb672edbdf9f8bfc8d6c94ab7f919dd4d04e36a31731ce8482deabd464"
 
 http_archive(
-    name = "python_2025_3",
+    name = "python_2026_1",
     build_file_content = _PYTHON_CE_BUILD_FILE,
-    sha256 = PYTHON_PLUGIN_253_SHA,
-    url = PYTHON_PLUGIN_253_URL,
+    sha256 = PYTHON_PLUGIN_261_SHA,
+    url = PYTHON_PLUGIN_261_URL,
 )
 
-GO_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_253_PLUGIN_REPOSITORY_VERSION, SDK_253_PLUGIN_REPOSITORY_VERSION)
+GO_PLUGIN_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_261_PLUGIN_REPOSITORY_VERSION, SDK_261_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_253_SHA = "d0432b03d958baad3cf408a9f60f104bc237e4452e1d85a756b23135c270c314"
+GO_PLUGIN_261_SHA = "644bc913ca17e85e62121c308486b471dfe13f25164277f3873aead77542fc53"
 
 http_archive(
-    name = "go_2025_3",
+    name = "go_2026_1",
     build_file_content = _GO_BUILD_FILE,
-    sha256 = GO_PLUGIN_253_SHA,
-    url = GO_PLUGIN_253_URL,
+    sha256 = GO_PLUGIN_261_SHA,
+    url = GO_PLUGIN_261_URL,
 )
 
-PERFORMANCE_PLUGIN_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+PERFORMANCE_PLUGIN_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-PERFORMANCE_PLUGIN_253_SHA = "de83c973e35968ff36577d3b759fc6dcbdb7c0c1391cf75da26c8bf965eab349"
+PERFORMANCE_PLUGIN_261_SHA = "bcad8fc9d2f8b7936bfa22d58e5e11b90a2b00b64ad4b99c5fd188b0b1674084"
 
 http_jar(
-    name = "performance_2025_3",
-    sha256 = PERFORMANCE_PLUGIN_253_SHA,
-    url = PERFORMANCE_PLUGIN_253_URL,
+    name = "performance_2026_1",
+    sha256 = PERFORMANCE_PLUGIN_261_SHA,
+    url = PERFORMANCE_PLUGIN_261_URL,
 )
 
-CODE_WITH_ME_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+CODE_WITH_ME_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_253_SHA = "05f2a169f9a1ec32c3f2e1282c88d2c0682c88f9cfff707f61900acc2604efa1"
+CODE_WITH_ME_261_SHA = "6d60ba3dee92050e878ec3ef641383307a45f0257b053db252552796888b50ba"
 
 http_jar(
-    name = "code_with_me_2025_3",
-    sha256 = CODE_WITH_ME_253_SHA,
-    url = CODE_WITH_ME_253_URL,
+    name = "code_with_me_2026_1",
+    sha256 = CODE_WITH_ME_261_SHA,
+    url = CODE_WITH_ME_261_URL,
 )
 
-CODE_WITH_ME_SPLIT_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+CODE_WITH_ME_SPLIT_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_SPLIT_253_SHA = "2e3ee978054093906cf9ab1a6ef9f626a91cc2c47ad57a942e33cdb0a225ab0e"
+CODE_WITH_ME_SPLIT_261_SHA = "f4c533c05081b89812cf4452db4d40156c822628d138c5f7d933cae69ee811df"
 
 http_jar(
-    name = "code_with_me_split_2025_3",
-    sha256 = CODE_WITH_ME_SPLIT_253_SHA,
-    url = CODE_WITH_ME_SPLIT_253_URL,
+    name = "code_with_me_split_2026_1",
+    sha256 = CODE_WITH_ME_SPLIT_261_SHA,
+    url = CODE_WITH_ME_SPLIT_261_URL,
 )
 
-TERMINAL_PLUGIN_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+TERMINAL_PLUGIN_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
 http_jar(
-    name = "terminal_2025_3",
-    url = TERMINAL_PLUGIN_253_URL,
+    name = "terminal_2026_1",
+    url = TERMINAL_PLUGIN_261_URL,
 )
 
-TERMINAL_COMPLETION_PLUGIN_253_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal-completion/%s/terminal-completion-%s.jar" % (SDK_253_INTELLIJ_REPOSITORY, SDK_253_INTELLIJ_VERSION, SDK_253_INTELLIJ_VERSION)
+TERMINAL_COMPLETION_PLUGIN_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal-completion/%s/terminal-completion-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
 http_jar(
-    name = "terminal_completion_2025_3",
-    url = TERMINAL_COMPLETION_PLUGIN_253_URL,
+    name = "terminal_completion_2026_1",
+    url = TERMINAL_COMPLETION_PLUGIN_261_URL,
 )
 
-PROTOEDIT_PLUGIN_253_VERSION = SDK_253_BASE_VERSION + ".86"
+PROTOEDIT_PLUGIN_261_VERSION = SDK_261_BASE_VERSION + ".36"
 
-PROTOEDIT_PLUGIN_253_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_253_VERSION, PROTOEDIT_PLUGIN_253_VERSION)
+PROTOEDIT_PLUGIN_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_261_VERSION, PROTOEDIT_PLUGIN_261_VERSION)
 
-PROTOEDIT_PLUGIN_253_SHA = "4240d288b7a7034982d2e5d0dd03455eeac986f9efe924460f4537eb78a6713f"
+PROTOEDIT_PLUGIN_261_SHA = "f56455de7f7614787efa0c98a21d69a9644b433b96ea57dfb767a08e1193c164"
 
 http_archive(
-    name = "protoedit_2025_3",
+    name = "protoedit_2026_1",
     build_file_content = _PROTOEDIT_BUILD_FILE,
-    sha256 = PROTOEDIT_PLUGIN_253_SHA,
-    url = PROTOEDIT_PLUGIN_253_URL,
+    sha256 = PROTOEDIT_PLUGIN_261_SHA,
+    url = PROTOEDIT_PLUGIN_261_URL,
 )

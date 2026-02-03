@@ -1,4 +1,3 @@
-load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain", "kt_kotlinc_options")
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
@@ -23,31 +22,24 @@ kt_kotlinc_options(
     name = "kotlinc_options",
     include_stdlibs = "none",
     jvm_target = select_for_plugin_api({
-        "intellij-2025.3": "21",
+        "intellij-2026.1": "21",
     }),
 )
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = select_for_plugin_api({
-        "intellij-2025.3": "2.3",
+        "intellij-2026.1": "2.3",
     }),
     experimental_multiplex_workers = True,
     jvm_target = select_for_plugin_api({
-        "intellij-2025.3": "21",
+        "intellij-2026.1": "21",
     }),
     kotlinc_options = ":kotlinc_options",
     language_version = select_for_plugin_api({
-        "intellij-2025.3": "2.3",
+        "intellij-2026.1": "2.3",
     }),
 )
-
-alias(
-    name = "format",
-    actual = "//tools/format",
-)
-
-npm_link_all_packages(name = "node_modules")
 
 kt_jvm_library(
   name = "bazel-plugin_resources",
@@ -92,10 +84,7 @@ kt_jvm_library(
     "//rules_intellij/intellij_platform_sdk:bytecode_viewer",
     "//rules_intellij/intellij_platform_sdk:junit",
     "//rules_intellij/intellij_platform_sdk:plugin_api",
-    "@maven//:com_fasterxml_jackson_core_jackson_annotations",
-    "@maven//:com_fasterxml_jackson_core_jackson_databind",
     "@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_xml",
-    "@maven//:com_fasterxml_jackson_module_jackson_module_kotlin",
   ],
 )
 
