@@ -2,7 +2,6 @@ package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.PtyCommandLine
-import com.jediterm.core.util.TermSize
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.label.Label
@@ -10,7 +9,6 @@ import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
 /**
@@ -133,6 +131,7 @@ class BazelRunner(
     shouldLogInvocation: Boolean = true,
   ): BazelProcess {
     val executionDescriptor = command.buildExecutionDescriptor()
+    val ptyTermSize = command.ptyTermSize
     val finishCallback = executionDescriptor.finishCallback
     val processArgs = executionDescriptor.command
 
@@ -146,45 +145,32 @@ class BazelRunner(
       logInvocation(processArgs, null, null, originId, shouldLogInvocation = shouldLogInvocation)
     }
 
-    val process = spawnProcess(
-      command = processArgs,
-      environment = environment,
-      workDirectory = workspaceRoot.toString(),
-      ptyTermSize = command.ptyTermSize,
-    )
+    val commandLine = if (ptyTermSize != null) {
+      PtyCommandLine(processArgs).withConsoleMode(false).withInitialColumns(ptyTermSize.columns).withInitialRows(ptyTermSize.rows)
+    }
+    else {
+      GeneralCommandLine(processArgs)
+    }
+    commandLine.withWorkingDirectory(workspaceRoot)
+    if (environment.isNotEmpty()) {
+      commandLine.withEnvironment(environment)
+    }
+    commandLine.withRedirectErrorStream(false)
+
+    val process = commandLine.createProcess()
 
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
-
     return BazelProcess(
       process,
       outputLogger,
       finishCallback,
-    )
+    ).also {
+      it.writeBazelLog {
+        appendLine(commandLine.getCommandLineString())
+        appendLine(envToString(environment))
+      }
+    }
   }
-
-  private fun spawnProcess(
-    command: List<String>,
-    environment: Map<String, String>,
-    workDirectory: String?,
-    ptyTermSize: TermSize?,
-  ): Process {
-    val commandLine = if (ptyTermSize != null) {
-      PtyCommandLine(command).withConsoleMode(false).withInitialColumns(ptyTermSize.columns).withInitialRows(ptyTermSize.rows)
-    }
-    else {
-      GeneralCommandLine(command)
-    }
-    if (workDirectory != null) {
-      commandLine.withWorkingDirectory(Path(workDirectory))
-    }
-    if (environment.isNotEmpty()) {
-      commandLine.withEnvironment(environment)
-    }
-
-    commandLine.withRedirectErrorStream(false)
-    return commandLine.createProcess()
-  }
-
 
   private fun envToString(environment: Map<String, String>): String = environment.entries.joinToString(" ") { "${it.key}=${it.value}" }
 
@@ -201,7 +187,6 @@ class BazelRunner(
     val processArgsString = processArgs.joinToString("' '", "'", "'")
     listOfNotNull("Invoking:", envString, directoryString, processArgsString)
       .joinToString(" ")
-      .also { LOGGER.info(it) }
       .also { bspClientLogger?.copy(originId = originId)?.message(it) }
   }
 }

@@ -21,7 +21,7 @@ class ModuleResolverTest {
     val stderr =
       "ERROR: In repo argument lll: Module lll does not exist in the dependency graph." +
       "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
-    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), BazelStatus.BUILD_ERROR)
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 1)
 
     val moduleOutputParser = ModuleOutputParser()
 
@@ -46,7 +46,7 @@ class ModuleResolverTest {
       #   <builtin> in <toplevel>
       """.trimIndent()
 
-    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
     val parsed = moduleOutputParser.parseShowRepoResults(result, false)
     parsed shouldBe mapOf("@community" to ShowRepoResult.LocalRepository("community~", "community"))
@@ -74,7 +74,7 @@ class ModuleResolverTest {
       #   /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/39b3974c0c7bcab09c689dfd2d36f22b/external/bazel_tools/tools/build_defs/repo/http.bzl:387:31 in <toplevel>
       """.trimIndent()
 
-    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
     val parsed =
       moduleOutputParser.parseShowRepoResults(result, false).get("rules_jvm_external@6.5") ?: fail("No entry produced for rules_jvm_external")
@@ -129,7 +129,7 @@ class ModuleResolverTest {
         #   <builtin> in <toplevel>
     """.trimIndent()
 
-    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
     val parsed = moduleOutputParser.parseShowRepoResults(result, false)
     parsed shouldBe mapOf(
@@ -148,7 +148,7 @@ class ModuleResolverTest {
       {"canonicalName":"anotherbundled+","repoRuleName":"local_repository","repoRuleBzlLabel":"@@bazel_tools//tools/build_defs/repo:local.bzl","moduleKey":"anotherbundled@_","attribute":[{"name":"path","type":"STRING","stringValue":"the/other/subproject","explicitlySpecified":true,"nodep":false}]}
      """.trimIndent()
 
-    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
     val parsed = moduleOutputParser.parseShowRepoResults(result, true )
 
@@ -165,7 +165,7 @@ class ModuleResolverTest {
      {"canonicalName":"rules_kotlin+","repoRuleName":"http_archive","repoRuleBzlLabel":"@@bazel_tools//tools/build_defs/repo:http.bzl","moduleKey":"rules_kotlin@2.2.2","attribute":[{"name":"url","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false},{"name":"urls","type":"STRING_LIST","stringListValue":["https://github.com/bazelbuild/rules_kotlin/releases/download/v2.2.2/rules_kotlin-v2.2.2.tar.gz"],"explicitlySpecified":true,"nodep":false},{"name":"sha256","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false},{"name":"integrity","type":"STRING","stringValue":"sha256-QR2yavs0ksyDUbW1NJkxUir+LFTyZRttEncwoSVtD2A\u003d","explicitlySpecified":true,"nodep":false},{"name":"netrc","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false},{"name":"auth_patterns","type":"STRING_DICT","explicitlySpecified":false},{"name":"canonical_id","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false},{"name":"strip_prefix","type":"STRING","stringValue":"","explicitlySpecified":true,"nodep":false},{"name":"add_prefix","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false},{"name":"files","type":"LABEL_DICT_UNARY","explicitlySpecified":false,"nodep":false},{"name":"type","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false},{"name":"patches","type":"LABEL_LIST","explicitlySpecified":false,"nodep":false},{"name":"remote_file_urls","type":"STRING_LIST_DICT","explicitlySpecified":true},{"name":"remote_file_integrity","type":"STRING_DICT","explicitlySpecified":true},{"name":"remote_module_file_urls","type":"STRING_LIST","stringListValue":["https://bcr.bazel.build/modules/rules_kotlin/2.2.2/MODULE.bazel"],"explicitlySpecified":true,"nodep":false},{"name":"remote_module_file_integrity","type":"STRING","stringValue":"sha256-ANOcXg+njNhhk5RiZbuEnnh4wk5EJg+VJRCEKIUrMVw\u003d","explicitlySpecified":true,"nodep":false},{"name":"remote_patches","type":"STRING_DICT","stringDictValue":[{"key":"https://bcr.bazel.build/modules/rules_kotlin/2.2.2/patches/module_dot_bazel_version.patch","value":"sha256-THY5AnXd72H8scfX2na73BV+pShJYYTM9WkD+eC3Ad4\u003d"}],"explicitlySpecified":true},{"name":"remote_patch_strip","type":"INTEGER","intValue":1,"explicitlySpecified":true},{"name":"patch_tool","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false},{"name":"patch_args","type":"STRING_LIST","explicitlySpecified":false,"nodep":false},{"name":"patch_strip","type":"INTEGER","intValue":0,"explicitlySpecified":false},{"name":"patch_cmds","type":"STRING_LIST","explicitlySpecified":false,"nodep":false},{"name":"patch_cmds_win","type":"STRING_LIST","explicitlySpecified":false,"nodep":false},{"name":"build_file","type":"LABEL","explicitlySpecified":false,"nodep":false},{"name":"build_file_content","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false},{"name":"workspace_file","type":"LABEL","explicitlySpecified":false,"nodep":false},{"name":"workspace_file_content","type":"STRING","stringValue":"","explicitlySpecified":false,"nodep":false}]}
    """.trimIndent()
 
-    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
     val parsed = moduleOutputParser.parseShowRepoResults(result, true )
 
@@ -185,7 +185,7 @@ class ModuleResolverTest {
       {"canonicalName":"bundled+","repoRuleName":"local_repository","moduleKey":"bundled@_","attribute":[{"name":"path","type":"STRING","stringValue":"subproject"}]}
     """.trimIndent() + "\n\r\n\n"
 
-    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
     val parsed = moduleOutputParser.parseShowRepoResults(result, true )
 

@@ -453,6 +453,12 @@
       key="bazel.kill.server.on.cancel"
       restartRequired="true"
     />
+    <registryKey
+      defaultValue="false"
+      description="If true, log bazel process output to bazel.log file"
+      key="bazel.enable.log"
+      restartRequired="false"
+    />
 
     <registryKey defaultValue="false"
                  description="Enable running non-binary bazel targets using synthetically generated targets"

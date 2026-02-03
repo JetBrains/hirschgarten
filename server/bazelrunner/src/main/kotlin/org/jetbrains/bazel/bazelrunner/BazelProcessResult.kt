@@ -6,8 +6,11 @@ import org.jetbrains.bazel.commons.BazelStatus
 class BazelProcessResult(
   private val stdoutCollector: OutputCollector,
   private val stderrCollector: OutputCollector,
-  val bazelStatus: BazelStatus,
+  val exitCode: Int,
 ) {
+  val bazelStatus: BazelStatus
+    get() = BazelStatus.fromExitCode(exitCode)
+
   val isSuccess: Boolean get() = bazelStatus == BazelStatus.SUCCESS
   val isNotSuccess: Boolean get() = !isSuccess
 
