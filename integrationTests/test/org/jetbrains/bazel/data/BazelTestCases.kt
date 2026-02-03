@@ -160,6 +160,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       ),
     )
 
+   val LocalPathOverride = withBazelProject(
+     projectInfo = withDefaults(
+       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
+       commitHash = "395beb872a02605bb8da254ddedee49affbcee94",
+       branchName = "main",
+       relativePath = "localPathOverride",
+       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+     )
+   )
+
     val RecoverDotBazelBsp = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
