@@ -6,6 +6,7 @@ import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -293,7 +294,10 @@ private fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<Si
     } catch (_: UnsupportedOperationException) { // unable to create a Path instance
       return emptyList()
     }
-  return filter { it.doesAffectFolder(rootDirPath) }
+  val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+  return runReadAction {
+    filter { it.doesAffectFolder(rootDirPath) && !it.isExcludedInFileIndex(fileIndex) }
+  }
 }
 
 @NlsSafe

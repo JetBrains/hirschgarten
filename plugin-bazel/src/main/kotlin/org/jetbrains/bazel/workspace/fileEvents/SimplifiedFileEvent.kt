@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.fileEvents
 
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
@@ -8,6 +9,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
+import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import java.nio.file.Path
@@ -30,6 +32,10 @@ internal sealed class SimplifiedFileEvent private constructor(
 
   fun doesAffectFolder(folderPath: Path): Boolean =
     fileRemoved?.startsWith(folderPath) == true || fileAdded?.startsWith(folderPath) == true
+
+  @RequiresReadLock
+  fun isExcludedInFileIndex(fileIndex: ProjectFileIndex): Boolean =
+    newVirtualFile?.let { fileIndex.isExcluded(it) } == true
 
   companion object {
     /** @return `SimplifiedFileEvent` if it should be processed, `null` otherwise */

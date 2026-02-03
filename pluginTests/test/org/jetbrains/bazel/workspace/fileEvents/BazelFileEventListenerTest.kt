@@ -276,6 +276,33 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `should ignore files inside excluded folders`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createDirectory("excluded")
+    val file = excluded.createFile("aaa", "java")
+
+    val module = workspaceModel.currentSnapshot.resolveModule(target1)
+    val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
+    val contentRoot =
+      ContentRootEntity(
+        url = srcUrl,
+        excludedPatterns = listOf("excluded"),
+        entitySource = module.entitySource,
+      )
+
+    runTestWriteAction {
+      workspaceModel.updateProjectModel { it.modifyModuleEntity(module) { contentRoots = listOf(contentRoot) } }
+    }
+
+    createEvent(file).process().shouldBeNull()
+
+    file.assertFileBelongsToTargets(
+      target1 to false,
+      target2 to false,
+    )
+  }
+
+  @Test
   fun `should ignore projects without any targets`() {
     project.targetUtils.setTargets(emptyMap())
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
