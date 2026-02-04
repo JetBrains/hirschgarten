@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.redcodes
 
-import com.intellij.codeInspection.i18n.InvalidPropertyKeyInspection
 import com.intellij.openapi.application.EDT
 import com.intellij.testFramework.IdeaTestUtil
 import com.intellij.testFramework.junit5.TestApplication
@@ -12,10 +11,11 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.jetbrains.bazel.test.framework.setupJdk
+import org.jetbrains.kotlin.idea.i18n.KotlinInvalidBundleOrPropertyInspection
 import org.junit.jupiter.api.Test
 
 @TestApplication
-class JavaResourcesTest  {
+class KotlinResourcesTest{
 
   private val projectFixture = projectFixture(openAfterCreation = true)
   private val tempDir = tempPathFixture()
@@ -24,11 +24,11 @@ class JavaResourcesTest  {
   @Test
   fun testHighlighting() = runBlocking {
     fixture.setupJdk(IdeaTestUtil.getMockJdk21())
-    fixture.enableInspections(InvalidPropertyKeyInspection())
-    fixture.copyBazelTestProject("redcodes/java_resources")
+    fixture.enableInspections(KotlinInvalidBundleOrPropertyInspection())
+    fixture.copyBazelTestProject("redcodes/kotlin_resources")
     fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
-      fixture.checkHighlighting("module/src/main/java/com/example/Module.java")
+      fixture.checkHighlighting("module/src/main/kotlin/com/example/Module.kt")
     }
   }
 }
