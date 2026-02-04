@@ -14,6 +14,7 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.NlsSafe
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
@@ -295,8 +296,9 @@ private fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<Si
       return emptyList()
     }
   val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+  val fileSystem = LocalFileSystem.getInstance()
   return runReadAction {
-    filter { it.doesAffectFolder(rootDirPath) && !it.isExcludedInFileIndex(fileIndex) }
+    filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileSystem) }
   }
 }
 
