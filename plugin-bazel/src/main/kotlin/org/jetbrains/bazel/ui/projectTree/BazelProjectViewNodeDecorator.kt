@@ -6,6 +6,7 @@ import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.newvfs.NewVirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants.SUPPORTED_CONFIG_FILE_NAMES
 import org.jetbrains.bazel.config.isBazelProject
@@ -40,7 +41,7 @@ private class BazelProjectViewNodeDecorator(private val project: Project) : Proj
 
   private fun PresentationData.setIconIfBazelDirectory(node: PsiDirectoryNode) {
     node.virtualFile?.let { virtualFile ->
-      if (virtualFile.children.any { it.name in SUPPORTED_CONFIG_FILE_NAMES }) {
+      if ((virtualFile is NewVirtualFile) && virtualFile.iterInDbChildren().any { it.name in SUPPORTED_CONFIG_FILE_NAMES }) {
         setIcon(BazelPluginIcons.bazelDirectory)
       }
     }
