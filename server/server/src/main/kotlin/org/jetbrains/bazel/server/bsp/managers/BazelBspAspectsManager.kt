@@ -113,10 +113,8 @@ class BazelBspAspectsManager(
     rulesetLanguages: List<RulesetLanguage>,
     externalRulesetNames: List<String>,
     workspaceContext: WorkspaceContext,
-    toolchains: Map<RulesetLanguage, String?>,
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
-    featureFlags: FeatureFlags,
     bazelInfo: BazelInfo,
   ) {
     detectBazelIgnoreAndErrorOut(bazelInfo)
@@ -145,7 +143,6 @@ class BazelBspAspectsManager(
           // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
-          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
           "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.toStarlarkString(),
           "protobufRepoName" to protobufRepoName.orEmpty(),
           "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,

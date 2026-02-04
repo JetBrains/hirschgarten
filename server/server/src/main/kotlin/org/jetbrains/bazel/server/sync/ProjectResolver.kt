@@ -4,7 +4,6 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.commons.BazelInfo
@@ -176,10 +175,8 @@ class ProjectResolver(
         ruleLanguages,
         externalRulesetNames,
         workspaceContext,
-        toolchains,
         bazelInfo.release,
         repoMapping,
-        featureFlags,
         bazelInfo,
       )
     }
