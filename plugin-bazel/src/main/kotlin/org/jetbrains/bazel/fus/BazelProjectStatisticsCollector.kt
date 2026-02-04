@@ -28,7 +28,7 @@ class BazelProjectStatisticsCollector : ProjectUsagesCollector() {
   }
 
   object Const {
-    internal val GROUP = EventLogGroup("bazel.project.statistics", 1, "FUS", "General statistics about Bazel projects")
+    internal val GROUP = EventLogGroup("bazel.project.statistics", 1, "FUS")
 
     internal val COUNT_TARGETS =
       GROUP.registerEvent(
