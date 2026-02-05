@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.fileEvents
 
+import com.android.adblib.utils.launchCancellable
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
@@ -28,6 +29,8 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.jetbrains.annotations.VisibleForTesting
@@ -61,38 +64,61 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
 
   // the returned map is for testing purposes; Project location hash is used instead of Project since it's safer to store
   @VisibleForTesting
-  fun process(events: List<VFileEvent>): Map<String, Job> {
-    val simplifiedEvents = events.mapNotNull { SimplifiedFileEvent.from(it) }
-    return ProjectManager
-      .getInstance()
-      .openProjects // ProjectLocator::getProjectsForFile won't work, since it only recognizes files already added to content roots
-      .filter { it.isBazelProject && it.hasAnyTargets() }
-      .associateProjectHashWithJob { processEventsForProject(it, simplifiedEvents) }
+  fun process(events: List<VFileEvent>): Map<String, Deferred<Boolean>> {
+    val projects =
+      ProjectManager
+        .getInstance()
+        .openProjects // ProjectLocator::getProjectsForFile won't work, since it only recognizes files already added to content roots
+        .filter { it.isBazelProject && it.hasAnyTargets() }
+    if (projects.isEmpty())
+      return emptyMap()
+
+    return projects.associateWith { project ->
+      BazelCoroutineService.getInstance(project).startAsync {
+        val simplifiedEvents = events.mapNotNull { SimplifiedFileEvent.from(it) }
+        processEventsForProject(project, simplifiedEvents)
+      }
+    }.mapKeys { it.key.locationHash }
   }
 
-  private fun processEventsForProject(project: Project, events: List<SimplifiedFileEvent>): Job? {
-    val applicableEvents = events.filterByProject(project).takeIf { it.isNotEmpty() } ?: return null
-    val controller = FileEventController.getInstance(project)
-    if (controller.isAnotherProcessingInProgress()) return null
-    val eventIsFirstInQueue = controller.addEvents(applicableEvents)
-    if (!eventIsFirstInQueue) return null  // only the first event in the queue should trigger the delayed processing
+  /** @return `true` if processing has been performed in this function execution, `false` if it was omitted for any reason */
+  private suspend fun processEventsForProject(project: Project, events: List<SimplifiedFileEvent>): Boolean {
+    val applicableEvents = events.filterByProject(project).takeIf { it.isNotEmpty() } ?: return false
+    val queueController = FileEventQueueController.getInstance(project)
+    val shouldStartProcessing = queueController.addEvents(applicableEvents)
+    if (!shouldStartProcessing)
+      return false
 
     val originId = "file-event-" + UUID.randomUUID().toString()
-
-    val job = BazelCoroutineService.getInstance(project).start {
-      controller.processWithLock {
-        delay(PROCESSING_DELAY)
-        processEventQueue(project, originId)
-      }
+    val processingJob = BazelCoroutineService.getInstance(project).startAsync(true) {
+      delay(PROCESSING_DELAY)
+      do {
+        val processed = queueController.withNextBatch { batch ->
+          try {
+            processEventQueue(project, batch, originId)
+          } catch (ex: Throwable) {
+            if (ex !is CancellationException)
+              logger.error(ex)
+            throw ex
+          }
+        }
+      } while (processed)
     }
+
+    startSyncConsoleTask(project, processingJob, originId)
+    processingJob.join()
+    return true
+  }
+
+  private fun startSyncConsoleTask(project: Project, processingJob: Job, originId: String) {
     project.syncConsole.startTask(
       taskId = originId,
       title = BazelPluginBundle.message("file.change.processing.title.multiple"),
       message = BazelPluginBundle.message("file.change.processing.message.start"),
       showConsole = TaskConsole.ShowConsole.ON_FAIL,
-      cancelAction = { job.cancel() },
+      cancelAction = { processingJob.cancel() },
     )
-    job.invokeOnCompletion { exception ->
+    processingJob.invokeOnCompletion { exception ->
       val (message, result) = if (exception == null) {
         BazelPluginBundle.message("file.change.processing.message.finish") to SuccessResultImpl()
       } else if (exception is CancellationException) {
@@ -102,17 +128,13 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       }
       project.syncConsole.finishTask(originId, message, result)
     }
-    return job
   }
 
-  private suspend fun processEventQueue(project: Project, originId: String) {
-    val controller = FileEventController.getInstance(project)
-    val allFileEvents = controller.getEventsAndClear()
-    val progressTitle = getProgressTitle(allFileEvents)
-
+  private suspend fun processEventQueue(project: Project, events: List<SimplifiedFileEvent>, originId: String) {
+    val progressTitle = getProgressTitle(events)
     BazelFileEventProgressReporter.runWithProgressBar(progressTitle, project) { bazelReporter ->
       applyAllChanges(
-        allFileEvents = allFileEvents,
+        allFileEvents = events,
         context = prepareProcessingContext(project, originId, bazelReporter)
       )
     }
@@ -260,17 +282,6 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
 
 // if a project has no targets, there is no point in processing (also, it could interrupt the initial sync)
 private fun Project.hasAnyTargets(): Boolean = this.targetUtils.allTargets().any()
-
-private fun List<Project>.associateProjectHashWithJob(action: (Project) -> Job?): Map<String, Job> =
-  mapNotNull {
-    val projectHash = it.locationHash
-    val job = action(it)
-    if (job != null) {
-      projectHash to job
-    } else {
-      null
-    }
-  }.toMap()
 
 private fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<SimplifiedFileEvent> {
   if (this.isEmpty() || !project.isBazelProject) return emptyList()
