@@ -51,9 +51,10 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
       projectView = ProjectViewService.getInstance(project).getProjectView(),
       workspaceRoot = project.rootDir.toNioPath(),
     )
+    val bazelVersionUpdated = project.service<BazelVersionCheckerService>().updateCurrentVersion()
     var server = this.server.get()
     if (server == null ||
-        project.service<BazelVersionCheckerService>().updateCurrentVersion() ||
+        bazelVersionUpdated ||
         server.workspaceContext != workspaceContext) {
       server = createServer(workspaceContext)
       this.server.set(server)
