@@ -124,7 +124,7 @@ class BazelBspAspectsManager(
     val javaEnabled = Language.Java in activeLanguages
     val pythonEnabled = Language.Python in activeLanguages
     val bazel8OrAbove = bazelRelease.major >= 8
-    Language.entries.filter { it.isTemplate }.forEach {
+    Language.entries.forEach {
       val ruleLanguage = languageRuleMap[it]
 
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
