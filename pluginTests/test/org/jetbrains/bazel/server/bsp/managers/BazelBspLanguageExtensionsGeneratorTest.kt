@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
@@ -67,7 +68,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
 
   private fun getExtensionsFileContent(): String =
     dotBazelBspAspectsPath
-      .resolve("extensions.bzl")
+      .resolve(Constants.EXTENSIONS_BZL)
       .toFile()
       .readLines()
       .filterNot { it.startsWith('#') }
