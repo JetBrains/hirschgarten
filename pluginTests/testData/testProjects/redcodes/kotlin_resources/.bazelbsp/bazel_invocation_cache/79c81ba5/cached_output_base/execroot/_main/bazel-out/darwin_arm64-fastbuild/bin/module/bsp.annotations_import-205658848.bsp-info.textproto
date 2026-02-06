@@ -1,0 +1,40 @@
+dependencies {
+  dependency_type: 0
+  exported: false
+  id: "@@+_repo_rules+annotations_http//file:file"
+}
+executable: false
+id: "@@//module:annotations_import"
+java_runtime_info {
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+local_jdk"
+  }
+}
+jvm_target_info {
+  has_api_generating_plugins: false
+  jars {
+    binary_jars {
+      is_external: true
+      is_source: true
+      relative_path: "file/annotations-26.0.2.jar"
+      root_execution_path_fragment: "external/+_repo_rules+annotations_http"
+    }
+  }
+}
+kind: "kt_jvm_import"
+kotlin_target_info {
+  kotlinc_opts: "-jvm-target=1.8"
+  kotlinc_opts: "-Xlambdas=class"
+  kotlinc_opts: "-Xsam-conversions=class"
+  module_name: "module-annotations_import"
+  stdlibs {
+    is_external: false
+    is_source: true
+    relative_path: "toolchains/kotlin-stdlib.jar"
+    root_execution_path_fragment: ""
+  }
+}
+workspace_name: "_main"

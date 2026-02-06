@@ -1,0 +1,722 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+[32mComputing main repo mapping:[0m 
+[1A[K[32mLoading:[0m 
+[1A[K[32mLoading:[0m 0 packages loaded
+[1A[K[32mAnalyzing:[0m 7 targets (5 packages loaded, 0 targets configured)
+[1A[K[32mAnalyzing:[0m 7 targets (5 packages loaded, 0 targets configured)
+    currently loading: @@bazel_tools//tools
+
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (69 packages loaded, 43 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+local_jdk; starting
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/.../kotlin-compiler-2.2.21.zip; 5.9 MiB (7.9%)
+    Fetching https://mirror.bazel.build/.../java/v18.1/java_tools-v18.1.zip
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (69 packages loaded, 43 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+local_jdk; starting
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 10.4 MiB (13.9%)
+    Fetching https://mirror.bazel.build/...ava_tools-v18.1.zip; 1.8 MiB (4.5%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 14.1 MiB (18.8%)
+    Fetching https://mirror.bazel.build/...va_tools-v18.1.zip; 6.0 MiB (14.6%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/.../zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 17.8 MiB (23.7%)
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 10.6 MiB (25.8%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 614.3 KiB (1.4%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 20.4 MiB (27.2%)
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 14.9 MiB (36.4%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...rch64-0.12.0.tar.xz; 1.7 MiB (4.1%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 23.3 MiB (31.0%)
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 23.6 MiB (57.8%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...rch64-0.12.0.tar.xz; 3.0 MiB (7.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 26.0 MiB (34.7%)
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 27.8 MiB (67.9%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...ch64-0.12.0.tar.xz; 4.4 MiB (10.7%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 28.8 MiB (38.3%)
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 31.6 MiB (77.4%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...ch64-0.12.0.tar.xz; 5.7 MiB (13.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 31.3 MiB (41.7%)
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 35.0 MiB (85.6%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...ch64-0.12.0.tar.xz; 7.1 MiB (17.2%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 33.6 MiB (44.7%)
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 38.8 MiB (94.8%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...ch64-0.12.0.tar.xz; 8.3 MiB (20.0%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (89 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 36.4 MiB (48.4%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...ch64-0.12.0.tar.xz; 9.9 MiB (24.0%)
+    Fetching ...+toolchains+remote_java_tools; Extracting java_tools-v18.1.zip
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 40.7 MiB (54.2%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 11.3 MiB (27.4%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 46.3 MiB (61.7%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 12.7 MiB (30.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 52.2 MiB (69.5%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 14.2 MiB (34.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 57.7 MiB (76.9%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 15.8 MiB (38.0%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 62.5 MiB (83.3%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 17.7 MiB (42.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 67.5 MiB (89.9%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 20.1 MiB (48.4%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 72.8 MiB (96.9%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 22.3 MiB (53.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 24.6 MiB (59.4%)
+    Fetching ...ub_jetbrains_kotlin_git; Extracting kotlin-compiler-2.2.21.zip
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1355 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...kotlin_extensions+com_github_jetbrains_kotlin_git; starting 4s
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 27.3 MiB (65.9%)
+    Fetching ...ub_jetbrains_kotlin_git; Extracting kotlin-compiler-2.2.21.zip
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 27.3 MiB (65.9%)
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+    Fetching https://mirror.bazel.build/...h64-0.12.0.tar.xz; 28.4 MiB (68.6%)
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+    Fetching https://mirror.bazel.build/...-0.12.0.tar.xz; 31.8 MiB (76.8%) 4s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 5s
+    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 6s
+    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
+    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 8s
+    Fetching ...ains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz 4s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 9s
+    Fetching ...ains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz 5s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 10s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 11s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 11s
+    Fetching https://mirror.bazel.build/...0.tar.xz; Checking in SHA-256 cache
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 12s
+    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 13s
+    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 14s
+    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 15s
+    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 16s
+    Fetching ...ains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz 4s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1477 targets configured)
+    currently loading: @@hermetic_cc_toolchain++toolchains+zig_config//
+[32m[1 / 1][0m no actions running
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1831 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@+_repo_rules+annotations_http; starting
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (110 packages loaded, 7785 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ules_java++toolchains+remote_java_tools_darwin_arm64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...les_kotlin_extensions+kotlinx_serialization_json_jvm; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching ...les_kotlin_extensions+kotlinx_serialization_core_jvm; starting
+    Fetching ...++rules_kotlin_extensions+kotlinx_serialization_json; starting
+    Fetching https://mirror.bazel.build/...in_arm64-v18.1.zip ... (12 fetches)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (113 packages loaded, 7793 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ules_java++toolchains+remote_java_tools_darwin_arm64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://mirror.bazel.build/...in_arm64-v18.1.zip; 1.9 MiB (21.2%)
+    Fetching https://cdn.azul.com/...0.1-macosx_aarch64.tar.gz; 2.7 MiB (1.3%)
+    Fetching https://cdn.azul.com/....29-macosx_aarch64.tar.gz; 2.6 MiB (1.4%)
+    Fetching https://github.com/...17-aarch64-apple-darwin-install_only.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (113 packages loaded, 7793 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ules_java++toolchains+remote_java_tools_darwin_arm64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://mirror.bazel.build/...in_arm64-v18.1.zip; 3.7 MiB (41.4%)
+    Fetching https://cdn.azul.com/...0.1-macosx_aarch64.tar.gz; 5.5 MiB (2.6%)
+    Fetching https://cdn.azul.com/....29-macosx_aarch64.tar.gz; 5.1 MiB (2.8%)
+    Fetching https://github.com/...arwin-install_only.tar.gz; 551.6 KiB (3.1%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (113 packages loaded, 7793 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ules_java++toolchains+remote_java_tools_darwin_arm64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://mirror.bazel.build/...in_arm64-v18.1.zip; 6.3 MiB (71.1%)
+    Fetching https://cdn.azul.com/...0.1-macosx_aarch64.tar.gz; 8.5 MiB (4.0%)
+    Fetching https://cdn.azul.com/....29-macosx_aarch64.tar.gz; 7.8 MiB (4.2%)
+    Fetching https://github.com/...-darwin-install_only.tar.gz; 1.0 MiB (5.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (113 packages loaded, 7793 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ules_java++toolchains+remote_java_tools_darwin_arm64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://mirror.bazel.build/...in_arm64-v18.1.zip; 7.9 MiB (89.2%)
+    Fetching https://cdn.azul.com/....1-macosx_aarch64.tar.gz; 10.1 MiB (4.7%)
+    Fetching https://cdn.azul.com/....29-macosx_aarch64.tar.gz; 9.0 MiB (4.9%)
+    Fetching https://github.com/...-darwin-install_only.tar.gz; 1.6 MiB (9.6%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/....1-macosx_aarch64.tar.gz; 12.4 MiB (5.8%)
+    Fetching https://cdn.azul.com/...29-macosx_aarch64.tar.gz; 11.1 MiB (6.0%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 1.9 MiB (11.2%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/....1-macosx_aarch64.tar.gz; 14.5 MiB (6.7%)
+    Fetching https://cdn.azul.com/...29-macosx_aarch64.tar.gz; 13.7 MiB (7.4%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 2.9 MiB (16.9%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/....1-macosx_aarch64.tar.gz; 17.0 MiB (7.9%)
+    Fetching https://cdn.azul.com/...29-macosx_aarch64.tar.gz; 15.9 MiB (8.6%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 3.6 MiB (21.2%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/....1-macosx_aarch64.tar.gz; 19.3 MiB (9.0%)
+    Fetching https://cdn.azul.com/...29-macosx_aarch64.tar.gz; 18.2 MiB (9.9%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 4.6 MiB (26.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 21.4 MiB (10.0%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 20.6 MiB (11.2%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 5.6 MiB (32.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 23.4 MiB (10.9%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 23.1 MiB (12.6%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 6.7 MiB (39.0%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 25.3 MiB (11.8%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 25.5 MiB (13.9%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 7.8 MiB (45.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 27.3 MiB (12.7%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 28.1 MiB (15.3%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 8.7 MiB (50.4%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 29.2 MiB (13.6%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 30.9 MiB (16.8%)
+    Fetching https://github.com/...darwin-install_only.tar.gz; 9.6 MiB (55.7%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 31.2 MiB (14.5%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 33.3 MiB (18.1%)
+    Fetching https://github.com/...arwin-install_only.tar.gz; 10.5 MiB (61.0%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 33.2 MiB (15.5%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 35.9 MiB (19.6%)
+    Fetching https://github.com/...arwin-install_only.tar.gz; 11.5 MiB (66.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 34.9 MiB (16.3%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 38.2 MiB (20.8%)
+    Fetching https://github.com/...arwin-install_only.tar.gz; 12.4 MiB (72.1%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 36.8 MiB (17.2%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 40.9 MiB (22.3%)
+    Fetching https://github.com/...arwin-install_only.tar.gz; 14.0 MiB (81.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
+    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
+    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 39.4 MiB (18.3%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 44.1 MiB (24.0%)
+    Fetching https://github.com/...arwin-install_only.tar.gz; 16.6 MiB (96.6%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 4s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 4s
+    Fetching ...s_python++python+python_3_11_aarch64-apple-darwin; starting 4s
+    Fetching https://cdn.azul.com/...1-macosx_aarch64.tar.gz; 42.4 MiB (19.8%)
+    Fetching https://cdn.azul.com/...9-macosx_aarch64.tar.gz; 47.5 MiB (25.9%)
+    Fetching ...darwin; Extracting cpython-3.11.11+20250317-aarch64-apple-darw\
+in-install_only.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 4s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 4s
+    Fetching ...s_python++python+python_3_11_aarch64-apple-darwin; starting 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 45.8 MiB (21.4%) 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 50.9 MiB (27.7%) 4s
+    Fetching ...darwin; Extracting cpython-3.11.11+20250317-aarch64-apple-darw\
+in-install_only.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 4s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 4s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 49.4 MiB (23.0%) 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 54.6 MiB (29.7%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 4s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 4s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 53.1 MiB (24.7%) 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 58.5 MiB (31.9%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 4s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 4s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 57.1 MiB (26.6%) 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 62.1 MiB (33.8%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 5s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 5s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 60.8 MiB (28.3%) 4s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 65.7 MiB (35.8%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 5s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 5s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 64.6 MiB (30.1%) 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 70.2 MiB (38.2%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 5s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 5s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 68.2 MiB (31.8%) 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 72.8 MiB (39.6%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 5s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 5s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 71.8 MiB (33.5%) 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 76.7 MiB (41.7%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 5s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 5s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 75.5 MiB (35.2%) 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 79.4 MiB (43.2%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 6s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 6s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 75.5 MiB (35.2%) 5s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 82.6 MiB (45.0%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 6s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 6s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 77.5 MiB (36.1%) 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 86.7 MiB (47.2%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7813 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 6s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 6s
+    Fetching ...arch64-apple-darwin; Running python_repository.MakeReadOnly 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 81.9 MiB (38.2%) 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 86.7 MiB (47.2%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 6s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 86.3 MiB (40.2%) 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 90.4 MiB (49.2%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 6s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 89.7 MiB (41.8%) 6s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 93.8 MiB (51.1%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 7s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 7s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 93.3 MiB (43.5%) 7s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 97.8 MiB (53.2%) 7s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 7s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 7s
+    Fetching https://cdn.azul.com/...acosx_aarch64.tar.gz; 97.5 MiB (45.4%) 7s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 102.0 MiB (55.5%) 7s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 7s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 7s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 101.2 MiB (47.2%) 7s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 105.8 MiB (57.6%) 7s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 7s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 7s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 105.6 MiB (49.2%) 7s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 110.2 MiB (60.0%) 7s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 7s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 7s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 110.0 MiB (51.2%) 7s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 114.3 MiB (62.2%) 7s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 8s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 113.8 MiB (53.0%) 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 118.4 MiB (64.5%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 8s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 117.8 MiB (54.9%) 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 123.7 MiB (67.4%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 8s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 121.7 MiB (56.7%) 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 126.7 MiB (69.0%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 8s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 125.5 MiB (58.5%) 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 131.2 MiB (71.5%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 8s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 130.2 MiB (60.7%) 8s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 135.3 MiB (73.7%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 9s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 9s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 134.5 MiB (62.7%) 9s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 142.7 MiB (77.7%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 9s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 9s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 138.5 MiB (64.5%) 9s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 147.3 MiB (80.2%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 9s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 9s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 145.6 MiB (67.9%) 9s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 150.1 MiB (81.7%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...@rules_java++toolchains+remotejdk25_macos_aarch64; starting 9s
+    Fetching ...@rules_java++toolchains+remotejdk11_macos_aarch64; starting 9s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 149.1 MiB (69.5%) 9s
+    Fetching https://cdn.azul.com/...cosx_aarch64.tar.gz; 153.2 MiB (83.4%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 10s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 152.5 MiB (71.1%) 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 154.9 MiB (84.4%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 10s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 153.0 MiB (71.3%) 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 156.0 MiB (85.0%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 10s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 155.7 MiB (72.6%) 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 158.7 MiB (86.4%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 10s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 158.7 MiB (74.0%) 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 161.7 MiB (88.0%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 10s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 161.4 MiB (75.2%) 10s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 164.7 MiB (89.7%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 11s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 164.2 MiB (76.5%) 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 168.3 MiB (91.7%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 11s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 167.8 MiB (78.2%) 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 173.0 MiB (94.2%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 11s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 172.0 MiB (80.2%) 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 177.2 MiB (96.5%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 11s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 175.6 MiB (81.8%) 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 182.0 MiB (99.1%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 11s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 11s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 179.9 MiB (83.8%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 12s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 12s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 184.4 MiB (85.9%) 12s
+    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
+ar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 12s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 12s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 188.7 MiB (87.9%) 12s
+    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
+ar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 12s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 12s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 192.4 MiB (89.6%) 12s
+    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
+ar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 12s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 12s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 192.9 MiB (89.9%) 12s
+    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
+ar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 13s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 13s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 196.9 MiB (91.7%) 12s
+    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
+ar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 13s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 13s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 201.6 MiB (93.9%) 13s
+    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
+ar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 13s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 13s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 206.0 MiB (96.0%) 13s
+    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
+ar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10069 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 13s
+    Fetching ...rules_java++toolchains+remotejdk11_macos_aarch64; starting 13s
+    Fetching https://cdn.azul.com/...osx_aarch64.tar.gz; 210.0 MiB (97.9%) 13s
+    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
+ar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (118 packages loaded, 10193 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 14s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (118 packages loaded, 10193 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 14s
+    Fetching ...arch64; Extracting zulu25.30.17-ca-jdk25.0.1-macosx_aarch64.ta\
+r.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (118 packages loaded, 10193 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...rules_java++toolchains+remotejdk25_macos_aarch64; starting 15s
+    Fetching ...arch64; Extracting zulu25.30.17-ca-jdk25.0.1-macosx_aarch64.ta\
+r.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (118 packages loaded, 10193 targets configured)
+    currently loading: @@rules_java++toolchains+remotejdk25_macos_aarch64//
+[32m[1 / 1][0m no actions running
+[1A[K[1A[K[1A[K[32mINFO: [0mAnalyzed 7 targets (119 packages loaded, 10344 targets configured).
+[32m[9 / 11][0m 2 actions running
+    //module:annotations_import; 0s darwin-sandbox
+    //toolchains:kotlin-stdlib; 0s darwin-sandbox
+[1A[K[1A[K[1A[K[32mINFO: [0mFound 7 targets...
+[32m[12 / 12][0m no actions running
+[1A[K[32mINFO: [0mElapsed time: 34.518s, Critical Path: 0.21s
+[32m[12 / 12][0m no actions running
+[1A[K[32mINFO: [0m12 processes: 10 internal, 2 darwin-sandbox.
+[32m[12 / 12][0m no actions running
+[1A[K[32mINFO: [0mBuild completed successfully, 12 total actions
+[32mINFO:[0m 
+[1A[K[32mINFO:[0m 
+[1A[K[32mINFO: [0mBuild Event Protocol files produced successfully.
+[0m

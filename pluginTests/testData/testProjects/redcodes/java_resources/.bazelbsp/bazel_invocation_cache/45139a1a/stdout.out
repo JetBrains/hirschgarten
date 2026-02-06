@@ -1,0 +1,1 @@
+{"annotations_http":"+_repo_rules+annotations_http","zig_sdk":"hermetic_cc_toolchain++toolchains+zig_sdk","":"","rules_kotlin":"rules_kotlin+","rules_java":"rules_java+","hermetic_cc_toolchain":"hermetic_cc_toolchain+","bazel_tools":"bazel_tools","local_config_platform":"local_config_platform"}
