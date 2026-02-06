@@ -1,13 +1,17 @@
 package org.jetbrains.bazel.sync.workspace.languages.java
 
+import com.intellij.openapi.projectRoots.impl.JavaHomeFinder
+import com.intellij.platform.eel.provider.LocalEelDescriptor
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
   fun resolve(targets: Sequence<TargetInfo>): Jdk? {
     val allCandidates = targets.mapNotNull { resolveJdkData(it) }.toList()
-    if (allCandidates.none()) return null
+    if (allCandidates.none()) return localJdkFallback()
     val bestJdk = allCandidates.sortByFrequency().maxBy { it.jdkType.priority }
     return Jdk(bestJdk.javaHome)
   }
@@ -25,7 +29,7 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
 
       JdkCandidate(
         jdkType = if (javaToolchainInfo.hasBootClasspathJavaHome()) JdkType.BOOT_CLASSPATH else JdkType.TOOLCHAIN,
-        javaHome = javaHome?.let(bazelPathsResolver::resolve) ?: return null,
+        javaHome = javaHome?.let(bazelPathsResolver::resolve)?.takeIf { it.exists() } ?: return null,
       )
     } else if (targetInfo.hasJavaRuntimeInfo()) {
       val javaRuntimeInfo = targetInfo.javaRuntimeInfo
@@ -33,7 +37,7 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
 
       JdkCandidate(
         jdkType = JdkType.RUNTIME,
-        javaHome = javaHome?.let(bazelPathsResolver::resolve) ?: return null,
+        javaHome = javaHome?.let(bazelPathsResolver::resolve)?.takeIf { it.exists() } ?: return null,
       )
     } else {
       null
@@ -76,4 +80,13 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
       .values
       .sortedByDescending { it.size }
       .map { it.first() }
+
+  private fun localJdkFallback(): Jdk? {
+    /**
+     * From: [JavaHomeFinder.JdkEntry.compareTo] docs:
+     * "An entry should appear before another one if it has a **more recent** version or a shorter path."
+     */
+    val jdkWithNewestVersion = JavaHomeFinder.findJdks(LocalEelDescriptor, false).minOrNull() ?: return null
+    return Jdk(Path(jdkWithNewestVersion.path))
+  }
 }

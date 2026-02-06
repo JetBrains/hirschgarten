@@ -32,8 +32,6 @@ import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
-import kotlin.collections.orEmpty
-import kotlin.collections.reduceOrNull
 import kotlin.io.path.Path
 
 class IllegalTargetsSizeException(message: String) : Exception(message)
@@ -94,8 +92,11 @@ class ProjectResolver(
           // Additionally, for those newly discovered local repositories, update the path to
           // point to the source tree (rather than the output map).
           val involvedRepos = targets.keys.mapNotNull {(it as? ResolvedLabel)?.repo as? Canonical}.distinct()
-          val needsPath = involvedRepos.filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
-          val extraRepositoryDescriptions = ModuleResolver(bazelRunner,  workspaceContext).resolveModules(needsPath.map { it.toString()}, bazelInfo)
+          val needsPath = involvedRepos
+            .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
+            .map { it.toString() }
+            .sorted()  // Call Bazel in a reproducible way
+          val extraRepositoryDescriptions = ModuleResolver(bazelRunner, workspaceContext).resolveModules(needsPath, bazelInfo)
           val extraPaths = extraRepositoryDescriptions.map { (name, description) -> when(description) {
             is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
             else -> mapOf()

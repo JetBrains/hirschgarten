@@ -1,5 +1,5 @@
 bazel_dep(name = "rules_kotlin", version = "2.2.2")
-
+bazel_dep(name = "rules_java", version = "9.3.0")
 http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 http_file(
@@ -17,4 +17,5 @@ use_repo(toolchains, "zig_sdk")
 register_toolchains(
     "@zig_sdk//toolchain/...",
     "@zig_sdk//libc_aware/toolchain/...",
+    "//toolchains:kotlin_toolchain",
 )

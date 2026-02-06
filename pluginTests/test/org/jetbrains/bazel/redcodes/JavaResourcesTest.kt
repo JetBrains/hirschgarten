@@ -2,19 +2,17 @@ package org.jetbrains.bazel.redcodes
 
 import com.intellij.codeInspection.i18n.InvalidPropertyKeyInspection
 import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.IdeaTestUtil
-import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
-import io.kotest.common.runBlocking
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
-import org.jetbrains.bazel.test.framework.setupJdk
 import org.junit.jupiter.api.Test
 
-@TestApplication
+@BazelTestApplication
 class JavaResourcesTest  {
 
   private val projectFixture = projectFixture(openAfterCreation = true)
@@ -22,8 +20,7 @@ class JavaResourcesTest  {
   private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
 
   @Test
-  fun testHighlighting() = runBlocking {
-    fixture.setupJdk(IdeaTestUtil.getMockJdk21())
+  fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.enableInspections(InvalidPropertyKeyInspection())
     fixture.copyBazelTestProject("redcodes/java_resources")
     fixture.performBazelSync()

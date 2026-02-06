@@ -46,7 +46,15 @@ class EnvironmentCreator(private val projectRootDir: Path) {
 
   fun createGitIgnoreFile(dotBazelBspDir: Path) {
     dotBazelBspDir.resolve(".gitignore")
-      .writeIfDifferent("*")
+      .writeIfDifferent(
+        """
+        aspects
+        .bazelproject
+        .gitignore
+        BUILD.bazel
+        bazel_invocation_cache/output_base
+      """.trimIndent(),
+      )
   }
 
   private fun copyAspectsFromResources(destinationPath: Path) =

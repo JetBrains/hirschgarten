@@ -2,7 +2,7 @@
 .bazelrc.user
 .DS_Store
 
-.bazelbsp/
+/.bazelbsp/
 .bsp/
 
 .idea/*
@@ -17,11 +17,11 @@
 
 __pycache__
 
-bazel-bin
-bazel-hirschgarten
-bazel-out
-bazel-testlogs
-bazel-bazel
+/bazel-bin
+/bazel-hirschgarten
+/bazel-out
+/bazel-testlogs
+/bazel-bazel
 
 idea-flex.skeleton
 jflex-*.jar

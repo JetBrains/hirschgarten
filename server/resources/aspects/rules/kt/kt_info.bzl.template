@@ -6,7 +6,7 @@ load("@rules_jvm//:rules/impl/javac-options.bzl", "JavacOptions", "javac_options
 load("@${rulesetName}//kotlin/internal:opts.bzl", "KotlincOptions", "kotlinc_options_to_flags")
 load("@${rulesetName}//kotlin/internal:opts.bzl", "JavacOptions", "javac_options_to_flags")
 #end
-load("//${bspPath}/aspects:utils/utils.bzl", "COMPILE_DEPS", "collect_targets_from_attrs", "convert_struct_to_dict", "create_struct", "file_location", "filter_not_none", "log_warn", "map", "BspAspectInfo")
+load("//${bspPath}/aspects:utils/utils.bzl", "COMPILE_DEPS", "collect_targets_from_attrs", "convert_struct_to_dict", "create_struct", "file_location", "filter_not_none", "log_warn", "map", "BspAspectInfo", "update_sync_output_groups")
 
 KOTLIN_TOOLCHAIN_TYPE = "@${rulesetName}//kotlin/internal:kt_toolchain_type"
 
@@ -29,7 +29,7 @@ def get_kotlin_plugins(target, ctx, dep_targets):
                 dep_plugins.append(exported_compiler_plugins)
     return depset(direct = direct_plugins, transitive = dep_plugins).to_list()
 
-def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
+def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
     provider = get_kt_jvm_provider(target)
     if provider == None:
         return None, None
@@ -58,7 +58,9 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
 
     stdlibs_files = []
     if hasattr(kotlin_toolchain, "jvm_stdlibs"):
-        stdlibs_files = kotlin_toolchain.jvm_stdlibs.compile_jars.to_list()
+        stdlibs_depset = kotlin_toolchain.jvm_stdlibs.compile_jars
+        update_sync_output_groups(output_groups, "bsp-sync-artifact", stdlibs_depset)
+        stdlibs_files = stdlibs_depset.to_list()
 
     stdlibs = map(file_location, stdlibs_files)
     plugins = get_kotlin_plugins(target, ctx, dep_targets)

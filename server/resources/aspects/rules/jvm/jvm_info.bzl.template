@@ -175,7 +175,7 @@ def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
     main_class = getattr(ctx.rule.attr, "main_class", None)
     resolve_files = []
     resolve_files_transitive = []
-    if is_external(target):
+    if is_external(target) or ctx.rule.kind in ["java_import", "jvm_import", "kt_jvm_import"]:
         resolve_files += resolve_files_jars
         resolve_files += resolve_files_generated_jars
         resolve_files_transitive.append(extract_runtime_jars(target, provider))
