@@ -332,14 +332,14 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
-  fun `should ignore deletion from deep inside an excluded folder`() {
+  fun `should ignore deletion from non-existing folder deep inside an excluded folder`() {
     val src = project.rootDir.createDirectory("src")
     val excluded = src.createExcludedDirectory("excluded")
     val level2 = excluded.createDirectory("level2")
     val level3 = level2.createDirectory("level3")
     val file = level3.createFile("aaa", "java")
 
-    runTestWriteAction { file.delete(requestor) }
+    runTestWriteAction { level2.delete(requestor) }
     deleteEvent(file).process().shouldBeNull()
   }
 

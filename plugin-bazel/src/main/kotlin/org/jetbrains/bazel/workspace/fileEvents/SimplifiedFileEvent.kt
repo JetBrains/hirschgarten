@@ -14,6 +14,7 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import java.nio.file.Path
+import kotlin.io.path.exists
 import kotlin.io.path.extension
 
 internal sealed class SimplifiedFileEvent private constructor(
@@ -37,10 +38,18 @@ internal sealed class SimplifiedFileEvent private constructor(
   @RequiresReadLock
   fun affectsExcludedFiles(fileIndex: ProjectFileIndex, fileSystem: LocalFileSystem): Boolean =
     newVirtualFile.isExcludedInFileIndex(fileIndex) ||
-    fileRemoved?.parent?.let { fileSystem.findFileByNioFile(it) }.isExcludedInFileIndex(fileIndex)
+    fileRemoved?.getFirstExistingAncestor()?.let { fileSystem.findFileByNioFile(it) }.isExcludedInFileIndex(fileIndex)
 
   private fun VirtualFile?.isExcludedInFileIndex(fileIndex: ProjectFileIndex): Boolean =
     this?.let { fileIndex.isExcluded(it) } == true
+
+  private fun Path.getFirstExistingAncestor(): Path? {
+    var ancestor = parent
+    while (ancestor != null && !ancestor.exists()) {
+      ancestor = ancestor.parent
+    }
+    return ancestor
+  }
 
   companion object {
     /** @return `SimplifiedFileEvent` if it should be processed, `null` otherwise */
