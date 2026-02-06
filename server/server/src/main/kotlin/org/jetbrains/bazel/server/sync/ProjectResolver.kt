@@ -183,7 +183,7 @@ class ProjectResolver(
     }
 
     measured("Generating language extensions file") {
-      bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
+      bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains, repoMapping, bazelInfo.externalAutoloads)
     }
 
     measured("Run Gazelle target") {
