@@ -62,14 +62,6 @@ def get_java_plugin_info(target):
     return None
     #end
 
-def java_info_reference():
-    #if( $javaEnabled == "true" )
-    return [JavaInfo]
-
-    #else
-    return []
-    #end
-
 def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
     toolchain = None
     if java_common.JavaToolchainInfo != platform_common.ToolchainInfo and java_common.JavaToolchainInfo in target:

@@ -1,8 +1,8 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
-load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
+load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS", "REQUIRED_ASPECT_PROVIDERS")
 load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "EXPORT_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups", "do_starlark_string_expansion_dict", "is_valid_aspect_target", "BspAspectInfo")
-load("//${bspPath}/aspects:rules/java/java_info.bzl", "java_info_in_target", "java_info_reference")
+load("//${bspPath}/aspects:rules/java/java_info.bzl", "java_info_in_target")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
     all_info = [create_extension_info(target = target, ctx = ctx, output_groups = output_groups, dep_targets = dep_targets) for create_extension_info in EXTENSIONS]
@@ -177,7 +177,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
 bsp_target_info_aspect = aspect(
     implementation = _bsp_target_info_aspect_impl,
-    required_aspect_providers = [java_info_reference()],
+    required_aspect_providers = REQUIRED_ASPECT_PROVIDERS,
     attr_aspects = ALL_DEPS,
     toolchains = TOOLCHAINS,
 )

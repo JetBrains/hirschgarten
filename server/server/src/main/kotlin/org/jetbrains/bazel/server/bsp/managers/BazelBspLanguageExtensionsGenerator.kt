@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import org.apache.velocity.app.VelocityEngine
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
@@ -12,6 +15,11 @@ enum class Language(
   val functions: List<String>,
   val isBundled: Boolean,
   val autoloadHints: List<String> = emptyList(),
+  val importsFromRuleSet: Map<String, List<String>> = emptyMap(),
+  /**
+   * https://bazel.build/versions/9.0.0/rules/lib/globals/bzl.html#aspect
+   */
+  val requiredAspectProviders: List<List<String>> = emptyList(),
 ) {
   Java(
     "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/java/java_info.bzl",
@@ -19,6 +27,8 @@ enum class Language(
     listOf("extract_java_toolchain", "extract_java_runtime"),
     true,
     listOf("JavaInfo", "java_common", "JavaPluginInfo", "java_binary", "java_library"),
+    mapOf("java/common:java_info.bzl" to listOf("JavaInfo")),
+    listOf(listOf("JavaInfo")),
   ),
   Python("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"),
          true, listOf("PyInfo")),
@@ -46,6 +56,21 @@ enum class Language(
       postfix = ")",
     ) { "\"$it\"" }
 
+  private fun toCanonicalRuleName(repoMapping: RepoMapping) : String? {
+    val toCanonical = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: return null
+    return rulesetNames.filter { it in toCanonical }.firstOrNull()?.let { "@@" + toCanonical[it] }
+  }
+
+  fun toRuleImportLoads(repoMapping: RepoMapping): List<String> {
+    val name = toCanonicalRuleName(repoMapping) ?: return emptyList()
+    return importsFromRuleSet.map { (filename, imports) -> "load(\"$name//$filename\", ${imports.joinToString(", ") { "\"$it\"" }})"}.sorted()
+  }
+
+  fun toRequiredAspectProviders(repoMapping: RepoMapping, externalAutoloads: List<String>): List<String> {
+    toCanonicalRuleName(repoMapping) ?: (rulesetNames.filter { it in externalAutoloads }.firstOrNull()) ?: return emptyList()
+    return requiredAspectProviders.map {it.joinToString(prefix = "[",separator = ",",  postfix = "]") }
+  }
+
   fun toAspectRelativePath(): String = fileName.substringAfter(":")
 
   fun toAspectTemplateRelativePath(): String = toAspectRelativePath() + Constants.TEMPLATE_EXTENSION
@@ -67,25 +92,27 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return props
   }
 
-  fun generateLanguageExtensions(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, String?>) {
-    val fileContent = prepareFileContent(rulesetLanguages, toolchains)
+  fun generateLanguageExtensions(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, String?>, repoMapping: RepoMapping, externalAutoloads: List<String> ) {
+    val fileContent = prepareFileContent(rulesetLanguages, toolchains, repoMapping, externalAutoloads)
     createNewExtensionsFile(fileContent)
   }
 
-  private fun prepareFileContent(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, String?>) =
+  private fun prepareFileContent(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, String?>, repoMapping: RepoMapping, externalAutoloads: List<String>) =
     listOf(
       "# This is a generated file, do not edit it",
-      createLoadStatementsString(rulesetLanguages.map { it.language }),
+      createLoadStatementsString(rulesetLanguages.map { it.language }, repoMapping),
       createExtensionListString(rulesetLanguages.map { it.language }),
       createToolchainListString(rulesetLanguages, toolchains),
+      createRequiredAspectProviders(rulesetLanguages.map { it.language }, repoMapping, externalAutoloads)
     ).joinToString(
       separator = "\n",
       postfix = "\n",
     )
 
-  private fun createLoadStatementsString(languages: List<Language>): String {
+  private fun createLoadStatementsString(languages: List<Language>, repoMapping: RepoMapping): String {
+    val ruleImports = languages.flatMap { it.toRuleImportLoads(repoMapping) }
     val loadStatements = languages.map { it.toLoadStatement() }
-    return loadStatements.joinToString(postfix = "\n", separator = "\n")
+    return (ruleImports + loadStatements).joinToString(postfix = "\n", separator = "\n")
   }
 
   private fun createExtensionListString(languages: List<Language>): String {
@@ -96,7 +123,10 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
   private fun createToolchainListString(rulesetLanguages: List<RulesetLanguage>, toolchains: Map<RulesetLanguage, String?>): String =
     rulesetLanguages
       .mapNotNull { toolchains[it] }
-      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ")
+      .joinToString(prefix = "TOOLCHAINS = [\n ", postfix = "\n]", separator = ",\n ")
+
+  private fun createRequiredAspectProviders(languages: List<Language>, repoMapping: RepoMapping, externalAutoloads: List<String>): String =
+    languages.flatMap { it.toRequiredAspectProviders(repoMapping, externalAutoloads) }.joinToString(prefix = "REQUIRED_ASPECT_PROVIDERS = [\n ", separator = ",\n ", postfix = "\n]")
 
   private fun createNewExtensionsFile(fileContent: String) {
     val file = aspectsPath.resolve(Constants.EXTENSIONS_BZL)
