@@ -9,6 +9,7 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.extended.codeowners.CodeOwnerIndex
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.project.GitProjectInfo
@@ -41,6 +42,8 @@ import org.kodein.di.instance
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.minutes
+
+private val codeOwnerIndex: CodeOwnerIndex? by lazy { CodeOwnerIndex.create() }
 
 /**
  * ```sh
@@ -179,6 +182,7 @@ fun IDEStartResult.publishPerformanceMetrics(
       projectDescription = context.getProjectDescription(),
       metrics = metricsSortedByName,
       generated = CIServer.instance.asTeamCity().buildStartTime,
+      owner = resolveTestOwner()
     )
 
   val reportFile = Files.createTempFile(runContext.snapshotsDir, artifactName, null)
@@ -187,6 +191,10 @@ fun IDEStartResult.publishPerformanceMetrics(
     println(jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(appMetrics))
   }
   publishTeamCityArtifacts(reportFile, zipContent = false, artifactPath = artifactPath, artifactName = artifactName)
+}
+
+private fun resolveTestOwner(): String {
+  return codeOwnerIndex?.getOwnerGroupName() ?: ""
 }
 
 private fun getMethodName(): String {
