@@ -61,6 +61,15 @@ object BazelFlag {
 
   @JvmStatic fun consistentLabels(enabled: Boolean): String = arg("consistent_labels", enabled.toString())
 
+  @JvmStatic
+  fun buildEventBinaryFile(file: String): String = arg("build_event_binary_file", file)
+
+  /**
+   * https://bazel.build/reference/command-line-reference#flag--target_pattern_file
+   */
+  @JvmStatic
+  fun targetPatternFile(file: String): String = arg("target_pattern_file", file)
+
   private fun yesNoArg(name: String, enable: Boolean) = arg(name, if (enable) "yes" else "no")
 
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)

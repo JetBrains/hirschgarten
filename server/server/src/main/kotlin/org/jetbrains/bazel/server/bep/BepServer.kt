@@ -30,18 +30,15 @@ import org.jetbrains.bsp.protocol.TestStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.net.URI
 import java.nio.file.FileSystemNotFoundException
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.UUID
-import kotlin.io.path.toPath
 
 class BepServer(
   private val bspClient: JoinedBuildClient,
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
-  bazelPathsResolver: BazelPathsResolver,
+  private val bazelPathsResolver: BazelPathsResolver,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)
   private val bepLogger = BepLogger(bspClientLogger)
@@ -118,8 +115,7 @@ class BepServer(
       val coverageReport =
         testResult.testActionOutputList
           .find { it.name == "test.lcov" }
-          ?.uri
-          ?.let { URI(it).toPath() }
+          ?.let { bazelPathsResolver.resolve(it) }
       if (coverageReport != null) {
         bspClient.onPublishCoverageReport(
           CoverageReport(
@@ -133,8 +129,7 @@ class BepServer(
         val testLog =
           testResult.testActionOutputList
             .find { it.name == "test.log" }
-            ?.uri
-            ?.let { URI(it).toPath() }
+            ?.let { bazelPathsResolver.resolve(it) }
 
         if (testLog != null) {
           bspClient.onCachedTestLog(
@@ -146,10 +141,10 @@ class BepServer(
         }
       }
 
-      val testXmlUri = testResult.testActionOutputList.find { it.name == "test.xml" }?.uri
-      if (testXmlUri != null) {
+      val testXml = testResult.testActionOutputList.find { it.name == "test.xml" }?.let { bazelPathsResolver.resolve(it) }
+      if (testXml != null) {
         // Test cases identified and sent to the client by TestXmlParser.
-        TestXmlParser(bspClientTestNotifier).parseAndReport(testXmlUri)
+        TestXmlParser(bspClientTestNotifier).parseAndReport(testXml)
       } else {
         // Send a generic notification if individual tests cannot be processed.
         val childId = TaskId(UUID.randomUUID().toString(), parents = listOf(taskId.id))
@@ -323,7 +318,7 @@ class BepServer(
     when (event.stderr.fileCase) {
       BuildEventStreamProtos.File.FileCase.URI -> {
         try {
-          val path = Paths.get(URI.create(event.stderr.uri))
+          val path = bazelPathsResolver.resolve(event.stderr)
           val stdErrText = Files.readString(path)
           processDiagnosticText(stdErrText, label, originId)
         } catch (e: FileSystemNotFoundException) {

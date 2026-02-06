@@ -4,7 +4,6 @@ import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
-import java.nio.file.Paths
 import java.util.Properties
 
 enum class Language(
@@ -51,7 +50,7 @@ enum class Language(
 }
 
 class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspectsResolver) {
-  private val aspectsPath = Paths.get(internalAspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
+  private val aspectsPath = internalAspectsResolver.aspectsPath
   private val velocityEngine = VelocityEngine()
 
   init {

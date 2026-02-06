@@ -20,6 +20,7 @@ import org.jetbrains.bsp.protocol.TestStatus
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import kotlin.io.path.writeText
 
 class TestXmlParserTest {
   private class MockBuildClient : JoinedBuildClient {
@@ -1031,9 +1032,9 @@ WARNING: Delegated to the 'execute' command.
     }
   }
 
-  private fun writeTempFile(tempDir: Path, contents: String): String {
-    val tempFile = tempDir.resolve("tempFile.xml").toFile()
+  private fun writeTempFile(tempDir: Path, contents: String): Path {
+    val tempFile = tempDir.resolve("tempFile.xml")
     tempFile.writeText(contents)
-    return tempFile.toURI().toString()
+    return tempFile
   }
 }

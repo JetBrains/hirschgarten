@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.projectTree;
 
+import org.jetbrains.bazel.bazelrunner.BazelCommand;
 import org.jetbrains.bazel.bazelrunner.BazelProcess;
 import org.jetbrains.bazel.bazelrunner.BazelRunner;
 import org.mockito.Mockito;
@@ -17,7 +18,7 @@ import static org.mockito.ArgumentMatchers.nullable;
 public final class BazelRunnerSpyStubbingHelper {
   public static void stubRunBazelCommand(BazelRunner runner, BazelProcess process) {
     Mockito.doReturn(process).when(runner).runBazelCommand(
-      any(),
+      any(BazelCommand.class),
       nullable(String.class),
       anyBoolean(),
       anyBoolean()

@@ -93,7 +93,7 @@ private fun findXmlOutputAndReport(scriptPath: Path, project: Project, originId:
       ?.groups
       ?.get("path")
       ?.value ?: return
-  val absoluteXmlPath = Path.of(execRoot, xmlPath).toUri().toString()
+  val absoluteXmlPath = Path.of(execRoot, xmlPath)
 
   val taskHandler = BazelTaskEventsService.getInstance(project)
   val testNotifier = BspClientTestNotifier(taskHandler, originId.toString())

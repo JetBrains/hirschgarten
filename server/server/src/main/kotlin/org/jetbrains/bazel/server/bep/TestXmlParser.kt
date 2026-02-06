@@ -12,9 +12,9 @@ import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestStatus
-import java.io.File
-import java.net.URI
+import java.nio.file.Path
 import java.util.UUID
+import kotlin.io.path.readText
 
 @JacksonXmlRootElement(localName = "testsuites")
 data class TestSuites(
@@ -96,17 +96,17 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   /**
    * Processes a test result xml file, reporting suite and test case results as task start and finish notifications.
    * Parent-child relationship is identified within each suite based on the TaskId.
-   * @param testXmlUri Uri corresponding to the test result xml file to be processed.
+   * @param testXml Uri corresponding to the test result xml file to be processed.
    */
-  fun parseAndReport(testXmlUri: String) {
-    val testSuites = parseTestXml(testXmlUri, TestSuites::class.java)
+  fun parseAndReport(testXml: Path) {
+    val testSuites = parseTestXml(testXml, TestSuites::class.java)
     if (testSuites != null) {
       testSuites
         .testsuite
         .forEach { processSuite(it) }
     } else {
       val fallbackTestSuites =
-        parseTestXml(testXmlUri, FallbackTestXmlParser.IncompleteTestSuites::class.java)
+        parseTestXml(testXml, FallbackTestXmlParser.IncompleteTestSuites::class.java)
       fallbackTestSuites?.testsuite?.forEach {
         fallbackTestXmlParser.processIncompleteInfoSuite(it)
       }
@@ -116,14 +116,14 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   /**
    * Deserialize the given test report into the TestSuites/IncompleteTestSuites type as defined above.
    */
-  private fun <T> parseTestXml(uri: String, valueType: Class<T>): T? {
+  private fun <T> parseTestXml(testXml: Path, valueType: Class<T>): T? {
     val xmlMapper =
       XmlMapper().apply {
         registerKotlinModule()
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       }
 
-    var rawContent = File(URI.create(uri)).readText()
+    var rawContent = testXml.readText()
     // Single empty tag does not deserialize properly, replace with empty pair.
     rawContent = rawContent.replace("<skipped />", "<skipped></skipped>")
     val testSuites: T? =

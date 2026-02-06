@@ -4,6 +4,7 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import java.nio.file.Path
 import java.nio.file.Paths
 
 private const val RELEASE = "release"
@@ -13,8 +14,8 @@ private const val WORKSPACE = "workspace"
 private const val BAZEL_BIN = "bazel-bin"
 private const val STARLARK_SEMANTICS = "starlark-semantics"
 
-class BazelInfoResolver(private val bazelRunner: BazelRunner) {
-  suspend fun resolveBazelInfo(workspaceContext: WorkspaceContext): BazelInfo {
+class BazelInfoResolver(val workspaceRoot: Path) {
+  suspend fun resolveBazelInfo(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): BazelInfo {
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         info {
@@ -26,13 +27,12 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
         .runBazelCommand(command)
         .waitAndGetResult()
     if (processResult.isNotSuccess) error("Querying bazel info failed.\n${processResult.stderrLines.joinToString("\n")}")
-    return parseBazelInfo(processResult)
+    return parseBazelInfo(processResult.stdoutLines, processResult.stderrLines)
   }
 
-  private fun parseBazelInfo(bazelProcessResult: BazelProcessResult): BazelInfo {
+  fun parseBazelInfo(stdoutLines: List<String>, stderrLines: List<String>): BazelInfo {
     val outputMap =
-      bazelProcessResult
-        .stdoutLines
+      stdoutLines
         .mapNotNull { line ->
           INFO_LINE_PATTERN.matchEntire(line)?.let { it.groupValues[1] to it.groupValues[2] }
         }.toMap()
@@ -40,13 +40,13 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
     fun extract(name: String): String =
       outputMap[name]
         ?: error(
-          "Failed to resolve $name from bazel info in ${bazelRunner.workspaceRoot}. " +
-            "Bazel Info output: '${bazelProcessResult.stderrLines.joinToString("\n")}'",
+          "Failed to resolve $name from bazel info in $workspaceRoot. " +
+          "Bazel Info output: '${stderrLines.joinToString("\n")}'",
         )
 
     val bazelReleaseVersion =
       BazelRelease.fromReleaseString(extract(RELEASE))
-        ?: bazelRunner.workspaceRoot?.let { BazelRelease.fromBazelVersionFile(it) }.orFallbackVersion()
+      ?: workspaceRoot.let { BazelRelease.fromBazelVersionFile(it) }.orFallbackVersion()
 
     val starlarkSemantics = parseStarlarkSemantics(extract(STARLARK_SEMANTICS), bazelReleaseVersion)
 

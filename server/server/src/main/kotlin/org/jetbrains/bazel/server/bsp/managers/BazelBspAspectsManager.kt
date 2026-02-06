@@ -19,7 +19,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Paths
 import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -45,7 +44,7 @@ class BazelBspAspectsManager(
   private val aspectsResolver: InternalAspectsResolver,
   private val bazelRelease: BazelRelease,
 ) {
-  private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
+  private val aspectsPath = aspectsResolver.aspectsPath
   private val templateWriter = TemplateWriter(aspectsPath)
 
   fun calculateRulesetLanguages(
@@ -221,7 +220,6 @@ class BazelBspAspectsManager(
         extraFlags = flagsToUse,
         originId = originId,
         shouldLogInvocation = shouldLogInvocation,
-        workspaceContext = workspaceContext,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }
 }

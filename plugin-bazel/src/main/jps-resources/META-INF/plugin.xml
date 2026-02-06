@@ -216,6 +216,10 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.buildTargetLanguageInferenceContributor"
                     interface="org.jetbrains.bazel.target.lang.BuildTargetLangInferenceContributor"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelProcessLauncherProvider"
+                    interface="org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <projectListeners>
@@ -446,7 +450,7 @@
       defaultValue="false"
       description="If true, IDEA will terminate Bazel server daemon if the bazel process was cancelled"
       key="bazel.kill.server.on.cancel"
-      restartRequired="true"
+      restartRequired="false"
     />
     <registryKey
       defaultValue="false"

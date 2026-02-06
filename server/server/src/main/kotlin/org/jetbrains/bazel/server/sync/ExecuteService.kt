@@ -1,7 +1,8 @@
 package org.jetbrains.bazel.server.sync
 
-import com.intellij.execution.process.OSProcessUtil
+import com.intellij.execution.process.OSProcessUtil.killProcess
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -37,8 +38,10 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.io.path.deleteExisting
 
 class ExecuteService(
   private val project: Project,
@@ -48,29 +51,47 @@ class ExecuteService(
   private val workspaceContext: WorkspaceContext,
   private val bazelPathsResolver: BazelPathsResolver,
 ) {
-  private suspend fun <T> withBepServer(originId: String?, body: suspend (BepReader) -> T): T {
-    val diagnosticsService = DiagnosticsService(workspaceRoot)
-    val server = BepServer(client, diagnosticsService, originId, bazelPathsResolver)
-    val bepReader = BepReader(server)
+  private suspend fun runWithBepServer(
+    command: BazelCommand,
+    originId: String?,
+    pidDeferred: CompletableDeferred<Long?>? = null,
+    shouldLogInvocation: Boolean = true,
+  ): BepBuildResult = coroutineScope {
+    val eventFile: Path =
+      Files.createTempFile("bazel-bep-output", null).toAbsolutePath()
 
-    return coroutineScope {
-      val reader = async(Dispatchers.IO) {
+    var bepReader: BepReader? = null
+    try {
+      command.useBes(eventFile)
+      val executionDescriptor = command.buildExecutionDescriptor()
+      val diagnosticsService = DiagnosticsService(workspaceRoot)
+      val server = BepServer(client, diagnosticsService, originId, bazelPathsResolver)
+      bepReader = BepReader(server, eventFile)
+      val bepReaderDeferred = async(Dispatchers.IO) {
         bepReader.start()
       }
-      try {
-        return@coroutineScope body(bepReader)
-      } catch (e: CancellationException) {
-        if (BazelFeatureFlags.killServerOnCancel) {
-          val serverPid = bepReader.serverPid.get()
-          if (serverPid > 0) {
-            OSProcessUtil.killProcess(serverPid.toInt())
-          }
+
+      val processResult: BazelProcessResult =
+        bazelRunner.runBazelCommand(executionDescriptor, originId = originId, shouldLogInvocation = shouldLogInvocation)
+          .also { bazelProcess -> pidDeferred?.complete(bazelProcess.pid) }
+          .waitAndGetResult()
+      bepReader.bazelBuildFinished()
+      bepReaderDeferred.await()
+
+      val bepOutput = bepReader.bepServer.bepOutput
+      BepBuildResult(processResult, bepOutput)
+    }
+    catch (e: CancellationException) {
+      if (BazelFeatureFlags.killServerOnCancel) {
+        val serverPid = bepReader?.serverPid?.get() ?: 0
+        if (serverPid > 0) {
+          killProcess(serverPid.toInt())
         }
-        throw e
-      } finally {
-        bepReader.finishBuild()
-        reader.await()
       }
+      throw e
+    }
+    finally {
+      eventFile.deleteExisting()
     }
   }
 
@@ -78,7 +99,8 @@ class ExecuteService(
     if (params.targets.isNotEmpty()) {
       val result = build(params.targets, params.originId, params.arguments ?: emptyList())
       CompileResult(statusCode = result.bazelStatus)
-    } else {
+    }
+    else {
       CompileResult(statusCode = BazelStatus.FATAL_ERROR)
     }
 
@@ -89,7 +111,8 @@ class ExecuteService(
           listOf(BazelFlag.noBuild(), BazelFlag.starlarkDebug(), BazelFlag.starlarkDebugPort(params.port))
         val result = build(params.targets, params.originId, debugFlags)
         result.bazelStatus
-      } else {
+      }
+      else {
         BazelStatus.FATAL_ERROR
       }
     return AnalysisDebugResult(statusCode)
@@ -127,17 +150,8 @@ class ExecuteService(
           ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(params.originId)
         }
       }
-    val bazelProcessResult =
-      withBepServer(params.originId) { bepReader ->
-        command.useBes(bepReader.eventFile)
-
-        bazelRunner.runBazelCommand(command, originId = params.originId)
-          .also {
-            params.pidDeferred?.complete(it.pid)
-          }
-          .waitAndGetResult()
-      }
-    return RunResult(statusCode = bazelProcessResult.bazelStatus, originId = params.originId)
+    val result = runWithBepServer(command, params.originId, pidDeferred = params.pidDeferred)
+    return RunResult(statusCode = result.processResult.bazelStatus, originId = params.originId)
   }
 
   /**
@@ -148,7 +162,8 @@ class ExecuteService(
       if (params.debug != null) {
         val requestedDebugType = params.debug
         generateRunArguments(requestedDebugType)
-      } else {
+      }
+      else {
         null
       }
 
@@ -212,41 +227,26 @@ class ExecuteService(
     }
 
     // TODO: handle multiple targets
-    val result =
-      withBepServer(params.originId) { bepReader ->
-        command.useBes(bepReader.eventFile)
-        bazelRunner
-          .runBazelCommand(
-            command,
-            originId = params.originId
-          ).waitAndGetResult()
-      }
-
-    return TestResult(statusCode = result.bazelStatus, originId = params.originId)
+    val result = runWithBepServer(command, params.originId)
+    return TestResult(statusCode = result.processResult.bazelStatus, originId = params.originId)
   }
 
   private suspend fun build(
-    bspIds: List<Label>,
+    allTargets: List<Label>,
     originId: String,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
-    // val allTargets = bspIds + getAdditionalBuildTargets(bspIds)
     // you must compute all targets  before passing them to bound
-    val allTargets = bspIds
-    return withBepServer(originId) { bepReader ->
-      val command =
-        bazelRunner.buildBazelCommand(workspaceContext) {
-          build {
-            options.addAll(additionalArguments)
-            targets.addAll(allTargets)
-            useBes(bepReader.eventFile)
-            ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(originId)
-          }
+    val command =
+      bazelRunner.buildBazelCommand(workspaceContext) {
+        build {
+          options.addAll(additionalArguments)
+          targets.addAll(allTargets)
+          ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(originId)
         }
-      bazelRunner
-        .runBazelCommand(command, originId = originId)
-        .waitAndGetResult()
-    }
+      }
+
+    return runWithBepServer(command, originId).processResult
   }
 
   private fun ensureTestOutputStreamed(command: BazelCommand) {
@@ -259,24 +259,17 @@ class ExecuteService(
     extraFlags: List<String> = emptyList(),
     originId: String?,
     shouldLogInvocation: Boolean,
-    workspaceContext: WorkspaceContext,
   ): BepBuildResult {
-    return withBepServer(originId) { bepReader ->
-      val command =
-        bazelRunner.buildBazelCommand(workspaceContext) {
-          build {
-            options.addAll(extraFlags)
-            targets.addAll(targetsSpec.values)
-            excludedTargets.addAll(targetsSpec.excludedValues)
-            useBes(bepReader.eventFile)
-            ptyTermSize = originId?.let { ConsoleService.getInstance(project).ptyTermSize(originId) }
-          }
+    val command =
+      bazelRunner.buildBazelCommand(workspaceContext) {
+        build {
+          options.addAll(extraFlags)
+          targets.addAll(targetsSpec.values)
+          excludedTargets.addAll(targetsSpec.excludedValues)
+          ptyTermSize = originId?.let { ConsoleService.getInstance(project).ptyTermSize(originId) }
         }
-      val result =
-        bazelRunner
-          .runBazelCommand(command, originId = originId, shouldLogInvocation = shouldLogInvocation)
-          .waitAndGetResult()
-      BepBuildResult(result, bepReader.bepServer.bepOutput)
-    }
+      }
+
+    return runWithBepServer(command, originId, shouldLogInvocation = shouldLogInvocation)
   }
 }

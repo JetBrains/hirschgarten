@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.connection
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
+import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.config.FeatureFlagsProvider
@@ -71,8 +72,14 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     )
     val bspInfo = BspInfo(workspaceRoot)
     val bspClientLogger = BspClientLogger(client)
-    val bazelRunner = BazelRunner(bspClientLogger, workspaceRoot)
-    val bazelInfo = BazelInfoResolver(bazelRunner).resolveBazelInfo(workspaceContext)
+    val aspectsResolver = InternalAspectsResolver(bspInfo = bspInfo)
+    val bazelInfoResolver = BazelInfoResolver(workspaceRoot)
+    val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
+    val bazelProcessLauncher =
+      bazelProcessLauncherProvider.createBazelProcessLauncher(workspaceRoot, bspInfo, aspectsResolver, bazelInfoResolver)
+    val bazelRunner = BazelRunner(bspClientLogger, workspaceRoot, bazelProcessLauncher)
+
+    val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext)
     bazelInfo.release.deprecated()?.let { bspClientLogger.warn(it + " Sync might give incomplete results.") }
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
@@ -84,11 +91,6 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
         bazelRunner = bazelRunner,
         workspaceContext = workspaceContext,
         bazelPathsResolver = bazelPathsResolver,
-      )
-
-    val aspectsResolver =
-      InternalAspectsResolver(
-        bspInfo = bspInfo,
       )
 
     val bazelBspAspectsManager =

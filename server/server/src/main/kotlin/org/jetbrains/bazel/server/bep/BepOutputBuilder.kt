@@ -4,6 +4,7 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.OutputGroup
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import java.io.File
 import java.nio.file.Path
@@ -22,7 +23,7 @@ class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolver) {
         files =
           namedSetOfFiles
             .filesList
-            .filter { it.name.endsWith("bsp-info.textproto") }
+            .filter { it.name.endsWith(Constants.ASPECT_OUTPUT_EXTENSION) }
             .map { it.toLocalPath() },
         children = namedSetOfFiles.fileSetsList.map { it.id },
       )

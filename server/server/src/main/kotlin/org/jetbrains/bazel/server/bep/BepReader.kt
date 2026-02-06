@@ -6,34 +6,24 @@ import org.jetbrains.bazel.server.bsp.utils.DelimitedMessageReader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.BufferedInputStream
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.io.path.deleteExisting
 import kotlin.io.path.inputStream
 import kotlin.time.Duration.Companion.milliseconds
 
-class BepReader(val bepServer: BepServer) {
-  val eventFile: Path =
-    Files.createTempFile("bazel-bep-output", null).toAbsolutePath().also {
-      it.setFilePermissions()
-    }
+class BepReader(val bepServer: BepServer, val eventFile: Path) {
   val serverPid = AtomicLong(0)
 
   private val bazelBuildFinished = AtomicBoolean(false)
 
   suspend fun start() {
     logger.info("Start listening to BEP events")
-    try {
-      eventFile.inputStream().buffered().use { inputStream ->
-        readBepEvents(inputStream)
-      }
-      logger.info("BEP events listening finished")
+    eventFile.setFilePermissions()
+    eventFile.inputStream().buffered().use { inputStream ->
+      readBepEvents(inputStream)
     }
-    finally {
-      eventFile.deleteExisting()
-    }
+    logger.info("BEP events listening finished")
   }
 
   private suspend fun readBepEvents(inputStream: BufferedInputStream) {
@@ -64,7 +54,7 @@ class BepReader(val bepServer: BepServer) {
     }
   }
 
-  fun finishBuild() {
+  fun bazelBuildFinished() {
     bazelBuildFinished.set(true)
   }
 

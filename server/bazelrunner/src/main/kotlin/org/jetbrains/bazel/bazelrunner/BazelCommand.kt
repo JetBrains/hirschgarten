@@ -68,7 +68,15 @@ interface HasSingleTarget {
   val target: Label
 }
 
-data class BazelCommandExecutionDescriptor(val command: List<String>, val finishCallback: () -> Unit = {})
+/**
+ * Immutable in contrast to [BazelCommand]
+ */
+data class BazelCommandExecutionDescriptor(
+  val command: List<String>,
+  val ptyTermSize: TermSize?,
+  val environment: Map<String, String> = emptyMap(),
+  val finishCallback: () -> Unit = {},
+)
 
 // See https://bazel.build/reference/command-line-reference#commands
 abstract class BazelCommand(val bazelBinary: String) {
@@ -86,7 +94,7 @@ abstract class BazelCommand(val bazelBinary: String) {
   fun useBes(besOutputFile: Path) {
     options.addAll(
       listOf(
-        "--build_event_binary_file=${besOutputFile.toAbsolutePath()}",
+        BazelFlag.buildEventBinaryFile(besOutputFile.toAbsolutePath().toString()),
         "--bes_outerr_buffer_size=10",
         "--build_event_publish_all_actions",
       ),
@@ -119,7 +127,9 @@ abstract class BazelCommand(val bazelBinary: String) {
         commandLine.addAll(programArguments)
       }
 
-      return BazelCommandExecutionDescriptor(commandLine)
+      // Pass environment variables here to be set inside org.jetbrains.bazel.bazelrunner.BazelRunner
+      // Run needs to be handled separately because the resulting process is not run in the sandbox
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize, environment = environment)
     }
   }
 
@@ -141,11 +151,11 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
       val targetPatternFile = prepareTargetPatternFile()
-      // https://bazel.build/reference/command-line-reference#flag--target_pattern_file
-      commandLine.add("--target_pattern_file=$targetPatternFile")
+      commandLine.add(BazelFlag.targetPatternFile(targetPatternFile.toString()))
 
       return BazelCommandExecutionDescriptor(
         commandLine,
+        ptyTermSize,
         finishCallback = {
           try {
             Files.deleteIfExists(targetPatternFile)
@@ -213,7 +223,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
     }
   }
 
@@ -239,7 +249,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
     }
   }
 
@@ -255,7 +265,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.add(target.toString())
 
-      return BazelCommandExecutionDescriptor(commandLine)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
     }
   }
 
@@ -275,7 +285,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.add(queryString(allowManualTargetsSync))
 
-      return BazelCommandExecutionDescriptor(commandLine)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
     }
 
     fun queryString(allowManualTargetsSync: Boolean): String {
@@ -314,7 +324,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
     }
   }
 
@@ -332,7 +342,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
     }
   }
 
@@ -344,7 +354,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(command)
       commandLine.addAll(options)
 
-      return BazelCommandExecutionDescriptor(commandLine)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
     }
   }
 

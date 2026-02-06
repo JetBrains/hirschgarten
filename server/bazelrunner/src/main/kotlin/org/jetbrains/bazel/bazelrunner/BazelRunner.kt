@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.configurations.PtyCommandLine
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.label.Label
@@ -17,6 +15,7 @@ import kotlin.io.path.pathString
 class BazelRunner(
   private val bspClientLogger: BspClientLogger?,
   val workspaceRoot: Path,
+  val bazelProcessLauncher: BazelProcessLauncher = DefaultBazelProcessLauncher(workspaceRoot),
 ) {
   companion object {
     private val LOGGER = LoggerFactory.getLogger(BazelRunner::class.java)
@@ -129,35 +128,20 @@ class BazelRunner(
     originId: String? = null,
     logProcessOutput: Boolean = true,
     shouldLogInvocation: Boolean = true,
+  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), originId, logProcessOutput, shouldLogInvocation)
+
+  fun runBazelCommand(
+    executionDescriptor: BazelCommandExecutionDescriptor,
+    originId: String? = null,
+    logProcessOutput: Boolean = true,
+    shouldLogInvocation: Boolean = true,
   ): BazelProcess {
-    val executionDescriptor = command.buildExecutionDescriptor()
-    val ptyTermSize = command.ptyTermSize
     val finishCallback = executionDescriptor.finishCallback
     val processArgs = executionDescriptor.command
+    val environment = executionDescriptor.environment
+    logInvocation(processArgs, environment, workspaceRoot, originId, shouldLogInvocation = shouldLogInvocation)
 
-    var environment = emptyMap<String, String>()
-
-    // Run needs to be handled separately because the resulting process is not run in the sandbox
-    if (command is BazelCommand.Run) {
-      environment = command.environment
-      logInvocation(processArgs, command.environment, workspaceRoot, originId, shouldLogInvocation = shouldLogInvocation)
-    } else {
-      logInvocation(processArgs, null, null, originId, shouldLogInvocation = shouldLogInvocation)
-    }
-
-    val commandLine = if (ptyTermSize != null) {
-      PtyCommandLine(processArgs).withConsoleMode(false).withInitialColumns(ptyTermSize.columns).withInitialRows(ptyTermSize.rows)
-    }
-    else {
-      GeneralCommandLine(processArgs)
-    }
-    commandLine.withWorkingDirectory(workspaceRoot)
-    if (environment.isNotEmpty()) {
-      commandLine.withEnvironment(environment)
-    }
-    commandLine.withRedirectErrorStream(false)
-
-    val process = commandLine.createProcess()
+    val process = bazelProcessLauncher.launchProcess(executionDescriptor)
 
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
     return BazelProcess(
@@ -166,7 +150,7 @@ class BazelRunner(
       finishCallback,
     ).also {
       it.writeBazelLog {
-        appendLine(commandLine.getCommandLineString())
+        appendLine(executionDescriptor.command.joinToString(" "))
         appendLine(envToString(environment))
       }
     }

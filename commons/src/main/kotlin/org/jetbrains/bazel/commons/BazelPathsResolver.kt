@@ -1,15 +1,18 @@
 package org.jetbrains.bazel.commons
 
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
 import java.io.File
+import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
+import kotlin.io.path.toPath
 
 private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
@@ -21,6 +24,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   fun resolvePaths(fileLocations: List<FileLocation>): List<Path> = fileLocations.map(::resolve)
 
   fun resolve(fileLocation: FileLocation): Path = paths.computeIfAbsent(fileLocation, ::doResolve)
+
+  fun resolve(file: BuildEventStreamProtos.File): Path = URI.create(file.uri).toPath()
 
   private fun doResolve(fileLocation: FileLocation): Path =
     when {
@@ -56,6 +61,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     when {
       execRootRelativePath.startsWith("external") -> resolveExternal(execRootRelativePath)
       else -> bazelInfo.execRoot.resolve(execRootRelativePath)
+        // If this path actually resolves to the local workspace, not bazel-out, then resolve it
+        .let { runCatching { it.toRealPath() }.getOrDefault(it) }
     }
 
   private fun resolveSource(fileLocation: FileLocation): Path = bazelInfo.workspaceRoot.resolve(fileLocation.relativePath)
