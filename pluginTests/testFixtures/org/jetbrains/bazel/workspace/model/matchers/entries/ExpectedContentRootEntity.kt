@@ -3,6 +3,7 @@ package org.jetbrains.bazel.workspace.model.matchers.entries
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.workspace.model.matchers.shouldContainExactlyInAnyOrder
 

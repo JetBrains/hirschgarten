@@ -178,5 +178,7 @@
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.test" />
     <orderEntry type="module" module-name="intellij.libraries.jediterm.core" />
     <orderEntry type="module" module-name="intellij.libraries.velocity" />
+    <orderEntry type="module" module-name="intellij.kotlin.i18n" />
+    <orderEntry type="module" module-name="intellij.kotlin.codeInsight.api" />
   </component>
 </module>

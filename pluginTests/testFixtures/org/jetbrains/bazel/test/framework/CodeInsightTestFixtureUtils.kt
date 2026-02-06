@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.test.framework
 
+import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
@@ -28,6 +31,12 @@ fun CodeInsightTestFixture.virtualFileOf(path: String): VirtualFile {
     .toVirtualFileUrl(manager)
     .virtualFile
     .let { requireNotNull(it) { "Virtual file not found for path: $path" } }
+}
+
+suspend fun CodeInsightTestFixture.setupJdk(sdk: Sdk) = writeAction {
+  ProjectJdkTable
+    .getInstance(this.project)
+    .addJdk(sdk)
 }
 
 fun CodeInsightTestFixture.materializeTemplateFilesInProject(

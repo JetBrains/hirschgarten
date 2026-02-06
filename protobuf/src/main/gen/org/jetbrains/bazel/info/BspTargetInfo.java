@@ -3396,6 +3396,23 @@ public final class BspTargetInfo {
      * @return The hasApiGeneratingPlugins.
      */
     boolean getHasApiGeneratingPlugins();
+
+    /**
+     * <code>optional string resource_strip_prefix = 13;</code>
+     * @return Whether the resourceStripPrefix field is set.
+     */
+    boolean hasResourceStripPrefix();
+    /**
+     * <code>optional string resource_strip_prefix = 13;</code>
+     * @return The resourceStripPrefix.
+     */
+    java.lang.String getResourceStripPrefix();
+    /**
+     * <code>optional string resource_strip_prefix = 13;</code>
+     * @return The bytes for resourceStripPrefix.
+     */
+    com.google.protobuf.ByteString
+        getResourceStripPrefixBytes();
   }
   /**
    * Protobuf type {@code bazelbsp.JvmTargetInfo}
@@ -3420,6 +3437,7 @@ public final class BspTargetInfo {
       args_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
       jdeps_ = java.util.Collections.emptyList();
+      resourceStripPrefix_ = "";
     }
 
     @java.lang.Override
@@ -3442,6 +3460,7 @@ public final class BspTargetInfo {
               org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.class, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder.class);
     }
 
+    private int bitField0_;
     public static final int JARS_FIELD_NUMBER = 1;
     @SuppressWarnings("serial")
     private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.JvmOutputs> jars_;
@@ -3726,6 +3745,53 @@ public final class BspTargetInfo {
       return hasApiGeneratingPlugins_;
     }
 
+    public static final int RESOURCE_STRIP_PREFIX_FIELD_NUMBER = 13;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object resourceStripPrefix_ = "";
+    /**
+     * <code>optional string resource_strip_prefix = 13;</code>
+     * @return Whether the resourceStripPrefix field is set.
+     */
+    @java.lang.Override
+    public boolean hasResourceStripPrefix() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional string resource_strip_prefix = 13;</code>
+     * @return The resourceStripPrefix.
+     */
+    @java.lang.Override
+    public java.lang.String getResourceStripPrefix() {
+      java.lang.Object ref = resourceStripPrefix_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        resourceStripPrefix_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string resource_strip_prefix = 13;</code>
+     * @return The bytes for resourceStripPrefix.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getResourceStripPrefixBytes() {
+      java.lang.Object ref = resourceStripPrefix_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        resourceStripPrefix_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -3763,6 +3829,9 @@ public final class BspTargetInfo {
       }
       if (hasApiGeneratingPlugins_ != false) {
         output.writeBool(12, hasApiGeneratingPlugins_);
+      }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 13, resourceStripPrefix_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3816,6 +3885,9 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(12, hasApiGeneratingPlugins_);
       }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(13, resourceStripPrefix_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -3847,6 +3919,11 @@ public final class BspTargetInfo {
           .equals(other.getJdepsList())) return false;
       if (getHasApiGeneratingPlugins()
           != other.getHasApiGeneratingPlugins()) return false;
+      if (hasResourceStripPrefix() != other.hasResourceStripPrefix()) return false;
+      if (hasResourceStripPrefix()) {
+        if (!getResourceStripPrefix()
+            .equals(other.getResourceStripPrefix())) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -3887,6 +3964,10 @@ public final class BspTargetInfo {
       hash = (37 * hash) + HAS_API_GENERATING_PLUGINS_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getHasApiGeneratingPlugins());
+      if (hasResourceStripPrefix()) {
+        hash = (37 * hash) + RESOURCE_STRIP_PREFIX_FIELD_NUMBER;
+        hash = (53 * hash) + getResourceStripPrefix().hashCode();
+      }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4047,6 +4128,7 @@ public final class BspTargetInfo {
         }
         bitField0_ = (bitField0_ & ~0x00000040);
         hasApiGeneratingPlugins_ = false;
+        resourceStripPrefix_ = "";
         return this;
       }
 
@@ -4129,6 +4211,12 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000080) != 0)) {
           result.hasApiGeneratingPlugins_ = hasApiGeneratingPlugins_;
         }
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000100) != 0)) {
+          result.resourceStripPrefix_ = resourceStripPrefix_;
+          to_bitField0_ |= 0x00000001;
+        }
+        result.bitField0_ |= to_bitField0_;
       }
 
       @java.lang.Override
@@ -4291,6 +4379,11 @@ public final class BspTargetInfo {
         if (other.getHasApiGeneratingPlugins() != false) {
           setHasApiGeneratingPlugins(other.getHasApiGeneratingPlugins());
         }
+        if (other.hasResourceStripPrefix()) {
+          resourceStripPrefix_ = other.resourceStripPrefix_;
+          bitField0_ |= 0x00000100;
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -4384,6 +4477,11 @@ public final class BspTargetInfo {
                 bitField0_ |= 0x00000080;
                 break;
               } // case 96
+              case 106: {
+                resourceStripPrefix_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000100;
+                break;
+              } // case 106
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -5554,6 +5652,85 @@ public final class BspTargetInfo {
       public Builder clearHasApiGeneratingPlugins() {
         bitField0_ = (bitField0_ & ~0x00000080);
         hasApiGeneratingPlugins_ = false;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object resourceStripPrefix_ = "";
+      /**
+       * <code>optional string resource_strip_prefix = 13;</code>
+       * @return Whether the resourceStripPrefix field is set.
+       */
+      public boolean hasResourceStripPrefix() {
+        return ((bitField0_ & 0x00000100) != 0);
+      }
+      /**
+       * <code>optional string resource_strip_prefix = 13;</code>
+       * @return The resourceStripPrefix.
+       */
+      public java.lang.String getResourceStripPrefix() {
+        java.lang.Object ref = resourceStripPrefix_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          resourceStripPrefix_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string resource_strip_prefix = 13;</code>
+       * @return The bytes for resourceStripPrefix.
+       */
+      public com.google.protobuf.ByteString
+          getResourceStripPrefixBytes() {
+        java.lang.Object ref = resourceStripPrefix_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          resourceStripPrefix_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string resource_strip_prefix = 13;</code>
+       * @param value The resourceStripPrefix to set.
+       * @return This builder for chaining.
+       */
+      public Builder setResourceStripPrefix(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        resourceStripPrefix_ = value;
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string resource_strip_prefix = 13;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearResourceStripPrefix() {
+        resourceStripPrefix_ = getDefaultInstance().getResourceStripPrefix();
+        bitField0_ = (bitField0_ & ~0x00000100);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string resource_strip_prefix = 13;</code>
+       * @param value The bytes for resourceStripPrefix to set.
+       * @return This builder for chaining.
+       */
+      public Builder setResourceStripPrefixBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        resourceStripPrefix_ = value;
+        bitField0_ |= 0x00000100;
         onChanged();
         return this;
       }
@@ -22513,71 +22690,72 @@ java.lang.String defaultValue) {
       "binary_jars\030\001 \003(\0132\026.bazelbsp.FileLocatio" +
       "n\022.\n\016interface_jars\030\002 \003(\0132\026.bazelbsp.Fil" +
       "eLocation\022+\n\013source_jars\030\003 \003(\0132\026.bazelbs" +
-      "p.FileLocation\"\365\001\n\rJvmTargetInfo\022\"\n\004jars" +
+      "p.FileLocation\"\263\002\n\rJvmTargetInfo\022\"\n\004jars" +
       "\030\001 \003(\0132\024.bazelbsp.JvmOutputs\022,\n\016generate" +
       "d_jars\030\002 \003(\0132\024.bazelbsp.JvmOutputs\022\022\n\nja" +
       "vac_opts\030\006 \003(\t\022\021\n\tjvm_flags\030\007 \003(\t\022\022\n\nmai" +
       "n_class\030\010 \001(\t\022\014\n\004args\030\t \003(\t\022%\n\005jdeps\030\n \003" +
       "(\0132\026.bazelbsp.FileLocation\022\"\n\032has_api_ge" +
-      "nerating_plugins\030\014 \001(\010\"\250\001\n\021JavaToolchain" +
-      "Info\022\026\n\016source_version\030\001 \001(\t\022\026\n\016target_v" +
-      "ersion\030\002 \001(\t\022)\n\tjava_home\030\003 \001(\0132\026.bazelb" +
-      "sp.FileLocation\0228\n\030boot_classpath_java_h" +
-      "ome\030\004 \001(\0132\026.bazelbsp.FileLocation\"<\n\017Jav" +
-      "aRuntimeInfo\022)\n\tjava_home\030\001 \001(\0132\026.bazelb" +
-      "sp.FileLocation\"\217\001\n\017ScalaTargetInfo\022\023\n\013s" +
-      "calac_opts\030\001 \003(\t\0222\n\022compiler_classpath\030\002" +
-      " \003(\0132\026.bazelbsp.FileLocation\0223\n\023scalates" +
-      "t_classpath\030\003 \003(\0132\026.bazelbsp.FileLocatio" +
-      "n\"?\n\023KotlincPluginOption\022\021\n\tplugin_id\030d " +
-      "\001(\t\022\025\n\014option_value\030\310\001 \001(\t\"\200\001\n\021KotlincPl" +
-      "uginInfo\022+\n\013plugin_jars\030d \003(\0132\026.bazelbsp" +
-      ".FileLocation\022>\n\026kotlinc_plugin_options\030" +
-      "\310\001 \003(\0132\035.bazelbsp.KotlincPluginOption\"\352\001" +
-      "\n\020KotlinTargetInfo\022\030\n\020language_version\030d" +
-      " \001(\t\022\024\n\013api_version\030\310\001 \001(\t\022\023\n\nassociates" +
-      "\030\254\002 \003(\t\022\025\n\014kotlinc_opts\030\220\003 \003(\t\022(\n\007stdlib" +
-      "s\030\364\003 \003(\0132\026.bazelbsp.FileLocation\022:\n\024kotl" +
-      "inc_plugin_infos\030\330\004 \003(\0132\033.bazelbsp.Kotli" +
-      "ncPluginInfo\022\024\n\013module_name\030\274\005 \001(\t\"\352\001\n\020P" +
-      "ythonTargetInfo\022+\n\013interpreter\030\001 \001(\0132\026.b" +
-      "azelbsp.FileLocation\022\017\n\007version\030\002 \001(\t\022\017\n" +
-      "\007imports\030\003 \003(\t\022\031\n\021is_code_generator\030\004 \001(" +
-      "\010\0221\n\021generated_sources\030\005 \003(\0132\026.bazelbsp." +
-      "FileLocation\022$\n\004main\030\006 \001(\0132\026.bazelbsp.Fi" +
-      "leLocation\022\023\n\013main_module\030\007 \001(\t\"\322\001\n\014GoTa" +
-      "rgetInfo\022\023\n\013import_path\030\001 \001(\t\022-\n\rsdk_hom" +
-      "e_path\030\002 \001(\0132\026.bazelbsp.FileLocation\0221\n\021" +
-      "generated_sources\030\003 \003(\0132\026.bazelbsp.FileL" +
-      "ocation\0223\n\023generated_libraries\030\004 \003(\0132\026.b" +
-      "azelbsp.FileLocation\022\026\n\016library_labels\030\005" +
-      " \003(\t\"N\n\022ProtobufTargetInfo\0228\n\017source_map" +
-      "pings\030\003 \003(\0132\037.bazelbsp.ProtobufSourceMap" +
-      "ping\"X\n\025ProtobufSourceMapping\022\023\n\013import_" +
-      "path\030\001 \001(\t\022*\n\nproto_file\030\002 \001(\0132\026.bazelbs" +
-      "p.FileLocation\"\274\006\n\nTargetInfo\022\n\n\002id\030\n \001(" +
-      "\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014depende" +
-      "ncies\030( \003(\0132\024.bazelbsp.Dependency\022\'\n\007sou" +
-      "rces\0302 \003(\0132\026.bazelbsp.FileLocation\0221\n\021ge" +
-      "nerated_sources\0303 \003(\0132\026.bazelbsp.FileLoc" +
-      "ation\022)\n\tresources\030< \003(\0132\026.bazelbsp.File" +
-      "Location\022*\n\003env\030F \003(\0132\035.bazelbsp.TargetI" +
-      "nfo.EnvEntry\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexe" +
-      "cutable\030Z \001(\010\022\026\n\016workspace_name\030d \001(\t\0221\n" +
-      "\017jvm_target_info\030\350\007 \001(\0132\027.bazelbsp.JvmTa" +
-      "rgetInfo\0229\n\023java_toolchain_info\030\320\017 \001(\0132\033" +
-      ".bazelbsp.JavaToolchainInfo\0225\n\021java_runt" +
-      "ime_info\030\270\027 \001(\0132\031.bazelbsp.JavaRuntimeIn" +
-      "fo\0225\n\021scala_target_info\030\240\037 \001(\0132\031.bazelbs" +
-      "p.ScalaTargetInfo\0227\n\022kotlin_target_info\030" +
-      "\3306 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022py" +
-      "thon_target_info\030\300> \001(\0132\032.bazelbsp.Pytho" +
-      "nTargetInfo\022/\n\016go_target_info\030\340] \001(\0132\026.b" +
-      "azelbsp.GoTargetInfo\022;\n\024protobuf_target_" +
-      "info\030\260m \001(\0132\034.bazelbsp.ProtobufTargetInf" +
-      "o\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(" +
-      "\t:\0028\001B\032\n\030org.jetbrains.bazel.infob\006proto" +
-      "3"
+      "nerating_plugins\030\014 \001(\010\022\"\n\025resource_strip" +
+      "_prefix\030\r \001(\tH\000\210\001\001B\030\n\026_resource_strip_pr" +
+      "efix\"\250\001\n\021JavaToolchainInfo\022\026\n\016source_ver" +
+      "sion\030\001 \001(\t\022\026\n\016target_version\030\002 \001(\t\022)\n\tja" +
+      "va_home\030\003 \001(\0132\026.bazelbsp.FileLocation\0228\n" +
+      "\030boot_classpath_java_home\030\004 \001(\0132\026.bazelb" +
+      "sp.FileLocation\"<\n\017JavaRuntimeInfo\022)\n\tja" +
+      "va_home\030\001 \001(\0132\026.bazelbsp.FileLocation\"\217\001" +
+      "\n\017ScalaTargetInfo\022\023\n\013scalac_opts\030\001 \003(\t\0222" +
+      "\n\022compiler_classpath\030\002 \003(\0132\026.bazelbsp.Fi" +
+      "leLocation\0223\n\023scalatest_classpath\030\003 \003(\0132" +
+      "\026.bazelbsp.FileLocation\"?\n\023KotlincPlugin" +
+      "Option\022\021\n\tplugin_id\030d \001(\t\022\025\n\014option_valu" +
+      "e\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022+\n\013plugin" +
+      "_jars\030d \003(\0132\026.bazelbsp.FileLocation\022>\n\026k" +
+      "otlinc_plugin_options\030\310\001 \003(\0132\035.bazelbsp." +
+      "KotlincPluginOption\"\352\001\n\020KotlinTargetInfo" +
+      "\022\030\n\020language_version\030d \001(\t\022\024\n\013api_versio" +
+      "n\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014kotlinc" +
+      "_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026.bazelbs" +
+      "p.FileLocation\022:\n\024kotlinc_plugin_infos\030\330" +
+      "\004 \003(\0132\033.bazelbsp.KotlincPluginInfo\022\024\n\013mo" +
+      "dule_name\030\274\005 \001(\t\"\352\001\n\020PythonTargetInfo\022+\n" +
+      "\013interpreter\030\001 \001(\0132\026.bazelbsp.FileLocati" +
+      "on\022\017\n\007version\030\002 \001(\t\022\017\n\007imports\030\003 \003(\t\022\031\n\021" +
+      "is_code_generator\030\004 \001(\010\0221\n\021generated_sou" +
+      "rces\030\005 \003(\0132\026.bazelbsp.FileLocation\022$\n\004ma" +
+      "in\030\006 \001(\0132\026.bazelbsp.FileLocation\022\023\n\013main" +
+      "_module\030\007 \001(\t\"\322\001\n\014GoTargetInfo\022\023\n\013import" +
+      "_path\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026.baz" +
+      "elbsp.FileLocation\0221\n\021generated_sources\030" +
+      "\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023generat" +
+      "ed_libraries\030\004 \003(\0132\026.bazelbsp.FileLocati" +
+      "on\022\026\n\016library_labels\030\005 \003(\t\"N\n\022ProtobufTa" +
+      "rgetInfo\0228\n\017source_mappings\030\003 \003(\0132\037.baze" +
+      "lbsp.ProtobufSourceMapping\"X\n\025ProtobufSo" +
+      "urceMapping\022\023\n\013import_path\030\001 \001(\t\022*\n\nprot" +
+      "o_file\030\002 \001(\0132\026.bazelbsp.FileLocation\"\274\006\n" +
+      "\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n" +
+      "\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\0132\024.baze" +
+      "lbsp.Dependency\022\'\n\007sources\0302 \003(\0132\026.bazel" +
+      "bsp.FileLocation\0221\n\021generated_sources\0303 " +
+      "\003(\0132\026.bazelbsp.FileLocation\022)\n\tresources" +
+      "\030< \003(\0132\026.bazelbsp.FileLocation\022*\n\003env\030F " +
+      "\003(\0132\035.bazelbsp.TargetInfo.EnvEntry\022\023\n\013en" +
+      "v_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016w" +
+      "orkspace_name\030d \001(\t\0221\n\017jvm_target_info\030\350" +
+      "\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229\n\023java_t" +
+      "oolchain_info\030\320\017 \001(\0132\033.bazelbsp.JavaTool" +
+      "chainInfo\0225\n\021java_runtime_info\030\270\027 \001(\0132\031." +
+      "bazelbsp.JavaRuntimeInfo\0225\n\021scala_target" +
+      "_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTargetInfo\022" +
+      "7\n\022kotlin_target_info\030\3306 \001(\0132\032.bazelbsp." +
+      "KotlinTargetInfo\0227\n\022python_target_info\030\300" +
+      "> \001(\0132\032.bazelbsp.PythonTargetInfo\022/\n\016go_" +
+      "target_info\030\340] \001(\0132\026.bazelbsp.GoTargetIn" +
+      "fo\022;\n\024protobuf_target_info\030\260m \001(\0132\034.baze" +
+      "lbsp.ProtobufTargetInfo\032*\n\010EnvEntry\022\013\n\003k" +
+      "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetbr" +
+      "ains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -22606,7 +22784,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_JvmTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_JvmTargetInfo_descriptor,
-        new java.lang.String[] { "Jars", "GeneratedJars", "JavacOpts", "JvmFlags", "MainClass", "Args", "Jdeps", "HasApiGeneratingPlugins", });
+        new java.lang.String[] { "Jars", "GeneratedJars", "JavacOpts", "JvmFlags", "MainClass", "Args", "Jdeps", "HasApiGeneratingPlugins", "ResourceStripPrefix", "ResourceStripPrefix", });
     internal_static_bazelbsp_JavaToolchainInfo_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable = new
