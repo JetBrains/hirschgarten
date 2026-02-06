@@ -21,7 +21,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
-import org.jetbrains.bazel.target.targetUtils
+import com.intellij.openapi.components.serviceIfCreated
+import org.jetbrains.bazel.target.TargetUtils
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 class BazelRunConfiguration internal constructor(
@@ -41,7 +42,7 @@ class BazelRunConfiguration internal constructor(
     private set
 
   override fun checkConfiguration() {
-    val utils = project.targetUtils
+    val utils = project.serviceIfCreated<TargetUtils>() ?: return
     val selectedTargets = targets.map {
       val target = utils.getBuildTargetForLabel(it) ?: return // skip validations when any target is missing
       if (!target.kind.isExecutable) throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.executable", it))

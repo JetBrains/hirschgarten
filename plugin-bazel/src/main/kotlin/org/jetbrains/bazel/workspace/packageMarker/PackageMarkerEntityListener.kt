@@ -16,7 +16,8 @@ import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.target.targetUtils
+import com.intellij.openapi.components.serviceIfCreated
+import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
@@ -95,4 +96,5 @@ private fun projectIsBazelAndContainsFile(project: Project, file: VirtualFile): 
   return project.isBazelProject && VfsUtil.isAncestor(rootDir, file, false) && project.hasAnyTargets()
 }
 
-private fun Project.hasAnyTargets(): Boolean = this.targetUtils.allTargets().any()
+private fun Project.hasAnyTargets(): Boolean =
+  this.serviceIfCreated<TargetUtils>()?.allTargets()?.any() == true
