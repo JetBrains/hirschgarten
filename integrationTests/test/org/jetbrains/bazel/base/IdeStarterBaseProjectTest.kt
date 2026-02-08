@@ -58,6 +58,7 @@ abstract class IdeStarterBaseProjectTest {
       .executeRightAfterIdeOpened(true)
       .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
       .propagateSystemProperty("bazel.project.view.file.path")
+      .propagateSystemProperty("bazel.enable.log")
       .patchPathVariable()
       .withKotlinPluginK2()
       .addIdeStarterTestMarker()
