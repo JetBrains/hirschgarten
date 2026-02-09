@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bep
 
-import androidx.compose.ui.geometry.Rect
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.v1.BuildEvent
