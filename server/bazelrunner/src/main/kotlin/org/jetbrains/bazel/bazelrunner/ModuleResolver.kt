@@ -116,8 +116,9 @@ class ModuleResolver(
   /**
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
-  suspend fun resolveModules(moduleNames: List<String>, bazelInfo: BazelInfo): Map<String, ShowRepoResult?> {
-    if (moduleNames.isEmpty()) return emptyMap() // avoid bazel call if no information is needed
+  suspend fun resolveModules(unsortedModuleNames: List<String>, bazelInfo: BazelInfo): Map<String, ShowRepoResult?> {
+    if (unsortedModuleNames.isEmpty()) return emptyMap() // avoid bazel call if no information is needed
+    val moduleNames = unsortedModuleNames.sorted()
     val json_output = bazelInfo.release.major >= 9
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
@@ -143,8 +144,9 @@ class ModuleResolver(
    * <canonicalRepoNames> is a list of canonical repo names without any leading @ characters.
    * The canonical repo name of the root module repository is the empty string.
    */
-  suspend fun getRepoMappings(canonicalRepoNames: List<String>): Map<String, Map<String, String>> {
-    if (canonicalRepoNames.isEmpty()) return emptyMap()
+  suspend fun getRepoMappings(unsortedCanonicalRepoNames: List<String>): Map<String, Map<String, String>> {
+    if (unsortedCanonicalRepoNames.isEmpty()) return emptyMap()
+    val canonicalRepoNames = unsortedCanonicalRepoNames.sorted()
     canonicalRepoNames.forEach {
         if (it.startsWith('@')) error("Canonical repo name cannot contain '@' characters: $it")
     }
