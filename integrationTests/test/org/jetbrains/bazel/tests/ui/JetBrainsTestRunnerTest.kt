@@ -6,7 +6,6 @@ import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
-import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
 import com.intellij.tools.ide.performanceTesting.commands.openFile
@@ -15,9 +14,7 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
@@ -53,7 +50,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
         step("open TestJava.java and run the whole class") {
           execute { openFile("TestJava.java") }
-          clickTestGutterOnLine(14, testTimeout = 15.seconds)
+          clickTestGutterOnLine(14)
 
           verifyTestStatus(
             listOf("3 tests failed,", " 2 passed"),
@@ -74,7 +71,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         step("Rerun failed tests in TestJava.java") {
           execute { openFile("TestJava.java") }
           x { byAccessibleName("Rerun Failed Tests") }.click()
-          wait(15.seconds)
           verifyTestStatus(
             listOf("3 tests failed"),
             listOf(
@@ -109,7 +105,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           val testTreeView = testTreeView()
           testTreeView.rightClickRow { it.startsWith("[1] myClass=class java.lang.String") }
           popup().waitOneText("Run 'testWithClasses'").click()
-          wait(10.seconds)
           verifyTestStatus(
             listOf("1 test passed"),
             listOf(
@@ -125,7 +120,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           val testTreeView = testTreeView()
           testTreeView.doubleClickRow { it.startsWith("[1] myClass=class java.lang.String") }
           execute { assertCaretPosition(18, 8) }
-          wait(3.seconds)
         }
       }
     }
@@ -168,7 +162,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
   /**
    * [line] can be different depending on e.g. imports folding
    */
-  private fun IdeaFrameUI.clickTestGutterOnLine(line: Int, testTimeout: Duration = 10.seconds) {
+  private fun IdeaFrameUI.clickTestGutterOnLine(line: Int) {
     val runGutter = editorTabs()
       .gutter()
       .getGutterIcons()
@@ -180,6 +174,5 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
     }
     runGutter.click()
     popup().waitOneText { it.text.startsWith("Test ") }.click()
-    wait(testTimeout)
   }
 }
