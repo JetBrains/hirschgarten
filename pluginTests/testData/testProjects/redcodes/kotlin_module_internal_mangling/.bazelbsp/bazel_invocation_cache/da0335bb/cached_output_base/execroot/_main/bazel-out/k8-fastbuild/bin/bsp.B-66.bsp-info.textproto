@@ -1,0 +1,82 @@
+dependencies {
+  dependency_type: 0
+  exported: false
+  id: "@@//:A"
+}
+executable: false
+id: "@@//:B"
+java_runtime_info {
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+local_jdk"
+  }
+}
+java_toolchain_info {
+  boot_classpath_java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+local_jdk"
+  }
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk25_linux"
+  }
+  source_version: "11"
+  target_version: "11"
+}
+jvm_target_info {
+  has_api_generating_plugins: false
+  jars {
+    binary_jars {
+      is_external: false
+      is_source: false
+      relative_path: "B.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+    interface_jars {
+      is_external: false
+      is_source: false
+      relative_path: "B.abi.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+    source_jars {
+      is_external: false
+      is_source: false
+      relative_path: "B-sources.jar"
+      root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+    }
+  }
+  jdeps {
+    is_external: false
+    is_source: false
+    relative_path: "B.jdeps"
+    root_execution_path_fragment: "bazel-out/k8-fastbuild/bin"
+  }
+}
+kind: "kt_jvm_library"
+kotlin_target_info {
+  api_version: "2.1"
+  kotlinc_opts: "-jvm-target=1.8"
+  kotlinc_opts: "-Xlambdas=class"
+  kotlinc_opts: "-Xsam-conversions=class"
+  language_version: "2.1"
+  module_name: "B"
+  stdlibs {
+    is_external: false
+    is_source: true
+    relative_path: "toolchains/kotlin-stdlib.jar"
+    root_execution_path_fragment: ""
+  }
+}
+sources {
+  is_external: false
+  is_source: true
+  relative_path: "B.java"
+  root_execution_path_fragment: ""
+}
+workspace_name: "_main"
