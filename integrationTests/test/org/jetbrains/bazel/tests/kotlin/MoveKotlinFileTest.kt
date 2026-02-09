@@ -59,7 +59,6 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
             execute { assertFileContentsEqual("expected/Class1.java", "Class1.java") }
           }
 
-          Thread.sleep(30000)
         }
       }
   }
