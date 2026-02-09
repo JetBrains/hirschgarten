@@ -7,6 +7,7 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.verticalScrollBar
 import com.intellij.driver.sdk.wait
+import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.driver.execute
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
@@ -19,7 +20,6 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -61,29 +61,22 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
           }
 
           step("Check if async stack trace is displayed") {
-            // this should give enough time for the test running to reach the debug break point
             waitOneContainsText("secondLevel:30", timeout = 1.minutes)
-            // wait for the rest of the stack trace to be rendered
-            wait(10.seconds)
-            x("//div[@class='Splitter']").verticalScrollBar { scrollBlockDown(6) }
-            val text = x("//div[@class='XDebuggerFramesList']").getAllTexts()
-            var nAsyncStackTraceText = 0
-            text.forEach {
-              if (it.text.contains("Async stack trace")) ++nAsyncStackTraceText
+            waitFor(message = "Async stack traces to appear", timeout = 30.seconds, interval = 2.seconds) {
+              x("//div[@class='Splitter']").verticalScrollBar { scrollBlockDown(6) }
+              val text = x("//div[@class='XDebuggerFramesList']").getAllTexts()
+              text.count { it.text.contains("Async stack trace") } >= 2
             }
             takeScreenshot("asyncStackTraceText")
-            assert(nAsyncStackTraceText == 2) {
-              "Async stack trace is not correctly displayed, number of async stack trace text found is $nAsyncStackTraceText"
-            }
           }
 
           step("Check thread dump for coroutine thread") {
             x("//div[@class='JBRunnerTabs']//div[@tooltiptext='More']").click()
             popup().waitOneContainsText("Get Thread Dump").click()
-            wait(10.seconds)
+            waitFor(message = "Thread dump to contain coroutine:2", timeout = 30.seconds, interval = 2.seconds) {
+              x("//div[@class='ThreadDumpPanel']").getAllTexts().any { it.text == "coroutine:2" }
+            }
             takeScreenshot("threadDumpPanel")
-            val threadDumpTexts = x("//div[@class='ThreadDumpPanel']").getAllTexts()
-            assertNotNull(threadDumpTexts.find { it.text == "coroutine:2" }) { "Thread dump doesn't contain coroutine thread" }
           }
         }
       }

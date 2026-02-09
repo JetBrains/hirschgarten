@@ -3,7 +3,7 @@ package org.jetbrains.bazel.tests.bytecode_viewer
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
-import com.intellij.driver.sdk.wait
+import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.build
 import com.intellij.tools.ide.performanceTesting.commands.goto
@@ -50,13 +50,12 @@ class BytecodeViewerTest : IdeStarterBaseProjectTest() {
             execute { goto(5, 17) }
             execute { sleep(5_000) }
             invokeAction("BytecodeViewer")
-            wait(5.seconds)
             val buildView = x("//div[@class='BytecodeToolWindowPanel']")
-            val text = buildView.getAllTexts().joinToString { it.text }
-
-            // we just want any text resembling bytecode to show
             val bytecodeKeywords = setOf("ICONST_3", "ICONST_2", "INVOKESTATIC")
-            assert(bytecodeKeywords.all { text.contains(it) })
+            waitFor(message = "Bytecode viewer to display expected keywords", timeout = 30.seconds, interval = 2.seconds) {
+              val text = buildView.getAllTexts().joinToString { it.text }
+              bytecodeKeywords.all { text.contains(it) }
+            }
           }
         }
       }

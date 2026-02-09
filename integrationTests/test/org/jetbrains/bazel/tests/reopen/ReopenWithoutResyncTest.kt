@@ -6,6 +6,7 @@ import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.wait
+import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -38,11 +39,12 @@ class ReopenWithoutResyncTest : IdeStarterBaseProjectTest() {
       .useDriverAndCloseIde {
         step("Verify sync is in progress") {
           ideFrame {
-            wait(20.seconds)
             val buildView = x { byType("com.intellij.build.BuildView") }
-            val hasProgressText = buildView.getAllTexts().any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) }
-            val hasSyncText = buildView.getAllTexts().any { it.text.contains(BazelPluginBundle.message("console.task.sync.success")) }
-            assert(hasProgressText || hasSyncText) { "Build view does not contain sync text" }
+            waitFor(message = "Sync text in build view", timeout = 1.minutes, interval = 2.seconds) {
+              val texts = buildView.getAllTexts()
+              texts.any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) } ||
+                texts.any { it.text.contains(BazelPluginBundle.message("console.task.sync.success")) }
+            }
           }
           takeScreenshot("whileSyncing")
         }
