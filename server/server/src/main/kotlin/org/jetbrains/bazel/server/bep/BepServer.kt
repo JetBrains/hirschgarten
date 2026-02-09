@@ -216,10 +216,8 @@ class BepServer(
         var isCommandLineFormattedOutput = true
         var onlyFromParsedOutput = true
         if (adjustedStderr != progress.stderr) {
-          LOGGER.debug("Before replace: ${progress.stderr}")
-          LOGGER.debug("After replace: $adjustedStderr")
           remoteExecutionPathRemapper?.let {
-            LOGGER.debug("Target label is substituted to: ${it.lastActionCompletedFailedLabel}")
+            LOGGER.debug("Before replace: ${progress.stderr}\nAfter replace: ${adjustedStderr}\nTarget label is substituted to: ${it.lastActionCompletedFailedLabel}")
             targetLabel = it.lastActionCompletedFailedLabel
             isCommandLineFormattedOutput = false
             onlyFromParsedOutput = false
@@ -342,11 +340,10 @@ class BepServer(
           if (event.stderr.uri.startsWith("bytestream://")) {
             LOGGER.debug("${event} - action completed")
             LOGGER.debug(event.stderr.uri)
-            val sources = ArrayList<String>( event.commandLineCount/100)
+            val sources = ArrayList<String>(event.commandLineCount/100)
             val iter = event.commandLineList.iterator()
             while (iter.hasNext()) {
-              val line = iter.next()
-              if ((line == "--sources")) {
+              if (iter.next() == "--sources") {
                 break
               }
             }
