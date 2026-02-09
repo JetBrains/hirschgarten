@@ -1,21 +1,25 @@
 package org.jetbrains.bazel.tests.run
 
-import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
 import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.driver.sdk.ui.xQuery
-import org.junit.jupiter.api.Assertions
+import com.intellij.driver.sdk.waitFor
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
-fun IdeaFrameUI.verifyBuildResultsTree(expectedTexts: Set<String>) {
-  step("Verify build results tree") {
+fun IdeaFrameUI.waitForBuildResultsTree(expectedTexts: Set<String>, timeout: Duration = 1.minutes) {
+  require(expectedTexts.isNotEmpty())
+  waitFor(
+    message = "Build results tree to contain $expectedTexts",
+    timeout = timeout,
+    interval = 2.seconds,
+  ) {
     val treeComponent = buildTreeView()
     treeComponent.expandAll()
     val actualTree = treeComponent.getAllTexts().map { it.text }
-    require(expectedTexts.isNotEmpty())
-    for (text in expectedTexts) {
-      Assertions.assertTrue(actualTree.contains(text), "Build tree must contain $text, actual tree: $actualTree")
-    }
+    expectedTexts.all { it in actualTree }
   }
 }
 
