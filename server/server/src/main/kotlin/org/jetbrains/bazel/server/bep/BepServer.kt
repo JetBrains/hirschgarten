@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bep
 
+import androidx.compose.ui.geometry.Rect
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.v1.BuildEvent
@@ -41,7 +42,7 @@ class BepServer(
   private val bspClient: JoinedBuildClient,
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
-  bazelPathsResolver: BazelPathsResolver,
+  private val bazelPathsResolver: BazelPathsResolver,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)
   private val bepLogger = BepLogger(bspClientLogger)
@@ -49,6 +50,8 @@ class BepServer(
   private var startedEvent: TaskId? = null
   private var bspClientTestNotifier: BspClientTestNotifier? = null // Present for test commands
   private val bepOutputBuilder = BepOutputBuilder(bazelPathsResolver)
+
+  private var remoteExecutionPathRemapper: RemoteExecutionPathRemapper? = null
 
   override fun publishLifecycleEvent(request: PublishLifecycleEventRequest, responseObserver: StreamObserver<Empty>) {
     responseObserver.onNext(Empty.getDefaultInstance())
@@ -209,13 +212,27 @@ class BepServer(
     if (event.hasProgress()) {
       val progress = event.progress
       if (progress.stderr.isNotEmpty() && originId != null) {
+        val adjustedStderr = remoteExecutionPathRemapper?.processOutput(progress.stderr) ?: progress.stderr
+        var targetLabel : Label = SyntheticLabel(AllRuleTargets)
+        var isCommandLineFormattedOutput = true
+        var onlyFromParsedOutput = true
+        if (adjustedStderr != progress.stderr) {
+          LOGGER.debug("Before replace: ${progress.stderr}")
+          LOGGER.debug("After replace: $adjustedStderr")
+          remoteExecutionPathRemapper?.let {
+            LOGGER.debug("Target label is substituted to: ${it.lastActionCompletedFailedLabel}")
+            targetLabel = it.lastActionCompletedFailedLabel
+            isCommandLineFormattedOutput = false
+            onlyFromParsedOutput = false
+          }
+        }
         val events =
           diagnosticsService.extractDiagnostics(
-            progress.stderr,
-            SyntheticLabel(AllRuleTargets),
+            adjustedStderr,
+            targetLabel,
             originId,
-            isCommandLineFormattedOutput = true,
-            onlyFromParsedOutput = true,
+            isCommandLineFormattedOutput = isCommandLineFormattedOutput,
+            onlyFromParsedOutput = onlyFromParsedOutput,
           )
         events.forEach {
           bspClient.onBuildPublishDiagnostics(
@@ -323,9 +340,34 @@ class BepServer(
     when (event.stderr.fileCase) {
       BuildEventStreamProtos.File.FileCase.URI -> {
         try {
-          val path = Paths.get(URI.create(event.stderr.uri))
-          val stdErrText = Files.readString(path)
-          processDiagnosticText(stdErrText, label, originId)
+          if (event.stderr.uri.startsWith("bytestream://")) {
+            LOGGER.debug("${event} - action completed")
+            LOGGER.debug(event.stderr.uri)
+            val sources = ArrayList<String>( event.commandLineCount/100)
+            val iter = event.commandLineList.iterator()
+            while (iter.hasNext()) {
+              val line = iter.next()
+              if ((line == "--sources")) {
+                break
+              }
+            }
+            while (iter.hasNext()) {
+              val line = iter.next()
+              if (line.startsWith("--")) {
+                break;
+              }
+              sources.add(line)
+            }
+            remoteExecutionPathRemapper = RemoteExecutionPathRemapper(
+              label,
+              sources,
+              bazelPathsResolver.workspaceRoot()
+            )
+          } else {
+            val path = Paths.get(URI.create(event.stderr.uri))
+            val stdErrText = Files.readString(path)
+            processDiagnosticText(stdErrText, label, originId)
+          }
         } catch (e: FileSystemNotFoundException) {
           LOGGER.warn("Failed to process diagnostic text", e)
         } catch (e: IOException) {
