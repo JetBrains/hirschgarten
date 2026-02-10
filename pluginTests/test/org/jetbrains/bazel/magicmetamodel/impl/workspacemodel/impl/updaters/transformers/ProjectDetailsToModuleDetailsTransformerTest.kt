@@ -42,7 +42,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ProjectDetails(
         targetIds = listOf(targetId),
         targets = setOf(target),
-        libraries = null,
+        libraries = emptyList(),
       )
 
     // when

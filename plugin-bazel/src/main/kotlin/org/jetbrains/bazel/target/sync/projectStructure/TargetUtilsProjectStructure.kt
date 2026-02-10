@@ -19,7 +19,7 @@ class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
   var bspTargets: List<RawBuildTarget> = emptyList()
   var fileToTarget: Map<Path, List<Label>> = emptyMap()
   var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = emptyMap()
-  var libraryItems: List<LibraryItem>? = null
+  var libraryItems: List<LibraryItem> = emptyList()
 
   override suspend fun apply(
     project: Project,

@@ -128,8 +128,8 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
     mainModule: String? = null,
   ) {
     targetUtils.setTargets(
-      mapOf(
-        label to RawBuildTarget(
+      listOf(
+        RawBuildTarget(
           id = label,
           tags = emptyList(),
           dependencies = emptyList(),
