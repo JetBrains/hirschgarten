@@ -10,12 +10,17 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import java.io.InputStream
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
  * Handles reading messages from a delimited input source when the source is being simultaneously written to (by another process for example)
  */
-class DelimitedMessageReader<MessageType : Message>(private val inputStream: InputStream, private val parser: Parser<MessageType>) {
+class DelimitedMessageReader<MessageType : Message>(
+  private val inputStream: InputStream,
+  private val parser: Parser<MessageType>,
+  private val timeout: Duration = DefaultTimeout
+) {
   /**
    * Returns the next message if available.
    * If there is no input available, the function returns instantly.
@@ -30,7 +35,7 @@ class DelimitedMessageReader<MessageType : Message>(private val inputStream: Inp
       val size =
         readRawVarint32().also { size ->
           try {
-            withTimeout(30.seconds) {
+            withTimeout(timeout) {
               while (isActive) {
                 if (inputStream.available() >= size) {
                   break
@@ -96,4 +101,8 @@ class DelimitedMessageReader<MessageType : Message>(private val inputStream: Inp
       // Can't ever get here, but the compiler is being tricky
       throw IllegalStateException()
     }
+
+  companion object {
+    val DefaultTimeout = 30.seconds
+  }
 }
