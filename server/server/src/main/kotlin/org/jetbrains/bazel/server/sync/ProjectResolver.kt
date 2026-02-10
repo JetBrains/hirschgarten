@@ -95,7 +95,6 @@ class ProjectResolver(
           val needsPath = involvedRepos
             .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
             .map { it.toString() }
-            .sorted()  // Call Bazel in a reproducible way
           val extraRepositoryDescriptions = ModuleResolver(bazelRunner, workspaceContext).resolveModules(needsPath, bazelInfo)
           val extraPaths = extraRepositoryDescriptions.map { (name, description) -> when(description) {
             is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
