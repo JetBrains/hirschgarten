@@ -14,6 +14,7 @@ import com.intellij.openapi.roots.impl.IdeaProjectModelModifier
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.pom.java.LanguageLevel
+import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -168,7 +169,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     jumpToBuildFile(project, target)
   }
 
-  private fun asyncPromise(callable: suspend () -> Unit): Promise<Void>? {
+  private fun asyncPromise(callable: suspend CoroutineScope.() -> Unit): Promise<Void>? {
     if (!project.isBazelProject) return null
     return AsyncPromise<Void>().also { promise ->
       BazelCoroutineService.getInstance(project).startAsync(callable = callable).invokeOnCompletion { throwable ->
