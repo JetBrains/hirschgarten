@@ -51,7 +51,7 @@ public data class KotlinBuildTarget(
   val kotlincOptions: List<String>,
   val associates: List<Label>,
   val moduleName: String? = null,
-  var jvmBuildTarget: JvmBuildTarget? = null,
+  val jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(2)

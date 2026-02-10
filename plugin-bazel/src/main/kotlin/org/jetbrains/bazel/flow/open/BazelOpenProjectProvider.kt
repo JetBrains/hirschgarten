@@ -21,7 +21,6 @@ internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
   public override fun isProjectFile(file: VirtualFile): Boolean =
     file.isFile && file.name in (Constants.WORKSPACE_FILE_NAMES)
 
-  @Suppress("RedundantVisibilityModifier")
   public override suspend fun linkProject(projectFile: VirtualFile, project: Project) {
     log.debug { "Link BazelBsp project $projectFile to existing project ${project.name}" }
     // todo it is incorrect

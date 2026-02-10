@@ -5,6 +5,7 @@ import com.intellij.openapi.diagnostic.logger
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
 import org.h2.mvstore.WriteBuffer
+import org.h2.mvstore.type.LongDataType
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -20,9 +21,12 @@ import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bsp.protocol.PartialBuildTarget
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.util.EnumSet
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import kotlin.io.path.invariantSeparatorsPathString
 
 private val LOG = logger<PartialBuildTarget>()
@@ -115,9 +119,9 @@ internal fun readResolvedLabel(buffer: ByteBuffer): ResolvedLabel {
   return ResolvedLabel(repo = repo, packagePath = packagePath, target = target)
 }
 
-internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMap.Builder<HashValue128, PartialBuildTarget> {
-  val mapBuilder = MVMap.Builder<HashValue128, PartialBuildTarget>()
-  mapBuilder.setKeyType(HashValue128KeyDataType)
+internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMap.Builder<Long, PartialBuildTarget> {
+  val mapBuilder = MVMap.Builder<Long, PartialBuildTarget>()
+  mapBuilder.setKeyType(LongDataType.INSTANCE)
   mapBuilder.setValueType(
     createAnyValueDataType<PartialBuildTarget>(
       writer = { buffer, item ->
@@ -138,7 +142,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         } else {
           val aClass = targetData.javaClass
           BuildDataTargetTypeRegistry.writeClassId(aClass, buffer)
-          val data = bazelGson.toJson(targetData, aClass).encodeToByteArray()
+          val data = gzip(bazelGson.toJson(targetData, aClass).encodeToByteArray())
           buffer.putVarInt(data.size)
           buffer.put(data)
         }
@@ -160,7 +164,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
             val dataSize = readVarInt(buffer)
             val encodedData = ByteArray(dataSize)
             buffer.get(encodedData)
-            bazelGson.fromJson(encodedData.decodeToString(), aClass)
+            bazelGson.fromJson(ungzip(encodedData).decodeToString(), aClass)
           }
         PartialBuildTarget(id = id, tags = tags, kind = kind, baseDirectory = baseDirectory, data = data, noBuild = noBuild)
       },
@@ -222,4 +226,17 @@ private fun readTargetKind(buffer: ByteBuffer): TargetKind {
   }
   val ruleType = RuleType.entries[buffer.get().toInt()]
   return TargetKind(kindString = kindString, languageClasses = languageClasses, ruleType = ruleType)
+}
+
+/** Returns a decompressed byte array of the given content. */
+private fun ungzip(data: ByteArray): ByteArray {
+  val byteArrayInputStream = data.inputStream()
+  return GZIPInputStream(byteArrayInputStream).use { it.readAllBytes() }
+}
+
+/** Returns a compressed byte array of the given content. */
+private fun gzip(content: ByteArray): ByteArray {
+  val byteArrayOutputStream = ByteArrayOutputStream()
+  GZIPOutputStream(byteArrayOutputStream).use { it.write(content) }
+  return byteArrayOutputStream.toByteArray()
 }

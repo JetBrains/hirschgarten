@@ -247,7 +247,7 @@ class CollectProjectDetailsTask(
             if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
               CompiledSourceCodeInsideJarExcludeTransformer().transform(
                 targetIdToModuleDetails.values,
-                projectDetails.libraries.orEmpty(),
+                projectDetails.libraries,
               )
             } else {
               null

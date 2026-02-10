@@ -39,10 +39,12 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
@@ -78,6 +80,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     target2.createModule()
     target3.createModule()
     target4.createModule()
+
+    project.targetUtils.setTargets(
+      listOf(
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target1),
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target2),
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target3),
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target4),
+      ),
+    )
   }
 
   @Test
@@ -276,7 +287,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should ignore projects without any targets`() {
-    project.targetUtils.setTargets(emptyMap())
+    project.targetUtils.setTargets(emptyList())
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
     createEvent(file).process().shouldBeNull()
     deleteEvent(file).process().shouldBeNull()
@@ -380,8 +391,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
         baseDirectory = projectBasePath,
       )
-    val mockTargetMap = mapOf(mockLabel to mockBuildTarget)
-    project.targetUtils.setTargets(mockTargetMap)
+    project.targetUtils.setTargets(listOf(mockBuildTarget))
   }
 
   private fun VirtualFile.createFile(name: String, extension: String): VirtualFile {
