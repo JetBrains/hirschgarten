@@ -5,6 +5,7 @@ import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
+import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -16,6 +17,7 @@ import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * ```sh
@@ -60,6 +62,7 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
               .first()
               .click()
             popup().waitOneContainsText("Debug test").click()
+            wait(15.seconds)
           }
           step("Verify debug test status and results tree") {
             // should be the same as for the above test results tree
