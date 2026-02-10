@@ -2,6 +2,7 @@ package org.jetbrains.bazel.tests.hotswap
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
+import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
@@ -66,8 +67,8 @@ class HotSwapTest : IdeStarterBaseProjectTest() {
             }
 
             step("Modify code during debug session") {
-              // bring back the focus
               execute { openFile("SimpleKotlinTest.kt") }
+              codeEditor().click()
               execute { goto(10, 35) }
               execute { pressKey(Keys.ENTER) }
               execute { delayType(delayMs = 150, text = "val a = 10") }
