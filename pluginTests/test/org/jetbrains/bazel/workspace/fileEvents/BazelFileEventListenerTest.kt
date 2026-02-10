@@ -281,7 +281,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val excluded = src.createExcludedDirectory("excluded")
     val file = excluded.createFile("aaa", "java")
 
-    createEvent(file).process().shouldBeNull()
+    createEvent(file).process().assertNoProcessingHappened()
   }
 
   @Test
@@ -291,7 +291,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file = excluded.createFile("aaa", "java")
 
     runTestWriteAction { file.delete(requestor) }
-    deleteEvent(file).process().shouldBeNull()
+    deleteEvent(file).process().assertNoProcessingHappened()
   }
 
   @Test
@@ -304,7 +304,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val moveEvent = moveEvent(file, pack)
     runTestWriteAction { file.move(requestor, pack) }
 
-    moveEvent.process().shouldBeNull()
+    moveEvent.process().assertNoProcessingHappened()
   }
 
   @Test
@@ -317,7 +317,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val moveEvent = moveEvent(file, excluded)
     runTestWriteAction { file.move(requestor, excluded) }
 
-    moveEvent.process().shouldBeNull()
+    moveEvent.process().assertNoProcessingHappened()
   }
 
   @Test
@@ -328,7 +328,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val level3 = level2.createDirectory("level3")
     val file = level3.createFile("aaa", "java")
 
-    createEvent(file).process().shouldBeNull()
+    createEvent(file).process().assertNoProcessingHappened()
   }
 
   @Test
@@ -340,7 +340,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file = level3.createFile("aaa", "java")
 
     runTestWriteAction { level2.delete(requestor) }
-    deleteEvent(file).process().shouldBeNull()
+    deleteEvent(file).process().assertNoProcessingHappened()
   }
 
   @Test
