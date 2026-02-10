@@ -25,7 +25,7 @@ object BazelProjectConfigurer {
     (context.resolvedProjectHome / "settings.gradle.kts").deleteIfExists()
     (context.resolvedProjectHome / "gradlew").deleteIfExists()
     (context.resolvedProjectHome / "gradlew.bat").deleteIfExists()
-    configureBazelCaches(context)
+    configureBazelSettings(context)
     if (createProjectView) {
       createProjectViewFile(context)
     }
@@ -68,24 +68,49 @@ register_toolchains(
   private val defaultCacheRoot: Path =
     Path.of(System.getProperty("user.home"), ".cache", "ide-starter-bazel")
 
-  private fun configureBazelCaches(context: IDETestContext) {
+  private fun configureBazelSettings(context: IDETestContext) {
     val bazelrc = context.resolvedProjectHome / ".bazelrc"
+    val lines = mutableListOf<String>()
+
     val repoCache = System.getenv("IDE_STARTER_BAZEL_REPOSITORY_CACHE")
       ?.let { Path.of(it) }
       ?: System.getProperty("ide.starter.bazel.repository.cache")
         ?.let { Path.of(it) }
       ?: defaultCacheRoot.resolve("repository-cache")
+    lines.add("common --repository_cache=$repoCache")
+
     val isPerformanceTest = System.getProperty("idea.performance.tests") == "true"
     val diskCache = System.getenv("IDE_STARTER_BAZEL_DISK_CACHE")
       ?.let { Path.of(it) }
       ?: System.getProperty("ide.starter.bazel.disk.cache")
         ?.let { Path.of(it) }
       ?: if (!isPerformanceTest) defaultCacheRoot.resolve("disk-cache") else null
-    val lines = buildList {
-      add("common --repository_cache=$repoCache")
-      diskCache?.let { add("common --disk_cache=$it") }
+    diskCache?.let { lines.add("common --disk_cache=$it") }
+
+    val downloaderConfigSource = System.getenv("IDE_STARTER_BAZEL_DOWNLOADER_CONFIG")
+      ?.let { Path.of(it) }
+      ?: System.getProperty("ide.starter.bazel.downloader.config")
+        ?.let { Path.of(it) }
+    if (downloaderConfigSource != null && downloaderConfigSource.exists()) {
+      val configFile = context.resolvedProjectHome / "bazel_downloader.cfg"
+      val content = downloaderConfigSource.toFile().readText()
+        .lineSequence()
+        .filter { !it.trim().startsWith("block ") }
+        .joinToString("\n")
+      configFile.writeText(content)
+      val flagName = resolveDownloaderConfigFlag(context)
+      lines.add("common --$flagName=bazel_downloader.cfg")
     }
+
     bazelrc.toFile().appendText("\n" + lines.joinToString("\n") + "\n")
+  }
+
+  private fun resolveDownloaderConfigFlag(context: IDETestContext): String {
+    val bazelVersionFile = context.resolvedProjectHome / ".bazelversion"
+    if (!bazelVersionFile.exists()) return "experimental_downloader_config"
+    val majorVersion = bazelVersionFile.toFile().readText().trim()
+      .split(".").firstOrNull()?.toIntOrNull() ?: return "experimental_downloader_config"
+    return if (majorVersion >= 8) "downloader_config" else "experimental_downloader_config"
   }
 
   private fun createProjectViewFile(context: IDETestContext) {
