@@ -133,7 +133,19 @@ class ModuleResolver(
       bazelRunner
         .runBazelCommand(command)
         .waitAndGetResult()
-    return moduleOutputParser.parseShowRepoResults(processResult, json_output)
+    if (bazelInfo.isWorkspaceEnabled && processResult.isNotSuccess) {
+      // work around https://github.com/bazelbuild/bazel/issues/28601
+      // As we cannot reliably determine which repositories `bazel mod show_repo` is willing to resolve,
+      // we have to accept failure. However, to get the maximal amount of information possible, we should
+      // ask for each repository individually.
+      if (moduleNames.size == 1) {
+        // Failure of a request asking for a single repository, so we just answer that we don't know.
+        return mapOf(moduleNames[0] to null)
+      }
+      return moduleNames.map { resolveModules(listOf(it), bazelInfo )}.reduceOrNull { acc, result -> acc + result } ?: emptyMap()
+    }
+
+      return moduleOutputParser.parseShowRepoResults(processResult, json_output)
   }
 
   val gson = bazelGson
