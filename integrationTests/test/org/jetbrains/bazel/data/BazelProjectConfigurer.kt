@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.data
 
 import com.intellij.ide.starter.ide.IDETestContext
+import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
@@ -24,6 +25,7 @@ object BazelProjectConfigurer {
     (context.resolvedProjectHome / "settings.gradle.kts").deleteIfExists()
     (context.resolvedProjectHome / "gradlew").deleteIfExists()
     (context.resolvedProjectHome / "gradlew.bat").deleteIfExists()
+    configureBazelCaches(context)
     if (createProjectView) {
       createProjectViewFile(context)
     }
@@ -62,6 +64,29 @@ register_toolchains(
     check(exitCode == 0) { "Bazel clean exited with code $exitCode" }
   }
 
+
+  private val defaultCacheRoot: Path =
+    Path.of(System.getProperty("user.home"), ".cache", "ide-starter-bazel")
+
+  private fun configureBazelCaches(context: IDETestContext) {
+    val bazelrc = context.resolvedProjectHome / ".bazelrc"
+    val repoCache = System.getenv("IDE_STARTER_BAZEL_REPOSITORY_CACHE")
+      ?.let { Path.of(it) }
+      ?: System.getProperty("ide.starter.bazel.repository.cache")
+        ?.let { Path.of(it) }
+      ?: defaultCacheRoot.resolve("repository-cache")
+    val isPerformanceTest = System.getProperty("idea.performance.tests") == "true"
+    val diskCache = System.getenv("IDE_STARTER_BAZEL_DISK_CACHE")
+      ?.let { Path.of(it) }
+      ?: System.getProperty("ide.starter.bazel.disk.cache")
+        ?.let { Path.of(it) }
+      ?: if (!isPerformanceTest) defaultCacheRoot.resolve("disk-cache") else null
+    val lines = buildList {
+      add("common --repository_cache=$repoCache")
+      diskCache?.let { add("common --disk_cache=$it") }
+    }
+    bazelrc.toFile().appendText("\n" + lines.joinToString("\n") + "\n")
+  }
 
   private fun createProjectViewFile(context: IDETestContext) {
     val projectView = context.resolvedProjectHome / "projectview.bazelproject"
