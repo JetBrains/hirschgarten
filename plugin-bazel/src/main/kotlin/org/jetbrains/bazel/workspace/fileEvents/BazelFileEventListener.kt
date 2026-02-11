@@ -5,6 +5,7 @@ import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -12,6 +13,7 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.NlsSafe
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
@@ -291,7 +293,11 @@ private fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<Si
     } catch (_: UnsupportedOperationException) { // unable to create a Path instance
       return emptyList()
     }
-  return filter { it.doesAffectFolder(rootDirPath) }
+  val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+  val fileSystem = LocalFileSystem.getInstance()
+  return runReadAction {
+    filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileSystem) }
+  }
 }
 
 @NlsSafe
