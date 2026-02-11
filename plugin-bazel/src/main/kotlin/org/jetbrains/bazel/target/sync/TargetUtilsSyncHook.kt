@@ -7,7 +7,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
-private class TargetUtilsSyncHook : ProjectSyncHook {
+internal class TargetUtilsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val bspTargets =
       environment.resolver
@@ -15,22 +15,13 @@ private class TargetUtilsSyncHook : ProjectSyncHook {
         .targets
     val targetUtilsDiff = environment.diff.targetUtilsDiff
     targetUtilsDiff.bspTargets = bspTargets
-    targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets, withLowPrioritySharedSources = true)
-    targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources =
-      calculateFileToTarget(bspTargets, withLowPrioritySharedSources = false)
+    targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets)
   }
 
-  private fun calculateFileToTarget(targets: List<BuildTarget>, withLowPrioritySharedSources: Boolean): Map<Path, List<Label>> {
+  private fun calculateFileToTarget(targets: List<RawBuildTarget>): Map<Path, List<Label>> {
     val resultMap = HashMap<Path, MutableList<Label>>()
     for (target in targets) {
-      target as RawBuildTarget
-      val sources =
-        if (withLowPrioritySharedSources) {
-          target.sources + target.lowPrioritySharedSources
-        } else {
-          target.sources
-        }
-      for (source in sources) {
+      for (source in target.sources) {
         val path = source.path
         val label = target.id
         resultMap.computeIfAbsent(path) { ArrayList() }.add(label)
