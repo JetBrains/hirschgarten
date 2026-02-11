@@ -3,47 +3,50 @@ package org.jetbrains.bazel.workspace.fileEvents
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
-internal class FileEventController {
-  private val processingLock = Mutex()
-
+internal class FileEventQueueController {
   // synchronized collections do not guarantee thread-safety on clear(), hence manual synchronization
-  private val eventQueue = mutableListOf<SimplifiedFileEvent>()
+  private val eventQueue = ArrayList<List<SimplifiedFileEvent>>()
+  private val processingBatch = AtomicBoolean(false)
 
-  /** @return `true` if these events were the first to be reported in the batch, `false` otherwise */
+  /** @return `true` if caller should start processing events, `false` otherwise */
   fun addEvents(events: List<SimplifiedFileEvent>): Boolean {
     synchronized(this) {
-      val eventIsFirstInQueue = eventQueue.isEmpty()
-      eventQueue += events
-      return eventIsFirstInQueue
+      val wasEmpty = eventQueue.isEmpty()
+      eventQueue.add(events)
+      return wasEmpty && !processingBatch.get()
     }
   }
 
-  fun getEventsAndClear(): List<SimplifiedFileEvent> {
-    synchronized(this) {
-      val events = eventQueue.toList() // list copy
-      eventQueue.clear()
-      return events
-    }
-  }
-
-  suspend fun processWithLock(action: suspend () -> Unit) {
-    try {
-      processingLock.withLock(this) {
-        action()
+  /** @return `true` if there was another batch to process, `false` otherwise */
+  suspend fun withNextBatch(body: suspend (List<SimplifiedFileEvent>) -> Unit): Boolean {
+    val batch =
+      synchronized(this) {
+        val batch = eventQueue.flatten().takeIf { it.isNotEmpty() }
+        processingBatch.set(batch != null)
+        eventQueue.clear()
+        batch
       }
-    } catch (_: IllegalStateException) {
-      // Mutex::withLock was called with Mutex already locked - in that case, we just want not to start the processing
-    }
-  }
 
-  fun isAnotherProcessingInProgress(): Boolean = processingLock.isLocked
+    if (batch == null)
+      return false
+
+    try {
+      body(batch)
+    } catch (ex: Throwable) {
+      synchronized(this) {
+        processingBatch.set(false)
+        eventQueue.clear()
+      }
+      throw ex
+    }
+    return true
+  }
 
   companion object {
     @JvmStatic
-    fun getInstance(project: Project): FileEventController = project.service()
+    fun getInstance(project: Project): FileEventQueueController = project.service()
   }
 }

@@ -16,7 +16,7 @@ import org.jetbrains.bazel.annotations.InternalApi
 class BazelCoroutineService(private val coroutineScope: CoroutineScope) {
   fun start(block: suspend CoroutineScope.() -> Unit): Job = coroutineScope.launch(block = block)
 
-  fun <T> startAsync(lazy: Boolean = false, callable: suspend () -> T): Deferred<T> =
+  fun <T> startAsync(lazy: Boolean = false, callable: suspend CoroutineScope.() -> T): Deferred<T> =
     coroutineScope.async(start = if (lazy) CoroutineStart.LAZY else CoroutineStart.DEFAULT) { callable() }
 
   companion object {
