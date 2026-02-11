@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.ui.console
 
 import com.google.common.base.Throwables.getStackTraceAsString
+import com.intellij.build.BuildContentDescriptor
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.FilePosition
@@ -19,7 +20,6 @@ import com.intellij.build.events.impl.StartBuildEventImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -145,7 +145,13 @@ abstract class TaskConsole(
     }
     taskPtyTerminalMap[taskId] = consoleDelegate
 
-    val contentDescriptor = RunContentDescriptor(console, null, consoleDelegate.component, null)
+    val contentDescriptor =
+      BuildContentDescriptor(console, null, consoleDelegate.component, null)
+    contentDescriptor.apply {
+      // copy values from taskDescriptor, where it had been set before already
+      isActivateToolWindowWhenAdded = taskDescriptor.isActivateToolWindowWhenAdded
+      isActivateToolWindowWhenFailed = taskDescriptor.isActivateToolWindowWhenFailed
+    }
     Disposer.register(contentDescriptor, consoleDelegate)
     Disposer.register(taskView as Disposable, contentDescriptor)
 
