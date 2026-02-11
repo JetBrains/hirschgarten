@@ -276,6 +276,74 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `should ignore file creation inside excluded folders`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val file = excluded.createFile("aaa", "java")
+
+    createEvent(file).process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore deletion from excluded folder`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val file = excluded.createFile("aaa", "java")
+
+    runTestWriteAction { file.delete(requestor) }
+    deleteEvent(file).process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore file move from excluded folder to non-excluded folder`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val pack = src.createDirectory("package")
+    val file = excluded.createFile("aaa", "java")
+
+    val moveEvent = moveEvent(file, pack)
+    runTestWriteAction { file.move(requestor, pack) }
+
+    moveEvent.process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore file move from non-excluded folder to excluded folder`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val pack = src.createDirectory("package")
+    val file = pack.createFile("aaa", "java")
+
+    val moveEvent = moveEvent(file, excluded)
+    runTestWriteAction { file.move(requestor, excluded) }
+
+    moveEvent.process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore file creation deep inside excluded folders`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val level2 = excluded.createDirectory("level2")
+    val level3 = level2.createDirectory("level3")
+    val file = level3.createFile("aaa", "java")
+
+    createEvent(file).process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore deletion from non-existing folder deep inside an excluded folder`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val level2 = excluded.createDirectory("level2")
+    val level3 = level2.createDirectory("level3")
+    val file = level3.createFile("aaa", "java")
+
+    runTestWriteAction { level2.delete(requestor) }
+    deleteEvent(file).process().assertNoProcessingHappened()
+  }
+
+  @Test
   fun `should ignore projects without any targets`() {
     project.targetUtils.setTargets(emptyMap())
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
@@ -397,6 +465,22 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     return runTestWriteAction {
       this.createChildDirectory(requestor, name)
     }
+  }
+
+  private fun VirtualFile.createExcludedDirectory(name: String): VirtualFile {
+    val directory = this.createDirectory(name)
+    val module = workspaceModel.currentSnapshot.resolveModule(target1)
+    val srcUrl = this.toVirtualFileUrl(virtualFileUrlManager)
+    val contentRoot =
+      ContentRootEntity(
+        url = srcUrl,
+        excludedPatterns = listOf("excluded"),
+        entitySource = module.entitySource,
+      )
+    runTestWriteAction {
+      workspaceModel.updateProjectModel { it.modifyModuleEntity(module) { contentRoots = listOf(contentRoot) } }
+    }
+    return directory
   }
 
   private fun createEvent(file: VirtualFile) =
