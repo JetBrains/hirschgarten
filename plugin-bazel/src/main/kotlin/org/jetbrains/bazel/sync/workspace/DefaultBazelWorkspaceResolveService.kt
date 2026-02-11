@@ -57,7 +57,6 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
       AspectBazelProjectMapper(
         project = project,
         languagePluginsService = project.service<LanguagePluginsService>(),
-        featureFlags = featureFlags,
         bazelPathsResolver = paths.bazelPathsResolver,
         targetTagsResolver = TargetTagsResolver(),
         mavenCoordinatesResolver = MavenCoordinatesResolver(),

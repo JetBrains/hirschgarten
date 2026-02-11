@@ -13,6 +13,5 @@ object BspMappings {
       Tag.NO_IDE -> BuildTargetTag.NO_IDE
       Tag.MANUAL -> BuildTargetTag.MANUAL
       Tag.NO_BUILD -> null
-      Tag.IDE_LOW_SHARED_SOURCES_PRIORITY -> null
     }
 }

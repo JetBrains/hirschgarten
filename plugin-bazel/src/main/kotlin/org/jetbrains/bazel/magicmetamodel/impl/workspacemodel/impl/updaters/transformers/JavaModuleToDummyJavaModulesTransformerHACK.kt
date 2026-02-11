@@ -11,14 +11,11 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
 import org.jetbrains.bazel.utils.allAncestorsSequence
-import org.jetbrains.bazel.utils.commonAncestor
-import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
@@ -35,7 +32,7 @@ import kotlin.io.path.pathString
  */
 class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
-  private val fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
+  private val fileToTargets: Map<Path, List<Label>>,
   private val project: Project,
 ) {
   sealed interface Result
@@ -142,7 +139,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
    * IDEA will only consider the inner source root because of how the workspace model works.
    * This can cause red code, e.g., on https://github.com/bazelbuild/bazel
    */
-  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargetWithoutLowPrioritySharedSources[this]?.size ?: 0) > 1
+  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargets[this]?.size ?: 0) > 1
 
   /**
    * @param relevantExtensions consider new files only with the specified extensions, or `null` to consider all new files

@@ -397,11 +397,6 @@
       key="bazel.merge.source.roots"
     />
     <registryKey
-      defaultValue="true"
-      description="Check and warn about shared sources in the project by showing the &quot;Shared sources detected&quot; notification"
-      key="bazel.check.shared.sources"
-    />
-    <registryKey
       defaultValue="false"
       description="Whether the Bazel plugin should import automatically even if .idea or another project model (e.g., Gradle) exists already"
       key="bazel.project.auto.open.if.present"

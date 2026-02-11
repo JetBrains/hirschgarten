@@ -55,7 +55,6 @@ import kotlin.io.path.notExists
 class AspectBazelProjectMapper(
   private val project: Project,
   private val languagePluginsService: LanguagePluginsService,
-  private val featureFlags: FeatureFlags,
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
@@ -192,18 +191,7 @@ class AspectBazelProjectMapper(
         createIntermediateTargetData(workspaceContext, targetsToImport, extraLibraries)
       }
 
-    val highPrioritySources =
-      if (this.featureFlags.isSharedSourceSupportEnabled) {
-        emptySet()
-      } else {
-        targets
-          .filter { !it.tags.hasLowSharedSourcesPriority() }
-          .flatMap { it.sources }
-          .map { it.path }
-          .toSet()
-      }
-
-    val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, highPrioritySources, repoMapping, dependencyGraph) }
+    val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, repoMapping, dependencyGraph) }
     val nonModuleRawTargets = measure("create non module raw targets") {
       val nonModuleTargets =
         createNonModuleTargets(
@@ -687,7 +675,7 @@ class AspectBazelProjectMapper(
     containsInternalJars: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
-    val rawSources = getSourceJarPaths(targetInfo);
+    val rawSources = getSourceJarPaths(targetInfo)
     val sources = if (workspaceContext.preferClassJarsOverSourcelessJars) {
       rawSources - outputs
     } else {
@@ -871,7 +859,6 @@ class AspectBazelProjectMapper(
 
   private suspend fun createRawBuildTargets(
     targets: List<IntermediateTargetData>,
-    highPrioritySources: Set<Path>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
   ): List<RawBuildTarget> =
@@ -881,7 +868,6 @@ class AspectBazelProjectMapper(
           async {
             createRawBuildTarget(
               target,
-              highPrioritySources,
               repoMapping,
               dependencyGraph,
             )
@@ -896,7 +882,6 @@ class AspectBazelProjectMapper(
 
   private suspend fun createRawBuildTarget(
     targetData: IntermediateTargetData,
-    highPrioritySources: Set<Path>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
   ): RawBuildTarget? {
@@ -911,12 +896,7 @@ class AspectBazelProjectMapper(
     val resources = resolveResources(target, languagePlugin)
 
     val tags = targetData.tags
-    val (targetSources, lowPrioritySharedSources) =
-      if (tags.hasLowSharedSourcesPriority()) {
-        targetData.sources.partition { it.path !in highPrioritySources }
-      } else {
-        targetData.sources to emptyList()
-      }
+    val targetSources = targetData.sources
 
     val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetData.sources, bazelPathsResolver)
     val data = languagePlugin.createBuildTargetData(context, target)
@@ -931,7 +911,6 @@ class AspectBazelProjectMapper(
       baseDirectory = baseDirectory,
       noBuild = Tag.NO_BUILD in tags,
       data = data,
-      lowPrioritySharedSources = lowPrioritySharedSources,
     )
   }
 
@@ -1055,8 +1034,6 @@ class AspectBazelProjectMapper(
       )
     return buildTarget
   }
-
-  private fun Set<Tag>.hasLowSharedSourcesPriority(): Boolean = Tag.IDE_LOW_SHARED_SOURCES_PRIORITY in this
 
   private fun inferKind(
     tags: Set<Tag>,
