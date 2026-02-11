@@ -7,6 +7,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 import kotlin.io.path.writeText
 
 object BazelProjectConfigurer {
@@ -17,14 +18,14 @@ object BazelProjectConfigurer {
 
   @OptIn(ExperimentalPathApi::class)
   fun configureProjectBeforeUseWithoutBazelClean(context: IDETestContext, createProjectView: Boolean = true) {
-    (context.resolvedProjectHome / ".idea").deleteRecursively()
-    (context.resolvedProjectHome / ".bazelbsp").deleteRecursively()
-    (context.resolvedProjectHome / "build.gradle").deleteIfExists()
-    (context.resolvedProjectHome / "build.gradle.kts").deleteIfExists()
-    (context.resolvedProjectHome / "settings.gradle").deleteIfExists()
-    (context.resolvedProjectHome / "settings.gradle.kts").deleteIfExists()
-    (context.resolvedProjectHome / "gradlew").deleteIfExists()
-    (context.resolvedProjectHome / "gradlew.bat").deleteIfExists()
+    (context.resolvedBazelProjectHome / ".idea").deleteRecursively()
+    (context.resolvedBazelProjectHome / ".bazelbsp").deleteRecursively()
+    (context.resolvedBazelProjectHome / "build.gradle").deleteIfExists()
+    (context.resolvedBazelProjectHome / "build.gradle.kts").deleteIfExists()
+    (context.resolvedBazelProjectHome / "settings.gradle").deleteIfExists()
+    (context.resolvedBazelProjectHome / "settings.gradle.kts").deleteIfExists()
+    (context.resolvedBazelProjectHome / "gradlew").deleteIfExists()
+    (context.resolvedBazelProjectHome / "gradlew.bat").deleteIfExists()
     configureBazelSettings(context)
     if (createProjectView) {
       createProjectViewFile(context)
@@ -32,7 +33,7 @@ object BazelProjectConfigurer {
   }
 
   fun addHermeticCcToolchain(context: IDETestContext) {
-    val moduleFile = context.resolvedProjectHome / "MODULE.bazel"
+    val moduleFile = context.resolvedBazelProjectHome / "MODULE.bazel"
     val toolchainConfig = """
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.1.0")
 
@@ -58,7 +59,7 @@ register_toolchains(
 
     val exitCode =
       ProcessBuilder("bazel", "clean", "--expunge")
-        .directory(context.resolvedProjectHome.toFile())
+        .directory(context.resolvedBazelProjectHome.toFile())
         .start()
         .waitFor()
     check(exitCode == 0) { "Bazel clean exited with code $exitCode" }
@@ -69,7 +70,7 @@ register_toolchains(
     Path.of(System.getProperty("user.home"), ".cache", "ide-starter-bazel")
 
   private fun configureBazelSettings(context: IDETestContext) {
-    val bazelrc = context.resolvedProjectHome / ".bazelrc"
+    val bazelrc = context.resolvedBazelProjectHome / ".bazelrc"
     val lines = mutableListOf<String>()
 
     val repoCache = System.getenv("IDE_STARTER_BAZEL_REPOSITORY_CACHE")
@@ -92,7 +93,7 @@ register_toolchains(
       ?: System.getProperty("ide.starter.bazel.downloader.config")
         ?.let { Path.of(it) }
     if (downloaderConfigSource != null && downloaderConfigSource.exists()) {
-      val configFile = context.resolvedProjectHome / "bazel_downloader.cfg"
+      val configFile = context.resolvedBazelProjectHome / "bazel_downloader.cfg"
       val content = downloaderConfigSource.toFile().readText()
         .lineSequence()
         .filter { !it.trim().startsWith("block ") }
@@ -106,7 +107,7 @@ register_toolchains(
   }
 
   private fun resolveDownloaderConfigFlag(context: IDETestContext): String {
-    val bazelVersionFile = context.resolvedProjectHome / ".bazelversion"
+    val bazelVersionFile = context.resolvedBazelProjectHome / ".bazelversion"
     if (!bazelVersionFile.exists()) return "experimental_downloader_config"
     val majorVersion = bazelVersionFile.toFile().readText().trim()
       .split(".").firstOrNull()?.toIntOrNull() ?: return "experimental_downloader_config"
@@ -114,7 +115,7 @@ register_toolchains(
   }
 
   private fun createProjectViewFile(context: IDETestContext) {
-    val projectView = context.resolvedProjectHome / "projectview.bazelproject"
+    val projectView = context.resolvedBazelProjectHome / "projectview.bazelproject"
     // Check env vars first (for values with spaces), fall back to system properties
     // argfile composer on TC doesn't handle spaces in VM options well
     val targets = System.getenv("BAZEL_PERF_TARGET_LIST") ?: System.getProperty("bazel.ide.starter.test.target.list")
@@ -137,4 +138,7 @@ register_toolchains(
         $buildFlags
       """.trimIndent()
   }
+
+  private val IDETestContext.resolvedBazelProjectHome: Path
+    get() = resolvedProjectHome.takeIf { it.isDirectory() } ?: resolvedProjectHome.parent
 }

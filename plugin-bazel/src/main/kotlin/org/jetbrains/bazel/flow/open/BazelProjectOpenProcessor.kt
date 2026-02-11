@@ -79,7 +79,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         projectRootDir to projectViewPath
       }
 
-    val projectStoreBaseDir = projectViewPath ?: path.workspaceFile
+    val projectStoreBaseDir = projectViewPath ?: projectRootDir?.workspaceFile
     if (projectStoreBaseDir == null || projectRootDir == null) {
       log.warn("Unable to open Bazel project at ${virtualFile.presentableUrl}")
       return null

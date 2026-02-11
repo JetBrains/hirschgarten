@@ -28,15 +28,25 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       )
     )
 
-    val BazelProjectOpenProcessorStarter = withBazelProject(
-      projectInfo = withDefaults(
-        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "be362148696afcec38035064a91d48ce76a4c10f",
-        branchName = "main",
-        relativePath = "invalidProjectOpeningTest",
-        configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
-      )
+  val BazelProjectOpenByRootDir = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "599425b1bc7b525e13849c64aa3ecc12880568b0",
+      branchName = "main",
+      relativePath = "simpleKotlinTest",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
     )
+  )
+
+  val BazelProjectOpenByModuleFile = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "599425b1bc7b525e13849c64aa3ecc12880568b0",
+      branchName = "main",
+      relativePath = "simpleKotlinTest/MODULE.bazel",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+    )
+  )
 
     val HotSwap = withBazelProject(
       projectInfo = withDefaults(
