@@ -290,6 +290,24 @@ def _is_valid_make_var(varname):
             return False
     return True
 
+def map_with_resolve_files(f, xs):
+    results = []
+    resolve_files = []
+
+    for x in xs:
+        if x != None:
+            res = f(x)
+            if res != None:
+                a, b = res
+                if a != None:
+                    results.append(a)
+                if b != None:
+                    resolve_files += b
+
+    return results, resolve_files
+
+
+IMPORT_RULE_KIND = ["java_import", "jvm_import", "kt_jvm_import"]
 
 EXPORT_DEPS = [
     "exports",

@@ -178,6 +178,15 @@ class BazelBspAspectsManager(
         "repoMapping" to starlarkRepoMapping,
       ),
     )
+
+    templateWriter.writeToFile(
+      "utils/jvm_common.bzl" + Constants.TEMPLATE_EXTENSION,
+      aspectsPath.resolve("utils").resolve("jvm_common.bzl"),
+      mapOf(
+        "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
+      ),
+    )
+
   }
 
   private fun RulesetLanguage.calculateCanonicalName(repoMapping: RepoMapping): String? =
