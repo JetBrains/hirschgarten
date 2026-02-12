@@ -399,6 +399,7 @@ class BazelRunnerBuilderTest {
         "build",
         BazelFlag.toolTag(),
         "--build_event_binary_file=/dev/null",
+        "--build_event_binary_file_upload_mode=wait_for_upload_complete",
         "--bes_outerr_buffer_size=10",
         "--build_event_publish_all_actions",
         "--curses=no",
