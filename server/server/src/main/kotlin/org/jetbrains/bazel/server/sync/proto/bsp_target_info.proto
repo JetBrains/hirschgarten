@@ -118,6 +118,7 @@ message TargetInfo {
   repeated JvmOutputs jars = 1001;
   repeated JvmOutputs generated_jars = 1002;
   repeated FileLocation jdeps = 1003;
+  bool jvm_target = 1004;
   JavaToolchainInfo java_toolchain_info = 2000;
   JavaRuntimeInfo java_runtime_info = 3000;
   ScalaTargetInfo scala_target_info = 4000;

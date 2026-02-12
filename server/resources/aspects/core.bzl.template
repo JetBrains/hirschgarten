@@ -23,6 +23,18 @@ def make_dep(dep, dependency_type, exported):
 def make_deps(deps, dependency_type, exported = False):
     return [make_dep(dep, dependency_type, exported) for dep in deps]
 
+COMMON_INFO_FIELDS = ["jars", "generated_jars", "jdeps"]
+
+def update_info(info, new_info):
+    """info.update(new_info), but with fields in COMMON_INFO_FIELDS
+    being the list concatenation of the values in both dicts.
+    """
+    common = {}
+    for k in COMMON_INFO_FIELDS:
+        common[k] = info.get(k, []) + new_info.get(k, [])
+    info.update(new_info)
+    info.update(common)
+
 def _is_analysis_test(target):
     """Returns if the target is an analysis test.
 
@@ -151,7 +163,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     all_extension_info = create_all_extension_info(target, ctx, output_groups, dep_targets)
     for (extension_info, extension_exported_properties) in all_extension_info:
-        info.update(extension_info)
+        update_info(info, extension_info)
         if extension_exported_properties != None:
             exported_properties.update(extension_exported_properties)
 
