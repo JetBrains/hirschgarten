@@ -85,12 +85,13 @@ class ProjectViewService(private val project: Project) {
     return@readAction ProjectView.fromProjectViewPsiFile(psi)
   }
 
-  private fun getDefaultProjectView(): ProjectView {
-    val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir).format(".")
-    val psiFile = PsiFileFactory.getInstance(project)
-      .createFileFromText(".bazelproject", ProjectViewLanguage, content) as ProjectViewPsiFile
-    return ProjectView.fromProjectViewPsiFile(psiFile)
-  }
+  private fun getDefaultProjectView(): ProjectView =
+    ReadAction.compute<ProjectView, RuntimeException> {
+      val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir).format(".")
+      val psiFile = PsiFileFactory.getInstance(project)
+        .createFileFromText(".bazelproject", ProjectViewLanguage, content) as ProjectViewPsiFile
+      ProjectView.fromProjectViewPsiFile(psiFile)
+    }
 
   suspend fun forceReparseCurrentProjectViewFiles() {
     val projectViewPath = findProjectViewPath()
