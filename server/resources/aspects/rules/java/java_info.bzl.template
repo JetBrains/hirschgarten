@@ -5,7 +5,9 @@ load("@${rulesetName}//java/common:java_plugin_info.bzl", "JavaPluginInfo")
 load("@${rulesetName}//java:java_utils.bzl", java_utils = "utils")
 #end
 
-load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "to_file_location", "BspAspectInfo")
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "to_file_location", "BspAspectInfo", "file_location", "is_external", "IMPORT_RULE_KIND", "update_sync_output_groups", "map_with_resolve_files")
+load("//${bspPath}/aspects:utils/jvm_common.bzl", "to_generated_jvm_outputs", "get_generated_jars", "provider_resolve_depsets", "to_jvm_outputs")
+
 
 def java_info_in_target(target):
     #if( $javaEnabled == "true" )
@@ -93,9 +95,15 @@ def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
     else:
         return None, None
 
+def get_jdeps(target): 
+    if java_info_in_target(target):
+        return [jo.jdeps for jo in get_java_info(target).java_outputs if jo.jdeps != None]
+    return []
+
+
 JAVA_RUNTIME_TOOLCHAIN_TYPE = "@bazel_tools//tools/jdk:runtime_toolchain_type"
 
-def extract_java_runtime(target, ctx, dep_targets, **kwargs):
+def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
     runtime = None
 
     if JAVA_RUNTIME_TOOLCHAIN_TYPE in ctx.toolchains:
@@ -117,8 +125,34 @@ def extract_java_runtime(target, ctx, dep_targets, **kwargs):
                 runtime_info = dep[BspAspectInfo].bsp_info.java_runtime_info
                 break
 
-    if runtime_info != None:
-        result = dict(java_runtime_info = runtime_info)
-        return result, result
+    jdeps = get_jdeps(target)
+    java_outputs = []
+    provider = get_java_info(target)
+    if provider:
+        if hasattr(provider, "java_outputs") and provider.java_outputs:
+            java_outputs = provider.java_outputs
+        elif hasattr(provider, "outputs") and provider.outputs:
+            java_outputs = provider.outputs.jars
+    jars, resolve_files_jars = map_with_resolve_files(to_jvm_outputs, java_outputs)
+    generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
+    
+    resolve_files = resolve_files_jars + resolve_files_generated_jars
+    resolve_files_transitive = []
+    if is_external(target) or ctx.rule.kind in IMPORT_RULE_KIND:
+        resolve_files_transitive += provider_resolve_depsets(target, provider)
+        update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(resolve_files, transitive=resolve_files_transitive))
     else:
-        return None, None
+        resolve_files += jdeps
+        update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
+
+
+    info_result = dict(jdeps = [file_location(j) for j in jdeps], jars = jars, generated_jars = generated_jars)
+
+    export_result = None
+    if runtime_info != None:
+        info_result["java_runtime_info"] = runtime_info
+        export_result = dict(java_runtime_info = runtime_info)
+    if provider:
+        info_result["jvm_target"] = True
+
+    return info_result, export_result
