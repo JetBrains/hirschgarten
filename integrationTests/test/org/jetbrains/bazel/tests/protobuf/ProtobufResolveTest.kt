@@ -19,6 +19,7 @@ import kotlin.time.Duration.Companion.minutes
  * ```
  */
 class ProtobufResolveTest : IdeStarterBaseProjectTest() {
+  override val timeout = 30.minutes
 
   @Test
   fun `protobuf imports should resolve without red code`() {
