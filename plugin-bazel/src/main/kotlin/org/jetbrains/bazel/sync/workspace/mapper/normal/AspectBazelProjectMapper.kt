@@ -291,18 +291,18 @@ class AspectBazelProjectMapper(
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
-      .filter { it.jvmTargetInfo.generatedJarsList.isNotEmpty() }
+      .filter { it.generatedJarsList.isNotEmpty() }
       .associate { targetInfo ->
         targetInfo.id to
           Library(
             label = Label.parse(targetInfo.id + "_generated"),
             outputs =
-              targetInfo.jvmTargetInfo.generatedJarsList
+              targetInfo.generatedJarsList
                 .flatMap { it.binaryJarsList }
                 .map { bazelPathsResolver.resolve(it) }
                 .toSet(),
             sources =
-              targetInfo.jvmTargetInfo.generatedJarsList
+              targetInfo.generatedJarsList
                 .flatMap { it.sourceJarsList }
                 .map { bazelPathsResolver.resolve(it) }
                 .toSet(),
@@ -579,7 +579,7 @@ class AspectBazelProjectMapper(
     }
 
   private fun dependencyJarsFromJdepsFiles(targetInfo: TargetInfo): Set<Path> =
-    targetInfo.jvmTargetInfo.jdepsList
+    targetInfo.jdepsList
       .flatMap { jdeps ->
         val path = bazelPathsResolver.resolve(jdeps)
         if (path.toFile().exists()) {
@@ -675,7 +675,7 @@ class AspectBazelProjectMapper(
         .toMap()
     }
 
-  private fun TargetInfo.containsAnyInternalJars() = jvmTargetInfo.jarsList.any { jars ->
+  private fun TargetInfo.containsAnyInternalJars() = jarsList.any { jars ->
     jars.sourceJarsList.any { !it.isExternal } && jars.binaryJarsList.any { !it.isExternal }
   }
 
@@ -751,7 +751,7 @@ class AspectBazelProjectMapper(
   }
 
   private fun getSourceJarPaths(targetInfo: TargetInfo) =
-    targetInfo.jvmTargetInfo.jarsList
+    targetInfo.jarsList
       .flatMap { it.sourceJarsList }
       .resolvePaths()
 
@@ -759,7 +759,7 @@ class AspectBazelProjectMapper(
 
   private fun getTargetOutputJarsList(targetInfo: TargetInfo): List<Path> {
     return if (targetInfo.hasJvmTargetInfo()) {
-      targetInfo.jvmTargetInfo.jarsList
+      targetInfo.jarsList
         .flatMap { it.binaryJarsList }
         .map { bazelPathsResolver.resolve(it) }
     }
@@ -774,7 +774,7 @@ class AspectBazelProjectMapper(
   private fun getTargetInterfaceJarsSet(targetInfo: TargetInfo) = getTargetInterfaceJarsList(targetInfo).toSet()
 
   private fun getTargetInterfaceJarsList(targetInfo: TargetInfo) =
-    targetInfo.jvmTargetInfo.jarsList
+    targetInfo.jarsList
       .flatMap { it.interfaceJarsList }
       .map { bazelPathsResolver.resolve(it) }
 
