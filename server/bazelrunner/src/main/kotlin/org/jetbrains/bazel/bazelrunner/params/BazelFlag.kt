@@ -64,6 +64,9 @@ object BazelFlag {
   @JvmStatic
   fun buildEventBinaryFile(file: String): String = arg("build_event_binary_file", file)
 
+  @JvmStatic
+  fun buildEventBinaryFileWait(): String = arg("build_event_binary_file_upload_mode", "wait_for_upload_complete")
+
   /**
    * https://bazel.build/reference/command-line-reference#flag--target_pattern_file
    */
