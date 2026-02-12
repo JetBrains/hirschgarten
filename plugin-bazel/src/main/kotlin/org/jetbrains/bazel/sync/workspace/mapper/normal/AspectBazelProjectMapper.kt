@@ -122,7 +122,7 @@ class AspectBazelProjectMapper(
           targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, featureFlags)
           }
-        val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.hasJvmTargetInfo() }
+        val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.getJvmTarget() }
         val jvmLibraries = (nonWorkspaceTargets + jvmDirectDependencies).associateBy { it.label() }
         (targetsToImport + nonJvmDirectDependencies).asSequence() to jvmLibraries
       }
@@ -269,7 +269,7 @@ class AspectBazelProjectMapper(
       }.toMap()
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
-    !targetInfo.kind.endsWith("_resources") && targetInfo.hasJvmTargetInfo() &&
+    !targetInfo.kind.endsWith("_resources") && targetInfo.getJvmTarget() &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
@@ -308,7 +308,7 @@ class AspectBazelProjectMapper(
       for (reverseDep in dependencyGraph.getReverseDependenciesInfo(info)) {
         val reverseDepLabel = reverseDep.label()
         if (reverseDepLabel in visited) continue
-        if (!reverseDep.hasJvmTargetInfo()) continue
+        if (!reverseDep.getJvmTarget()) continue
         toProcess.add(reverseDepLabel)
         visited.add(reverseDepLabel)
       }
@@ -802,7 +802,7 @@ class AspectBazelProjectMapper(
       isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
         (
           shouldImportTargetKind(target.kind) ||
-            target.hasJvmTargetInfo() &&
+            target.getJvmTarget() &&
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
@@ -846,7 +846,7 @@ class AspectBazelProjectMapper(
   // TODO BAZEL-2208
   // The only language that supports strict deps by default is Java, in Kotlin and Scala strict deps are disabled by default.
   private fun targetSupportsStrictDeps(target: TargetInfo): Boolean =
-    target.hasJvmTargetInfo() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
+    target.getJvmTarget() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
 
   private suspend fun createRawBuildTargets(
     targets: List<IntermediateTargetData>,
@@ -949,8 +949,8 @@ class AspectBazelProjectMapper(
       if (target.hasProtobufTargetInfo()) {
         add(LanguageClass.PROTOBUF)
       }
-      // TODO It's a hack preserved from before TargetKind refactorking, to be removed
-      if (target.hasJvmTargetInfo()) {
+      // TODO It's a hack preserved from before TargetKind refactoring, to be removed
+      if (target.getJvmTarget()) {
         add(LanguageClass.JAVA)
       }
       if (target.hasPythonTargetInfo()) {

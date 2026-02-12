@@ -51,7 +51,7 @@ class JavaLanguagePlugin(
   }
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
-    if (!target.hasJvmTargetInfo()) {
+    if (!target.getJvmTarget()) {
       return null
     }
     val jvmTarget = target.jvmTargetInfo

@@ -28,7 +28,7 @@ class TargetInfoReader(private val bspClientLogger: BspClientLogger?) {
       // that contains JvmTargetInfo as currently it's the most important one for us. Later, we sort by
       // shortest size to get a stable result, which should be the default config.
       .mapValues {
-        it.value.filter(TargetInfo::hasJvmTargetInfo).minByOrNull { targetInfo -> targetInfo.serializedSize } ?: it.value.first()
+        it.value.filter(TargetInfo::getJvmTarget).minByOrNull { targetInfo -> targetInfo.serializedSize } ?: it.value.first()
       }.mapKeys { Label.parse(it.key) }
 
   private fun readFromFile(file: Path): TargetInfo? {
