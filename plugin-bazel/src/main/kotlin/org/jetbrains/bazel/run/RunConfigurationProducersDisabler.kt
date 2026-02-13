@@ -56,7 +56,7 @@ private class BazelRunConfigurationProducerSuppressor : RunConfigurationProducer
     "org.jetbrains.kotlin.idea.run.KotlinRunConfigurationProducer",
     "org.jetbrains.kotlin.idea.run.KotlinTestClassGradleConfigurationProducer",
     "org.jetbrains.kotlin.idea.run.KotlinTestMethodGradleConfigurationProducer",
-    "org.jetbrains.plugins.gradle.execution.GradleGroovyScriptRunConfigurationProducer",
+    "com.intellij.gradle.java.groovy.execution.GradleGroovyScriptRunConfigurationProducer",
     "org.jetbrains.plugins.gradle.execution.test.runner.AllInDirectoryGradleConfigurationProducer",
     "org.jetbrains.plugins.gradle.execution.test.runner.AllInPackageGradleConfigurationProducer",
     "org.jetbrains.plugins.gradle.execution.test.runner.PatternGradleConfigurationProducer",
