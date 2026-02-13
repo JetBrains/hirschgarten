@@ -271,6 +271,30 @@ fun UiComponent.assertSyncSucceeded() {
   ) { "Build view does not contain sync success text ('$syncSuccessText')" }
 }
 
+fun <T : CommandChain> T.assertSyncedTargets(vararg targets: String): T {
+  addCommand(CMD_PREFIX + "assertSyncedTargets ${targets.joinToString(" ")}")
+  return this
+}
+
+fun <T : CommandChain> T.switchProjectView(fileName: String): T {
+  addCommand(CMD_PREFIX + "switchProjectView $fileName")
+  return this
+}
+
+fun checkIdeaLogForExceptions(context: IDETestContext) {
+  val logFile = context.paths.testHome.resolve("log").resolve("idea.log")
+  if (!logFile.toFile().exists()) return
+
+  val errors = logFile.toFile().readLines().filter {
+    it.contains("ERROR -") || it.contains("SEVERE -")
+  }
+  if (errors.isNotEmpty()) {
+    System.err.println("=== IDEA LOG EXCEPTIONS (${errors.size} found) ===")
+    errors.forEach { System.err.println(it) }
+    System.err.println("=== END IDEA LOG EXCEPTIONS ===")
+  }
+}
+
 fun configureProjectWithHermeticCcToolchain(context: IDETestContext) {
   BazelProjectConfigurer.configureProjectBeforeUse(context)
   BazelProjectConfigurer.addHermeticCcToolchain(context)
