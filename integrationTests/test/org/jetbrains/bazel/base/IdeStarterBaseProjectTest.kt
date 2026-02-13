@@ -55,10 +55,18 @@ abstract class IdeStarterBaseProjectTest {
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 1200).seconds
 
-  protected fun createContext(projectName: String, case: TestCase<*>): IDETestContext {
+  protected fun createContext(
+    projectName: String,
+    case: TestCase<*>,
+    pluginZipOverride: Path? = null,
+  ): IDETestContext {
     IntegrationTestCompat.onPreCreateContext()
     val ctx = Starter.newContext(projectName, case)
-    IntegrationTestCompat.onPostCreateContext(ctx)
+    if (pluginZipOverride != null) {
+      ctx.pluginConfigurator.installPluginFromPath(pluginZipOverride)
+    } else {
+      IntegrationTestCompat.onPostCreateContext(ctx)
+    }
 
     return ctx
       .executeRightAfterIdeOpened(true)
