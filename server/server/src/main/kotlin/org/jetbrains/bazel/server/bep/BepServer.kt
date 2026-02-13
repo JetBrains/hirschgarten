@@ -8,6 +8,7 @@ import com.google.devtools.build.v1.PublishBuildToolEventStreamRequest
 import com.google.devtools.build.v1.PublishBuildToolEventStreamResponse
 import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.protobuf.Empty
+import com.intellij.platform.util.progress.RawProgressReporter
 import io.grpc.stub.StreamObserver
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
@@ -42,6 +43,7 @@ class BepServer(
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
   bazelPathsResolver: BazelPathsResolver,
+  private val rawProgressReporter: RawProgressReporter? = null,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)
   private val bepLogger = BepLogger(bspClientLogger)
@@ -49,6 +51,7 @@ class BepServer(
   private var startedEvent: TaskId? = null
   private var bspClientTestNotifier: BspClientTestNotifier? = null // Present for test commands
   private val bepOutputBuilder = BepOutputBuilder(bazelPathsResolver)
+  private val buildProgressParser = BuildProgressParser()
 
   override fun publishLifecycleEvent(request: PublishLifecycleEventRequest, responseObserver: StreamObserver<Empty>) {
     responseObserver.onNext(Empty.getDefaultInstance())
@@ -209,6 +212,10 @@ class BepServer(
     if (event.hasProgress()) {
       val progress = event.progress
       if (progress.stderr.isNotEmpty() && originId != null) {
+        val stderrLines = progress.stderr.lines().map { line ->
+          line.replace(ansiEscapeCode, "")
+        }
+
         val events =
           diagnosticsService.extractDiagnostics(
             progress.stderr,
@@ -221,6 +228,11 @@ class BepServer(
           bspClient.onBuildPublishDiagnostics(
             it,
           )
+        }
+
+        buildProgressParser.parse(stderrLines)?.let { progress ->
+          rawProgressReporter?.details(progress.details)
+          rawProgressReporter?.fraction(progress.fraction)
         }
       }
     }
@@ -393,6 +405,8 @@ class BepServer(
   val bepOutput: BepOutput = bepOutputBuilder.build()
 
   companion object {
+    private val ansiEscapeCode = "\\u001B\\[[\\d;]*[^\\d;]".toRegex()
+
     private val LOGGER: Logger = LoggerFactory.getLogger(BepServer::class.java)
   }
 }
