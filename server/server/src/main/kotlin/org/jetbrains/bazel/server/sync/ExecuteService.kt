@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.sync
 
 import com.intellij.execution.process.OSProcessUtil.killProcess
 import com.intellij.openapi.project.Project
+import com.intellij.platform.util.progress.reportRawProgress
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -57,41 +58,43 @@ class ExecuteService(
     pidDeferred: CompletableDeferred<Long?>? = null,
     shouldLogInvocation: Boolean = true,
   ): BepBuildResult = coroutineScope {
-    val eventFile: Path =
-      Files.createTempFile("bazel-bep-output", null).toAbsolutePath()
+    reportRawProgress { rawProgressReporter ->
+      val eventFile: Path =
+        Files.createTempFile("bazel-bep-output", null).toAbsolutePath()
 
-    var bepReader: BepReader? = null
-    try {
-      command.useBes(eventFile)
-      val executionDescriptor = command.buildExecutionDescriptor()
-      val diagnosticsService = DiagnosticsService(workspaceRoot)
-      val server = BepServer(client, diagnosticsService, originId, bazelPathsResolver)
-      bepReader = BepReader(server, eventFile)
-      val bepReaderDeferred = async(Dispatchers.IO) {
-        bepReader.start()
-      }
-
-      val processResult: BazelProcessResult =
-        bazelRunner.runBazelCommand(executionDescriptor, originId = originId, shouldLogInvocation = shouldLogInvocation)
-          .also { bazelProcess -> pidDeferred?.complete(bazelProcess.pid) }
-          .waitAndGetResult()
-      bepReader.bazelBuildFinished()
-      bepReaderDeferred.await()
-
-      val bepOutput = bepReader.bepServer.bepOutput
-      BepBuildResult(processResult, bepOutput)
-    }
-    catch (e: CancellationException) {
-      if (BazelFeatureFlags.killServerOnCancel) {
-        val serverPid = bepReader?.serverPid?.get() ?: 0
-        if (serverPid > 0) {
-          killProcess(serverPid.toInt())
+      var bepReader: BepReader? = null
+      try {
+        command.useBes(eventFile)
+        val executionDescriptor = command.buildExecutionDescriptor()
+        val diagnosticsService = DiagnosticsService(workspaceRoot)
+        val server = BepServer(client, diagnosticsService, originId, bazelPathsResolver, rawProgressReporter)
+        bepReader = BepReader(server, eventFile)
+        val bepReaderDeferred = async(Dispatchers.IO) {
+          bepReader.start()
         }
+
+        val processResult: BazelProcessResult =
+          bazelRunner.runBazelCommand(executionDescriptor, originId = originId, shouldLogInvocation = shouldLogInvocation)
+            .also { bazelProcess -> pidDeferred?.complete(bazelProcess.pid) }
+            .waitAndGetResult()
+        bepReader.bazelBuildFinished()
+        bepReaderDeferred.await()
+
+        val bepOutput = bepReader.bepServer.bepOutput
+        BepBuildResult(processResult, bepOutput)
       }
-      throw e
-    }
-    finally {
-      eventFile.deleteExisting()
+      catch (e: CancellationException) {
+        if (BazelFeatureFlags.killServerOnCancel) {
+          val serverPid = bepReader?.serverPid?.get() ?: 0
+          if (serverPid > 0) {
+            killProcess(serverPid.toInt())
+          }
+        }
+        throw e
+      }
+      finally {
+        eventFile.deleteExisting()
+      }
     }
   }
 
