@@ -2,7 +2,6 @@ package org.jetbrains.bazel.taskEvents
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.BuildTaskHandler
 import org.jetbrains.bsp.protocol.TaskFinishParams
@@ -11,28 +10,27 @@ import java.util.concurrent.ConcurrentHashMap
 
 typealias OriginId = String
 
+class TaskListenerAlreadyExistsException(message: String) : IllegalStateException(message)
+
 @Service(Service.Level.PROJECT)
 class BazelTaskEventsService : BuildTaskHandler {
-  private val log = logger<BazelTaskEventsService>()
 
   private val taskListeners: ConcurrentHashMap<OriginId, BazelTaskListener> = ConcurrentHashMap()
 
-  private fun get(id: OriginId): BazelTaskListener? {
+  private fun get(id: OriginId): BazelTaskListener {
     val listener = taskListeners[id]
-    if (listener == null) {
-      log.warn("No task listener found for task $id")
-    }
+    require(listener != null) { "No task listener found for task $id" }
     return listener
   }
 
-  fun existsListener(id: OriginId): Boolean = taskListeners.containsKey(id)
-
   fun saveListener(id: OriginId, listener: BazelTaskListener) {
-    taskListeners[id] = listener
+    if (taskListeners.putIfAbsent(id, listener) != null) {
+      throw TaskListenerAlreadyExistsException("Listener for task $id exists already")
+    }
   }
 
   fun withListener(id: OriginId, block: BazelTaskListener.() -> Unit) {
-    get(id)?.apply { block() }
+    get(id).apply { block() }
   }
 
   fun removeListener(id: OriginId) {
