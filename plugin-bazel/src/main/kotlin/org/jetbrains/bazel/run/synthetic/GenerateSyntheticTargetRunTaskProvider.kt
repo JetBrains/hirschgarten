@@ -71,7 +71,8 @@ class GenerateSyntheticTargetRunTaskProvider(
   }
 
   class Task : BeforeRunTask<Task>(GENERATE_SYNTHETIC_PROVIDER_ID),
-               PersistentStateComponent<TaskState> {
+               PersistentStateComponent<TaskState>,
+               SyntheticRunTaskMarker {
     var taskState: TaskState = TaskState()
     override fun getState(): TaskState {
       return taskState
@@ -93,3 +94,5 @@ class GenerateSyntheticTargetRunTaskProvider(
     var params: String? = ""
   }
 }
+
+interface SyntheticRunTaskMarker
