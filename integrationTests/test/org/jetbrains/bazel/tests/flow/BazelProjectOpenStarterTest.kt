@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun `test open Bazel project by project root`() {
+  fun `open project by root directory should resolve project name`() {
     createContext("openBazelProjectByProjectRoot", IdeaBazelCases.BazelProjectOpenByRootDir)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -26,7 +26,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun `test open Bazel project by MODULE file`() {
+  fun `open project by MODULE file should resolve project name`() {
     createContext("openBazelProjectByProjectModule", IdeaBazelCases.BazelProjectOpenByModuleFile)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

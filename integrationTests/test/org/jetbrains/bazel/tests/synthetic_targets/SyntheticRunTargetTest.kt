@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.minutes
 class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun test() {
+  fun `synthetic run targets should execute Java and Kotlin main classes from gutter`() {
     createContext("runAllTestsAction", IdeaBazelCases.SyntheticRunTarget)
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
