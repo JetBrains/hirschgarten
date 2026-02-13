@@ -9,9 +9,9 @@ import com.intellij.tools.ide.performanceTesting.commands.replaceText
 import com.intellij.tools.ide.performanceTesting.commands.saveDocumentsAndSettings
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
@@ -47,12 +47,7 @@ class BazelVersionUpdateTest : IdeStarterBaseProjectTest() {
               .waitForSmartMode()
               .takeScreenshot("afterResync")
           }
-          val buildView = x { byType("com.intellij.build.BuildView") }
-          assert(
-            buildView.getAllTexts().any {
-              it.text.contains(BazelPluginBundle.message("console.task.sync.success"))
-            },
-          ) { "Build view does not contain success sync text" }
+          assertSyncSucceeded()
         }
       }
     }

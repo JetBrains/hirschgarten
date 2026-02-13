@@ -9,8 +9,6 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
-import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.PyCharmBazelCases
@@ -143,5 +141,3 @@ private fun Driver.verifyRunLineMarkerText(expectedTexts: List<String>) {
     expectedTexts.forEach { expected -> assert(texts.any { actual -> actual.text.contains(expected) }) }
   }
 }
-
-private fun <T : CommandChain> T.checkImportedModules(): T = also { addCommand("${CMD_PREFIX}PyCharmCheckImportedModules") }

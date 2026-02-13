@@ -8,6 +8,7 @@ import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.openEditor
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.UiComponent
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.dialog
@@ -20,6 +21,9 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.findAndKillProcesses
+import com.intellij.ide.starter.project.GitProjectInfo
+import com.intellij.ide.starter.project.LocalProjectInfo
+import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -30,6 +34,8 @@ import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
+import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.jetbrains.bazel.tests.ui.expandedTree
@@ -255,4 +261,41 @@ val Driver.projectRootDir: VirtualFile
 @Remote("org.jetbrains.bazel.config.BazelProjectPropertiesKt", plugin = "org.jetbrains.bazel")
 interface BazelProjectPropertiesKt {
   fun getRootDir(project: Project): VirtualFile
+}
+
+fun UiComponent.assertSyncSucceeded() {
+  val buildView = x { byType("com.intellij.build.BuildView") }
+  val syncSuccessText = BazelPluginBundle.message("console.task.sync.success")
+  assert(
+    buildView.getAllTexts().any { it.text.contains(syncSuccessText) },
+  ) { "Build view does not contain sync success text ('$syncSuccessText')" }
+}
+
+fun configureProjectWithHermeticCcToolchain(context: IDETestContext) {
+  BazelProjectConfigurer.configureProjectBeforeUse(context)
+  BazelProjectConfigurer.addHermeticCcToolchain(context)
+}
+
+fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
+  val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
+  if (localProjectPath != null) {
+    return LocalProjectInfo(
+      projectDir = Path.of(localProjectPath),
+      isReusable = true,
+      configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
+    )
+  }
+  val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
+  val commitHash = System.getProperty("bazel.ide.starter.test.commit.hash").orEmpty()
+  val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "252"
+  val projectHomeRelativePath: String? = System.getProperty("bazel.ide.starter.test.project.home.relative.path")
+
+  return GitProjectInfo(
+    repositoryUrl = projectUrl,
+    commitHash = commitHash,
+    branchName = branchName,
+    projectHomeRelativePath = { if (projectHomeRelativePath != null) it.resolve(projectHomeRelativePath) else it },
+    isReusable = true,
+    configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
+  )
 }

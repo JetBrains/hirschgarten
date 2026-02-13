@@ -7,9 +7,9 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.deleteFile
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
@@ -40,19 +40,7 @@ class RecoverDotBazelBspTest : IdeStarterBaseProjectTest() {
         step("Check that the sync finishes successfully") {
           ideFrame {
             try {
-              val buildView = x { byType("com.intellij.build.BuildView") }
-              assert(
-                buildView.getAllTexts().any {
-                  it.text.contains(BazelPluginBundle.message("console.task.sync.success"))
-                },
-              ) {
-                buildString {
-                  appendLine("Build view does not contain success sync text:")
-                  buildView.getAllTexts().forEach {
-                    appendLine(it.text)
-                  }
-                }
-              }
+              assertSyncSucceeded()
             } catch (e: Exception) {
               assert(e is WaitForException) { "Unknown exception: ${e.message}" }
             }
