@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.sync
 
 import com.intellij.openapi.project.Project
+import com.intellij.platform.util.progress.reportRawProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -45,19 +46,21 @@ class ExecuteService(
 ) {
   private suspend fun <T> withBepServer(originId: String, body: suspend (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
-    val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver)
-    val bepReader = BepReader(server)
+    reportRawProgress { rawProgressReporter ->
+      val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver, rawProgressReporter)
+      val bepReader = BepReader(server)
 
-    return coroutineScope {
-      val reader =
-        async(Dispatchers.Default) {
-          bepReader.start()
+      return coroutineScope {
+        val reader =
+          async(Dispatchers.Default) {
+            bepReader.start()
+          }
+        try {
+          return@coroutineScope body(bepReader)
+        } finally {
+          bepReader.finishBuild()
+          reader.await()
         }
-      try {
-        return@coroutineScope body(bepReader)
-      } finally {
-        bepReader.finishBuild()
-        reader.await()
       }
     }
   }
