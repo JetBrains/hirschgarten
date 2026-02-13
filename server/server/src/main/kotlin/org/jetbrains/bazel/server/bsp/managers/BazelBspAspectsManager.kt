@@ -211,6 +211,7 @@ class BazelBspAspectsManager(
         aspect(aspectsResolver.resolveLabel(aspect)),
         outputGroups(outputGroups),
         keepGoing(),
+        "--remote_download_outputs=toplevel",
       )
     val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
     val syncFlags = workspaceContext.syncFlags
