@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.tests.synthetic_targets
 
+import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -23,10 +24,10 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
     createContext("runAllTestsAction", IdeaBazelCases.SyntheticRunTarget)
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
-        this.addSystemProperty("ide.registry.bazel.run.synthetic.enable", "true")
       }
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
+        setRegistry("bazel.run.synthetic.enable", true.toString())
         syncBazelProject()
         waitForIndicators(5.minutes)
 

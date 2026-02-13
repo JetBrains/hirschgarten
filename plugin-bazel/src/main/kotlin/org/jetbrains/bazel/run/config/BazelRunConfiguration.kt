@@ -20,6 +20,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle.message
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bazel.run.synthetic.SyntheticRunTaskMarker
 import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
 import org.jetbrains.bazel.target.targetUtils
 
@@ -178,7 +179,12 @@ class BazelRunConfiguration internal constructor(
    * it will be overruled by this deserialization unless we forcefully disable this.
    * @see setBeforeRunTasksFromHandler
    */
-  override fun setBeforeRunTasks(value: List<BeforeRunTask<*>>) {}
+  override fun setBeforeRunTasks(value: List<BeforeRunTask<*>>) {
+    val tasks = value.filter { it is SyntheticRunTaskMarker }
+    if (tasks.isNotEmpty()) {
+      super.setBeforeRunTasks(tasks)
+    }
+  }
 
   fun setBeforeRunTasksFromHandler(value: List<BeforeRunTask<*>>) {
     super.setBeforeRunTasks(value)
