@@ -6,6 +6,11 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.project.TestCaseTemplate
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
+import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createSymbolicLinkPointingTo
+import kotlin.io.path.div
+import kotlin.io.path.exists
 
 object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val FastBuild = withBazelProject(
@@ -279,6 +284,30 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
     )
   )
+
+  val ProjectViewChange = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "1b07410678cfef0042e82ecfaadbbd9f34c1cd03",
+      branchName = "main",
+      relativePath = "projectViewChangeTest",
+      configure = { context ->
+        BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, createProjectView = false)
+        preCacheBazelisk(context)
+      },
+    )
+  )
+}
+
+private fun preCacheBazelisk(context: IDETestContext) {
+  val systemBazelisk = listOf("/opt/homebrew/bin/bazelisk", "/usr/local/bin/bazelisk")
+    .map { Path.of(it) }
+    .firstOrNull { it.exists() } ?: return
+  val cacheDir = (context.paths.systemDir / "bazel-plugin").createDirectories()
+  val target = cacheDir / "bazelisk"
+  if (!target.exists()) {
+    target.createSymbolicLinkPointingTo(systemBazelisk)
+  }
 }
 
 object GoLandBazelCases : BaseBazelCasesParametrized(BazelTestContext.GOLAND) {
