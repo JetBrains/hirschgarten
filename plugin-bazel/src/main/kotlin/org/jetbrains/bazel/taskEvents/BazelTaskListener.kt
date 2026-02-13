@@ -30,13 +30,6 @@ interface BazelTaskListener {
   ) {
   }
 
-  fun onTaskProgress(
-    taskId: TaskId,
-    message: String,
-    data: Any?,
-  ) {
-  }
-
   fun onTaskFinish(
     taskId: TaskId,
     parentId: TaskId?,

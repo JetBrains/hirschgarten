@@ -4,7 +4,6 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
@@ -16,21 +15,11 @@ import org.jetbrains.bsp.protocol.TaskStartParams
 
 const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 
-class BazelClient(
-  private val syncConsole: TaskConsole,
-  private val buildConsole: TaskConsole,
-  private val project: Project,
-) : JoinedBuildClient {
+class BazelClient(private val project: Project) : JoinedBuildClient {
   private val log = logger<BazelClient>()
 
   override fun onBuildLogMessage(params: LogMessageParams) {
     log.debug("Got log message: $params")
-
-    // Legacy task handling
-    if (params.originId == null || !BazelTaskEventsService.getInstance(project).existsListener(params.originId!!)) {
-      addMessageToConsole(params.originId, params.message)
-      return
-    }
 
     val originId = params.originId ?: return // TODO
     val message = params.message
@@ -51,12 +40,6 @@ class BazelClient(
   }
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
-    if (!BazelTaskEventsService.getInstance(project).existsListener(params.originId)) {
-      log.debug("Got diagnostics without listener: $params")
-      addDiagnosticToConsole(params)
-      return
-    }
-
     val originId = params.originId
     val textDocument = params.textDocument?.path
     val buildTarget = params.buildTarget
@@ -72,28 +55,6 @@ class BazelClient(
           it.message,
         )
       }
-    }
-  }
-
-  private fun addMessageToConsole(originId: String?, message: String) {
-    if (originId?.startsWith("build") == true || originId?.startsWith("mobile-install") == true) {
-      buildConsole.addMessage(originId, message)
-    } else {
-      syncConsole.addMessage(originId, message)
-    }
-  }
-
-  private fun addDiagnosticToConsole(params: PublishDiagnosticsParams) {
-    val targetConsole = if (params.originId.startsWith("build")) buildConsole else syncConsole
-    params.diagnostics.forEach {
-      targetConsole.addDiagnosticMessage(
-        params.originId,
-        params.textDocument?.path,
-        it.range.start.line,
-        it.range.start.character,
-        it.message,
-        getMessageEventKind(it.severity),
-      )
     }
   }
 

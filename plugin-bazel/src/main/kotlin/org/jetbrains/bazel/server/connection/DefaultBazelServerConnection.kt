@@ -28,7 +28,6 @@ import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
-import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.util.concurrent.atomic.AtomicReference
@@ -64,12 +63,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   }
 
   private suspend fun createServer(workspaceContext: WorkspaceContext): BspServerApi {
-    val consoleService = ConsoleService.getInstance(project)
-    val client = BazelClient(
-      consoleService.syncConsole,
-      consoleService.buildConsole,
-      project,
-    )
+    val client = BazelClient(project)
     val bspInfo = BspInfo(workspaceRoot)
     val bspClientLogger = BspClientLogger(client)
     val aspectsResolver = InternalAspectsResolver(bspInfo = bspInfo)

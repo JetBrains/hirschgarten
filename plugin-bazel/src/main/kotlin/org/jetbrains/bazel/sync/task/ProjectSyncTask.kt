@@ -7,7 +7,6 @@ import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.fileLogger
@@ -34,6 +33,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
@@ -49,6 +49,8 @@ import org.jetbrains.bazel.sync.status.SyncFatalFailureException
 import org.jetbrains.bazel.sync.status.SyncPartialFailureException
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.taskEvents.TaskListenerAlreadyExistsException
 import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
@@ -64,7 +66,8 @@ class ProjectSyncTask(private val project: Project) {
         var syncAlreadyInProgress = false
         try {
           log.debug("Starting sync project task")
-          project.syncConsole.startTask(
+          val syncConsole = project.syncConsole
+          syncConsole.startTask(
             taskId = PROJECT_SYNC_TASK_ID,
             title = BazelPluginBundle.message("console.task.sync.title"),
             message = BazelPluginBundle.message("console.task.sync.in.progress"),
@@ -75,8 +78,15 @@ class ProjectSyncTask(private val project: Project) {
             redoAction = { sync(syncScope, buildProject) },
           )
 
-          preSync()
-          doSync(syncScope, buildProject)
+          val taskListener = BazelBuildTaskListener(syncConsole, PROJECT_SYNC_TASK_ID)
+          BazelTaskEventsService.getInstance(project).saveListener(PROJECT_SYNC_TASK_ID, taskListener)
+          try {
+            preSync()
+            doSync(syncScope, buildProject)
+          }
+          finally {
+            BazelTaskEventsService.getInstance(project).removeListener(PROJECT_SYNC_TASK_ID)
+          }
 
           project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BazelPluginBundle.message("console.task.sync.success"))
         }
@@ -89,6 +99,9 @@ class ProjectSyncTask(private val project: Project) {
           throw e
         }
         catch (_: SyncAlreadyInProgressException) {
+          syncAlreadyInProgress = true
+        }
+        catch (_: TaskListenerAlreadyExistsException) {
           syncAlreadyInProgress = true
         }
         catch (_: SyncPartialFailureException) {
