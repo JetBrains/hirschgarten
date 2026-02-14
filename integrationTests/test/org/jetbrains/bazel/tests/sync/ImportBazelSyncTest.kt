@@ -169,10 +169,17 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
       }
 
     // Swap to CURRENT plugin for upgrade simulation — remove old plugin first
-    context.paths.pluginsDir.toFile().listFiles()
-      ?.filter { it.name.contains("bazel", ignoreCase = true) }
-      ?.forEach { it.deleteRecursively() }
+    val pluginsDir = context.paths.pluginsDir
+    println("=== Plugin swap: listing plugins dir before cleanup ===")
+    pluginsDir.toFile().listFiles()?.forEach { println("  ${it.name} (dir=${it.isDirectory})") }
+    val toDelete = pluginsDir.toFile().listFiles()?.filter { it.name.contains("bazel", ignoreCase = true) } ?: emptyList()
+    toDelete.forEach {
+      println("  DELETING: ${it.name}")
+      it.deleteRecursively()
+    }
     IntegrationTestCompat.onPostCreateContext(context)
+    println("=== Plugin swap: listing plugins dir after install ===")
+    pluginsDir.toFile().listFiles()?.forEach { println("  ${it.name} (dir=${it.isDirectory})") }
 
     // IDE Run 2: Open with CURRENT (newly built) plugin — simulates upgrade
     context
