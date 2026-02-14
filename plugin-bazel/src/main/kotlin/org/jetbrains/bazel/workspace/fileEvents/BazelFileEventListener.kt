@@ -40,7 +40,9 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
@@ -105,7 +107,10 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       } while (processed)
     }
 
-    startSyncConsoleTask(project, processingJob, originId)
+    // no need to start sync console task if no Bazel processing is allowed
+    if (project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
+      startSyncConsoleTask(project, processingJob, originId)
+    }
     processingJob.join()
     return true
   }
@@ -232,9 +237,14 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       }
     // avoid running a Bazel query when not required (BAZEL-2458)
     if (bazelQueryIsRequired) {
-      val targetsByPath =
-        context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.originId) } ?: return
-      addFileToTargets(targetsByPath, moduleToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
+      if (context.project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
+        val targetsByPath =
+          context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.originId) } ?: return
+        addFileToTargets(targetsByPath, moduleToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
+      } else {
+        // Bazel is not allowed to be run on file events, but it was necessary - show "Resync" button
+        BazelProjectAware.notify(context.project)
+      }
     } else {
       context.progressReporter.skipQueryStep()
       for (filePath in addedFilePaths) {
