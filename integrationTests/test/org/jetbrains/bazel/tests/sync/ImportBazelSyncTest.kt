@@ -57,7 +57,7 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
 
   override val timeout: Duration get() = 3600.seconds
 
-  private lateinit var projectHome: Path
+  private var projectHome: Path = Path.of(LOCAL_HIRSCHGARTEN)
 
   private val previousPluginZip: Path?
     get() = System.getenv("BAZEL_PREVIOUS_PLUGIN_ZIP")?.let { Path.of(it) }
@@ -139,7 +139,6 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
   @Test
   @Order(2)
   fun `plugin upgrade preserves project state`() {
-    check(::projectHome.isInitialized) { "Test 1 must run first to populate projectHome" }
     val pluginZip = checkNotNull(previousPluginZip) { "BAZEL_PREVIOUS_PLUGIN_ZIP env var or $LOCAL_PLUGIN_ZIP must be set" }
 
     val context = createContext(
