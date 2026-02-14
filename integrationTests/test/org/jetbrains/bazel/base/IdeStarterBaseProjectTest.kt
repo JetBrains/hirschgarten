@@ -55,10 +55,18 @@ abstract class IdeStarterBaseProjectTest {
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 1200).seconds
 
-  protected fun createContext(projectName: String, case: TestCase<*>): IDETestContext {
+  protected fun createContext(
+    projectName: String,
+    case: TestCase<*>,
+    pluginZipOverride: Path? = null,
+  ): IDETestContext {
     IntegrationTestCompat.onPreCreateContext()
     val ctx = Starter.newContext(projectName, case)
-    IntegrationTestCompat.onPostCreateContext(ctx)
+    if (pluginZipOverride != null) {
+      ctx.pluginConfigurator.installPluginFromPath(pluginZipOverride)
+    } else {
+      IntegrationTestCompat.onPostCreateContext(ctx)
+    }
 
     return ctx
       .executeRightAfterIdeOpened(true)
@@ -97,6 +105,7 @@ abstract class IdeStarterBaseProjectTest {
   @AfterEach
   fun tearDown() {
     killBazelProcesses()
+    killCefProcesses()
   }
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
@@ -149,6 +158,20 @@ abstract class IdeStarterBaseProjectTest {
         )
       } catch (t: Throwable) {
         System.err.println("Failed to find/kill Bazel server processes: ${t.message}")
+      }
+    }
+
+    fun killCefProcesses() {
+      try {
+        findAndKillProcesses(
+          message = "Killing orphaned JCEF helper processes",
+          filter = java.util.function.Predicate { p ->
+            p.name.contains("cef_server") &&
+              p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
+          },
+        )
+      } catch (t: Throwable) {
+        System.err.println("Failed to find/kill JCEF processes: ${t.message}")
       }
     }
   }
