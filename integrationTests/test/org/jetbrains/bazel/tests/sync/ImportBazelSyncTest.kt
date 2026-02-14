@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.tests.sync
 
+import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.welcomeScreen
+import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
@@ -11,6 +13,7 @@ import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
@@ -151,9 +154,24 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
     context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
-        ideFrame {
-          waitForIndicators(10.minutes)
+        step("Verify no resync happens after plugin upgrade") {
+          ideFrame {
+            wait(20.seconds)
+            try {
+              val buildView = x { byType("com.intellij.build.BuildView") }
+              assert(
+                !buildView.getAllTexts().any {
+                  it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress"))
+                },
+              ) { "Unexpected resync triggered after plugin upgrade" }
+            } catch (e: Exception) {
+              assert(e is WaitForException) { "Unknown exception: ${e.message}" }
+            }
+          }
+          takeScreenshot("afterNoResyncCheck")
+        }
 
+        ideFrame {
           step("Assert target order matches previous plugin version") {
             execute { assertTargetOrder() }
             takeScreenshot("afterUpgradeAssertTargetOrder")
