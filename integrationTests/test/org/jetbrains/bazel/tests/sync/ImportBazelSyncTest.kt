@@ -17,6 +17,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
@@ -139,20 +140,22 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
   @Order(2)
   fun `plugin upgrade preserves project state`() {
     check(::projectHome.isInitialized) { "Test 1 must run first to populate projectHome" }
+    val pluginZip = checkNotNull(previousPluginZip) { "BAZEL_PREVIOUS_PLUGIN_ZIP env var or $LOCAL_PLUGIN_ZIP must be set" }
 
-    val projectInfo = LocalProjectInfo(
-      projectDir = projectHome,
-      isReusable = true,
-      configureProjectBeforeUse = {},
+    val context = createContext(
+      "hirschgarten-upgrade",
+      IdeaBazelCases.withProject(
+        LocalProjectInfo(
+          projectDir = projectHome,
+          isReusable = true,
+          configureProjectBeforeUse = {},
+        ),
+      ),
+      pluginZipOverride = pluginZip,
     )
 
     // IDE Run 1: Open with OLD (previous stable) plugin
-    val oldPluginContext = createContext(
-      "hirschgarten-old-plugin",
-      IdeaBazelCases.withProject(projectInfo),
-      pluginZipOverride = previousPluginZip,
-    )
-    oldPluginContext
+    context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -161,16 +164,15 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
         }
 
         step("Check IDEA log for exceptions (old plugin)") {
-          checkIdeaLogForExceptions(oldPluginContext)
+          checkIdeaLogForExceptions(context)
         }
       }
 
+    // Swap to CURRENT plugin for upgrade simulation
+    IntegrationTestCompat.onPostCreateContext(context)
+
     // IDE Run 2: Open with CURRENT (newly built) plugin — simulates upgrade
-    val upgradeContext = createContext(
-      "hirschgarten-upgrade",
-      IdeaBazelCases.withProject(projectInfo),
-    )
-    upgradeContext
+    context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         step("Verify no resync happens after plugin upgrade") {
@@ -198,7 +200,7 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
         }
 
         step("Check IDEA log for exceptions (upgraded plugin)") {
-          checkIdeaLogForExceptions(upgradeContext)
+          checkIdeaLogForExceptions(context)
         }
       }
   }
