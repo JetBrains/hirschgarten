@@ -27,5 +27,8 @@
     <performancePlugin.commandProvider
       implementation="org.jetbrains.bazel.kotlin.ideStarter.KotlinIdeStarterCommandProvider"
     />
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.target.ideStarter.TargetOrderCommandProvider"
+    />
   </extensions>
 </idea-plugin>
