@@ -140,18 +140,37 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
   fun `plugin upgrade preserves project state`() {
     check(::projectHome.isInitialized) { "Test 1 must run first to populate projectHome" }
 
-    val context = createContext(
-      "hirschgarten-upgrade",
-      IdeaBazelCases.withProject(
-        LocalProjectInfo(
-          projectDir = projectHome,
-          isReusable = true,
-          configureProjectBeforeUse = {},
-        ),
-      ),
+    val projectInfo = LocalProjectInfo(
+      projectDir = projectHome,
+      isReusable = true,
+      configureProjectBeforeUse = {},
+    )
+
+    // IDE Run 1: Open with OLD (previous stable) plugin
+    val oldPluginContext = createContext(
+      "hirschgarten-old-plugin",
+      IdeaBazelCases.withProject(projectInfo),
       pluginZipOverride = previousPluginZip,
     )
-    context
+    oldPluginContext
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        ideFrame {
+          waitForIndicators(5.minutes)
+          takeScreenshot("oldPluginOpened")
+        }
+
+        step("Check IDEA log for exceptions (old plugin)") {
+          checkIdeaLogForExceptions(oldPluginContext)
+        }
+      }
+
+    // IDE Run 2: Open with CURRENT (newly built) plugin — simulates upgrade
+    val upgradeContext = createContext(
+      "hirschgarten-upgrade",
+      IdeaBazelCases.withProject(projectInfo),
+    )
+    upgradeContext
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         step("Verify no resync happens after plugin upgrade") {
@@ -172,14 +191,14 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
         }
 
         ideFrame {
-          step("Assert target order matches previous plugin version") {
+          step("Assert target order matches after upgrade") {
             execute { assertTargetOrder() }
             takeScreenshot("afterUpgradeAssertTargetOrder")
           }
         }
 
-        step("Check IDEA log for exceptions") {
-          checkIdeaLogForExceptions(context)
+        step("Check IDEA log for exceptions (upgraded plugin)") {
+          checkIdeaLogForExceptions(upgradeContext)
         }
       }
   }
