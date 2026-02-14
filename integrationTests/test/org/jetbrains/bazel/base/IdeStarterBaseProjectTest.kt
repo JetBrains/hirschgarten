@@ -105,6 +105,7 @@ abstract class IdeStarterBaseProjectTest {
   @AfterEach
   fun tearDown() {
     killBazelProcesses()
+    killCefProcesses()
   }
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
@@ -157,6 +158,20 @@ abstract class IdeStarterBaseProjectTest {
         )
       } catch (t: Throwable) {
         System.err.println("Failed to find/kill Bazel server processes: ${t.message}")
+      }
+    }
+
+    fun killCefProcesses() {
+      try {
+        findAndKillProcesses(
+          message = "Killing orphaned JCEF helper processes",
+          filter = java.util.function.Predicate { p ->
+            p.name.contains("cef_server") &&
+              p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
+          },
+        )
+      } catch (t: Throwable) {
+        System.err.println("Failed to find/kill JCEF processes: ${t.message}")
       }
     }
   }
