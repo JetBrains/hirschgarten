@@ -40,5 +40,6 @@
     <orderEntry type="module" module-name="intellij.idea.ultimate.build" scope="TEST" />
     <orderEntry type="module" module-name="intellij.idea.community.build.tasks" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="tcServiceMessages" level="project" />
+    <orderEntry type="module" module-name="intellij.platform.images.tests" scope="TEST" />
   </component>
 </module>
