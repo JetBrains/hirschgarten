@@ -136,6 +136,7 @@ private val shareableConfigFiles =
     "uiDesigner.xml",
     "vcs.xml",
     "misc.xml",
+    "watcherTasks.xml",
     // scheme manager
     "codeStyles",
     "copyright",
