@@ -168,7 +168,10 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
         }
       }
 
-    // Swap to CURRENT plugin for upgrade simulation
+    // Swap to CURRENT plugin for upgrade simulation — remove old plugin first
+    context.paths.pluginsDir.toFile().listFiles()
+      ?.filter { it.name.contains("bazel", ignoreCase = true) }
+      ?.forEach { it.deleteRecursively() }
     IntegrationTestCompat.onPostCreateContext(context)
 
     // IDE Run 2: Open with CURRENT (newly built) plugin — simulates upgrade
