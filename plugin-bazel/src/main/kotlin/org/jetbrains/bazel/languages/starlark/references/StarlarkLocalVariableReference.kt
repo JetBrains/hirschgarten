@@ -19,7 +19,7 @@ class StarlarkLocalVariableReference(element: StarlarkLocalVariableElement, soft
     myElement?.let {
       val processor = StarlarkResolveProcessor(mutableListOf(), it)
       SearchUtils.searchInFile(it, processor)
-      processor.result.firstOrNull()
+      processor.getBestMatch()
     }
 
   override fun getVariants(): Array<StarlarkLookupElement> =
