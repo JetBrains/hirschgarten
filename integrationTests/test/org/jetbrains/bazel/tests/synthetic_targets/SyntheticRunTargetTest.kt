@@ -12,6 +12,7 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
@@ -21,11 +22,12 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `synthetic run targets should execute Java and Kotlin main classes from gutter`() {
-    createContext("runAllTestsAction", IdeaBazelCases.SyntheticRunTarget)
+    val context = createContext("runAllTestsAction", IdeaBazelCases.SyntheticRunTarget)
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
       }
-      .runIdeWithDriver(runTimeout = timeout)
+    context
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         setRegistry("bazel.run.synthetic.enable", true.toString())
         syncBazelProject()
@@ -57,6 +59,7 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
           }
         }
       }
+    checkIdeaLogForExceptions(context)
   }
 
   private fun IdeaFrameUI.runFromGutter(line: Int, text: String) {
