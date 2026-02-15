@@ -25,7 +25,7 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
   fun `run all tests action should execute and show results`(runConfigRunWithBazel: Boolean) {
     createContext("runAllTestsAction", IdeaBazelCases.RunAllTestsAction)
       .setRunConfigRunWithBazel(runConfigRunWithBazel)
-      .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }.useDriverAndCloseIde {
       ideFrame {
         syncBazelProject()
         waitForIndicators(5.minutes)

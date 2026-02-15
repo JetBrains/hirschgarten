@@ -19,6 +19,7 @@ import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.DebugStepTypes
@@ -147,11 +148,12 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
   }
 
   private fun testResultsTreeWithBazelRunner() {
+    expandedTree = true
     withDriver(bgRun) {
       setRegistry("bazel.run.config.run.with.bazel", true.toString())
       try {
         ideFrame {
-          step("Open SimpleKotlinTest.kt and run test with bazel runner") {
+          step("Run test with bazel runner") {
             execute { openFile("SimpleKotlinTest.kt") }
             execute { runSimpleKotlinTest() }
             takeScreenshot("afterRunningSimpleKotlinTestBazelRunner")
@@ -164,21 +166,17 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
             takeScreenshot("afterTestResultsTreeBazelRunner")
           }
 
-          step("Launch debug run config for SimpleKotlinTest") {
-            editorTabs()
-              .gutter()
-              .getGutterIcons()
-              .first()
-              .click()
-            popup().waitOneContainsText("Debug test").click()
-            wait(15.seconds)
+          step("Run same test again to verify caching (proves Bazel runner is active)") {
+            execute { openFile("SimpleKotlinTest.kt") }
+            execute { runSimpleKotlinTest() }
+            takeScreenshot("afterRerunSimpleKotlinTestBazelRunner")
           }
-          step("Verify debug test status and results tree") {
+          step("Verify cached results (only Bazel runner produces cached suffix)") {
             verifyTestStatus(
               listOf("2 tests passed"),
-              listOf("SimpleKotlinTest", "trivial test()", "another trivial test()"),
+              listOf("SimpleKotlinTest", "trivial test() (cached)", "another trivial test() (cached)"),
             )
-            takeScreenshot("afterDebugTestResultsTreeBazelRunner")
+            takeScreenshot("afterCachedTestResultsTreeBazelRunner")
           }
         }
       } finally {
