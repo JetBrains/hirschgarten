@@ -22,7 +22,7 @@ class ExternalRepoResolveTest : IdeStarterBaseProjectTest() {
   @Test
   fun `navigate to external repo symbols should resolve correctly`() {
     createContext("externalRepoResolve", IdeaBazelCases.ExternalRepoResolve)
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()

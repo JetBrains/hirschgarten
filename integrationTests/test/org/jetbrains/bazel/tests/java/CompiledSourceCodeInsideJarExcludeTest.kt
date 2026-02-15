@@ -28,7 +28,7 @@ class CompiledSourceCodeInsideJarExcludeTest : IdeStarterBaseProjectTest() {
   @Test
   fun `navigation should resolve to source file not compiled jar`() {
     createContext("compiledSourceCodeInsideJarExclude", IdeaBazelCases.CompiledSourceCodeInsideJarExclude)
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()

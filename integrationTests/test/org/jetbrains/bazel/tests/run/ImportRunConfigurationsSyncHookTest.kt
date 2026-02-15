@@ -8,6 +8,7 @@ import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
@@ -24,7 +25,8 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `imported run configurations should execute and show build diagnostics`() {
-    createContext("importRunConfigurationsSyncHook", IdeaBazelCases.ImportRunConfigurationsSyncHook).runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
+    val context = createContext("importRunConfigurationsSyncHook", IdeaBazelCases.ImportRunConfigurationsSyncHook)
+    context.runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }.useDriverAndCloseIde {
       ideFrame {
         syncBazelProject(buildAndSync = true)
         waitForIndicators(5.minutes)
@@ -92,5 +94,6 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
         }
       }
     }
+    checkIdeaLogForExceptions(context)
   }
 }

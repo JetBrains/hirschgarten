@@ -22,7 +22,7 @@ class NonModuleTargetsTest : IdeStarterBaseProjectTest() {
   @Test
   fun `non-module targets should be synced and visible in project`() {
     createContext("nonModuleTargets", IdeaBazelCases.NonModuleTargets)
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
