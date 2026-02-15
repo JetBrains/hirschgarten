@@ -24,7 +24,7 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
   @Test
   fun `protobuf imports should resolve without red code`() {
     createContext("protobufResolve", IdeaBazelCases.ProtobufResolve)
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()

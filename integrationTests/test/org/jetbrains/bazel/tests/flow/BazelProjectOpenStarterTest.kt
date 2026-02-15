@@ -15,7 +15,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
   @Test
   fun `open project by root directory should resolve project name`() {
     createContext("openBazelProjectByProjectRoot", IdeaBazelCases.BazelProjectOpenByRootDir)
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         step("Ensure correct project is opened") {
           waitForProjectOpen()
@@ -28,7 +28,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
   @Test
   fun `open project by MODULE file should resolve project name`() {
     createContext("openBazelProjectByProjectModule", IdeaBazelCases.BazelProjectOpenByModuleFile)
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         step("Ensure correct project is opened") {
           waitForProjectOpen()

@@ -28,7 +28,7 @@ class ProjectViewChangeTest : IdeStarterBaseProjectTest() {
   fun `modify project view and resync updates targets`() {
     val context = createContext("projectViewModify", IdeaBazelCases.ProjectViewChange)
     context
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
@@ -69,7 +69,7 @@ class ProjectViewChangeTest : IdeStarterBaseProjectTest() {
   fun `switch project view file and resync updates targets`() {
     val context = createContext("projectViewSwitch", IdeaBazelCases.ProjectViewChange)
     context
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()

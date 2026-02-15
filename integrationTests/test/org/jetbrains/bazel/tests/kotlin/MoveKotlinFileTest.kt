@@ -11,6 +11,7 @@ import com.intellij.tools.ide.performanceTesting.commands.saveDocumentsAndSettin
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileContentsEqual
+import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
@@ -26,11 +27,12 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `move Kotlin file to subpackage should update imports`() {
-    createContext("MoveFilesTest", IdeaBazelCases.MoveKotlinFile)
+    val context = createContext("MoveFilesTest", IdeaBazelCases.MoveKotlinFile)
       .applyVMOptionsPatch {
         skipRefactoringDialogs()
       }
-      .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
+    context
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }.useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
           waitForIndicators(10.minutes)
@@ -61,6 +63,7 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
         }
       }
+    checkIdeaLogForExceptions(context)
   }
 }
 
