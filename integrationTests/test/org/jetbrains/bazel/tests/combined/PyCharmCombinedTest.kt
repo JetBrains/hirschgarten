@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.tests.python
+package org.jetbrains.bazel.tests.combined
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.step
@@ -8,44 +8,81 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
+import com.intellij.driver.sdk.waitForIndicators
+import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestMethodOrder
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-/**
- * ```sh
- * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:PyCharmTest --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
- * ```
- */
-abstract class PyCharmBaseTest : IdeStarterBaseProjectTest() {
-  protected fun runPyCharmTest(actions: Driver.() -> Unit) {
-    createContext("pyCharm", PyCharmBazelCases.PyCharm)
-      .runIdeWithDriver(runTimeout = timeout)
-      .useDriverAndCloseIde { actions() }
-  }
-}
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
+class PyCharmCombinedTest : IdeStarterBaseProjectTest() {
+  private lateinit var bgRun: BackgroundRun
+  private lateinit var ctx: IDETestContext
 
-class PyCharmOpenProjectTest : PyCharmBaseTest() {
-
-  @Test
-  fun `Python run line markers should be available after sync`() {
-    runPyCharmTest {
+  @BeforeAll
+  fun startIdeAndSync() {
+    ctx = createContext("pyCharmCombined", PyCharmBazelCases.PyCharm)
+    bgRun = ctx.runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+    withDriver(bgRun) {
       ideFrame {
         syncBazelProjectCloseDialog()
         waitForIndicators(10.minutes)
         execute { waitForSmartMode() }
+      }
+    }
+  }
 
+  @BeforeEach
+  fun skipIfCriticalFailed() = Assumptions.assumeFalse(criticalProblemOccurred)
+
+  @AfterEach
+  fun checkIdeState() {
+    if (!criticalProblemOccurred && ::bgRun.isInitialized && !bgRun.driver.isConnected) {
+      criticalProblemOccurred = true
+    }
+  }
+
+  @Test @Order(1)
+  fun `Python run line markers should be available after sync`() = pyCharmRunLineMarkers()
+
+  @Test @Order(2)
+  fun `Python test line markers should be available for test files`() = pyCharmTestLineMarkers()
+
+  @Test @Order(3)
+  fun `Python import statements should resolve correctly`() = pyCharmImportStatements()
+
+  @AfterAll
+  fun closeIde() {
+    if (::bgRun.isInitialized) bgRun.closeIdeAndWait()
+    if (::ctx.isInitialized) checkIdeaLogForExceptions(ctx)
+  }
+
+  private fun pyCharmRunLineMarkers() {
+    withDriver(bgRun) {
+      ideFrame {
         step("Open file") {
           execute { openFile("python/bin.py") }
-          wait(5.seconds) // Wait for Python plugin to register breakpoint types
+          wait(5.seconds)
         }
 
         step("Verify run line marker text") {
@@ -54,21 +91,13 @@ class PyCharmOpenProjectTest : PyCharmBaseTest() {
       }
     }
   }
-}
 
-class PyCharmOpenProjectWithTestFileTest : PyCharmBaseTest() {
-
-  @Test
-  fun `Python test line markers should be available for test files`() {
-    runPyCharmTest {
+  private fun pyCharmTestLineMarkers() {
+    withDriver(bgRun) {
       ideFrame {
-        syncBazelProjectCloseDialog()
-        waitForIndicators(10.minutes)
-        execute { waitForSmartMode() }
-
         step("Open test file") {
           execute { openFile("python/test.py") }
-          wait(5.seconds) // Wait for Python plugin to register breakpoint types
+          wait(5.seconds)
         }
 
         step("Verify run line marker text") {
@@ -77,18 +106,10 @@ class PyCharmOpenProjectWithTestFileTest : PyCharmBaseTest() {
       }
     }
   }
-}
 
-class PyCharmImportStatementsTest : PyCharmBaseTest() {
-
-  @Test
-  fun `Python import statements should resolve correctly`() {
-    runPyCharmTest {
+  private fun pyCharmImportStatements() {
+    withDriver(bgRun) {
       ideFrame {
-        syncBazelProjectCloseDialog()
-        waitForIndicators(10.minutes)
-        execute { waitForSmartMode() }
-
         step("Open main.py and navigate to bbb") {
           execute { openFile("python/main/main.py") }
           execute { navigateToFile(2, 28, "util.py", 3, 5) }
@@ -127,17 +148,17 @@ class PyCharmImportStatementsTest : PyCharmBaseTest() {
       }
     }
   }
-}
 
-private fun Driver.verifyRunLineMarkerText(expectedTexts: List<String>) {
-  ideFrame {
-    val gutterIcons = editorTabs().gutter().getGutterIcons()
-    val selectedGutterIcon = gutterIcons.first()
-    selectedGutterIcon.click()
-    val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
-    takeScreenshot("afterClickingOnRunLineMarker")
-    val texts = heavyWeightWindow.getAllTexts()
-    assert(texts.size == expectedTexts.size)
-    expectedTexts.forEach { expected -> assert(texts.any { actual -> actual.text.contains(expected) }) }
+  private fun Driver.verifyRunLineMarkerText(expectedTexts: List<String>) {
+    ideFrame {
+      val gutterIcons = editorTabs().gutter().getGutterIcons()
+      val selectedGutterIcon = gutterIcons.first()
+      selectedGutterIcon.click()
+      val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
+      takeScreenshot("afterClickingOnRunLineMarker")
+      val texts = heavyWeightWindow.getAllTexts()
+      assert(texts.size == expectedTexts.size)
+      expectedTexts.forEach { expected -> assert(texts.any { actual -> actual.text.contains(expected) }) }
+    }
   }
 }
