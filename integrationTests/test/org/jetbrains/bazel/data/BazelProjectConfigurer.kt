@@ -103,6 +103,10 @@ register_toolchains(
       lines.add("common --$flagName=bazel_downloader.cfg")
     }
 
+    lines.add("common --java_runtime_version=remotejdk_21")
+    lines.add("common --java_language_version=21")
+    lines.add("common --tool_java_runtime_version=remotejdk_21")
+
     bazelrc.toFile().appendText("\n" + lines.joinToString("\n") + "\n")
   }
 
