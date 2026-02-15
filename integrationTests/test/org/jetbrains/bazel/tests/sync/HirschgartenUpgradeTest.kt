@@ -22,6 +22,8 @@ import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
+import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -38,6 +40,9 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
 
   private var projectHome: Path? = null
 
+  @BeforeEach
+  fun skipIfCriticalFailed() = Assumptions.assumeFalse(criticalProblemOccurred)
+
   private fun resolveProjectHome(): Path {
     projectHome?.let { return it }
     val case = IdeaBazelCases.withProject(hirschgartenProjectInfo())
@@ -51,10 +56,19 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
   @Test
   @Order(1)
   fun `import hirschgarten and verify target order stability`() {
+    try {
+      importHirschgartenAndVerifyTargetOrder()
+    } catch (e: Throwable) {
+      criticalProblemOccurred = true
+      throw e
+    }
+  }
+
+  private fun importHirschgartenAndVerifyTargetOrder() {
     val case = IdeaBazelCases.withProject(hirschgartenProjectInfo())
     val context = createContext("hirschgarten", case)
     context
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
@@ -116,7 +130,7 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
     )
 
     context
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         ideFrame {
           waitForIndicators(5.minutes)
@@ -136,7 +150,7 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
     IntegrationTestCompat.onPostCreateContext(context)
 
     context
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
         step("Verify no resync happens after plugin upgrade") {
           ideFrame {
@@ -198,7 +212,8 @@ private fun hirschgartenProjectInfo(): ProjectInfoSpec {
 private fun configureHirschgarten(context: IDETestContext) {
   val projectHome = context.resolvedProjectHome
   resetTrackedFiles(projectHome)
-  BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)
+  BazelProjectConfigurer.configureProjectBeforeUse(context)
+  BazelProjectConfigurer.addHermeticCcToolchain(context)
 }
 
 private fun resetTrackedFiles(projectHome: Path) {

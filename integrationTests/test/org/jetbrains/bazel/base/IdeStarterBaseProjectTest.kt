@@ -3,6 +3,7 @@ package org.jetbrains.bazel.ideStarter
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
 import com.intellij.driver.client.utility
+import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.openEditor
@@ -54,6 +55,20 @@ import kotlin.time.Duration.Companion.seconds
 abstract class IdeStarterBaseProjectTest {
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 1200).seconds
+
+  protected var criticalProblemOccurred = false
+
+  protected fun isDriverConnected(bgRun: BackgroundRun): Boolean =
+    bgRun.driver.isConnected
+
+  protected fun withDriver(bgRun: BackgroundRun, block: Driver.() -> Unit) {
+    if (bgRun.driver.isConnected) {
+      bgRun.driver.withContext { block() }
+    } else if (!criticalProblemOccurred) {
+      criticalProblemOccurred = true
+      error("IDE is not connected")
+    }
+  }
 
   protected fun createContext(
     projectName: String,
@@ -315,6 +330,8 @@ fun checkIdeaLogForExceptions(context: IDETestContext) {
     System.err.println("=== IDEA LOG EXCEPTIONS (${errors.size} found) ===")
     errors.forEach { System.err.println(it) }
     System.err.println("=== END IDEA LOG EXCEPTIONS ===")
+  } else {
+    println("=== IDEA LOG: no exceptions found ===")
   }
 }
 
