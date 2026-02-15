@@ -45,5 +45,6 @@
     <orderEntry type="module" module-name="intellij.platform.debugger.impl.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.python.venv.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.python.community.services.systemPython.tests" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.python.pyproject.tests" scope="TEST" />
   </component>
 </module>
