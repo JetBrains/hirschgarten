@@ -59,7 +59,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
         val context = createContext(projectName, IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
         val startResult =
           context
-            .runIdeWithDriver(runTimeout = timeout)
+            .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
             .useDriverAndCloseIde {
               ideFrame {
                 step("Collect performance metrics during Bazel sync") {

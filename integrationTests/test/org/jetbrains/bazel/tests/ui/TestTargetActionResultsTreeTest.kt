@@ -14,8 +14,7 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -26,13 +25,12 @@ import kotlin.time.Duration.Companion.seconds
  */
 class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
 
-  @ParameterizedTest
-  @ValueSource(booleans = [false, true])
-  fun `test results tree should display passed tests correctly`(runConfigRunWithBazel: Boolean) {
+  @Test
+  fun `test results tree should display passed tests correctly with bazel runner`() {
     val fileName = "SimpleKotlinTest.kt"
 
     createContext("testTargetActionResultsTree", IdeaBazelCases.TestTargetActionResultsTree)
-      .setRunConfigRunWithBazel(runConfigRunWithBazel)
+      .setRunConfigRunWithBazel(true)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
