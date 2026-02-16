@@ -128,23 +128,25 @@ class BazelRunner(
     command: BazelCommand,
     originId: String? = null,
     logProcessOutput: Boolean = true,
-    shouldLogInvocation: Boolean = true,
-  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), originId, logProcessOutput, shouldLogInvocation)
+  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), originId, logProcessOutput)
 
   fun runBazelCommand(
     executionDescriptor: BazelCommandExecutionDescriptor,
     originId: String? = null,
     logProcessOutput: Boolean = true,
-    shouldLogInvocation: Boolean = true,
   ): BazelProcess {
     val finishCallback = executionDescriptor.finishCallback
     val processArgs = executionDescriptor.command
     val environment = executionDescriptor.environment
-    logInvocation(processArgs, environment, workspaceRoot, originId, shouldLogInvocation = shouldLogInvocation)
+
+    val outputLogger = taskEventsHandler.takeIf { logProcessOutput }?.asLogger(originId = originId)
+    if (outputLogger != null) {
+      val log = "${envToString(environment)} ${processArgs.joinToString(" ")}"
+      outputLogger.message(log)
+    }
 
     val process = bazelProcessLauncher.launchProcess(executionDescriptor)
 
-    val outputLogger = taskEventsHandler.takeIf { logProcessOutput }?.asLogger(originId = originId)
     return BazelProcess(
       process,
       outputLogger,
@@ -158,20 +160,4 @@ class BazelRunner(
   }
 
   private fun envToString(environment: Map<String, String>): String = environment.entries.joinToString(" ") { "${it.key}=${it.value}" }
-
-  private fun logInvocation(
-    processArgs: List<String>,
-    processEnv: Map<String, String>?,
-    directory: Path?,
-    originId: String?,
-    shouldLogInvocation: Boolean,
-  ) {
-    if (!shouldLogInvocation) return
-    val envString = processEnv?.let { envToString(it) }
-    val directoryString = directory?.let { "cd $it &&" }
-    val processArgsString = processArgs.joinToString("' '", "'", "'")
-    listOfNotNull("Invoking:", envString, directoryString, processArgsString)
-      .joinToString(" ")
-      .also { taskEventsHandler?.asLogger(originId = originId)?.message(it) }
-  }
 }
