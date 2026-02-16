@@ -43,6 +43,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
   private val runBuildifierOnSaveCheckBox: JBCheckBox
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
+  private val allowBazelInvocationOnFileEventsCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
 
@@ -51,6 +52,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     buildifierExecutablePathField = initBuildifierExecutablePathField()
     runBuildifierOnSaveCheckBox = initRunBuildifierOnSaveCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
+    allowBazelInvocationOnFileEventsCheckBox = initAllowBazelInvocationOnFileEventsCheckBox()
   }
 
   override fun getDependencies(): List<BaseExtensionPointName<*>> = listOf(BazelGeneralSettingsProvider.ep)
@@ -68,6 +70,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
       }
       row { cell(runBuildifierOnSaveCheckBox).align(Align.FILL) }
       row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
+      row { cell(allowBazelInvocationOnFileEventsCheckBox).align(Align.FILL) }
 
       // add settings from extensions
       configurables
@@ -133,6 +136,14 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
       }
     }
 
+  private fun initAllowBazelInvocationOnFileEventsCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.file.event.invoke.bazel.checkbox.text")).apply {
+      isSelected = currentProjectSettings.allowBazelInvocationOnFileEvents
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(allowBazelInvocationOnFileEvents = isSelected)
+      }
+    }
+
   override fun isModified(): Boolean = currentProjectSettings != project.bazelProjectSettings
 
   override fun apply() {
@@ -193,6 +204,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
         "project.settings.buildifier.label",
         "project.settings.project.view.label",
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
+        "project.settings.plugin.file.event.invoke.bazel.checkbox.text",
         "project.settings.plugin.title",
         "project.settings.plugin.run.buildifier.on.save.checkbox.text",
       )

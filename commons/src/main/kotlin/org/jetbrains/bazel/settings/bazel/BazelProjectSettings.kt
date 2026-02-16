@@ -18,6 +18,7 @@ data class BazelProjectSettings(
   val buildifierExecutablePath: Path? = null,
   val runBuildifierOnSave: Boolean = true,
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
+  val allowBazelInvocationOnFileEvents: Boolean = true,
   // experimental settings
 ) {
   fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings =
@@ -36,6 +37,7 @@ data class BazelProjectSettingsState(
   var buildifierExecutablePathUri: String? = null,
   var runBuildifierOnSave: Boolean = true,
   var showExcludedDirectoriesAsSeparateNode: Boolean = true,
+  var allowBazelInvocationOnFileEvents: Boolean = true,
 ) {
   fun isEmptyState(): Boolean = this == BazelProjectSettingsState()
 }
@@ -57,6 +59,7 @@ class BazelProjectSettingsService :
       buildifierExecutablePathUri = settings.buildifierExecutablePath?.toUri()?.toString(),
       runBuildifierOnSave = settings.runBuildifierOnSave,
       showExcludedDirectoriesAsSeparateNode = settings.showExcludedDirectoriesAsSeparateNode,
+      allowBazelInvocationOnFileEvents = settings.allowBazelInvocationOnFileEvents,
     )
 
   override fun loadState(settingsState: BazelProjectSettingsState) {
@@ -67,6 +70,7 @@ class BazelProjectSettingsService :
           buildifierExecutablePath = settingsState.buildifierExecutablePathUri?.takeIf { it.isNotBlank() }?.let { Paths.get(URI(it)) },
           runBuildifierOnSave = settingsState.runBuildifierOnSave,
           showExcludedDirectoriesAsSeparateNode = settingsState.showExcludedDirectoriesAsSeparateNode,
+          allowBazelInvocationOnFileEvents = settingsState.allowBazelInvocationOnFileEvents,
         )
     }
   }
