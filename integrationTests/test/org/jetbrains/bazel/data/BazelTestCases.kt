@@ -83,6 +83,15 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       )
     )
 
+    val SimpleScalaTest = withBazelProject(
+      projectInfo = withDefaults(
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "b3991962f00c8e60bc60e5ba7287b90195baa01e",
+        branchName = "main",
+        relativePath = "simpleScalaTest",
+        configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+      )
+    )
 
 
     val BazelCoverage = withBazelProject(
