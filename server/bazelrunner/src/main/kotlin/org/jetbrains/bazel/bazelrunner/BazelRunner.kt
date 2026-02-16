@@ -3,8 +3,9 @@ package org.jetbrains.bazel.bazelrunner
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+import org.jetbrains.bsp.protocol.asLogger
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import kotlin.io.path.pathString
@@ -13,7 +14,7 @@ import kotlin.io.path.pathString
  * Runs Bazel commands with proper repository configuration.
  */
 class BazelRunner(
-  private val bspClientLogger: BspClientLogger?,
+  private val taskEventsHandler: BazelTaskEventsHandler?,
   val workspaceRoot: Path,
   val bazelProcessLauncher: BazelProcessLauncher = DefaultBazelProcessLauncher(workspaceRoot),
 ) {
@@ -143,7 +144,7 @@ class BazelRunner(
 
     val process = bazelProcessLauncher.launchProcess(executionDescriptor)
 
-    val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
+    val outputLogger = taskEventsHandler.takeIf { logProcessOutput }?.asLogger(originId = originId)
     return BazelProcess(
       process,
       outputLogger,
@@ -171,6 +172,6 @@ class BazelRunner(
     val processArgsString = processArgs.joinToString("' '", "'", "'")
     listOfNotNull("Invoking:", envString, directoryString, processArgsString)
       .joinToString(" ")
-      .also { bspClientLogger?.copy(originId = originId)?.message(it) }
+      .also { taskEventsHandler?.asLogger(originId = originId)?.message(it) }
   }
 }

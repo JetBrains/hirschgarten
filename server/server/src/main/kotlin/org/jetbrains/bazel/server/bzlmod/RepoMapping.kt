@@ -7,9 +7,9 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
+import org.jetbrains.bsp.protocol.BazelTaskLogger
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -22,7 +22,7 @@ suspend fun calculateRepoMapping(
   workspaceContext: WorkspaceContext,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
-  bspClientLogger: BspClientLogger,
+  taskLogger: BazelTaskLogger,
 ): RepoMapping {
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
@@ -35,7 +35,7 @@ suspend fun calculateRepoMapping(
       moduleResolver.getRepoMappings(listOf("")).get("").orEmpty()
     }
     catch (e: Exception) {
-      bspClientLogger.error(e.toString())
+      taskLogger.error(e.toString())
       return RepoMappingDisabled
     }
 
@@ -61,12 +61,12 @@ suspend fun calculateRepoMapping(
       when (showRepoResult) {
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
         else -> {
-          bspClientLogger.warn("Tried to import external module $externalRepo, but it was not `local_path_override`: $showRepoResult")
+          taskLogger.warn("Tried to import external module $externalRepo, but it was not `local_path_override`: $showRepoResult")
         }
       }
     }
     catch (e: Exception) {
-      bspClientLogger.error(e.toString())
+      taskLogger.error(e.toString())
     }
   }
 
