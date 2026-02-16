@@ -746,17 +746,8 @@ class AspectBazelProjectMapper(
   private fun getTargetOutputJarsSet(targetInfo: TargetInfo) = getTargetOutputJarsList(targetInfo).toSet()
 
   private fun getTargetOutputJarsList(targetInfo: TargetInfo): List<Path> {
-    return if (targetInfo.hasJvmTargetInfo()) {
-      targetInfo.jarsList
-        .flatMap { it.binaryJarsList }
-        .map { bazelPathsResolver.resolve(it) }
-    }
-    else {
-      // java_import depends on a filegroup that doesn't have .jvmTargetInfo
-      targetInfo.sourcesList
-        .filter { it.relativePath.endsWith(".jar") }
-        .map { bazelPathsResolver.resolve(it) }
-    }
+    return ( targetInfo.jarsList.flatMap { it.binaryJarsList } .map { bazelPathsResolver.resolve(it) }
+      + targetInfo.sourcesList .filter { it.relativePath.endsWith(".jar") } .map { bazelPathsResolver.resolve(it) } )
   }
 
   private fun getTargetInterfaceJarsSet(targetInfo: TargetInfo) = getTargetInterfaceJarsList(targetInfo).toSet()
