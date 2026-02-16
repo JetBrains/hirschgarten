@@ -11,6 +11,7 @@ import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -47,7 +48,7 @@ object ProjectViewToWorkspaceContextConverter {
       directories = dirs,
       buildFlags = projectView.buildFlags,
       syncFlags = projectView.syncFlags,
-      debugFlags = projectView.debugFlags,
+      debugFlags = getAllDebugFlags(projectView),
       bazelBinary = projectView.bazelBinary?.let { workspaceRoot.resolve(it) }
         ?: resolveBazelBinary(workspaceRoot),
       allowManualTargetsSync = projectView.allowManualTargetsSync,
@@ -240,4 +241,14 @@ object ProjectViewToWorkspaceContextConverter {
       }
     }
   }
+
+  private fun getAllDebugFlags(projectView: ProjectView): List<String> =
+    (
+      projectView.debugFlags +
+      (
+        projectView.pythonDebugFlags.takeIf {
+          BazelFeatureFlags.isPythonSupportEnabled
+        } ?: emptyList()
+      )
+    ).distinct()
 }

@@ -22,6 +22,7 @@ import org.jetbrains.bazel.languages.projectview.sections.ImportRunConfiguration
 import org.jetbrains.bazel.languages.projectview.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.PreferClassJarsOverSourcelessJarsSection
 import org.jetbrains.bazel.languages.projectview.sections.PythonCodeGeneratorRuleNamesSection
+import org.jetbrains.bazel.languages.projectview.sections.PythonDebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.RunConfigRunWithBazelSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardingApproachSection
@@ -97,6 +98,9 @@ val ProjectView.indexAllFilesInDirectories: Boolean
 
 val ProjectView.pythonCodeGeneratorRuleNames: List<String>
   get() = getSection(PythonCodeGeneratorRuleNamesSection.KEY) ?: emptyList()
+
+val ProjectView.pythonDebugFlags: List<String>
+  get() = getSection(PythonDebugFlagsSection.KEY) ?: emptyList()
 
 val ProjectView.importIjars: Boolean
   get() = getSection(ImportIjarsSection.KEY) ?: false
