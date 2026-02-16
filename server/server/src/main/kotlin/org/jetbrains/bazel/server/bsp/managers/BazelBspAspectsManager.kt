@@ -198,7 +198,6 @@ class BazelBspAspectsManager(
     targetsSpec: TargetCollection,
     aspect: String,
     outputGroups: List<String>,
-    shouldLogInvocation: Boolean,
     workspaceContext: WorkspaceContext,
     originId: String?,
   ): BazelBspAspectsManagerResult {
@@ -220,7 +219,6 @@ class BazelBspAspectsManager(
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
         originId = originId,
-        shouldLogInvocation = shouldLogInvocation,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }
 }
