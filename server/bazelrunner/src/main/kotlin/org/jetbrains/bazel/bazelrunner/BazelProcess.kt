@@ -28,13 +28,15 @@ class BazelProcess internal constructor(
 
       val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelFeatureFlags.killServerOnCancel)
       val duration = stopwatch.stop()
-      logger?.message("\nBazel run completed in ${Format.duration(duration)} (exit code $exitCode)")
+      logger?.message("Command completed in ${Format.duration(duration)} (exit code $exitCode)")
 
       writeBazelLog {
         appendLine("exit code: $exitCode")
         appendLine("stdout:\n${outputProcessor.stdoutCollector.raw().toString(Charsets.UTF_8)}")
 
         val stdErrLines = outputProcessor.stderrCollector.lines()
+          .dropWhile { it.isBlank() }
+          .dropLastWhile { it.isBlank() }
         if (stdErrLines.isNotEmpty()) {
           appendLine("stderr:")
           stdErrLines.forEach {

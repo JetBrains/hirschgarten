@@ -235,9 +235,7 @@ class BepServer(
 
   private fun processBuildMetrics(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasBuildMetrics()) {
-      // TODO: https://youtrack.jetbrains.com/issue/BAZEL-621
-      val duration = Duration.ofMillis(event.buildMetrics.timingMetrics.wallTimeInMs)
-      taskEventsHandler.asLogger(originId).message("Command completed in ${Format.duration(duration)}")
+      bepMetrics = event.buildMetrics
     }
   }
 
@@ -400,6 +398,8 @@ class BepServer(
   }
 
   val bepOutput: BepOutput = bepOutputBuilder.build()
+  var bepMetrics: BuildEventStreamProtos.BuildMetrics? = null
+    private set
 
   companion object {
     private val ansiEscapeCode = "\\u001B\\[[\\d;]*[^\\d;]".toRegex()
