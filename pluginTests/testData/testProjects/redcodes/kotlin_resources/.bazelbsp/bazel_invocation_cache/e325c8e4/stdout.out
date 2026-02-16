@@ -1,181 +1,0 @@
-$TEST_TMPDIR defined, some defaults will be overridden
-[32mComputing main repo mapping:[0m 
-[1A[K[32mLoading:[0m 
-[1A[K[32mLoading:[0m 0 packages loaded
-[1A[K[32mAnalyzing:[0m 7 targets (5 packages loaded, 0 targets configured)
-[1A[K[32mAnalyzing:[0m 7 targets (5 packages loaded, 0 targets configured)
-    currently loading: @@bazel_tools//tools
-
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (81 packages loaded, 306 targets configured)
-    currently loading: @@rules_java+// ... (6 packages)
-[32m[1 / 1][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
-    Fetching ...+toolchains+remote_java_tools; Extracting java_tools-v18.1.zip
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching repository @@rules_license+; starting
-    Fetching ...external/rules_license+; Extracting rules_license-1.0.0.tar.gz
-    Fetching ...ub_jetbrains_kotlin_git; Extracting kotlin-compiler-2.2.21.zip
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1359 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
-    Fetching ...+toolchains+remote_java_tools; Extracting java_tools-v18.1.zip
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching ...ub_jetbrains_kotlin_git; Extracting kotlin-compiler-2.2.21.zip
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1359 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching ...ub_jetbrains_kotlin_git; Extracting kotlin-compiler-2.2.21.zip
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
-    Fetching ...ains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz 4s
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 5s
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 6s
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
-    Fetching https://mirror.bazel.build/...0.tar.xz; Checking in SHA-256 cache
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 8s
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 9s
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 10s
-    Fetching ...lchains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...y @@hermetic_cc_toolchain++toolchains+zig_config; starting 11s
-    Fetching ...ains+zig_config; Extracting zig-macos-aarch64-0.12.0.tar.xz 4s
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1481 targets configured)
-    currently loading: @@hermetic_cc_toolchain++toolchains+zig_config//
-[32m[1 / 1][0m no actions running
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (93 packages loaded, 1673 targets configured)
-    currently loading: @@rules_kotlin+//kotlin/compiler
-[32m[1 / 1][0m no actions running
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (113 packages loaded, 7780 targets configured)
-    currently loading: @@rules_java++toolchains+remote_java_tools_darwin_arm64\
-//
-[32m[1 / 1][0m no actions running
-    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
-    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
-    Fetching ...darwin; Extracting cpython-3.11.11+20250317-aarch64-apple-darw\
-in-install_only.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7807 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
-    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
-    Fetching ...darwin; Extracting cpython-3.11.11+20250317-aarch64-apple-darw\
-in-install_only.tar.gz
-    Fetching ...lin_extensions+com_github_google_ksp; Extracting artifacts.zip
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7807 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
-    Fetching ...ules_python++python+python_3_11_aarch64-apple-darwin; starting
-    Fetching ...darwin; Extracting cpython-3.11.11+20250317-aarch64-apple-darw\
-in-install_only.tar.gz
-    Fetching ...lin_extensions+com_github_google_ksp; Extracting artifacts.zip
-    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
-ar.gz
-    Fetching ...arch64; Extracting zulu25.30.17-ca-jdk25.0.1-macosx_aarch64.ta\
-r.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (114 packages loaded, 7807 targets configured)
-    currently loading: @@rules_python++python+python_3_11_aarch64-apple-darwin\
-//
-[32m[1 / 1][0m no actions running
-    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
-    Fetching ...lin_extensions+com_github_google_ksp; Extracting artifacts.zip
-    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
-ar.gz
-    Fetching ...arch64; Extracting zulu25.30.17-ca-jdk25.0.1-macosx_aarch64.ta\
-r.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10063 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
-    Fetching ...lin_extensions+com_github_google_ksp; Extracting artifacts.zip
-    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
-ar.gz
-    Fetching ...arch64; Extracting zulu25.30.17-ca-jdk25.0.1-macosx_aarch64.ta\
-r.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 10063 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
-    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
-ar.gz
-    Fetching ...arch64; Extracting zulu25.30.17-ca-jdk25.0.1-macosx_aarch64.ta\
-r.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (118 packages loaded, 10069 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
-    Fetching ...y @@rules_java++toolchains+remotejdk11_macos_aarch64; starting
-    Fetching ...arch64; Extracting zulu11.84.17-ca-jdk11.0.29-macosx_aarch64.t\
-ar.gz
-    Fetching ...arch64; Extracting zulu25.30.17-ca-jdk25.0.1-macosx_aarch64.ta\
-r.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (118 packages loaded, 10069 targets configured)
-    currently loading: @@rules_java++toolchains+remotejdk11_macos_aarch64//
-[32m[1 / 1][0m no actions running
-    Fetching ...y @@rules_java++toolchains+remotejdk25_macos_aarch64; starting
-    Fetching ...arch64; Extracting zulu25.30.17-ca-jdk25.0.1-macosx_aarch64.ta\
-r.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (119 packages loaded, 10194 targets configured)
-    currently loading: @@rules_java++toolchains+remotejdk25_macos_aarch64//
-[32m[1 / 1][0m no actions running
-[1A[K[1A[K[1A[K[32mINFO: [0mAnalyzed 7 targets (120 packages loaded, 10345 targets configured).
-[32m[9 / 10][0m //toolchains:kotlin-stdlib; 0s darwin-sandbox
-[1A[K[32mINFO: [0mFound 7 targets...
-[32m[11 / 11][0m no actions running
-[1A[K[32mINFO: [0mElapsed time: 15.815s, Critical Path: 0.20s
-[32m[11 / 11][0m no actions running
-[1A[K[32mINFO: [0m11 processes: 10 internal, 1 darwin-sandbox.
-[32m[11 / 11][0m no actions running
-[1A[K[32mINFO: [0mBuild completed successfully, 11 total actions
-[32mINFO:[0m 
-[1A[K[32mINFO:[0m 
-[1A[K[32mINFO: [0mBuild Event Protocol files produced successfully.
-[0m
