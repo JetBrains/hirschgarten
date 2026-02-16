@@ -13,8 +13,6 @@ import com.intellij.ide.starter.extended.codeowners.CodeOwnerIndex
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.project.GitProjectInfo
-import com.intellij.ide.starter.project.LocalProjectInfo
-import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
@@ -29,9 +27,9 @@ import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
-import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.getProjectInfoFromSystemProperties
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openBspToolWindow
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
@@ -52,34 +50,6 @@ private val codeOwnerIndex: CodeOwnerIndex? by lazy { CodeOwnerIndex.create() }
  */
 @PerformanceUnitTest
 class PerformanceTest : IdeStarterBaseProjectTest() {
-  private fun configureProjectWithHermeticCcToolchain(context: IDETestContext) {
-    BazelProjectConfigurer.configureProjectBeforeUse(context)
-    BazelProjectConfigurer.addHermeticCcToolchain(context)
-  }
-
-  private fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
-    val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
-    if (localProjectPath != null) {
-      return LocalProjectInfo(
-        projectDir = Path.of(localProjectPath),
-        isReusable = true,
-        configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
-      )
-    }
-    val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
-    val commitHash = System.getProperty("bazel.ide.starter.test.commit.hash").orEmpty()
-    val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "252"
-    val projectHomeRelativePath: String? = System.getProperty("bazel.ide.starter.test.project.home.relative.path")
-
-    return GitProjectInfo(
-      repositoryUrl = projectUrl,
-      commitHash = commitHash,
-      branchName = branchName,
-      projectHomeRelativePath = { if (projectHomeRelativePath != null) it.resolve(projectHomeRelativePath) else it },
-      isReusable = true,
-      configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
-    )
-  }
 
   @TestFactory
   fun `sync performance metrics should be collected during project import`(): List<DynamicTest> {
@@ -87,6 +57,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
     return listOf(
       DynamicTest.dynamicTest("sync performance - $projectName") {
         val context = createContext(projectName, IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
+          .applyVMOptionsPatch { withXmx(11264) }
         val startResult =
           context
             .runIdeWithDriver(runTimeout = timeout)
@@ -137,11 +108,6 @@ private fun <T : CommandChain> T.stopRecordingMaxMemory(): T {
 
 private fun <T : CommandChain> T.recordMemory(gaugeName: String): T {
   addCommand(CMD_PREFIX + "recordMemory", gaugeName)
-  return this
-}
-
-private fun <T : CommandChain> T.openBspToolWindow(): T {
-  addCommand(CMD_PREFIX + "openBspToolWindow")
   return this
 }
 

@@ -124,7 +124,7 @@ class BazelBspAspectsManager(
     val javaEnabled = Language.Java in activeLanguages
     val pythonEnabled = Language.Python in activeLanguages
     val bazel8OrAbove = bazelRelease.major >= 8
-    Language.entries.filter { it.isTemplate }.forEach {
+    Language.entries.forEach {
       val ruleLanguage = languageRuleMap[it]
 
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
@@ -178,6 +178,15 @@ class BazelBspAspectsManager(
         "repoMapping" to starlarkRepoMapping,
       ),
     )
+
+    templateWriter.writeToFile(
+      "utils/jvm_common.bzl" + Constants.TEMPLATE_EXTENSION,
+      aspectsPath.resolve("utils").resolve("jvm_common.bzl"),
+      mapOf(
+        "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
+      ),
+    )
+
   }
 
   private fun RulesetLanguage.calculateCanonicalName(repoMapping: RepoMapping): String? =
@@ -198,7 +207,6 @@ class BazelBspAspectsManager(
     targetsSpec: TargetCollection,
     aspect: String,
     outputGroups: List<String>,
-    shouldLogInvocation: Boolean,
     workspaceContext: WorkspaceContext,
     originId: String?,
   ): BazelBspAspectsManagerResult {
@@ -208,6 +216,7 @@ class BazelBspAspectsManager(
         aspect(aspectsResolver.resolveLabel(aspect)),
         outputGroups(outputGroups),
         keepGoing(),
+        "--remote_download_outputs=toplevel",
       )
     val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
     val syncFlags = workspaceContext.syncFlags
@@ -219,7 +228,6 @@ class BazelBspAspectsManager(
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
         originId = originId,
-        shouldLogInvocation = shouldLogInvocation,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }
 }

@@ -39,10 +39,12 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
@@ -79,6 +81,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     target2.createModule()
     target3.createModule()
     target4.createModule()
+
+    project.targetUtils.setTargets(
+      listOf(
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target1),
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target2),
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target3),
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target4),
+      ),
+    )
   }
 
   @Test
@@ -276,8 +287,76 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `should ignore file creation inside excluded folders`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val file = excluded.createFile("aaa", "java")
+
+    createEvent(file).process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore deletion from excluded folder`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val file = excluded.createFile("aaa", "java")
+
+    runTestWriteAction { file.delete(requestor) }
+    deleteEvent(file).process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore file move from excluded folder to non-excluded folder`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val pack = src.createDirectory("package")
+    val file = excluded.createFile("aaa", "java")
+
+    val moveEvent = moveEvent(file, pack)
+    runTestWriteAction { file.move(requestor, pack) }
+
+    moveEvent.process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore file move from non-excluded folder to excluded folder`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val pack = src.createDirectory("package")
+    val file = pack.createFile("aaa", "java")
+
+    val moveEvent = moveEvent(file, excluded)
+    runTestWriteAction { file.move(requestor, excluded) }
+
+    moveEvent.process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore file creation deep inside excluded folders`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val level2 = excluded.createDirectory("level2")
+    val level3 = level2.createDirectory("level3")
+    val file = level3.createFile("aaa", "java")
+
+    createEvent(file).process().assertNoProcessingHappened()
+  }
+
+  @Test
+  fun `should ignore deletion from non-existing folder deep inside an excluded folder`() {
+    val src = project.rootDir.createDirectory("src")
+    val excluded = src.createExcludedDirectory("excluded")
+    val level2 = excluded.createDirectory("level2")
+    val level3 = level2.createDirectory("level3")
+    val file = level3.createFile("aaa", "java")
+
+    runTestWriteAction { level2.delete(requestor) }
+    deleteEvent(file).process().assertNoProcessingHappened()
+  }
+
+  @Test
   fun `should ignore projects without any targets`() {
-    project.targetUtils.setTargets(emptyMap())
+    project.targetUtils.setTargets(emptyList())
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
     createEvent(file).process().assertNoProcessingHappened()
     deleteEvent(file).process().assertNoProcessingHappened()
@@ -381,8 +460,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
         baseDirectory = projectBasePath,
       )
-    val mockTargetMap = mapOf(mockLabel to mockBuildTarget)
-    project.targetUtils.setTargets(mockTargetMap)
+    project.targetUtils.setTargets(listOf(mockBuildTarget))
   }
 
   private fun VirtualFile.createFile(name: String, extension: String): VirtualFile {
@@ -397,6 +475,22 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     return runTestWriteAction {
       this.createChildDirectory(requestor, name)
     }
+  }
+
+  private fun VirtualFile.createExcludedDirectory(name: String): VirtualFile {
+    val directory = this.createDirectory(name)
+    val module = workspaceModel.currentSnapshot.resolveModule(target1)
+    val srcUrl = this.toVirtualFileUrl(virtualFileUrlManager)
+    val contentRoot =
+      ContentRootEntity(
+        url = srcUrl,
+        excludedPatterns = listOf("excluded"),
+        entitySource = module.entitySource,
+      )
+    runTestWriteAction {
+      workspaceModel.updateProjectModel { it.modifyModuleEntity(module) { contentRoots = listOf(contentRoot) } }
+    }
+    return directory
   }
 
   private fun createEvent(file: VirtualFile) =

@@ -13,28 +13,7 @@ import org.jetbrains.bazel.utils.findCanonicalVirtualFileThatExists
 import org.jetbrains.bsp.protocol.CompileReport
 import java.nio.file.Path
 
-class BazelBuildTaskListener(private val buildConsole: TaskConsole, private val originId: String) : BazelTaskListener {
-  override fun onTaskStart(
-    taskId: TaskId,
-    parentId: TaskId?,
-    message: String,
-    data: Any?,
-  ) {
-    if (parentId == null) {
-      buildConsole.startSubtask(originId, taskId, message)
-    } else {
-      buildConsole.startSubtask(taskId, parentId, message)
-    }
-  }
-
-  override fun onTaskProgress(
-    taskId: TaskId,
-    message: String,
-    data: Any?,
-  ) {
-    buildConsole.addMessage(taskId, message)
-  }
-
+class BazelBuildTaskListener(private val taskConsole: TaskConsole, private val originId: String) : BazelTaskListener {
   override fun onTaskFinish(
     taskId: TaskId,
     parentId: TaskId?,
@@ -45,15 +24,15 @@ class BazelBuildTaskListener(private val buildConsole: TaskConsole, private val 
     when (data) {
       is CompileReport -> {
         if (data.errors == 0 && status == BazelStatus.SUCCESS) {
-          buildConsole.finishSubtask(taskId, message, FailureResultImpl())
+          taskConsole.finishSubtask(taskId, message, FailureResultImpl())
         } else if (status == BazelStatus.CANCEL) {
-          buildConsole.finishSubtask(taskId, message, SkippedResultImpl())
+          taskConsole.finishSubtask(taskId, message, SkippedResultImpl())
         } else {
-          buildConsole.finishSubtask(taskId, message, SuccessResultImpl())
+          taskConsole.finishSubtask(taskId, message, SuccessResultImpl())
         }
       }
 
-      else -> buildConsole.finishSubtask(taskId, message, SuccessResultImpl())
+      else -> taskConsole.finishSubtask(taskId, message, SuccessResultImpl())
     }
   }
 
@@ -65,7 +44,7 @@ class BazelBuildTaskListener(private val buildConsole: TaskConsole, private val 
     severity: MessageEvent.Kind,
     message: String,
   ) {
-    buildConsole.addDiagnosticMessage(
+    taskConsole.addDiagnosticMessage(
       taskId = originId,
       path = textDocument
         ?.findCanonicalVirtualFileThatExists()
@@ -79,6 +58,6 @@ class BazelBuildTaskListener(private val buildConsole: TaskConsole, private val 
   }
 
   override fun onLogMessage(message: String) {
-    buildConsole.addMessage(originId, message)
+    taskConsole.addMessage(originId, message)
   }
 }

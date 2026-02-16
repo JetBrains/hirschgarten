@@ -94,6 +94,7 @@ class BazelInvocationCache(
     }
   }
 
+  @OptIn(ExperimentalPathApi::class)
   private fun launchAndCacheProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process {
     val cacheDir = getCacheDirectory(executionDescriptor).createDirectories()
 
@@ -103,9 +104,9 @@ class BazelInvocationCache(
 
     val stdout = process.inputStream.readAllBytes()
     val statusCode = process.waitFor()
-    check(statusCode == 0) {
-      "$executionDescriptor failed with status code $statusCode, " +
-      "last lines of stdout: ${String(stdout).lines().takeLast(20).joinToString("\n")}"
+    if(statusCode != 0) {
+      invocationCacheDir.deleteRecursively()
+      error("$executionDescriptor failed with status code $statusCode\n${String(stdout)}")
     }
 
     if (executionDescriptor.command.contains("info")) {

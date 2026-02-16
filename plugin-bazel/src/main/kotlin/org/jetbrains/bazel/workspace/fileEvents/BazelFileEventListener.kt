@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.workspace.fileEvents
 
-import com.android.adblib.utils.launchCancellable
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -13,6 +13,7 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.NlsSafe
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
@@ -29,7 +30,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -40,7 +40,9 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
@@ -105,7 +107,10 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       } while (processed)
     }
 
-    startSyncConsoleTask(project, processingJob, originId)
+    // no need to start sync console task if no Bazel processing is allowed
+    if (project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
+      startSyncConsoleTask(project, processingJob, originId)
+    }
     processingJob.join()
     return true
   }
@@ -232,9 +237,14 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       }
     // avoid running a Bazel query when not required (BAZEL-2458)
     if (bazelQueryIsRequired) {
-      val targetsByPath =
-        context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.originId) } ?: return
-      addFileToTargets(targetsByPath, moduleToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
+      if (context.project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
+        val targetsByPath =
+          context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.originId) } ?: return
+        addFileToTargets(targetsByPath, moduleToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
+      } else {
+        // Bazel is not allowed to be run on file events, but it was necessary - show "Resync" button
+        BazelProjectAware.notify(context.project)
+      }
     } else {
       context.progressReporter.skipQueryStep()
       for (filePath in addedFilePaths) {
@@ -293,7 +303,11 @@ private fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<Si
     } catch (_: UnsupportedOperationException) { // unable to create a Path instance
       return emptyList()
     }
-  return filter { it.doesAffectFolder(rootDirPath) }
+  val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+  val fileSystem = LocalFileSystem.getInstance()
+  return runReadAction {
+    filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileSystem) }
+  }
 }
 
 @NlsSafe

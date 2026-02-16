@@ -5,10 +5,11 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 
-data class ProjectDetails(
+class ProjectDetails(
   val targetIds: List<Label>,
   val targets: Set<RawBuildTarget>,
-  val libraries: List<LibraryItem>?,
-  var defaultJdkName: String? = null,
+  val libraries: List<LibraryItem>,
   val workspaceContext: WorkspaceContext? = null,
-)
+) {
+  var defaultJdkName: String? = null
+}

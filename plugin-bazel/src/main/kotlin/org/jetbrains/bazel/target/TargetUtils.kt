@@ -3,7 +3,6 @@
 package org.jetbrains.bazel.target
 
 import com.intellij.configurationStore.SettingsSavingComponent
-import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -14,12 +13,14 @@ import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.util.AwaitCancellationAndInvoke
 import com.intellij.util.awaitCancellationAndInvoke
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import com.intellij.util.concurrency.ThreadingAssertions
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.BufferOverflow
@@ -27,18 +28,23 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.target.TargetsCacheStorage.Companion.openStore
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
+import kotlin.collections.hashMapOf
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -47,24 +53,30 @@ private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit.MILLISECONDS)
 
-private fun getStorageFilename(): String {
-  // version for 243 cannot use `Hashing.xxh3_128()`
-  // (not available in 243, and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
-  val suffix = if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "-243" else ""
-  return "bazel-targets-v2$suffix.db"
-}
-
 @PublicApi
 @Service(Service.Level.PROJECT)
 class TargetUtils(private val project: Project, private val coroutineScope: CoroutineScope) : SettingsSavingComponent {
-  private val db = openStore(storeFile = project.getProjectDataPath(getStorageFilename()), filePathSuffix = project.basePath!! + "/")
+  @OptIn(AwaitCancellationAndInvoke::class)
+  private val dbAsync: Deferred<TargetsCacheStorage> =
+    BazelCoroutineService.getInstance(project).startAsync {
+      withContext(Dispatchers.IO) {
+        val store = openStore(storeFile = project.getProjectDataPath("bazel-targets-v3.db"), project = project)
+        coroutineScope.awaitCancellationAndInvoke(Dispatchers.IO) {
+          store.close()
+        }
+        store
+      }
+    }
+
+  private val db: TargetsCacheStorage
+    get() = runBlocking { dbAsync.await() }
 
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()
 
   private val allTargetsAndLibrariesLabelsCache =
     SynchronizedClearableLazy {
-      db.getAllTargetsAndLibrariesLabelsCache(project)
+      db.getAllTargetsAndLibrariesLabelsCache()
     }
 
   private val allExecutableTargetsCache = SynchronizedClearableLazy {
@@ -84,14 +96,6 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   private val mutableTargetListUpdated = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_LATEST)
   val targetListUpdated: SharedFlow<Unit> = mutableTargetListUpdated.asSharedFlow()
-
-  init {
-    // cannot use opt-in (no such opt-in in 243)
-    @Suppress("OPT_IN_USAGE")
-    coroutineScope.awaitCancellationAndInvoke(Dispatchers.IO) {
-      db.close()
-    }
-  }
 
   override suspend fun save() {
     val exitInProgress = ApplicationManager.getApplication().isExitInProgress
@@ -115,8 +119,8 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   @TestOnly
-  fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
-    db.setTargets(labelToTargetInfo)
+  fun setTargets(targets: List<BuildTarget>) {
+    db.setTargets(targets)
     notifyTargetListUpdated()
   }
 
@@ -128,21 +132,22 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun saveTargets(
     targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
-    libraryItems: List<LibraryItem>?,
+    libraryItems: List<LibraryItem>,
   ) {
     ThreadingAssertions.assertBackgroundThread()
-    val labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id }
+
+    val executableTargets =
+      calculateExecutableTargets(
+        targets = fileToTarget.flatMap { it.value }.distinct(),
+        targetDirectDependentsGraph = calculateDirectDependentsGraph(targets),
+        labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id },
+      )
+
     db.reset(
       fileToTarget = fileToTarget,
-      fileToExecutableTargets =
-        calculateFileToExecutableTargets(
-          targetDependentsGraph = TargetDependentsGraph(targets, libraryItems),
-          fileToTarget = fileToTarget,
-          labelToTargetInfo = labelToTargetInfo,
-        ),
+      executableTargets = executableTargets,
       libraryItems = libraryItems,
       targets = targets,
-      project = project,
     )
 
     notifyTargetListUpdated()
@@ -155,36 +160,44 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
   }
 
-  private fun calculateFileToExecutableTargets(
-    targetDependentsGraph: TargetDependentsGraph,
-    fileToTarget: Map<Path, List<Label>>,
-    labelToTargetInfo: Map<Label, BuildTarget>,
-  ): Map<Path, List<Label>> {
-    val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
-    return fileToTarget.entries
-      .mapNotNull { (path, targets) ->
-        val dependents =
-          targets
-            .flatMap { label ->
-              calculateTransitivelyExecutableTargets(
-                resultCache = targetToTransitiveRevertedDependenciesCache,
-                targetDependentsGraph = targetDependentsGraph,
-                labelToTargetInfo = labelToTargetInfo,
-                target = label,
-              )
-            }.distinct()
+  private fun calculateDirectDependentsGraph(targets: List<RawBuildTarget>): Map<Label, Set<Label>> {
+    val targetIdToDirectDependentIds = hashMapOf<Label, MutableSet<Label>>()
+    for (targetInfo in targets) {
+      val dependencies = targetInfo.dependencies
+      for (dependency in dependencies) {
+        targetIdToDirectDependentIds
+          .computeIfAbsent(dependency.label) { hashSetOf<Label>() }
+          .add(targetInfo.id)
+      }
+    }
+    return targetIdToDirectDependentIds
+  }
 
-        if (dependents.isEmpty()) {
-          null
-        } else {
-          path to dependents
+  private fun calculateExecutableTargets(
+    targets: List<Label>,
+    targetDirectDependentsGraph: Map<Label, Set<Label>>,
+    labelToTargetInfo: Map<Label, BuildTarget>,
+  ): Map<ResolvedLabel, List<Label>> {
+    val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
+    val result = mutableMapOf<ResolvedLabel, List<Label>>()
+    targets
+      .forEach { label ->
+        val executables = calculateTransitivelyExecutableTargets(
+          resultCache = targetToTransitiveRevertedDependenciesCache,
+          targetDirectDependentsGraph = targetDirectDependentsGraph,
+          labelToTargetInfo = labelToTargetInfo,
+          target = label,
+        )
+        if (executables.isNotEmpty()) {
+          result[label as ResolvedLabel] = executables.toList()
         }
-      }.toMap()
+      }
+    return result
   }
 
   private fun calculateTransitivelyExecutableTargets(
     resultCache: MutableMap<Label, Set<Label>>,
-    targetDependentsGraph: TargetDependentsGraph,
+    targetDirectDependentsGraph: Map<Label, Set<Label>>,
     target: Label,
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Set<Label> =
@@ -194,7 +207,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
         return@getOrPut setOf(target)
       }
 
-      val directDependentIds = targetDependentsGraph.directDependentIds(target)
+      val directDependentIds = targetDirectDependentsGraph[target] ?: return@getOrPut emptySet()
 
       val executableTargetsFromSamePackage = directDependentIds.filter {
         it.packagePath == target.packagePath && labelToTargetInfo[it]?.kind?.isExecutable == true
@@ -204,7 +217,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       return@getOrPut directDependentIds
         .asSequence()
         .flatMap { dependency ->
-          calculateTransitivelyExecutableTargets(resultCache, targetDependentsGraph, dependency, labelToTargetInfo)
+          calculateTransitivelyExecutableTargets(resultCache, targetDirectDependentsGraph, dependency, labelToTargetInfo)
         }.distinct()
         .take(MAX_EXECUTABLE_TARGET_IDS)
         .toHashSet()
@@ -229,11 +242,12 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
+    val targetsForFile = getTargetsForFile(file)
     val executableDirectTargets =
-      getTargetsForFile(file)
-        .filter { label -> db.getBuildTargetForLabel(label, project)?.kind?.isExecutable == true }
+      targetsForFile
+        .filter { label -> db.getBuildTargetForLabel(label)?.kind?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
-      return file.toNioPathOrNull()?.let { db.getExecutableTargetsForPath(it) } ?: emptyList()
+      return targetsForFile.flatMap { db.getExecutableTargetsForTarget(it) ?: emptyList() }.distinct()
     }
     return executableDirectTargets
   }
@@ -252,7 +266,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
    * The label must be first canonicalized via toCanonicalLabel.
    */
   @InternalApi
-  fun getBuildTargetForLabel(label: Label): BuildTarget? = db.getBuildTargetForLabel(label, project)
+  fun getBuildTargetForLabel(label: Label): BuildTarget? = db.getBuildTargetForLabel(label)
 
   @InternalApi
   fun getBuildTargetForModule(module: Module): BuildTarget? = getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }

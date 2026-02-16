@@ -1,8 +1,7 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
-load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
-load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "EXPORT_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups", "do_starlark_string_expansion_dict", "is_valid_aspect_target", "BspAspectInfo")
-load("//${bspPath}/aspects:rules/java/java_info.bzl", "java_info_in_target", "java_info_reference")
+load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "REQUIRED_ASPECT_PROVIDERS", "TOOLCHAINS")
+load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "BspAspectInfo", "COMPILE_DEPS", "EXPORT_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "do_starlark_string_expansion_dict", "file_location", "get_aspect_ids", "is_valid_aspect_target", "update_sync_output_groups")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
     all_info = [create_extension_info(target = target, ctx = ctx, output_groups = output_groups, dep_targets = dep_targets) for create_extension_info in EXTENSIONS]
@@ -23,6 +22,18 @@ def make_dep(dep, dependency_type, exported):
 
 def make_deps(deps, dependency_type, exported = False):
     return [make_dep(dep, dependency_type, exported) for dep in deps]
+
+COMMON_INFO_FIELDS = ["jars", "generated_jars", "jdeps"]
+
+def update_info(info, new_info):
+    """info.update(new_info), but with fields in COMMON_INFO_FIELDS
+    being the list concatenation of the values in both dicts.
+    """
+    common = {}
+    for k in COMMON_INFO_FIELDS:
+        common[k] = info.get(k, []) + new_info.get(k, [])
+    info.update(new_info)
+    info.update(common)
 
 def _is_analysis_test(target):
     """Returns if the target is an analysis test.
@@ -60,16 +71,11 @@ def _bsp_target_info_aspect_impl(target, ctx):
     runtime_dep_targets = collect_targets_from_attrs(rule_attrs, RUNTIME_DEPS)
     runtime_deps = make_deps(runtime_dep_targets, RUNTIME)
 
-    direct_export_targets = []
-    direct_exports = []
-    direct_exports_set = {}
-    can_have_exports = java_info_in_target(target)
-    if can_have_exports:
-        direct_export_targets = collect_targets_from_attrs(rule_attrs, EXPORT_DEPS)
-        direct_exports = make_deps(direct_export_targets, COMPILE, True)
-        direct_exports_set = {str(dep.label): None for dep in direct_export_targets}
+    direct_export_targets = collect_targets_from_attrs(rule_attrs, EXPORT_DEPS)
+    direct_exports = make_deps(direct_export_targets, COMPILE, True)
+    direct_exports_set = {str(dep.label): None for dep in direct_export_targets}
 
-    all_deps = [dep for dep in compile_deps + runtime_deps if not(dep.id in direct_exports_set)] + direct_exports
+    all_deps = [dep for dep in compile_deps + runtime_deps if not (dep.id in direct_exports_set)] + direct_exports
 
     dep_targets = direct_dep_targets + private_direct_dep_targets + runtime_dep_targets + direct_export_targets
     output_groups = dict()
@@ -157,7 +163,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     all_extension_info = create_all_extension_info(target, ctx, output_groups, dep_targets)
     for (extension_info, extension_exported_properties) in all_extension_info:
-        info.update(extension_info)
+        update_info(info, extension_info)
         if extension_exported_properties != None:
             exported_properties.update(extension_exported_properties)
 
@@ -177,7 +183,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
 bsp_target_info_aspect = aspect(
     implementation = _bsp_target_info_aspect_impl,
-    required_aspect_providers = [java_info_reference()],
+    required_aspect_providers = REQUIRED_ASPECT_PROVIDERS,
     attr_aspects = ALL_DEPS,
     toolchains = TOOLCHAINS,
 )

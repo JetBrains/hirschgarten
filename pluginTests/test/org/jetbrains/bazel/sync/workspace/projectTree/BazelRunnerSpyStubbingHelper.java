@@ -20,7 +20,6 @@ public final class BazelRunnerSpyStubbingHelper {
     Mockito.doReturn(process).when(runner).runBazelCommand(
       any(BazelCommand.class),
       nullable(String.class),
-      anyBoolean(),
       anyBoolean()
     );
   }

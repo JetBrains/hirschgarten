@@ -5,6 +5,6 @@ import org.jetbrains.bsp.protocol.RawBuildTarget
 
 data class BazelResolvedWorkspace(
   val targets: List<RawBuildTarget>,
-  val libraries: List<LibraryItem> = listOf(),
+  val libraries: List<LibraryItem> = emptyList(),
   val hasError: Boolean = false,
 )

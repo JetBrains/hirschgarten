@@ -18,7 +18,6 @@ import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
@@ -30,7 +29,9 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -54,11 +55,10 @@ class ProjectResolver(
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
   private val workspaceContext: WorkspaceContext,
   private val featureFlags: FeatureFlags,
-  private val targetInfoReader: TargetInfoReader,
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val bspClientLogger: BspClientLogger,
+  private val taskEventsHandler: BazelTaskEventsHandler
 ) {
   private suspend fun <T> measured(description: String, f: suspend () -> T): T = bspTracer.spanBuilder(description).useWithScope { f() }
 
@@ -79,7 +79,7 @@ class ProjectResolver(
           "Parsing aspect outputs",
         ) {
           val rawTargetsMap =
-            targetInfoReader
+            TargetInfoReader(taskEventsHandler.asLogger(originId))
               .readTargetMapFromAspectOutputs(aspectOutputs)
           processTargetMap(rawTargetsMap)
         }
@@ -95,7 +95,6 @@ class ProjectResolver(
           val needsPath = involvedRepos
             .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
             .map { it.toString() }
-            .sorted()  // Call Bazel in a reproducible way
           val extraRepositoryDescriptions = ModuleResolver(bazelRunner, workspaceContext).resolveModules(needsPath, bazelInfo)
           val extraPaths = extraRepositoryDescriptions.map { (name, description) -> when(description) {
             is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
@@ -135,7 +134,7 @@ class ProjectResolver(
 
     val repoMapping =
       measured("Calculating external repository mapping") {
-        calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+        calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(originId))
       }
 
     val bazelExternalRulesetsQuery =
@@ -144,7 +143,7 @@ class ProjectResolver(
         bazelRunner,
         bazelInfo.isBzlModEnabled,
         bazelInfo.isWorkspaceEnabled,
-        bspClientLogger,
+        taskEventsHandler,
         bazelPathsResolver,
         workspaceContext,
         repoMapping,
@@ -183,7 +182,7 @@ class ProjectResolver(
     }
 
     measured("Generating language extensions file") {
-      bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
+      bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains, repoMapping, bazelInfo.externalAutoloads)
     }
 
     measured("Run Gazelle target") {
@@ -213,6 +212,7 @@ class ProjectResolver(
     originId: String?,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
+      val taskLogger = taskEventsHandler.asLogger(originId)
       val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
       val languageSpecificOutputGroups = getLanguageSpecificOutputGroups(featureFlags)
       outputGroups.addAll(languageSpecificOutputGroups)
@@ -226,15 +226,12 @@ class ProjectResolver(
               targetsSpec = targetsToSync,
               aspect = ASPECT_NAME,
               outputGroups = outputGroups,
-              shouldLogInvocation = true,
               workspaceContext = workspaceContext,
               originId = originId,
             ).also {
               if (it.status == BazelStatus.OOM_ERROR) {
-                bspClientLogger.warn(
-                  "Bazel ran out of memory during sync. To mitigate, consider enabling shard sync in your project view file: `shard_sync: true`",
-                )
-                bspClientLogger.message("---")
+                taskLogger.warn("Bazel ran out of memory during sync. To mitigate, consider enabling shard sync in your project view file: `shard_sync: true`", )
+                taskLogger.message("---")
               }
             }
         }
@@ -249,7 +246,7 @@ class ProjectResolver(
               workspaceContext,
               featureFlags,
               bazelRunner,
-              bspClientLogger,
+              taskLogger,
               phasedSyncProject,
             )
           var remainingShardedTargetsSpecs = shardedResult.targets.toTargetCollections().toMutableList()
@@ -266,48 +263,45 @@ class ProjectResolver(
             }
             val shardedTargetsSpec = remainingShardedTargetsSpecs.removeFirst()
             val shardName = "shard $shardNumber of ${shardNumber + remainingShardedTargetsSpecs.size}"
-            bspClientLogger.message("\nBuilding $shardName ...")
-            bspClientLogger.message("Expected remaining shards: ${remainingShardedTargetsSpecs.size}")
+            taskLogger.message("\nBuilding $shardName ...")
+            taskLogger.message("Expected remaining shards: ${remainingShardedTargetsSpecs.size}")
             val result =
               bazelBspAspectsManager
                 .fetchFilesFromOutputGroups(
                   targetsSpec = shardedTargetsSpec,
                   aspect = ASPECT_NAME,
                   outputGroups = outputGroups,
-                  shouldLogInvocation = false,
                   workspaceContext = workspaceContext,
                   originId = originId,
                 )
             if (result.isFailure) {
-              bspClientLogger.warn("Failed to build $shardName")
+              taskLogger.warn("Failed to build $shardName")
             } else {
-              bspClientLogger.message("Finished building $shardName")
+              taskLogger.message("Finished building $shardName")
             }
             if (result.status == BazelStatus.OOM_ERROR) {
-              bspClientLogger.warn("Bazel ran out of memory during sync, attempting to halve the target shard size to recover")
+              taskLogger.warn("Bazel ran out of memory during sync, attempting to halve the target shard size to recover")
               try {
                 val halvedTargetsSpec = shardedTargetsSpec.halve()
                 suggestedTargetShardSize = halvedTargetsSpec.first().values.size
-                bspClientLogger.message(
+                taskLogger.message(
                   "Retrying with the target shard size of $suggestedTargetShardSize (previously ${shardedTargetsSpec.values.size}) ...",
                 )
                 remainingShardedTargetsSpecs = remainingShardedTargetsSpecs.flatMap { it.halve() }.toMutableList()
                 remainingShardedTargetsSpecs.addAll(0, halvedTargetsSpec)
               } catch (e: IllegalTargetsSizeException) {
-                bspClientLogger.error("Cannot split targets further: ${e.message}")
+                taskLogger.error("Cannot split targets further: ${e.message}")
                 throw e
               }
             }
             shardedBuildResult = shardedBuildResult.merge(result)
 
-            bspClientLogger.message("---")
+            taskLogger.message("---")
             ++shardNumber
           }
           if (suggestedTargetShardSize != workspaceContext.targetShardSize) {
-            bspClientLogger.message(
-              "Bazel ran out of memory during sync. To mitigate, consider setting shard size in your project view file: `target_shard_size: $suggestedTargetShardSize`",
-            )
-            bspClientLogger.message("---")
+            taskLogger.message("Bazel ran out of memory during sync. To mitigate, consider setting shard size in your project view file: `target_shard_size: $suggestedTargetShardSize`", )
+            taskLogger.message("---")
           }
           shardedBuildResult
         } else {

@@ -6,9 +6,9 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
@@ -21,7 +21,7 @@ import java.nio.file.Files
 import kotlin.io.path.Path
 
 class BepDiagnosticsTest {
-  private class MockBuildClient : JoinedBuildClient {
+  private class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
     val buildPublishDiagnostics: MutableList<PublishDiagnosticsParams> = mutableListOf()
 
     override fun onBuildLogMessage(p0: LogMessageParams) {}
@@ -39,7 +39,7 @@ class BepDiagnosticsTest {
     override fun onCachedTestLog(testLog: CachedTestLog) {}
   }
 
-  fun newBepServer(client: JoinedBuildClient): BepServer {
+  fun newBepServer(taskHandler: BazelTaskEventsHandler): BepServer {
     val workspaceRoot = Path("workspaceRoot")
     val bazelInfo =
       BazelInfo(
@@ -53,7 +53,7 @@ class BepDiagnosticsTest {
         externalAutoloads = emptyList(),
       )
     return BepServer(
-      bspClient = client,
+      taskEventsHandler = taskHandler,
       diagnosticsService = DiagnosticsService(workspaceRoot),
       originId = "originId",
       bazelPathsResolver = BazelPathsResolver(bazelInfo),
@@ -63,7 +63,7 @@ class BepDiagnosticsTest {
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `compilation gives warnings`(success: Boolean) {
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val server = newBepServer(client)
 
     val stderrContents = """
@@ -114,7 +114,7 @@ src/build/NotCompiling.java:4: error: cannot find symbol
 
   @Test
   fun `unsuccessful compilation gives errors`() {
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val server = newBepServer(client)
 
     val stderrContents = """

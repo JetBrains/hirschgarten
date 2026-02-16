@@ -25,7 +25,6 @@ object BazelFeatureFlags {
 
   @VisibleForTesting
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
-  private const val CHECK_SHARED_SOURCES = "bazel.check.shared.sources"
   private const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
   private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
   private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
@@ -74,9 +73,6 @@ object BazelFeatureFlags {
 
   val fastBuildEnabled: Boolean
     get() = isEnabled(FAST_BUILD_ENABLED)
-
-  val checkSharedSources: Boolean
-    get() = isEnabled(CHECK_SHARED_SOURCES)
 
   val autoOpenProjectIfPresent: Boolean
     get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT)

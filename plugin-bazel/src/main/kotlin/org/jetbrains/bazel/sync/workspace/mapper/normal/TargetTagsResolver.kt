@@ -7,7 +7,6 @@ private val bazelTagToTagMapping =
   mapOf(
     "no-ide" to Tag.NO_IDE,
     "manual" to Tag.MANUAL,
-    "ide-low-shared-sources-priority" to Tag.IDE_LOW_SHARED_SOURCES_PRIORITY,
   )
 
 class TargetTagsResolver {

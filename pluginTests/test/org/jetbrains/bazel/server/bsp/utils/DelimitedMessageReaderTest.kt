@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import kotlin.math.pow
+import kotlin.time.Duration.Companion.seconds
 
 class DelimitedMessageReaderTest {
   @Test
@@ -80,6 +81,7 @@ class DelimitedMessageReaderTest {
         DelimitedMessageReader(
           ByteArrayInputStream(partial),
           BuildEventStreamProtos.BuildEvent.parser(),
+          timeout = 1.seconds
         )
 
       try {

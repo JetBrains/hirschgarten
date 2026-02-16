@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
@@ -21,12 +23,51 @@ class BazelBspLanguageExtensionsGeneratorTest {
     override suspend fun fetchExternalRulesetNames(): List<String> = rulesetNames
   }
 
+  private val noAutoloads : List<String> = listOf()
+  private val fullAutoloads = listOf("rules_python", "rules_java", "rules_android")
+  private val defaultRepoMapping = BzlmodRepoMapping(
+    mapOf(),
+    mapOf(
+      "rules_java" to "rules_java+",
+      "rules_jvm" to "rules_jvm+",
+      "rules_python" to "rules_python+",
+    ),
+    mapOf(),
+  )
+  private val emptyRepoMapping = BzlmodRepoMapping(mapOf(), mapOf(), mapOf())
+  private val goRepoMapping = BzlmodRepoMapping(mapOf(), mapOf("rules_to" to "rules_go+"), mapOf())
+  private val fullRepoMapping =
+    BzlmodRepoMapping(
+      mapOf(),
+      mapOf(
+        "rules_java" to "rules_java+",
+        "rules_jvm" to "rules_jvm+",
+        "rules_python" to "rules_python+",
+        "io_bazel_rules_go" to "io_bazel_rules_go+",
+        "io_bazel_rules_scala" to "io_bazel_rules_scala+",
+        "io_bazel_rules_kotlin" to "io_bazel_rules_kotlin+",
+      ),
+      mapOf(),
+    )
+  val kotlinCompletedRepoMapping =
+    BzlmodRepoMapping(mapOf(), mapOf("io_bazel_rules_kotlin" to "rules_kotlin+", "rules_java" to "rules_java+"), mapOf())
+
   private val defaultFileContent =
+    """ load("@@rules_java+//java/common:java_info.bzl", "JavaInfo")
+            load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
+            load("//.bazelbsp/aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
+            load("//.bazelbsp/aspects:rules/python/python_info.bzl","extract_python_info")
+            EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info]
+            TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False)]
+            REQUIRED_ASPECT_PROVIDERS=[[JavaInfo]]
+        """.replace(" ", "").replace("\n", "")
+  private val autoloadFileContent =
     """ load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
             load("//.bazelbsp/aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
             load("//.bazelbsp/aspects:rules/python/python_info.bzl","extract_python_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info]
             TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False)]
+            REQUIRED_ASPECT_PROVIDERS=[[JavaInfo]]
         """.replace(" ", "").replace("\n", "")
   private val goFileContent =
     """ load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
@@ -35,9 +76,11 @@ class BazelBspLanguageExtensionsGeneratorTest {
             load("//.bazelbsp/aspects:rules/go/go_info.bzl","extract_go_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info,extract_go_info]
             TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False),"@io_bazel_rules_go//go:toolchain"]
+            REQUIRED_ASPECT_PROVIDERS=[]
         """.replace(" ", "").replace("\n", "")
   private val allExtensionsFileContent =
-    """ load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
+    """ load("@@rules_java+//java/common:java_info.bzl", "JavaInfo")
+            load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
             load("//.bazelbsp/aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
             load("//.bazelbsp/aspects:rules/python/python_info.bzl","extract_python_info")
             load("//.bazelbsp/aspects:rules/kt/kt_info.bzl","extract_kotlin_info")
@@ -45,7 +88,17 @@ class BazelBspLanguageExtensionsGeneratorTest {
             load("//.bazelbsp/aspects:rules/go/go_info.bzl","extract_go_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info,extract_kotlin_info,extract_scala_info,extract_go_info]
             TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False),"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type","@io_bazel_rules_scala//scala:toolchain_type","@io_bazel_rules_go//go:toolchain"]
+            REQUIRED_ASPECT_PROVIDERS=[[JavaInfo]]
         """.replace(" ", "").replace("\n", "")
+  private val kotlinFileContent =
+    """ load("@@rules_java+//java/common:java_info.bzl", "JavaInfo")
+            load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
+            load("//.bazelbsp/aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
+            load("//.bazelbsp/aspects:rules/kt/kt_info.bzl","extract_kotlin_info")
+            EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_kotlin_info]
+            TOOLCHAINS=[config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False),"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"]
+            REQUIRED_ASPECT_PROVIDERS=[[JavaInfo]]
+    """.replace(" ", "").replace("\n", "")
   private val defaultRulesetLanguages =
     listOf(
       RulesetLanguage(null, Language.Java),
@@ -67,7 +120,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
 
   private fun getExtensionsFileContent(): String =
     dotBazelBspAspectsPath
-      .resolve("extensions.bzl")
+      .resolve(Constants.EXTENSIONS_BZL)
       .toFile()
       .readLines()
       .filterNot { it.startsWith('#') }
@@ -92,7 +145,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
       BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
-    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains, defaultRepoMapping, noAutoloads)
 
     // then
     val fileContent = getExtensionsFileContent()
@@ -104,15 +157,15 @@ class BazelBspLanguageExtensionsGeneratorTest {
     // given
     val rulesetLanguages =
       defaultRulesetLanguages +
-        listOf(
-          RulesetLanguage("io_bazel_rules_go", Language.Go),
-        )
+      listOf(
+        RulesetLanguage("io_bazel_rules_go", Language.Go),
+      )
     BazelExternalRulesetsQueryMock(listOf("io_bazel_rules_go"))
     val bazelBspLanguageExtensionsGenerator =
       BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
-    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(rulesetLanguages, defaultToolchains)
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(rulesetLanguages, defaultToolchains, goRepoMapping, noAutoloads)
 
     // then
     val fileContent = getExtensionsFileContent()
@@ -124,16 +177,16 @@ class BazelBspLanguageExtensionsGeneratorTest {
     // given
     val rulesetLanguages =
       defaultRulesetLanguages +
-        listOf(
-          RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin),
-          RulesetLanguage("io_bazel_rules_scala", Language.Scala),
-          RulesetLanguage("io_bazel_rules_go", Language.Go),
-        )
+      listOf(
+        RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin),
+        RulesetLanguage("io_bazel_rules_scala", Language.Scala),
+        RulesetLanguage("io_bazel_rules_go", Language.Go),
+      )
     val bazelBspLanguageExtensionsGenerator =
       BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
-    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(rulesetLanguages, defaultToolchains)
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(rulesetLanguages, defaultToolchains, fullRepoMapping, noAutoloads)
 
     // then
     val fileContent = getExtensionsFileContent()
@@ -145,11 +198,11 @@ class BazelBspLanguageExtensionsGeneratorTest {
     // given
     val rulesetLanguages =
       defaultRulesetLanguages +
-        listOf(
-          RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin),
-          RulesetLanguage("io_bazel_rules_scala", Language.Scala),
-          RulesetLanguage("io_bazel_rules_go", Language.Go),
-        )
+      listOf(
+        RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin),
+        RulesetLanguage("io_bazel_rules_scala", Language.Scala),
+        RulesetLanguage("io_bazel_rules_go", Language.Go),
+      )
     val emptyBazelBspLanguageExtensionsGenerator =
       BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
     val allBazelBspLanguageExtensionsGenerator =
@@ -158,17 +211,46 @@ class BazelBspLanguageExtensionsGeneratorTest {
       )
 
     // when
-    allBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(rulesetLanguages, defaultToolchains)
+    allBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(rulesetLanguages, defaultToolchains, fullRepoMapping, noAutoloads)
     var fileContent = getExtensionsFileContent()
 
     // then
     fileContent shouldBe allExtensionsFileContent
 
     // when
-    emptyBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(defaultRulesetLanguages, defaultToolchains)
+    emptyBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(defaultRulesetLanguages, defaultToolchains, fullRepoMapping, noAutoloads)
 
     // then
     fileContent = getExtensionsFileContent()
     fileContent shouldBe defaultFileContent
+  }
+
+  @Test
+  fun `should handle kotlin project correctly`() {
+    val rulesetLanguages =
+      listOf(
+        RulesetLanguage(null, Language.Java),
+        RulesetLanguage(null, Language.Jvm),
+        RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin),
+      )
+    val bazelBspLanguageExtensionsGenerator =
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
+
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(rulesetLanguages, defaultToolchains, kotlinCompletedRepoMapping, noAutoloads)
+
+    val fileContent = getExtensionsFileContent()
+    fileContent shouldBe kotlinFileContent
+  }
+
+  @Test
+  fun `handles autoloads`() {
+    val bazelBspLanguageExtensionsGenerator =
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
+
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(defaultRulesetLanguages, defaultToolchains, emptyRepoMapping, fullAutoloads)
+
+    val fileContent = getExtensionsFileContent()
+    fileContent shouldBe autoloadFileContent
+
   }
 }

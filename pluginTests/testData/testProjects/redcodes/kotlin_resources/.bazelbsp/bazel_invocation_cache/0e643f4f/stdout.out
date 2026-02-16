@@ -1,0 +1,134 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+[32mComputing main repo mapping:[0m 
+[1A[K[32mLoading:[0m 
+[1A[K[32mLoading:[0m 0 packages loaded
+[1A[K[32mAnalyzing:[0m 7 targets (5 packages loaded, 0 targets configured)
+[1A[K[32mAnalyzing:[0m 7 targets (5 packages loaded, 0 targets configured)
+    currently loading: @@bazel_tools//tools
+
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (75 packages loaded, 286 targets configured)
+    currently loading: @@rules_java+// ... (8 packages)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...+toolchains+remote_java_tools; Extracting java_tools-v18.1.zip
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching repository @@rules_license+; starting
+    Fetching ...external/rules_license+; Extracting rules_license-1.0.0.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (90 packages loaded, 1314 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 5s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 5s
+    Fetching https://mirror.bazel.build/...0.tar.xz; Checking in SHA-256 cache
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 6s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 8s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (91 packages loaded, 1436 targets configured)
+    currently loading: @@hermetic_cc_toolchain++toolchains+zig_config//
+[32m[1 / 1][0m no actions running
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (92 packages loaded, 1628 targets configured)
+    currently loading: @@rules_kotlin+//kotlin/compiler ... (2 packages)
+[32m[1 / 1][0m no actions running
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (112 packages loaded, 8985 targets configured)
+    currently loading: @@rules_java++toolchains+remote_java_tools_linux//
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ...ux-gnu; Extracting cpython-3.11.11+20250317-x86_64-unknown-lin\
+ux-gnu-install_only.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (113 packages loaded, 9008 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ...ux-gnu; Extracting cpython-3.11.11+20250317-x86_64-unknown-lin\
+ux-gnu-install_only.tar.gz
+    Fetching ...lin_extensions+com_github_google_ksp; Extracting artifacts.zip
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (113 packages loaded, 9008 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ...6_64-unknown-linux-gnu; Running python_repository.MakeReadOnly
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ...lin_extensions+com_github_google_ksp; Extracting artifacts.zip
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (116 packages loaded, 11426 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ...lin_extensions+com_github_google_ksp; Extracting artifacts.zip
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (116 packages loaded, 11426 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (117 packages loaded, 11432 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (118 packages loaded, 11432 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 7 targets (118 packages loaded, 11555 targets configured)
+    currently loading: @@rules_java++toolchains+remotejdk25_linux//
+[32m[1 / 1][0m no actions running
+[1A[K[1A[K[1A[K[32mINFO: [0mAnalyzed 7 targets (119 packages loaded, 11703 targets configured).
+[32m[9 / 10][0m [Sched] Extracting interface for jar toolchains/kotlin-stdlib.jar
+[1A[K[32mINFO: [0mFound 7 targets...
+[32m[11 / 11][0m no actions running
+[1A[K[32mINFO: [0mElapsed time: 12.153s, Critical Path: 0.07s
+[32m[11 / 11][0m no actions running
+[1A[K[32mINFO: [0m11 processes: 10 internal, 1 linux-sandbox.
+[32m[11 / 11][0m no actions running
+[1A[K[32mINFO: [0mBuild completed successfully, 11 total actions
+[32mINFO:[0m 
+[1A[K[32mINFO:[0m 
+[1A[K[32mINFO: [0mBuild Event Protocol files produced successfully.
+[0m

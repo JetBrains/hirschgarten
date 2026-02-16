@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.tests.synthetic_targets
 
+import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -11,6 +12,7 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
@@ -19,14 +21,15 @@ import kotlin.time.Duration.Companion.minutes
 class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun test() {
-    createContext("runAllTestsAction", IdeaBazelCases.SyntheticRunTarget)
+  fun `synthetic run targets should execute Java and Kotlin main classes from gutter`() {
+    val context = createContext("runAllTestsAction", IdeaBazelCases.SyntheticRunTarget)
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
-        this.addSystemProperty("ide.registry.bazel.run.synthetic.enable", "true")
       }
+    context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
+        setRegistry("bazel.run.synthetic.enable", true.toString())
         syncBazelProject()
         waitForIndicators(5.minutes)
 
@@ -56,6 +59,7 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
           }
         }
       }
+    checkIdeaLogForExceptions(context)
   }
 
   private fun IdeaFrameUI.runFromGutter(line: Int, text: String) {

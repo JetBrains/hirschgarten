@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 class LocalPathOverrideTest : IdeStarterBaseProjectTest() {
 
   @Test
-  fun `local modules outside projectview detected`() {
+  fun `local path override should resolve navigation and build target`() {
     createContext("localPathOverride", IdeaBazelCases.LocalPathOverride)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

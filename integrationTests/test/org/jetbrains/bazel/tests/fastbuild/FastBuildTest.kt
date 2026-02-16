@@ -20,6 +20,7 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.findFile
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
@@ -36,9 +37,10 @@ import kotlin.time.Duration.Companion.seconds
 class FastBuildTest : IdeStarterBaseProjectTest() {
   @Test
   fun `fast build hotswap should apply code changes during debug`() {
-    createContext("fastbuild", IdeaBazelCases.FastBuild)
+    val context = createContext("fastbuild", IdeaBazelCases.FastBuild)
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
       .withBazelFeatureFlag(BazelFeatureFlags.FAST_BUILD_ENABLED)
+    context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -101,6 +103,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
           }
         }
       }
+    checkIdeaLogForExceptions(context)
   }
 }
 

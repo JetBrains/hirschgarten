@@ -2,6 +2,7 @@ package org.jetbrains.bazel.flow.open
 
 import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
@@ -15,6 +16,8 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.targetUtils
 import java.nio.file.Path
 import javax.swing.Icon
 
@@ -79,7 +82,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         projectRootDir to projectViewPath
       }
 
-    val projectStoreBaseDir = projectViewPath ?: path.workspaceFile
+    val projectStoreBaseDir = projectViewPath ?: projectRootDir?.workspaceFile
     if (projectStoreBaseDir == null || projectRootDir == null) {
       log.warn("Unable to open Bazel project at ${virtualFile.presentableUrl}")
       return null
@@ -108,6 +111,11 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
             }
 
           true
+        }
+
+        callback = { project, _ ->
+          // force async load targets cache
+          project.service<TargetUtils>()
         }
       }
   }

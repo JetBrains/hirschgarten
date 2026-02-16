@@ -7,12 +7,12 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.protocol.BazelTaskLogger
 import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.reader
 
-class TargetInfoReader(private val bspClientLogger: BspClientLogger?) {
+class TargetInfoReader(private val taskLogger: BazelTaskLogger?) {
   suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
     withContext(Dispatchers.Default) {
       files.map { file -> async { readFromFile(file) } }.awaitAll()
@@ -28,7 +28,7 @@ class TargetInfoReader(private val bspClientLogger: BspClientLogger?) {
       // that contains JvmTargetInfo as currently it's the most important one for us. Later, we sort by
       // shortest size to get a stable result, which should be the default config.
       .mapValues {
-        it.value.filter(TargetInfo::hasJvmTargetInfo).minByOrNull { targetInfo -> targetInfo.serializedSize } ?: it.value.first()
+        it.value.filter(TargetInfo::getJvmTarget).minByOrNull { targetInfo -> targetInfo.serializedSize } ?: it.value.first()
       }.mapKeys { Label.parse(it.key) }
 
   private fun readFromFile(file: Path): TargetInfo? {
@@ -44,7 +44,7 @@ class TargetInfoReader(private val bspClientLogger: BspClientLogger?) {
       }
     } catch (e: IOException) {
       // Can happen if one output path is a prefix of another, then Bazel can't create both
-      bspClientLogger?.error("[WARN] Could not read target info $file: ${e.message}")
+      taskLogger?.error("[WARN] Could not read target info $file: ${e.message}")
       return null
     }
     return builder.build()

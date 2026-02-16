@@ -63,11 +63,10 @@ open class RunSyntheticTargetAction(
       taskState.target = target.id.toString()
       taskState.language = targetElement.language.id
       taskState.params = params.data
-      settings.configuration.beforeRunTasks = listOf(task)
+      settings.configuration.beforeRunTasks = listOf(task) + settings.configuration.beforeRunTasks
     }
 
     settings.isTemporary = true
-    settings.configuration.beforeRunTasks
     return settings
   }
 

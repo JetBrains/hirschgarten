@@ -25,9 +25,9 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
 
   private fun setTargets(targets: List<String>) {
     project.targetUtils.setTargets(
-      targets.map { Label.parse(it) }.associateWith {
+      targets.map {
         RawBuildTarget(
-          id = it,
+          id = Label.parse(it),
           tags = emptyList(),
           dependencies = emptyList(),
           kind =

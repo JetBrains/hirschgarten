@@ -13,6 +13,7 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertEitherFileContentIsEqual
+import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
@@ -27,7 +28,8 @@ import kotlin.time.Duration.Companion.minutes
 class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
   @Test
   fun `quick fix should add module and library dependencies to BUILD file`() {
-    createContext("bazelProjectModelModifier", IdeaBazelCases.BazelProjectModelModifier)
+    val context = createContext("bazelProjectModelModifier", IdeaBazelCases.BazelProjectModelModifier)
+    context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -62,6 +64,7 @@ class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
           }
         }
       }
+    checkIdeaLogForExceptions(context)
   }
 
   private fun <T : CommandChain> T.applyOrderEntryFixAndCheckRedCode(hint: String) =

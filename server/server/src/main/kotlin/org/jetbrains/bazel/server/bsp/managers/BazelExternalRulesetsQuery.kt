@@ -10,10 +10,11 @@ import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+import org.jetbrains.bsp.protocol.asLogger
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
@@ -42,7 +43,7 @@ class BazelExternalRulesetsQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
   private val isWorkspaceEnabled: Boolean,
-  private val bspClientLogger: BspClientLogger,
+  private val taskEventsHandler: BazelTaskEventsHandler,
   private val bazelPathsResolver: BazelPathsResolver,
   private val workspaceContext: WorkspaceContext,
   private val repoMapping: RepoMapping,
@@ -55,14 +56,14 @@ class BazelExternalRulesetsQueryImpl(
           originId,
           bazelRunner,
           isBzlModEnabled,
-          bspClientLogger,
+          taskEventsHandler,
           workspaceContext,
         ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             originId,
             bazelRunner,
             isWorkspaceEnabled,
-            bspClientLogger,
+            taskEventsHandler,
             workspaceContext,
           ).fetchExternalRulesetNames()
     }
@@ -72,7 +73,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
   private val originId: String?,
   private val bazelRunner: BazelRunner,
   private val isWorkspaceEnabled: Boolean,
-  private val bspClientLogger: BspClientLogger,
+  private val taskEventsHandler: BazelTaskEventsHandler,
   private val workspaceContext: WorkspaceContext,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
@@ -93,7 +94,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
           .let { result ->
             if (result.isNotSuccess) {
               val queryFailedMessage = getQueryFailedMessage(result)
-              bspClientLogger.warn(queryFailedMessage)
+              taskEventsHandler.asLogger(originId).warn(queryFailedMessage)
               log.warn(queryFailedMessage)
               null
             } else {
@@ -140,7 +141,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
   private val originId: String?,
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
-  private val bspClientLogger: BspClientLogger,
+  private val taskEventsHandler: BazelTaskEventsHandler,
   private val workspaceContext: WorkspaceContext,
 ) : BazelExternalRulesetsQuery {
   private val gson = bazelGson
@@ -161,16 +162,14 @@ class BazelBzlModExternalRulesetsQueryImpl(
         .let { result ->
           if (result.isNotSuccess) {
             val queryFailedMessage = getQueryFailedMessage(result)
-            bspClientLogger.warn(queryFailedMessage)
-            bazelRunner.workspaceRoot
-              ?.takeIf { originId != null }
-              ?.let { workspaceRoot ->
-                val target = SyntheticLabel(AllRuleTargets)
-                val diagnostics =
-                  DiagnosticsService(workspaceRoot)
-                    .extractDiagnostics(result.stderrLines, target, originId!!, isCommandLineFormattedOutput = true)
-                diagnostics.forEach { bspClientLogger.publishDiagnostics(it) }
-              }
+            taskEventsHandler.asLogger(originId).warn(queryFailedMessage)
+            if (originId != null) {
+              val target = SyntheticLabel(AllRuleTargets)
+              val diagnostics =
+                DiagnosticsService(bazelRunner.workspaceRoot)
+                  .extractDiagnostics(result.stderrLines, target, originId, isCommandLineFormattedOutput = true)
+              diagnostics.forEach { taskEventsHandler.onBuildPublishDiagnostics(it) }
+            }
             log.warn(queryFailedMessage)
           }
           // best effort to parse the output even when there are errors

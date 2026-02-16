@@ -24,7 +24,6 @@ data class RawBuildTarget(
   override val baseDirectory: Path,
   override val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
   override var data: BuildTargetData? = null,
-  val lowPrioritySharedSources: List<SourceItem> = emptyList(),
 ) : BuildTarget
 
 data class PartialBuildTarget(
@@ -51,7 +50,7 @@ public data class KotlinBuildTarget(
   val kotlincOptions: List<String>,
   val associates: List<Label>,
   val moduleName: String? = null,
-  var jvmBuildTarget: JvmBuildTarget? = null,
+  val jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(2)

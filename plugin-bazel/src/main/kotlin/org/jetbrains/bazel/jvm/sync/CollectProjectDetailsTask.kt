@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.jvm.sync
 
 import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
@@ -14,14 +13,12 @@ import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.util.PathUtilRt
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
@@ -34,7 +31,6 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.query
@@ -43,8 +39,6 @@ import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStruct
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -54,6 +48,8 @@ import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
+
+const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 
 class CollectProjectDetailsTask(
   private val project: Project,
@@ -230,7 +226,7 @@ class CollectProjectDetailsTask(
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
                 // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
-                fileToTargetWithoutLowPrioritySharedSources = targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources,
+                fileToTargets = targetUtilsDiff.fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
               )
@@ -247,7 +243,7 @@ class CollectProjectDetailsTask(
             if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
               CompiledSourceCodeInsideJarExcludeTransformer().transform(
                 targetIdToModuleDetails.values,
-                projectDetails.libraries.orEmpty(),
+                projectDetails.libraries,
               )
             } else {
               null
@@ -289,7 +285,6 @@ class CollectProjectDetailsTask(
     addBspFetchedScalaSdks()
 
     VirtualFileManager.getInstance().asyncRefresh()
-    checkSharedSources(targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources)
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -323,46 +318,6 @@ class CollectProjectDetailsTask(
         }
       }
     }
-  }
-
-  private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
-    if (isSharedSourceSupportEnabled(project)) return
-    if (!BazelFeatureFlags.checkSharedSources) return
-    for ((file, labels) in fileToTargetWithoutLowPrioritySharedSources) {
-      if (labels.size <= 1) {
-        continue
-      }
-
-      val fileName = PathUtilRt.getFileName(file.toString())
-      if (!SourceType.hasSourceFileExtension(fileName)) {
-        continue
-      }
-      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { fileName.endsWith(it) }) {
-        continue
-      }
-      warnOverlappingSources(firstTarget = labels[0], secondTarget = labels[1], fileName = fileName)
-      break
-    }
-  }
-
-  private fun warnOverlappingSources(
-    firstTarget: Label,
-    secondTarget: Label,
-    fileName: String,
-  ) {
-    BazelBalloonNotifier.warn(
-      BazelPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
-      BazelPluginBundle.message(
-        "widget.collect.targets.overlapping.sources.message",
-        firstTarget.toString(),
-        secondTarget.toString(),
-        fileName,
-      ),
-    )
-  }
-
-  private companion object {
-    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = arrayOf("empty.kt")
   }
 }
 

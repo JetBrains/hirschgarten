@@ -112,6 +112,51 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `should complete debug flags variants`() {
+    myFixture.configureByText(".bazelproject", "debug_flags:\n  <caret>")
+    myFixture.type("action")
+
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val expectedFlags =
+      Flag
+        .all()
+        .filter {
+          it.key.contains("action") &&
+          it.value.option.commands.any { cmd ->
+            cmd == "run"
+          } &&
+          it.value.option.commands.any { cmd ->
+            cmd == "test"
+          }
+        }.map { it.key }
+
+    lookups shouldContainExactlyInAnyOrder expectedFlags
+  }
+
+
+  @Test
+  fun `should complete python debug flags variants`() {
+    myFixture.configureByText(".bazelproject", "python_debug_flags:\n  <caret>")
+    myFixture.type("action")
+
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val expectedFlags =
+      Flag
+        .all()
+        .filter {
+          it.key.contains("action") &&
+          it.value.option.commands.any { cmd ->
+            cmd == "run"
+          } &&
+          it.value.option.commands.any { cmd ->
+            cmd == "test"
+          }
+        }.map { it.key }
+
+    lookups shouldContainExactlyInAnyOrder expectedFlags
+  }
+
+  @Test
   fun `should complete build flags variants with existing flag`() {
     myFixture.configureByText(".bazelproject", "build_flags:\n  --action_cache\n  <caret>")
     myFixture.type("action")

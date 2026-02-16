@@ -23,7 +23,7 @@ import java.nio.file.Path
 
 class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTarget>,
-  fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
+  fileToTargets: Map<Path, List<Label>>,
   projectBasePath: Path,
   private val project: Project,
 ) {
@@ -31,7 +31,7 @@ class ModuleDetailsToJavaModuleTransformer(
   private val type = ModuleTypeId("JAVA_MODULE")
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
   private val javaModuleToDummyJavaModulesTransformerHACK =
-    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargetWithoutLowPrioritySharedSources, project)
+    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargets, project)
 
   fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val javaModule =

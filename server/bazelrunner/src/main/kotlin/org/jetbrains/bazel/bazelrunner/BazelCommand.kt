@@ -95,6 +95,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     options.addAll(
       listOf(
         BazelFlag.buildEventBinaryFile(besOutputFile.toAbsolutePath().toString()),
+        BazelFlag.buildEventBinaryFileWait(),
         "--bes_outerr_buffer_size=10",
         "--build_event_publish_all_actions",
       ),

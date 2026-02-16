@@ -18,14 +18,14 @@ object TargetIdToModuleEntitiesMap {
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,
     targetIdToTargetInfo: Map<Label, BuildTarget>,
-    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
+    fileToTargets: Map<Path, List<Label>>,
     projectBasePath: Path,
     project: Project,
   ): Map<Label, List<Module>> {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
-        fileToTargetWithoutLowPrioritySharedSources,
+        fileToTargets,
         projectBasePath,
         project,
       )
