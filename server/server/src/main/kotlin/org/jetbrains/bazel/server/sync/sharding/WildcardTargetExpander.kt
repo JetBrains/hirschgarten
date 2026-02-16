@@ -21,9 +21,9 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Expands wildcard target patterns into individual Bazel targets.  */
@@ -50,7 +50,7 @@ object WildcardTargetExpander {
     packageTargets: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
-    bspClientLogger: BspClientLogger,
+    taskLogger: BazelTaskLogger,
     context: WorkspaceContext,
   ): ExpandedTargetsResult? {
     val shards =
@@ -67,7 +67,7 @@ object WildcardTargetExpander {
       singleTargets.addAll(result.singleTargets)
       buildResult = buildResult.merge(result.buildResult)
       if (buildResult == BazelStatus.FATAL_ERROR) {
-        bspClientLogger.warn("Bazel query for expanding package targets failed with fatal error. Skipping further expanding queries.")
+        taskLogger.warn("Bazel query for expanding package targets failed with fatal error. Skipping further expanding queries.")
         return ExpandedTargetsResult(singleTargets, buildResult)
       }
     }
