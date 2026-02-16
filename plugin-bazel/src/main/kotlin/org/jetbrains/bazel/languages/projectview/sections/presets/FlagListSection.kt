@@ -7,20 +7,20 @@ import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 
-abstract class FlagListSection(private val command: String) : ListSection<List<String>>() {
-  final override val completionProvider = FlagCompletionProvider(command)
+abstract class FlagListSection(private vararg val commands: String) : ListSection<List<String>>() {
+  final override val completionProvider = FlagCompletionProvider(*commands)
 
   final override fun fromRawValues(rawValues: List<String>): List<String> = rawValues
 
   final override fun annotateValue(element: PsiElement, holder: AnnotationHolder) {
-    val flag = Flag.byName(element.text)
+    val flag = Flag.byName(element.text.takeWhile { it != '=' })
     if (flag == null) {
       val message = ProjectViewBundle.getMessage("annotator.unknown.flag.error", element.text)
       holder.annotateWarning(element, message)
       return
     }
-    if (command !in flag.option.commands) {
-      val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error", element.text, command)
+    if (commands.any { it !in flag.option.commands }) {
+      val message = ProjectViewBundle.getMessage("annotator.flag.not.allowed.here.error", element.text, commands.contentToString())
       holder.annotateWarning(element, message)
     }
   }
