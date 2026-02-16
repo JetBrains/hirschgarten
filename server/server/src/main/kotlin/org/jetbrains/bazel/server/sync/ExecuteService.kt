@@ -55,8 +55,7 @@ class ExecuteService(
   private suspend fun runWithBepServer(
     command: BazelCommand,
     originId: String?,
-    pidDeferred: CompletableDeferred<Long?>? = null,
-    shouldLogInvocation: Boolean = true,
+    pidDeferred: CompletableDeferred<Long?>? = null
   ): BepBuildResult = coroutineScope {
     reportRawProgress { rawProgressReporter ->
       val eventFile: Path =
@@ -67,20 +66,30 @@ class ExecuteService(
         command.useBes(eventFile)
         val executionDescriptor = command.buildExecutionDescriptor()
         val diagnosticsService = DiagnosticsService(workspaceRoot)
-        val server = BepServer(taskEventsHandler, diagnosticsService, originId, bazelPathsResolver, rawProgressReporter)
-        bepReader = BepReader(server, eventFile)
+        val bepServer = BepServer(taskEventsHandler, diagnosticsService, originId, bazelPathsResolver, rawProgressReporter)
+        bepReader = BepReader(bepServer, eventFile)
         val bepReaderDeferred = async(Dispatchers.IO) {
           bepReader.start()
         }
 
-        val processResult: BazelProcessResult =
-          bazelRunner.runBazelCommand(executionDescriptor, originId = originId, shouldLogInvocation = shouldLogInvocation)
-            .also { bazelProcess -> pidDeferred?.complete(bazelProcess.pid) }
-            .waitAndGetResult()
+        val bazelProcess = bazelRunner.runBazelCommand(
+          executionDescriptor,
+          originId = originId
+        )
+        pidDeferred?.complete(bazelProcess.pid)
+        val processResult = bazelProcess.waitAndGetResult()
+
         bepReader.bazelBuildFinished()
         bepReaderDeferred.await()
 
-        val bepOutput = bepReader.bepServer.bepOutput
+        bepServer.bepMetrics?.let { metrics ->
+          bazelProcess.writeBazelLog {
+            println("Metrics:")
+            println(metrics.toString())
+          }
+        }
+
+        val bepOutput = bepServer.bepOutput
         BepBuildResult(processResult, bepOutput)
       }
       catch (e: CancellationException) {
@@ -239,7 +248,7 @@ class ExecuteService(
     originId: String,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
-    // you must compute all targets  before passing them to bound
+    // you must compute all targets before passing them to bound
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         build {
@@ -260,8 +269,7 @@ class ExecuteService(
   suspend fun buildTargetsWithBep(
     targetsSpec: TargetCollection,
     extraFlags: List<String> = emptyList(),
-    originId: String?,
-    shouldLogInvocation: Boolean,
+    originId: String?
   ): BepBuildResult {
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
@@ -273,6 +281,6 @@ class ExecuteService(
         }
       }
 
-    return runWithBepServer(command, originId, shouldLogInvocation = shouldLogInvocation)
+    return runWithBepServer(command, originId)
   }
 }
