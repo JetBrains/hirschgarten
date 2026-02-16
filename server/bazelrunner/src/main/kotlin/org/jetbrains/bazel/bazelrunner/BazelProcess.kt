@@ -6,13 +6,13 @@ import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
 import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.Stopwatch
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.protocol.BazelTaskLogger
 import java.io.PrintWriter
 import java.time.Instant
 
 class BazelProcess internal constructor(
   private val process: Process,
-  private val logger: BspClientLogger? = null,
+  private val logger: BazelTaskLogger? = null,
   private val finishCallback: () -> Unit = {},
 ) {
   val pid: Long get() = process.pid()
@@ -23,12 +23,12 @@ class BazelProcess internal constructor(
       val outputProcessor =
         OutputProcessor(
           process,
-          if (logger != null) logger::messageWithoutNewLine else null,
+          if (logger != null) logger::message else null,
         )
 
       val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelFeatureFlags.killServerOnCancel)
       val duration = stopwatch.stop()
-      logger?.message("\nCommand completed in ${Format.duration(duration)} (exit code $exitCode)")
+      logger?.message("\nBazel run completed in ${Format.duration(duration)} (exit code $exitCode)")
 
       writeBazelLog {
         appendLine("exit code: $exitCode")

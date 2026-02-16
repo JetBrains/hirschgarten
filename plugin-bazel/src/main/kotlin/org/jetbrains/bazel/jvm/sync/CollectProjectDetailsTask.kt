@@ -19,7 +19,6 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
@@ -32,7 +31,6 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.query
@@ -41,7 +39,6 @@ import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStruct
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -51,6 +48,8 @@ import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
+
+const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 
 class CollectProjectDetailsTask(
   private val project: Project,
