@@ -2,5 +2,5 @@ release: release 8.5.1
 execution_root: __bazel_invocation_cache_output_base__/execroot/_main
 output_base: __bazel_invocation_cache_output_base__
 workspace: __bazel_invocation_cache_workspace__
-bazel-bin: __bazel_invocation_cache_output_base__/execroot/_main/bazel-out/darwin_arm64-fastbuild/bin
+bazel-bin: __bazel_invocation_cache_output_base__/execroot/_main/bazel-out/k8-fastbuild/bin
 starlark-semantics: StarlarkSemantics{internal_bazel_only_utf_8_byte_strings=true}
