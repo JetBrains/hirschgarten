@@ -30,10 +30,10 @@ import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.DebugType
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
@@ -47,7 +47,7 @@ import kotlin.io.path.deleteExisting
 class ExecuteService(
   private val project: Project,
   private val workspaceRoot: Path,
-  private val client: JoinedBuildClient,
+  private val taskEventsHandler: BazelTaskEventsHandler,
   private val bazelRunner: BazelRunner,
   private val workspaceContext: WorkspaceContext,
   private val bazelPathsResolver: BazelPathsResolver,
@@ -67,7 +67,7 @@ class ExecuteService(
         command.useBes(eventFile)
         val executionDescriptor = command.buildExecutionDescriptor()
         val diagnosticsService = DiagnosticsService(workspaceRoot)
-        val server = BepServer(client, diagnosticsService, originId, bazelPathsResolver, rawProgressReporter)
+        val server = BepServer(taskEventsHandler, diagnosticsService, originId, bazelPathsResolver, rawProgressReporter)
         bepReader = BepReader(server, eventFile)
         val bepReaderDeferred = async(Dispatchers.IO) {
           bepReader.start()

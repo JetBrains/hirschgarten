@@ -3,7 +3,7 @@ package org.jetbrains.bazel.logger
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.testing.BazelTestLocationHintProvider
-import org.jetbrains.bsp.protocol.BuildTaskHandler
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
@@ -14,7 +14,7 @@ import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.jetbrains.bsp.protocol.TestTask
 
-class BspClientTestNotifier(private val taskHandler: BuildTaskHandler, private val originId: String) {
+class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandler, private val originId: String) {
   private var passedTests: Int = 0
   private var failedTests: Int = 0
   private var ignoredTests: Int = 0
@@ -46,7 +46,7 @@ class BspClientTestNotifier(private val taskHandler: BuildTaskHandler, private v
         data = testStart,
         message = "Test $displayName started",
       )
-    taskHandler.onBuildTaskStart(taskStartParams)
+    taskEventsHandler.onBuildTaskStart(taskStartParams)
   }
 
   /**
@@ -87,7 +87,7 @@ class BspClientTestNotifier(private val taskHandler: BuildTaskHandler, private v
         data = testFinish,
         message = "Test $displayName finished",
       )
-    taskHandler.onBuildTaskFinish(taskFinishParams)
+    taskEventsHandler.onBuildTaskFinish(taskFinishParams)
   }
 
   /**
@@ -105,6 +105,6 @@ class BspClientTestNotifier(private val taskHandler: BuildTaskHandler, private v
         data = testingBegin,
         message = "Test started for target $targetIdentifier",
       )
-    taskHandler.onBuildTaskStart(taskStartParams)
+    taskEventsHandler.onBuildTaskStart(taskStartParams)
   }
 }

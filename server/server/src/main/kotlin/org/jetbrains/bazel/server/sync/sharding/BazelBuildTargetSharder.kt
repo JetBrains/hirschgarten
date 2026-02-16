@@ -22,10 +22,10 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.ShardingApproach
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.FeatureFlags
 import kotlin.math.min
 
@@ -49,7 +49,7 @@ object BazelBuildTargetSharder {
     context: WorkspaceContext,
     featureFlags: FeatureFlags,
     bazelRunner: BazelRunner,
-    bspClientLogger: BspClientLogger,
+    taskLogger: BazelTaskLogger,
     firstPhaseProject: PhasedSyncProject?,
   ): ShardedTargetsResult {
     if (firstPhaseProject != null) {
@@ -85,7 +85,7 @@ object BazelBuildTargetSharder {
             includes,
             excludes,
             bazelRunner,
-            bspClientLogger,
+            taskLogger,
             context,
             featureFlags,
           )
@@ -120,7 +120,7 @@ object BazelBuildTargetSharder {
     includes: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
-    bspClientLogger: BspClientLogger,
+    taskLogger: BazelTaskLogger,
     context: WorkspaceContext,
     featureFlags: FeatureFlags,
   ): ExpandedTargetsResult {
@@ -153,7 +153,7 @@ object BazelBuildTargetSharder {
           fullList,
           excludes,
           bazelRunner,
-          bspClientLogger,
+          taskLogger,
           context,
         ).orEmpty()
 
