@@ -226,7 +226,6 @@ class ProjectResolver(
               targetsSpec = targetsToSync,
               aspect = ASPECT_NAME,
               outputGroups = outputGroups,
-              shouldLogInvocation = true,
               workspaceContext = workspaceContext,
               originId = originId,
             ).also {
@@ -272,7 +271,6 @@ class ProjectResolver(
                   targetsSpec = shardedTargetsSpec,
                   aspect = ASPECT_NAME,
                   outputGroups = outputGroups,
-                  shouldLogInvocation = false,
                   workspaceContext = workspaceContext,
                   originId = originId,
                 )
