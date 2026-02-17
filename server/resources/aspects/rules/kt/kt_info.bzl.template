@@ -73,6 +73,7 @@ def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
         kotlinc_opts = kotlinc_opts,
         stdlibs = stdlibs,
         kotlinc_plugin_infos = kt_compiler_plugin_infos,
+        exported_compiler_plugin_targets_from_deps = [ str(plugin.label) for plugin in plugins ],
         module_name = module_name,
     )
 
