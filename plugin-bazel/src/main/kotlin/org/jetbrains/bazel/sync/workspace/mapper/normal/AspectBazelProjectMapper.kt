@@ -132,7 +132,7 @@ class AspectBazelProjectMapper(
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
-        calculateOutputJarsLibraries(workspaceContext, targetsToImport)
+        calculateOutputJarsLibraries(workspaceContext, targetsToImport, allTargets)
       }
     val annotationProcessorLibraries =
       measure("Create AP libraries") {
@@ -253,9 +253,10 @@ class AspectBazelProjectMapper(
   private fun calculateOutputJarsLibraries(
     workspaceContext: WorkspaceContext,
     targetsToImport: Sequence<TargetInfo>,
+    allTargets: Map<Label, TargetInfo>,
   ): Map<Label, List<Library>> =
     targetsToImport
-      .filter { shouldCreateOutputJarsLibrary(it) }
+      .filter { shouldCreateOutputJarsLibrary(it, allTargets) }
       .mapNotNull { target ->
         createLibrary(
           workspaceContext,
@@ -268,13 +269,14 @@ class AspectBazelProjectMapper(
         }
       }.toMap()
 
-  private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
+  private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo, allTargets : Map<Label, TargetInfo>) =
     !targetInfo.kind.endsWith("_resources") && targetInfo.getJvmTarget() &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
           (targetInfo.sourcesList.isEmpty() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
-          targetInfo.hasApiGeneratingPlugins
+          targetInfo.hasApiGeneratingPlugins ||
+          targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any { allTargets.get(Label.parse(it))?.hasApiGeneratingPlugins ?: false }
         )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
