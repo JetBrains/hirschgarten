@@ -29,12 +29,11 @@ message JvmOutputs {
 }
 
 message JvmTargetInfo {
-  reserved 1, 2, 10;
+  reserved 1, 2, 10, 12;
   repeated string javac_opts = 6;
   repeated string jvm_flags = 7;
   string main_class = 8;
   repeated string args = 9;
-  bool has_api_generating_plugins = 12;
   optional string resource_strip_prefix = 13;
 }
 
@@ -73,6 +72,7 @@ message KotlinTargetInfo {
   repeated FileLocation stdlibs = 500;
   repeated KotlincPluginInfo kotlinc_plugin_infos = 600;
   string module_name = 700;
+  repeated string exported_compiler_plugin_targets_from_deps = 601;
 }
 
 message PythonTargetInfo {
@@ -119,6 +119,7 @@ message TargetInfo {
   repeated JvmOutputs generated_jars = 1002;
   repeated FileLocation jdeps = 1003;
   bool jvm_target = 1004;
+  bool has_api_generating_plugins = 1005;
   JavaToolchainInfo java_toolchain_info = 2000;
   JavaRuntimeInfo java_runtime_info = 3000;
   ScalaTargetInfo scala_target_info = 4000;
