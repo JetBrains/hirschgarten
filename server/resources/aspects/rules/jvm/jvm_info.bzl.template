@@ -79,11 +79,12 @@ def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
         jvm_flags = jvm_flags,
         main_class = main_class,
         args = args,
-        has_api_generating_plugins = has_api_generating_plugins(target, ctx, dep_targets, provider),
         resource_strip_prefix = resource_strip_prefix,
     )
     result = dict(jvm_target_info = info, jars = jars, generated_jars = generated_jars)
     if provider:
         result["jvm_target"] = True
+    if has_api_generating_plugins(target, ctx, dep_targets, provider):
+        result["has_api_generating_plugins"] = True
 
     return result, None
