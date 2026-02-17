@@ -22,7 +22,7 @@ class LocalPathOverrideTest : IdeStarterBaseProjectTest() {
   @Test
   fun `local path override should resolve navigation and build target`() {
     createContext("localPathOverride", IdeaBazelCases.LocalPathOverride)
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           step("Initial sync") {

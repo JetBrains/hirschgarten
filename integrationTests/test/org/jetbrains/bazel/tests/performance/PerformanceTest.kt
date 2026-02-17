@@ -60,7 +60,7 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
           .applyVMOptionsPatch { withXmx(11264) }
         val startResult =
           context
-            .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+            .runIdeWithDriver(runTimeout = timeout)
             .useDriverAndCloseIde {
               ideFrame {
                 step("Collect performance metrics during Bazel sync") {

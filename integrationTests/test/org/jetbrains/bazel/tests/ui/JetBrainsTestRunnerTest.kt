@@ -25,7 +25,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
   fun `JetBrains test runner should execute tests and show results tree`() {
     createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
       .setRunConfigRunWithBazel(false)
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
       ideFrame {
         syncBazelProject(buildAndSync = true)
@@ -136,7 +136,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
     createContext("runAllTestsAction", IdeaBazelCases.JetBrainsTestRunner)
       // This is required for Bazel test caching!
       .setRunConfigRunWithBazel(true)
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject(buildAndSync = true)

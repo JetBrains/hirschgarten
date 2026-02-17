@@ -24,7 +24,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
   @Test
   fun `run test with coverage and verify results`() {
     createContext("bazelCoverage", IdeaBazelCases.BazelCoverage)
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
