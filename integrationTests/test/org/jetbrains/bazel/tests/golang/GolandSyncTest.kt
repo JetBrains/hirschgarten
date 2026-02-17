@@ -37,7 +37,7 @@ class GolandSyncTest : IdeStarterBaseProjectTest() {
     createContext("golandSync", GoLandBazelCases.GolandSync)
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
       .withBazelFeatureFlag(BazelFeatureFlags.GO_SUPPORT)
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()

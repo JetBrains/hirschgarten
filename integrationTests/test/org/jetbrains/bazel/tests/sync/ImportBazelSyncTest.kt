@@ -16,7 +16,7 @@ class ImportBazelSyncTest : IdeStarterBaseProjectTest() {
   fun `large Bazel project should sync successfully`() {
     val context = createContext("bazel-sync", IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
