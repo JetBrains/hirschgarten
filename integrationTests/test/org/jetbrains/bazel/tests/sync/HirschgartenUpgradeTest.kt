@@ -67,6 +67,7 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
   private fun importHirschgartenAndVerifyTargetOrder() {
     val case = IdeaBazelCases.withProject(hirschgartenProjectInfo())
     val context = createContext("hirschgarten", case)
+      .applyVMOptionsPatch { withXmx(11264) }
     context
       .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
       .useDriverAndCloseIde {
