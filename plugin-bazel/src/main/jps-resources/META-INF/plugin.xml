@@ -35,7 +35,7 @@
   <depends
     config-file="withCodeWithMe.xml"
     optional="true"
-  >com.jetbrains.remote.development</depends>
+  >com.jetbrains.remoteDevelopment</depends>
   <depends
     config-file="withCoverage.xml"
     optional="true"
