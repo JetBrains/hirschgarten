@@ -10,7 +10,7 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 class AbuMagicAction :
   SuspendableAction(
     "Abu magic action",
-    AllIcons.Providers.MongoDB,
+    AllIcons.Xml.Browsers.Explorer,
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     project.connection.runWithServer { bspServer ->
