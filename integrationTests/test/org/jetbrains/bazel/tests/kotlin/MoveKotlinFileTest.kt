@@ -32,7 +32,7 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
         skipRefactoringDialogs()
       }
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }.useDriverAndCloseIde {
+      .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
           waitForIndicators(10.minutes)

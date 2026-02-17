@@ -54,7 +54,7 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
       .applyVMOptionsPatch {
         addSystemProperty("expose.ui.hierarchy.url", "true")
       }
-    bgRun = ctx.runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+    bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
     withDriver(bgRun) {
       ideFrame {
         syncBazelProject()

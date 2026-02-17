@@ -23,7 +23,7 @@ class DisabledKotlinPluginTest : IdeStarterBaseProjectTest() {
   fun `sync should work with Kotlin plugin disabled`() {
     createContext("disabledKotlinPlugin", IdeaBazelCases.DisabledKotlinPlugin)
       .withDisabledPlugins(setOf("org.jetbrains.kotlin"))
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
