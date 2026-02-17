@@ -26,7 +26,7 @@ class LabelAllTabSESplitUiTest : IdeStarterBaseProjectTest() {
   fun `search everywhere should show Bazel labels when contributor enabled`() {
     val context = createContext("labelAllTabSESplit", IdeaBazelCases.LabelAllTabSESplit).enableSplitSearchEverywhere()
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }.useDriverAndCloseIde {
+      .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
@@ -48,7 +48,7 @@ class LabelAllTabSESplitUiTest : IdeStarterBaseProjectTest() {
   fun `search everywhere should hide Bazel labels when contributor disabled`() {
     val context = createContext("labelAllTabSESplit", IdeaBazelCases.LabelAllTabSESplit).enableSplitSearchEverywhere()
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }.useDriverAndCloseIde {
+      .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)

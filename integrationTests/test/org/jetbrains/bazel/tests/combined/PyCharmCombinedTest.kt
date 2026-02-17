@@ -42,7 +42,7 @@ class PyCharmCombinedTest : IdeStarterBaseProjectTest() {
   @BeforeAll
   fun startIdeAndSync() {
     ctx = createContext("pyCharmCombined", PyCharmBazelCases.PyCharm)
-    bgRun = ctx.runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+    bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
     withDriver(bgRun) {
       ideFrame {
         syncBazelProjectCloseDialog()

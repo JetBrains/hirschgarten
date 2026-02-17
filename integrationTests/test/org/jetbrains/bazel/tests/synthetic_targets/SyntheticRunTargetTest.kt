@@ -27,7 +27,7 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
       }
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         setRegistry("bazel.run.synthetic.enable", true.toString())
         syncBazelProject()

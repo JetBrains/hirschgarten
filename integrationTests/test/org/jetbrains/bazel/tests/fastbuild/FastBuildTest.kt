@@ -41,7 +41,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
       .withBazelFeatureFlag(BazelFeatureFlags.FAST_BUILD_ENABLED)
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()

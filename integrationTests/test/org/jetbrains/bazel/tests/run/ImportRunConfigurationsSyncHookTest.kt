@@ -27,7 +27,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
   @Test
   fun `imported run configurations should execute and show build diagnostics`() {
     val context = createContext("importRunConfigurationsSyncHook", IdeaBazelCases.ImportRunConfigurationsSyncHook)
-    context.runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }.useDriverAndCloseIde {
+    context.runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {
         syncBazelProject(buildAndSync = true)
         waitForIndicators(5.minutes)
