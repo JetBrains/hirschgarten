@@ -30,7 +30,7 @@ class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
   fun `quick fix should add module and library dependencies to BUILD file`() {
     val context = createContext("bazelProjectModelModifier", IdeaBazelCases.BazelProjectModelModifier)
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()

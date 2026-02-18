@@ -67,7 +67,7 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
   @BeforeAll
   fun startIdeAndSync() {
     ctx = createContext("simpleKotlinCombined", IdeaBazelCases.SimpleKotlinCombined)
-    bgRun = ctx.runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+    bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
     withDriver(bgRun) {
       ideFrame {
         syncBazelProject()

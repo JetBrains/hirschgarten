@@ -12,24 +12,23 @@ import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.BspServerApi
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
-import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectProvider
 import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.ProjectSyncService
-import org.jetbrains.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.asLogger
 import java.util.concurrent.atomic.AtomicReference
 
 class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
@@ -63,25 +62,24 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   }
 
   private suspend fun createServer(workspaceContext: WorkspaceContext): BspServerApi {
-    val client = BazelClient(project)
+    val taskEventsHandler = BazelTaskEventsService.getInstance(project)
     val bspInfo = BspInfo(workspaceRoot)
-    val bspClientLogger = BspClientLogger(client)
     val aspectsResolver = InternalAspectsResolver(bspInfo = bspInfo)
     val bazelInfoResolver = BazelInfoResolver(workspaceRoot)
     val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
     val bazelProcessLauncher =
       bazelProcessLauncherProvider.createBazelProcessLauncher(workspaceRoot, bspInfo, aspectsResolver, bazelInfoResolver)
-    val bazelRunner = BazelRunner(bspClientLogger, workspaceRoot, bazelProcessLauncher)
+    val bazelRunner = BazelRunner(taskEventsHandler, workspaceRoot, bazelProcessLauncher)
 
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext)
-    bazelInfo.release.deprecated()?.let { bspClientLogger.warn(it + " Sync might give incomplete results.") }
+    bazelInfo.release.deprecated()?.let { taskEventsHandler.asLogger(null).warn(it + " Sync might give incomplete results.") }
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
     val executeService =
       ExecuteService(
         project = project,
         workspaceRoot = workspaceRoot,
-        client = client,
+        taskEventsHandler = taskEventsHandler,
         bazelRunner = bazelRunner,
         workspaceContext = workspaceContext,
         bazelPathsResolver = bazelPathsResolver,
@@ -95,7 +93,6 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
       )
     val bazelToolchainManager = BazelToolchainManager()
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
-    val targetInfoReader = TargetInfoReader(bspClientLogger)
 
     val projectResolver =
       ProjectResolver(
@@ -104,11 +101,10 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
         bazelBspLanguageExtensionsGenerator = bazelBspLanguageExtensionsGenerator,
         workspaceContext = workspaceContext,
         featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
-        targetInfoReader = targetInfoReader,
         bazelInfo = bazelInfo,
         bazelRunner = bazelRunner,
         bazelPathsResolver = bazelPathsResolver,
-        bspClientLogger = bspClientLogger,
+        taskEventsHandler = taskEventsHandler,
       )
     val firstPhaseProjectResolver =
       FirstPhaseProjectResolver(
@@ -116,7 +112,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
         bazelRunner = bazelRunner,
         workspaceContext = workspaceContext,
         bazelInfo = bazelInfo,
-        bspClientLogger = bspClientLogger,
+        taskEventsHandler = taskEventsHandler,
       )
     val projectProvider = ProjectProvider(projectResolver, firstPhaseProjectResolver)
 

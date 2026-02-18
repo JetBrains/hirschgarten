@@ -7,10 +7,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
@@ -23,7 +23,7 @@ import java.nio.file.Path
 import kotlin.io.path.writeText
 
 class TestXmlParserTest {
-  private class MockBuildClient : JoinedBuildClient {
+  private class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
     val taskStartCalls = mutableListOf<TaskStartParams>()
     val taskFinishCalls = mutableListOf<TaskFinishParams>()
 
@@ -63,7 +63,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -159,7 +159,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -261,7 +261,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -367,7 +367,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -484,7 +484,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -590,7 +590,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -695,7 +695,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -774,7 +774,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -817,7 +817,7 @@ class TestXmlParserTest {
       </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -915,7 +915,7 @@ WARNING: Delegated to the 'execute' command.
 </testsuites>
       """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when
@@ -984,7 +984,7 @@ WARNING: Delegated to the 'execute' command.
 ]]></system-out></testcase><testcase name="testAnother" classname="com.example.MyJunit4Test" time="0.01"/></testsuite></testsuites>
     """.trimIndent()
 
-    val client = MockBuildClient()
+    val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client, "sample-origin")
 
     // when

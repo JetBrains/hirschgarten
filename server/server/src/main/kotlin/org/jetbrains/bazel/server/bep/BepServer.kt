@@ -12,38 +12,38 @@ import com.intellij.platform.util.progress.RawProgressReporter
 import io.grpc.stub.StreamObserver
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileTask
 import org.jetbrains.bsp.protocol.CoverageReport
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestStatus
+import org.jetbrains.bsp.protocol.asLogger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.FileSystemNotFoundException
 import java.nio.file.Files
+import java.time.Duration
 import java.util.UUID
 
 class BepServer(
-  private val bspClient: JoinedBuildClient,
+  private val taskEventsHandler: BazelTaskEventsHandler,
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
   private val bazelPathsResolver: BazelPathsResolver,
   private val rawProgressReporter: RawProgressReporter? = null,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
-  private val bspClientLogger = BspClientLogger(bspClient)
-  private val bepLogger = BepLogger(bspClientLogger)
 
   private var startedEvent: TaskId? = null
   private var bspClientTestNotifier: BspClientTestNotifier? = null // Present for test commands
@@ -120,7 +120,7 @@ class BepServer(
           .find { it.name == "test.lcov" }
           ?.let { bazelPathsResolver.resolve(it) }
       if (coverageReport != null) {
-        bspClient.onPublishCoverageReport(
+        taskEventsHandler.onPublishCoverageReport(
           CoverageReport(
             originId,
             coverageReport,
@@ -135,7 +135,7 @@ class BepServer(
             ?.let { bazelPathsResolver.resolve(it) }
 
         if (testLog != null) {
-          bspClient.onCachedTestLog(
+          taskEventsHandler.onCachedTestLog(
             CachedTestLog(
               originId,
               testLog,
@@ -220,7 +220,7 @@ class BepServer(
             onlyFromParsedOutput = true,
           )
         events.forEach {
-          bspClient.onBuildPublishDiagnostics(
+          taskEventsHandler.onBuildPublishDiagnostics(
             it,
           )
         }
@@ -235,7 +235,7 @@ class BepServer(
 
   private fun processBuildMetrics(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasBuildMetrics()) {
-      bepLogger.onBuildMetrics(event.buildMetrics)
+      bepMetrics = event.buildMetrics
     }
   }
 
@@ -258,13 +258,13 @@ class BepServer(
         val task = CompileTask(target)
         startParams.data = task
       }
-      bspClient.onBuildTaskStart(startParams)
+      taskEventsHandler.onBuildTaskStart(startParams)
     } else if (event.started.command == Constants.BAZEL_TEST_COMMAND || event.started.command == Constants.BAZEL_COVERAGE_COMMAND) {
       if (target == null) {
         return
       }
 
-      val bspClientTestNotifier = BspClientTestNotifier(bspClient, originId)
+      val bspClientTestNotifier = BspClientTestNotifier(taskEventsHandler, originId)
       this.bspClientTestNotifier = bspClientTestNotifier
       bspClientTestNotifier.beginTestTarget(target, taskId)
     }
@@ -309,7 +309,7 @@ class BepServer(
     val report = CompileReport(target, errors, 0)
     val finishParams =
       TaskFinishParams(taskId, status = statusCode, eventTime = event.finished.finishTimeMillis, originId = originId, data = report)
-    bspClient.onBuildTaskFinish(finishParams)
+    taskEventsHandler.onBuildTaskFinish(finishParams)
   }
 
   private fun processCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
@@ -361,7 +361,7 @@ class BepServer(
           originId,
         )
       events.forEach {
-        bspClient.onBuildPublishDiagnostics(
+        taskEventsHandler.onBuildPublishDiagnostics(
           it,
         )
       }
@@ -398,6 +398,8 @@ class BepServer(
   }
 
   val bepOutput: BepOutput = bepOutputBuilder.build()
+  var bepMetrics: BuildEventStreamProtos.BuildMetrics? = null
+    private set
 
   companion object {
     private val ansiEscapeCode = "\\u001B\\[[\\d;]*[^\\d;]".toRegex()

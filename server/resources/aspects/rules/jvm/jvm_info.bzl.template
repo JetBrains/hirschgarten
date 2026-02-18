@@ -1,5 +1,6 @@
-load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion")
-load("//${bspPath}/aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info", "get_java_plugin_info", "get_javacopts")
+load("//${bspPath}/aspects:utils/utils.bzl", "IMPORT_RULE_KIND", "create_struct", "file_location", "is_external", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion", "map_with_resolve_files")
+load("//${bspPath}/aspects:utils/jvm_common.bzl", "to_generated_jvm_outputs", "get_generated_jars", "to_jvm_outputs", "provider_resolve_depsets")
+load("//${bspPath}/aspects:rules/java/java_info.bzl", "get_java_plugin_info", "get_javacopts")
 
 #if( $kotlinEnabled == "true" )
 load("//${bspPath}/aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_additional_javac_options", "get_kotlin_plugins")
@@ -12,123 +13,12 @@ def get_kotlin_plugins(target, ctx, dep_targets):
     return []
 #end
 
-def map_with_resolve_files(f, xs):
-    results = []
-    resolve_files = []
-
-    for x in xs:
-        if x != None:
-            res = f(x)
-            if res != None:
-                a, b = res
-                if a != None:
-                    results.append(a)
-                if b != None:
-                    resolve_files += b
-
-    return results, resolve_files
-
-def get_interface_jars(output):
-    if hasattr(output, "compile_jar") and output.compile_jar:
-        return [output.compile_jar]
-    elif hasattr(output, "ijar") and output.ijar: # Kotlin rules don't use compile_jar field
-        return [output.ijar]
-    else:
-        return []
-
-def get_binary_jars(output):
-    if hasattr(output, "class_jar") and output.class_jar:
-        return [output.class_jar]
-    else:
-        return []
-
-def get_source_jars(output):
-    if hasattr(output, "source_jars"):
-        source_jars = output.source_jars
-        if type(source_jars) == "depset":
-            return source_jars.to_list()
-        else:
-            # assuming it returns sequence type here
-            return source_jars
-    if hasattr(output, "source_jar") and output.source_jar != None:
-        return [output.source_jar]
-    return []
-
-def to_generated_jvm_outputs(output):
-    if output == None or output.generated_class_jar == None:
-        return None
-
-    class_jar = output.generated_class_jar
-    source_jar = output.generated_source_jar
-
-    output = struct(
-        binary_jars = [file_location(class_jar)],
-        source_jars = [file_location(source_jar)],
-    )
-    resolve_files = [class_jar, source_jar]
-    return output, resolve_files
-
-def get_generated_jars(provider):
-    if hasattr(provider, "java_outputs"):
-        return map_with_resolve_files(to_generated_jvm_outputs, provider.java_outputs)
-
-    if hasattr(provider, "annotation_processing") and provider.annotation_processing and provider.annotation_processing.enabled:
-        class_jars = filter_not_none([provider.annotation_processing.class_jar])
-        source_jars = filter_not_none([provider.annotation_processing.source_jar])
-
-        # Additional info from `rules_kotlin`'s `KtJvmInfo`
-        if hasattr(provider, "additional_generated_source_jars"):
-            source_jars = source_jars + [jar for jar in provider.additional_generated_source_jars]
-        if hasattr(provider, "all_output_jars"):
-            class_jars = class_jars + [jar for jar in provider.all_output_jars]
-
-        output = struct(
-            binary_jars = [file_location(jar) for jar in class_jars],
-            source_jars = [file_location(jar) for jar in source_jars],
-        )
-        resolve_files = class_jars + source_jars
-        return [output], resolve_files
-
-    return [], []
-
-def to_jvm_outputs(output):
-    if output == None:
-        return None
-
-    binary_jars = get_binary_jars(output)
-    interface_jars = get_interface_jars(output)
-    source_jars = get_source_jars(output)
-    output = struct(
-        binary_jars = map(file_location, binary_jars),
-        interface_jars = map(file_location, interface_jars),
-        source_jars = map(file_location, source_jars),
-    )
-    resolve_files = binary_jars + interface_jars + source_jars
-    return output, resolve_files
-
-def extract_runtime_jars(target, provider):
-    compilation_info = getattr(provider, "compilation_info", None)
-
-    if compilation_info:
-        return compilation_info.runtime_classpath
-
-    java_info = get_java_info(target)
-
-    return getattr(provider, "transitive_runtime_jars", java_info.transitive_runtime_jars if java_info else depset())
-
-def extract_compile_jars(provider):
-    compilation_info = getattr(provider, "compilation_info", None)
-
-    return compilation_info.compilation_classpath if compilation_info else depset()
-
 def get_jvm_provider(target):
     if hasattr(target, "scala"):
         return target.scala
     kt_jvm_provider = get_kt_jvm_provider(target)
     if kt_jvm_provider != None and hasattr(kt_jvm_provider, "outputs"):
         return kt_jvm_provider
-    if java_info_in_target(target):
-        return get_java_info(target)
     return None
 
 def get_javac_opts(target, ctx):
@@ -150,18 +40,13 @@ def has_api_generating_plugins(target, ctx, dep_targets, provider):
 
 def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
     provider = get_jvm_provider(target)
-    if not provider:
-        return None, None
 
-    if hasattr(provider, "java_outputs") and provider.java_outputs:
-        java_outputs = provider.java_outputs
-    elif hasattr(provider, "outputs") and provider.outputs:
-        java_outputs = provider.outputs.jars
-    else:
-        return None, None
-
-    # I don't know why, but it seems that the "java_outputs" variable can have a different type, depending on language
-    jdeps = get_jdeps(target)
+    java_outputs = []
+    if provider:
+        if hasattr(provider, "java_outputs") and provider.java_outputs:
+            java_outputs = provider.java_outputs
+        elif hasattr(provider, "outputs") and provider.outputs:
+            java_outputs = provider.outputs.jars
 
     jars, resolve_files_jars = map_with_resolve_files(to_jvm_outputs, java_outputs)
 
@@ -173,20 +58,12 @@ def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
     jvm_flags = do_starlark_string_expansion(ctx, "jvm_flags", raw_jvm_flags, data_deps)
     args = getattr(ctx.rule.attr, "args", [])
     main_class = getattr(ctx.rule.attr, "main_class", None)
-    resolve_files = []
+    resolve_files = resolve_files_jars + resolve_files_generated_jars
     resolve_files_transitive = []
-    if is_external(target) or ctx.rule.kind in ["java_import", "jvm_import", "kt_jvm_import"]:
-        resolve_files += resolve_files_jars
-        resolve_files += resolve_files_generated_jars
-        resolve_files_transitive.append(extract_runtime_jars(target, provider))
-        resolve_files_transitive.append(extract_compile_jars(provider))
-        resolve_files_transitive.append(getattr(provider, "transitive_source_jars", depset()))
+    if is_external(target) or ctx.rule.kind in IMPORT_RULE_KIND:
+        resolve_files_transitive += provider_resolve_depsets(target, provider)
         update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(resolve_files, transitive=resolve_files_transitive))
     else:
-        # During build and sync, we use this output group to make sure all the generated jars are built by Bazel.
-        resolve_files += resolve_files_jars
-        resolve_files += resolve_files_generated_jars
-        resolve_files += jdeps
         update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
 
     resource_strip_prefix_attr = getattr(ctx.rule.attr, "resource_strip_prefix", None)
@@ -198,20 +75,15 @@ def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
         # Label("some/package") -> "some/package" (assuming there's no target <relative path>/some/package:package)
         resource_strip_prefix = resource_strip_prefix_attr.label.name
     info = create_struct(
-        jars = jars,
-        generated_jars = generated_jars,
         javac_opts = javac_opts,
         jvm_flags = jvm_flags,
         main_class = main_class,
         args = args,
-        jdeps = [file_location(j) for j in jdeps],
         has_api_generating_plugins = has_api_generating_plugins(target, ctx, dep_targets, provider),
         resource_strip_prefix = resource_strip_prefix,
     )
+    result = dict(jvm_target_info = info, jars = jars, generated_jars = generated_jars)
+    if provider:
+        result["jvm_target"] = True
 
-    return dict(jvm_target_info = info), None
-
-def get_jdeps(target):
-    if java_info_in_target(target):
-        return [jo.jdeps for jo in get_java_info(target).java_outputs if jo.jdeps != None]
-    return []
+    return result, None

@@ -67,8 +67,9 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
   private fun importHirschgartenAndVerifyTargetOrder() {
     val case = IdeaBazelCases.withProject(hirschgartenProjectInfo())
     val context = createContext("hirschgarten", case)
+      .applyVMOptionsPatch { withXmx(11264) }
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
@@ -130,7 +131,7 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
     )
 
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           waitForIndicators(5.minutes)
@@ -150,7 +151,7 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
     IntegrationTestCompat.onPostCreateContext(context)
 
     context
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         step("Verify no resync happens after plugin upgrade") {
           ideFrame {

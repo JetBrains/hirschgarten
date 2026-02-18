@@ -57,9 +57,10 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
     return listOf(
       DynamicTest.dynamicTest("sync performance - $projectName") {
         val context = createContext(projectName, IdeaBazelCases.withProject(getProjectInfoFromSystemProperties()))
+          .applyVMOptionsPatch { withXmx(11264) }
         val startResult =
           context
-            .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+            .runIdeWithDriver(runTimeout = timeout)
             .useDriverAndCloseIde {
               ideFrame {
                 step("Collect performance metrics during Bazel sync") {

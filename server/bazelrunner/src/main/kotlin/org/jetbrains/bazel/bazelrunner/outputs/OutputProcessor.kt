@@ -12,6 +12,8 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
+typealias OutputHandler = (String) -> Unit
+
 class OutputProcessor(private val process: Process, handler: OutputHandler? = null) {
   val stdoutCollector = OutputCollector()
   val stderrCollector = OutputCollector()
@@ -77,7 +79,7 @@ class OutputProcessor(private val process: Process, handler: OutputHandler? = nu
               else {
                 continue
               }
-              handler?.onNextLine(line)
+              handler?.invoke(line)
             }
           }
         } catch (e: Throwable) {

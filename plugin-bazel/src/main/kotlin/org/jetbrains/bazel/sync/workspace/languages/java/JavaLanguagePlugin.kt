@@ -51,11 +51,11 @@ class JavaLanguagePlugin(
   }
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
-    if (!target.hasJvmTargetInfo()) {
+    if (!target.getJvmTarget()) {
       return null
     }
     val jvmTarget = target.jvmTargetInfo
-    val binaryOutputs = jvmTarget.jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
+    val binaryOutputs = target.jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
     val mainClass = getMainClass(jvmTarget)
 
     val jdk = jdk ?: return null

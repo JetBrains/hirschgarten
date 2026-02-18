@@ -22,7 +22,7 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
   @Test
   fun `Python files should have no red code after sync`() {
     createContext("simplePython", PyCharmBazelCases.SimplePython)
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProjectCloseDialog()

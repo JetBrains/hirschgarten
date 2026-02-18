@@ -4,6 +4,7 @@ import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.data.IdeaBazelCases
@@ -26,17 +27,17 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
   @Test
   fun `imported run configurations should execute and show build diagnostics`() {
     val context = createContext("importRunConfigurationsSyncHook", IdeaBazelCases.ImportRunConfigurationsSyncHook)
-    context.runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }.useDriverAndCloseIde {
+    context.runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {
         syncBazelProject(buildAndSync = true)
         waitForIndicators(5.minutes)
 
         step("Select Bazel test configuration") {
-          step("See which run configurations there are") { x { byVisibleText("Remote JVM") }.click() }
-          Thread.sleep(500)
-          keyboard {
-            key(KeyEvent.VK_DOWN)
-            key(KeyEvent.VK_ENTER)
+          step("Open run configurations dropdown") { 
+            x { byVisibleText("Remote JVM") }.click() 
+          }
+          step("Select 'Bazel test CalculatorTest' from dropdown") {
+            popup().waitOneText("Bazel test CalculatorTest").click()
           }
         }
 
@@ -67,10 +68,11 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
         }
 
         step("Select Bazel run configuration") {
-          step("See which run configurations there are") { x { byVisibleText("Bazel test CalculatorTest") }.click() }
-          Thread.sleep(500)
-          keyboard {
-            key(KeyEvent.VK_ENTER)
+          step("Open run configurations dropdown") { 
+            x { byVisibleText("Bazel test CalculatorTest") }.click() 
+          }
+          step("Select 'Bazel run :main' from dropdown") {
+            popup().waitOneText("Bazel run :main").click()
           }
         }
 

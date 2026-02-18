@@ -1,0 +1,31 @@
+executable: false
+id: "@@rules_java+//toolchains:current_java_toolchain"
+java_runtime_info {
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+local_jdk"
+  }
+}
+java_toolchain_info {
+  boot_classpath_java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+local_jdk"
+  }
+  java_home {
+    is_external: true
+    is_source: false
+    relative_path: ""
+    root_execution_path_fragment: "external/rules_java++toolchains+remotejdk25_linux"
+  }
+  source_version: "11"
+  target_version: "11"
+}
+jvm_target_info {
+  has_api_generating_plugins: false
+}
+kind: "java_toolchain_alias"
+workspace_name: "_main"
