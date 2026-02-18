@@ -5,7 +5,6 @@ import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -56,6 +55,7 @@ import java.nio.file.Path
 import java.util.UUID
 import kotlin.io.path.extension
 import kotlin.io.path.name
+import kotlin.time.Duration.Companion.milliseconds
 
 @Suppress("UnstableApiUsage")
 class BazelFileEventListener : BulkFileListenerBackgroundable {
@@ -420,7 +420,7 @@ private fun VirtualFileUrl.addToModule(
   entityStorageDiff.modifyModuleEntity(module) { contentRoots += contentRootEntity }
 }
 
-private const val PROCESSING_DELAY = 250L // not noticeable by the user, but if there are many events simultaneously, we will get them all
+private val PROCESSING_DELAY = 250.milliseconds // not noticeable by the user, but if there are many events simultaneously, we will get them all
 
 private val logger = Logger.getInstance(BazelFileEventListener::class.java)
 
