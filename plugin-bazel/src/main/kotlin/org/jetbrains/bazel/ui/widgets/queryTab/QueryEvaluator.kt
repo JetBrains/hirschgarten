@@ -6,6 +6,7 @@ import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.TaskGroupId
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -100,7 +101,7 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
       commandToRun.options.add(flag.value)
     }
 
-    val startedProcess = bazelRunner.runBazelCommand(commandToRun)
+    val startedProcess = bazelRunner.runBazelCommand(commandToRun, TaskGroupId.EMPTY.task(""))
     currentProcessCancelled.set(false)
     currentProcess.set(startedProcess)
   }

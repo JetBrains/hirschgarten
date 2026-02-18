@@ -7,16 +7,15 @@ import com.intellij.build.events.impl.SuccessResultImpl
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.utils.findCanonicalVirtualFileThatExists
 import org.jetbrains.bsp.protocol.CompileReport
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-class BazelBuildTaskListener(private val taskConsole: TaskConsole, private val originId: String) : BazelTaskListener {
+class BazelBuildTaskListener(private val taskConsole: TaskConsole) : BazelTaskListener {
   override fun onTaskFinish(
     taskId: TaskId,
-    parentId: TaskId?,
     message: String,
     status: BazelStatus,
     data: Any?,
@@ -37,6 +36,7 @@ class BazelBuildTaskListener(private val taskConsole: TaskConsole, private val o
   }
 
   override fun onDiagnostic(
+    taskId: TaskId,
     textDocument: Path?,
     buildTarget: Label,
     line: Int,
@@ -45,7 +45,7 @@ class BazelBuildTaskListener(private val taskConsole: TaskConsole, private val o
     message: String,
   ) {
     taskConsole.addDiagnosticMessage(
-      taskId = originId,
+      taskId = taskId,
       path = textDocument
         ?.findCanonicalVirtualFileThatExists()
         ?.toNioPath()
@@ -57,7 +57,7 @@ class BazelBuildTaskListener(private val taskConsole: TaskConsole, private val o
     )
   }
 
-  override fun onLogMessage(message: String) {
-    taskConsole.addMessage(originId, message)
+  override fun onLogMessage(taskId: TaskId, message: String) {
+    taskConsole.addMessage(taskId, message)
   }
 }

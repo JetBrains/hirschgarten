@@ -12,7 +12,6 @@ import com.intellij.platform.util.progress.RawProgressReporter
 import io.grpc.stub.StreamObserver
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
-import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
@@ -28,19 +27,18 @@ import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestStatus
-import org.jetbrains.bsp.protocol.asLogger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.FileSystemNotFoundException
 import java.nio.file.Files
-import java.time.Duration
 import java.util.UUID
+import kotlin.random.Random
 
 class BepServer(
   private val taskEventsHandler: BazelTaskEventsHandler,
   private val diagnosticsService: DiagnosticsService,
-  private val originId: String?,
+  private val parentId: TaskId,
   private val bazelPathsResolver: BazelPathsResolver,
   private val rawProgressReporter: RawProgressReporter? = null,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
@@ -88,7 +86,7 @@ class BepServer(
     if (event.hasTestResult()) {
       val taskId = startedEvent
       val bspClientTestNotifier = this.bspClientTestNotifier
-      if (originId == null || taskId == null || bspClientTestNotifier == null) {
+      if (taskId == null || bspClientTestNotifier == null) {
         return
       }
 
@@ -122,7 +120,7 @@ class BepServer(
       if (coverageReport != null) {
         taskEventsHandler.onPublishCoverageReport(
           CoverageReport(
-            originId,
+            taskId,
             coverageReport,
           ),
         )
@@ -137,7 +135,7 @@ class BepServer(
         if (testLog != null) {
           taskEventsHandler.onCachedTestLog(
             CachedTestLog(
-              originId,
+              taskId,
               testLog,
             ),
           )
@@ -147,11 +145,11 @@ class BepServer(
       val testXml = testResult.testActionOutputList.find { it.name == "test.xml" }?.let { bazelPathsResolver.resolve(it) }
       if (testXml != null) {
         // Test cases identified and sent to the client by TestXmlParser.
-        TestXmlParser(bspClientTestNotifier).parseAndReport(testXml)
+        TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, testXml)
       } else {
         // Send a generic notification if individual tests cannot be processed.
-        val childId = TaskId(UUID.randomUUID().toString(), parents = listOf(taskId.id))
-        bspClientTestNotifier.startTest("Test", childId)
+        val childId = taskId.subTask("test-" + Random.nextBytes(8).toHexString())
+        bspClientTestNotifier.startTest("Test", childId, isSuite = true)
         bspClientTestNotifier.finishTest("Test", childId, testStatus, "Test finished")
       }
     }
@@ -206,7 +204,7 @@ class BepServer(
   private fun processProgressEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasProgress()) {
       val progress = event.progress
-      if (progress.stderr.isNotEmpty() && originId != null) {
+      if (progress.stderr.isNotEmpty()) {
         val stderrLines = progress.stderr.lines().map { line ->
           line.replace(ansiEscapeCode, "")
         }
@@ -215,7 +213,7 @@ class BepServer(
           diagnosticsService.extractDiagnostics(
             stderrLines,
             SyntheticLabel(AllRuleTargets),
-            originId,
+            parentId,
             isCommandLineFormattedOutput = true,
             onlyFromParsedOutput = true,
           )
@@ -242,13 +240,8 @@ class BepServer(
   private fun consumeBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     bepOutputBuilder.clear()
 
-    if (originId == null) {
-      LOGGER.warn("No origin id was found. Event: {}", event)
-      return
-    }
-
-    val taskId = TaskId(event.started.uuid)
-    val startParams = TaskStartParams(taskId, eventTime = event.started.startTimeMillis, originId = originId)
+    val taskId = parentId.subTask("started-" + event.started.uuid)
+    val startParams = TaskStartParams(taskId, eventTime = event.started.startTimeMillis)
     val target =
       event.id.testResult.label
         ?.let { Label.parse(it) }
@@ -264,7 +257,7 @@ class BepServer(
         return
       }
 
-      val bspClientTestNotifier = BspClientTestNotifier(taskEventsHandler, originId)
+      val bspClientTestNotifier = BspClientTestNotifier(taskEventsHandler)
       this.bspClientTestNotifier = bspClientTestNotifier
       bspClientTestNotifier.beginTestTarget(target, taskId)
     }
@@ -289,12 +282,7 @@ class BepServer(
     }
 
     if (taskId == null) {
-      LOGGER.warn("No start event id was found. Origin id: {}", originId)
-      return
-    }
-
-    if (originId == null) {
-      LOGGER.warn("No origin id was found. Task id: {}", taskId)
+      LOGGER.warn("No start event id was found. Origin id: {}", parentId)
       return
     }
 
@@ -308,7 +296,7 @@ class BepServer(
     val errors = if (isSuccess) 0 else 1
     val report = CompileReport(target, errors, 0)
     val finishParams =
-      TaskFinishParams(taskId, status = statusCode, eventTime = event.finished.finishTimeMillis, originId = originId, data = report)
+      TaskFinishParams(taskId, status = statusCode, eventTime = event.finished.finishTimeMillis, data = report)
     taskEventsHandler.onBuildTaskFinish(finishParams)
   }
 
@@ -319,20 +307,19 @@ class BepServer(
   }
 
   private fun processActionCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    val originId: String = originId ?: return
     if (event.hasAction()) {
-      consumeActionCompletedEvent(event.action, originId)
+      consumeActionCompletedEvent(event.action)
     }
   }
 
-  private fun consumeActionCompletedEvent(event: BuildEventStreamProtos.ActionExecuted, originId: String) {
+  private fun consumeActionCompletedEvent(event: BuildEventStreamProtos.ActionExecuted) {
     val label = Label.parse(event.label)
     when (event.stderr.fileCase) {
       BuildEventStreamProtos.File.FileCase.URI -> {
         try {
           val path = bazelPathsResolver.resolve(event.stderr)
           val stdErrText = Files.readString(path)
-          processDiagnosticText(stdErrText, label, originId)
+          processDiagnosticText(stdErrText, label, parentId)
         } catch (e: FileSystemNotFoundException) {
           LOGGER.warn("Failed to process diagnostic text", e)
         } catch (e: IOException) {
@@ -341,7 +328,7 @@ class BepServer(
       }
 
       BuildEventStreamProtos.File.FileCase.CONTENTS -> {
-        processDiagnosticText(event.stderr.contents.toStringUtf8(), label, originId)
+        processDiagnosticText(event.stderr.contents.toStringUtf8(), label, parentId)
       }
 
       else -> {}
@@ -351,14 +338,14 @@ class BepServer(
   private fun processDiagnosticText(
     stdErrText: String,
     targetLabel: Label,
-    originId: String,
+    taskId: TaskId,
   ) {
     if (stdErrText.isNotEmpty()) {
       val events =
         diagnosticsService.extractDiagnostics(
           stdErrText.lines(),
           targetLabel,
-          originId,
+          taskId,
         )
       events.forEach {
         taskEventsHandler.onBuildPublishDiagnostics(

@@ -38,6 +38,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveS
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -95,7 +96,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             server = server,
             resolver = resolver,
             diff = diff,
-            taskId = "test",
+            taskId = TaskGroupId.EMPTY.task("test"),
             progressReporter = reporter,
             // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
             buildTargets = emptyMap(),
@@ -139,7 +140,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             server = server,
             resolver = resolver,
             diff = diff,
-            taskId = "test",
+            taskId = TaskGroupId.EMPTY.task("test"),
             progressReporter = reporter,
             // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
             buildTargets = emptyMap(),

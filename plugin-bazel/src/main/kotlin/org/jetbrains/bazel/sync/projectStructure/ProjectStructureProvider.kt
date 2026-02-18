@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.projectStructure
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bsp.protocol.TaskId
 
 /**
  * Represents a diff (snapshot) of the underlying project structure which should be updated during sync in the
@@ -20,7 +21,7 @@ interface ProjectStructureDiff {
   suspend fun apply(
     project: Project,
     syncScope: ProjectSyncScope,
-    taskId: String,
+    taskId: TaskId,
   )
 }
 
@@ -35,7 +36,7 @@ class AllProjectStructuresDiff(private val project: Project, diffs: List<Project
   fun <TDiff : ProjectStructureDiff> diffOfType(diffClazz: Class<TDiff>): TDiff =
     diffs[diffClazz] as? TDiff ?: error("Cannot find a ProjectStructureDiff of type: ${diffClazz.simpleName}")
 
-  suspend fun applyAll(syncScope: ProjectSyncScope, taskId: String) {
+  suspend fun applyAll(syncScope: ProjectSyncScope, taskId: TaskId) {
     diffs.values.forEach { it.apply(project, syncScope, taskId) }
   }
 }

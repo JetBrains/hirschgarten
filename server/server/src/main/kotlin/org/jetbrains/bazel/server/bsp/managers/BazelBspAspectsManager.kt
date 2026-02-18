@@ -18,6 +18,7 @@ import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bsp.protocol.TaskId
 import java.io.IOException
 import java.nio.file.Files
 import kotlin.io.path.exists
@@ -216,7 +217,7 @@ class BazelBspAspectsManager(
     aspect: String,
     outputGroups: List<String>,
     workspaceContext: WorkspaceContext,
-    originId: String?,
+    taskId: TaskId,
   ): BazelBspAspectsManagerResult {
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
     val defaultFlags =
@@ -235,7 +236,7 @@ class BazelBspAspectsManager(
       .buildTargetsWithBep(
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
-        originId = originId,
+        taskId = taskId,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }
 }

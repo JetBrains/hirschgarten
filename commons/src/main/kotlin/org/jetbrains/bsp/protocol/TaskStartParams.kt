@@ -4,7 +4,6 @@ import org.jetbrains.bazel.label.Label
 
 data class TaskStartParams(
   val taskId: TaskId,
-  val originId: String,
   val eventTime: Long? = null,
   val message: String? = null,
   var data: TaskStartData? = null,
@@ -12,7 +11,7 @@ data class TaskStartParams(
 
 sealed interface TaskStartData
 
-data class TestStart(val displayName: String, val locationHint: String? = null) : TaskStartData
+data class TestStart(val displayName: String, val isSuit: Boolean, val locationHint: String? = null) : TaskStartData
 
 data class TestTask(val target: Label) : TaskStartData
 

@@ -9,14 +9,15 @@ import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestFinish
 import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.jetbrains.bsp.protocol.TestTask
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -32,33 +33,47 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
     )
   }
 
+  private val testStartData = ConcurrentHashMap<TaskId, TestStart>()
+
+  private fun findParentTaskId(taskId: TaskId): TaskId? {
+    var id = taskId.parent
+    while (id != null) {
+      if (testStartData.containsKey(id))
+        return id
+      id = id.parent
+    }
+    return null
+  }
+
   override fun onTaskStart(
     taskId: TaskId,
-    parentId: TaskId?,
     message: String,
     data: Any?,
   ) {
     when (data) {
       is TestTask -> {
         // OutputToGeneralTestEventsConverter.MyServiceMessageVisitor.visitServiceMessage ignores the first testingStarted event
-        handler.notifyTextAvailable(ServiceMessageBuilder("testingStarted").toStringWithNewline(), ProcessOutputType.STDOUT)
-        handler.notifyTextAvailable(ServiceMessageBuilder("testingStarted").toStringWithNewline(), ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(ServiceMessageBuilder("testingStarted").toString().toStringWithNewline(), ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(ServiceMessageBuilder("testingStarted").toString().toStringWithNewline(), ProcessOutputType.STDOUT)
       }
 
       is TestStart -> {
+        testStartData[taskId] = data
+        val parentTaskId = findParentTaskId(taskId)
         val serviceMessage =
-          if (parentId != null) {
-            ServiceMessageBuilder
-              .testStarted(data.displayName)
-              .addNodeId(taskId)
-              .addAttribute("parentNodeId", parentId)
-              .addAttribute("locationHint", data.locationHint)
-              .toString()
-          } else {
+          if (data.isSuit) {
             ServiceMessageBuilder
               .testSuiteStarted(data.displayName)
-              .addNodeId(taskId)
-              .addAttribute("parentNodeId", "0")
+              .addNodeId(taskId.id)
+              .addAttribute("parentNodeId", parentTaskId?.id ?: "0")
+              .addAttribute("locationHint", data.locationHint)
+              .toString()
+          }
+          else {
+            ServiceMessageBuilder
+              .testStarted(data.displayName)
+              .addNodeId(taskId.id)
+              .addAttribute("parentNodeId", parentTaskId?.id ?: "0")
               .addAttribute("locationHint", data.locationHint)
               .toString()
           }
@@ -69,21 +84,22 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
 
   override fun onTaskFinish(
     taskId: TaskId,
-    parentId: TaskId?,
     message: String,
     status: BazelStatus,
     data: Any?,
   ) {
+    val startData = testStartData.remove(taskId)
+
     when (data) {
       is TestFinish -> {
         val serviceMessage =
-          if (parentId != null) {
-            processTestCaseFinish(taskId, data)
-          } else {
+          if (startData?.isSuit == true) {
             processTestSuiteFinish(taskId, data)
+          } else {
+            processTestCaseFinish(taskId, data)
           }
 
-        handler.notifyTextAvailable(serviceMessage.toStringWithNewline(), ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable(serviceMessage.toString().toStringWithNewline(), ProcessOutputType.STDOUT)
       }
     }
   }
@@ -102,7 +118,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
 
   // For compatibility with older BSP servers
   // TODO: Log messages in the correct place
-  override fun onLogMessage(message: String) {
+  override fun onLogMessage(taskId: TaskId, message: String) {
     val messageWithNewline = message.toStringWithNewline()
     ansiEscapeDecoder.escapeText(messageWithNewline, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
       handler.notifyTextAvailable(s, key)
@@ -144,11 +160,11 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
       val errorMessage =
         details?.errorMessage?.takeIf { it.isNotBlank() } ?: "Failed"
       failureMessageBuilder
-        .addNodeId(taskId)
+        .addNodeId(taskId.id)
         .addMessage(errorMessage)
         .let { if (details?.errorType == null) it else it.addAttribute("type", details.errorType) }
         .toString()
-      handler.notifyTextAvailable(failureMessageBuilder.toStringWithNewline(), ProcessOutputType.STDOUT)
+      handler.notifyTextAvailable(failureMessageBuilder.toString().toStringWithNewline(), ProcessOutputType.STDOUT)
       details?.output?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
     } else {
       details?.output?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDOUT) }
@@ -162,7 +178,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
 
     return ServiceMessageBuilder
       .testFinished(data.displayName)
-      .addNodeId(taskId)
+      .addNodeId(taskId.id)
       .addMessage(data.message)
       .addTime(details?.time)
   }
@@ -174,7 +190,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
     details?.systemErr?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
     return ServiceMessageBuilder
       .testSuiteFinished(data.displayName)
-      .addNodeId(taskId)
+      .addNodeId(taskId.id)
       .addTime(details?.time)
   }
 
@@ -198,4 +214,4 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
  * If a system message sent to the process handler does not end with a newline,
  * it might connect to another message and not be parsed correctly
  * */
-private fun Any?.toStringWithNewline(): String = this.toString().let { if (it.endsWith("\n")) it else "$it\n" }
+private fun String.toStringWithNewline(): String = if (this.endsWith("\n")) this else "$this\n"

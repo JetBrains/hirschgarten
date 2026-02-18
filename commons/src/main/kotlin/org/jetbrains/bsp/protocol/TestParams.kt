@@ -3,8 +3,8 @@ package org.jetbrains.bsp.protocol
 import org.jetbrains.bazel.label.Label
 
 data class TestParams(
+  val taskId: TaskId,
   val targets: List<Label>,
-  val originId: String,
   val arguments: List<String>? = null,
   val environmentVariables: Map<String, String>? = null,
   val debug: DebugType? = null,

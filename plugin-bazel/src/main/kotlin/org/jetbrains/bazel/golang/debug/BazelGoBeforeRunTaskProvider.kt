@@ -24,6 +24,7 @@ import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.RunParams
 import java.io.File
 import java.io.IOException
@@ -110,7 +111,7 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
             val params =
               RunParams(
                 target = runConfiguration.targets.single(),
-                originId = "",
+                taskId = TaskGroupId.EMPTY.task(""),
                 checkVisibility = true,
                 arguments = emptyList(),
                 environmentVariables = emptyMap(),

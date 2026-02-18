@@ -19,14 +19,17 @@ import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.TaskId
 import java.util.UUID
+import kotlin.random.Random
 
 interface BuildTargetTask {
   suspend fun build(
     server: JoinedBuildServer,
     targetIds: List<Label>,
     buildConsole: TaskConsole,
-    originId: String,
+    taskId: TaskId,
     debugFlags: List<String>,
   ): BazelStatus
 }
@@ -44,34 +47,32 @@ suspend fun runBuildTargetTask(
     val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags } else listOf()
     project.connection.runWithServer { server ->
       coroutineScope {
-        val originId = "build-" + UUID.randomUUID().toString()
+        val taskGroupId = TaskGroupId("build-" + Random.nextBytes(8).toHexString())
         val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
 
-        val taskListener = BazelBuildTaskListener(bspBuildConsole, originId)
-
-        BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
-
-        val startBuildMessage = when (targetIds.size) {
-          0 -> BazelPluginBundle.message("console.task.build.no.targets")
-          1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString(project))
-          else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
-        }
-
-        bspBuildConsole.startTask(
-          taskId = originId,
-          title = BazelPluginBundle.message("console.task.build.title"),
-          message = startBuildMessage,
-          cancelAction = { this@coroutineScope.cancel() },
-          redoAction = {
-            BazelCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project, isDebug, buildTargetTask) }
-          },
-        )
+        val taskListener = BazelBuildTaskListener(bspBuildConsole)
+        BazelTaskEventsService.getInstance(project).saveListener(taskGroupId, taskListener)
 
         try {
-          val buildDeferred = async { buildTargetTask.build(server, targetIds, bspBuildConsole, originId, debugFlag) }
-          return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId).getStatus()
+          val taskId = taskGroupId.task("build-${project.name}-${Random.nextBytes(8).toHexString()}")
+          bspBuildConsole.startTask(
+            taskId = taskId,
+            title = BazelPluginBundle.message("console.task.build.title"),
+            message = when (targetIds.size) {
+              0 -> BazelPluginBundle.message("console.task.build.no.targets")
+              1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString(project))
+              else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
+            },
+            cancelAction = { this@coroutineScope.cancel() },
+            redoAction = {
+              BazelCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project, isDebug, buildTargetTask) }
+            },
+          )
+
+          val buildDeferred = async { buildTargetTask.build(server, targetIds, bspBuildConsole, taskId, debugFlag) }
+          return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, taskId).getStatus()
         } finally {
-          BazelTaskEventsService.getInstance(project).removeListener(originId)
+          BazelTaskEventsService.getInstance(project).removeListener(taskGroupId)
         }
       }
     }
@@ -85,10 +86,10 @@ object DefaultBuildTargetTask : BuildTargetTask {
     server: JoinedBuildServer,
     targetIds: List<Label>,
     buildConsole: TaskConsole,
-    originId: String,
+    taskId: TaskId,
     debugFlags: List<String>,
   ): BazelStatus {
-    val compileParams = CompileParams(targetIds, originId = originId, arguments = debugFlags + listOf("--keep_going"))
+    val compileParams = CompileParams(taskId,targetIds, arguments = debugFlags + listOf("--keep_going"))
     return server.buildTargetCompile(compileParams).statusCode
   }
 }
