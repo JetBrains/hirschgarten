@@ -146,7 +146,10 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
         update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
 
 
-    info_result = dict(jdeps = [file_location(j) for j in jdeps], jars = jars, generated_jars = generated_jars)
+    info_result = dict(jdeps = [file_location(j) for j in jdeps],
+                       jars = jars, generated_jars = generated_jars,
+                       javac_opts = get_javacopts(target, ctx),
+                  )
 
     export_result = None
     if runtime_info != None:

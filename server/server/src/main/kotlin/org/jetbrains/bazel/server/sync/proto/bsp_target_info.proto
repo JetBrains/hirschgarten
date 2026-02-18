@@ -29,8 +29,7 @@ message JvmOutputs {
 }
 
 message JvmTargetInfo {
-  reserved 1, 2, 10, 12;
-  repeated string javac_opts = 6;
+  reserved 1, 2, 6, 10, 12;
   repeated string jvm_flags = 7;
   string main_class = 8;
   repeated string args = 9;
@@ -115,6 +114,7 @@ message TargetInfo {
   bool executable = 90;
   string workspace_name = 100;
   JvmTargetInfo jvm_target_info = 1000;
+  repeated string javac_opts = 1006;
   repeated JvmOutputs jars = 1001;
   repeated JvmOutputs generated_jars = 1002;
   repeated FileLocation jdeps = 1003;

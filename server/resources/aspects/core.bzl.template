@@ -23,7 +23,7 @@ def make_dep(dep, dependency_type, exported):
 def make_deps(deps, dependency_type, exported = False):
     return [make_dep(dep, dependency_type, exported) for dep in deps]
 
-COMMON_INFO_FIELDS = ["jars", "generated_jars", "jdeps"]
+COMMON_INFO_FIELDS = ["jars", "generated_jars", "jdeps", "javac_opts"]
 
 def update_info(info, new_info):
     """info.update(new_info), but with fields in COMMON_INFO_FIELDS
