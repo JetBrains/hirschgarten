@@ -68,6 +68,10 @@ class SyncCache(private val project: Project) {
     cache[key] = value
   }
 
+  @TestOnly
+  fun <T : Any> isAlreadyComputed(computable: SyncCacheComputable<T>): Boolean =
+    cache[computable] != null
+
   internal class ClearSyncCache : ProjectPostSyncHook {
     override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
       val syncCache = getInstance(environment.project)
