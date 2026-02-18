@@ -23,7 +23,15 @@ def make_dep(dep, dependency_type, exported):
 def make_deps(deps, dependency_type, exported = False):
     return [make_dep(dep, dependency_type, exported) for dep in deps]
 
-COMMON_INFO_FIELDS = ["jars", "generated_jars", "jdeps", "javac_opts"]
+COMMON_INFO_FIELDS = ["java_common"]
+
+def merge_dicts(a, b):
+    result = {}
+    for k in a.keys():
+        result[k] = a.get(k, []) + b.get(k, [])
+    for k in b.keys():
+        result[k] = a.get(k, []) + b.get(k, [])
+    return result
 
 def update_info(info, new_info):
     """info.update(new_info), but with fields in COMMON_INFO_FIELDS
@@ -31,7 +39,7 @@ def update_info(info, new_info):
     """
     common = {}
     for k in COMMON_INFO_FIELDS:
-        common[k] = info.get(k, []) + new_info.get(k, [])
+        common[k] = merge_dicts(info.get(k, {}), new_info.get(k, {}))
     info.update(new_info)
     info.update(common)
 
@@ -166,6 +174,10 @@ def _bsp_target_info_aspect_impl(target, ctx):
         update_info(info, extension_info)
         if extension_exported_properties != None:
             exported_properties.update(extension_exported_properties)
+
+    # Freeze common fields
+    for k in COMMON_INFO_FIELDS:
+        info[k] = create_struct(**(info.get(k, {})))
 
     file_name = target.label.name
     file_name = file_name[:MAX_FILENAME_LENGTH] + "-" + str(abs(hash(file_name)))

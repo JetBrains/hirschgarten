@@ -86,7 +86,7 @@ def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
     )
 
     info_file = dict(kotlin_target_info = kotlin_target_info,
-                     javac_opts = get_additional_javac_options(ctx, target),
+                     java_common = dict(javac_opts = get_additional_javac_options(ctx, target)),
                 )
 
     return info_file, None
