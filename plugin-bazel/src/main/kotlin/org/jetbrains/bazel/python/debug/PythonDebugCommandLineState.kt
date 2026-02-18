@@ -43,7 +43,7 @@ class PythonDebugCommandLineState(environment: ExecutionEnvironment, private val
     val buildParams =
       CompileParams(
         targets = listOf(targetId),
-        originId = originId.toString(),
+        taskId = taskGroupId.task("py-debug"),
         arguments = transformProgramArguments(programArguments),
       )
     server.buildTargetCompile(buildParams)

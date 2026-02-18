@@ -5,7 +5,6 @@ import org.jetbrains.bazel.label.Label
 
 data class TaskFinishParams(
   val taskId: TaskId,
-  val originId: String,
   val eventTime: Long? = null,
   val message: String? = null,
   val status: BazelStatus,

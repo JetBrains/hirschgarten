@@ -21,6 +21,7 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bsp.protocol.TaskId
 
 private const val MAX_REPLACE_WSM_ATTEMPTS = 3
 
@@ -34,7 +35,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
   override suspend fun apply(
     project: Project,
     syncScope: ProjectSyncScope,
-    taskId: String,
+    taskId: TaskId,
   ) {
     val sourceFilter: (EntitySource) -> Boolean =
       when (syncScope) {
@@ -62,8 +63,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     }
 
     project.syncConsole.withSubtask(
-      taskId = taskId,
-      subtaskId = "apply-changes-on-workspace-model",
+      subtaskId = taskId.subTask("apply-changes-on-workspace-model"),
       message = BazelPluginBundle.message("console.task.model.apply.changes"),
     ) { subtaskId ->
       bspTracer.spanBuilder("apply.changes.on.workspace.model.ms").useWithScope {

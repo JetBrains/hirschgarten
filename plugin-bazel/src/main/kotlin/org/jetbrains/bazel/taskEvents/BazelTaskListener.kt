@@ -3,12 +3,12 @@ package org.jetbrains.bazel.taskEvents
 import com.intellij.build.events.MessageEvent
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-
-typealias TaskId = String
 
 interface BazelTaskListener {
   fun onDiagnostic(
+    taskId: TaskId,
     textDocument: Path?,
     buildTarget: Label,
     line: Int,
@@ -24,7 +24,6 @@ interface BazelTaskListener {
 
   fun onTaskStart(
     taskId: TaskId,
-    parentId: TaskId?,
     message: String,
     data: Any?,
   ) {
@@ -32,18 +31,13 @@ interface BazelTaskListener {
 
   fun onTaskFinish(
     taskId: TaskId,
-    parentId: TaskId?,
     message: String,
     status: BazelStatus,
     data: Any?,
   ) {
   }
 
-  fun onLogMessage(message: String) {}
-
-  fun onShowMessage(message: String) {}
-
+  fun onLogMessage(taskId: TaskId, message: String) {}
   fun onPublishCoverageReport(coverageReport: Path) {}
-
   fun onCachedTestLog(testLog: Path) {}
 }

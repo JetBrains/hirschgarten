@@ -2,11 +2,13 @@ package org.jetbrains.bazel.ui.console
 
 import com.intellij.build.BuildViewManager
 import com.intellij.build.SyncViewManager
+import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.jediterm.core.util.TermSize
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bsp.protocol.TaskId
 
 @Service(Service.Level.PROJECT)
 class ConsoleService(project: Project) {
@@ -31,7 +33,7 @@ class ConsoleService(project: Project) {
       )
   }
 
-  fun ptyTermSize(taskId: Any): TermSize? =
+  fun ptyTermSize(taskId: TaskId): TermSize? =
     buildConsole.ptyTermSize(taskId) ?: syncConsole.ptyTermSize(taskId)
 
   companion object {
@@ -43,27 +45,30 @@ val Project.syncConsole: TaskConsole
   get() = ConsoleService.getInstance(this).syncConsole
 
 suspend fun <T> TaskConsole.withSubtask(
-  taskId: String,
-  subtaskId: String,
+  subtaskId: TaskId,
   message: String,
-  block: suspend (subtaskId: String) -> T,
+  block: suspend (subtaskId: TaskId) -> T,
 ): T {
-  startSubtask(taskId, subtaskId, message)
-  val result = block(subtaskId)
-  finishSubtask(subtaskId, message)
-  return result
+  startSubtask(subtaskId, message)
+  try {
+    val result = block(subtaskId)
+    finishSubtask(subtaskId)
+    return result
+  } catch (ex: Throwable) {
+    finishSubtask(subtaskId, result = FailureResultImpl(ex))
+    throw ex
+  }
 }
 
 suspend fun <T> Project.withSubtask(
   reporter: SequentialProgressReporter,
-  taskId: String,
+  subtaskId: TaskId,
   text: String,
-  block: suspend (subtaskId: String) -> T,
+  block: suspend (subtaskId: TaskId) -> T,
 ) {
   reporter.indeterminateStep(text) {
     syncConsole.withSubtask(
-      taskId = taskId,
-      subtaskId = text,
+      subtaskId = subtaskId,
       message = text,
       block = block,
     )

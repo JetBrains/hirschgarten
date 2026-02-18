@@ -26,7 +26,7 @@ object JvmToolchainQuery {
       }
     val aqueryResult =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false)
+        .runBazelCommand(command, logProcessOutput = false, taskId = null)
         .waitAndGetResult()
     if (aqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for jvm toolchain info")
 

@@ -43,6 +43,7 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
@@ -53,7 +54,7 @@ const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 
 class CollectProjectDetailsTask(
   private val project: Project,
-  private val taskId: String,
+  private val taskId: TaskId,
   private val diff: MutableEntityStorage,
   private val targetUtilsDiff: TargetUtilsProjectStructureDiff,
 ) {
@@ -101,11 +102,11 @@ class CollectProjectDetailsTask(
     project: Project,
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
-  ): ProjectDetails =
-    try {
+  ): ProjectDetails {
+    val subtaskId = this.taskId.subTask(IMPORT_SUBTASK_ID)
+    return try {
       project.syncConsole.startSubtask(
-        this.taskId,
-        IMPORT_SUBTASK_ID,
+        subtaskId,
         BazelPluginBundle.message("console.task.model.collect"),
       )
 
@@ -114,33 +115,35 @@ class CollectProjectDetailsTask(
           project = project,
           server = server,
           syncScope = syncScope,
-          taskId = taskId,
+          taskId = subtaskId,
         )
 
-      project.syncConsole.finishSubtask(IMPORT_SUBTASK_ID)
+      project.syncConsole.finishSubtask(subtaskId)
 
       projectDetails
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       if (e is CancellationException) {
         project.syncConsole.finishSubtask(
-          IMPORT_SUBTASK_ID,
+          subtaskId,
           null,
           FailureResultImpl(),
         )
-      } else {
+      }
+      else {
         project.syncConsole.finishSubtask(
-          IMPORT_SUBTASK_ID,
+          subtaskId,
           null,
           FailureResultImpl(e),
         )
       }
       throw e
     }
+  }
 
   private suspend fun calculateAllUniqueJdkInfosSubtask(projectDetails: ProjectDetails) =
     project.syncConsole.withSubtask(
-      taskId = taskId,
-      subtaskId = "calculate-all-unique-jdk-infos",
+      subtaskId = taskId.subTask("calculate-all-unique-jdk-infos"),
       message = BazelPluginBundle.message("console.task.model.calculate.jdks.infos"),
     ) {
       uniqueJavaHomes =
@@ -157,8 +160,7 @@ class CollectProjectDetailsTask(
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) =
     project.syncConsole.withSubtask(
-      taskId = taskId,
-      subtaskId = "calculate-all-scala-sdk-infos",
+      subtaskId = taskId.subTask("calculate-all-scala-sdk-infos"),
       message = BazelPluginBundle.message("console.task.model.calculate.scala.sdk.infos"),
     ) {
       scalaSdks =
@@ -185,8 +187,7 @@ class CollectProjectDetailsTask(
 
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails, syncScope: ProjectSyncScope) {
     project.syncConsole.withSubtask(
-      taskId,
-      "calculate-project-structure",
+      taskId.subTask("calculate-project-structure"),
       BazelPluginBundle.message("console.task.model.calculate.structure"),
     ) {
       coroutineScope {
@@ -289,8 +290,7 @@ class CollectProjectDetailsTask(
 
   private suspend fun addBspFetchedJdks() =
     project.syncConsole.withSubtask(
-      taskId,
-      "add-bsp-fetched-jdks",
+      taskId.subTask("add-bsp-fetched-jdks"),
       BazelPluginBundle.message("console.task.model.add.fetched.jdks"),
     ) {
       bspTracer.spanBuilder("add.bsp.fetched.jdks.ms").useWithScope {
@@ -306,8 +306,7 @@ class CollectProjectDetailsTask(
   private suspend fun addBspFetchedScalaSdks() {
     scalaSdkExtension()?.let { extension ->
       project.syncConsole.withSubtask(
-        taskId,
-        "add-bsp-fetched-scala-sdks",
+        taskId.subTask("add-bsp-fetched-scala-sdks"),
         BazelPluginBundle.message("console.task.model.add.scala.fetched.sdks"),
       ) {
         val modifiableProvider = IdeModifiableModelsProviderImpl(project)
@@ -326,7 +325,7 @@ suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
   server: JoinedBuildServer,
   syncScope: ProjectSyncScope,
-  taskId: String,
+  taskId: TaskId,
 ): ProjectDetails =
   coroutineScope {
     try {

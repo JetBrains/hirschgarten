@@ -16,7 +16,7 @@ interface BazelTaskLogger {
   fun error(errorMessage: String)
 }
 
-fun BazelTaskEventsHandler.asLogger(originId: String? = null): BazelTaskLogger {
+fun BazelTaskEventsHandler.asLogger(taskId: TaskId): BazelTaskLogger {
   val taskEventsHandler = this
   return object: BazelTaskLogger {
     override fun message(message: String) {
@@ -38,7 +38,7 @@ fun BazelTaskEventsHandler.asLogger(originId: String? = null): BazelTaskLogger {
       else {
         message + '\n'
       }
-      val params = LogMessageParams(messageType, message = messageWithNewLine, originId = originId)
+      val params = LogMessageParams(taskId, messageType, message = messageWithNewLine)
       taskEventsHandler.onBuildLogMessage(params)
     }
   }

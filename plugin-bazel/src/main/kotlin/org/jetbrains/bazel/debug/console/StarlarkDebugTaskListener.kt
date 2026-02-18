@@ -5,6 +5,7 @@ import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
+import org.jetbrains.bsp.protocol.TaskId
 
 class StarlarkDebugTaskListener(private val console: ConsoleView) : BazelTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
@@ -16,7 +17,7 @@ class StarlarkDebugTaskListener(private val console: ConsoleView) : BazelTaskLis
     debugPausedChecker = newDebugPausedChecker
   }
 
-  override fun onLogMessage(message: String) {
+  override fun onLogMessage(taskId: TaskId, message: String) {
     // bazelbsp server erroneously sends a redundant log message in a loop when the debugging session is suspended
     if (debugPausedChecker?.invoke() != true) printMessage(message)
   }

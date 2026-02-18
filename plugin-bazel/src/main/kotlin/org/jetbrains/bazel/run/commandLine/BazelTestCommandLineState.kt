@@ -58,7 +58,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
     val params =
       TestParams(
         targets = configuration.targets,
-        originId = originId.toString(),
+        taskId = taskGroupId.task("test"),
         arguments = transformProgramArguments(state.programArguments),
         environmentVariables = state.env.envs,
         coverageInstrumentationFilter = coverageInstrumentationFilter,

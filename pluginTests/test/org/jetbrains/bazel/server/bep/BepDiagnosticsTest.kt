@@ -10,6 +10,7 @@ import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.LogMessageParams
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskStartParams
@@ -55,7 +56,7 @@ class BepDiagnosticsTest {
     return BepServer(
       taskEventsHandler = taskHandler,
       diagnosticsService = DiagnosticsService(workspaceRoot),
-      originId = "originId",
+      parentId = TaskGroupId("originId").task(""),
       bazelPathsResolver = BazelPathsResolver(bazelInfo),
     )
   }

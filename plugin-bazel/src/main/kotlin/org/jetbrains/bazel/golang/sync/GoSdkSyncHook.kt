@@ -17,6 +17,7 @@ import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 
 /** From [com.goide.inspections.GoWrongSdkConfigurationNotificationProvider].  */
@@ -64,10 +65,10 @@ class GoSdkSyncHook : ProjectPostSyncHook {
   private suspend fun calculateAndAddGoSdk(
     reporter: SequentialProgressReporter,
     project: Project,
-    taskId: String,
+    taskId: TaskId,
   ) = project.withSubtask(
     reporter = reporter,
-    taskId = taskId,
+    subtaskId = taskId.subTask("calculate-and-add-go-sdk"),
     text = BazelPluginBundle.message("console.task.model.calculate.add.go.fetched.sdk"),
   ) {
     project.targetUtils

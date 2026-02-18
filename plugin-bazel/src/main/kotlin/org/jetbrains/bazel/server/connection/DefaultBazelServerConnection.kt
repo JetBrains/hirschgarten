@@ -28,7 +28,6 @@ import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.asLogger
 import java.util.concurrent.atomic.AtomicReference
 
 class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
@@ -72,7 +71,6 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     val bazelRunner = BazelRunner(taskEventsHandler, workspaceRoot, bazelProcessLauncher)
 
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext)
-    bazelInfo.release.deprecated()?.let { taskEventsHandler.asLogger(null).warn(it + " Sync might give incomplete results.") }
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
     val executeService =

@@ -51,10 +51,13 @@ import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import java.util.UUID
 import kotlin.io.path.extension
 import kotlin.io.path.name
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 @Suppress("UnstableApiUsage")
@@ -93,13 +96,13 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     if (!shouldStartProcessing)
       return false
 
-    val originId = "file-event-" + UUID.randomUUID().toString()
+    val taskId = TaskGroupId("file-event-" + Random.nextBytes(8).toHexString()).task("")
     val processingJob = BazelCoroutineService.getInstance(project).startAsync(true) {
       delay(PROCESSING_DELAY)
       do {
         val processed = queueController.withNextBatch { batch ->
           try {
-            processEventQueue(project, batch, originId)
+            processEventQueue(project, batch, taskId)
           } catch (ex: Throwable) {
             if (ex !is CancellationException)
               logger.error(ex)
@@ -111,27 +114,27 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
 
     // no need to start sync console task if no Bazel processing is allowed
     if (project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
-      startSyncConsoleTask(project, processingJob, originId)
+      startSyncConsoleTask(project, processingJob, taskId)
     }
     try {
       processingJob.join()
     } finally {
-      BazelTaskEventsService.getInstance(project).removeListener(originId)
+      BazelTaskEventsService.getInstance(project).removeListener(taskId.taskGroupId)
     }
     return true
   }
 
-  private fun startSyncConsoleTask(project: Project, processingJob: Job, originId: String) {
+  private fun startSyncConsoleTask(project: Project, processingJob: Job, taskId: TaskId) {
     val syncConsole = project.syncConsole
     syncConsole.startTask(
-      taskId = originId,
+      taskId = taskId,
       title = BazelPluginBundle.message("file.change.processing.title.multiple"),
       message = BazelPluginBundle.message("file.change.processing.message.start"),
       showConsole = TaskConsole.ShowConsole.ON_FAIL,
       cancelAction = { processingJob.cancel() },
     )
-    val taskListener = BazelBuildTaskListener(syncConsole, originId)
-    BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
+    val taskListener = BazelBuildTaskListener(syncConsole)
+    BazelTaskEventsService.getInstance(project).saveListener(taskId.taskGroupId, taskListener)
     processingJob.invokeOnCompletion { exception ->
       val (message, result) =
         when (exception) {
@@ -139,16 +142,16 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
           is CancellationException -> BazelPluginBundle.message("file.change.processing.message.cancelled") to SkippedResultImpl()
           else -> BazelPluginBundle.message("file.change.processing.message.failed") to FailureResultImpl(exception)
         }
-      project.syncConsole.finishTask(originId, message, result)
+      project.syncConsole.finishTask(taskId, message, result)
     }
   }
 
-  private suspend fun processEventQueue(project: Project, events: List<SimplifiedFileEvent>, originId: String) {
+  private suspend fun processEventQueue(project: Project, events: List<SimplifiedFileEvent>, taskId: TaskId) {
     val progressTitle = getProgressTitle(events)
     BazelFileEventProgressReporter.runWithProgressBar(progressTitle, project) { bazelReporter ->
       applyAllChanges(
         allFileEvents = events,
-        context = prepareProcessingContext(project, originId, bazelReporter)
+        context = prepareProcessingContext(project, taskId, bazelReporter)
       )
     }
   }
@@ -247,7 +250,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     if (bazelQueryIsRequired) {
       if (context.project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
         val targetsByPath =
-          context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.originId) } ?: return
+          context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.taskId) } ?: return
         addFileToTargets(targetsByPath, moduleToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
       } else {
         // Bazel is not allowed to be run on file events, but it was necessary - show "Resync" button
@@ -328,7 +331,7 @@ private fun getProgressTitle(fileChanges: List<SimplifiedFileEvent>): String =
 
 private suspend fun prepareProcessingContext(
   project: Project,
-  originId: String,
+  taskId: TaskId,
   bazelReporter: BazelFileEventProgressReporter,
 ): ProcessingContext {
   val workspaceModel = project.serviceAsync<WorkspaceModel>()
@@ -340,7 +343,7 @@ private suspend fun prepareProcessingContext(
     workspaceSnapshot = workspaceModel.currentSnapshot,
     entityStorageDiff = entityStorageDiff,
     targetUtils = project.serviceAsync<TargetUtils>(),
-    originId = originId,
+    taskId = taskId,
     fileIndex = ProjectRootManager.getInstance(project).fileIndex,
     progressReporter = bazelReporter,
   )
@@ -357,12 +360,12 @@ private suspend fun findModulesForFile(newFile: VirtualFile, fileIndex: ProjectF
     .toSet()
 }
 
-private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>, originId: String): Map<Path, List<Label>>? =
+private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>, taskId: TaskId): Map<Path, List<Label>>? =
   if (!project.serviceAsync<SyncStatusService>().isSyncInProgress) {
     try {
       project
         .connection
-        .runWithServer { it.buildTargetInverseSources(InverseSourcesParams(originId, filePaths)) }
+        .runWithServer { it.buildTargetInverseSources(InverseSourcesParams(taskId, filePaths)) }
         .targets
     } catch (ex: Exception) {
       logger.debug(ex)
@@ -431,7 +434,7 @@ private data class ProcessingContext(
   val workspaceSnapshot: ImmutableEntityStorage,
   val entityStorageDiff: MutableEntityStorage,
   val targetUtils: TargetUtils,
-  val originId: String,
+  val taskId: TaskId,
   val fileIndex: ProjectFileIndex,
   val progressReporter: BazelFileEventProgressReporter,
 )
