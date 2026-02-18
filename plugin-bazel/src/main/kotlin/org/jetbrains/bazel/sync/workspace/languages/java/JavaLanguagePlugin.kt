@@ -59,14 +59,14 @@ class JavaLanguagePlugin(
     val mainClass = getMainClass(jvmTarget)
 
     val jdk = jdk ?: return null
-    val javaVersion = javaVersionFromJavacOpts(jvmTarget.javacOptsList) ?: javaVersionFromToolchain(target)
+    val javaVersion = javaVersionFromJavacOpts(target.javacOptsList) ?: javaVersionFromToolchain(target)
     val javaHome = jdk.javaHome
     val environmentVariables =
       context.target.envMap + context.target.envInheritList.associateWith { EnvironmentUtil.getValue(it) ?: "" }
     return JvmBuildTarget(
       javaVersion = javaVersion.orEmpty(),
       javaHome = javaHome,
-      javacOpts = jvmTarget.javacOptsList,
+      javacOpts = target.javacOptsList,
       binaryOutputs = binaryOutputs,
       environmentVariables = environmentVariables,
       mainClass = mainClass,
