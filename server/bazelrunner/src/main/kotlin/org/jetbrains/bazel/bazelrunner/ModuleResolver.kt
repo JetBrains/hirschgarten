@@ -3,6 +3,7 @@ package org.jetbrains.bazel.bazelrunner
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.TaskId
 
 sealed interface ShowRepoResult {
   val name: String
@@ -110,6 +111,7 @@ class ModuleOutputParser {
 class ModuleResolver(
   private val bazelRunner: BazelRunner,
   private val workspaceContext: WorkspaceContext,
+  private val taskId: TaskId
 ) {
   private val moduleOutputParser = ModuleOutputParser()
 
@@ -131,7 +133,7 @@ class ModuleResolver(
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command)
+        .runBazelCommand(command, taskId)
         .waitAndGetResult()
     if (bazelInfo.isWorkspaceEnabled && processResult.isNotSuccess) {
       // work around https://github.com/bazelbuild/bazel/issues/28601
@@ -171,7 +173,7 @@ class ModuleResolver(
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command)
+        .runBazelCommand(command, taskId)
         .waitAndGetResult()
 
     if (processResult.isNotSuccess) {

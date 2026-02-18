@@ -83,9 +83,9 @@ class RunScriptPathCommandLineState(environment: ExecutionEnvironment, val setti
   ) {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
     runWithScriptPath(
+      taskGroupId.task("jvm-run"),
       scriptPath,
       environment.project,
-      originId,
       pidDeferred,
       handler,
       settings.env.envs,

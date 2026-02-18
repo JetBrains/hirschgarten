@@ -39,12 +39,8 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
-import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
-import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
-import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-
-private data class SubtaskParents(val rootTask: Any, val parentTask: Any)
 
 private val log = logger<TaskConsole>()
 
@@ -53,10 +49,10 @@ abstract class TaskConsole(
   private val basePath: String,
   private val project: Project,
 ) {
-  protected val tasksInProgress: MutableList<Any> = mutableListOf()
-  private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
-  private val subtaskMessageMap: MutableMap<Any, String> = linkedMapOf()
-  private val taskPtyTerminalMap: MutableMap<Any, TerminalExecutionConsole> = linkedMapOf()
+  protected val tasksInProgress: MutableSet<TaskId> = mutableSetOf()
+  private val subtaskParentMap: MutableMap<TaskId, TaskId> = linkedMapOf()
+  private val subtaskMessageMap: MutableMap<TaskId, String> = linkedMapOf()
+  private val taskPtyTerminalMap: MutableMap<TaskId, TerminalExecutionConsole> = linkedMapOf()
 
   /**
    * Displays start of a task in this console.
@@ -70,7 +66,7 @@ abstract class TaskConsole(
    */
   @Synchronized
   fun startTask(
-    taskId: Any,
+    taskId: TaskId,
     title: String,
     message: String,
     cancelAction: () -> Unit = {},
@@ -90,7 +86,7 @@ abstract class TaskConsole(
     }
 
   private fun doStartTask(
-    taskId: Any,
+    taskId: TaskId,
     title: String,
     message: String,
     cancelAction: () -> Unit,
@@ -120,7 +116,7 @@ abstract class TaskConsole(
   }
 
   private fun addCancelActionToDescriptor(
-    taskId: Any,
+    taskId: TaskId,
     taskDescriptor: DefaultBuildDescriptor,
     doCancelAction: () -> Unit,
   ) {
@@ -133,7 +129,7 @@ abstract class TaskConsole(
     taskDescriptor.withAction(action)
   }
 
-  private fun addPtyToDescriptor(taskId: Any, taskDescriptor: DefaultBuildDescriptor) {
+  private fun addPtyToDescriptor(taskId: TaskId, taskDescriptor: DefaultBuildDescriptor) {
     if (!BazelFeatureFlags.usePty) return
     val consoleDelegate = TerminalExecutionConsoleBuilder(project).build()
     val console = object : ConsoleView by consoleDelegate, BuildProgressListener {
@@ -197,7 +193,7 @@ abstract class TaskConsole(
    */
   @Synchronized
   public fun finishTask(
-    taskId: Any,
+    taskId: TaskId,
     message: String,
     result: EventResult = SuccessResultImpl(),
   ): Unit =
@@ -206,7 +202,7 @@ abstract class TaskConsole(
     }
 
   private fun doFinishTask(
-    taskId: Any,
+    taskId: TaskId,
     message: String,
     result: EventResult,
   ) {
@@ -220,7 +216,7 @@ abstract class TaskConsole(
     }
     finishChildrenSubtasks(taskId, result)
     tasksInProgress.remove(taskId)
-    subtaskParentMap.entries.removeAll { it.value.rootTask == taskId }
+    subtaskParentMap.entries.removeAll { findRootTaskId(it.value) == taskId }
     taskPtyTerminalMap.remove(taskId)
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
     taskView.onEvent(taskId, event)
@@ -236,28 +232,24 @@ abstract class TaskConsole(
    */
   @Synchronized
   fun startSubtask(
-    parentTaskId: Any,
-    subtaskId: Any,
+    subtaskId: TaskId,
     message: String,
   ) {
-    val rootTaskId = subtaskParentMap[parentTaskId]?.rootTask ?: parentTaskId
+    val parentTaskId = subtaskId.parent ?: return
+    val rootTaskId = findRootTaskId(parentTaskId) ?: return
     doIfTaskInProgress(rootTaskId) {
       doStartSubtask(rootTaskId, parentTaskId, subtaskId, message)
     }
   }
 
   private fun doStartSubtask(
-    rootTaskId: Any,
-    parentTaskId: Any,
-    subtaskId: Any,
+    rootTaskId: TaskId,
+    parentTaskId: TaskId,
+    subtaskId: TaskId,
     message: String,
   ) {
     subtaskMessageMap[subtaskId] = message
-    subtaskParentMap[subtaskId] =
-      SubtaskParents(
-        rootTask = rootTaskId,
-        parentTask = parentTaskId,
-      )
+    subtaskParentMap[subtaskId] = parentTaskId
     val event = ProgressBuildEventImpl(subtaskId, parentTaskId, System.currentTimeMillis(), message, -1, -1, "")
     taskView.onEvent(rootTaskId, event)
   }
@@ -271,20 +263,20 @@ abstract class TaskConsole(
    */
   @Synchronized
   fun finishSubtask(
-    subtaskId: Any,
+    subtaskId: TaskId,
     message: String? = null,
     result: EventResult = SuccessResultImpl(),
   ) {
-    subtaskParentMap[subtaskId]?.let {
-      doIfTaskInProgress(it.rootTask) {
-        doFinishSubtask(it.rootTask, subtaskId, message, result)
-      }
+    val parentTaskId = subtaskParentMap[subtaskId] ?: return
+    val rootTaskId = findRootTaskId(parentTaskId) ?: return
+    doIfTaskInProgress(rootTaskId) {
+      doFinishSubtask(rootTaskId, subtaskId, message, result)
     }
   }
 
   private fun doFinishSubtask(
-    rootTask: Any,
-    subtaskId: Any,
+    rootTask: TaskId,
+    subtaskId: TaskId,
     message: String?,
     result: EventResult,
   ) {
@@ -298,9 +290,9 @@ abstract class TaskConsole(
     subtaskParentMap.remove(subtaskId)
   }
 
-  private fun finishChildrenSubtasks(parentId: Any, result: EventResult) {
+  private fun finishChildrenSubtasks(parentId: TaskId, result: EventResult) {
     subtaskParentMap
-      .filterValues { it.parentTask == parentId }
+      .filterValues { it == parentId }
       .keys
       .forEach {
         finishSubtask(it, null, result)
@@ -319,34 +311,31 @@ abstract class TaskConsole(
    */
   @Synchronized
   fun addDiagnosticMessage(
-    taskId: Any,
+    taskId: TaskId,
     path: Path?,
     line: Int,
     column: Int,
     message: String,
     severity: MessageEvent.Kind,
   ) {
-    maybeGetRootTask(taskId)?.let {
-      doIfTaskInProgress(it) {
-        if (message.isNotBlank()) {
-          val subtaskId =
-            if (tasksInProgress.contains(taskId)) it else taskId
-          val filePosition = FilePosition(path?.toFile(), line, column)
-          doAddDiagnosticMessage(it, subtaskId, filePosition, message, severity)
-        }
+    val rootTaskId = findRootTaskId(taskId) ?: return
+    doIfTaskInProgress(rootTaskId) {
+      if (message.isNotBlank()) {
+        val filePosition = path?.let { FilePosition(path.toFile(), line, column) }
+        doAddDiagnosticMessage(rootTaskId, taskId, filePosition, message, severity)
       }
     }
   }
 
   private fun doAddDiagnosticMessage(
-    taskId: Any,
-    subtaskId: Any,
-    filePosition: FilePosition,
+    taskId: TaskId,
+    subtaskId: TaskId,
+    filePosition: FilePosition?,
     message: String,
     severity: MessageEvent.Kind,
   ) {
     val event =
-      if (filePosition.file == null) {
+      if (filePosition?.file == null) {
         MessageEventImpl(
           subtaskId,
           severity,
@@ -368,31 +357,11 @@ abstract class TaskConsole(
     taskView.onEvent(taskId, event)
   }
 
-  /**
-   * Adds a message to the latest task in this console.
-   */
   @Synchronized
-  fun addMessage(message: String) {
-    val entry = subtaskParentMap.entries.lastOrNull()
-    val taskId = tasksInProgress.lastOrNull()
-    entry?.let { addMessage(it.key, message) } ?: taskId?.let { addMessage(taskId, message) }
-  }
-
-  @Synchronized
-  fun addWarnMessage(taskId: Any?, message: String) {
-    val taskIdOrDefault = taskId ?: getDefaultTaskId() ?: return
-    maybeGetRootTask(taskIdOrDefault)?.let {
-      doIfTaskInProgress(it) {
-        val event =
-          MessageEventImpl(
-            PROJECT_SYNC_TASK_ID,
-            MessageEvent.Kind.WARNING,
-            "",
-            message,
-            "",
-          )
-        taskView.onEvent(it, event)
-      }
+  fun addWarnMessage(taskId: TaskId, message: String) {
+    val rootTaskId = findRootTaskId(taskId) ?: return
+    doIfTaskInProgress(rootTaskId) {
+      doAddDiagnosticMessage(rootTaskId, taskId, null, message, MessageEvent.Kind.WARNING)
     }
   }
 
@@ -404,14 +373,11 @@ abstract class TaskConsole(
    * @param message message to be added. New line will be inserted at its end if it's not present there already
    */
   @Synchronized
-  fun addMessage(taskId: Any?, message: String) {
-    val taskIdOrDefault = taskId ?: getDefaultTaskId() ?: return
-    maybeGetRootTask(taskIdOrDefault)?.let {
-      doIfTaskInProgress(it) {
-        if (message.isNotBlank()) {
-          doAddMessage(taskIdOrDefault, message)
-        }
-      }
+  fun addMessage(taskId: TaskId, message: String) {
+    if (message.isBlank()) return
+    val rootTaskId = findRootTaskId(taskId) ?: return
+    doIfTaskInProgress(rootTaskId) {
+      doAddMessage(taskId, message)
     }
   }
 
@@ -423,57 +389,67 @@ abstract class TaskConsole(
     return terminal.terminalWidget.terminalPanel.terminalSizeFromComponent ?: DEFAULT_PTY_TERM_SIZE
   }
 
-  private val defaultTaskIds =
-    listOf(
-      BASE_PROJECT_SYNC_SUBTASK_ID,
-      CONNECT_TASK_ID,
-      PROJECT_SYNC_TASK_ID,
-    )
-
-  private fun getDefaultTaskId() = defaultTaskIds.firstOrNull { tasksInProgress.contains(it) }
-
-  private fun doAddMessage(taskId: Any, message: String) {
-    sendMessageEvent(taskId, message)
-    sendMessageToAncestors(taskId, message)
-  }
-
-  private fun sendMessageToAncestors(taskId: Any, message: String): Unit =
-    doUnlessTaskInProgress(taskId) {
-      // if taskID is a root task, it has no parents
-      maybeGetParentTask(taskId)?.let {
-        if (it != taskId) {
-          sendMessageEvent(it, message)
-          sendMessageToAncestors(it, message)
-        }
-      }
+  private fun doAddMessage(taskId: TaskId, message: String) {
+    if (tasksInProgress.contains(taskId)) {
+      sendMessageEvent(taskId, message)
     }
-
-  private fun sendMessageEvent(taskId: Any, message: String) {
-    val subtaskId =
-      if (tasksInProgress.contains(taskId)) null else taskId
-    val event = OutputBuildEventImpl(subtaskId, message, true)
-    maybeGetRootTask(taskId)?.let { taskView.onEvent(it, event) }
+    else if (subtaskParentMap.containsKey(taskId)) {
+      sendMessageEvent(taskId, message)
+      sendMessageToAncestors(taskId, message)
+    }
   }
 
-  private inline fun doIfTaskInProgress(taskId: Any, action: () -> Unit) {
+  private fun sendMessageToAncestors(taskId: TaskId, message: String): Unit {
+    val parentTask = subtaskParentMap[taskId]
+    if (parentTask != null) {
+      sendMessageEvent(parentTask, message)
+      sendMessageToAncestors(parentTask, message)
+    }
+  }
+
+  private fun sendMessageEvent(taskId: TaskId, message: String) {
+    val subtaskId = if (tasksInProgress.contains(taskId)) null else taskId
+    val event = OutputBuildEventImpl(subtaskId, message, true)
+    findRootTaskId(taskId)?.let { rootTaskId ->
+      taskView.onEvent(rootTaskId, event)
+    }
+  }
+
+  private inline fun doIfTaskInProgress(taskId: TaskId, action: () -> Unit) {
     if (tasksInProgress.contains(taskId)) {
       action()
     }
   }
 
-  private inline fun doUnlessTaskInProgress(taskId: Any, action: () -> Unit) {
+  private inline fun doUnlessTaskInProgress(taskId: TaskId, action: () -> Unit) {
     if (!tasksInProgress.contains(taskId)) {
       action()
     }
   }
 
+  private fun findParentTaskId(taskId: TaskId): TaskId? {
+    var id: TaskId? = taskId.parent
+    while (id != null) {
+      if (subtaskParentMap.containsKey(id) || tasksInProgress.contains(id))
+        return id
+      id = id.parent
+    }
+    return null
+  }
+
+  private fun findRootTaskId(taskId: TaskId): TaskId? {
+    var id: TaskId? = taskId
+    while (id != null) {
+      if (tasksInProgress.contains(id))
+        return id
+      id = id.parent
+    }
+    return null
+  }
+
   private fun prepareTextToPrint(text: String): String = if (text.endsWith("\n")) text else text + "\n"
 
-  private fun maybeGetParentTask(taskId: Any): Any? = if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.parentTask
-
-  private fun maybeGetRootTask(taskId: Any): Any? = if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
-
-  private inner class CancelAction(private val doCancelAction: () -> Unit, private val taskId: Any) :
+  private inner class CancelAction(private val doCancelAction: () -> Unit, private val taskId: TaskId) :
     DumbAwareAction({ BazelPluginBundle.message("cancel.action.text") }, AllIcons.Actions.Suspend) {
     @Volatile
     private var cancelActionActivated = false

@@ -31,7 +31,7 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
     val runParams =
       RunParams(
         target = configuration.targets.single(),
-        originId = originId.toString(),
+        taskId = taskGroupId.task("run"),
         checkVisibility = configuration.doVisibilityCheck,
         arguments = transformProgramArguments(runState.programArguments),
         environmentVariables = runState.env.envs,

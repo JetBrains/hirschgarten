@@ -14,7 +14,7 @@ import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.jetbrains.bsp.protocol.TestTask
 
-class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandler, private val originId: String) {
+class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandler) {
   private var passedTests: Int = 0
   private var failedTests: Int = 0
   private var ignoredTests: Int = 0
@@ -27,22 +27,22 @@ class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandle
    *
    * @param displayName display name of the started test / test suite
    * @param taskId      TaskId of the started test - when parentsId is not empty / test suite - otherwise
+   * @param isSuite     whether the started test is a test suite or a test case
    * @param parentSuites list of ancestor suites' names, starting from the top level
    * @param classname `classname` value from test XML, if present
    */
   fun startTest(
     displayName: String,
     taskId: TaskId,
+    isSuite: Boolean,
     parentSuites: List<String> = emptyList(),
     classname: String? = null,
   ) {
-    val locationHint =
-      BazelTestLocationHintProvider.testLocationHint(displayName, classname, parentSuites, isSuite = taskId.parents.isEmpty())
-    val testStart = TestStart(displayName, locationHint)
+    val locationHint = BazelTestLocationHintProvider.testLocationHint(displayName, classname, parentSuites, isSuite = isSuite)
+    val testStart = TestStart(displayName, isSuite, locationHint)
     val taskStartParams =
       TaskStartParams(
         taskId,
-        originId = originId,
         data = testStart,
         message = "Test $displayName started",
       )
@@ -83,7 +83,6 @@ class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandle
       TaskFinishParams(
         taskId,
         status = BazelStatus.SUCCESS,
-        originId = originId,
         data = testFinish,
         message = "Test $displayName finished",
       )
@@ -101,7 +100,6 @@ class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandle
     val taskStartParams =
       TaskStartParams(
         taskId,
-        originId = originId,
         data = testingBegin,
         message = "Test started for target $targetIdentifier",
       )

@@ -11,6 +11,7 @@ import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
@@ -30,8 +31,8 @@ class ProjectSyncService(
   private val bazelInfo: BazelInfo,
   private val workspaceContext: WorkspaceContext,
 ) {
-  suspend fun runSync(build: Boolean, originId: String): BazelProject {
-    val project = projectProvider.refreshAndGet(build = build, originId = originId)
+  suspend fun runSync(build: Boolean, taskId: TaskId): BazelProject {
+    val project = projectProvider.refreshAndGet(build = build, taskId = taskId)
 
     return BazelProject(
       targets = project.targets,
@@ -52,6 +53,7 @@ class ProjectSyncService(
         val project =
           projectProvider.updateAndGet(
             targetsToSync = selector.targets,
+            taskId = params.taskId
           )
         bspMapper.workspaceTargets(project)
       }
@@ -59,7 +61,7 @@ class ProjectSyncService(
   }
 
   suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): WorkspacePhasedBuildTargetsResult {
-    val project = projectProvider.bazelQueryRefreshAndGet(params.originId)
+    val project = projectProvider.bazelQueryRefreshAndGet(params.taskId)
     return firstPhaseTargetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 

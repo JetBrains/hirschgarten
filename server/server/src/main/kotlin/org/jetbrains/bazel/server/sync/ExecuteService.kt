@@ -37,6 +37,7 @@ import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import java.nio.file.Files
@@ -54,7 +55,7 @@ class ExecuteService(
 ) {
   private suspend fun runWithBepServer(
     command: BazelCommand,
-    originId: String?,
+    taskId: TaskId,
     pidDeferred: CompletableDeferred<Long?>? = null
   ): BepBuildResult = coroutineScope {
     reportRawProgress { rawProgressReporter ->
@@ -66,7 +67,7 @@ class ExecuteService(
         command.useBes(eventFile)
         val executionDescriptor = command.buildExecutionDescriptor()
         val diagnosticsService = DiagnosticsService(workspaceRoot)
-        val bepServer = BepServer(taskEventsHandler, diagnosticsService, originId, bazelPathsResolver, rawProgressReporter)
+        val bepServer = BepServer(taskEventsHandler, diagnosticsService, taskId, bazelPathsResolver, rawProgressReporter)
         bepReader = BepReader(bepServer, eventFile)
         val bepReaderDeferred = async(Dispatchers.IO) {
           bepReader.start()
@@ -74,7 +75,7 @@ class ExecuteService(
 
         val bazelProcess = bazelRunner.runBazelCommand(
           executionDescriptor,
-          originId = originId
+          taskId = taskId
         )
         pidDeferred?.complete(bazelProcess.pid)
         val processResult = bazelProcess.waitAndGetResult()
@@ -109,7 +110,7 @@ class ExecuteService(
 
   suspend fun compile(params: CompileParams): CompileResult =
     if (params.targets.isNotEmpty()) {
-      val result = build(params.targets, params.originId, params.arguments ?: emptyList())
+      val result = build(params.targets, params.taskId, params.arguments ?: emptyList())
       CompileResult(statusCode = result.bazelStatus)
     }
     else {
@@ -121,7 +122,7 @@ class ExecuteService(
       if (params.targets.isNotEmpty()) {
         val debugFlags =
           listOf(BazelFlag.noBuild(), BazelFlag.starlarkDebug(), BazelFlag.starlarkDebugPort(params.port))
-        val result = build(params.targets, params.originId, debugFlags)
+        val result = build(params.targets, params.taskId, debugFlags)
         result.bazelStatus
       }
       else {
@@ -159,11 +160,11 @@ class ExecuteService(
           params.environmentVariables?.let { environment.putAll(it) }
           params.arguments?.let { programArguments.addAll(it) }
           params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.trim().split(" ")) }
-          ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(params.originId)
+          ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(params.taskId)
         }
       }
-    val result = runWithBepServer(command, params.originId, pidDeferred = params.pidDeferred)
-    return RunResult(statusCode = result.processResult.bazelStatus, originId = params.originId)
+    val result = runWithBepServer(command, params.taskId, pidDeferred = params.pidDeferred)
+    return RunResult(statusCode = result.processResult.bazelStatus, taskId = params.taskId)
   }
 
   /**
@@ -239,13 +240,13 @@ class ExecuteService(
     }
 
     // TODO: handle multiple targets
-    val result = runWithBepServer(command, params.originId)
-    return TestResult(statusCode = result.processResult.bazelStatus, originId = params.originId)
+    val result = runWithBepServer(command, params.taskId)
+    return TestResult(statusCode = result.processResult.bazelStatus)
   }
 
   private suspend fun build(
     allTargets: List<Label>,
-    originId: String,
+    taskId: TaskId,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
     // you must compute all targets before passing them to bound
@@ -254,11 +255,11 @@ class ExecuteService(
         build {
           options.addAll(additionalArguments)
           targets.addAll(allTargets)
-          ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(originId)
+          ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(taskId)
         }
       }
 
-    return runWithBepServer(command, originId).processResult
+    return runWithBepServer(command, taskId).processResult
   }
 
   private fun ensureTestOutputStreamed(command: BazelCommand) {
@@ -269,7 +270,7 @@ class ExecuteService(
   suspend fun buildTargetsWithBep(
     targetsSpec: TargetCollection,
     extraFlags: List<String> = emptyList(),
-    originId: String?
+    taskId: TaskId
   ): BepBuildResult {
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
@@ -277,10 +278,10 @@ class ExecuteService(
           options.addAll(extraFlags)
           targets.addAll(targetsSpec.values)
           excludedTargets.addAll(targetsSpec.excludedValues)
-          ptyTermSize = originId?.let { ConsoleService.getInstance(project).ptyTermSize(originId) }
+          ptyTermSize = ConsoleService.getInstance(project).ptyTermSize(taskId)
         }
       }
 
-    return runWithBepServer(command, originId)
+    return runWithBepServer(command, taskId)
   }
 }

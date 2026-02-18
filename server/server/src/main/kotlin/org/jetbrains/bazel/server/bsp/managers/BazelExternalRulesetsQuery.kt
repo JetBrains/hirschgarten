@@ -14,6 +14,7 @@ import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
@@ -39,7 +40,7 @@ class BazelEnabledRulesetsQueryImpl(private val enabledRules: List<String>) : Ba
 }
 
 class BazelExternalRulesetsQueryImpl(
-  private val originId: String?,
+  private val taskId: TaskId,
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
   private val isWorkspaceEnabled: Boolean,
@@ -53,14 +54,14 @@ class BazelExternalRulesetsQueryImpl(
       workspaceContext.enabledRules.isNotEmpty() -> BazelEnabledRulesetsQueryImpl(workspaceContext.enabledRules).fetchExternalRulesetNames()
       else ->
         BazelBzlModExternalRulesetsQueryImpl(
-          originId,
+          taskId,
           bazelRunner,
           isBzlModEnabled,
           taskEventsHandler,
           workspaceContext,
         ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
-            originId,
+            taskId,
             bazelRunner,
             isWorkspaceEnabled,
             taskEventsHandler,
@@ -70,7 +71,7 @@ class BazelExternalRulesetsQueryImpl(
 }
 
 class BazelWorkspaceExternalRulesetsQueryImpl(
-  private val originId: String?,
+  private val taskId: TaskId,
   private val bazelRunner: BazelRunner,
   private val isWorkspaceEnabled: Boolean,
   private val taskEventsHandler: BazelTaskEventsHandler,
@@ -89,12 +90,12 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
             }
           }
 
-        runBazelCommand(command, logProcessOutput = false)
+        runBazelCommand(command, taskId, logProcessOutput = false)
           .waitAndGetResult()
           .let { result ->
             if (result.isNotSuccess) {
               val queryFailedMessage = getQueryFailedMessage(result)
-              taskEventsHandler.asLogger(originId).warn(queryFailedMessage)
+              taskEventsHandler.asLogger(taskId).warn(queryFailedMessage)
               log.warn(queryFailedMessage)
               null
             } else {
@@ -138,7 +139,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
 }
 
 class BazelBzlModExternalRulesetsQueryImpl(
-  private val originId: String?,
+  private val taskId: TaskId,
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
   private val taskEventsHandler: BazelTaskEventsHandler,
@@ -156,21 +157,20 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner
         .runBazelCommand(
           command,
-          originId = originId,
+          taskId = taskId,
           logProcessOutput = false
         ).waitAndGetResult()
         .let { result ->
           if (result.isNotSuccess) {
             val queryFailedMessage = getQueryFailedMessage(result)
-            taskEventsHandler.asLogger(originId).warn(queryFailedMessage)
-            if (originId != null) {
-              val target = SyntheticLabel(AllRuleTargets)
-              val diagnostics =
-                DiagnosticsService(bazelRunner.workspaceRoot)
-                  .extractDiagnostics(result.stderrLines, target, originId, isCommandLineFormattedOutput = true)
-              diagnostics.forEach { taskEventsHandler.onBuildPublishDiagnostics(it) }
-            }
+            taskEventsHandler.asLogger(taskId).warn(queryFailedMessage)
             log.warn(queryFailedMessage)
+
+            val target = SyntheticLabel(AllRuleTargets)
+            val diagnostics =
+              DiagnosticsService(bazelRunner.workspaceRoot)
+                .extractDiagnostics(result.stderrLines, target, taskId, isCommandLineFormattedOutput = true)
+            diagnostics.forEach { taskEventsHandler.onBuildPublishDiagnostics(it) }
           }
           // best effort to parse the output even when there are errors
           try {

@@ -3,17 +3,19 @@ package org.jetbrains.bazel.server.bep
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestStatus
 import java.util.UUID
 import java.util.regex.Pattern
+import kotlin.random.Random
 
 /**
  * Parses the nice-looking test execution tree Junit5 produces
  */
 class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientTestNotifier) {
-  fun processTestOutput(output: String) {
-    val tree = generateTestResultTree(output)
+  fun processTestOutput(parentId: TaskId, output: String) {
+    val tree = generateTestResultTree(output, parentId)
     notifyClient(tree)
   }
 
@@ -31,7 +33,7 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
    *
    * @return List of generated TestResultTreeNode instances
    * */
-  private fun generateTestResultTree(output: String): List<TestResultTreeNode> {
+  private fun generateTestResultTree(output: String, parentId: TaskId): List<TestResultTreeNode> {
     val lines = output.lines()
     val testResultTrees = mutableListOf<TestResultTreeNode>()
 
@@ -53,7 +55,7 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
             testResultsAreStarting -> ""
             else -> continue
           }
-        treeRootForCurrentTarget = TestResultTreeNode(rootNodeName, TaskId(testUUID()), null, mutableListOf(), -1)
+        treeRootForCurrentTarget = TestResultTreeNode(rootNodeName, parentId.subTask(rootNodeName), null, mutableListOf(), -1)
         testResultTrees.add(treeRootForCurrentTarget)
         currentNode = treeRootForCurrentTarget
       } else if (testEndedMatcher.find()) {
@@ -67,13 +69,13 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
       } else if (testLineMatcher.find()) {
         val indent = testLineMatcher.start("name")
         val parent = currentNode?.let { findParentByIndent(it, indent) }
-        val parentId = if (parent?.isRootNode() == true) null else parent?.taskId?.id
+
         val (testName, testTime) = separateTimeFromTestName(testLineMatcher.group("name"))
 
         val newNode =
           TestResultTreeNode(
             name = testName,
-            taskId = TaskId(testUUID(), parents = listOfNotNull(parentId)),
+            taskId = (parent?.taskId ?: parentId).subTask(testName + "-" + Random.nextBytes(8).toHexString()),
             status = testLineMatcher.group("result").toTestStatus(),
             messageLines = mutableListOf(testLineMatcher.group("message")),
             indent = indent,
@@ -217,15 +219,15 @@ private class TestResultTreeNode(
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
     } else if (isLeafNode()) {
       val fullMessage = generateMessage()
-      bspClientTestNotifier.startTest(name, taskId, parentSuiteNames)
+      bspClientTestNotifier.startTest(name, taskId, isSuite = false, parentSuiteNames)
 
       if (status == TestStatus.FAILED && parent?.isRootNode() == true && children.isEmpty()) {
         // BAZEL-2080: if an exception happens at the start of a test suit, there will be no test case run
         // and no test case reported. Teamcity will mark a testsuit with no test case as success.
         // So in this case, we need to report a dummy test case with TestStatus.FAILED status.
         val displayName = "no tests found"
-        val placeholderID = TaskId("empty-test-" + UUID.randomUUID().toString(), parents = listOfNotNull(taskId.id))
-        bspClientTestNotifier.startTest(displayName, placeholderID)
+        val placeholderID = taskId.subTask("placeholder")
+        bspClientTestNotifier.startTest(displayName, placeholderID, isSuite = false)
         bspClientTestNotifier.finishTest(
           displayName = displayName,
           taskId = placeholderID,
@@ -246,7 +248,7 @@ private class TestResultTreeNode(
         data = createTestCaseData(fullMessage, time),
       )
     } else {
-      bspClientTestNotifier.startTest(name, taskId, parentSuiteNames)
+      bspClientTestNotifier.startTest(name, taskId, isSuite = true, parentSuiteNames)
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
       bspClientTestNotifier.finishTest(
         displayName = name,

@@ -5,6 +5,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -126,20 +127,20 @@ class BazelRunner(
 
   fun runBazelCommand(
     command: BazelCommand,
-    originId: String? = null,
+    taskId: TaskId?,
     logProcessOutput: Boolean = true,
-  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), originId, logProcessOutput)
+  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), taskId, logProcessOutput)
 
   fun runBazelCommand(
     executionDescriptor: BazelCommandExecutionDescriptor,
-    originId: String? = null,
+    taskId: TaskId?,
     logProcessOutput: Boolean = true,
   ): BazelProcess {
     val finishCallback = executionDescriptor.finishCallback
     val processArgs = executionDescriptor.command
     val environment = executionDescriptor.environment
 
-    val outputLogger = taskEventsHandler.takeIf { logProcessOutput }?.asLogger(originId = originId)
+    val outputLogger = taskId?.let { taskEventsHandler.takeIf { logProcessOutput }?.asLogger(taskId) }
     if (outputLogger != null) {
       val log = "${envToString(environment)} ${processArgs.joinToString(" ")}"
       outputLogger.message(log)

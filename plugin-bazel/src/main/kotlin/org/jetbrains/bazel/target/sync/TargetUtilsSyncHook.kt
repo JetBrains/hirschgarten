@@ -3,7 +3,6 @@ package org.jetbrains.bazel.target.sync
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
@@ -11,7 +10,7 @@ internal class TargetUtilsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val bspTargets =
       environment.resolver
-        .getOrFetchResolvedWorkspace()
+        .getOrFetchResolvedWorkspace(taskId = environment.taskId)
         .targets
     val targetUtilsDiff = environment.diff.targetUtilsDiff
     targetUtilsDiff.bspTargets = bspTargets

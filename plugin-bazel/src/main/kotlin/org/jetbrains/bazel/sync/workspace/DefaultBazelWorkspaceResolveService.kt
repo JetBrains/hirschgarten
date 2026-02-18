@@ -19,6 +19,7 @@ import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapperContext
 import org.jetbrains.bsp.protocol.BazelProject
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
@@ -66,7 +67,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
     state = BazelWorkspaceSyncState.Initialized
   }
 
-  private suspend fun syncWorkspace(build: Boolean, taskId: String): BazelProject {
+  private suspend fun syncWorkspace(build: Boolean, taskId: TaskId): BazelProject {
     when (val state = state) {
       // if workspace was already sync or even resolved - return the available state and avoid recomputation
       is BazelWorkspaceSyncState.Resolved -> return state.bazelProject
@@ -85,7 +86,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
       .also { state = BazelWorkspaceSyncState.Synced(it) }
   }
 
-  private suspend fun resolveWorkspace(scope: ProjectSyncScope, taskId: String): BazelResolvedWorkspace {
+  private suspend fun resolveWorkspace(scope: ProjectSyncScope, taskId: TaskId): BazelResolvedWorkspace {
     val synced =
       when (val state = state) {
         // workspace is already resolved - return the available state and avoid recomputation
@@ -125,7 +126,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
             else {
               WorkspaceBuildTargetSelector.AllTargets
             }
-          val buildTargets = connection.runWithServer { server -> server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector)) }
+          val buildTargets = connection.runWithServer { server -> server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, taskId)) }
           val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
           bazelMapper.createProject(
             allTargets = synced.targets,
@@ -149,10 +150,10 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
     }
   }
 
-  override suspend fun getOrFetchResolvedWorkspace(scope: ProjectSyncScope, taskId: String): BazelResolvedWorkspace =
+  override suspend fun getOrFetchResolvedWorkspace(scope: ProjectSyncScope, taskId: TaskId): BazelResolvedWorkspace =
     resolveWorkspace(scope, taskId)
 
-  override suspend fun getOrFetchSyncedProject(build: Boolean, taskId: String): BazelProject =
+  override suspend fun getOrFetchSyncedProject(build: Boolean, taskId: TaskId): BazelProject =
     syncWorkspace(build, taskId)
 
   /**
