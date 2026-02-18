@@ -1,0 +1,135 @@
+{
+  stores: [
+    {
+      name: "AC_STORE",
+      filesystem: {
+        content_path: "/data/ac/content",
+        temp_path: "/data/ac/tmp",
+        eviction_policy: {
+          // 5 GB
+          max_bytes: 5000000000,
+        },
+      },
+    },
+    {
+      // Worker needs a fast_slow store — fast (filesystem) for hardlinks, slow (noop)
+      // since CAS and worker are co-located in a single process.
+      name: "CAS_STORE",
+      fast_slow: {
+        fast: {
+          filesystem: {
+            content_path: "/data/cas/content",
+            temp_path: "/data/cas/tmp",
+            eviction_policy: {
+              // 20 GB
+              max_bytes: 20000000000,
+            },
+          },
+        },
+        slow: {
+          noop: {},
+        },
+      },
+    },
+  ],
+  schedulers: [
+    {
+      name: "MAIN_SCHEDULER",
+      simple: {
+        supported_platform_properties: {
+          cpu_count: "minimum",
+          OSFamily: "priority",
+          "container-image": "priority",
+        },
+      },
+    },
+  ],
+  workers: [
+    {
+      local: {
+        worker_api_endpoint: {
+          uri: "grpc://127.0.0.1:50061",
+        },
+        cas_fast_slow_store: "CAS_STORE",
+        upload_action_result: {
+          ac_store: "AC_STORE",
+        },
+        work_directory: "/data/work",
+        platform_properties: {
+          cpu_count: {
+            values: ["8"],
+          },
+          OSFamily: {
+            values: [""],
+          },
+          "container-image": {
+            values: [""],
+          },
+        },
+      },
+    },
+  ],
+  servers: [
+    {
+      name: "public",
+      listener: {
+        http: {
+          socket_address: "0.0.0.0:50051",
+        },
+      },
+      services: {
+        cas: [
+          {
+            instance_name: "main",
+            cas_store: "CAS_STORE",
+          },
+        ],
+        ac: [
+          {
+            instance_name: "main",
+            ac_store: "AC_STORE",
+          },
+        ],
+        execution: [
+          {
+            instance_name: "main",
+            cas_store: "CAS_STORE",
+            scheduler: "MAIN_SCHEDULER",
+          },
+        ],
+        capabilities: [
+          {
+            instance_name: "main",
+            remote_execution: {
+              scheduler: "MAIN_SCHEDULER",
+            },
+          },
+        ],
+        bytestream: [
+          {
+            instance_name: "main",
+            cas_store: "CAS_STORE",
+          },
+        ],
+      },
+    },
+    {
+      name: "worker_api",
+      listener: {
+        http: {
+          socket_address: "0.0.0.0:50061",
+        },
+      },
+      services: {
+        worker_api: {
+          scheduler: "MAIN_SCHEDULER",
+        },
+        admin: {},
+        health: {},
+      },
+    },
+  ],
+  global: {
+    max_open_files: 24576,
+  },
+}
