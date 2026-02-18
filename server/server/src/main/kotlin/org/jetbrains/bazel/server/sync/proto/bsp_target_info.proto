@@ -74,6 +74,13 @@ message KotlinTargetInfo {
   repeated string exported_compiler_plugin_targets_from_deps = 601;
 }
 
+message JavaCommonInfo {
+  repeated string javac_opts = 1;
+  repeated JvmOutputs jars = 2;
+  repeated JvmOutputs generated_jars = 3;
+  repeated FileLocation jdeps = 4;
+}
+
 message PythonTargetInfo {
   FileLocation interpreter = 1;
   string version = 2;
@@ -114,12 +121,10 @@ message TargetInfo {
   bool executable = 90;
   string workspace_name = 100;
   JvmTargetInfo jvm_target_info = 1000;
-  repeated string javac_opts = 1006;
-  repeated JvmOutputs jars = 1001;
-  repeated JvmOutputs generated_jars = 1002;
-  repeated FileLocation jdeps = 1003;
+  reserved 1001 to 1003, 1006;
   bool jvm_target = 1004;
   bool has_api_generating_plugins = 1005;
+  JavaCommonInfo java_common = 1007;
   JavaToolchainInfo java_toolchain_info = 2000;
   JavaRuntimeInfo java_runtime_info = 3000;
   ScalaTargetInfo scala_target_info = 4000;
