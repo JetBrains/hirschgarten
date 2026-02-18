@@ -1,0 +1,14 @@
+# Local NativeLink RBE configuration.
+# Copy this file to the Ultimate root as .bazelrc-user.bazelrc:
+#   cp plugins/bazel/tools/scripts/bazelrc-local-rbe.template .bazelrc-user.bazelrc
+#
+# Start NativeLink first: plugins/bazel/tools/scripts/start-local-rbe.sh
+# Remove the file to return to normal builds.
+
+# Override the HTTP remote cache — cannot combine with gRPC remote execution.
+common --remote_cache=
+
+build --remote_executor=grpc://localhost:50051
+build --remote_default_exec_properties=OSFamily=Linux
+build --jobs=HOST_CPUS*.5
+build --remote_timeout=600
