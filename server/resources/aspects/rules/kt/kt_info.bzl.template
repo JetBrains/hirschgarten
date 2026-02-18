@@ -29,6 +29,14 @@ def get_kotlin_plugins(target, ctx, dep_targets):
                 dep_plugins.append(exported_compiler_plugins)
     return depset(direct = direct_plugins, transitive = dep_plugins).to_list()
 
+def get_additional_javac_options(ctx, target):
+    kotlin_toolchain = ctx.toolchains[KOTLIN_TOOLCHAIN_TYPE]
+    toolchain_javac_opts = kotlin_toolchain.javac_options
+    javac_opts_target = getattr(ctx.rule.attr, "javac_opts", None)
+    javac_opts = javac_opts_target[JavacOptions] if javac_opts_target and JavacOptions in javac_opts_target else toolchain_javac_opts
+
+    return javac_options_to_flags(javac_opts)
+
 def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
     provider = get_kt_jvm_provider(target)
     if provider == None:
@@ -77,7 +85,9 @@ def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
         module_name = module_name,
     )
 
-    info_file = dict(kotlin_target_info = kotlin_target_info)
+    info_file = dict(kotlin_target_info = kotlin_target_info,
+                     javac_opts = get_additional_javac_options(ctx, target),
+                )
 
     return info_file, None
 
@@ -127,9 +137,3 @@ def get_kotlinc_options(ctx, target):
         kotlinc_opts_dict["jvm_target"] = getattr(kotlin_toolchain, "jvm_target")
     return kotlinc_options_to_flags(create_struct(**kotlinc_opts_dict))
 
-def get_additional_javac_options(ctx, target):
-    kotlin_toolchain = ctx.toolchains[KOTLIN_TOOLCHAIN_TYPE]
-    toolchain_javac_opts = kotlin_toolchain.javac_options
-    javac_opts_target = getattr(ctx.rule.attr, "javac_opts", None)
-    javac_opts = javac_opts_target[JavacOptions] if javac_opts_target and JavacOptions in javac_opts_target else toolchain_javac_opts
-    return javac_options_to_flags(javac_opts)
