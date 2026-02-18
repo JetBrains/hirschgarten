@@ -21,6 +21,7 @@ import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
@@ -73,7 +74,7 @@ open class BuildServerMock(
   private val workspacePhasedBuildTargetsResult: WorkspacePhasedBuildTargetsResult? = null,
   private val jvmClasspathResult: BspJvmClasspath? = null,
 ) : JoinedBuildServer {
-  override suspend fun runSync(build: Boolean, originId: String): BazelProject = wrapInFuture(bazelProject)
+  override suspend fun runSync(build: Boolean, taskId: TaskId): BazelProject = wrapInFuture(bazelProject)
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsResult)

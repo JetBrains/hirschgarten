@@ -4,90 +4,80 @@ import com.intellij.build.events.MessageEvent.Kind
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.LogMessageParams
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import java.util.concurrent.ConcurrentHashMap
-
-typealias OriginId = String
-
-class TaskListenerAlreadyExistsException(message: String) : IllegalStateException(message)
 
 @Service(Service.Level.PROJECT)
 class BazelTaskEventsService : BazelTaskEventsHandler {
 
-  private val taskListeners: ConcurrentHashMap<OriginId, BazelTaskListener> = ConcurrentHashMap()
+  private val taskListeners: ConcurrentHashMap<TaskGroupId, BazelTaskListener> = ConcurrentHashMap()
 
-  private fun get(id: OriginId): BazelTaskListener {
-    val listener = taskListeners[id]
-    require(listener != null) { "No task listener found for task $id" }
-    return listener
-  }
-
-  fun saveListener(id: OriginId, listener: BazelTaskListener) {
+  fun saveListener(id: TaskGroupId, listener: BazelTaskListener) {
+    if (id == TaskGroupId.EMPTY) {
+      error("Attempt to register TaskGroupId.EMPTY listener")
+    }
     if (taskListeners.putIfAbsent(id, listener) != null) {
-      throw TaskListenerAlreadyExistsException("Listener for task $id exists already")
+      throw IllegalStateException("Listener for task $id exists already")
     }
   }
 
-  fun withListener(id: OriginId, block: BazelTaskListener.() -> Unit) {
-    get(id).apply { block() }
+  fun withListener(id: TaskId, block: BazelTaskListener.() -> Unit) {
+    val listener = taskListeners[id.taskGroupId] ?: run {
+      log.warn("No task listener found for task $id")
+      return
+    }
+
+    block(listener)
   }
 
-  fun removeListener(id: OriginId) {
+  fun removeListener(id: TaskGroupId) {
     taskListeners.remove(id)
   }
 
   override fun onBuildTaskStart(params: TaskStartParams) {
-    val taskId = params.taskId.id
-    val originId = params.originId
-    val maybeParent = params.taskId.parents.firstOrNull()
-
+    val taskId = params.taskId
     val message = params.message ?: return
-
-    withListener(originId) {
-      onTaskStart(taskId, maybeParent, message, params.data)
+    withListener(taskId) {
+      onTaskStart(taskId, message, params.data)
     }
   }
 
   override fun onBuildTaskFinish(params: TaskFinishParams) {
-    val taskId = params.taskId.id
-    val originId = params.originId
-    val maybeParent = params.taskId.parents.firstOrNull()
-
+    val taskId = params.taskId
     val status = params.status
-
     val message = params.message ?: return
 
-    withListener(originId) {
-      onTaskFinish(taskId, maybeParent, message, status, params.data)
+    withListener(taskId) {
+      onTaskFinish(taskId, message, status, params.data)
     }
   }
 
   override fun onBuildLogMessage(params: LogMessageParams) {
-    val originId = params.originId ?: return // TODO
+    val originId = params.task
     val message = params.message
 
     withListener(originId) {
-      onLogMessage(message)
+      onLogMessage(originId, message)
     }
   }
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
-    val originId = params.originId
-    val textDocument = params.textDocument?.path
-    val buildTarget = params.buildTarget
-
-    withListener(originId) {
+    withListener(params.taskId) {
       params.diagnostics.forEach { diag ->
         onDiagnostic(
-          textDocument,
-          buildTarget,
+          params.taskId,
+          params.textDocument?.path,
+          params.buildTarget,
           diag.range.start.line,
           diag.range.start.character,
           when (diag.severity) {
@@ -104,18 +94,20 @@ class BazelTaskEventsService : BazelTaskEventsHandler {
   }
 
   override fun onPublishCoverageReport(report: CoverageReport) {
-    withListener(report.originId) {
+    withListener(report.taskId) {
       onPublishCoverageReport(report.coverageReport)
     }
   }
 
   override fun onCachedTestLog(testLog: CachedTestLog) {
-    withListener(testLog.originId) {
+    withListener(testLog.taskId) {
       onCachedTestLog(testLog.testLog)
     }
   }
 
   companion object {
+    private val log = logger<BazelTaskEventsService>()
+
     @JvmStatic
     fun getInstance(project: Project) = project.service<BazelTaskEventsService>()
   }

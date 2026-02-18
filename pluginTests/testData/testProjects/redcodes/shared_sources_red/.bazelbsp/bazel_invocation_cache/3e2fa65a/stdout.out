@@ -1,499 +1,0 @@
-$TEST_TMPDIR defined, some defaults will be overridden
-[32mComputing main repo mapping:[0m 
-[1A[K[35mWARNING: [0mFor repository 'rules_java', the root module requires module version rules_java@8.10.0, but got rules_java@8.14.0 in the resolved dependency graph. Please update the version in your MODULE.bazel or set --check_direct_dependencies=off
-[32mComputing main repo mapping:[0m 
-[1A[K[32mLoading:[0m 
-[1A[K[32mLoading:[0m 0 packages loaded
-[1A[K[32mAnalyzing:[0m 3 targets (3 packages loaded, 0 targets configured)
-[1A[K[32mAnalyzing:[0m 3 targets (3 packages loaded, 0 targets configured)
-
-[1A[K[1A[K[32mAnalyzing:[0m 3 targets (54 packages loaded, 200 targets configured)
-    currently loading: @@rules_java+// ... (3 packages)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching repository @@rules_license+; starting
-[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (62 packages loaded, 450 targets configured)
-    currently loading: @@rules_java+// ... (3 packages)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching repository @@rules_license+; starting
-    Fetching repository @@rules_pkg+; starting
-    Fetching https://mirror.bazel.build/.../zig-linux-x86_64-0.12.0.tar.xz
-    Fetching https://github.com/.../download/1.0.1/rules_pkg-1.0.1.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching https://mirror.bazel.build/...6_64-0.12.0.tar.xz; 6.8 MiB (15.7%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching https://mirror.bazel.build/..._64-0.12.0.tar.xz; 11.6 MiB (26.9%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching https://mirror.bazel.build/..._64-0.12.0.tar.xz; 17.3 MiB (39.9%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching https://mirror.bazel.build/..._64-0.12.0.tar.xz; 23.9 MiB (55.0%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching https://mirror.bazel.build/..._64-0.12.0.tar.xz; 32.4 MiB (74.7%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching https://mirror.bazel.build/..._64-0.12.0.tar.xz; 41.3 MiB (95.1%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
-    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
-    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 6s
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
-    Fetching https://mirror.bazel.build/...0.tar.xz; Checking in SHA-256 cache
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
-    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 8s
-    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-[32m[1 / 1][0m no actions running
-    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 9s
-    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (66 packages loaded, 488 targets configured)
-    currently loading: @@hermetic_cc_toolchain++toolchains+zig_config//
-[32m[1 / 1][0m no actions running
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (67 packages loaded, 797 targets configured)
-    currently loading: @@bazel_tools//tools/allowlists/function_transition_all\
-owlist
-[32m[1 / 1][0m no actions running
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 4s
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 5s
-    Fetching https://cdn.azul.com/...lu11.78.15-ca-jdk11.0.26-linux_x64.tar.gz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 5s
-    Fetching https://cdn.azul.com/...k11.0.26-linux_x64.tar.gz; 5.9 MiB (3.1%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 5s
-    Fetching https://cdn.azul.com/...1.0.26-linux_x64.tar.gz; 21.7 MiB (11.3%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 5s
-    Fetching https://cdn.azul.com/...1.0.26-linux_x64.tar.gz; 28.6 MiB (14.9%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 6s
-    Fetching https://cdn.azul.com/...1.0.26-linux_x64.tar.gz; 45.9 MiB (23.9%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 6s
-    Fetching https://cdn.azul.com/...1.0.26-linux_x64.tar.gz; 55.1 MiB (28.8%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 6s
-    Fetching https://cdn.azul.com/...1.0.26-linux_x64.tar.gz; 71.2 MiB (37.1%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
-    Fetching https://cdn.azul.com/...1.0.26-linux_x64.tar.gz; 79.5 MiB (41.5%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
-    Fetching https://cdn.azul.com/...1.0.26-linux_x64.tar.gz; 95.7 MiB (49.9%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
-    Fetching https://cdn.azul.com/....0.26-linux_x64.tar.gz; 104.1 MiB (54.3%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
-    Fetching https://cdn.azul.com/....0.26-linux_x64.tar.gz; 112.1 MiB (58.5%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
-    Fetching https://cdn.azul.com/....0.26-linux_x64.tar.gz; 119.6 MiB (62.4%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
-    Fetching https://cdn.azul.com/....0.26-linux_x64.tar.gz; 126.4 MiB (66.0%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
-    Fetching https://cdn.azul.com/....0.26-linux_x64.tar.gz; 142.1 MiB (74.2%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
-    Fetching https://cdn.azul.com/....0.26-linux_x64.tar.gz; 151.2 MiB (78.9%)
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
-    Fetching https://cdn.azul.com/...26-linux_x64.tar.gz; 159.1 MiB (83.0%) 4s
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
-    Fetching https://cdn.azul.com/...26-linux_x64.tar.gz; 167.5 MiB (87.4%) 4s
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
-    Fetching https://cdn.azul.com/...26-linux_x64.tar.gz; 174.4 MiB (91.0%) 4s
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
-    Fetching https://cdn.azul.com/...26-linux_x64.tar.gz; 183.0 MiB (95.5%) 4s
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 10s
-    Fetching ..._linux; Extracting zulu11.78.15-ca-jdk11.0.26-linux_x64.tar.gz
-[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (68 packages loaded, 1395 targets configured)
-    currently loading: @@rules_java++toolchains+remotejdk11_linux//
-[32m[2 / 2][0m no actions running
-[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/.../java/v16.0/java_tools-v16.0.zip
-    Fetching https://mirror.bazel.build/.../v16.0/java_tools_linux-v16.0.zip
-    Fetching https://cdn.azul.com/...ulu21.40.17-ca-jdk21.0.6-linux_x64.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...a_tools-v16.0.zip; 278.9 KiB (0.6%)
-    Fetching https://mirror.bazel.build/...s_linux-v16.0.zip; 301.8 KiB (3.3%)
-    Fetching https://cdn.azul.com/...dk21.0.6-linux_x64.tar.gz; 8.2 MiB (4.0%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...a_tools-v16.0.zip; 589.7 KiB (1.4%)
-    Fetching https://mirror.bazel.build/...s_linux-v16.0.zip; 596.5 KiB (6.4%)
-    Fetching https://cdn.azul.com/...k21.0.6-linux_x64.tar.gz; 15.7 MiB (7.7%)
-    Fetching https://github.com/...86_64-unknown-linux-gnu-install_only.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...a_tools-v16.0.zip; 969.2 KiB (2.3%)
-    Fetching https://mirror.bazel.build/..._linux-v16.0.zip; 949.0 KiB (10.2%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 23.6 MiB (11.6%)
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 232.0 KiB (0.8%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...ava_tools-v16.0.zip; 1.2 MiB (3.0%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 1.2 MiB (13.3%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 29.7 MiB (14.6%)
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 520.8 KiB (1.8%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...ava_tools-v16.0.zip; 1.6 MiB (3.8%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 1.5 MiB (16.7%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 37.2 MiB (18.3%)
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 802.6 KiB (2.8%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...ava_tools-v16.0.zip; 2.0 MiB (4.7%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 1.9 MiB (20.7%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 44.6 MiB (21.9%)
-    Fetching https://github.com/...nux-gnu-install_only.tar.gz; 1.1 MiB (4.0%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...ava_tools-v16.0.zip; 2.4 MiB (5.6%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 2.6 MiB (28.3%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 52.2 MiB (25.7%)
-    Fetching https://github.com/...nux-gnu-install_only.tar.gz; 1.8 MiB (6.4%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...ava_tools-v16.0.zip; 2.8 MiB (6.6%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 2.9 MiB (32.1%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 60.1 MiB (29.5%)
-    Fetching https://github.com/...nux-gnu-install_only.tar.gz; 2.4 MiB (8.3%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...ava_tools-v16.0.zip; 3.2 MiB (7.5%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 3.3 MiB (36.6%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 68.0 MiB (33.4%)
-    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 3.0 MiB (10.5%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...ava_tools-v16.0.zip; 3.6 MiB (8.5%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 3.3 MiB (36.6%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 83.4 MiB (41.0%)
-    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 3.7 MiB (13.2%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...ava_tools-v16.0.zip; 4.1 MiB (9.7%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 3.7 MiB (40.9%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 90.4 MiB (44.4%)
-    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 4.4 MiB (15.4%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...va_tools-v16.0.zip; 4.9 MiB (11.6%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 4.1 MiB (44.7%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 96.8 MiB (47.6%)
-    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 5.1 MiB (17.8%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...va_tools-v16.0.zip; 5.4 MiB (12.9%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 4.3 MiB (47.8%)
-    Fetching https://cdn.azul.com/...21.0.6-linux_x64.tar.gz; 96.8 MiB (47.6%)
-    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 5.6 MiB (19.6%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...va_tools-v16.0.zip; 5.9 MiB (13.9%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 4.8 MiB (52.6%)
-    Fetching https://cdn.azul.com/...1.0.6-linux_x64.tar.gz; 102.5 MiB (50.3%)
-    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 8.3 MiB (29.3%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...va_tools-v16.0.zip; 6.4 MiB (15.3%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 5.1 MiB (56.8%)
-    Fetching https://cdn.azul.com/...1.0.6-linux_x64.tar.gz; 107.6 MiB (52.9%)
-    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 9.4 MiB (33.1%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...va_tools-v16.0.zip; 6.4 MiB (15.3%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 5.7 MiB (62.8%)
-    Fetching https://cdn.azul.com/...1.0.6-linux_x64.tar.gz; 122.8 MiB (60.3%)
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 10.6 MiB (37.5%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...va_tools-v16.0.zip; 7.6 MiB (18.2%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 6.3 MiB (69.2%)
-    Fetching https://cdn.azul.com/...1.0.6-linux_x64.tar.gz; 128.9 MiB (63.3%)
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 12.1 MiB (42.8%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
-    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
-    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
-    Fetching repository @@rules_java++toolchains+remotejdk21_linux; starting
-    Fetching https://mirror.bazel.build/...va_tools-v16.0.zip; 8.3 MiB (19.7%)
-    Fetching https://mirror.bazel.build/...ls_linux-v16.0.zip; 7.3 MiB (80.2%)
-    Fetching https://cdn.azul.com/...1.0.6-linux_x64.tar.gz; 136.3 MiB (67.0%)
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 13.3 MiB (46.9%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 4s
-    Fetching ... @@rules_java++toolchains+remote_java_tools_linux; starting 4s
-    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 4s
-    Fetching https://mirror.bazel.build/...tools-v16.0.zip; 8.9 MiB (21.2%) 4s
-    Fetching https://mirror.bazel.build/...linux-v16.0.zip; 7.7 MiB (85.0%) 4s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 143.5 MiB (70.5%) 4s
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 14.5 MiB (51.0%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 4s
-    Fetching ... @@rules_java++toolchains+remote_java_tools_linux; starting 4s
-    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 4s
-    Fetching https://mirror.bazel.build/...tools-v16.0.zip; 9.4 MiB (22.4%) 4s
-    Fetching https://mirror.bazel.build/...linux-v16.0.zip; 8.2 MiB (90.4%) 4s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 149.3 MiB (73.3%) 4s
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 15.7 MiB (55.3%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 4s
-    Fetching ... @@rules_java++toolchains+remote_java_tools_linux; starting 4s
-    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 4s
-    Fetching https://mirror.bazel.build/...tools-v16.0.zip; 9.9 MiB (23.6%) 4s
-    Fetching https://mirror.bazel.build/...linux-v16.0.zip; 8.6 MiB (95.0%) 4s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 155.1 MiB (76.2%) 4s
-    Fetching https://github.com/...x-gnu-install_only.tar.gz; 17.0 MiB (60.1%)
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (80 packages loaded, 6498 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 4s
-    Fetching ... @@rules_java++toolchains+remote_java_tools_linux; starting 4s
-    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 4s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 10.6 MiB (25.2%) 4s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 160.8 MiB (79.0%) 4s
-    Fetching https://github.com/...nu-install_only.tar.gz; 18.6 MiB (65.5%) 4s
-    Fetching ...remote_java_tools_linux; Extracting java_tools_linux-v16.0.zip
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (81 packages loaded, 6518 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 4s
-    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 4s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 11.4 MiB (27.1%) 4s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 161.6 MiB (79.4%) 4s
-    Fetching https://github.com/...nu-install_only.tar.gz; 24.3 MiB (85.9%) 4s
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (81 packages loaded, 6518 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 5s
-    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 5s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 5s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 12.3 MiB (29.2%) 5s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 167.2 MiB (82.1%) 5s
-    Fetching ...ux-gnu; Extracting cpython-3.11.10+20241016-x86_64-unknown-lin\
-ux-gnu-install_only.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (81 packages loaded, 6518 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 5s
-    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 5s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 5s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 13.2 MiB (31.5%) 5s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 174.3 MiB (85.6%) 5s
-    Fetching ...ux-gnu; Extracting cpython-3.11.10+20241016-x86_64-unknown-lin\
-ux-gnu-install_only.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (81 packages loaded, 6518 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 5s
-    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 5s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 5s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 14.2 MiB (33.8%) 5s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 182.4 MiB (89.6%) 5s
-    Fetching ...ux-gnu; Extracting cpython-3.11.10+20241016-x86_64-unknown-lin\
-ux-gnu-install_only.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (84 packages loaded, 8853 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 5s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 5s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 15.9 MiB (37.8%) 5s
-    Fetching https://cdn.azul.com/....6-linux_x64.tar.gz; 188.2 MiB (92.4%) 5s
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (84 packages loaded, 8853 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 6s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 6s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 16.9 MiB (40.2%) 6s
-    Fetching ...1_linux; Extracting zulu21.40.17-ca-jdk21.0.6-linux_x64.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (84 packages loaded, 8853 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 6s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 6s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 21.1 MiB (50.1%) 6s
-    Fetching ...1_linux; Extracting zulu21.40.17-ca-jdk21.0.6-linux_x64.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (84 packages loaded, 8853 targets configured)
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remote_java_tools; starting 6s
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 6s
-    Fetching https://mirror.bazel.build/...ools-v16.0.zip; 39.8 MiB (94.6%) 6s
-    Fetching ...1_linux; Extracting zulu21.40.17-ca-jdk21.0.6-linux_x64.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (84 packages loaded, 8853 targets configured)
-    currently loading: @@rules_java++toolchains+remote_java_tools//
-[32m[2 / 2][0m no actions running
-    Fetching ...sitory @@rules_java++toolchains+remotejdk21_linux; starting 6s
-    Fetching ...1_linux; Extracting zulu21.40.17-ca-jdk21.0.6-linux_x64.tar.gz
-[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 3 targets (85 packages loaded, 8861 targets configured)
-    currently loading: @@rules_java++toolchains+remotejdk21_linux//
-[32m[2 / 2][0m no actions running
-[1A[K[1A[K[1A[K[32mINFO: [0mAnalyzed 3 targets (86 packages loaded, 8986 targets configured).
-[32m[4 / 4][0m no actions running
-[1A[K[32mINFO: [0mFound 3 targets...
-[32m[5 / 5][0m no actions running
-[1A[K[32mINFO: [0mElapsed time: 29.967s, Critical Path: 0.03s
-[32m[5 / 5][0m no actions running
-[1A[K[32mINFO: [0m5 processes: 5 internal.
-[32m[5 / 5][0m no actions running
-[1A[K[32mINFO: [0mBuild completed successfully, 5 total actions
-[32mINFO:[0m 
-[1A[K[32mINFO:[0m 
-[1A[K[32mINFO: [0mBuild Event Protocol files produced successfully.
-[0m

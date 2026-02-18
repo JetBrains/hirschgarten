@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.diagnostics
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.Range
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
@@ -1136,11 +1137,11 @@ class DiagnosticsServiceTest {
     vararg diagnostics: BspDiagnostic,
   ): PublishDiagnosticsParams =
     PublishDiagnosticsParams(
+      TaskGroupId.EMPTY.task("task-id"),
       textDocument,
       buildTarget,
       diagnostics = diagnostics.asList(),
       reset = true,
-      originId = "originId",
     )
 
   private fun errorDiagnostic(position: Position, message: String): BspDiagnostic =
@@ -1163,5 +1164,11 @@ class DiagnosticsServiceTest {
     buildTarget: Label,
     isCommandLineFormattedOutput: Boolean = false,
   ): List<PublishDiagnosticsParams> =
-    DiagnosticsService(workspacePath).extractDiagnostics(output.lines(), buildTarget, "originId", isCommandLineFormattedOutput)
+    DiagnosticsService(workspacePath)
+      .extractDiagnostics(
+        output.lines(),
+        buildTarget,
+        TaskGroupId.EMPTY.task("task-id"),
+        isCommandLineFormattedOutput
+      )
 }

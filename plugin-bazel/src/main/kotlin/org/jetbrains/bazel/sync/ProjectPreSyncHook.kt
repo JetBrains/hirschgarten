@@ -4,6 +4,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.bazel.ui.console.withSubtask
+import org.jetbrains.bsp.protocol.TaskId
 
 /**
  * Represents a pre-sync hook which will be executed before each sync (if `isEnabled` returns true).
@@ -34,7 +35,7 @@ interface ProjectPreSyncHook {
    */
   data class ProjectPreSyncHookEnvironment(
     val project: Project,
-    val taskId: String,
+    val taskId: TaskId,
     val progressReporter: SequentialProgressReporter,
   )
 }
@@ -45,5 +46,5 @@ val Project.projectPreSyncHooks: List<ProjectPreSyncHook>
       .extensionList
       .filter { it.isEnabled(this) }
 
-suspend fun <T> ProjectPreSyncHook.ProjectPreSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: String) -> T) =
-  project.withSubtask(progressReporter, taskId, text, block)
+suspend fun <T> ProjectPreSyncHook.ProjectPreSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
+  project.withSubtask(progressReporter, taskId.subTask(text), text, block)

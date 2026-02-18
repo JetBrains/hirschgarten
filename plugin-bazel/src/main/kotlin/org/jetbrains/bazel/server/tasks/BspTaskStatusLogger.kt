@@ -5,30 +5,30 @@ import kotlinx.coroutines.Deferred
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeoutException
 
-public class BspTaskStatusLogger(
+class BspTaskStatusLogger(
   private val taskDeferred: Deferred<BazelStatus>,
   private val bspBuildConsole: TaskConsole,
-  private val originId: String,
+  private val taskId: TaskId,
 ) {
-  public suspend fun getStatus(): BazelStatus =
+  suspend fun getStatus(): BazelStatus =
     taskDeferred
       .also { it.invokeOnCompletion { throwable -> catchBuildErrors(throwable) } }
       .await()
-      .also { finishBuildConsoleTaskWithProperResult(it, bspBuildConsole, originId) }
+      .also { finishBuildConsoleTaskWithProperResult(it, bspBuildConsole) }
 
   private fun finishBuildConsoleTaskWithProperResult(
     status: BazelStatus,
     bspBuildConsole: TaskConsole,
-    uuid: String,
   ) = when (status) {
-    BazelStatus.SUCCESS -> bspBuildConsole.finishTask(uuid, BazelPluginBundle.message("console.task.status.ok"))
-    BazelStatus.CANCEL -> bspBuildConsole.finishTask(uuid, BazelPluginBundle.message("console.task.status.cancelled"))
+    BazelStatus.SUCCESS -> bspBuildConsole.finishTask(taskId, BazelPluginBundle.message("console.task.status.ok"))
+    BazelStatus.CANCEL -> bspBuildConsole.finishTask(taskId, BazelPluginBundle.message("console.task.status.cancelled"))
     else ->
       bspBuildConsole.finishTask(
-        uuid,
+        taskId,
         BazelPluginBundle.message("console.task.status.error"),
         FailureResultImpl(),
       )
@@ -39,21 +39,21 @@ public class BspTaskStatusLogger(
     when (exception) {
       is CancellationException -> {
         bspBuildConsole.finishTask(
-          originId,
+          taskId,
           BazelPluginBundle.message("console.task.exception.cancellation"),
           FailureResultImpl(BazelPluginBundle.message("console.task.exception.cancellation.message")),
         )
       }
       is TimeoutException -> {
         bspBuildConsole.finishTask(
-          originId,
+          taskId,
           BazelPluginBundle.message("console.task.exception.timed.out"),
           FailureResultImpl(BazelPluginBundle.message("console.task.exception.timeout.message")),
         )
       }
       else -> {
         bspBuildConsole.finishTask(
-          originId,
+          taskId,
           BazelPluginBundle.message("console.task.exception.other"),
           FailureResultImpl(exception),
         )

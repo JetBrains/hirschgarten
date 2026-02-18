@@ -27,6 +27,7 @@ import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -118,7 +119,7 @@ private class ScriptPathBuildTargetTask(
     server: JoinedBuildServer,
     targetIds: List<Label>,
     buildConsole: TaskConsole,
-    originId: String,
+    taskId: TaskId,
     debugFlags: List<String>,
   ): BazelStatus {
     val state = runConfiguration.handler?.state
@@ -135,8 +136,8 @@ private class ScriptPathBuildTargetTask(
     val coroutineDebugParams = if (isDebug) retrieveKotlinCoroutineParams(environment, runConfiguration.project) else emptyList()
     val params =
       RunParams(
+        taskId = taskId,
         target = targetIds.single(),
-        originId = originId,
         arguments = programArguments?.let { transformProgramArguments(it) }.orEmpty() + additionalProgramArguments.orEmpty(),
         additionalBazelParams = (scriptPathParam + coroutineDebugParams + additionalBazelParams).joinToString(" "),
         /**

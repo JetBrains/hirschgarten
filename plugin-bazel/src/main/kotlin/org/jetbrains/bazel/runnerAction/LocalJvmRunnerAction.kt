@@ -22,9 +22,9 @@ import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.ui.console.ConsoleService
-import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
+import org.jetbrains.bsp.protocol.TaskGroupId
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -41,9 +41,8 @@ abstract class LocalJvmRunnerAction(
   override suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings? {
     val module = targetInfo.getModule(project) ?: return null
 
-    val bspSyncConsole = ConsoleService.getInstance(project).syncConsole
     if (!preBuild(project)) return null
-    val environment = queryJvmEnvironment(project, bspSyncConsole) ?: return null
+    val environment = queryJvmEnvironment(project) ?: return null
     return calculateConfigurationSettings(environment, module, project, targetInfo)
   }
 
@@ -97,39 +96,44 @@ abstract class LocalJvmRunnerAction(
     return BazelPluginBundle.message(actionNameKey, targetDisplayName)
   }
 
-  private suspend fun queryJvmEnvironment(project: Project, bspSyncConsole: TaskConsole) =
-    try {
+  private suspend fun queryJvmEnvironment(project: Project): JvmEnvironmentItem? {
+    val bspSyncConsole = ConsoleService.getInstance(project).syncConsole
+    val taskId = TaskGroupId("LocalJvmRunnerAction").task(RETRIEVE_JVM_ENVIRONMENT_ID)
+    return try {
       withContext(Dispatchers.IO) {
         val job = async { getEnvironment(project) }
         bspSyncConsole.startTask(
-          RETRIEVE_JVM_ENVIRONMENT_ID,
+          taskId,
           BazelPluginBundle.message("console.task.query.jvm.environment.title"),
           BazelPluginBundle.message("console.task.query.jvm.environment.in.progress"),
           { job.cancel() },
         )
         val env = job.await()
         bspSyncConsole.finishTask(
-          RETRIEVE_JVM_ENVIRONMENT_ID,
+          taskId,
           BazelPluginBundle.message("console.task.query.jvm.environment.success"),
         )
         env
       }
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       if (e is CancellationException) {
         bspSyncConsole.finishTask(
-          RETRIEVE_JVM_ENVIRONMENT_ID,
+          taskId,
           BazelPluginBundle.message("console.task.query.jvm.environment.cancel"),
           FailureResultImpl(),
         )
-      } else {
+      }
+      else {
         bspSyncConsole.finishTask(
-          RETRIEVE_JVM_ENVIRONMENT_ID,
+          taskId,
           BazelPluginBundle.message("console.task.query.jvm.environment.failed"),
           FailureResultImpl(e),
         )
       }
       null
     }
+  }
 
   companion object {
     val jvmEnvironment: Key<JvmEnvironmentItem> = Key<JvmEnvironmentItem>("jvmEnvironment")

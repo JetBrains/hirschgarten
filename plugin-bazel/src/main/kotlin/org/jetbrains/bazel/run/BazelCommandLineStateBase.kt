@@ -22,10 +22,12 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.TaskGroupId
 import java.util.UUID
+import kotlin.random.Random
 
 abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : CommandLineState(environment) {
-  protected val originId: UUID = UUID.randomUUID()
+  protected val taskGroupId: TaskGroupId = TaskGroupId(environment.toString() + "-" + Random.nextBytes(8).toHexString())
 
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
@@ -68,11 +70,10 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
     val runListener = createAndAddTaskListener(handler)
 
     with(BazelTaskEventsService.getInstance(project)) {
-      val originId = originId.toString()
-      saveListener(originId, runListener)
+      saveListener(taskGroupId, runListener)
       runDeferred.invokeOnCompletion {
         pid.complete(null)
-        removeListener(originId)
+        removeListener(taskGroupId)
       }
     }
 

@@ -27,7 +27,7 @@ object ClasspathQuery {
       }
     val cqueryResult =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false)
+        .runBazelCommand(command, logProcessOutput = false, taskId = null)
         .waitAndGetResult()
     if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for runtime classpath")
     try {

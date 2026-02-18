@@ -4,8 +4,8 @@ import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.label.Label
 
 data class RunParams(
+  val taskId: TaskId,
   val target: Label,
-  val originId: String,
   val checkVisibility: Boolean,
   val arguments: List<String>? = null,
   val environmentVariables: Map<String, String>? = null,

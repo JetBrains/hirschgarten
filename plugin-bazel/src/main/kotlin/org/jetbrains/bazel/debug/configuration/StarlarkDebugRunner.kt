@@ -33,11 +33,13 @@ import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.net.ConnectException
 import java.util.UUID
 import java.util.concurrent.CancellationException
+import kotlin.random.Random
 
 class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
   override fun getRunnerId(): String = "StarlarkDebugRunner"
@@ -119,9 +121,9 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
   ) {
     coroutineScope {
-      val originId = "analysis-debug-" + UUID.randomUUID().toString()
-      BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
-      val params = AnalysisDebugParams(originId, port, listOf(target))
+      val taskGroupId = TaskGroupId("analysis-debug-" + Random.nextBytes(8).toHexString())
+      BazelTaskEventsService.getInstance(project).saveListener(taskGroupId, taskListener)
+      val params = AnalysisDebugParams(taskGroupId.task("debug"), port, listOf(target))
 
       val buildDeferred = async { server.buildTargetAnalysisDebug(params) }
       try {
@@ -131,7 +133,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
         buildDeferred.cancel()
         futureProxy.completeExceptionally(e)
       } finally {
-        BazelTaskEventsService.getInstance(project).removeListener(originId)
+        BazelTaskEventsService.getInstance(project).removeListener(taskGroupId)
       }
     }
   }

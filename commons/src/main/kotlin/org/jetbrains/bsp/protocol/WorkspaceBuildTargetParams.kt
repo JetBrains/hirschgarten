@@ -8,4 +8,4 @@ sealed interface WorkspaceBuildTargetSelector {
   data class SpecificTargets(val targets: List<Label>) : WorkspaceBuildTargetSelector
 }
 
-data class WorkspaceBuildTargetParams(val selector: WorkspaceBuildTargetSelector)
+data class WorkspaceBuildTargetParams(val selector: WorkspaceBuildTargetSelector, val taskId: TaskId)

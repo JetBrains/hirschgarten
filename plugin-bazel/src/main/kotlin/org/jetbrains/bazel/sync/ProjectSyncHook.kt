@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.TaskId
 
 /**
  * Represents a sync hook which will be executed on each sync (if `isEnabled` returns true).
@@ -47,7 +48,7 @@ interface ProjectSyncHook {
     val server: JoinedBuildServer,
     val resolver: BazelWorkspaceResolveService,
     val diff: AllProjectStructuresDiff,
-    val taskId: String,
+    val taskId: TaskId,
     val progressReporter: SequentialProgressReporter,
     val buildTargets: Map<Label, BspTargetInfo.TargetInfo>,
   )
@@ -59,5 +60,5 @@ val Project.projectSyncHooks: List<ProjectSyncHook>
       .extensionList
       .filter { it.isEnabled(this) }
 
-suspend fun <T> ProjectSyncHook.ProjectSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: String) -> T) =
-  project.withSubtask(progressReporter, taskId, text, block)
+suspend fun <T> ProjectSyncHook.ProjectSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
+  project.withSubtask(progressReporter, taskId.subTask(text), text, block)

@@ -11,6 +11,7 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TestFinish
 import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
@@ -50,7 +51,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
     val data = TestTask(Label.parse("id"))
 
     // when
-    listener.onTaskStart(taskId = "task-id", parentId = null, message = "", data = data)
+    listener.onTaskStart(taskId = TaskGroupId.EMPTY.task("task-id"), message = "", data = data)
 
     // then
     handler.latestText shouldBeEqual expectedText
@@ -59,19 +60,19 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `task-start with test suite`() {
     // given
-    val taskId = "task-id"
-    val data = TestStart("testSuite", "test://testSuite")
+    val taskId = TaskGroupId.EMPTY.task("task-id")
+    val data = TestStart("testSuite", true,"test://testSuite")
     val expectedText =
       ServiceMessageBuilder
         .testSuiteStarted(
           data.displayName,
-        ).addAttribute("nodeId", taskId)
+        ).addAttribute("nodeId", taskId.id)
         .addAttribute("parentNodeId", "0")
         .addAttribute("locationHint", data.locationHint)
         .toString() + "\n"
 
     // when
-    listener.onTaskStart(taskId = taskId, parentId = null, message = "", data = data)
+    listener.onTaskStart(taskId = taskId, message = "", data = data)
 
     // then
     handler.latestText shouldBeEqual expectedText
@@ -80,20 +81,20 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `task-start with test case`() {
     // given
-    val taskId = "task-id"
-    val parentId = "parent-id"
-    val data = TestStart("testCase", "test://testCase")
+    val parentId = TaskGroupId.EMPTY.task("parent-id")
+    val taskId = parentId.subTask("task-id")
+    val data = TestStart("testCase", false,"test://testCase")
     val expectedText =
       ServiceMessageBuilder
         .testStarted(
           data.displayName,
-        ).addAttribute("nodeId", taskId)
-        .addAttribute("parentNodeId", parentId)
+        ).addAttribute("nodeId", taskId.id)
+        .addAttribute("parentNodeId", "0")
         .addAttribute("locationHint", data.locationHint)
         .toString() + "\n"
 
     // when
-    listener.onTaskStart(taskId = taskId, parentId = parentId, message = "", data = data)
+    listener.onTaskStart(taskId = taskId, message = "", data = data)
 
     // then
     handler.latestText shouldBeEqual expectedText
@@ -103,19 +104,21 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   fun `task-finish with test suite`() {
     // given
     val durationSeconds = 1.23456
-    val taskId = "task-id"
+    val taskId = TaskGroupId.EMPTY.task("task-id")
+    val testStartData = TestStart("testSuite", true, "test://testSuite")
     val testFinishData = TestFinish("testSuite", TestStatus.PASSED, data = JUnitStyleTestSuiteData(durationSeconds, null, null))
 
     val expectedDurationMillis = (1234).toLong()
     val expectedText =
       ServiceMessageBuilder
         .testSuiteFinished(testFinishData.displayName)
-        .addAttribute("nodeId", taskId)
+        .addAttribute("nodeId", taskId.id)
         .addAttribute("duration", expectedDurationMillis.toString())
         .toString() + "\n"
 
     // when
-    listener.onTaskFinish(taskId = taskId, parentId = null, message = "", data = testFinishData, status = BazelStatus.SUCCESS)
+    listener.onTaskStart(taskId = taskId, message = "", data = testStartData)
+    listener.onTaskFinish(taskId = taskId, message = "", data = testFinishData, status = BazelStatus.SUCCESS)
 
     // then
     handler.latestText shouldBeEqual expectedText

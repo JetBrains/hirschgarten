@@ -96,19 +96,20 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   /**
    * Processes a test result xml file, reporting suite and test case results as task start and finish notifications.
    * Parent-child relationship is identified within each suite based on the TaskId.
+   * @param parentId TaskId associated with the test execution.
    * @param testXml Uri corresponding to the test result xml file to be processed.
    */
-  fun parseAndReport(testXml: Path) {
+  fun parseAndReport(parentId: TaskId, testXml: Path) {
     val testSuites = parseTestXml(testXml, TestSuites::class.java)
     if (testSuites != null) {
       testSuites
         .testsuite
-        .forEach { processSuite(it) }
+        .forEach { processSuite(parentId, it) }
     } else {
       val fallbackTestSuites =
         parseTestXml(testXml, FallbackTestXmlParser.IncompleteTestSuites::class.java)
       fallbackTestSuites?.testsuite?.forEach {
-        fallbackTestXmlParser.processIncompleteInfoSuite(it)
+        fallbackTestXmlParser.processIncompleteInfoSuite(parentId, it)
       }
     }
   }
@@ -142,9 +143,10 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * this happens when the user chooses to run only one test class, not the whole Bazel target.
    * In that case, there is no point in showing such an empty suite to the user.
    *
+   * @param parentId TaskId of the parent test suite or test case.
    * @param suite TestSuite to be processed.
    */
-  private fun processSuite(suite: TestSuite) {
+  private fun processSuite(parentId: TaskId, suite: TestSuite) {
     val suiteStatus =
       when {
         suite.tests > 0 && suite.testcase.isEmpty() -> return
@@ -153,12 +155,12 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
         else -> TestStatus.PASSED
       }
 
-    val suiteTaskId = TaskId(UUID.randomUUID().toString(), parents = emptyList())
+    val suiteTaskId = parentId.subTask(suite.name)
     val suiteData = JUnitStyleTestSuiteData(suite.time, null, suite.systemErr?.toString())
 
-    bspClientTestNotifier.startTest(suite.name, suiteTaskId)
+    bspClientTestNotifier.startTest(suite.name, suiteTaskId, isSuite = true)
     suite.testcase.forEach { case ->
-      processTestCase(suiteTaskId.id, suite.name, case)
+      processTestCase(suiteTaskId, suite.name, case)
     }
     bspClientTestNotifier.finishTest(
       suite.name,
@@ -176,11 +178,11 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * @param testCase TestCase to be processed and sent to the client.
    */
   private fun processTestCase(
-    parentId: String,
+    parentId: TaskId,
     parentSuiteName: String,
     testCase: TestCase,
   ) {
-    val testCaseTaskId = TaskId(UUID.randomUUID().toString(), listOf(parentId))
+    val testCaseTaskId = parentId.subTask(UUID.randomUUID().toString())
 
     // Extract the error summary message.
     val outcomeMessage =
@@ -229,6 +231,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
       taskId = testCaseTaskId,
       classname = testCaseData.className,
       parentSuites = listOf(parentSuiteName),
+      isSuite = false
     )
     bspClientTestNotifier.finishTest(
       testCase.name,
@@ -280,19 +283,19 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     val systemOut: String? = null,
   )
 
-  fun processIncompleteInfoSuite(suite: IncompleteTestSuite) {
+  fun processIncompleteInfoSuite(parentId: TaskId, suite: IncompleteTestSuite) {
     val containsJunit5 = suite.systemOut?.let(Junit5TestVisualOutputParser::textContainsJunit5VisualOutput)
     if (containsJunit5 == true) {
       val parser = Junit5TestVisualOutputParser(bspClientTestNotifier)
-      parser.processTestOutput(suite.systemOut)
+      parser.processTestOutput(parentId, suite.systemOut)
     } else {
-      defaultIncompleteInfoSuiteProcessing(suite)
+      defaultIncompleteInfoSuiteProcessing(parentId, suite)
     }
   }
 
   // A Bazel target is represented by a test suite containing one test case
-  private fun defaultIncompleteInfoSuiteProcessing(suite: IncompleteTestSuite) {
-    val suiteTaskId = TaskId(UUID.randomUUID().toString(), emptyList())
+  private fun defaultIncompleteInfoSuiteProcessing(parentId: TaskId, suite: IncompleteTestSuite) {
+    val suiteTaskId = parentId.subTask(suite.name)
     val suiteStatus =
       when {
         suite.failures > 0 -> TestStatus.FAILED
@@ -301,10 +304,10 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
       }
     val testSuiteData = JUnitStyleTestSuiteData(null, suite.systemOut, null)
 
-    bspClientTestNotifier.startTest(suite.name, suiteTaskId)
+    bspClientTestNotifier.startTest(suite.name, suiteTaskId, isSuite = true)
     val fallbackMessage = suite.systemOut.takeIf { suite.testcase.size == 1 }
     suite.testcase.forEach { testCase ->
-      processIncompleteInfoCase(testCase, suiteTaskId.id, suite.name, testCase.systemOut ?: fallbackMessage)
+      processIncompleteInfoCase(testCase, suiteTaskId, suite.name, testCase.systemOut ?: fallbackMessage)
     }
     bspClientTestNotifier.finishTest(
       suite.name,
@@ -320,11 +323,11 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
    */
   private fun processIncompleteInfoCase(
     testCase: IncompleteTestCase,
-    parentId: String,
+    parentId: TaskId,
     parentSuiteName: String,
     systemOut: String?,
   ) {
-    val testCaseTaskId = TaskId(UUID.randomUUID().toString(), listOf(parentId))
+    val testCaseTaskId = parentId.subTask(UUID.randomUUID().toString())
 
     // Extract the error summary message.
     val outcomeMessage =
@@ -361,7 +364,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     // In the generated xml, suite name and test case name are the same, but in the Test Console test names have
     // to be unique
     val testCaseName = testCase.name.substringAfterLast('/')
-    bspClientTestNotifier.startTest(testCaseName, testCaseTaskId, parentSuites = listOf(parentSuiteName))
+    bspClientTestNotifier.startTest(testCaseName, testCaseTaskId, isSuite = false, parentSuites = listOf(parentSuiteName))
     bspClientTestNotifier.finishTest(
       testCaseName,
       testCaseTaskId,

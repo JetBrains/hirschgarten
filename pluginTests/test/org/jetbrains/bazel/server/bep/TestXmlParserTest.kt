@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.bep
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -14,6 +13,7 @@ import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestFinish
 import org.jetbrains.bsp.protocol.TestStatus
@@ -64,10 +64,10 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 5
@@ -160,10 +160,10 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 14
@@ -262,10 +262,10 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 17 // one of the test suites in the XML is empty, so we hide it
@@ -368,10 +368,11 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    val taskId = TaskGroupId.EMPTY.task("")
+    TestXmlParser(notifier).parseAndReport(taskId, writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 16 // one of the test suites in the XML is empty, so we hide it
@@ -401,13 +402,14 @@ class TestXmlParserTest {
     client.taskFinishCalls.map {
       val data = (it.data as TestFinish)
       when (data.displayName) {
-        "com.example.optimization.TestSuite1", "com.example.testing.base.Tests" -> {
-          it.taskId.parents shouldBe emptyList()
+        "com.example.optimization.TestSuite1",
+        "com.example.testing.base.Tests" -> {
+          it.taskId.parent shouldBe taskId
           data.status shouldBe TestStatus.FAILED
         }
 
         "sampleFailedTest" -> {
-          it.taskId.parents shouldNotBe emptyList<String>()
+          it.taskId.parent shouldNotBe null
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldContain "expected:"
@@ -485,10 +487,10 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
 
     // then
     client.taskStartCalls.size shouldBe 5
@@ -511,21 +513,18 @@ class TestXmlParserTest {
         "TripleTest" -> {
         }
         "testFailure()" -> {
-          it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldNotBeEmpty()
+          it.taskId.parent.shouldNotBeNull()
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldNotBe null
           data.message!!.split("\n".toRegex()).size shouldBe 7
         }
         "testIgnored()" -> {
-          it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldNotBeEmpty()
+          it.taskId.parent.shouldNotBeNull()
           data.status shouldBe TestStatus.SKIPPED
         }
         "testSuccess()" -> {
-          it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldNotBeEmpty()
+          it.taskId.parent.shouldNotBeNull()
           data.status shouldBe TestStatus.PASSED
         }
       }
@@ -591,10 +590,10 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
 
     // then
     client.taskStartCalls.size shouldBe 5
@@ -616,21 +615,18 @@ class TestXmlParserTest {
         "TripleTest" -> {
         }
         "testFailure()" -> {
-          it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldNotBeEmpty()
+          it.taskId.parent.shouldNotBeNull()
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldNotBe null
           data.message!!.split("\n".toRegex()).size shouldBe 7
         }
         "testIgnored()" -> {
-          it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldNotBeEmpty()
+          it.taskId.parent.shouldNotBeNull()
           data.status shouldBe TestStatus.SKIPPED
         }
         "testSuccess()" -> {
-          it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldNotBeEmpty()
+          it.taskId.parent.shouldNotBeNull()
           data.status shouldBe TestStatus.PASSED
         }
       }
@@ -696,10 +692,10 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
 
     // then
     client.taskStartCalls.size shouldBe 3 // two malformed rows should simply be ignored
@@ -719,11 +715,11 @@ class TestXmlParserTest {
       val data = (it.data as TestFinish)
       when (data.displayName) {
         "testIgnored()" -> {
-          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parent.shouldNotBeNull()
           data.status shouldBe TestStatus.SKIPPED
         }
         "testSuccess()" -> {
-          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parent.shouldNotBeNull()
           data.status shouldBe TestStatus.PASSED
         }
       }
@@ -775,10 +771,10 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
 
     // then
     client.taskStartCalls.size shouldBe 3
@@ -818,10 +814,10 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
 
     // then
     val lastFinish = client.taskFinishCalls.first().data as? TestFinish
@@ -916,10 +912,10 @@ WARNING: Delegated to the 'execute' command.
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
 
     // then
     val expectedNames =
@@ -985,10 +981,10 @@ WARNING: Delegated to the 'execute' command.
     """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
 
     // then
     client.taskStartCalls.size shouldBe 4

@@ -66,7 +66,7 @@ class PythonProjectSync : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Process Python targets") {
       // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
-      val workspace = environment.resolver.getOrFetchResolvedWorkspace()
+      val workspace = environment.resolver.getOrFetchResolvedWorkspace(taskId = environment.taskId)
       val targets = workspace.targets
       val pythonTargets = targets.calculatePythonTargets()
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
@@ -107,8 +107,7 @@ class PythonProjectSync : ProjectSyncHook {
   ): Map<Label, Sdk?> =
     environment.progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
       environment.project.syncConsole.withSubtask(
-        taskId = environment.taskId,
-        subtaskId = "calculate-and-add-all-python-sdk-infos",
+        subtaskId = environment.taskId.subTask("calculate-and-add-all-python-sdk-infos"),
         message = BazelPluginBundle.message("console.task.model.calculate.python.sdks"),
       ) {
         calculateAndAddSdks(targets, environment.project)

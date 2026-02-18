@@ -15,8 +15,8 @@ import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-import java.util.UUID
 import kotlin.io.path.readText
 
 // See: https://bazel.build/reference/test-encyclopedia
@@ -27,9 +27,9 @@ private const val BAZEL_TEST_FILTER_ENV = "TESTBRIDGE_TEST_ONLY"
  * because Bazel doesn't include environment variable setup in the generated script.
  */
 suspend fun runWithScriptPath(
+  taskId: TaskId,
   scriptPath: Path,
   project: Project,
-  originId: UUID,
   pidDeferred: CompletableDeferred<Long?>,
   handler: BazelProcessHandler,
   env: Map<String, String>,
@@ -79,11 +79,11 @@ suspend fun runWithScriptPath(
   runInterruptible(Dispatchers.IO) {
     pidDeferred.complete(scriptHandler.process.pid())
     scriptHandler.waitFor()
-    findXmlOutputAndReport(scriptPath, project, originId)
+    findXmlOutputAndReport(taskId, scriptPath, project)
   }
 }
 
-private fun findXmlOutputAndReport(scriptPath: Path, project: Project, originId: UUID) {
+private fun findXmlOutputAndReport(taskId: TaskId, scriptPath: Path, project: Project) {
   val scriptContent = scriptPath.readText()
 
   val execRoot = BazelBinPathService.getInstance(project).bazelExecPath ?: return
@@ -96,9 +96,9 @@ private fun findXmlOutputAndReport(scriptPath: Path, project: Project, originId:
   val absoluteXmlPath = Path.of(execRoot, xmlPath)
 
   val taskHandler = BazelTaskEventsService.getInstance(project)
-  val testNotifier = BspClientTestNotifier(taskHandler, originId.toString())
+  val testNotifier = BspClientTestNotifier(taskHandler)
 
-  TestXmlParser(testNotifier).parseAndReport(absoluteXmlPath)
+  TestXmlParser(testNotifier).parseAndReport(taskId /* ??? */, absoluteXmlPath)
 }
 
 private val TEST_XML_OUTPUT_FILE_REGEX = Regex("XML_OUTPUT_FILE=(?<path>\\S+)")

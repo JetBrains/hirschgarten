@@ -17,6 +17,7 @@ import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RawAspectTarget
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -176,7 +177,7 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
           options.addAll(extraOptions)
         }
       }
-      val process = bazelRunner.runBazelCommand(command, logProcessOutput = false)
+      val process = bazelRunner.runBazelCommand(command, logProcessOutput = false, taskId = null)
       val result = process.waitAndGetResult()
 
       if (result.isNotSuccess) {

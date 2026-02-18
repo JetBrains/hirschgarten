@@ -10,6 +10,7 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.BazelTaskLogger
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -23,11 +24,12 @@ suspend fun calculateRepoMapping(
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
   taskLogger: BazelTaskLogger,
+  taskId: TaskId
 ): RepoMapping {
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
   }
-  val moduleResolver = ModuleResolver(bazelRunner, workspaceContext)
+  val moduleResolver = ModuleResolver(bazelRunner, workspaceContext, taskId)
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
   val moduleApparentNameToCanonicalName =
     try {

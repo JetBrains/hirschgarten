@@ -13,6 +13,7 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
 class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
@@ -23,11 +24,10 @@ class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
   override suspend fun apply(
     project: Project,
     syncScope: ProjectSyncScope,
-    taskId: String,
+    taskId: TaskId,
   ) {
     project.syncConsole.withSubtask(
-      taskId = taskId,
-      subtaskId = "apply-changes-on-target-utils",
+      subtaskId = taskId.subTask("apply-changes-on-target-utils"),
       message = BazelPluginBundle.message("console.task.apply.changes.on.target.utils.message"),
     ) {
       project.targetUtils.saveTargets(

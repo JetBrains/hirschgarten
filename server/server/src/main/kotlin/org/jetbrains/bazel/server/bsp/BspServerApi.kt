@@ -18,6 +18,7 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
@@ -38,7 +39,7 @@ class BspServerApi(
   override val bazelInfo: BazelInfo,
 ) : JoinedBuildServer {
 
-  override suspend fun runSync(build: Boolean, originId: String): BazelProject = projectSyncService.runSync(build, originId)
+  override suspend fun runSync(build: Boolean, taskId: TaskId): BazelProject = projectSyncService.runSync(build, taskId)
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildTargets(params)
