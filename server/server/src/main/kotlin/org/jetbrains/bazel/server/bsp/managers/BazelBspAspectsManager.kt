@@ -123,7 +123,6 @@ class BazelBspAspectsManager(
     val languageRuleMap = rulesetLanguages.associateBy { it.language }
     val activeLanguages = rulesetLanguages.map { it.language }.toSet()
     val kotlinEnabled = Language.Kotlin in activeLanguages
-    val javaEnabled = Language.Java in activeLanguages
     val pythonEnabled = Language.Python in activeLanguages
     val bazel8OrAbove = bazelRelease.major >= 8
     Language.entries.forEach {
@@ -139,7 +138,6 @@ class BazelBspAspectsManager(
           "rulesetName" to canonicalRuleName,
           "rulesetNameApparent" to apparentRuleName,
           "kotlinEnabled" to kotlinEnabled.toString(),
-          "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
           // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
