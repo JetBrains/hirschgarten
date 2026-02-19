@@ -39,7 +39,7 @@ class ScalaLanguagePlugin(
         .associateBy(
           { it.label() },
           {
-            it.scalaTargetInfo.scalatestClasspathList
+            it.scalaTargetInfo.scalatestClasspathTargetsList.flatMap { targets.get(Label.parse(it))?.javaProvider?.fullCompileJarsList ?: emptyList() }
               .map(bazelPathsResolver::resolve)
               .toSet()
           },
