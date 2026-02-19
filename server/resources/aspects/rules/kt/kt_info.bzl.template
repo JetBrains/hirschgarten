@@ -6,7 +6,10 @@ load("@rules_jvm//:rules/impl/javac-options.bzl", "JavacOptions", "javac_options
 load("@${rulesetName}//kotlin/internal:opts.bzl", "KotlincOptions", "kotlinc_options_to_flags")
 load("@${rulesetName}//kotlin/internal:opts.bzl", "JavacOptions", "javac_options_to_flags")
 #end
-load("//${bspPath}/aspects:utils/utils.bzl", "COMPILE_DEPS", "collect_targets_from_attrs", "convert_struct_to_dict", "create_struct", "file_location", "filter_not_none", "log_warn", "map", "BspAspectInfo", "update_sync_output_groups")
+
+load("//${bspPath}/aspects:utils/utils.bzl", "COMPILE_DEPS", "IMPORT_RULE_KIND", "collect_targets_from_attrs", "convert_struct_to_dict", "create_struct", "file_location", "filter_not_none", "is_external", "log_warn", "map", "BspAspectInfo", "update_sync_output_groups", "map_with_resolve_files")
+load("//${bspPath}/aspects:utils/jvm_common.bzl", "get_generated_jars", "to_jvm_outputs", "provider_resolve_depsets")
+
 
 KOTLIN_TOOLCHAIN_TYPE = "@${rulesetName}//kotlin/internal:kt_toolchain_type"
 
@@ -85,9 +88,34 @@ def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
         module_name = module_name,
     )
 
+    java_outputs = []
+    if provider:
+        if hasattr(provider, "java_outputs") and provider.java_outputs:
+            java_outputs = provider.java_outputs
+        elif hasattr(provider, "outputs") and provider.outputs:
+            java_outputs = provider.outputs.jars
+    jars, resolve_files_jars = map_with_resolve_files(to_jvm_outputs, java_outputs)
+    generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
+
+    resolve_files = resolve_files_jars + resolve_files_generated_jars
+    resolve_files_transitive = []
+    if is_external(target) or ctx.rule.kind in IMPORT_RULE_KIND:
+        resolve_files_transitive += provider_resolve_depsets(target, provider)
+        update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(resolve_files, transitive=resolve_files_transitive))
+    else:
+        update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
+
+
+
+
     info_file = dict(kotlin_target_info = kotlin_target_info,
-                     java_common = dict(javac_opts = get_additional_javac_options(ctx, target)),
+                     java_common = dict(javac_opts = get_additional_javac_options(ctx, target),
+                                        jars = jars, generated_jars = generated_jars),
+                     jvm_target = True,
                 )
+    if hasattr(provider, "api_generating_plugins"):
+        if len(provider.api_generating_plugins.processor_classes.to_list()) > 0:
+            info_file["has_api_generating_plugins"] = True
 
     return info_file, None
 
