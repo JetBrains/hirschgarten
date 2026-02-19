@@ -2,12 +2,10 @@ load("//${bspPath}/aspects:utils/utils.bzl", "IMPORT_RULE_KIND", "create_struct"
 load("//${bspPath}/aspects:utils/jvm_common.bzl", "to_generated_jvm_outputs", "get_generated_jars", "to_jvm_outputs", "provider_resolve_depsets")
 
 #if( $kotlinEnabled == "true" )
-load("//${bspPath}/aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_kotlin_plugins")
+load("//${bspPath}/aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")
 #else
 def get_kt_jvm_provider(target):
     return None
-def get_kotlin_plugins(target, ctx, dep_targets):
-    return []
 #end
 
 def get_jvm_provider(target):
