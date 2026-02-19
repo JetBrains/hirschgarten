@@ -5,7 +5,6 @@ import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -41,12 +40,14 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.projectAware.BazelProjectAware
+import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -54,6 +55,7 @@ import java.nio.file.Path
 import java.util.UUID
 import kotlin.io.path.extension
 import kotlin.io.path.name
+import kotlin.time.Duration.Companion.milliseconds
 
 @Suppress("UnstableApiUsage")
 class BazelFileEventListener : BulkFileListenerBackgroundable {
@@ -111,26 +113,32 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     if (project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
       startSyncConsoleTask(project, processingJob, originId)
     }
-    processingJob.join()
+    try {
+      processingJob.join()
+    } finally {
+      BazelTaskEventsService.getInstance(project).removeListener(originId)
+    }
     return true
   }
 
   private fun startSyncConsoleTask(project: Project, processingJob: Job, originId: String) {
-    project.syncConsole.startTask(
+    val syncConsole = project.syncConsole
+    syncConsole.startTask(
       taskId = originId,
       title = BazelPluginBundle.message("file.change.processing.title.multiple"),
       message = BazelPluginBundle.message("file.change.processing.message.start"),
       showConsole = TaskConsole.ShowConsole.ON_FAIL,
       cancelAction = { processingJob.cancel() },
     )
+    val taskListener = BazelBuildTaskListener(syncConsole, originId)
+    BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
     processingJob.invokeOnCompletion { exception ->
-      val (message, result) = if (exception == null) {
-        BazelPluginBundle.message("file.change.processing.message.finish") to SuccessResultImpl()
-      } else if (exception is CancellationException) {
-        BazelPluginBundle.message("file.change.processing.message.cancelled") to SkippedResultImpl()
-      } else {
-        BazelPluginBundle.message("file.change.processing.message.failed") to FailureResultImpl(exception)
-      }
+      val (message, result) =
+        when (exception) {
+          null -> BazelPluginBundle.message("file.change.processing.message.finish") to SuccessResultImpl()
+          is CancellationException -> BazelPluginBundle.message("file.change.processing.message.cancelled") to SkippedResultImpl()
+          else -> BazelPluginBundle.message("file.change.processing.message.failed") to FailureResultImpl(exception)
+        }
       project.syncConsole.finishTask(originId, message, result)
     }
   }
@@ -293,7 +301,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
 // if a project has no targets, there is no point in processing (also, it could interrupt the initial sync)
 private fun Project.hasAnyTargets(): Boolean = this.targetUtils.allTargets().any()
 
-private fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<SimplifiedFileEvent> {
+private suspend fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<SimplifiedFileEvent> {
   if (this.isEmpty() || !project.isBazelProject) return emptyList()
   val rootDirPath =
     try {
@@ -305,7 +313,7 @@ private fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<Si
     }
   val fileIndex = ProjectRootManager.getInstance(project).fileIndex
   val fileSystem = LocalFileSystem.getInstance()
-  return runReadAction {
+  return readAction {
     filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileSystem) }
   }
 }
@@ -412,7 +420,7 @@ private fun VirtualFileUrl.addToModule(
   entityStorageDiff.modifyModuleEntity(module) { contentRoots += contentRootEntity }
 }
 
-private const val PROCESSING_DELAY = 250L // not noticeable by the user, but if there are many events simultaneously, we will get them all
+private val PROCESSING_DELAY = 250.milliseconds // not noticeable by the user, but if there are many events simultaneously, we will get them all
 
 private val logger = Logger.getInstance(BazelFileEventListener::class.java)
 
