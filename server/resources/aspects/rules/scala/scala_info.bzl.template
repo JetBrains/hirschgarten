@@ -1,4 +1,3 @@
-load("//${bspPath}/aspects:rules/java/java_info.bzl", "get_java_info")
 load("//${bspPath}/aspects:utils/utils.bzl", "file_location", "is_external", "map", "update_sync_output_groups")
 
 SCALA_COMPILER_NAMES = [
@@ -35,12 +34,11 @@ def find_scalac_classpath(runfiles):
             result.append(file)
     return result if found_scala_compiler_jar and len(result) >= 2 else []
 
-def extract_scalatest_classpath(rule_attr):
+def extract_scalatest_classpath_targets(rule_attr):
     def extract_from_attr(attr):
         attr_value = getattr(rule_attr, attr, None)
-        if attr_value != None and get_java_info(attr_value) != None:
-            jars = getattr(get_java_info(attr_value), "full_compile_jars", depset()).to_list()
-            return map(file_location, jars)
+        if attr_value != None:
+            return [str(attr_value.label)]
         return []
 
     return (
@@ -74,6 +72,6 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
         common_scalac_opts = []
     scala_info["scalac_opts"] = common_scalac_opts + getattr(ctx.rule.attr, "scalacopts", [])
 
-    scala_info["scalatest_classpath"] = extract_scalatest_classpath(rule_attr)
+    scala_info["scalatest_classpath_targets"] = extract_scalatest_classpath_targets(rule_attr)
 
     return dict(scala_target_info = struct(**scala_info)), None
