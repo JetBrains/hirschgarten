@@ -1,0 +1,92 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+[32mComputing main repo mapping:[0m 
+[1A[K[32mLoading:[0m 
+[1A[K[32mLoading:[0m 0 packages loaded
+[1A[K[32mAnalyzing:[0m 5 targets (4 packages loaded, 0 targets configured)
+[1A[K[32mAnalyzing:[0m 5 targets (4 packages loaded, 0 targets configured)
+    currently loading: @@bazel_tools//tools
+
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (77 packages loaded, 524 targets configured)
+    currently loading: @@rules_license+//licenses/spdx
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 5s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 6s
+    Fetching https://mirror.bazel.build/...0.tar.xz; Checking in SHA-256 cache
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 6s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 8s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (78 packages loaded, 545 targets configured)
+    currently loading: @@hermetic_cc_toolchain++toolchains+zig_config//
+[32m[1 / 1][0m no actions running
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (79 packages loaded, 844 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@+_repo_rules+annotations_http; starting
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (83 packages loaded, 1521 targets configured)
+[32m[2 / 2][0m no actions running
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (83 packages loaded, 1521 targets configured)
+[32m[2 / 2][0m no actions running
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (94 packages loaded, 6691 targets configured)
+    currently loading: @@rules_java++toolchains+remote_java_tools//
+[32m[2 / 2][0m no actions running
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ...ux-gnu; Extracting cpython-3.11.11+20250317-x86_64-unknown-lin\
+ux-gnu-install_only.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (95 packages loaded, 6699 targets configured)
+    currently loading: @@rules_python++python+python_3_11_x86_64-unknown-linux\
+-gnu//
+[32m[2 / 2][0m no actions running
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (98 packages loaded, 9117 targets configured)
+[32m[2 / 2][0m no actions running
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (98 packages loaded, 9117 targets configured)
+    currently loading: @@rules_java++toolchains+remotejdk25_linux//
+[32m[2 / 2][0m no actions running
+[1A[K[1A[K[1A[K[32mINFO: [0mAnalyzed 5 targets (99 packages loaded, 9246 targets configured).
+[32m[7 / 8][0m //module:annotations_import; 0s processwrapper-sandbox
+[1A[K[32mINFO: [0mFound 5 targets...
+[32m[9 / 9][0m no actions running
+[1A[K[32mINFO: [0mElapsed time: 12.758s, Critical Path: 0.02s
+[32m[9 / 9][0m no actions running
+[1A[K[32mINFO: [0m9 processes: 8 internal, 1 processwrapper-sandbox.
+[32m[9 / 9][0m no actions running
+[1A[K[32mINFO: [0mBuild completed successfully, 9 total actions
+[32mINFO:[0m 
+[1A[K[32mINFO:[0m 
+[1A[K[32mINFO: [0mBuild Event Protocol files produced successfully.
+[0m
