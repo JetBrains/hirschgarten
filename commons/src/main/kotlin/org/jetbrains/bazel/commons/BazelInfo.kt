@@ -46,7 +46,7 @@ data class BazelRelease(val major: Int, val minor: Int = 0) {
 
     internal val OLDEST_SUPPORTED_MAJOR = 7
 
-    internal val MINIMAL_MINOR_VERSION = mapOf(7 to 5)
+    internal val MINIMAL_MINOR_VERSION = mapOf(7 to 5, 8 to 2)
   }
 
   /**
