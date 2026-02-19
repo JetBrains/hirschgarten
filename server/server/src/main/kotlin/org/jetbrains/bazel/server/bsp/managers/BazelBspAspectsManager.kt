@@ -13,6 +13,7 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bep.BepOutput
+import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -172,9 +173,16 @@ class BazelBspAspectsManager(
       }
 
     templateWriter.writeToFile(
+      "utils/make_variables.bzl" + Constants.TEMPLATE_EXTENSION,
+      aspectsPath.resolve("utils").resolve("make_variables.bzl"),
+      mapOf(),
+    )
+
+    templateWriter.writeToFile(
       "utils/utils.bzl" + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve("utils").resolve("utils.bzl"),
       mapOf(
+        "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
         "repoMapping" to starlarkRepoMapping,
       ),
     )
