@@ -247,6 +247,9 @@ PRIVATE_COMPILE_DEPS = [
     "_java_toolchain",
     "_jvm",
     "runtime_jdk",
+    "_scalatest",
+    "_scalatest_runner",
+   "_scalatest_reporter",
 ]
 
 RUNTIME_DEPS = [

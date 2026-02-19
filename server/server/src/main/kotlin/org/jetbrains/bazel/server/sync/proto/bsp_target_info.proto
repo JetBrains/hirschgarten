@@ -36,6 +36,10 @@ message JvmTargetInfo {
   optional string resource_strip_prefix = 13;
 }
 
+message JavaProviderInfo {
+  repeated FileLocation full_compile_jars = 1;
+}
+
 message JavaToolchainInfo {
   string source_version = 1;
   string target_version = 2;
@@ -48,9 +52,10 @@ message JavaRuntimeInfo {
 }
 
 message ScalaTargetInfo {
+  reserved 3;
   repeated string scalac_opts = 1;
   repeated FileLocation compiler_classpath = 2;
-  repeated FileLocation scalatest_classpath = 3;
+  repeated string scalatest_classpath_targets = 4;
 }
 
 message KotlincPluginOption {
@@ -124,6 +129,7 @@ message TargetInfo {
   reserved 1001 to 1003, 1006;
   bool jvm_target = 1004;
   bool has_api_generating_plugins = 1005;
+  JavaProviderInfo java_provider = 1008;
   JavaCommonInfo java_common = 1007;
   JavaToolchainInfo java_toolchain_info = 2000;
   JavaRuntimeInfo java_runtime_info = 3000;
