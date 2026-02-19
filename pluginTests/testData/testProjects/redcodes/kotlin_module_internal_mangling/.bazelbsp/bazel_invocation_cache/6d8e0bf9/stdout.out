@@ -1,0 +1,880 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+[32mComputing main repo mapping:[0m 
+[1A[K[32mLoading:[0m 
+[1A[K[32mLoading:[0m 0 packages loaded
+[1A[K[33mDEBUG: [0m__bazel_invocation_cache_output_base__/external/rules_kotlin+/kotlin/kotlin.bzl:81:10: kt_jvm_library should be loaded from //kotlin:jvm.bzl
+[32mLoading:[0m 4 packages loaded
+[1A[K[33mDEBUG: [0m__bazel_invocation_cache_output_base__/external/rules_kotlin+/kotlin/kotlin.bzl:81:10: kt_jvm_library should be loaded from //kotlin:jvm.bzl
+[32mLoading:[0m 4 packages loaded
+[1A[K[32mAnalyzing:[0m 5 targets (4 packages loaded, 0 targets configured)
+[1A[K[32mAnalyzing:[0m 5 targets (4 packages loaded, 0 targets configured)
+    currently loading: @@bazel_tools//tools
+
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (85 packages loaded, 640 targets configured)
+    currently loading: @@rules_license+//licenses/spdx
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://mirror.bazel.build/.../java/v18.1/java_tools-v18.1.zip
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (87 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 11.2 MiB (27.4%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/.../v2.2.21/kotlin-compiler-2.2.21.zip
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (87 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 18.9 MiB (46.3%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/.../kotlin-compiler-2.2.21.zip; 1.4 MiB (1.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (87 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 25.7 MiB (62.8%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/.../kotlin-compiler-2.2.21.zip; 2.8 MiB (3.7%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (87 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching https://mirror.bazel.build/...a_tools-v18.1.zip; 33.1 MiB (80.9%)
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/.../kotlin-compiler-2.2.21.zip; 4.0 MiB (5.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (87 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching repository @@rules_java++toolchains+remote_java_tools; starting
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/.../kotlin-compiler-2.2.21.zip; 5.1 MiB (6.9%)
+    Fetching ...+toolchains+remote_java_tools; Extracting java_tools-v18.1.zip
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 11.2 MiB (14.9%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 16.0 MiB (21.4%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 25.0 MiB (33.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 29.2 MiB (38.9%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 32.9 MiB (43.9%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 40.0 MiB (53.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 45.3 MiB (60.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 50.0 MiB (66.6%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...es_kotlin_extensions+com_github_jetbrains_kotlin_git; starting
+    Fetching ...itory @@hermetic_cc_toolchain++toolchains+zig_config; starting
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 55.5 MiB (73.9%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...kotlin_extensions+com_github_jetbrains_kotlin_git; starting 4s
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 60.0 MiB (79.9%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...kotlin_extensions+com_github_jetbrains_kotlin_git; starting 4s
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+    Fetching https://github.com/...otlin-compiler-2.2.21.zip; 65.3 MiB (87.1%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...kotlin_extensions+com_github_jetbrains_kotlin_git; starting 4s
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+    Fetching https://github.com/...in-compiler-2.2.21.zip; 70.0 MiB (93.3%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (88 packages loaded, 1313 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...kotlin_extensions+com_github_jetbrains_kotlin_git; starting 4s
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+    Fetching ...ub_jetbrains_kotlin_git; Extracting kotlin-compiler-2.2.21.zip
+[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (89 packages loaded, 1435 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 4s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (89 packages loaded, 1435 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 5s
+    Fetching https://mirror.bazel.build/...0.tar.xz; Checking in SHA-256 cache
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (89 packages loaded, 1435 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 6s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (89 packages loaded, 1435 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 7s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (89 packages loaded, 1435 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 8s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (89 packages loaded, 1435 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...ry @@hermetic_cc_toolchain++toolchains+zig_config; starting 9s
+    Fetching ...olchains+zig_config; Extracting zig-linux-x86_64-0.12.0.tar.xz
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (90 packages loaded, 1435 targets configured)
+[32m[1 / 1][0m no actions running
+[1A[K[1A[K[32mAnalyzing:[0m 5 targets (106 packages loaded, 5491 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
+    Fetching https://mirror.bazel.build/.../v18.1/java_tools_linux-v18.1.zip
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ...les_kotlin_extensions+kotlinx_serialization_core_jvm; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching ...ions+kotlinx_serialization_json_jvm; starting ... (10 fetches)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (110 packages loaded, 8981 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
+    Fetching https://mirror.bazel.build/...ls_linux-v18.1.zip; 3.0 MiB (33.1%)
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...ulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+    Fetching https://cdn.azul.com/...lu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (110 packages loaded, 8981 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching ...ory @@rules_java++toolchains+remote_java_tools_linux; starting
+    Fetching https://mirror.bazel.build/...ls_linux-v18.1.zip; 6.9 MiB (76.0%)
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...dk25.0.1-linux_x64.tar.gz; 1.9 MiB (0.9%)
+    Fetching https://cdn.azul.com/...4.tar.gz; 2.3 MiB (1.2%) ... (10 fetches)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...dk25.0.1-linux_x64.tar.gz; 4.6 MiB (2.1%)
+    Fetching https://cdn.azul.com/...k11.0.29-linux_x64.tar.gz; 5.4 MiB (2.8%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 150.4 KiB (0.1%)
+    Fetching https://github.com/...x-gnu-install_only.tar.gz; 260.3 KiB (0.9%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...dk25.0.1-linux_x64.tar.gz; 8.5 MiB (3.8%)
+    Fetching https://cdn.azul.com/...k11.0.29-linux_x64.tar.gz; 9.8 MiB (5.1%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 374.4 KiB (0.2%)
+    Fetching https://github.com/...x-gnu-install_only.tar.gz; 612.3 KiB (2.1%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...k25.0.1-linux_x64.tar.gz; 12.1 MiB (5.4%)
+    Fetching https://cdn.azul.com/...11.0.29-linux_x64.tar.gz; 13.7 MiB (7.2%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 550.4 KiB (0.3%)
+    Fetching https://github.com/...x-gnu-install_only.tar.gz; 964.3 KiB (3.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...k25.0.1-linux_x64.tar.gz; 18.7 MiB (8.4%)
+    Fetching https://cdn.azul.com/...11.0.29-linux_x64.tar.gz; 17.4 MiB (9.1%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 726.4 KiB (0.4%)
+    Fetching https://github.com/...nux-gnu-install_only.tar.gz; 1.4 MiB (4.9%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 23.0 MiB (10.4%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 25.8 MiB (13.5%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 966.4 KiB (0.6%)
+    Fetching https://github.com/...nux-gnu-install_only.tar.gz; 2.1 MiB (7.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 26.8 MiB (12.1%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 29.8 MiB (15.6%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 1.4 MiB (0.8%)
+    Fetching https://github.com/...nux-gnu-install_only.tar.gz; 2.6 MiB (9.2%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 30.2 MiB (13.6%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 33.8 MiB (17.7%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 1.6 MiB (0.9%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 3.6 MiB (12.4%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 34.2 MiB (15.4%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 38.0 MiB (19.9%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 1.8 MiB (1.0%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 4.5 MiB (15.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 38.1 MiB (17.2%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 42.3 MiB (22.2%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 1.9 MiB (1.1%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 5.3 MiB (18.5%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 42.2 MiB (19.0%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 46.7 MiB (24.4%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 1.9 MiB (1.1%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 5.9 MiB (20.7%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 45.9 MiB (20.7%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 51.1 MiB (26.7%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 2.1 MiB (1.2%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 6.6 MiB (23.0%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 49.0 MiB (22.1%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 54.4 MiB (28.5%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 2.2 MiB (1.3%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 7.6 MiB (26.6%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 52.5 MiB (23.7%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 57.4 MiB (30.0%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 2.5 MiB (1.5%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 8.2 MiB (28.6%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 56.5 MiB (25.5%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 60.8 MiB (31.8%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 2.6 MiB (1.5%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 8.7 MiB (30.3%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...otlin++rules_kotlin_extensions+com_github_google_ksp; starting
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 59.4 MiB (26.8%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 63.8 MiB (33.4%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 2.8 MiB (1.6%)
+    Fetching https://github.com/...ux-gnu-install_only.tar.gz; 9.3 MiB (32.5%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 4s
+    Fetching repository @@rules_java++toolchains+remotejdk25_linux; starting
+    Fetching repository @@rules_java++toolchains+remotejdk11_linux; starting
+    Fetching ..._python++python+python_3_11_x86_64-unknown-linux-gnu; starting
+    Fetching https://cdn.azul.com/...25.0.1-linux_x64.tar.gz; 62.7 MiB (28.3%)
+    Fetching https://cdn.azul.com/...1.0.29-linux_x64.tar.gz; 69.7 MiB (36.5%)
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 2.8 MiB (1.6%)
+    Fetching https://github.com/...x-gnu-install_only.tar.gz; 10.1 MiB (35.4%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 4s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 70.5 MiB (31.8%) 4s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 73.1 MiB (38.3%) 4s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 3.0 MiB (1.8%)
+    Fetching https://github.com/...x-gnu-install_only.tar.gz; 11.4 MiB (39.8%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 4s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 74.0 MiB (33.4%) 4s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 75.9 MiB (39.7%) 4s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 3.6 MiB (2.1%) 4s
+    Fetching https://github.com/...x-gnu-install_only.tar.gz; 12.2 MiB (42.5%)
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 4s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 77.6 MiB (35.0%) 4s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 78.9 MiB (41.3%) 4s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 3.9 MiB (2.3%) 4s
+    Fetching https://github.com/...nu-install_only.tar.gz; 13.4 MiB (46.7%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 4s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 80.9 MiB (36.5%) 4s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 81.5 MiB (42.7%) 4s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 4.1 MiB (2.4%) 4s
+    Fetching https://github.com/...nu-install_only.tar.gz; 14.1 MiB (49.1%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 4s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 4s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 4s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 84.6 MiB (38.2%) 4s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 84.6 MiB (44.3%) 4s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 4.3 MiB (2.5%) 4s
+    Fetching https://github.com/...nu-install_only.tar.gz; 14.8 MiB (51.7%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 5s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 5s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 88.4 MiB (39.9%) 5s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 87.8 MiB (46.0%) 5s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 4.6 MiB (2.7%) 4s
+    Fetching https://github.com/...nu-install_only.tar.gz; 15.8 MiB (55.1%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 5s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 5s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 92.3 MiB (41.7%) 5s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 91.3 MiB (47.8%) 5s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 5.0 MiB (2.9%) 5s
+    Fetching https://github.com/...nu-install_only.tar.gz; 16.7 MiB (58.4%) 4s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 5s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 5s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 95.7 MiB (43.2%) 5s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 94.4 MiB (49.4%) 5s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 5.2 MiB (3.1%) 5s
+    Fetching https://github.com/...nu-install_only.tar.gz; 17.8 MiB (62.1%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 5s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 5s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 5s
+    Fetching https://cdn.azul.com/...0.1-linux_x64.tar.gz; 99.1 MiB (44.7%) 5s
+    Fetching https://cdn.azul.com/....29-linux_x64.tar.gz; 97.5 MiB (51.0%) 5s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 5.4 MiB (3.1%) 5s
+    Fetching https://github.com/...nu-install_only.tar.gz; 18.5 MiB (64.7%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 6s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 6s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 102.6 MiB (46.3%) 5s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 100.5 MiB (52.6%) 5s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 5.6 MiB (3.3%) 5s
+    Fetching https://github.com/...nu-install_only.tar.gz; 19.1 MiB (66.7%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 6s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 6s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 107.1 MiB (48.3%) 6s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 103.3 MiB (54.1%) 6s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 5.9 MiB (3.5%) 5s
+    Fetching https://github.com/...nu-install_only.tar.gz; 19.9 MiB (69.4%) 5s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 6s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 6s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 110.9 MiB (50.0%) 6s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 106.7 MiB (55.9%) 6s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 6.2 MiB (3.6%) 6s
+    Fetching https://github.com/...nu-install_only.tar.gz; 20.9 MiB (73.1%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 6s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 6s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 114.3 MiB (51.6%) 6s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 109.4 MiB (57.3%) 6s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 6.7 MiB (3.9%) 6s
+    Fetching https://github.com/...nu-install_only.tar.gz; 22.0 MiB (76.7%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 6s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 6s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 6s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 118.8 MiB (53.6%) 6s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 112.5 MiB (58.9%) 6s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 6.7 MiB (3.9%) 6s
+    Fetching https://github.com/...nu-install_only.tar.gz; 23.5 MiB (82.0%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 7s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 123.0 MiB (55.5%) 6s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 115.8 MiB (60.6%) 6s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 7.1 MiB (4.2%) 6s
+    Fetching https://github.com/...nu-install_only.tar.gz; 24.6 MiB (85.9%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 7s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 126.7 MiB (57.1%) 7s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 118.8 MiB (62.2%) 7s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 7.9 MiB (4.6%) 6s
+    Fetching https://github.com/...nu-install_only.tar.gz; 25.6 MiB (89.5%) 6s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 7s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 130.5 MiB (58.9%) 7s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 121.7 MiB (63.7%) 7s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 8.4 MiB (4.9%) 7s
+    Fetching https://github.com/...nu-install_only.tar.gz; 26.8 MiB (93.5%) 7s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 7s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 134.2 MiB (60.5%) 7s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 124.7 MiB (65.3%) 7s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 8.7 MiB (5.1%) 7s
+    Fetching https://github.com/...nu-install_only.tar.gz; 28.0 MiB (97.6%) 7s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 7s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 7s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 7s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 137.2 MiB (61.9%) 7s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 127.1 MiB (66.6%) 7s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 9.0 MiB (5.2%) 7s
+    Fetching ...ux-gnu; Extracting cpython-3.11.11+20250317-x86_64-unknown-lin\
+ux-gnu-install_only.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (111 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
+    Fetching ...thon++python+python_3_11_x86_64-unknown-linux-gnu; starting 8s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 141.2 MiB (63.7%) 8s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 133.5 MiB (69.9%) 8s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 9.0 MiB (5.2%) 7s
+    Fetching ...ux-gnu; Extracting cpython-3.11.11+20250317-x86_64-unknown-lin\
+ux-gnu-install_only.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (112 packages loaded, 9002 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 145.9 MiB (65.8%) 8s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 136.6 MiB (71.5%) 8s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 9.6 MiB (5.6%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 149.7 MiB (67.5%) 8s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 140.1 MiB (73.3%) 8s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 10.0 MiB (5.9%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 158.6 MiB (71.6%) 8s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 144.2 MiB (75.5%) 8s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 10.5 MiB (6.1%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 8s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 8s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 162.7 MiB (73.4%) 8s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 147.9 MiB (77.5%) 8s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 11.6 MiB (6.8%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 166.7 MiB (75.2%) 9s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 151.3 MiB (79.2%) 9s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 12.1 MiB (7.1%) 8s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 170.5 MiB (76.9%) 9s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 155.1 MiB (81.2%) 9s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 12.6 MiB (7.4%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 174.5 MiB (78.8%) 9s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 159.0 MiB (83.2%) 9s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 13.1 MiB (7.7%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...in++rules_kotlin_extensions+com_github_google_ksp; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk25_linux; starting 9s
+    Fetching ...sitory @@rules_java++toolchains+remotejdk11_linux; starting 9s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 178.5 MiB (80.5%) 9s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 162.9 MiB (85.3%) 9s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 13.6 MiB (8.0%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 10s
+    Fetching https://cdn.azul.com/....1-linux_x64.tar.gz; 182.1 MiB (82.2%) 9s
+    Fetching https://cdn.azul.com/...29-linux_x64.tar.gz; 166.4 MiB (87.1%) 9s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 14.0 MiB (8.2%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 10s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 185.2 MiB (83.6%) 10s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 169.3 MiB (88.7%) 10s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 15.0 MiB (8.8%) 9s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 10s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 186.4 MiB (84.1%) 10s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 170.6 MiB (89.3%) 10s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 17.8 MiB (10.4%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 10s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 192.5 MiB (86.8%) 10s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 173.6 MiB (90.9%) 10s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 17.8 MiB (10.4%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 10s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 10s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 195.4 MiB (88.2%) 10s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 176.1 MiB (92.2%) 10s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 18.4 MiB (10.8%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 11s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 199.1 MiB (89.8%) 11s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 177.9 MiB (93.1%) 11s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 18.8 MiB (11.0%) 10s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 11s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 203.1 MiB (91.7%) 11s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 181.9 MiB (95.2%) 11s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 19.2 MiB (11.2%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 11s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 207.7 MiB (93.7%) 11s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 184.1 MiB (96.4%) 11s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 20.5 MiB (12.0%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 11s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 211.5 MiB (95.4%) 11s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 186.0 MiB (97.4%) 11s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 21.1 MiB (12.3%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 11s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 11s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 215.4 MiB (97.2%) 11s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 188.1 MiB (98.5%) 11s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 21.9 MiB (12.8%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 12s
+    Fetching https://cdn.azul.com/...1-linux_x64.tar.gz; 219.4 MiB (99.0%) 12s
+    Fetching https://cdn.azul.com/...9-linux_x64.tar.gz; 190.1 MiB (99.5%) 12s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 22.5 MiB (13.2%) 11s
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 12s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 24.1 MiB (14.1%) 12s
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 12s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 26.9 MiB (15.8%) 12s
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 12s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 12s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 29.6 MiB (17.3%) 12s
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 13s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 13s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 13s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 30.0 MiB (17.5%) 12s
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (114 packages loaded, 11420 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 13s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 13s
+    Fetching ...itory @@rules_java++toolchains+remotejdk11_linux; starting 13s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 32.8 MiB (19.2%) 12s
+    Fetching ..._linux; Extracting zulu11.84.17-ca-jdk11.0.29-linux_x64.tar.gz
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (115 packages loaded, 11543 targets configured)
+[32m[1 / 1][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 13s
+    Fetching ...itory @@rules_java++toolchains+remotejdk25_linux; starting 13s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 35.5 MiB (20.8%) 13s
+    Fetching ...5_linux; Extracting zulu25.30.17-ca-jdk25.0.1-linux_x64.tar.gz
+[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 13s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 38.6 MiB (22.6%) 13s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 13s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 40.8 MiB (23.9%) 13s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 14s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 44.0 MiB (25.7%) 13s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 14s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 47.1 MiB (27.6%) 14s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 14s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 50.0 MiB (29.2%) 14s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 14s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 54.0 MiB (31.6%) 14s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 15s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 57.7 MiB (33.7%) 14s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 15s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 60.0 MiB (35.1%) 14s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 15s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 63.6 MiB (37.2%) 15s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 15s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 71.1 MiB (41.6%) 15s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 16s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 75.5 MiB (44.2%) 15s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 16s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 79.6 MiB (46.5%) 15s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 16s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 82.5 MiB (48.2%) 16s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 16s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 86.6 MiB (50.6%) 16s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 17s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 93.7 MiB (54.8%) 16s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 17s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 97.4 MiB (56.9%) 16s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 17s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 102.6 MiB (60.0%) 17s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 17s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 106.6 MiB (62.3%) 17s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 18s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 110.0 MiB (64.3%) 17s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 18s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 115.0 MiB (67.3%) 17s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 18s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 120.0 MiB (70.2%) 18s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 18s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 124.2 MiB (72.6%) 18s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 18s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 129.9 MiB (75.9%) 18s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 19s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 139.5 MiB (81.6%) 18s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 19s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 143.7 MiB (84.0%) 19s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 19s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 154.3 MiB (90.2%) 19s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 20s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 160.0 MiB (93.5%) 19s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 20s
+    Fetching https://github.com/.../2.3.3/artifacts.zip; 166.0 MiB (97.0%) 19s
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 20s
+[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 20s
+    Fetching ...lin_extensions+com_github_google_ksp; Extracting artifacts.zip
+[1A[K[1A[K[1A[K[1A[K[32mAnalyzing:[0m 5 targets (116 packages loaded, 11688 targets configured)
+[32m[5 / 5][0m no actions running
+    Fetching ...n++rules_kotlin_extensions+com_github_google_ksp; starting 21s
+[1A[K[1A[K[1A[K[32mINFO: [0mAnalyzed 5 targets (117 packages loaded, 11696 targets configured).
+[32m[7 / 7][0m no actions running
+[1A[K[32mINFO: [0mFound 5 targets...
+[32m[8 / 8][0m no actions running
+[1A[K[32mINFO: [0mElapsed time: 31.312s, Critical Path: 0.06s
+[32m[8 / 8][0m no actions running
+[1A[K[32mINFO: [0m8 processes: 7 internal, 1 processwrapper-sandbox.
+[32m[8 / 8][0m no actions running
+[1A[K[32mINFO: [0mBuild completed successfully, 8 total actions
+[32mINFO:[0m 
+[1A[K[32mINFO:[0m 
+[1A[K[32mINFO: [0mBuild Event Protocol files produced successfully.
+[0m
