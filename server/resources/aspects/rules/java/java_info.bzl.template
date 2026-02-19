@@ -7,6 +7,7 @@ load("@${rulesetName}//java:java_utils.bzl", java_utils = "utils")
 
 load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "to_file_location", "BspAspectInfo", "file_location", "is_external", "IMPORT_RULE_KIND", "update_sync_output_groups", "map_with_resolve_files")
 load("//${bspPath}/aspects:utils/jvm_common.bzl", "to_generated_jvm_outputs", "get_generated_jars", "provider_resolve_depsets", "to_jvm_outputs")
+load("//${bspPath}/aspects:utils/make_variables.bzl", "expand_make_variables")
 
 
 def java_info_in_target(target):
@@ -29,9 +30,10 @@ def get_java_info(target):
     #end
 
 def _get_javacopts_from_context(ctx):
-    javacopts = getattr(ctx.rule.attr, "javacopts", [])
-    if javacopts == None: # "javacopts" might exist in ctx.rule.attr as None
-        javacopts = []
+    javacopts_raw = getattr(ctx.rule.attr, "javacopts", [])
+    if javacopts_raw == None: # "javacopts" might exist in ctx.rule.attr as None
+        javacopts_raw = []
+    javacopts = expand_make_variables(ctx, True, javacopts_raw)
     add_exports = ["--add-exports=" + export + "=ALL-UNNAMED" for export in getattr(ctx.rule.attr, "add_exports", [])]
     add_opens = ["--add-opens=" + open + "=ALL-UNNAMED" for open in getattr(ctx.rule.attr, "add_opens", [])]
     return javacopts + add_exports + add_opens
