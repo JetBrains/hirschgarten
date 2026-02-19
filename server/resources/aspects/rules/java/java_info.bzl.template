@@ -1,4 +1,4 @@
-#if( $javaEnabled == "true" && $bazel8OrAbove == "true" && $rulesetName != "" )
+#if( $bazel8OrAbove == "true" && $rulesetName != "" )
 load("@${rulesetName}//java/common:java_common.bzl", "java_common")
 load("@${rulesetName}//java/common:java_info.bzl", "JavaInfo")
 load("@${rulesetName}//java/common:java_plugin_info.bzl", "JavaPluginInfo")
@@ -10,25 +10,6 @@ load("//${bspPath}/aspects:utils/jvm_common.bzl", "to_generated_jvm_outputs", "g
 load("//${bspPath}/aspects:utils/make_variables.bzl", "expand_make_variables")
 
 
-def java_info_in_target(target):
-    #if( $javaEnabled == "true" )
-    return JavaInfo in target
-
-    #else
-    return False
-    #end
-
-def get_java_info(target):
-    #if( $javaEnabled == "true" )
-    if JavaInfo in target:
-        return target[JavaInfo]
-    else:
-        return None
-
-    #else
-    return None
-    #end
-
 def _get_javacopts_from_context(ctx):
     javacopts_raw = getattr(ctx.rule.attr, "javacopts", [])
     if javacopts_raw == None: # "javacopts" might exist in ctx.rule.attr as None
@@ -39,9 +20,9 @@ def _get_javacopts_from_context(ctx):
     return javacopts + add_exports + add_opens
 
 def get_javacopts(target, ctx):
-    #if( $javaEnabled == "true" && $bazel8OrAbove == "true" && $rulesetName != "" )
-    java_info = get_java_info(target)
-    if java_info != None:
+    #if( $bazel8OrAbove == "true" && $rulesetName != "" )
+    if JavaInfo in target:
+        java_info = target[JavaInfo]
         compilation_info = getattr(java_info, "compilation_info", None)
         module_flags_info = getattr(java_info, "module_flags_info", None)
         if compilation_info != None and module_flags_info != None:
@@ -53,17 +34,6 @@ def get_javacopts(target, ctx):
 
     #else
     return _get_javacopts_from_context(ctx)
-    #end
-
-def get_java_plugin_info(target):
-    #if( $javaEnabled == "true" )
-    if JavaPluginInfo in target:
-        return target[JavaPluginInfo]
-    else:
-        return None
-
-    #else
-    return None
     #end
 
 def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
@@ -98,8 +68,8 @@ def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
         return None, None
 
 def get_jdeps(target): 
-    if java_info_in_target(target):
-        return [jo.jdeps for jo in get_java_info(target).java_outputs if jo.jdeps != None]
+    if JavaInfo in target:
+        return [jo.jdeps for jo in target[JavaInfo].java_outputs if jo.jdeps != None]
     return []
 
 
@@ -129,8 +99,9 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
 
     jdeps = get_jdeps(target)
     java_outputs = []
-    provider = get_java_info(target)
-    if provider:
+    provider = None
+    if JavaInfo in target:
+        provider = target[JavaInfo]
         if hasattr(provider, "java_outputs") and provider.java_outputs:
             java_outputs = provider.java_outputs
         elif hasattr(provider, "outputs") and provider.outputs:
@@ -164,8 +135,8 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
             full_compile_jars = map(file_location, getattr(provider, "full_compile_jars", depset()).to_list())
         )
 
-    java_plugin_info = get_java_plugin_info(target)
-    if java_plugin_info:
+    if JavaPluginInfo in target:
+        java_plugin_info = target[JavaPluginInfo]
         if len(java_plugin_info.api_generating_plugins.processor_classes.to_list()) > 0:
             info_result["has_api_generating_plugins"] = True
 
