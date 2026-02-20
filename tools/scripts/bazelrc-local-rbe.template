@@ -1,14 +1,21 @@
-# Local NativeLink RBE configuration.
-# Copy this file to the Ultimate root as .bazelrc-user.bazelrc:
-#   cp plugins/bazel/tools/scripts/bazelrc-local-rbe.template .bazelrc-user.bazelrc
+# Local NativeLink RBE configuration with mTLS.
 #
-# Start NativeLink first: plugins/bazel/tools/scripts/start-local-rbe.sh
-# Remove the file to return to normal builds.
+# The start script generates .bazelrc-user.bazelrc with correct absolute paths.
+# This template is for reference only.
+#
+# Usage: plugins/bazel/tools/scripts/start-local-rbe.sh
+# Cleanup: plugins/bazel/tools/scripts/stop-local-rbe.sh
 
 # Override the HTTP remote cache — cannot combine with gRPC remote execution.
 common --remote_cache=
 
-build --remote_executor=grpc://localhost:50051
+# mTLS: CA cert to verify the server, client cert+key to authenticate to it.
+# Certs are checked into docker/nativelink/certs/.
+build --tls_certificate=<absolute-path-to>/docker/nativelink/certs/ca.pem
+build --tls_client_certificate=<absolute-path-to>/docker/nativelink/certs/client.pem
+build --tls_client_key=<absolute-path-to>/docker/nativelink/certs/client-key.pem
+
+build --remote_executor=grpcs://localhost:50051
 build --remote_default_exec_properties=OSFamily=Linux
 build --jobs=HOST_CPUS*.5
 build --remote_timeout=600

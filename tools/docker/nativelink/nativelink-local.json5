@@ -75,6 +75,11 @@
       listener: {
         http: {
           socket_address: "0.0.0.0:50051",
+          tls: {
+            cert_file: "/config/certs/server.pem",
+            key_file: "/config/certs/server-key.pem",
+            client_ca_file: "/config/certs/ca.pem",
+          },
         },
       },
       services: {

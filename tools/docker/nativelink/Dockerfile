@@ -21,6 +21,7 @@ RUN --mount=from=nativelink-bin,source=/,target=/nativelink-img \
     cp /nativelink-img/nix/store/*/bin/nativelink /usr/local/bin/nativelink
 
 COPY nativelink-local.json5 /config/nativelink.json5
+COPY certs/ /config/certs/
 
 VOLUME /data
 EXPOSE 50051 50061
