@@ -22,7 +22,7 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `synthetic run targets should execute Java and Kotlin main classes from gutter`() {
-    val context = createContext("runAllTestsAction", IdeaBazelCases.SyntheticRunTarget)
+    val context = createContext("syntheticRunTarget", IdeaBazelCases.SyntheticRunTarget)
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
       }
