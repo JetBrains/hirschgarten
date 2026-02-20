@@ -26,15 +26,15 @@ class ScalaLanguagePlugin(
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
-  override fun prepareSync(project: Project, targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(project: Project, targets: Map<Label, BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
     scalaSdks =
-      targets
+      targets.values.asSequence()
         .associateBy(
           { it.label() },
           ScalaSdkResolver(bazelPathsResolver)::resolveSdk,
         ).filterValuesNotNull()
     scalaTestJars =
-      targets
+      targets.values.asSequence()
         .filter { it.hasScalaTargetInfo() }
         .associateBy(
           { it.label() },

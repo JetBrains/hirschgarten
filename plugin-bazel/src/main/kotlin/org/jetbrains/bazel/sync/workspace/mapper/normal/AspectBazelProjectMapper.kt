@@ -99,7 +99,7 @@ class AspectBazelProjectMapper(
     repoMapping: RepoMapping,
     hasError: Boolean,
   ): BazelResolvedWorkspace {
-    languagePluginsService.all.forEach { it.prepareSync(project, allTargets.values.asSequence(), workspaceContext) }
+    languagePluginsService.all.forEach { it.prepareSync(project, allTargets, workspaceContext) }
     val dependencyGraph =
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, allTargets)

@@ -7,6 +7,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
@@ -20,8 +21,8 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
 
-  override fun prepareSync(project: Project, targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
-    val defaultTargetInfo = calculateDefaultTargetInfo(targets)
+  override fun prepareSync(project: Project, targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext) {
+    val defaultTargetInfo = calculateDefaultTargetInfo(targets.values.asSequence())
     defaultInterpreter =
       defaultTargetInfo
         ?.interpreter
