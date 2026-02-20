@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -35,9 +36,9 @@ class JavaLanguagePlugin(
   private var cachedSROIncludeMatchers: List<SourceRootPattern> = listOf()
   private var cachedSROExcludeMatchers: List<SourceRootPattern> = listOf()
 
-  override fun prepareSync(project: Project, targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(project: Project, targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext) {
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
-    jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets)
+    jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets.values.asSequence())
 
     val projectView = ProjectViewService.getInstance(project)
       .getCachedProjectView()
