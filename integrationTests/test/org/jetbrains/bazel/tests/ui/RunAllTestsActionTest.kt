@@ -23,7 +23,7 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
   fun `run all tests action should execute and show results`(runConfigRunWithBazel: Boolean) {
-    createContext("runAllTestsAction", IdeaBazelCases.RunAllTestsAction)
+    createContext("runAllTestsAction-${if (runConfigRunWithBazel) "withBazel" else "withoutBazel"}", IdeaBazelCases.RunAllTestsAction)
       .setRunConfigRunWithBazel(runConfigRunWithBazel)
       .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {
