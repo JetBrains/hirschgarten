@@ -1,44 +1,11 @@
-load("//${bspPath}/aspects:utils/utils.bzl", "IMPORT_RULE_KIND", "create_struct", "file_location", "is_external", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion", "map_with_resolve_files")
-load("//${bspPath}/aspects:utils/jvm_common.bzl", "to_generated_jvm_outputs", "get_generated_jars", "to_jvm_outputs", "provider_resolve_depsets")
-
-def get_jvm_provider(target):
-    if hasattr(target, "scala"):
-        return target.scala
-    return None
-
-def has_api_generating_plugins(target, ctx, dep_targets, provider):
-    if hasattr(provider, "api_generating_plugins"):
-        # rules_java calculates api_generating_plugins for us already
-        return len(provider.api_generating_plugins.processor_classes.to_list()) > 0
-
-    return False
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "file_location", "do_starlark_string_expansion")
 
 def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
-    provider = get_jvm_provider(target)
-
-    java_outputs = []
-    if provider:
-        if hasattr(provider, "java_outputs") and provider.java_outputs:
-            java_outputs = provider.java_outputs
-        elif hasattr(provider, "outputs") and provider.outputs:
-            java_outputs = provider.outputs.jars
-
-    jars, resolve_files_jars = map_with_resolve_files(to_jvm_outputs, java_outputs)
-
-    generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
-
     raw_jvm_flags = getattr(ctx.rule.attr, "jvm_flags", [])
     data_deps = getattr(ctx.rule.attr, "data", [])
     jvm_flags = do_starlark_string_expansion(ctx, "jvm_flags", raw_jvm_flags, data_deps)
     args = getattr(ctx.rule.attr, "args", [])
     main_class = getattr(ctx.rule.attr, "main_class", None)
-    resolve_files = resolve_files_jars + resolve_files_generated_jars
-    resolve_files_transitive = []
-    if is_external(target) or ctx.rule.kind in IMPORT_RULE_KIND:
-        resolve_files_transitive += provider_resolve_depsets(target, provider)
-        update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(resolve_files, transitive=resolve_files_transitive))
-    else:
-        update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
 
     resource_strip_prefix_attr = getattr(ctx.rule.attr, "resource_strip_prefix", None)
     resource_strip_prefix = None
@@ -54,10 +21,5 @@ def extract_jvm_info(target, ctx, output_groups, dep_targets, **kwargs):
         args = args,
         resource_strip_prefix = resource_strip_prefix,
     )
-    result = dict(jvm_target_info = info, java_common = dict(jars = jars, generated_jars = generated_jars))
-    if provider:
-        result["jvm_target"] = True
-    if has_api_generating_plugins(target, ctx, dep_targets, provider):
-        result["has_api_generating_plugins"] = True
 
-    return result, None
+    return dict(jvm_target_info = info), None
