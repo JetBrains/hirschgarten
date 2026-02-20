@@ -36,6 +36,7 @@ object BazelFeatureFlags {
   const val RUN_CONFIG_RUN_WITH_BAZEL = "bazel.run.config.run.with.bazel"
   const val USE_PTY = "bazel.use.pty"
   const val KILL_SERVER_ON_CANCEL = "bazel.kill.server.on.cancel"
+  const val KILL_TREE_ON_CANCEL = "bazel.kill.tree.on.cancel"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -103,6 +104,9 @@ object BazelFeatureFlags {
 
   val killServerOnCancel: Boolean
     get() = isEnabled(KILL_SERVER_ON_CANCEL)
+
+  val killClientTreeOnCancel: Boolean
+    get() = isEnabled(KILL_TREE_ON_CANCEL)
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->

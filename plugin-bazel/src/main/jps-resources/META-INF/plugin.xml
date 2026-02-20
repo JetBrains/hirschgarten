@@ -443,6 +443,12 @@
       restartRequired="true"
     />
     <registryKey
+      defaultValue="true"
+      description="If true, IDEA will terminate bazel client process tree if the bazel process was cancelled"
+      key="bazel.kill.tree.on.cancel"
+      restartRequired="false"
+    />
+    <registryKey
       defaultValue="false"
       description="If true, IDEA will terminate Bazel server daemon if the bazel process was cancelled"
       key="bazel.kill.server.on.cancel"
