@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.projectTree;
 import org.jetbrains.bazel.bazelrunner.BazelCommand;
 import org.jetbrains.bazel.bazelrunner.BazelProcess;
 import org.jetbrains.bazel.bazelrunner.BazelRunner;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -22,5 +23,15 @@ public final class BazelRunnerSpyStubbingHelper {
       nullable(String.class),
       anyBoolean()
     );
+  }
+
+  public static BazelCommand captureBazelCommandFromMock(BazelRunner runner) {
+    ArgumentCaptor<BazelCommand> argumentCaptor = ArgumentCaptor.forClass(BazelCommand.class);
+    Mockito.verify(runner).runBazelCommand(
+      argumentCaptor.capture(),
+      nullable(String.class),
+      anyBoolean()
+    );
+    return argumentCaptor.getValue();
   }
 }
