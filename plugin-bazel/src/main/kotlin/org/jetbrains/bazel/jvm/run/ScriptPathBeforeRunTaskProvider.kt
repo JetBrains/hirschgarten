@@ -98,8 +98,10 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
     }
   }
 
-  private fun createTempScriptFile(): Path =
-    Files.createTempFile(Paths.get(FileUtilRt.getTempDirectory()), "bazel-script-", "").also { it.toFile().deleteOnExit() }
+  private fun createTempScriptFile(): Path {
+    val suffix = if (SystemInfo.isWindows) ".bat" else ""
+    Files.createTempFile(Paths.get(FileUtilRt.getTempDirectory()), "bazel-script-", suffix).also { it.toFile().deleteOnExit() }
+  }
 
   override fun getId(): Key<Task> = PROVIDER_ID
 
