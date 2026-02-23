@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync.projectResolver
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.TargetKey
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.junit.jupiter.api.Test
@@ -30,7 +31,7 @@ class ProjectResolverTest {
   ): TargetInfo =
     TargetInfo
       .newBuilder()
-      .setId(id)
+      .setKey(TargetKey.newBuilder().setLabel(id).build())
       .addAllDependencies(
         dependenciesIds.map { dependency(it) },
       ).setKind(kind)
@@ -43,5 +44,5 @@ class ProjectResolverTest {
       .build()
 
   private fun toIdToTargetInfoMap(vararg targetIds: TargetInfo): Map<Label, TargetInfo> =
-    targetIds.associateBy { targetId -> Label.parse(targetId.id) }
+    targetIds.associateBy { targetId -> Label.parse(targetId.key.label) }
 }
