@@ -11,6 +11,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 
 object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val FastBuild = withBazelProject(
@@ -19,7 +20,11 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
         commitHash = "2f0fe4c086dac9ab844542cc18525478e253d416",
         branchName = "main",
         relativePath = "fastBuildTest",
-        configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
+        configure = { context ->
+          BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)
+          val projectHome = context.resolvedProjectHome.let { if (it.isDirectory()) it else it.parent }
+          (projectHome / ".bazelrc").toFile().appendText("\ncommon --disk_cache=\n")
+        },
       )
     )
 
