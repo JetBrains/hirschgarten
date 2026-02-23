@@ -41,6 +41,7 @@ import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.ExecUtils
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -144,10 +145,24 @@ object FastBuildUtils {
       val originalParamsFile1 = targetJar.parent.resolve(targetJar.fileName.name + "-1.params")
 
       if (originalParamsFile.notExists()) {
-        BazelCoroutineService.getInstance(project).start {
-          runBuildTargetTask(buildInfos.values.map { it.id }, project)
+        logger.info("Params file not found at $originalParamsFile, falling back to full build with hotswap")
+        withContext(Dispatchers.EDT) {
+          writeIntentReadAction {
+            FileDocumentManager.getInstance().saveAllDocuments()
+          }
         }
-        throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.params.not.found"))
+        val status = runBuildTargetTask(buildInfos.values.map { it.id }, project)
+        if (status == BazelStatus.SUCCESS) {
+          val fallbackTempDir = Files.createTempDirectory("fastbuild-fallback")
+          processAndHotswapOutput(fallbackTempDir, targetJar, project)
+        }
+        fastBuildTargetStatus = FastBuildTargetStatus(
+          inputFile = inputFile,
+          targetJar = targetJar,
+          status = if (status == BazelStatus.SUCCESS) FastBuildActionStatus.SUCCESS else FastBuildActionStatus.ERROR,
+        )
+        fastBuildService.finishFastBuildTarget(fastBuildTargetStatus)
+        continue
       }
 
       withContext(Dispatchers.EDT) {
