@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.io.FileUtilRt
+import com.intellij.util.system.OS
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
@@ -98,8 +99,12 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
     }
   }
 
-  private fun createTempScriptFile(): Path =
-    Files.createTempFile(Paths.get(FileUtilRt.getTempDirectory()), "bazel-script-", "").also { it.toFile().deleteOnExit() }
+  private fun createTempScriptFile(): Path {
+    // on Windows, the only way to have an executable script is to have a
+    // .bat file, but on unix the extension doesn't matter
+    val suffix = if (OS.CURRENT == OS.Windows) ".bat" else ""
+    return Files.createTempFile(Paths.get(FileUtilRt.getTempDirectory()), "bazel-script-", suffix).also { it.toFile().deleteOnExit() }
+  }
 
   override fun getId(): Key<Task> = PROVIDER_ID
 
