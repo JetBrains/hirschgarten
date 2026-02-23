@@ -9,22 +9,15 @@ import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
-import com.intellij.util.application
 import com.intellij.util.lang.UrlClassLoader
-import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.junit.jupiter.api.fail
 import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
 import kotlin.io.path.copyTo
-import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createParentDirectories
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.name
-import kotlin.io.path.notExists
 import kotlin.io.path.relativeTo
 import kotlin.io.path.toPath
 
@@ -78,51 +71,11 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override suspend fun performBazelSync() {
     ProjectSyncTask(project).sync(SecondPhaseSync, buildProject = false)
-    syncBazelCache()
-  }
-
-  @OptIn(ExperimentalPathApi::class)
-  private fun syncBazelCache() {
-    val expectedInvocationCache = tempDir.resolve(BazelInvocationCache.INVOCATION_CACHE_DIR_PATH)
-    val testProjectPath = requireNotNull(testProjectPath) { "copyBazelTestProject has to be called before this method" }
-    val actualInvocationCache = testProjectPath.resolve(BazelInvocationCache.INVOCATION_CACHE_DIR_PATH)
-
-    if (expectedInvocationCache.notExists()) {
-      val mainMessage = "Please rerun test using Bazel IntelliJ plugin to update Bazel invocation caches."
-      runCatching { actualInvocationCache.deleteRecursively() }
-        .onSuccess {
-          fail("$mainMessage Deleted invocation cache directory in test successfully.")
-        }.onFailure { exception ->
-          fail(
-            mainMessage + " Couldn't delete invocation cache directory. " +
-            "Please rerun using Bazel IntelliJ plugin (which uses --script_path and avoids Bazel sandboxing) instead of `bazel test`: $exception",
-          )
-        }
-    }
-    else if (actualInvocationCache.notExists()) {
-      runCatching {
-        expectedInvocationCache.copyToRecursively(
-          actualInvocationCache.createParentDirectories(),
-          followLinks = false,
-        )
-      }.onSuccess {
-        fail(
-          "Synchronized Bazel invocation caches! Next test run should pass successfully. " +
-          "Don't forget to `git add` the created ${BazelInvocationCache.INVOCATION_CACHE_DIR_PATH}.",
-        )
-      }.onFailure { exception ->
-        fail(
-          "Please rerun using Bazel IntelliJ plugin (which uses --script_path and avoids Bazel sandboxing) instead of `bazel test`. " +
-          "Exception on copy attempt: $exception",
-        )
-      }
-    }
   }
 
   override fun setUp() {
     super.setUp()
     project.bazelProjectProperties.rootDir = virtualFileOf(tempDirPath)
-    registerExtension(application.extensionArea, BazelProcessLauncherProvider.ep, BazelInvocationCacheProvider)
   }
 
   override fun tearDown() {
