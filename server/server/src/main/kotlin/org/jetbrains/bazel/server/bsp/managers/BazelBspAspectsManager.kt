@@ -136,7 +136,6 @@ class BazelBspAspectsManager(
         mapOf(
           "rulesetName" to canonicalRuleName,
           "rulesetNameApparent" to apparentRuleName,
-          "pythonEnabled" to pythonEnabled.toString(),
           // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),

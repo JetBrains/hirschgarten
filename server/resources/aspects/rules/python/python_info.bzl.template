@@ -4,10 +4,7 @@ load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "file_location", "
 
 # Ruleset Name: $rulesetName
 
-#if( $pythonEnabled == "false")
-# Not enabled
-
-#elseif( $bazel8OrAbove == "true" && $rulesetName != "" )
+#if( $bazel8OrAbove == "true" && $rulesetName != "" )
 # Bazel 8+: Use only the rules_python providers.
 load("@${rulesetName}//python:defs.bzl", "PyInfo")
 PyInfo_Secondary = None
@@ -30,15 +27,9 @@ PYTHON_TOOLCHAIN_TYPE = None
 CODE_GENERATOR_RULE_NAMES = ${codeGeneratorRules}
 
 def py_info_in_target(target):
-    #if( $pythonEnabled == "true" )
     return PyInfo in target or (PyInfo_Secondary != None and PyInfo_Secondary in target)
 
-    #else
-    return False
-    #end
-
 def get_py_info(target):
-    #if( $pythonEnabled == "true" )
     if PyInfo in target:
         return target[PyInfo]
     elif PyInfo_Secondary != None and PyInfo_Secondary in target:
@@ -46,12 +37,7 @@ def get_py_info(target):
     else:
         return None
 
-    #else
-    return None
-    #end
-
 def get_py_runtime_info(ctx):
-    #if( $pythonEnabled == "true" )
     if PYTHON_TOOLCHAIN_TYPE != None and PYTHON_TOOLCHAIN_TYPE in ctx.toolchains:
         toolchain = ctx.toolchains[PYTHON_TOOLCHAIN_TYPE]
         if not toolchain:
@@ -60,10 +46,6 @@ def get_py_runtime_info(ctx):
         return getattr(toolchain, "py3_runtime", None)
     else:
         return None
-
-    #else
-    return None
-    #end
 
 def interpreter_from_absolute_path(path):
     if path == None:
