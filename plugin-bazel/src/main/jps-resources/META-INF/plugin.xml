@@ -23,9 +23,10 @@
 
   <resource-bundle>messages.BazelPluginBundle</resource-bundle>
   <dependencies>
-    <plugin id="com.intellij.modules.lang" />
-    <module name="intellij.platform.searchEverywhere" />
     <module name="intellij.libraries.grpc"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.platform.searchEverywhere"/>
+    <!-- endregion -->
   </dependencies>
 
   <content namespace="jetbrains">
