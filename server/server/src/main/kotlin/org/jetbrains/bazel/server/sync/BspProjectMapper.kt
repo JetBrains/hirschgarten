@@ -171,7 +171,7 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
       workspaceContext: WorkspaceContext,
       extraOptions: List<String> = emptyList(),
     ): String {
-      val command = bazelRunner.buildBazelCommand(workspaceContext, inheritProjectviewOptionsOverride = true) {
+      val command = bazelRunner.buildBazelCommand(workspaceContext) {
         queryExpression(expr) {
           options.add("--keep_going")
           options.addAll(extraOptions)

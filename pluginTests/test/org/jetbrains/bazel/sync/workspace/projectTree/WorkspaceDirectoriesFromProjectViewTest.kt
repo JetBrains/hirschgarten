@@ -21,6 +21,7 @@ import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.Project
 import org.jetbrains.bazel.server.sync.BspProjectMapper
+import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.mockito.Mockito.mock
@@ -401,13 +402,37 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     )
   }
 
+  fun `test should not pass build flags to bazel query command`() {
+    // GIVEN
+    val extraToolchainsOption = "--extra_toolchains=//some_directory/non_existing_toolchain:non_existing_toolchain"
+    val psiFile = myFixture.configureByText(
+      "testeest.bazelproject",
+      """
+        directories:
+          some_directory
+        build_flags:
+          $extraToolchainsOption
+        derive_targets_from_directories: true
+      """.trimIndent(),
+    )
+
+    // WHEN
+    runMapper(psiFile)
+
+    // THEN
+    val bazelCommand = captureBazelCommandFromMock(bazelRunner)
+    assertNotEmpty(bazelCommand.options)
+    assertDoesntContain(bazelCommand.options, extraToolchainsOption)
+  }
+
   private fun createFromProjectView(projectView: ProjectView): Project {
     val workspaceContext = ProjectViewToWorkspaceContextConverter
       .convert(projectView, workspaceRoot)
 
     return createFakeProject(
       directories = workspaceContext.directories,
-      targets = workspaceContext.targets
+      targets = workspaceContext.targets,
+      buildFlags = workspaceContext.buildFlags,
     )
   }
 
@@ -426,12 +451,13 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
   private fun createFakeProject(
       directories: List<ExcludableValue<Path>> = emptyList(),
-      targets: List<ExcludableValue<Label>> = emptyList()
+      targets: List<ExcludableValue<Label>> = emptyList(),
+      buildFlags: List<String> = emptyList(),
   ): Project {
     val context = WorkspaceContext(
         targets = targets,
         directories = directories,
-        buildFlags = emptyList(),
+        buildFlags = buildFlags,
         syncFlags = emptyList(),
         debugFlags = emptyList(),
         bazelBinary = Path.of("bazel"),
