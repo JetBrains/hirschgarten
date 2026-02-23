@@ -264,7 +264,7 @@ internal class AspectBazelProjectMapper(
       .mapNotNull { target ->
         createLibrary(
           workspaceContext,
-          Label.parse(target.id + "_output_jars"),
+          Label.parse(target.key.label + "_output_jars"),
           target,
           onlyOutputJars = true,
         )?.let { library ->
@@ -286,9 +286,9 @@ internal class AspectBazelProjectMapper(
     targetsToImport
       .filter { it.javaCommon.generatedJarsList.isNotEmpty() }
       .associate { targetInfo ->
-        targetInfo.id to
+        targetInfo.key.label to
           Library(
-            label = Label.parse(targetInfo.id + "_generated"),
+            label = Label.parse(targetInfo.key.label + "_generated"),
             outputs =
               targetInfo.javaCommon.generatedJarsList
                 .flatMap { it.binaryJarsList }
@@ -1002,7 +1002,7 @@ internal class AspectBazelProjectMapper(
 
     return (sourceItems + generatedSourceItems + extraSources)
       .distinctBy { it.path }
-      .onEach { if (it.path.notExists()) logNonExistingFile(it.path, target.id) }
+      .onEach { if (it.path.notExists()) logNonExistingFile(it.path, target.key.label) }
   }
 
   private fun logNonExistingFile(file: Path, targetId: String) {

@@ -152,8 +152,14 @@ def _bsp_target_info_aspect_impl(target, ctx):
         data_deps += getattr(ctx.rule.attr, "build_data", [])
         env = do_starlark_string_expansion_dict(ctx, "env", raw_env, data_deps)
 
+    target_id = create_struct(
+        label = str(target.label),
+        aspect_ids = [it for it in ctx.aspect_ids if not "bsp_target_info_aspect" in it],
+        configuration = getattr(ctx.configuration, "short_id", None),
+    )
+
     info = dict(
-        id = str(target.label),
+        key = target_id,
         kind = rule_kind,
         tags = rule_attrs.tags,
         dependencies = list(all_deps),
