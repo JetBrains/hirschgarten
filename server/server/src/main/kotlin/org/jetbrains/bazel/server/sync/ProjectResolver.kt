@@ -382,7 +382,7 @@ class ProjectResolver internal constructor(
       targetMap
         .map { (_, v) ->
           // our target-information already contains labels in canonical form
-          val label = Label.parse(v.id)
+          val label = Label.parse(v.key.label)
           label to
             v
               .toBuilder()
