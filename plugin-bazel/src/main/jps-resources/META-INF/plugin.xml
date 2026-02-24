@@ -1055,6 +1055,10 @@
         class="org.jetbrains.bazel.action.registered.ToggleBazelLogAction"
         id="Bazel.ToggleBazelLogAction"
       />
+      <action
+        class="org.jetbrains.bazel.action.registered.ShowBazelLogAction"
+        id="Bazel.ShowBazelLogAction"
+      />
       <add-to-group
         anchor="last"
         group-id="HelpDiagnosticTools"
