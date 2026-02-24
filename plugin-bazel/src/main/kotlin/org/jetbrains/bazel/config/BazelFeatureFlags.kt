@@ -2,7 +2,9 @@ package org.jetbrains.bazel.config
 
 import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.util.registry.Registry
+import java.nio.file.Path
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
 
@@ -109,6 +111,9 @@ object BazelFeatureFlags {
 
   val isLogEnabled: Boolean
     get() = isEnabled(ENABLE_LOG)
+
+  val logPath: Path
+    get() = PathManager.getLogDir().resolve("bazel-logs").resolve("bazel.log")
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.openapi.application.PathManager
 import com.intellij.util.io.outputStream
 import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
 import org.jetbrains.bazel.commons.Format
@@ -59,8 +58,7 @@ class BazelProcess internal constructor(
     if (!BazelFeatureFlags.isLogEnabled)
       return
 
-    val logPath = PathManager.getLogDir().resolve("bazel-logs").resolve("bazel.log")
-    logPath.outputStream(append = true).use { out ->
+    BazelFeatureFlags.logPath.outputStream(append = true).use { out ->
       PrintWriter(out).use { writer ->
         try {
           writer.appendLine("\n${Instant.now()}")
