@@ -265,7 +265,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     taskConsole.addMessage(task, "Message 1\n")
     taskConsole.addMessage(task, "Message 2\n") // should add new line at the end
     taskConsole.addMessage(task.subTask("subtask"), "Message 3\n") // should send a copy the message to the subtask's parent
-    taskConsole.addMessage(task.subTask("nonexistent-task"), "Message 4\n") // should be omitted - no such task
+    taskConsole.addMessage(task.subTask("nonexistent-task"), "Message 4\n") // should send to parent task
     taskConsole.addMessage(task, "") // should be omitted - empty message
     taskConsole.addMessage(task, "   \n  \t  ") // should be omitted - blank message
 
@@ -285,6 +285,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
             TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 2\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, task.subTask("subtask"), "Message 3\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 3\n"),
+            TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 4\n"),
             TestableBuildEvent(FinishEventImpl::class, task.subTask("subtask"), null, "Subtask finished"),
             TestableBuildEvent(FinishBuildEventImpl::class, task, null, "Task finished"),
           ),
@@ -400,7 +401,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     // starting a different root task, under similar ID
     taskConsole.startTask(root, "Root task", "Root started")
 
-    // messages should not be sent - the children's root task has been finished
+    // messages should be sent to restarted task - the children's root task has been finished
     taskConsole.addMessage(child, "Message 3\n")
     taskConsole.addMessage(grandchild, "Message 4\n")
 
@@ -423,6 +424,8 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
             TestableBuildEvent(FinishEventImpl::class, child, null, "Child"),
             TestableBuildEvent(FinishBuildEventImpl::class, root, null, "Root finished"),
             TestableBuildEvent(StartBuildEventImpl::class, root, null, "Root started"),
+            TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 3\n"),
+            TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 4\n"),
             TestableBuildEvent(FinishBuildEventImpl::class, root, null, "Root finished"),
           ),
       )
@@ -541,7 +544,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     // starting a different ancestor subtask, under similar ID
     taskConsole.startSubtask(subtask1, "Subtask 1 started")
 
-    // messages should not be sent - the children's ancestor subtask has been finished
+    // messages should go to parent - the children's ancestor subtask has been finished
     taskConsole.addMessage(subtask2, "Message 3\n")
     taskConsole.addMessage(subtask3, "Message 4\n")
 
@@ -568,6 +571,10 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
             TestableBuildEvent(FinishEventImpl::class, subtask2, null, "Subtask 2"),
             TestableBuildEvent(FinishEventImpl::class, subtask1, null, "Subtask 1"),
             TestableBuildEvent(ProgressBuildEventImpl::class, subtask1, root, "Subtask 1 started"),
+            TestableBuildEvent(OutputBuildEventImpl::class, null, subtask1, "Message 3\n"),
+            TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 3\n"),
+            TestableBuildEvent(OutputBuildEventImpl::class, null, subtask1, "Message 4\n"),
+            TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 4\n"),
             TestableBuildEvent(FinishEventImpl::class, subtask1, null, "Subtask 1 finished"),
             TestableBuildEvent(FinishBuildEventImpl::class, root, null, "Root finished"),
           ),
