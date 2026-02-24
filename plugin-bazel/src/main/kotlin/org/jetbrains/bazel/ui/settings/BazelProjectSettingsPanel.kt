@@ -118,7 +118,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
   private fun buildifierExecutableValidationInfo(): ValidationInfo? =
     validateBuildifierExecutable(
       buildifierExecutablePathField.text.takeIf { it.isNotBlank() }
-        ?: BuildifierUtil.detectBuildifierExecutable(),
+      ?: BuildifierUtil.detectBuildifierExecutable(),
     )
 
   private fun initRunBuildifierOnSaveCheckBox(): JBCheckBox =
@@ -145,7 +145,9 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
       }
     }
 
-  override fun isModified(): Boolean = currentProjectSettings != project.bazelProjectSettings
+  override fun isModified(): Boolean =
+    super<BoundCompositeSearchableConfigurable>.isModified() ||
+    currentProjectSettings != project.bazelProjectSettings
 
   override fun apply() {
     super<BoundCompositeSearchableConfigurable>.apply()
@@ -178,7 +180,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
 
   private fun getBuildifierExecPathPlaceholderMessage(): String =
     currentProjectSettings.getBuildifierPathString()
-      ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
+    ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
 
   private fun savedProjectViewPath() =
     project.bazelProjectSettings.projectViewPath
@@ -220,9 +222,11 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
           try {
             val nioPath = Path("").resolve(executablePath)
             nioPath.getErrorMessage()
-          } catch (e: InvalidPathException) {
+          }
+          catch (e: InvalidPathException) {
             BazelPluginBundle.message("path.validation.invalid", e.message.orEmpty())
-          } catch (e: IOException) {
+          }
+          catch (e: IOException) {
             BazelPluginBundle.message("path.validation.inaccessible", e.message.orEmpty())
           }
       }
