@@ -1,0 +1,40 @@
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "file_location")
+
+def extract_source_mappings(protobuf_info, proto_common):
+    mappings = []
+    get_import_path_func = resolve_proto_common_get_import_path(proto_common)
+    for source in protobuf_info.direct_sources:
+        proto = create_struct(
+            import_path = get_import_path_func(source),
+            proto_file = file_location(source),
+        )
+        mappings.append(proto)
+    return mappings
+
+def resolve_proto_common_get_import_path(proto_common):
+    return getattr(proto_common, "get_import_path", _get_import_path_fallback)
+
+# https://github.com/protocolbuffers/protobuf/blob/cbaf01ac1604e4bcb12552ca3b52fecd21f3e01b/bazel/common/proto_common.bzl#L58
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+#
+def _get_import_path_fallback(proto_file):
+    repo_path = _remove_repo(proto_file)
+    index = repo_path.find("_virtual_imports/")
+    if index >= 0:
+        index = repo_path.find("/", index + len("_virtual_imports/"))
+        repo_path = repo_path[index + 1:]
+    return repo_path
+
+def _remove_repo(file):
+    short_path = file.short_path
+    workspace_root = file.owner.workspace_root
+    if workspace_root:
+        if workspace_root.startswith("external/"):
+            workspace_root = "../" + workspace_root.removeprefix("external/")
+        return short_path.removeprefix(workspace_root + "/")
+    return short_path

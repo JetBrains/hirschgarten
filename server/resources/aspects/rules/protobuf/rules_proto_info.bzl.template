@@ -1,0 +1,34 @@
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct")
+load("//${bspPath}/aspects:rules/protobuf/proto_common.bzl", "extract_source_mappings")
+
+#if( $bazel8OrAbove == "true")
+# Bazel 8+: Use only the rules_proto providers.
+load("@$rulesetName//proto:defs.bzl", "ProtoInfo", "proto_common")
+ProtoInfo_Secondary = None
+
+#else
+# Non-Bazel 8+ workspace that has rules_proto present: Support both builtin and rules_proto providers.
+load("@$rulesetName//proto:defs.bzl", ProtoInfo_Secondary = "ProtoInfo", "proto_common")
+#end
+
+
+def has_protoinfo_in_target(target):
+    return ProtoInfo in target or (ProtoInfo_Secondary != None and ProtoInfo_Secondary in target)
+
+def get_proto_info(target):
+    if ProtoInfo in target:
+        return target[ProtoInfo]
+    elif ProtoInfo_Secondary != None and ProtoInfo_Secondary in target:
+        return target[ProtoInfo_Secondary]
+    else:
+        return None
+
+def extract_rules_proto_info(target, ctx, output_groups, **kwargs):
+    if not has_protoinfo_in_target(target):
+      return None, None
+
+    protobuf_info = get_proto_info(target)
+    proto_target_info = create_struct(
+        source_mappings = list(extract_source_mappings(protobuf_info, proto_common)),
+    )
+    return dict(protobuf_target_info = proto_target_info), None

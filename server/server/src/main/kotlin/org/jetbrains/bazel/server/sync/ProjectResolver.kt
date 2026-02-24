@@ -155,12 +155,22 @@ class ProjectResolver(
         "Discovering supported external rules",
       ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames() }
 
+    val externalRepos = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName?.let {
+      mapping -> externalRulesetNames.mapNotNull { repoName -> mapping[repoName] }.filter {it != ""}.map {"@@" + it }
+    } ?: emptyList()
+
+    val externalRulesetDefinitions =
+      measured("Looking up definitions of external rules") {
+         ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(externalRepos, bazelInfo)
+      }
+
     val ruleLanguages =
       measured(
         "Mapping rule names to languages",
       ) {
         bazelBspAspectsManager.calculateRulesetLanguages(
           externalRulesetNames,
+          externalRulesetDefinitions,
           bazelInfo.externalAutoloads,
           featureFlags,
         )

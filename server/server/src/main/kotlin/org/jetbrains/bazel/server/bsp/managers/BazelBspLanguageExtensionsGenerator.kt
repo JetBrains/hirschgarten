@@ -20,6 +20,7 @@ enum class Language(
    * https://bazel.build/versions/9.0.0/rules/lib/globals/bzl.html#aspect
    */
   val requiredAspectProviders: List<List<String>> = emptyList(),
+  val hostLocations: List<String> = emptyList(),
 ) {
   Java(
     "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/java/java_info.bzl",
@@ -45,8 +46,10 @@ enum class Language(
   ),
   Go("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"),
      false),
-  Protobuf("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/protobuf_info.bzl", listOf("rules_proto", "protobuf"), listOf("extract_protobuf_info"),
-           false),
+  RulesProto("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/rules_proto_info.bzl", listOf("rules_proto"), listOf("extract_rules_proto_info"),
+           false, emptyList(), emptyMap(), emptyList(), listOf("https://github.com/bazelbuild/rules_proto")),
+  Protobuf("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/protobuf_info.bzl", listOf("protobuf"), listOf("extract_protobuf_info"),
+           false, emptyList(), emptyMap(), emptyList(), listOf("https://github.com/protocolbuffers/protobuf/")),
   ;
 
   fun toLoadStatement(): String =
