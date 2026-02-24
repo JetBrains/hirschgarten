@@ -108,22 +108,18 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
 
   // Verifies that modifying the active project view file directly (via Path.writeText)
   // and resyncing picks up the new target list — the basic project view edit workflow.
+  // Uses the default projectview.bazelproject (active from @BeforeAll) to avoid
+  // polluting shared project view files used by other tests.
   @Test @Order(2)
   fun `modifying active project view file and resyncing should update targets`() {
     withDriver(bgRun) {
       ideFrame {
-        step("Switch to subset targets view as baseline") {
-          execute { switchProjectView("all-dirs-subset-targets.bazelproject") }
-          execute {
-            buildAndSync()
-            waitForSmartMode()
-          }
-          assertSyncSucceeded()
+        step("Verify initial targets from default project view") {
           execute { assertSyncedTargets("//app:app", "//common:common") }
         }
         step("Modify active project view — add server target") {
-          openFile("all-dirs-subset-targets.bazelproject", waitForCodeAnalysis = false)
-          (ctx.resolvedProjectHome / "all-dirs-subset-targets.bazelproject")
+          openFile("projectview.bazelproject", waitForCodeAnalysis = false)
+          (ctx.resolvedProjectHome / "projectview.bazelproject")
             .writeText(
               "derive_targets_from_directories: false\n" +
                 "index_all_files_in_directories: true\n\n" +
@@ -141,8 +137,8 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           assertSyncSucceeded()
           execute { assertSyncedTargets("//app:app", "//common:common", "//server:server") }
         }
-        step("Restore original project view file") {
-          (ctx.resolvedProjectHome / "all-dirs-subset-targets.bazelproject")
+        step("Restore default project view and resync to clean state") {
+          (ctx.resolvedProjectHome / "projectview.bazelproject")
             .writeText(
               "derive_targets_from_directories: false\n" +
                 "index_all_files_in_directories: true\n\n" +
@@ -150,6 +146,13 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
                 "targets:\n  //app:app\n  //common:common\n\n" +
                 "import_depth: 0\n",
             )
+          wait(3.seconds)
+          execute {
+            buildAndSync()
+            waitForSmartMode()
+          }
+          assertSyncSucceeded()
+          execute { assertSyncedTargets("//app:app", "//common:common") }
         }
       }
     }
