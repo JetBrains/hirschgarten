@@ -111,9 +111,9 @@ class BazelBspLanguageExtensionsGeneratorTest {
         null,
         Language.Java,
       ) to """config_common.toolchain_type("@bazel_tools//tools/jdk:runtime_toolchain_type", mandatory = False)""",
-      RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin) to """"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"""",
-      RulesetLanguage("io_bazel_rules_scala", Language.Scala) to """"@io_bazel_rules_scala//scala:toolchain_type"""",
-      RulesetLanguage("io_bazel_rules_go", Language.Go) to """"@io_bazel_rules_go//go:toolchain"""",
+      RulesetLanguage(ApparentRulesetName("io_bazel_rules_kotlin"), Language.Kotlin) to """"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"""",
+      RulesetLanguage(ApparentRulesetName("io_bazel_rules_scala"), Language.Scala) to """"@io_bazel_rules_scala//scala:toolchain_type"""",
+      RulesetLanguage(ApparentRulesetName("io_bazel_rules_go"), Language.Go) to """"@io_bazel_rules_go//go:toolchain"""",
     )
   private lateinit var dotBazelBspAspectsPath: Path
   private lateinit var internalAspectsResolverMock: InternalAspectsResolver
@@ -158,7 +158,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
     val rulesetLanguages =
       defaultRulesetLanguages +
       listOf(
-        RulesetLanguage("io_bazel_rules_go", Language.Go),
+        RulesetLanguage(ApparentRulesetName("io_bazel_rules_go"), Language.Go),
       )
     BazelExternalRulesetsQueryMock(listOf("io_bazel_rules_go"))
     val bazelBspLanguageExtensionsGenerator =
@@ -178,9 +178,9 @@ class BazelBspLanguageExtensionsGeneratorTest {
     val rulesetLanguages =
       defaultRulesetLanguages +
       listOf(
-        RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin),
-        RulesetLanguage("io_bazel_rules_scala", Language.Scala),
-        RulesetLanguage("io_bazel_rules_go", Language.Go),
+        RulesetLanguage(ApparentRulesetName("io_bazel_rules_kotlin"), Language.Kotlin),
+        RulesetLanguage(ApparentRulesetName("io_bazel_rules_scala"), Language.Scala),
+        RulesetLanguage(ApparentRulesetName("io_bazel_rules_go"), Language.Go),
       )
     val bazelBspLanguageExtensionsGenerator =
       BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
@@ -199,9 +199,9 @@ class BazelBspLanguageExtensionsGeneratorTest {
     val rulesetLanguages =
       defaultRulesetLanguages +
       listOf(
-        RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin),
-        RulesetLanguage("io_bazel_rules_scala", Language.Scala),
-        RulesetLanguage("io_bazel_rules_go", Language.Go),
+        RulesetLanguage(ApparentRulesetName("io_bazel_rules_kotlin"), Language.Kotlin),
+        RulesetLanguage(ApparentRulesetName("io_bazel_rules_scala"), Language.Scala),
+        RulesetLanguage(ApparentRulesetName("io_bazel_rules_go"), Language.Go),
       )
     val emptyBazelBspLanguageExtensionsGenerator =
       BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
@@ -231,7 +231,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
       listOf(
         RulesetLanguage(null, Language.Java),
         RulesetLanguage(null, Language.Jvm),
-        RulesetLanguage("io_bazel_rules_kotlin", Language.Kotlin),
+        RulesetLanguage(ApparentRulesetName("io_bazel_rules_kotlin"), Language.Kotlin),
       )
     val bazelBspLanguageExtensionsGenerator =
       BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
