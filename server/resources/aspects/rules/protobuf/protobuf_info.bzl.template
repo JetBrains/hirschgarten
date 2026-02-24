@@ -1,38 +1,15 @@
-load("//${bspPath}/aspects:utils/utils.bzl", "create_struct","file_location")
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct")
+load("//${bspPath}/aspects:rules/protobuf/proto_common.bzl", "extract_source_mappings")
 
-#if( $bazel8OrAbove == "true" && $rulesetNameApparent == "rules_proto" )
-# Bazel 8+: Use only the rules_proto providers.
-load("@$protobufRepoName//proto:defs.bzl", "ProtoInfo", "proto_common")
-ProtoInfo_Secondary = None
-
-#elseif( $bazel8OrAbove == "true" && $rulesetNameApparent == "protobuf" )
-load("@$protobufRepoName//bazel/common:proto_info.bzl", "ProtoInfo")
-load("@$protobufRepoName//bazel/common:proto_common.bzl", "proto_common")
-ProtoInfo_Secondary = None
-
-#elseif( $rulesetNameApparent == "rules_proto" )
-# Non-Bazel 8+ workspace that has rules_proto present: Support both builtin and rules_proto providers.
-load("@$protobufRepoName//proto:defs.bzl", ProtoInfo_Secondary = "ProtoInfo", "proto_common")
-
-#elseif( $rulesetNameApparent == "protobuf" )
-load("@$protobufRepoName//bazel/common:proto_info.bzl", "ProtoInfo")
-load("@$protobufRepoName//bazel/common:proto_common.bzl", "proto_common")
-ProtoInfo_Secondary = None
-
-#else
-# Use only builtin providers.
-ProtoInfo_Secondary = None
-#end
-CODE_GENERATOR_RULE_NAMES = ${codeGeneratorRules}
+load("@${rulesetName}//bazel/common:proto_info.bzl", "ProtoInfo")
+load("@${rulesetName}//bazel/common:proto_common.bzl", "proto_common")
 
 def has_protoinfo_in_target(target):
-    return ProtoInfo in target or (ProtoInfo_Secondary != None and ProtoInfo_Secondary in target)
+    return ProtoInfo in target
 
 def get_proto_info(target):
     if ProtoInfo in target:
         return target[ProtoInfo]
-    elif ProtoInfo_Secondary != None and ProtoInfo_Secondary in target:
-        return target[ProtoInfo_Secondary]
     else:
         return None
 
@@ -42,48 +19,6 @@ def extract_protobuf_info(target, ctx, output_groups, **kwargs):
 
     protobuf_info = get_proto_info(target)
     proto_target_info = create_struct(
-        source_mappings = list(extract_source_mappings(protobuf_info)),
+        source_mappings = list(extract_source_mappings(protobuf_info, proto_common)),
     )
     return dict(protobuf_target_info = proto_target_info), None
-
-def extract_source_mappings(protobuf_info):
-    mappings = []
-    get_import_path_func = resolve_proto_common_get_import_path()
-    for source in protobuf_info.direct_sources:
-        proto = create_struct(
-            import_path = get_import_path_func(source),
-            proto_file = file_location(source),
-        )
-        mappings.append(proto)
-    return mappings
-
-def resolve_proto_common_get_import_path():
-    if hasattr(proto_common, "get_import_path"):
-        return getattr(proto_common, "get_import_path")
-    else:
-        return _get_import_path_fallback
-
-# https://github.com/protocolbuffers/protobuf/blob/cbaf01ac1604e4bcb12552ca3b52fecd21f3e01b/bazel/common/proto_common.bzl#L58
-# Protocol Buffers - Google's data interchange format
-# Copyright 2024 Google Inc.  All rights reserved.
-#
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file or at
-# https://developers.google.com/open-source/licenses/bsd
-#
-def _get_import_path_fallback(proto_file):
-    repo_path = _remove_repo(proto_file)
-    index = repo_path.find("_virtual_imports/")
-    if index >= 0:
-        index = repo_path.find("/", index + len("_virtual_imports/"))
-        repo_path = repo_path[index + 1:]
-    return repo_path
-
-def _remove_repo(file):
-    short_path = file.short_path
-    workspace_root = file.owner.workspace_root
-    if workspace_root:
-        if workspace_root.startswith("external/"):
-            workspace_root = "../" + workspace_root.removeprefix("external/")
-        return short_path.removeprefix(workspace_root + "/")
-    return short_path

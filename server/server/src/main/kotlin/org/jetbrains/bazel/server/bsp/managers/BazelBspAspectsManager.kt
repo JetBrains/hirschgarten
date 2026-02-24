@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
+import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
@@ -13,7 +14,6 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bep.BepOutput
-import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -36,10 +36,16 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   }
 }
 
-/**
- * @param rulesetName apparent ruleset name
- */
-data class RulesetLanguage(val rulesetName: String?, val language: Language)
+sealed interface RuleSetName
+data class ApparentRulesetName(val name: String) : RuleSetName
+data class CanonicalRulesetName(val name: String) : RuleSetName
+
+fun RuleSetName.asReponame() = when (this) {
+  is CanonicalRulesetName -> "@${name}"
+  is ApparentRulesetName -> name
+}
+
+data class RulesetLanguage(val rulesetName: RuleSetName?, val language: Language)
 
 class BazelBspAspectsManager(
   private val executeService: ExecuteService,
@@ -51,15 +57,22 @@ class BazelBspAspectsManager(
 
   fun calculateRulesetLanguages(
     externalRulesetNames: List<String>,
+    externalRulesetDefinitions: Map<String, ShowRepoResult?>,
     externalAutoloads: List<String>,
     featureFlags: FeatureFlags,
-  ): List<RulesetLanguage> =
-    Language
+  ): List<RulesetLanguage> {
+    val httpArchiveUpstreamURLsByCanonicalName = externalRulesetDefinitions.values.mapNotNull { definition -> (definition as? ShowRepoResult.HttpArchiveRepository)?.let { it.name to it.urls }}
+    val canonicalRepoByHostLocation = httpArchiveUpstreamURLsByCanonicalName.flatMap  { (k, v) -> v.map { Pair(k, it)}}.associateBy { it.second }.mapValues { (k, v) -> v.first  }
+    return Language
       .entries
       .mapNotNull { language ->
+        language.hostLocations.firstNotNullOfOrNull { location -> canonicalRepoByHostLocation.keys.firstOrNull { it.startsWith(location) } }
+          ?.let {
+          return@mapNotNull RulesetLanguage(canonicalRepoByHostLocation[it]?.let { CanonicalRulesetName(it) }, language)
+        }
         val rulesetName = language.rulesetNames.firstOrNull { it in externalRulesetNames }
         rulesetName?.let {
-          return@mapNotNull RulesetLanguage(it, language)
+          return@mapNotNull RulesetLanguage(ApparentRulesetName(it), language)
         }
         if (language.isBundled(externalAutoloads)) {
           return@mapNotNull RulesetLanguage(null, language)
@@ -67,6 +80,7 @@ class BazelBspAspectsManager(
         null
       }.removeDisabledLanguages(featureFlags)
       .addExternalPythonLanguageIfNeeded(externalRulesetNames, featureFlags)
+  }
 
   private fun Language.isBundled(externalAutoloads: List<String>): Boolean {
     if (!isBundled) return false
@@ -91,7 +105,7 @@ class BazelBspAspectsManager(
   ): List<RulesetLanguage> {
     if (!featureFlags.isPythonSupportEnabled) return this
     val pythonRulesetName = Language.Python.rulesetNames.firstOrNull { externalRulesetNames.contains(it) } ?: return this
-    return this.filterNot { it.language == Language.Python } + RulesetLanguage(pythonRulesetName, Language.Python)
+    return this.filterNot { it.language == Language.Python } + RulesetLanguage(ApparentRulesetName(pythonRulesetName), Language.Python)
   }
 
   fun detectBazelIgnoreAndErrorOut(
@@ -121,8 +135,6 @@ class BazelBspAspectsManager(
     detectBazelIgnoreAndErrorOut(bazelInfo)
 
     val languageRuleMap = rulesetLanguages.associateBy { it.language }
-    val activeLanguages = rulesetLanguages.map { it.language }.toSet()
-    val pythonEnabled = Language.Python in activeLanguages
     val bazel8OrAbove = bazelRelease.major >= 8
     Language.entries.forEach {
       val ruleLanguage = languageRuleMap[it]
@@ -130,8 +142,7 @@ class BazelBspAspectsManager(
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
       val templateFilePath = it.toAspectTemplateRelativePath()
       val canonicalRuleName = ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty()
-      val apparentRuleName = ruleLanguage?.rulesetName.orEmpty()
-      val protobufRepoName = ProtobufRepoMappings(repoMapping).getMappedProtobufRepoName(canonicalRuleName, apparentRuleName)
+      val apparentRuleName = (ruleLanguage?.rulesetName as? ApparentRulesetName)?.name.orEmpty()
       val variableMap =
         mapOf(
           "rulesetName" to canonicalRuleName,
@@ -140,7 +151,6 @@ class BazelBspAspectsManager(
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
           "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.toStarlarkString(),
-          "protobufRepoName" to protobufRepoName.orEmpty(),
           "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
       )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
@@ -191,19 +201,28 @@ class BazelBspAspectsManager(
       ),
     )
 
+    templateWriter.writeToFile(
+      "rules/protobuf/proto_common.bzl" + Constants.TEMPLATE_EXTENSION,
+      aspectsPath.resolve("rules").resolve("protobuf").resolve("proto_common.bzl"),
+      mapOf(
+        "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
+      ),
+    )
+
   }
 
   private fun RulesetLanguage.calculateCanonicalName(repoMapping: RepoMapping): String? =
     when {
+      // If the name is already a conical one, we can take it; however we have the canonical name without
+      // prefix, so we have to add @ to indicate it as canonical, as the template adds a single @ as prefix.
+      (rulesetName as? CanonicalRulesetName) != null-> "@${rulesetName.name}"
       // bazel mod dump_repo_mapping returns everything without @@
       // and in aspects we have a @ prefix
-      repoMapping is BzlmodRepoMapping && rulesetName != null ->
-        repoMapping.apparentRepoNameToCanonicalName[rulesetName]?.let { "@$it" } ?: rulesetName
+      repoMapping is BzlmodRepoMapping && (rulesetName as? ApparentRulesetName)!= null ->
+        repoMapping.apparentRepoNameToCanonicalName[rulesetName.name ]?.let { "@$it" } ?: rulesetName.name
 
-      else -> rulesetName
+      else -> (rulesetName as? ApparentRulesetName)?.name
     }
-
-  private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
 
   private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 

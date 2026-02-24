@@ -5,7 +5,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
-import org.jetbrains.bazel.commons.BazelStatus
 import org.junit.jupiter.api.Test
 
 class ModuleResolverTest {
@@ -79,8 +78,8 @@ class ModuleResolverTest {
     val parsed =
       moduleOutputParser.parseShowRepoResults(result, false).get("rules_jvm_external@6.5") ?: fail("No entry produced for rules_jvm_external")
 
-    parsed.shouldBeInstanceOf<ShowRepoResult.Unknown>()
-    parsed.output shouldBe stdout + "\n"
+    parsed.shouldBeInstanceOf<ShowRepoResult.HttpArchiveRepository>()
+    (parsed as ShowRepoResult.HttpArchiveRepository).urls shouldBe listOf("https://github.com/bazel-contrib/rules_jvm_external/releases/download/6.5/rules_jvm_external-6.5.tar.gz")
     parsed.name shouldBe "rules_jvm_external~"
   }
 
@@ -169,12 +168,9 @@ class ModuleResolverTest {
 
     val parsed = moduleOutputParser.parseShowRepoResults(result, true )
 
-    val rules_kotlin = parsed.get("rules_kotlin@2.2.2") ?: error("Entry for rules_kotlin@2.2.2 is missing")
-    rules_kotlin.shouldBeInstanceOf<ShowRepoResult.Unknown>()
-
     parsed shouldBe mapOf(
       "bundled@_" to ShowRepoResult.LocalRepository("bundled+", "subproject"),
-      "rules_kotlin@2.2.2" to rules_kotlin,
+      "rules_kotlin@2.2.2" to ShowRepoResult.HttpArchiveRepository("rules_kotlin+", listOf("https://github.com/bazelbuild/rules_kotlin/releases/download/v2.2.2/rules_kotlin-v2.2.2.tar.gz"))
     )
 
   }

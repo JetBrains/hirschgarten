@@ -20,6 +20,8 @@ sealed interface ShowRepoResult {
    */
   data class LocalRepository(override val name: String, val path: String) : ShowRepoResult
 
+  data class HttpArchiveRepository(override val name: String, val urls: List<String>) : ShowRepoResult
+
   /**
    * Any other output that doesn't match the expected format but contains the name of the module.
    */
@@ -33,6 +35,13 @@ class ModuleOutputParser {
       .substringAfter("$attributeName = \"")
       .substringBefore("\",")
       .trim()
+
+  private fun extractAttributeList(lines: List<String>, attributeName: String): List<String> =
+    lines.first { it.contains("$attributeName = ") }
+      .substringAfter("$attributeName = [")
+      .substringBefore("]")
+      .split(",")
+      .map { it.trim().removePrefix("\"").removeSuffix("\"") }
 
   private fun splitInfoGroups(lines: List<String>): Map<String, List<String>> {
     var groups = mutableMapOf<String, List<String>>()
@@ -67,6 +76,10 @@ class ModuleOutputParser {
         val path = extractAttribute(stanza, "path")
         return ShowRepoResult.LocalRepository(name, path)
       }
+      else if (stanza.any { it.contains("http_archive") }) {
+        val urls = extractAttributeList(stanza, "urls")
+        return ShowRepoResult.HttpArchiveRepository(name, urls)
+      }
       else {
         return ShowRepoResult.Unknown(name, stanza.joinToString("\n") + "\n")
       }
@@ -83,12 +96,21 @@ class ModuleOutputParser {
       val description = bazelGson.fromJson<JsonProto.Repository>(jsonText, JsonProto.Repository::class.java)
       if (description.canonicalName == null) return emptyMap() // Nothing we can do with that repository
       val key = description.moduleKey ?: description.canonicalName
-      if (description.repoRuleName != "local_repository") {
-        return mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText))
+
+      if (description.repoRuleName == "local_repository") {
+        val pathValues = description.attribute.filter { it.name == "path" }.map { it.stringValue }.filterNotNull()
+        if (pathValues.isEmpty()) return mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText))
+        return mapOf(key to ShowRepoResult.LocalRepository(description.canonicalName, pathValues.last()))
       }
-      val pathValues = description.attribute.filter { it.name == "path" }.map { it.stringValue }.filterNotNull()
-      if (pathValues.isEmpty()) return mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText))
-      return mapOf(key to ShowRepoResult.LocalRepository(description.canonicalName, pathValues.last()))
+      else if (description.repoRuleName == "http_archive") {
+        return mapOf(
+          key to ShowRepoResult.HttpArchiveRepository(
+            description.canonicalName,
+            description.attribute.filter { it.name == "urls" }.flatMap { it.stringListValue ?: emptyList() },
+          ),
+        )
+      }
+      return mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText))
     }
     catch (ex: Throwable) {
       throw Error("Failed to parse repository json description: $jsonText", ex)
@@ -111,7 +133,7 @@ class ModuleOutputParser {
 class ModuleResolver(
   private val bazelRunner: BazelRunner,
   private val workspaceContext: WorkspaceContext,
-  private val taskId: TaskId
+  private val taskId: TaskId,
 ) {
   private val moduleOutputParser = ModuleOutputParser()
 
@@ -144,10 +166,10 @@ class ModuleResolver(
         // Failure of a request asking for a single repository, so we just answer that we don't know.
         return mapOf(moduleNames[0] to null)
       }
-      return moduleNames.map { resolveModules(listOf(it), bazelInfo )}.reduceOrNull { acc, result -> acc + result } ?: emptyMap()
+      return moduleNames.map { resolveModules(listOf(it), bazelInfo) }.reduceOrNull { acc, result -> acc + result } ?: emptyMap()
     }
 
-      return moduleOutputParser.parseShowRepoResults(processResult, json_output)
+    return moduleOutputParser.parseShowRepoResults(processResult, json_output)
   }
 
   val gson = bazelGson
@@ -162,7 +184,7 @@ class ModuleResolver(
     if (unsortedCanonicalRepoNames.isEmpty()) return emptyMap()
     val canonicalRepoNames = unsortedCanonicalRepoNames.sorted()
     canonicalRepoNames.forEach {
-        if (it.startsWith('@')) error("Canonical repo name cannot contain '@' characters: $it")
+      if (it.startsWith('@')) error("Canonical repo name cannot contain '@' characters: $it")
     }
 
     val command =
@@ -193,6 +215,6 @@ class ModuleResolver(
 
 class JsonProto {
   // Class representations of the relevant parts of some messages from https://github.com/bazelbuild/bazel/blob/master/src/main/protobuf/build.proto
-  data class Attribute(val name: String, val stringValue: String?)
+  data class Attribute(val name: String, val stringValue: String?, val stringListValue: List<String>?)
   data class Repository(val moduleKey: String?, val canonicalName: String?, val repoRuleName: String?, val attribute: List<Attribute>)
 }
