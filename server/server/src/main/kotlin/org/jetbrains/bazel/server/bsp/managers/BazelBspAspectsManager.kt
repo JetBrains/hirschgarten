@@ -121,8 +121,6 @@ class BazelBspAspectsManager(
     detectBazelIgnoreAndErrorOut(bazelInfo)
 
     val languageRuleMap = rulesetLanguages.associateBy { it.language }
-    val activeLanguages = rulesetLanguages.map { it.language }.toSet()
-    val pythonEnabled = Language.Python in activeLanguages
     val bazel8OrAbove = bazelRelease.major >= 8
     Language.entries.forEach {
       val ruleLanguage = languageRuleMap[it]
@@ -202,8 +200,6 @@ class BazelBspAspectsManager(
 
       else -> rulesetName
     }
-
-  private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
 
   private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 
