@@ -1050,6 +1050,17 @@
       id="Bazel.RefreshBcrModules"
       class="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.RefreshBcrModulesAction"
     />
+    <group id="Bazel.DiagnosticTools">
+      <separator/>
+      <action
+        class="org.jetbrains.bazel.action.registered.ToggleBazelLogAction"
+        id="Bazel.ToggleBazelLogAction"
+      />
+      <add-to-group
+        anchor="last"
+        group-id="HelpDiagnosticTools"
+      />
+    </group>
   </actions>
 
   <applicationListeners>
