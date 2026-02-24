@@ -36,7 +36,6 @@ object BazelFeatureFlags {
   const val RUN_CONFIG_RUN_WITH_BAZEL = "bazel.run.config.run.with.bazel"
   private const val USE_PTY = "bazel.use.pty"
 
-  @VisibleForTesting
   const val ENABLE_LOG = "bazel.enable.log"
 
   private const val KILL_TREE_ON_CANCEL = "bazel.kill.tree.on.cancel"
