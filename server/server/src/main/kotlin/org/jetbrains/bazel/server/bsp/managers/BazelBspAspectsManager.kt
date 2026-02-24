@@ -13,7 +13,6 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bep.BepOutput
-import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -129,7 +128,6 @@ class BazelBspAspectsManager(
       val templateFilePath = it.toAspectTemplateRelativePath()
       val canonicalRuleName = ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty()
       val apparentRuleName = ruleLanguage?.rulesetName.orEmpty()
-      val protobufRepoName = ProtobufRepoMappings(repoMapping).getMappedProtobufRepoName(canonicalRuleName, apparentRuleName)
       val variableMap =
         mapOf(
           "rulesetName" to canonicalRuleName,
@@ -138,7 +136,6 @@ class BazelBspAspectsManager(
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
           "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.toStarlarkString(),
-          "protobufRepoName" to protobufRepoName.orEmpty(),
           "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
       )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
