@@ -295,33 +295,6 @@ class ProjectSyncTask(private val project: Project) {
   }
 }
 
-fun <Result> CoroutineScope.asyncQueryIf(
-  check: Boolean,
-  queryName: String,
-  doQuery: suspend () -> Result,
-): Deferred<Result?> = async { queryIf(check, queryName, doQuery) }
-
-suspend fun <Result> queryIf(
-  check: Boolean,
-  queryName: String,
-  doQuery: suspend () -> Result,
-): Result? = if (check) query(queryName, doQuery) else null
-
-fun <Result> CoroutineScope.asyncQuery(queryName: String, doQuery: suspend () -> Result): Deferred<Result> =
-  async { query(queryName, doQuery) }
-
-suspend fun <Result> query(queryName: String, doQuery: suspend () -> Result): Result =
-  try {
-    withContext(Dispatchers.IO) { doQuery() }
-  }
-  catch (e: Exception) {
-    when (e) {
-      is CancellationException -> fileLogger().info("Query $queryName is cancelled")
-      else -> fileLogger().warn("Query $queryName failed", e)
-    }
-    throw e
-  }
-
 enum class SyncResultStatus {
   SUCCESS,
   PARTIAL_SUCCESS,

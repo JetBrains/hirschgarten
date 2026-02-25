@@ -22,7 +22,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveS
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
-import org.jetbrains.bsp.protocol.BazelProject
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -47,7 +47,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
           BazelResolvedWorkspace(
             targets = listOf(),
           ),
-        bazelProject = BazelProject(mapOf(), false),
+        bazelProject = WorkspaceBuildTargetsResult(mapOf(), setOf()),
       ),
       disposable,
     )

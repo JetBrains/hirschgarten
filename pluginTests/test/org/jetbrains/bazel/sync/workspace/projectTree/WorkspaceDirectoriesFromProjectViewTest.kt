@@ -9,20 +9,13 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.server.bsp.info.BspInfo
-import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.Project
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
@@ -38,7 +31,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
   private lateinit var workspaceRoot: Path
   private lateinit var bazelRunner: BazelRunner
   private lateinit var bspInfo: BspInfo
-  private lateinit var mapper: BspProjectMapper
 
   override fun setUp() {
     super.setUp()
@@ -48,7 +40,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       override val bazelBspDir: Path
         get() = workspaceRoot.resolve(".bazelbsp")
     }
-    mapper = BspProjectMapper(bazelRunner, bspInfo)
   }
 
   fun `test should correctly identify included and excluded directories`() {
@@ -425,68 +416,19 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     assertDoesntContain(bazelCommand.options, extraToolchainsOption)
   }
 
-  private fun createFromProjectView(projectView: ProjectView): Project {
-    val workspaceContext = ProjectViewToWorkspaceContextConverter
-      .convert(projectView, workspaceRoot)
-
-    return createFakeProject(
-      directories = workspaceContext.directories,
-      targets = workspaceContext.targets,
-      buildFlags = workspaceContext.buildFlags,
-    )
-  }
-
   private fun runMapper(psiFile: PsiFile?): WorkspaceDirectoriesResult {
     val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val project = createFromProjectView(projectView)
+    val workspaceContext = ProjectViewToWorkspaceContextConverter
+      .convert(projectView, workspaceRoot)
     val owner = ModalTaskOwner.guess()
+    val mapper = BspProjectMapper(bazelRunner, bspInfo, workspaceContext)
     return runWithModalProgressBlocking(
       owner,
       "Running Bazel Query",
       TaskCancellation.cancellable()
     ) {
-      mapper.workspaceDirectories(project)
+      mapper.workspaceDirectories(workspaceRoot)
     }
-  }
-
-  private fun createFakeProject(
-      directories: List<ExcludableValue<Path>> = emptyList(),
-      targets: List<ExcludableValue<Label>> = emptyList(),
-      buildFlags: List<String> = emptyList(),
-  ): Project {
-    val context = WorkspaceContext(
-        targets = targets,
-        directories = directories,
-        buildFlags = buildFlags,
-        syncFlags = emptyList(),
-        debugFlags = emptyList(),
-        bazelBinary = Path.of("bazel"),
-        allowManualTargetsSync = false,
-        importDepth = -1,
-        enabledRules = emptyList(),
-        ideJavaHomeOverride = Path.of("java_home"),
-        shardSync = false,
-        targetShardSize = 1000,
-        shardingApproach = null,
-        importRunConfigurations = emptyList(),
-        gazelleTarget = null,
-        indexAllFilesInDirectories = false,
-        pythonCodeGeneratorRuleNames = emptyList(),
-        importIjars = false,
-        deriveInstrumentationFilterFromTargets = true,
-        indexAdditionalFilesInDirectories = emptyList(),
-        preferClassJarsOverSourcelessJars = true,
-    )
-
-    return AspectSyncProject(
-        workspaceRoot = workspaceRoot,
-        workspaceContext = context,
-        repoMapping = RepoMappingDisabled,
-        bazelRelease = BazelRelease(8),
-        workspaceName = "test",
-        targets = emptyMap(),
-        rootTargets = emptySet()
-    )
   }
 
   private fun createMockBazelRunner(): BazelRunner {
