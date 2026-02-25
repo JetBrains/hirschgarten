@@ -332,11 +332,7 @@ suspend fun calculateProjectDetailsWithCapabilities(
       val service = BazelWorkspaceResolveService.getInstance(project)
       val workspace = service.getOrFetchResolvedWorkspace(syncScope, taskId)
       val targets = workspace.targets
-
-      val workspaceContext =
-        query("workspace/context") {
-          server.workspaceContext()
-        }
+      val workspaceContext = server.workspaceContext
 
       ProjectDetails(
         targetIds = targets.map { it.id },

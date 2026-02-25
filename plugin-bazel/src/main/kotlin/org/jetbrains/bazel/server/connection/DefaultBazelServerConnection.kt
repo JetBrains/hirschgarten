@@ -20,7 +20,7 @@ import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
-import org.jetbrains.bazel.server.sync.ProjectProvider
+import org.jetbrains.bazel.server.sync.BazelSyncProjectProvider
 import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
@@ -112,16 +112,17 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
         bazelInfo = bazelInfo,
         taskEventsHandler = taskEventsHandler,
       )
-    val projectProvider = ProjectProvider(projectResolver, firstPhaseProjectResolver)
+    val projectProvider = BazelSyncProjectProvider(project, projectResolver, firstPhaseProjectResolver)
 
     val bspProjectMapper =
       BspProjectMapper(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
+        workspaceContext = workspaceContext
       )
     val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper()
     val projectSyncService =
-      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo, workspaceContext)
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo)
 
     return BspServerApi(
       projectSyncService = projectSyncService,

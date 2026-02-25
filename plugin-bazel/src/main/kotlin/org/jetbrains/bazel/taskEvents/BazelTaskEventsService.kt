@@ -32,6 +32,10 @@ class BazelTaskEventsService : BazelTaskEventsHandler {
   }
 
   fun withListener(id: TaskId, block: BazelTaskListener.() -> Unit) {
+    if (id.taskGroupId == TaskGroupId.EMPTY) {
+      return
+    }
+
     val listener = taskListeners[id.taskGroupId] ?: run {
       log.warn("No task listener found for task $id")
       return

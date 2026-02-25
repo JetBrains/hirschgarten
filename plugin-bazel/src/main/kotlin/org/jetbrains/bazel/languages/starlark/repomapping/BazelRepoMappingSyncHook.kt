@@ -51,7 +51,7 @@ class BazelRepoMappingSyncHook : ProjectSyncHook {
       val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
       val bazelRepoMappingResult =
         query("workspace/bazelRepoMapping") {
-          environment.server.workspaceBazelRepoMapping()
+          environment.server.workspaceBazelRepoMapping(environment.taskId)
         }
       when (val mapping = bazelRepoMappingResult.repoMapping) {
         is BzlmodRepoMapping -> {

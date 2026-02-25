@@ -9,7 +9,7 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.Project
+import org.jetbrains.bazel.server.model.BazelSyncProject
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.DirectoryItem
@@ -17,14 +17,17 @@ import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RawAspectTarget
-import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 
-class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo: BspInfo) {
+class BspProjectMapper(
+  private val bazelRunner: BazelRunner,
+  private val bspInfo: BspInfo,
+  private val workspaceContext: WorkspaceContext,
+) {
   fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
     val targets =
       project.targets
@@ -36,13 +39,11 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     )
   }
 
-  suspend fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
+  suspend fun workspaceDirectories(workspaceRoot: Path): WorkspaceDirectoriesResult {
     // bazel symlinks exclusion logic is now taken care by BazelSymlinkExcludeService,
     // so there is no need for excluding them here anymore
-    val workspaceRoot = project.workspaceRoot
-
     val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude(workspaceRoot)
-    val (includedDirectories, excludedDirectories) = getProjectDirs(workspaceRoot, project.workspaceContext)
+    val (includedDirectories, excludedDirectories) = getProjectDirs(workspaceRoot)
 
     return WorkspaceDirectoriesResult(
       includedDirectories = includedDirectories.map { it.toDirectoryItem() },
@@ -58,7 +59,6 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
 
   private suspend fun getProjectDirs(
     workspaceRoot: Path,
-    workspaceContext: WorkspaceContext
   ): ProjectDirs {
     val included = mutableSetOf<Path>()
     val excluded = mutableSetOf<Path>()
@@ -141,7 +141,7 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     return BazelQueryRunner.runQuery(expr, bazelRunner, workspaceContext)
   }
 
-  fun workspaceBazelRepoMapping(project: Project): WorkspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(project.repoMapping)
+  fun workspaceBazelRepoMapping(project: BazelSyncProject): WorkspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(project.repoMapping)
 
   private fun computeAdditionalDirectoriesToExclude(workspaceRoot: Path): List<Path> =
     listOf(
@@ -155,14 +155,14 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
     )
 
   suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, project.workspaceRoot, bazelRunner, project.workspaceContext)
+    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, project.workspaceRoot, bazelRunner, workspaceContext)
   }
 
-  suspend fun jvmBuilderParamsForTarget(project: Project, target: Label): JvmToolchainInfo =
-    JvmToolchainQuery.jvmToolchainQueryForTarget(bspInfo, bazelRunner, project.workspaceContext, target)
+  suspend fun jvmBuilderParamsForTarget(target: Label): JvmToolchainInfo =
+    JvmToolchainQuery.jvmToolchainQueryForTarget(bspInfo, bazelRunner, workspaceContext, target)
 
-  suspend fun classpathQuery(project: Project, target: Label): BspJvmClasspath =
-    ClasspathQuery.classPathQuery(target, bspInfo, bazelRunner, project.workspaceContext)
+  suspend fun classpathQuery(target: Label): BspJvmClasspath =
+    ClasspathQuery.classPathQuery(target, bspInfo, bazelRunner, workspaceContext)
 
   internal object BazelQueryRunner {
     suspend fun runQuery(

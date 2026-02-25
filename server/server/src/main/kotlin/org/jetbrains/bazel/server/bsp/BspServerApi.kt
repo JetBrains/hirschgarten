@@ -34,7 +34,7 @@ import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
 class BspServerApi(
   private val projectSyncService: ProjectSyncService,
   private val executeService: ExecuteService,
-  val workspaceContext: WorkspaceContext,
+  override val workspaceContext: WorkspaceContext,
   val bazelPathsResolver: BazelPathsResolver,
   override val bazelInfo: BazelInfo,
 ) : JoinedBuildServer {
@@ -62,13 +62,11 @@ class BspServerApi(
 
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = projectSyncService.workspaceDirectories()
 
-  override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
+  override suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping(taskId)
 
   override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult = projectSyncService.workspaceBazelPaths()
 
-  override suspend fun workspaceName(): WorkspaceNameResult = projectSyncService.workspaceName()
-
-  override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
+  override suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult = projectSyncService.workspaceName(taskId)
 
   override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath =
     projectSyncService.workspaceTargetClasspathQuery(params)

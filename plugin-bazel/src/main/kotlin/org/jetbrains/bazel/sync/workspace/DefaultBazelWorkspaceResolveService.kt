@@ -50,7 +50,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
       }
     }
     val paths = connection.runWithServer { server -> server.workspaceBazelPaths() }
-    val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
+    val workspaceContext = connection.runWithServer { server -> server.workspaceContext }
     project
       .service<LanguagePluginsService>()
       .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver())
@@ -103,7 +103,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
         is BazelWorkspaceSyncState.Synced -> state.bazelProject
       }
 
-    val repoMapping = connection.runWithServer { server -> server.workspaceBazelRepoMapping() }
+    val repoMapping = connection.runWithServer { server -> server.workspaceBazelRepoMapping(taskId) }
     val workspace: BazelResolvedWorkspace =
       when (scope) {
         is FirstPhaseSync -> {
@@ -127,7 +127,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
               WorkspaceBuildTargetSelector.AllTargets
             }
           val buildTargets = connection.runWithServer { server -> server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, taskId)) }
-          val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
+          val workspaceContext = connection.runWithServer { server -> server.workspaceContext }
           bazelMapper.createProject(
             allTargets = synced.targets,
             rootTargets = buildTargets.rootTargets,

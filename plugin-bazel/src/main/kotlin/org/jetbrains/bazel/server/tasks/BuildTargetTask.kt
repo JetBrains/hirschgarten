@@ -44,7 +44,7 @@ suspend fun runBuildTargetTask(
   return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
     // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
     // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
-    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags } else listOf()
+    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext.debugFlags } else listOf()
     project.connection.runWithServer { server ->
       coroutineScope {
         val taskGroupId = TaskGroupId("build-" + Random.nextBytes(8).toHexString())
