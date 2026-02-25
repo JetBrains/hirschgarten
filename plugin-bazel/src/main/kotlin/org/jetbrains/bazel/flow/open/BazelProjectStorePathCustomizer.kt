@@ -2,11 +2,15 @@ package org.jetbrains.bazel.flow.open
 
 import com.intellij.configurationStore.ProjectStoreDescriptor
 import com.intellij.configurationStore.ProjectStorePathCustomizer
-import com.intellij.openapi.application.PathManager
-import com.intellij.openapi.project.getProjectCacheFileName
-import com.intellij.openapi.project.projectsDataDir
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.vfs.findPsiFile
+import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
+import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
+import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.nio.file.Path
 
 private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
@@ -15,29 +19,25 @@ private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
     if (!projectRoot.hasNameOf(*Constants.SUPPORTED_CONFIG_FILE_NAMES) &&
       !projectRoot.hasExtensionOf(*Constants.SUPPORTED_EXTENSIONS)
     ) return null
-
-    // we should use `getProjectCacheFileName` API,
-    // as in this dir is located a lot of other project-related data, so, location of dir should be in an expected location
-    val cacheDirectoryName = getProjectCacheFileName(projectRoot)
-    val dotIdea = projectsDataDir.resolve(cacheDirectoryName).resolve("bazel.idea")
-    val workspaceXml =
-      PathManager
-        .getConfigDir()
-        .resolve("workspace")
-        .resolve("bazel")
-        .resolve("$cacheDirectoryName.xml")
-
-    val historicalProjectBasePath = LocalFileSystem.getInstance()
-      .refreshAndFindFileByNioFile(projectRoot)
+    val historicalProjectBasePath = projectRoot.refreshAndFindVirtualFile()
       ?.let(::findProjectFolderFromVFile)
-      ?.toNioPath()
-      ?: projectRoot.parent
-
+      ?.toNioPath() ?: projectRoot.parent
+    val dotIdea = runReadActionBlocking { historicalProjectBasePath.selectDotIdeaPath() }
     return BazelProjectStoreDescriptor(
       projectIdentityFile = projectRoot,
       dotIdea = dotIdea,
       historicalProjectBasePath = historicalProjectBasePath,
-      workspaceXml = workspaceXml,
+      workspaceXml = dotIdea.resolve("workspace.xml"),
     )
   }
+
+  private fun Path.selectDotIdeaPath(): Path = this
+    .refreshAndFindVirtualDirectory()
+    ?.let { ProjectViewFileUtils.calculateProjectViewFilePath(projectRootDir = it, projectViewPath = null) }
+    ?.refreshAndFindVirtualFile()
+    ?.findPsiFile(ProjectManager.getInstance().defaultProject)
+    ?.let { it as? ProjectViewPsiFile }
+    ?.let(ProjectView::fromProjectViewPsiFile)
+    ?.dotIdeaDirectoryLocation
+    ?.let(this::resolve) ?: this.resolve(".idea")
 }
