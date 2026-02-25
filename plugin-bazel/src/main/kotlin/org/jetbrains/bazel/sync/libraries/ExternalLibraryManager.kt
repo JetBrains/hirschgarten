@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Service(Service.Level.PROJECT)
 class ExternalLibraryManager(private val project: Project, private val cs: CoroutineScope) {
   private val duringSync: AtomicBoolean = AtomicBoolean(false)
-  private val underLibraryUpdate: AtomicBoolean = AtomicBoolean(false)
 
   @Volatile
   private var libraries: Map<Class<out BazelExternalLibraryProvider>, BazelExternalSyntheticLibrary> = mapOf()
@@ -29,7 +28,6 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
 
   @Synchronized
   private fun initializeVariables() {
-    underLibraryUpdate.set(true)
     // this must be done asynchronously to be able to refresh and find virtual file under read lock
     // https://youtrack.jetbrains.com/issue/BAZEL-2265
     BazelCoroutineService.getInstance(project).start {
@@ -46,7 +44,6 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
             }
           }.toMap()
       this@ExternalLibraryManager.libraries = libraries
-      underLibraryUpdate.set(false)
 
       fireLibrariesChanged(libraries)
     }
@@ -94,7 +91,7 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
 
   @Synchronized
   fun getLibrary(providerClass: Class<out BazelExternalLibraryProvider>): BazelExternalSyntheticLibrary? =
-    if (duringSync.get() || underLibraryUpdate.get()) null else libraries[providerClass]
+    libraries[providerClass]
 
   companion object {
     @JvmStatic
