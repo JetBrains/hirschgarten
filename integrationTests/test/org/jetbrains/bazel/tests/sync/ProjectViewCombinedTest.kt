@@ -108,12 +108,20 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
 
   // Verifies that modifying the active project view file directly (via Path.writeText)
   // and resyncing picks up the new target list — the basic project view edit workflow.
-  // Uses the default projectview.bazelproject (active from @BeforeAll) to avoid
-  // polluting shared project view files used by other tests.
+  // Switches back to projectview.bazelproject first, since @Order(1) may have changed
+  // the active view to a different file.
   @Test @Order(2)
   fun `modifying active project view file and resyncing should update targets`() {
     withDriver(bgRun) {
       ideFrame {
+        step("Ensure projectview.bazelproject is the active view") {
+          execute { switchProjectView("projectview.bazelproject") }
+          execute {
+            buildAndSync()
+            waitForSmartMode()
+          }
+          assertSyncSucceeded()
+        }
         step("Verify initial targets from default project view") {
           execute { assertSyncedTargets("//app:app", "//common:common") }
         }
@@ -276,7 +284,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
   // BAZEL-1451: derive_targets_from_directories: false with no targets: section.
   // The plugin should NOT silently fall back to //... (all targets).
   // Expected: zero targets synced (or an error), not a full-repo sync.
-  @Test @Order(102)
+  @Test @Order(103)
   fun `empty targets with derive_targets_from_directories false should not fallback to all targets`() {
     withDriver(bgRun) {
       ideFrame {
