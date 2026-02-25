@@ -9,7 +9,7 @@ import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskId
 
 /**
@@ -45,7 +45,7 @@ interface ProjectSyncHook {
   data class ProjectSyncHookEnvironment(
     val project: Project,
     val syncScope: ProjectSyncScope,
-    val server: JoinedBuildServer,
+    val server: BazelServerFacade,
     val resolver: BazelWorkspaceResolveService,
     val diff: AllProjectStructuresDiff,
     val taskId: TaskId,

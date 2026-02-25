@@ -18,11 +18,11 @@ import org.jetbrains.bazel.sync.workspace.mapper.normal.TargetTagsResolver
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapperContext
-import org.jetbrains.bsp.protocol.BazelProject
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 
 @Service(Service.Level.PROJECT)
 class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelWorkspaceResolveService {
@@ -50,7 +50,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
       }
     }
     val paths = connection.runWithServer { server -> server.workspaceBazelPaths() }
-    val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
+    val workspaceContext = connection.runWithServer { server -> server.workspaceContext }
     project
       .service<LanguagePluginsService>()
       .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver())
@@ -67,7 +67,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
     state = BazelWorkspaceSyncState.Initialized
   }
 
-  private suspend fun syncWorkspace(build: Boolean, taskId: TaskId): BazelProject {
+  private suspend fun syncWorkspace(build: Boolean, taskId: TaskId): WorkspaceBuildTargetsResult {
     when (val state = state) {
       // if workspace was already sync or even resolved - return the available state and avoid recomputation
       is BazelWorkspaceSyncState.Resolved -> return state.bazelProject
@@ -103,7 +103,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
         is BazelWorkspaceSyncState.Synced -> state.bazelProject
       }
 
-    val repoMapping = connection.runWithServer { server -> server.workspaceBazelRepoMapping() }
+    val repoMapping = connection.runWithServer { server -> server.workspaceBazelRepoMapping(taskId) }
     val workspace: BazelResolvedWorkspace =
       when (scope) {
         is FirstPhaseSync -> {
@@ -127,7 +127,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
               WorkspaceBuildTargetSelector.AllTargets
             }
           val buildTargets = connection.runWithServer { server -> server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, taskId)) }
-          val workspaceContext = connection.runWithServer { server -> server.workspaceContext() }
+          val workspaceContext = connection.runWithServer { server -> server.workspaceContext }
           bazelMapper.createProject(
             allTargets = synced.targets,
             rootTargets = buildTargets.rootTargets,
@@ -153,7 +153,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
   override suspend fun getOrFetchResolvedWorkspace(scope: ProjectSyncScope, taskId: TaskId): BazelResolvedWorkspace =
     resolveWorkspace(scope, taskId)
 
-  override suspend fun getOrFetchSyncedProject(build: Boolean, taskId: TaskId): BazelProject =
+  override suspend fun getOrFetchSyncedProject(build: Boolean, taskId: TaskId): WorkspaceBuildTargetsResult =
     syncWorkspace(build, taskId)
 
   /**
@@ -173,9 +173,9 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
     object Initialized : Nothing("project is not synced")
 
     // project only has raw target data
-    data class Synced(val bazelProject: BazelProject) : BazelWorkspaceSyncState
+    data class Synced(val bazelProject: WorkspaceBuildTargetsResult) : BazelWorkspaceSyncState
 
     // project is fully resolved
-    data class Resolved(val bazelProject: BazelProject, val resolvedWorkspace: BazelResolvedWorkspace) : BazelWorkspaceSyncState
+    data class Resolved(val bazelProject: WorkspaceBuildTargetsResult, val resolvedWorkspace: BazelResolvedWorkspace) : BazelWorkspaceSyncState
   }
 }
