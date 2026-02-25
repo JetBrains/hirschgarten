@@ -2,6 +2,7 @@
 
 package org.jetbrains.bazel.workspace.packageMarker
 
+import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.EntityStorage
@@ -20,7 +21,8 @@ private class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIn
     registrar: WorkspaceFileSetRegistrar,
     storage: EntityStorage,
   ) {
-    val module = entity.module.findModule(storage) ?: return
+    val moduleEntity = entity.module
+    val module = moduleEntity.findModule(storage) ?: return
     registrar.registerNonRecursiveFileSet(
       file = entity.root,
       kind = WorkspaceFileKind.CONTENT,
@@ -32,6 +34,7 @@ private class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIn
           SourceRootTypeId("java-source"),
           entity.packagePrefix,
           false,
+          languageLevelId = moduleEntity.javaSettings?.languageLevelId,
         ),
     )
   }
