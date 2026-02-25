@@ -36,9 +36,8 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory.Companion.fileToImportPathMapComputable
-import org.jetbrains.bazel.golang.sync.GO_EXTERNAL_LIBRARY_ROOT_NAME
+import org.jetbrains.bazel.golang.sync.GoExternalSyntheticLibrary
 import org.jetbrains.bazel.sync.SyncCache
-import org.jetbrains.bazel.sync.libraries.BazelExternalSyntheticLibrary
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -54,7 +53,7 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
   @BeforeEach
   fun beforeEach() {
     project.isBazelProject = true
-    rootNode = createRootNode(GO_EXTERNAL_LIBRARY_ROOT_NAME)
+    rootNode = createRootNode()
     fileToImportPathMap = ConcurrentHashMap<Path, String>()
     SyncCache.getInstance(project).clear()
   }
@@ -108,10 +107,9 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
       object : ViewSettings {},
     )
 
-  private fun createRootNode(nodeName: String): SyntheticLibraryElementNode {
+  private fun createRootNode(): SyntheticLibraryElementNode {
     val parentLibrary =
-      BazelExternalSyntheticLibrary(
-        nodeName,
+      GoExternalSyntheticLibrary(
         ImmutableList.of(),
       )
 

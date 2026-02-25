@@ -13,33 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.bazel.sync.libraries
+package org.jetbrains.bazel.golang.sync
 
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import javax.swing.Icon
 
-/**
- * A [SyntheticLibrary] pointing to a list of external files for a language. Only supports one
- * instance per value of presentableText.
- */
+@VisibleForTesting
+const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries"
 
-class BazelExternalSyntheticLibrary(private val text: String, private val files: List<VirtualFile>) :
+data class GoExternalSyntheticLibrary(private val files: List<VirtualFile>) :
   SyntheticLibrary(),
   ItemPresentation {
   override fun getSourceRoots(): List<VirtualFile> = files.filter { it.isValid }
 
-  override fun equals(other: Any?): Boolean {
-    // intended to be only a single instance added to the project for each value of presentableText
-    return other is BazelExternalSyntheticLibrary &&
-      text == other.text
-  }
-
-  override fun hashCode(): Int = text.hashCode()
-
-  override fun getPresentableText(): String = text
+  override fun getPresentableText(): String = GO_EXTERNAL_LIBRARY_ROOT_NAME
 
   override fun getIcon(unused: Boolean): Icon = BazelPluginIcons.bazel
 }
