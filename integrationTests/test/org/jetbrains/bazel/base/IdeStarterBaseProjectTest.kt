@@ -319,6 +319,11 @@ fun <T : CommandChain> T.switchProjectView(fileName: String): T {
   return this
 }
 
+fun <T : CommandChain> T.refreshFile(relativePath: String): T {
+  addCommand(CMD_PREFIX + "refreshFile $relativePath")
+  return this
+}
+
 fun <T : CommandChain> T.assertFileInProject(relativePath: String, expectedInProject: Boolean): T {
   addCommand(CMD_PREFIX + "assertFileInProject $relativePath $expectedInProject")
   return this

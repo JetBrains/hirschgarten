@@ -11,6 +11,7 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileInProject
+import org.jetbrains.bazel.ideStarter.refreshFile
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
@@ -135,6 +136,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
                 "targets:\n  //app:app\n  //common:common\n  //server:server\n\n" +
                 "import_depth: 0\n",
             )
+          execute { refreshFile("projectview.bazelproject") }
           wait(3.seconds)
         }
         step("Resync and verify server target is now synced") {
@@ -154,6 +156,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
                 "targets:\n  //app:app\n  //common:common\n\n" +
                 "import_depth: 0\n",
             )
+          execute { refreshFile("projectview.bazelproject") }
           wait(3.seconds)
           execute {
             buildAndSync()

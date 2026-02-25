@@ -17,5 +17,6 @@ public class BazelCommandProvider : CommandProvider {
       AssertSyncedTargetsCommand.PREFIX to CreateCommand(::AssertSyncedTargetsCommand),
       AssertFileInProjectCommand.PREFIX to CreateCommand(::AssertFileInProjectCommand),
       SwitchProjectViewCommand.PREFIX to CreateCommand(::SwitchProjectViewCommand),
+      RefreshFileCommand.PREFIX to CreateCommand(::RefreshFileCommand),
     )
 }
