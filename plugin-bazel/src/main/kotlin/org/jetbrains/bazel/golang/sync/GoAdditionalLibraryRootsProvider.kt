@@ -18,10 +18,12 @@ package org.jetbrains.bazel.golang.sync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import com.intellij.openapi.roots.SyntheticLibrary
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 
 class GoAdditionalLibraryRootsProvider : AdditionalLibraryRootsProvider() {
   override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
+    if (!BazelFeatureFlags.isGoSupportEnabled) return emptyList()
     if (!project.isBazelProject) return emptyList()
     val library = GoExternalLibraryManager.getInstance(project).library
     return if (library != null) {
