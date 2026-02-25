@@ -1,9 +1,10 @@
 package org.jetbrains.bazel.sync.libraries
 
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.AdditionalLibraryRootsListener
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
-import com.intellij.util.WaitFor
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -32,7 +33,7 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
     // this must be done asynchronously to be able to refresh and find virtual file under read lock
     // https://youtrack.jetbrains.com/issue/BAZEL-2265
     BazelCoroutineService.getInstance(project).start {
-      libraries =
+      val libraries: Map<Class<out BazelExternalLibraryProvider>, BazelExternalSyntheticLibrary> =
         AdditionalLibraryRootsProvider.EP_NAME
           .extensionList
           .mapNotNull { it as? BazelExternalLibraryProvider }
@@ -44,7 +45,24 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
               null
             }
           }.toMap()
+      this@ExternalLibraryManager.libraries = libraries
       underLibraryUpdate.set(false)
+
+      fireLibrariesChanged(libraries)
+    }
+  }
+
+  private fun fireLibrariesChanged(libraries: Map<Class<out BazelExternalLibraryProvider>, BazelExternalSyntheticLibrary>) {
+    libraries.values.forEach { library ->
+      runWriteAction {
+        AdditionalLibraryRootsListener.fireAdditionalLibraryChanged(
+          project,
+          library.presentableText,
+          emptyList(),
+          library.allRoots,
+          ExternalLibraryManager::class.java.name,
+        )
+      }
     }
   }
 
@@ -74,22 +92,9 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
     )
   }
 
-  private fun isLibrariesAvailable(): Boolean = !duringSync.get() && !underLibraryUpdate.get()
-
-  /**
-   * waits for libraries to be available before returning the corresponding library,
-   * maximum waiting time is 10 seconds
-   * https://youtrack.jetbrains.com/issue/BAZEL-2283
-   */
-  fun getLibraryBlocking(providerClass: Class<out BazelExternalLibraryProvider>): BazelExternalSyntheticLibrary? {
-    object : WaitFor(10000) {
-      override fun condition(): Boolean = isLibrariesAvailable()
-    }
-    return getLibrary(providerClass)
-  }
-
+  @Synchronized
   fun getLibrary(providerClass: Class<out BazelExternalLibraryProvider>): BazelExternalSyntheticLibrary? =
-    if (isLibrariesAvailable()) libraries[providerClass] else null
+    if (duringSync.get() || underLibraryUpdate.get()) null else libraries[providerClass]
 
   companion object {
     @JvmStatic

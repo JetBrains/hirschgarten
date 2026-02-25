@@ -14,8 +14,7 @@ abstract class BazelExternalLibraryProvider : AdditionalLibraryRootsProvider() {
   abstract fun getLibraryFiles(project: Project): List<Path>
 
   override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
-    val externalLibraryManager = ExternalLibraryManager.getInstance(project)
-    val library = externalLibraryManager.getLibraryBlocking(javaClass)
+    val library = ExternalLibraryManager.getInstance(project).getLibrary(javaClass)
     return if (library != null) listOf(library) else listOf()
   }
 }
