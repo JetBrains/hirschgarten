@@ -10,7 +10,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.RunParams
 
 class BazelRunCommandLineState(environment: ExecutionEnvironment, private val runState: AbstractGenericRunState<*>) :
@@ -20,7 +20,7 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
   override suspend fun startBsp(
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
   ) {

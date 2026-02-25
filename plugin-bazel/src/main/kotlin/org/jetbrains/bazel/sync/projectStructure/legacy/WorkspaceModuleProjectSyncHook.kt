@@ -16,7 +16,6 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
 class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
@@ -30,7 +29,7 @@ class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
     val project = environment.project
     if (!EnableWorkspaceModuleSyncHookExtension.EP.extensionList.any { it.isEnabled(environment) }) return
     val moduleEntitySource = BazelModuleEntitySource(WORKSPACE_MODULE_NAME)
-    val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
+    val directories = environment.server.workspaceDirectories()
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
     val includedDirectories = directories.includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }
     val excludedDirectories = directories.excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }

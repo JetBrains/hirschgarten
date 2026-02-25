@@ -17,7 +17,7 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 
 internal val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
 
@@ -77,9 +77,9 @@ class RunScriptPathCommandLineState(environment: ExecutionEnvironment, val setti
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
   override suspend fun startBsp(
-    server: JoinedBuildServer,
-    pidDeferred: CompletableDeferred<Long?>,
-    handler: BazelProcessHandler,
+      server: BazelServerFacade,
+      pidDeferred: CompletableDeferred<Long?>,
+      handler: BazelProcessHandler,
   ) {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
     runWithScriptPath(

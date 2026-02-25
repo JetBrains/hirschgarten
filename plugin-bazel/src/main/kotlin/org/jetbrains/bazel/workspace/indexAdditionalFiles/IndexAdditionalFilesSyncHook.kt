@@ -18,7 +18,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
@@ -66,10 +65,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
     projectDirectoriesEntity: BazelProjectDirectoriesEntity,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<VirtualFileUrl> {
-    val workspaceContext =
-      query("workspace/context") {
-        environment.server.workspaceContext()
-      }
+    val workspaceContext = environment.server.workspaceContext
     if (workspaceContext.indexAllFilesInDirectories) {
       return emptyList()
     }

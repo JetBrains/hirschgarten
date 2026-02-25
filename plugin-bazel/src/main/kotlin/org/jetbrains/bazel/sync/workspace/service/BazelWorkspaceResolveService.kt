@@ -3,8 +3,8 @@ package org.jetbrains.bazel.sync.workspace
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bsp.protocol.BazelProject
 import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 
 interface BazelWorkspaceResolveService {
   suspend fun invalidateCachedState()
@@ -17,7 +17,7 @@ interface BazelWorkspaceResolveService {
   suspend fun getOrFetchSyncedProject(
     build: Boolean = false,
     taskId: TaskId
-  ): BazelProject
+  ): WorkspaceBuildTargetsResult
 
   companion object {
     @JvmStatic

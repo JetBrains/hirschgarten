@@ -18,15 +18,14 @@ import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.CompileParams
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
-import java.util.UUID
 import kotlin.random.Random
 
 interface BuildTargetTask {
   suspend fun build(
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     targetIds: List<Label>,
     buildConsole: TaskConsole,
     taskId: TaskId,
@@ -44,7 +43,7 @@ suspend fun runBuildTargetTask(
   return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
     // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
     // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
-    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext().debugFlags } else listOf()
+    val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext.debugFlags } else listOf()
     project.connection.runWithServer { server ->
       coroutineScope {
         val taskGroupId = TaskGroupId("build-" + Random.nextBytes(8).toHexString())
@@ -83,7 +82,7 @@ suspend fun runBuildTargetTask(
 
 object DefaultBuildTargetTask : BuildTargetTask {
   override suspend fun build(
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     targetIds: List<Label>,
     buildConsole: TaskConsole,
     taskId: TaskId,

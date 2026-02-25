@@ -20,7 +20,7 @@ import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 
 class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
@@ -86,9 +86,9 @@ class ScriptPathTestCommandLineState(environment: ExecutionEnvironment, val sett
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
   override suspend fun startBsp(
-    server: JoinedBuildServer,
-    pidDeferred: CompletableDeferred<Long?>,
-    handler: BazelProcessHandler,
+      server: BazelServerFacade,
+      pidDeferred: CompletableDeferred<Long?>,
+      handler: BazelProcessHandler,
   ) {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
     runWithScriptPath(

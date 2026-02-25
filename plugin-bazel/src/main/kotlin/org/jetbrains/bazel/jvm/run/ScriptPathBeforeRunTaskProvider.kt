@@ -26,7 +26,7 @@ import org.jetbrains.bazel.server.tasks.DefaultBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.DebugType
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Files
@@ -121,11 +121,11 @@ private class ScriptPathBuildTargetTask(
   private val isDebug: Boolean,
 ) : BuildTargetTask {
   override suspend fun build(
-    server: JoinedBuildServer,
-    targetIds: List<Label>,
-    buildConsole: TaskConsole,
-    taskId: TaskId,
-    debugFlags: List<String>,
+      server: BazelServerFacade,
+      targetIds: List<Label>,
+      buildConsole: TaskConsole,
+      taskId: TaskId,
+      debugFlags: List<String>,
   ): BazelStatus {
     val state = runConfiguration.handler?.state
     val debugPort = if (isDebug) {

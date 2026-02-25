@@ -5,12 +5,11 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
-data class BazelProject(val targets: Map<Label, BspTargetInfo.TargetInfo>, val hasError: Boolean)
-
-interface JoinedBuildServer {
-  suspend fun runSync(build: Boolean, taskId: TaskId): BazelProject
-
+interface BazelServerFacade {
   val bazelInfo: BazelInfo
+  val workspaceContext: WorkspaceContext
+
+  suspend fun runSync(build: Boolean, taskId: TaskId): WorkspaceBuildTargetsResult
 
   suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult
 
@@ -31,13 +30,11 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
 
-  suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
+  suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult
 
   suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult
 
-  suspend fun workspaceName(): WorkspaceNameResult
-
-  suspend fun workspaceContext(): WorkspaceContext
+  suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult
 
   suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath
 

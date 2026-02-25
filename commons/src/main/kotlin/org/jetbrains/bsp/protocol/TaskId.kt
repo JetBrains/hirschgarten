@@ -4,6 +4,9 @@ data class TaskGroupId(val id: String) {
   fun task(taskId: String): TaskId = TaskId(this, taskId)
 
   companion object {
+    /**
+     * Empty group, which explicitly does not reflect in UI
+     */
     val EMPTY = TaskGroupId("")
   }
 }
