@@ -16,6 +16,7 @@ import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
 class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
+  @Volatile
   private var symlinksToExclude: Set<Path>? = null
 
   fun getOrComputeBazelSymlinksToExclude(bazelWorkspace: Path): Set<Path> {
