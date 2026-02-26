@@ -142,11 +142,9 @@ class BazelBspAspectsManager(
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
       val templateFilePath = it.toAspectTemplateRelativePath()
       val canonicalRuleName = ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty()
-      val apparentRuleName = (ruleLanguage?.rulesetName as? ApparentRulesetName)?.name.orEmpty()
       val variableMap =
         mapOf(
           "rulesetName" to canonicalRuleName,
-          "rulesetNameApparent" to apparentRuleName,
           // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
