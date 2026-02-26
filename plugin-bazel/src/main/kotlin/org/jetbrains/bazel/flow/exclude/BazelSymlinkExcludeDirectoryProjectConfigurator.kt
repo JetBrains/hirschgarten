@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.flow.open.exclude
+package org.jetbrains.bazel.flow.exclude
 
 import com.intellij.ide.projectView.actions.MarkRootsManager
 import com.intellij.openapi.application.backgroundWriteAction
@@ -27,7 +27,7 @@ internal class BazelSymlinkExcludeDirectoryProjectConfigurator : DirectoryProjec
   ) {
     // Call BazelSymlinkExcludeService even if isBazelProject == true because it adds excludes to file watcher
     val bazelWorkspace = findProjectFolderFromVFile(baseDir) ?: return
-    val symlinksToExclude = project.serviceAsync<BazelSymlinkExcludeService>().getBazelSymlinksToExclude(bazelWorkspace.toNioPath())
+    val symlinksToExclude = project.serviceAsync<BazelSymlinkExcludeService>().getOrComputeBazelSymlinksToExclude(bazelWorkspace.toNioPath())
     if (symlinksToExclude.isEmpty()) return
 
     // Fake Module is going to be removed by CounterPlatformProjectConfigurator anyway
