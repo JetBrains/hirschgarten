@@ -21,7 +21,6 @@ import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.SyntheticLibraryElementNode
 import com.intellij.lang.FileASTNode
 import com.intellij.mock.MockVirtualFile
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
@@ -37,10 +36,8 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory.Companion.fileToImportPathMapComputable
-import org.jetbrains.bazel.golang.sync.GO_EXTERNAL_LIBRARY_ROOT_NAME
+import org.jetbrains.bazel.golang.sync.GoExternalSyntheticLibrary
 import org.jetbrains.bazel.sync.SyncCache
-import org.jetbrains.bazel.sync.libraries.BazelExternalSyntheticLibrary
-import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -56,7 +53,7 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
   @BeforeEach
   fun beforeEach() {
     project.isBazelProject = true
-    rootNode = createRootNode(GO_EXTERNAL_LIBRARY_ROOT_NAME)
+    rootNode = createRootNode()
     fileToImportPathMap = ConcurrentHashMap<Path, String>()
     SyncCache.getInstance(project).clear()
   }
@@ -110,10 +107,9 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
       object : ViewSettings {},
     )
 
-  private fun createRootNode(nodeName: String): SyntheticLibraryElementNode {
+  private fun createRootNode(): SyntheticLibraryElementNode {
     val parentLibrary =
-      BazelExternalSyntheticLibrary(
-        nodeName,
+      GoExternalSyntheticLibrary(
         ImmutableList.of(),
       )
 

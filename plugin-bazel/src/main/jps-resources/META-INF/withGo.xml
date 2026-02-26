@@ -20,6 +20,7 @@
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoSdkSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoModuleSupportPostSyncHook" />
+    <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoExternalLibraryPostSyncHook" />
     <workspaceModuleSyncHook.enable implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceModuleEnable" />
     <runHandlerProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoRunHandler$BazelGoRunHandlerProvider" />
     <runHandlerProvider
