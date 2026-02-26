@@ -50,7 +50,7 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
     )
   }
 
-  private fun calculateSdkPath(sdk: BspTargetInfo.FileLocation?): Path? =
+  private fun calculateSdkPath(sdk: BspTargetInfo.ArtifactLocation?): Path? =
     sdk
       ?.takeUnless { it.relativePath.isNullOrEmpty() }
       ?.let {
