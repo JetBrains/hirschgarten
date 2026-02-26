@@ -67,6 +67,12 @@ class GolandSyncTest : IdeStarterBaseProjectTest() {
             takeScreenshot("navigateFromImportReferenceToBuildFileOutsideWorkspace")
           }
 
+          step("Open a source file and navigate from the import reference to a source file outside of the workspace") {
+            execute { it.openFile("testb/testb_test.go") }
+            execute { it.navigateToFile(18, 10, "assertions.go", 813, 6) }
+            takeScreenshot("navigateFromImportReferenceToBuildFileOutsideWorkspace")
+          }
+
           FILES_TO_CHECK_FOR_RED_CODE.forEach {
             step("Check for red code in file $it") {
               checkForRedCodeInFile(it)

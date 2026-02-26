@@ -7,7 +7,6 @@ import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
@@ -35,7 +34,6 @@ class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
         fileToTarget = fileToTarget,
         libraryItems = libraryItems,
       )
-      project.messageBus.syncPublisher(SyncStatusListener.TOPIC).targetUtilAvailable()
     }
   }
 }
