@@ -48,8 +48,7 @@ class FirstPhaseProjectResolver(
         workspaceRoot = workspaceRoot,
         bazelRelease = bazelInfo.release,
         modules = modules,
-        repoMapping = repoMapping,
-        workspaceContext = workspaceContext,
+        repoMapping = repoMapping
       )
     }
 }

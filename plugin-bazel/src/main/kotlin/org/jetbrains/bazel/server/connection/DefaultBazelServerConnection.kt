@@ -12,22 +12,20 @@ import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
-import org.jetbrains.bazel.server.bsp.BspServerApi
+import org.jetbrains.bazel.server.bsp.BaselServerFacadeImpl
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bazel.server.sync.BazelSyncProjectProvider
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
-import org.jetbrains.bazel.server.sync.ProjectProvider
 import org.jetbrains.bazel.server.sync.ProjectResolver
-import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
-import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import java.util.concurrent.atomic.AtomicReference
 
 class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
@@ -35,13 +33,13 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   private val environmentCreator = EnvironmentCreator(workspaceRoot).also {
     it.create()
   }
-  private val server = AtomicReference<BspServerApi?>(null)
+  private val server = AtomicReference<BaselServerFacadeImpl?>(null)
 
-  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T {
+  override suspend fun <T> runWithServer(task: suspend (server: BazelServerFacade) -> T): T {
     return task(getServer())
   }
 
-  private suspend fun getServer(): BspServerApi {
+  private suspend fun getServer(): BaselServerFacadeImpl {
     // ensure `.bazelbsp` directory exists and functions
     environmentCreator.create()
 
@@ -60,7 +58,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
     return server
   }
 
-  private suspend fun createServer(workspaceContext: WorkspaceContext): BspServerApi {
+  private suspend fun createServer(workspaceContext: WorkspaceContext): BaselServerFacadeImpl {
     val taskEventsHandler = BazelTaskEventsService.getInstance(project)
     val bspInfo = BspInfo(workspaceRoot)
     val aspectsResolver = InternalAspectsResolver(bspInfo = bspInfo)
@@ -112,22 +110,20 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
         bazelInfo = bazelInfo,
         taskEventsHandler = taskEventsHandler,
       )
-    val projectProvider = ProjectProvider(projectResolver, firstPhaseProjectResolver)
+    val projectProvider = BazelSyncProjectProvider(project, projectResolver, firstPhaseProjectResolver)
 
     val bspProjectMapper =
       BspProjectMapper(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
+        workspaceContext = workspaceContext
       )
-    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper()
-    val projectSyncService =
-      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo, workspaceContext)
 
-    return BspServerApi(
-      projectSyncService = projectSyncService,
+    return BaselServerFacadeImpl(
+      bspMapper = bspProjectMapper,
+      projectProvider = projectProvider,
       executeService = executeService,
       workspaceContext = workspaceContext,
-      bazelPathsResolver = bazelPathsResolver,
       bazelInfo = bazelInfo,
     )
   }

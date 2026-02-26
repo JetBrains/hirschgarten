@@ -19,7 +19,6 @@ import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 
@@ -31,10 +30,7 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     environment.withSubtask("Import run configurations") {
       val project = environment.project
-      val workspaceContext =
-        query("workspace/context") {
-          environment.server.workspaceContext()
-        }
+      val workspaceContext = environment.server.workspaceContext
 
       val runManager = RunManager.getInstance(project)
       val shouldSetSelectedConfiguration = runManager.selectedConfiguration == null

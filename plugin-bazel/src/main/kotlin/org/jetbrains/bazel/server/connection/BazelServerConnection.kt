@@ -1,14 +1,14 @@
 package org.jetbrains.bazel.server.connection
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 
 /**
  * The BSP connection, implementation should keep all the information
  * needed to establish and keep the connection with the server.
  */
 interface BazelServerConnection {
-  suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T
+  suspend fun <T> runWithServer(task: suspend (server: BazelServerFacade) -> T): T
 }
 
 val Project.connection: BazelServerConnection

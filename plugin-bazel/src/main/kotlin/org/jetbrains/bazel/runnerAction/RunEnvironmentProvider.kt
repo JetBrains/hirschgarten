@@ -7,7 +7,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.JvmMainClass
 import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
@@ -26,7 +26,7 @@ class RunEnvironmentProvider(private val project: Project) {
 
   private suspend fun BuildTarget.getJvmEnvironmentItem(
     paths: BazelPathsResolver,
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     label: Label,
   ): JvmEnvironmentItem? {
     val jvmTarget = extractJvmBuildTarget(this) ?: return null

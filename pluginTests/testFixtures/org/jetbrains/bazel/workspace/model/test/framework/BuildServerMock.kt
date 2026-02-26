@@ -3,7 +3,6 @@ package org.jetbrains.bazel.workspace.model.test.framework
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.Label
@@ -16,7 +15,7 @@ import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
@@ -46,34 +45,10 @@ open class BuildServerMock(
   private val analysisDebugResult: AnalysisDebugResult? = null,
   private val runResultWithDebug: RunResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = WorkspaceBazelRepoMappingResult(RepoMappingDisabled),
-  private val workspaceContextResult: WorkspaceContext? =
-    WorkspaceContext(
-      targets = listOf(ExcludableValue.included(Label.parse("//..."))),
-      directories = listOf(ExcludableValue.included(Path("."))),
-      buildFlags = emptyList(),
-      syncFlags = emptyList(),
-      debugFlags = emptyList(),
-      bazelBinary = Path("bazel"),
-      allowManualTargetsSync = true,
-      importDepth = -1,
-      enabledRules = emptyList(),
-      ideJavaHomeOverride = Path("java_home"),
-      shardSync = false,
-      targetShardSize = 1000,
-      shardingApproach = null,
-      importRunConfigurations = emptyList(),
-      gazelleTarget = null,
-      indexAllFilesInDirectories = false,
-      pythonCodeGeneratorRuleNames = emptyList(),
-      importIjars = false,
-      deriveInstrumentationFilterFromTargets = true,
-      indexAdditionalFilesInDirectories = emptyList(),
-      preferClassJarsOverSourcelessJars = true,
-    ),
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val workspacePhasedBuildTargetsResult: WorkspacePhasedBuildTargetsResult? = null,
   private val jvmClasspathResult: BspJvmClasspath? = null,
-) : JoinedBuildServer {
+) : BazelServerFacade {
   override suspend fun runSync(build: Boolean, taskId: TaskId): BazelProject = wrapInFuture(bazelProject)
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult =
@@ -97,7 +72,9 @@ open class BuildServerMock(
 
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = wrapInFuture(runResultWithDebug)
 
-  override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
+  override suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
+
+  override val workspaceContext: WorkspaceContext = mockWorkspaceContext
 
   override val bazelInfo =
     BazelInfo(
@@ -115,9 +92,7 @@ open class BuildServerMock(
     return WorkspaceBazelPathsResult("/path/to/bazel-bin", "/path/to/bazel-out/exec", BazelPathsResolver(bazelInfo))
   }
 
-  override suspend fun workspaceName(): WorkspaceNameResult = WorkspaceNameResult("_main")
-
-  override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
+  override suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult = WorkspaceNameResult("_main")
 
   override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath =
     wrapInFuture(jvmClasspathResult)

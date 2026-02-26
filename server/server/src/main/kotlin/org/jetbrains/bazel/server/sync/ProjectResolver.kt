@@ -38,7 +38,7 @@ import kotlin.io.path.Path
 
 class IllegalTargetsSizeException(message: String) : Exception(message)
 
-fun TargetCollection.halve(): List<TargetCollection> {
+private fun TargetCollection.halve(): List<TargetCollection> {
   if (values.size <= 1) {
     throw IllegalTargetsSizeException("Cannot split target collection with ${values.size} targets")
   }
@@ -68,8 +68,8 @@ class ProjectResolver(
     requestedTargetsToSync: List<Label>?,
     phasedSyncProject: PhasedSyncProject?,
     taskId: TaskId,
-  ): AspectSyncProject =
-    bspTracer.spanBuilder("Resolve project").useWithScope {
+  ): AspectSyncProject {
+    return bspTracer.spanBuilder("Resolve project").useWithScope {
       val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, taskId)
       val repoMapping = buildAspectResult.first
       val aspectResult = buildAspectResult.second
@@ -85,45 +85,51 @@ class ProjectResolver(
           processTargetMap(rawTargetsMap)
         }
 
-      val newRepoMapping = when(repoMapping) {
+      val newRepoMapping = when (repoMapping) {
         is RepoMappingDisabled -> RepoMappingDisabled
         is BzlmodRepoMapping -> {
           // If we discovered new repositories in the transitive dependencies, verify if some of
           // them are local repositories and update our mapping to local paths accordingly.
           // Additionally, for those newly discovered local repositories, update the path to
           // point to the source tree (rather than the output map).
-          val involvedRepos = targets.keys.mapNotNull {(it as? ResolvedLabel)?.repo as? Canonical}.distinct()
+          val involvedRepos = targets.keys.mapNotNull { (it as? ResolvedLabel)?.repo as? Canonical }.distinct()
           val needsPath = involvedRepos
             .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
             .map { it.toString() }
           val extraRepositoryDescriptions = ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(needsPath, bazelInfo)
-          val extraPaths = extraRepositoryDescriptions.map { (name, description) -> when(description) {
-            is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
-            else -> mapOf()
-          } }.reduceOrNull { acc, map -> acc + map }
+          val extraPaths = extraRepositoryDescriptions.map { (name, description) ->
+            when (description) {
+              is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
+              else -> mapOf()
+            }
+          }.reduceOrNull { acc, map -> acc + map }
             .orEmpty()
           val extraPathsResolved = extraPaths.mapValues { (_, path) -> bazelInfo.workspaceRoot.resolve(path) }
           BzlmodRepoMapping(
             repoMapping.canonicalRepoNameToLocalPath + extraPaths,
             repoMapping.apparentRepoNameToCanonicalName,
-            repoMapping.canonicalRepoNameToPath + extraPathsResolved)
+            repoMapping.canonicalRepoNameToPath + extraPathsResolved,
+          )
         }
       }
 
 
-      val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
+      val workspaceName = targets.values.firstOrNull()?.workspaceName ?: "_main"
       val rootTargets = aspectResult.bepOutput.rootTargets()
+
+      bazelPathsResolver.clear()
+
       return@useWithScope AspectSyncProject(
         workspaceRoot = bazelInfo.workspaceRoot,
         bazelRelease = bazelInfo.release,
         repoMapping = newRepoMapping,
-        workspaceContext = workspaceContext,
         workspaceName = workspaceName,
         hasError = aspectResult.isFailure,
         targets = targets,
         rootTargets = rootTargets,
       )
     }
+  }
 
   private suspend fun buildProjectWithAspectAndSetup(
     build: Boolean,
@@ -339,11 +345,6 @@ class ProjectResolver(
       runBazelCommand(command, taskId)
         .waitAndGetResult()
     }
-  }
-
-  fun releaseMemory() {
-    bazelPathsResolver.clear()
-    System.gc()
   }
 
   suspend fun extractAspectOutputPaths(buildAspectResult: BazelBspAspectsManagerResult): Set<Path> =

@@ -17,7 +17,7 @@ class PathSyncHook : ProjectSyncHook {
         bazelBinPathService.bazelBinPath = bazelBinPathResult.bazelBin
         bazelBinPathService.bazelExecPath = bazelBinPathResult.executionRoot
         val bazelWorkspaceResult =
-          query("workspace/bazelWorkspaceName") { environment.server.workspaceName() }
+          query("workspace/bazelWorkspaceName") { environment.server.workspaceName(environment.taskId) }
 
         environment.project.workspaceName = bazelWorkspaceResult.workspaceName
       }

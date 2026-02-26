@@ -32,12 +32,11 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.net.ConnectException
-import java.util.UUID
 import java.util.concurrent.CancellationException
 import kotlin.random.Random
 
@@ -113,12 +112,12 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     }
 
   private suspend fun analysisDebug(
-    project: Project,
-    port: Int,
-    taskListener: StarlarkDebugTaskListener,
-    target: Label,
-    server: JoinedBuildServer,
-    futureProxy: CompletableDeferred<AnalysisDebugResult>,
+      project: Project,
+      port: Int,
+      taskListener: StarlarkDebugTaskListener,
+      target: Label,
+      server: BazelServerFacade,
+      futureProxy: CompletableDeferred<AnalysisDebugResult>,
   ) {
     coroutineScope {
       val taskGroupId = TaskGroupId("analysis-debug-" + Random.nextBytes(8).toHexString())

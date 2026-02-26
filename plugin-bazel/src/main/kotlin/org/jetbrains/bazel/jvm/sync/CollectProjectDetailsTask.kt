@@ -33,7 +33,6 @@ import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureDiff
 import org.jetbrains.bazel.target.targetUtils
@@ -42,7 +41,7 @@ import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
@@ -66,7 +65,7 @@ class CollectProjectDetailsTask(
 
   suspend fun execute(
     project: Project,
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     syncScope: ProjectSyncScope,
     progressReporter: SequentialProgressReporter,
   ) {
@@ -100,7 +99,7 @@ class CollectProjectDetailsTask(
 
   private suspend fun collectModel(
     project: Project,
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     syncScope: ProjectSyncScope,
   ): ProjectDetails {
     val subtaskId = this.taskId.subTask(IMPORT_SUBTASK_ID)
@@ -323,7 +322,7 @@ class CollectProjectDetailsTask(
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
 suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
-  server: JoinedBuildServer,
+  server: BazelServerFacade,
   syncScope: ProjectSyncScope,
   taskId: TaskId,
 ): ProjectDetails =
@@ -332,11 +331,7 @@ suspend fun calculateProjectDetailsWithCapabilities(
       val service = BazelWorkspaceResolveService.getInstance(project)
       val workspace = service.getOrFetchResolvedWorkspace(syncScope, taskId)
       val targets = workspace.targets
-
-      val workspaceContext =
-        query("workspace/context") {
-          server.workspaceContext()
-        }
+      val workspaceContext = server.workspaceContext
 
       ProjectDetails(
         targetIds = targets.map { it.id },
