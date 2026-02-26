@@ -20,14 +20,17 @@ class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
   private var symlinksToExclude: Set<Path>? = null
 
   fun getOrComputeBazelSymlinksToExclude(bazelWorkspace: Path): Set<Path> {
-    this.symlinksToExclude?.let { return it }
-    val symlinksToExclude = BazelSymlinksCalculator.calculateBazelSymlinksToExclude(bazelWorkspace, BazelFeatureFlags.symlinkScanMaxDepth)
-
-    if (symlinksToExclude.isNotEmpty()) {
-      logger.info("Found bazel symlinks to exclude during workspace scan: $symlinksToExclude")
-      return addBazelSymlinksToExcludeUnderLock(symlinksToExclude)
+    val currentSymlinks = this.symlinksToExclude
+    if (currentSymlinks != null) {
+      return currentSymlinks
     }
-    return symlinksToExclude
+
+    val computedSymlinks = BazelSymlinksCalculator.calculateBazelSymlinksToExclude(bazelWorkspace, BazelFeatureFlags.symlinkScanMaxDepth)
+    if (computedSymlinks.isNotEmpty()) {
+      logger.info("Found bazel symlinks to exclude during workspace scan: $computedSymlinks")
+      return addBazelSymlinksToExcludeUnderLock(computedSymlinks)
+    }
+    return emptySet()
   }
 
   fun getOrComputeBazelSymlinksToExclude(): Set<Path> {
