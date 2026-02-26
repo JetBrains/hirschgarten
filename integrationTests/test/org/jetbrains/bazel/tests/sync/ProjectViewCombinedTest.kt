@@ -19,6 +19,7 @@ import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.switchProjectView
+import org.jetbrains.bazel.ideStarter.switchProjectViewWithPreview
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -259,7 +260,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
     withDriver(bgRun) {
       ideFrame {
         step("Switch to build-flags-with-toolchain view") {
-          execute { switchProjectView("build-flags-with-toolchain.bazelproject") }
+          switchProjectViewWithPreview("build-flags-with-toolchain.bazelproject")
         }
         step("Resync with build_flags") {
           execute {
