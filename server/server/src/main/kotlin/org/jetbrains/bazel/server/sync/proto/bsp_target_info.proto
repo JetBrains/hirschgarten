@@ -4,11 +4,22 @@ package bazelbsp;
 
 option java_package = "org.jetbrains.bazel.info";
 
-message FileLocation {
-  string relative_path = 1;
-  bool is_source = 2;
-  bool is_external = 3;
-  string root_execution_path_fragment = 4;
+message ArtifactLocation {
+  // The path of this file relative to its root. This excludes the
+  // aforementioned root, i.e. configuration-specific fragments of the path.
+  // This path can be different to File.short_path.
+  string relative_path = 2;
+
+  // True if this is a source file, i.e. it is not generated.
+  bool is_source = 3;
+
+  // The root beneath which this file resides. Not equal to File.root.path,
+  // normalizes relative paths and therefore also includes the bazel-bin
+  // prefix for the artifact.
+  string root_path = 4;
+
+  // Whether this artifact comes from an external repository.
+  bool is_external = 5;
 }
 
 message Dependency {
@@ -23,9 +34,9 @@ message Dependency {
 }
 
 message JvmOutputs {
-  repeated FileLocation binary_jars = 1;
-  repeated FileLocation interface_jars = 2;
-  repeated FileLocation source_jars = 3;
+  repeated ArtifactLocation binary_jars = 1;
+  repeated ArtifactLocation interface_jars = 2;
+  repeated ArtifactLocation source_jars = 3;
 }
 
 message JvmTargetInfo {
@@ -36,23 +47,23 @@ message JvmTargetInfo {
 }
 
 message JavaProviderInfo {
-  repeated FileLocation full_compile_jars = 1;
+  repeated ArtifactLocation full_compile_jars = 1;
 }
 
 message JavaToolchainInfo {
   string source_version = 1;
   string target_version = 2;
-  FileLocation java_home = 3;
-  FileLocation boot_classpath_java_home = 4;
+  ArtifactLocation java_home = 3;
+  ArtifactLocation boot_classpath_java_home = 4;
 }
 
 message JavaRuntimeInfo {
-  FileLocation java_home = 1;
+  ArtifactLocation java_home = 1;
 }
 
 message ScalaTargetInfo {
   repeated string scalac_opts = 1;
-  repeated FileLocation compiler_classpath = 2;
+  repeated ArtifactLocation compiler_classpath = 2;
   repeated string scalatest_classpath_targets = 4;
 }
 
@@ -62,7 +73,7 @@ message KotlincPluginOption {
 }
 
 message KotlincPluginInfo {
-  repeated FileLocation plugin_jars = 100;
+  repeated ArtifactLocation plugin_jars = 100;
   repeated KotlincPluginOption kotlinc_plugin_options = 200;
 }
 
@@ -71,7 +82,7 @@ message KotlinTargetInfo {
   string api_version = 200;
   repeated string associates = 300;
   repeated string kotlinc_opts = 400;
-  repeated FileLocation stdlibs = 500;
+  repeated ArtifactLocation stdlibs = 500;
   repeated KotlincPluginInfo kotlinc_plugin_infos = 600;
   string module_name = 700;
   repeated string exported_compiler_plugin_targets_from_deps = 601;
@@ -81,23 +92,23 @@ message JavaCommonInfo {
   repeated string javac_opts = 1;
   repeated JvmOutputs jars = 2;
   repeated JvmOutputs generated_jars = 3;
-  repeated FileLocation jdeps = 4;
+  repeated ArtifactLocation jdeps = 4;
 }
 
 message PythonTargetInfo {
-  FileLocation interpreter = 1;
+  ArtifactLocation interpreter = 1;
   string version = 2;
   repeated string imports = 3;
-  repeated FileLocation generated_sources = 5;
-  FileLocation main = 6;
+  repeated ArtifactLocation generated_sources = 5;
+  ArtifactLocation main = 6;
   string main_module = 7;
 }
 
 message GoTargetInfo {
   string import_path = 1;
-  FileLocation sdk_home_path = 2;
-  repeated FileLocation generated_sources = 3;
-  repeated FileLocation generated_libraries = 4;
+  ArtifactLocation sdk_home_path = 2;
+  repeated ArtifactLocation generated_sources = 3;
+  repeated ArtifactLocation generated_libraries = 4;
   repeated string library_labels = 5;
 }
 
@@ -107,7 +118,7 @@ message ProtobufTargetInfo {
 
 message ProtobufSourceMapping {
   string import_path = 1;
-  FileLocation proto_file = 2;
+  ArtifactLocation proto_file = 2;
 }
 
 message TargetInfo {
@@ -115,9 +126,9 @@ message TargetInfo {
   string kind = 20;
   repeated string tags = 30;
   repeated Dependency dependencies = 40;
-  repeated FileLocation sources = 50;
-  repeated FileLocation generated_sources = 51;
-  repeated FileLocation resources = 60;
+  repeated ArtifactLocation sources = 50;
+  repeated ArtifactLocation generated_sources = 51;
+  repeated ArtifactLocation resources = 60;
   map<string, string> env = 70;
   repeated string env_inherit = 80;
   bool executable = 90;

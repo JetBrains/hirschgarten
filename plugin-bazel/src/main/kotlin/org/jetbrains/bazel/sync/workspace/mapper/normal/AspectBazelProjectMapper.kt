@@ -19,7 +19,7 @@ import org.jetbrains.bazel.commons.Tag
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
+import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
@@ -728,7 +728,7 @@ internal class AspectBazelProjectMapper(
 
   private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 
-  private fun List<FileLocation>.resolvePaths() = map { bazelPathsResolver.resolve(it) }.toSet()
+  private fun List<ArtifactLocation>.resolvePaths() = map { bazelPathsResolver.resolve(it) }.toSet()
 
   private fun getTargetOutputJarPaths(targetInfo: TargetInfo) =
     getTargetOutputJarsList(targetInfo)

@@ -90,7 +90,7 @@ def create_file_location(relative_path, is_source, is_external, root_execution_p
         relative_path = relative_path,
         is_source = is_source,
         is_external = is_external,
-        root_execution_path_fragment = root_execution_path_fragment,
+        root_path = root_execution_path_fragment,
     )
 
 def create_struct(**kwargs):
