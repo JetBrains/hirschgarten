@@ -39,7 +39,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
@@ -50,7 +49,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.BeforeEach
@@ -593,7 +592,7 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
 
   private val connection =
     object : BazelServerConnection {
-      override suspend fun <T> runWithServer(task: suspend (JoinedBuildServer) -> T): T = task(this@InverseSourcesServer)
+      override suspend fun <T> runWithServer(task: suspend (BazelServerFacade) -> T): T = task(this@InverseSourcesServer)
     }
 
   val serverService =
@@ -616,7 +615,7 @@ private class BlockedServerSimulator : BuildServerMock() {
 
   private val connection =
     object : BazelServerConnection {
-      override suspend fun <T> runWithServer(task: suspend (JoinedBuildServer) -> T): T = task(this@BlockedServerSimulator)
+      override suspend fun <T> runWithServer(task: suspend (BazelServerFacade) -> T): T = task(this@BlockedServerSimulator)
     }
 
   val serverService =

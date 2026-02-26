@@ -19,7 +19,7 @@ import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
@@ -39,7 +39,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
     }
 
   override suspend fun startBsp(
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
   ) {

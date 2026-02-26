@@ -18,15 +18,14 @@ import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.CompileParams
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
-import java.util.UUID
 import kotlin.random.Random
 
 interface BuildTargetTask {
   suspend fun build(
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     targetIds: List<Label>,
     buildConsole: TaskConsole,
     taskId: TaskId,
@@ -83,7 +82,7 @@ suspend fun runBuildTargetTask(
 
 object DefaultBuildTargetTask : BuildTargetTask {
   override suspend fun build(
-    server: JoinedBuildServer,
+    server: BazelServerFacade,
     targetIds: List<Label>,
     buildConsole: TaskConsole,
     taskId: TaskId,
