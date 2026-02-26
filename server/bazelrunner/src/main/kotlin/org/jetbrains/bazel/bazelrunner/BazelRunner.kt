@@ -153,7 +153,7 @@ class BazelRunner(
       outputLogger,
       finishCallback,
     ).also {
-      it.writeBazelLog {
+      BazelLog.write {
         appendLine(executionDescriptor.command.joinToString(" "))
         appendLine(envToString(environment))
       }
