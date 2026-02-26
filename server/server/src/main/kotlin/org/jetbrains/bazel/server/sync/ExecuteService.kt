@@ -7,6 +7,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.bazelrunner.BazelLog
 import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -84,7 +85,7 @@ class ExecuteService(
         bepReaderDeferred.await()
 
         bepServer.bepMetrics?.let { metrics ->
-          bazelProcess.writeBazelLog {
+          BazelLog.write {
             println("Metrics:")
             println(metrics.toString())
           }
