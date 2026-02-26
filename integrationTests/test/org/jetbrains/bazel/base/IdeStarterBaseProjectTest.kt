@@ -319,6 +319,12 @@ fun <T : CommandChain> T.switchProjectView(fileName: String): T {
   return this
 }
 
+fun Driver.switchProjectViewWithPreview(fileName: String) {
+  execute(CommandChain().switchProjectView(fileName))
+  openFile(fileName, waitForCodeAnalysis = false)
+  execute(CommandChain().takeScreenshot("projectView_${fileName.substringBeforeLast('.')}"))
+}
+
 fun <T : CommandChain> T.refreshFile(relativePath: String): T {
   addCommand(CMD_PREFIX + "refreshFile $relativePath")
   return this
