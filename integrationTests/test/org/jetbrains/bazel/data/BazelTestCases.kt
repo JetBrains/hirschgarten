@@ -242,7 +242,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val ProjectViewCombined = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "adf0bd26f4fda1431f72b277a7b9a6e25aab3f5e",
+      commitHash = "16819ecdd62353846653353d05aaba78736870a3",
       branchName = "main",
       relativePath = "projectViewCombinedTest",
       configure = { context ->
