@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.python.PyNames
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
+import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
@@ -69,15 +69,15 @@ internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsRe
     )
   }
 
-  private fun calculateInterpreterPath(interpreter: FileLocation?): Path? =
+  private fun calculateInterpreterPath(interpreter: ArtifactLocation?): Path? =
     interpreter
       ?.takeUnless { it.relativePath.isNullOrEmpty() }
       ?.let { bazelPathsResolver.resolve(it) }
 
-  private fun getExternalSources(targetInfo: TargetInfo): List<FileLocation> =
+  private fun getExternalSources(targetInfo: TargetInfo): List<ArtifactLocation> =
     targetInfo.sourcesList.mapNotNull { it.takeIf { it.isExternal } }
 
-  private fun calculateExternalSourcePath(externalSource: FileLocation): Path {
+  private fun calculateExternalSourcePath(externalSource: ArtifactLocation): Path {
     val path = bazelPathsResolver.resolve(externalSource)
     return bazelPathsResolver.resolve(findSitePackagesSubdirectory(path) ?: path)
   }
