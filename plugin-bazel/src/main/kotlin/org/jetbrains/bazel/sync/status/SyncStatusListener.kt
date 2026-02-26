@@ -9,8 +9,6 @@ interface SyncStatusListener {
 
   fun allTasksCancelled() {}
 
-  fun targetUtilAvailable() {}
-
   companion object {
     val TOPIC: Topic<SyncStatusListener> = Topic(SyncStatusListener::class.java)
   }

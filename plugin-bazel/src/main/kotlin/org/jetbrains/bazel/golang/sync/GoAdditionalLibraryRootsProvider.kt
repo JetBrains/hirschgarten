@@ -16,34 +16,20 @@
 package org.jetbrains.bazel.golang.sync
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
+import com.intellij.openapi.roots.SyntheticLibrary
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.golang.resolve.BazelGoPackage
-import org.jetbrains.bazel.sync.libraries.BazelExternalLibraryProvider
-import java.nio.file.Path
-import kotlin.io.path.extension
 
-public const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries"
-
-class GoAdditionalLibraryRootsProvider : BazelExternalLibraryProvider() {
-  override val libraryName: String = GO_EXTERNAL_LIBRARY_ROOT_NAME
-
-  override fun getLibraryFiles(project: Project): List<Path> {
+class GoAdditionalLibraryRootsProvider : AdditionalLibraryRootsProvider() {
+  override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
     if (!BazelFeatureFlags.isGoSupportEnabled) return emptyList()
     if (!project.isBazelProject) return emptyList()
-    val workspacePath = project.rootDir.toNioPath()
-
-    // don't use sync cache, because
-    // 1. this is used during sync before project data is saved
-    // 2. the roots provider is its own cache
-    val libraryFiles =
-      BazelGoPackage
-        .getUncachedTargetToFileMap(project)
-        .values()
-        .filter { !it.startsWith(workspacePath) && it.extension == "go" }
-        .distinct()
-        .toList()
-    return libraryFiles
+    val library = GoExternalLibraryManager.getInstance(project).library
+    return if (library != null) {
+      listOf(library)
+    } else {
+      emptyList()
+    }
   }
 }
