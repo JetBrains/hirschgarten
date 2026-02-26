@@ -15,6 +15,8 @@ public class BazelCommandProvider : CommandProvider {
       AssertFileContentsEqualCommand.PREFIX to CreateCommand(::AssertFileContentsEqualCommand),
       AssertEitherFileContentIsEqualCommand.PREFIX to CreateCommand(::AssertEitherFileContentIsEqualCommand),
       AssertSyncedTargetsCommand.PREFIX to CreateCommand(::AssertSyncedTargetsCommand),
+      AssertFileInProjectCommand.PREFIX to CreateCommand(::AssertFileInProjectCommand),
       SwitchProjectViewCommand.PREFIX to CreateCommand(::SwitchProjectViewCommand),
+      RefreshFileCommand.PREFIX to CreateCommand(::RefreshFileCommand),
     )
 }
