@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.mapper.phased
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.phased.generatorName
 import org.jetbrains.bazel.commons.phased.interestingDeps
 import org.jetbrains.bazel.commons.phased.isBinary
 import org.jetbrains.bazel.commons.phased.isManual
@@ -27,6 +28,7 @@ class FirstPhaseTargetUtilsTest {
         deps = listOf("//target/name1", "//target/name2"),
         runtimeDeps = listOf("//target/name3", "//target/name4"),
         exports = listOf("//target/name5", "//target/name6"),
+        generatorName = "other_target",
       )
 
     // when & then
@@ -39,6 +41,7 @@ class FirstPhaseTargetUtilsTest {
 
     target.isManual shouldBe false
     target.isNoIde shouldBe false
+    target.generatorName shouldBe "other_target"
   }
 
   @Test

@@ -27,17 +27,19 @@ class TestTargetAction(
         "target.debug.test.action.text",
         "",
       )
-    } else {
+    } else if (targetInfos.size == 1) {
       BazelPluginBundle.message(
         "target.test.action.text",
         if (isRunConfigName ||
           includeTargetNameInText
         ) {
-          targetInfos.joinToString(";") { it.id.toShortString(project) }
+          targetInfos.single().id.toShortString(project)
         } else {
           ""
         },
       )
+    } else {
+      BazelPluginBundle.message("action.run.all.tests")
     }
   },
   isDebugAction = isDebugAction,
