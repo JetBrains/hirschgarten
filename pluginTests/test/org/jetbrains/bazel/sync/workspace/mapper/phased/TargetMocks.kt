@@ -13,6 +13,7 @@ fun createMockTarget(
   srcs: List<String> = emptyList(),
   resources: List<String> = emptyList(),
   tags: List<String> = emptyList(),
+  generatorName: String? = null,
 ): Target {
   val rule =
     Rule
@@ -25,6 +26,11 @@ fun createMockTarget(
       .addAttribute(("srcs" to srcs).toListAttribute())
       .addAttribute(("resources" to resources).toListAttribute())
       .addAttribute(("tags" to tags).toListAttribute())
+      .apply {
+        if (generatorName != null) {
+          addAttribute(("generator_name" to generatorName).toStringAttribute())
+        }
+      }
       .build()
 
   return Target
@@ -40,4 +46,12 @@ fun Pair<String, List<String>>.toListAttribute(): Attribute =
     .setName(first)
     .setType(Attribute.Discriminator.STRING_LIST)
     .addAllStringListValue(second)
+    .build()
+
+fun Pair<String, String>.toStringAttribute(): Attribute =
+  Attribute
+    .newBuilder()
+    .setName(first)
+    .setType(Attribute.Discriminator.STRING)
+    .setStringValue(second)
     .build()

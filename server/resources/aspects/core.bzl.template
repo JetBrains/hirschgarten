@@ -147,6 +147,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     if type(raw_env) == "dict":
         data_deps = []
         data_deps += getattr(ctx.rule.attr, "data", [])
+
         # Needed by the cmake() rule from rules_foreign_cc
         data_deps += getattr(ctx.rule.attr, "build_data", [])
         env = do_starlark_string_expansion_dict(ctx, "env", raw_env, data_deps)
@@ -163,6 +164,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         env_inherit = getattr(rule_attrs, "env_inherit", []),
         executable = executable,
         workspace_name = ctx.workspace_name,
+        generator_name = getattr(rule_attrs, "generator_name", ""),
     )
 
     exported_properties = dict(

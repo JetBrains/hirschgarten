@@ -71,6 +71,7 @@ class AspectBazelProjectMapper(
     val tags: Set<Tag>,
     val sources: List<SourceItem>,
     val languages: Set<LanguageClass>,
+    val generatorName: String?,
   )
 
   fun TargetInfo.toIntermediateData(
@@ -88,6 +89,7 @@ class AspectBazelProjectMapper(
       tags = tags,
       sources = resolveSourceSet(this, languagePlugin).toList(),
       languages = languages,
+      generatorName = generatorName.takeIf { it.isNotEmpty() },
     )
   }
 
@@ -638,6 +640,7 @@ class AspectBazelProjectMapper(
           tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
           kindString = targetInfo.kind,
+          generatorName = targetInfo.generatorName.takeIf { it.isNotEmpty() },
         )
       }
   }
@@ -904,6 +907,7 @@ class AspectBazelProjectMapper(
       baseDirectory = baseDirectory,
       noBuild = Tag.NO_BUILD in tags,
       data = data,
+      generatorName = targetData.generatorName,
     )
   }
 
@@ -1024,6 +1028,7 @@ class AspectBazelProjectMapper(
         sources = emptyList(),
         resources = emptyList(),
         data = null,
+        generatorName = generatorName,
       )
     return buildTarget
   }

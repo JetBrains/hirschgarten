@@ -37,6 +37,8 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.SingleTarget
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.target.TargetsCacheStorage.Companion.openStore
@@ -44,7 +46,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
-import kotlin.collections.hashMapOf
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -176,10 +177,10 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   private fun calculateExecutableTargets(
     targets: List<Label>,
     targetDirectDependentsGraph: Map<Label, Set<Label>>,
-    labelToTargetInfo: Map<Label, BuildTarget>,
+    labelToTargetInfo: Map<Label, RawBuildTarget>,
   ): Map<ResolvedLabel, List<Label>> {
     val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
-    val result = mutableMapOf<ResolvedLabel, List<Label>>()
+    val result = mutableMapOf<ResolvedLabel, MutableList<Label>>()
     targets
       .forEach { label ->
         val executables = calculateTransitivelyExecutableTargets(
@@ -189,9 +190,18 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
           target = label,
         )
         if (executables.isNotEmpty()) {
-          result[label as ResolvedLabel] = executables.toList()
+          result[label as ResolvedLabel] = executables.toMutableList()
         }
       }
+    labelToTargetInfo.forEach { (label, target) ->
+      target.generatorName?.let { generatorName ->
+        val generatorLabel = label.assumeResolved().copy(target = SingleTarget(generatorName))
+        val generatorTargets = result.getOrPut(generatorLabel) { mutableListOf() }
+        if (generatorTargets.size < MAX_EXECUTABLE_TARGET_IDS) {
+          generatorTargets.add(label)
+        }
+      }
+    }
     return result
   }
 
@@ -247,10 +257,13 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       targetsForFile
         .filter { label -> db.getBuildTargetForLabel(label)?.kind?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
-      return targetsForFile.flatMap { db.getExecutableTargetsForTarget(it) ?: emptyList() }.distinct()
+      return targetsForFile.flatMap { getExecutableTargetsForTarget(it) }.distinct()
     }
     return executableDirectTargets
   }
+
+  fun getExecutableTargetsForTarget(target: Label): List<Label> =
+    db.getExecutableTargetsForTarget(target).orEmpty()
 
   @PublicApi
   fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY

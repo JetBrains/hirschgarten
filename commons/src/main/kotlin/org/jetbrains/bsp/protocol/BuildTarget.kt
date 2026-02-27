@@ -24,6 +24,7 @@ data class RawBuildTarget(
   override val baseDirectory: Path,
   override val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
   override var data: BuildTargetData? = null,
+  val generatorName: String? = null,
 ) : BuildTarget
 
 data class PartialBuildTarget(
