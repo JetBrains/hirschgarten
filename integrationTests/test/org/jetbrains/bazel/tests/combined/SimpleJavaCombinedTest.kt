@@ -3,10 +3,11 @@ package org.jetbrains.bazel.tests.combined
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
+import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitFor
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
@@ -25,7 +26,6 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
-import com.intellij.ide.starter.driver.execute as sdkExecute
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
@@ -41,6 +41,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestMethodOrder
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import com.intellij.ide.starter.driver.execute as sdkExecute
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
@@ -78,6 +79,9 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
 
   @Test @Order(2)
   fun `bytecode viewer should display compiled class bytecode`() = bytecodeViewer()
+
+  @Test @Order(3)
+  fun `run gutter for test suite should contain several targets`() = runGutterTestSuite()
 
   @Test @Order(100)
   fun `update bazel version should not cause server to break`() = bazelVersionUpdate()
@@ -151,6 +155,34 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
               .takeScreenshot("afterResync")
           }
           assertSyncSucceeded()
+        }
+      }
+    }
+  }
+
+  private fun runGutterTestSuite() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Open BUILD file") {
+          openFile("BUILD")
+        }
+        step("Check run gutters for test suite") {
+          editorTabs()
+            .gutter()
+            .getGutterIcons()
+            .first()
+            .click()
+          val expectedTexts = listOf(
+            "Run all tests",
+            "Test //:SimpleTest",
+            "Test //:Simple2Test",
+          )
+          for (text in expectedTexts) {
+            step("Checking that run gutter contains run config with name: $text") {
+              popup().waitAnyTextsContains(text)
+            }
+          }
+          popup().close()
         }
       }
     }

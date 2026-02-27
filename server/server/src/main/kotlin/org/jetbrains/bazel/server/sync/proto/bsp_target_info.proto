@@ -129,6 +129,7 @@ message TargetInfo {
   reserved 1001 to 1003, 1006;
   bool jvm_target = 1004;
   bool has_api_generating_plugins = 1005;
+  string generator_name = 1500;
   JavaProviderInfo java_provider = 1008;
   JavaCommonInfo java_common = 1007;
   JavaToolchainInfo java_toolchain_info = 2000;

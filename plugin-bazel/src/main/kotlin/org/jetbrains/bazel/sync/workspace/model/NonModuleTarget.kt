@@ -9,4 +9,5 @@ data class NonModuleTarget(
   val tags: Set<Tag>,
   val baseDirectory: Path,
   val kindString: String,
+  val generatorName: String?,
 )

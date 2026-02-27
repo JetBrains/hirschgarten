@@ -25,11 +25,20 @@ private val runtimeDeps = listOf("runtime_deps")
 val Target.interestingDeps: List<String>
   get() = (compileDeps + runtimeDeps).flatMap { getListAttribute(it) }
 
+private const val GENERATOR_NAME = "generator_name"
+val Target.generatorName: String?
+  get() = getStringAttribute(GENERATOR_NAME)
+
 fun Target.getListAttribute(name: String): List<String> =
   rule.attributeList
     .firstOrNull { it.name == name }
     ?.stringListValueList
     .orEmpty()
+
+fun Target.getStringAttribute(name: String): String? =
+  rule.attributeList
+    .firstOrNull { it.name == name }
+    ?.stringValue
 
 private const val BAZEL_MANUAL_TAG = "manual"
 val Target.isManual: Boolean

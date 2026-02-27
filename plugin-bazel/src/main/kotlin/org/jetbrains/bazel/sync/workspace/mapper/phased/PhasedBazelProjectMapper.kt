@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.Language
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.phased.generatorName
 import org.jetbrains.bazel.commons.phased.interestingDeps
 import org.jetbrains.bazel.commons.phased.isBinary
 import org.jetbrains.bazel.commons.phased.isManual
@@ -60,6 +61,7 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
       noBuild = isManual, // TODO lol, it's different from the aspect sync??
       baseDirectory = bazelPathsResolver.toDirectoryPath(label, context.repoMapping),
       data = null,
+      generatorName = generatorName,
     )
   }
 
