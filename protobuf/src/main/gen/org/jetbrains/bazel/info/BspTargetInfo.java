@@ -13996,12 +13996,6 @@ public final class BspTargetInfo {
         getImportsBytes(int index);
 
     /**
-     * <code>bool is_code_generator = 4;</code>
-     * @return The isCodeGenerator.
-     */
-    boolean getIsCodeGenerator();
-
-    /**
      * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
      */
     java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
@@ -14195,17 +14189,6 @@ public final class BspTargetInfo {
       return imports_.getByteString(index);
     }
 
-    public static final int IS_CODE_GENERATOR_FIELD_NUMBER = 4;
-    private boolean isCodeGenerator_ = false;
-    /**
-     * <code>bool is_code_generator = 4;</code>
-     * @return The isCodeGenerator.
-     */
-    @java.lang.Override
-    public boolean getIsCodeGenerator() {
-      return isCodeGenerator_;
-    }
-
     public static final int GENERATED_SOURCES_FIELD_NUMBER = 5;
     @SuppressWarnings("serial")
     private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_;
@@ -14335,9 +14318,6 @@ public final class BspTargetInfo {
       for (int i = 0; i < imports_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, imports_.getRaw(i));
       }
-      if (isCodeGenerator_ != false) {
-        output.writeBool(4, isCodeGenerator_);
-      }
       for (int i = 0; i < generatedSources_.size(); i++) {
         output.writeMessage(5, generatedSources_.get(i));
       }
@@ -14370,10 +14350,6 @@ public final class BspTargetInfo {
         }
         size += dataSize;
         size += 1 * getImportsList().size();
-      }
-      if (isCodeGenerator_ != false) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, isCodeGenerator_);
       }
       for (int i = 0; i < generatedSources_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -14410,8 +14386,6 @@ public final class BspTargetInfo {
           .equals(other.getVersion())) return false;
       if (!getImportsList()
           .equals(other.getImportsList())) return false;
-      if (getIsCodeGenerator()
-          != other.getIsCodeGenerator()) return false;
       if (!getGeneratedSourcesList()
           .equals(other.getGeneratedSourcesList())) return false;
       if (hasMain() != other.hasMain()) return false;
@@ -14442,9 +14416,6 @@ public final class BspTargetInfo {
         hash = (37 * hash) + IMPORTS_FIELD_NUMBER;
         hash = (53 * hash) + getImportsList().hashCode();
       }
-      hash = (37 * hash) + IS_CODE_GENERATOR_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-          getIsCodeGenerator());
       if (getGeneratedSourcesCount() > 0) {
         hash = (37 * hash) + GENERATED_SOURCES_FIELD_NUMBER;
         hash = (53 * hash) + getGeneratedSourcesList().hashCode();
@@ -14602,14 +14573,13 @@ public final class BspTargetInfo {
         version_ = "";
         imports_ =
             com.google.protobuf.LazyStringArrayList.emptyList();
-        isCodeGenerator_ = false;
         if (generatedSourcesBuilder_ == null) {
           generatedSources_ = java.util.Collections.emptyList();
         } else {
           generatedSources_ = null;
           generatedSourcesBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000008);
         main_ = null;
         if (mainBuilder_ != null) {
           mainBuilder_.dispose();
@@ -14650,9 +14620,9 @@ public final class BspTargetInfo {
 
       private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo result) {
         if (generatedSourcesBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) != 0)) {
+          if (((bitField0_ & 0x00000008) != 0)) {
             generatedSources_ = java.util.Collections.unmodifiableList(generatedSources_);
-            bitField0_ = (bitField0_ & ~0x00000010);
+            bitField0_ = (bitField0_ & ~0x00000008);
           }
           result.generatedSources_ = generatedSources_;
         } else {
@@ -14676,16 +14646,13 @@ public final class BspTargetInfo {
           imports_.makeImmutable();
           result.imports_ = imports_;
         }
-        if (((from_bitField0_ & 0x00000008) != 0)) {
-          result.isCodeGenerator_ = isCodeGenerator_;
-        }
-        if (((from_bitField0_ & 0x00000020) != 0)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
           result.main_ = mainBuilder_ == null
               ? main_
               : mainBuilder_.build();
           to_bitField0_ |= 0x00000002;
         }
-        if (((from_bitField0_ & 0x00000040) != 0)) {
+        if (((from_bitField0_ & 0x00000020) != 0)) {
           result.mainModule_ = mainModule_;
         }
         result.bitField0_ |= to_bitField0_;
@@ -14753,14 +14720,11 @@ public final class BspTargetInfo {
           }
           onChanged();
         }
-        if (other.getIsCodeGenerator() != false) {
-          setIsCodeGenerator(other.getIsCodeGenerator());
-        }
         if (generatedSourcesBuilder_ == null) {
           if (!other.generatedSources_.isEmpty()) {
             if (generatedSources_.isEmpty()) {
               generatedSources_ = other.generatedSources_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000008);
             } else {
               ensureGeneratedSourcesIsMutable();
               generatedSources_.addAll(other.generatedSources_);
@@ -14773,7 +14737,7 @@ public final class BspTargetInfo {
               generatedSourcesBuilder_.dispose();
               generatedSourcesBuilder_ = null;
               generatedSources_ = other.generatedSources_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000008);
               generatedSourcesBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getGeneratedSourcesFieldBuilder() : null;
@@ -14787,7 +14751,7 @@ public final class BspTargetInfo {
         }
         if (!other.getMainModule().isEmpty()) {
           mainModule_ = other.mainModule_;
-          bitField0_ |= 0x00000040;
+          bitField0_ |= 0x00000020;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -14834,11 +14798,6 @@ public final class BspTargetInfo {
                 imports_.add(s);
                 break;
               } // case 26
-              case 32: {
-                isCodeGenerator_ = input.readBool();
-                bitField0_ |= 0x00000008;
-                break;
-              } // case 32
               case 42: {
                 org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
                     input.readMessage(
@@ -14856,12 +14815,12 @@ public final class BspTargetInfo {
                 input.readMessage(
                     getMainFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00000020;
+                bitField0_ |= 0x00000010;
                 break;
               } // case 50
               case 58: {
                 mainModule_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000040;
+                bitField0_ |= 0x00000020;
                 break;
               } // case 58
               default: {
@@ -15185,44 +15144,12 @@ public final class BspTargetInfo {
         return this;
       }
 
-      private boolean isCodeGenerator_ ;
-      /**
-       * <code>bool is_code_generator = 4;</code>
-       * @return The isCodeGenerator.
-       */
-      @java.lang.Override
-      public boolean getIsCodeGenerator() {
-        return isCodeGenerator_;
-      }
-      /**
-       * <code>bool is_code_generator = 4;</code>
-       * @param value The isCodeGenerator to set.
-       * @return This builder for chaining.
-       */
-      public Builder setIsCodeGenerator(boolean value) {
-
-        isCodeGenerator_ = value;
-        bitField0_ |= 0x00000008;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>bool is_code_generator = 4;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearIsCodeGenerator() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        isCodeGenerator_ = false;
-        onChanged();
-        return this;
-      }
-
       private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_ =
         java.util.Collections.emptyList();
       private void ensureGeneratedSourcesIsMutable() {
-        if (!((bitField0_ & 0x00000010) != 0)) {
+        if (!((bitField0_ & 0x00000008) != 0)) {
           generatedSources_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(generatedSources_);
-          bitField0_ |= 0x00000010;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -15372,7 +15299,7 @@ public final class BspTargetInfo {
       public Builder clearGeneratedSources() {
         if (generatedSourcesBuilder_ == null) {
           generatedSources_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           generatedSourcesBuilder_.clear();
@@ -15449,7 +15376,7 @@ public final class BspTargetInfo {
           generatedSourcesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
                   generatedSources_,
-                  ((bitField0_ & 0x00000010) != 0),
+                  ((bitField0_ & 0x00000008) != 0),
                   getParentForChildren(),
                   isClean());
           generatedSources_ = null;
@@ -15465,7 +15392,7 @@ public final class BspTargetInfo {
        * @return Whether the main field is set.
        */
       public boolean hasMain() {
-        return ((bitField0_ & 0x00000020) != 0);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>.bazelbsp.FileLocation main = 6;</code>
@@ -15490,7 +15417,7 @@ public final class BspTargetInfo {
         } else {
           mainBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
@@ -15504,7 +15431,7 @@ public final class BspTargetInfo {
         } else {
           mainBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
@@ -15513,7 +15440,7 @@ public final class BspTargetInfo {
        */
       public Builder mergeMain(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
         if (mainBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) != 0) &&
+          if (((bitField0_ & 0x00000010) != 0) &&
             main_ != null &&
             main_ != org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance()) {
             getMainBuilder().mergeFrom(value);
@@ -15524,7 +15451,7 @@ public final class BspTargetInfo {
           mainBuilder_.mergeFrom(value);
         }
         if (main_ != null) {
-          bitField0_ |= 0x00000020;
+          bitField0_ |= 0x00000010;
           onChanged();
         }
         return this;
@@ -15533,7 +15460,7 @@ public final class BspTargetInfo {
        * <code>.bazelbsp.FileLocation main = 6;</code>
        */
       public Builder clearMain() {
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000010);
         main_ = null;
         if (mainBuilder_ != null) {
           mainBuilder_.dispose();
@@ -15546,7 +15473,7 @@ public final class BspTargetInfo {
        * <code>.bazelbsp.FileLocation main = 6;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getMainBuilder() {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000010;
         onChanged();
         return getMainFieldBuilder().getBuilder();
       }
@@ -15621,7 +15548,7 @@ public final class BspTargetInfo {
           java.lang.String value) {
         if (value == null) { throw new NullPointerException(); }
         mainModule_ = value;
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
@@ -15631,7 +15558,7 @@ public final class BspTargetInfo {
        */
       public Builder clearMainModule() {
         mainModule_ = getDefaultInstance().getMainModule();
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000020);
         onChanged();
         return this;
       }
@@ -15645,7 +15572,7 @@ public final class BspTargetInfo {
         if (value == null) { throw new NullPointerException(); }
         checkByteStringIsUtf8(value);
         mainModule_ = value;
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
@@ -24592,49 +24519,49 @@ java.lang.String defaultValue) {
       "fo\022\022\n\njavac_opts\030\001 \003(\t\022\"\n\004jars\030\002 \003(\0132\024.b" +
       "azelbsp.JvmOutputs\022,\n\016generated_jars\030\003 \003" +
       "(\0132\024.bazelbsp.JvmOutputs\022%\n\005jdeps\030\004 \003(\0132" +
-      "\026.bazelbsp.FileLocation\"\352\001\n\020PythonTarget" +
+      "\026.bazelbsp.FileLocation\"\325\001\n\020PythonTarget" +
       "Info\022+\n\013interpreter\030\001 \001(\0132\026.bazelbsp.Fil" +
       "eLocation\022\017\n\007version\030\002 \001(\t\022\017\n\007imports\030\003 " +
-      "\003(\t\022\031\n\021is_code_generator\030\004 \001(\010\0221\n\021genera" +
-      "ted_sources\030\005 \003(\0132\026.bazelbsp.FileLocatio" +
-      "n\022$\n\004main\030\006 \001(\0132\026.bazelbsp.FileLocation\022" +
-      "\023\n\013main_module\030\007 \001(\t\"\322\001\n\014GoTargetInfo\022\023\n" +
-      "\013import_path\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(" +
-      "\0132\026.bazelbsp.FileLocation\0221\n\021generated_s" +
-      "ources\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023" +
-      "generated_libraries\030\004 \003(\0132\026.bazelbsp.Fil" +
-      "eLocation\022\026\n\016library_labels\030\005 \003(\t\"N\n\022Pro" +
-      "tobufTargetInfo\0228\n\017source_mappings\030\003 \003(\013" +
-      "2\037.bazelbsp.ProtobufSourceMapping\"X\n\025Pro" +
-      "tobufSourceMapping\022\023\n\013import_path\030\001 \001(\t\022" +
-      "*\n\nproto_file\030\002 \001(\0132\026.bazelbsp.FileLocat" +
-      "ion\"\203\010\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024" +
-      " \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\013" +
-      "2\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(\0132" +
-      "\026.bazelbsp.FileLocation\0221\n\021generated_sou" +
-      "rces\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\tre" +
-      "sources\030< \003(\0132\026.bazelbsp.FileLocation\022*\n" +
-      "\003env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntr" +
-      "y\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001" +
-      "(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_target" +
-      "_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\022\023\n" +
-      "\njvm_target\030\354\007 \001(\010\022#\n\032has_api_generating" +
-      "_plugins\030\355\007 \001(\010\022\027\n\016generator_name\030\334\013 \001(\t" +
-      "\0222\n\rjava_provider\030\360\007 \001(\0132\032.bazelbsp.Java" +
-      "ProviderInfo\022.\n\013java_common\030\357\007 \001(\0132\030.baz" +
-      "elbsp.JavaCommonInfo\0229\n\023java_toolchain_i" +
-      "nfo\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainInfo\022" +
-      "5\n\021java_runtime_info\030\270\027 \001(\0132\031.bazelbsp.J" +
-      "avaRuntimeInfo\0225\n\021scala_target_info\030\240\037 \001" +
-      "(\0132\031.bazelbsp.ScalaTargetInfo\0227\n\022kotlin_" +
-      "target_info\030\3306 \001(\0132\032.bazelbsp.KotlinTarg" +
-      "etInfo\0227\n\022python_target_info\030\300> \001(\0132\032.ba" +
-      "zelbsp.PythonTargetInfo\022/\n\016go_target_inf" +
-      "o\030\340] \001(\0132\026.bazelbsp.GoTargetInfo\022;\n\024prot" +
-      "obuf_target_info\030\260m \001(\0132\034.bazelbsp.Proto" +
-      "bufTargetInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r" +
-      "\n\005value\030\002 \001(\t:\0028\001J\006\010\351\007\020\354\007J\006\010\356\007\020\357\007B\032\n\030org" +
-      ".jetbrains.bazel.infob\006proto3"
+      "\003(\t\0221\n\021generated_sources\030\005 \003(\0132\026.bazelbs" +
+      "p.FileLocation\022$\n\004main\030\006 \001(\0132\026.bazelbsp." +
+      "FileLocation\022\023\n\013main_module\030\007 \001(\tJ\004\010\004\020\005\"" +
+      "\322\001\n\014GoTargetInfo\022\023\n\013import_path\030\001 \001(\t\022-\n" +
+      "\rsdk_home_path\030\002 \001(\0132\026.bazelbsp.FileLoca" +
+      "tion\0221\n\021generated_sources\030\003 \003(\0132\026.bazelb" +
+      "sp.FileLocation\0223\n\023generated_libraries\030\004" +
+      " \003(\0132\026.bazelbsp.FileLocation\022\026\n\016library_" +
+      "labels\030\005 \003(\t\"N\n\022ProtobufTargetInfo\0228\n\017so" +
+      "urce_mappings\030\003 \003(\0132\037.bazelbsp.ProtobufS" +
+      "ourceMapping\"X\n\025ProtobufSourceMapping\022\023\n" +
+      "\013import_path\030\001 \001(\t\022*\n\nproto_file\030\002 \001(\0132\026" +
+      ".bazelbsp.FileLocation\"\203\010\n\nTargetInfo\022\n\n" +
+      "\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n" +
+      "\014dependencies\030( \003(\0132\024.bazelbsp.Dependenc" +
+      "y\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.FileLocati" +
+      "on\0221\n\021generated_sources\0303 \003(\0132\026.bazelbsp" +
+      ".FileLocation\022)\n\tresources\030< \003(\0132\026.bazel" +
+      "bsp.FileLocation\022*\n\003env\030F \003(\0132\035.bazelbsp" +
+      ".TargetInfo.EnvEntry\022\023\n\013env_inherit\030P \003(" +
+      "\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspace_name\030" +
+      "d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132\027.bazelb" +
+      "sp.JvmTargetInfo\022\023\n\njvm_target\030\354\007 \001(\010\022#\n" +
+      "\032has_api_generating_plugins\030\355\007 \001(\010\022\027\n\016ge" +
+      "nerator_name\030\334\013 \001(\t\0222\n\rjava_provider\030\360\007 " +
+      "\001(\0132\032.bazelbsp.JavaProviderInfo\022.\n\013java_" +
+      "common\030\357\007 \001(\0132\030.bazelbsp.JavaCommonInfo\022" +
+      "9\n\023java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp" +
+      ".JavaToolchainInfo\0225\n\021java_runtime_info\030" +
+      "\270\027 \001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021sca" +
+      "la_target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTa" +
+      "rgetInfo\0227\n\022kotlin_target_info\030\3306 \001(\0132\032." +
+      "bazelbsp.KotlinTargetInfo\0227\n\022python_targ" +
+      "et_info\030\300> \001(\0132\032.bazelbsp.PythonTargetIn" +
+      "fo\022/\n\016go_target_info\030\340] \001(\0132\026.bazelbsp.G" +
+      "oTargetInfo\022;\n\024protobuf_target_info\030\260m \001" +
+      "(\0132\034.bazelbsp.ProtobufTargetInfo\032*\n\010EnvE" +
+      "ntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001J\006\010\351" +
+      "\007\020\354\007J\006\010\356\007\020\357\007B\032\n\030org.jetbrains.bazel.info" +
+      "b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -24717,7 +24644,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_PythonTargetInfo_descriptor,
-        new java.lang.String[] { "Interpreter", "Version", "Imports", "IsCodeGenerator", "GeneratedSources", "Main", "MainModule", });
+        new java.lang.String[] { "Interpreter", "Version", "Imports", "GeneratedSources", "Main", "MainModule", });
     internal_static_bazelbsp_GoTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_bazelbsp_GoTargetInfo_fieldAccessorTable = new
