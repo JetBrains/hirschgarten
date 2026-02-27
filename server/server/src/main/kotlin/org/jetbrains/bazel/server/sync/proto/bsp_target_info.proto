@@ -87,10 +87,10 @@ message JavaCommonInfo {
 }
 
 message PythonTargetInfo {
+  reserved 4;
   FileLocation interpreter = 1;
   string version = 2;
   repeated string imports = 3;
-  bool is_code_generator = 4;
   repeated FileLocation generated_sources = 5;
   FileLocation main = 6;
   string main_module = 7;

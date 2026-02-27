@@ -15,7 +15,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Path
 
-internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonBuildTarget> {
+internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) : LanguagePlugin<PythonBuildTarget> {
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
 
@@ -56,12 +56,13 @@ internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsRe
         emptyList()
       }
     val pythonTarget = target.pythonTargetInfo
+    val isCodeGenerator = target.sourcesList.isEmpty() && workspaceContext.pythonCodeGeneratorRuleNames.contains(target.kind)
     return PythonBuildTarget(
       version = pythonTarget.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
       interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter) ?: defaultInterpreter,
       imports = pythonTarget.importsList,
-      isCodeGenerator = pythonTarget.isCodeGenerator,
-      generatedSources = pythonTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      isCodeGenerator = isCodeGenerator,
+      generatedSources = if (isCodeGenerator) pythonTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) } else emptyList(),
       sourceDependencies = sourceDependencies,
       mainFile = pythonTarget.main?.let { bazelPathsResolver.resolve(it) },
       mainModule = pythonTarget.mainModule

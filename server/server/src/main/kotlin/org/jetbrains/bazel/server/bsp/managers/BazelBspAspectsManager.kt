@@ -152,7 +152,6 @@ internal class BazelBspAspectsManager(
           // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
-          "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.toStarlarkString(),
           "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
       )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
@@ -225,8 +224,6 @@ internal class BazelBspAspectsManager(
 
       else -> (rulesetName as? ApparentRulesetName)?.name
     }
-
-  private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 
   suspend fun fetchFilesFromOutputGroups(
     targetsSpec: TargetCollection,
