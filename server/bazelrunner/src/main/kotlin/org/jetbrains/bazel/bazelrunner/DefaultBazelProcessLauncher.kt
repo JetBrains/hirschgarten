@@ -10,7 +10,7 @@ class DefaultBazelProcessLauncher(private val workspaceRoot: Path) : BazelProces
   override fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process {
     val ptyTermSize = executionDescriptor.ptyTermSize
     val commandLine = if (ptyTermSize != null) {
-      PtyCommandLine(executionDescriptor.command).withConsoleMode(false).withInitialColumns(ptyTermSize.columns)
+      PtyCommandLine(executionDescriptor.command).withConsoleMode(true).withInitialColumns(ptyTermSize.columns)
         .withInitialRows(ptyTermSize.rows)
     }
     else {

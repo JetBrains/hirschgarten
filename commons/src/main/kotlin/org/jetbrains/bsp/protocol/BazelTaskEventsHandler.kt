@@ -11,6 +11,7 @@ interface BazelTaskEventsHandler {
 }
 
 interface BazelTaskLogger {
+  fun info(message: String)
   fun message(message: String)
   fun warn(message: String)
   fun error(errorMessage: String)
@@ -19,6 +20,10 @@ interface BazelTaskLogger {
 fun BazelTaskEventsHandler.asLogger(taskId: TaskId): BazelTaskLogger {
   val taskEventsHandler = this
   return object: BazelTaskLogger {
+    override fun info(message: String) {
+      log(MessageType.INFO, message)
+    }
+
     override fun message(message: String) {
       log(MessageType.LOG, message)
     }
