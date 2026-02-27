@@ -207,16 +207,16 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
     }
   }
 
-  // BAZEL-1986: directories: . -frontend -webapp explicitly excludes frontend/ and webapp/.
-  // Files in excluded directories should NOT appear in project content.
+  // BAZEL-1986: project view with only targets (no directories section).
+  // Only files belonging to targeted packages should be indexed — not BUILD files from other packages.
   @Test @Order(101)
-  fun `excluded directories should not be scanned`() {
+  fun `non-targeted BUILD files should not be indexed when using targets-only project view`() {
     withDriver(bgRun) {
       ideFrame {
-        step("Switch to excluded-dir-with-target view") {
-          execute { switchProjectView("excluded-dir-with-target.bazelproject") }
+        step("Switch to targets-but-not-dirs view") {
+          execute { switchProjectView("targets-but-not-dirs.bazelproject") }
         }
-        step("Resync with excluded dirs") {
+        step("Resync with targets-only view") {
           execute {
             buildAndSync()
             waitForSmartMode()
@@ -226,16 +226,18 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         step("Verify synced targets") {
           execute { assertSyncedTargets("//app:app", "//common:common", "//server:server") }
         }
-        step("Verify excluded dir files are NOT in project content") {
+        step("Verify non-targeted BUILD files are NOT in project content") {
+          execute { assertFileInProject("frontend/BUILD.bazel", false) }
+          execute { assertFileInProject("webapp/BUILD.bazel", false) }
+        }
+        step("Verify non-targeted source files are NOT in project content") {
           execute { assertFileInProject("frontend/src/main/java/com/example/frontend/Frontend.java", false) }
           execute { assertFileInProject("webapp/src/main/java/com/example/webapp/Webapp.java", false) }
         }
-        step("Verify included dir files ARE in project content") {
+        step("Verify targeted files ARE in project content") {
           execute { assertFileInProject("app/src/main/java/com/example/app/App.java", true) }
           execute { assertFileInProject("common/src/main/java/com/example/common/Common.java", true) }
           execute { assertFileInProject("server/src/main/java/com/example/server/Server.java", true) }
-          execute { assertFileInProject("client/src/main/java/com/example/client/Client.java", true) }
-          execute { assertFileInProject("database/src/main/java/com/example/database/Database.java", true) }
         }
       }
     }
