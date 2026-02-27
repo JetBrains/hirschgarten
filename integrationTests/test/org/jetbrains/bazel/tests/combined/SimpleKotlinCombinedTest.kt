@@ -5,6 +5,7 @@ import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.UiText.Companion.asString
 import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
@@ -14,13 +15,10 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
-import org.jetbrains.bazel.tests.ui.expandedTree
-import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.DebugStepTypes
 import com.intellij.tools.ide.performanceTesting.commands.Keys
@@ -45,6 +43,8 @@ import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.tests.ui.expandedTree
+import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions
@@ -87,6 +87,9 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
     }
   }
 
+  @Test @Order(0)
+  fun `pty terminal should have correct output after sync`() = ptyTerminal()
+
   @Test @Order(1)
   fun `test results tree should display passed tests correctly`() = testResultsTree()
 
@@ -109,6 +112,23 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
   fun closeIde() {
     if (::bgRun.isInitialized) bgRun.closeIdeAndWait()
     if (::ctx.isInitialized) checkIdeaLogForExceptions(ctx)
+  }
+
+  private fun ptyTerminal() {
+    withDriver(bgRun) {
+      ideFrame {
+        val buildView = x { byType("com.intellij.build.BuildView") }
+        // Check that waitContainsText doesn't care about separating output lines, carrying over a dot from the previous line
+        buildView.waitContainsText(".INFO: Build completed successfully")
+        // If PTY terminal is disabled, it will print an empty "INFO:" into the console and won't be able to overwrite it
+        waitFor(
+          message = "Build console shouldn't contain empty \"INFO:\"",
+          timeout = 10.seconds,
+          getter = { buildView.getAllTexts().asString() },
+          checker = { text: String -> "INFO: INFO: " !in text },
+        )
+      }
+    }
   }
 
   private fun testResultsTree() {
