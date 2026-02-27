@@ -116,13 +116,13 @@ internal class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
+                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags, workspaceContext)
                 } == true
               },
             )
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
-            isWorkspaceTarget(it, repoMapping, featureFlags)
+            isWorkspaceTarget(it, repoMapping, featureFlags, workspaceContext)
           }
         val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.getJvmTarget() }
         val jvmLibraries = (nonWorkspaceTargets + jvmDirectDependencies).associateBy { it.label() }
@@ -777,11 +777,12 @@ internal class AspectBazelProjectMapper(
         it.relativePath.endsWith(".scala")
     }
 
-  private fun hasKnownPythonSources(targetInfo: TargetInfo) =
+  private fun hasKnownPythonSources(targetInfo: TargetInfo,
+                                    workspaceContext: WorkspaceContext) =
     targetInfo.sourcesList.any {
       it.relativePath.endsWith(".py")
     } ||
-      targetInfo.pythonTargetInfo.isCodeGenerator
+    (targetInfo.sourcesList.isEmpty() && workspaceContext.pythonCodeGeneratorRuleNames.contains(targetInfo.kind))
 
   private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
@@ -802,6 +803,7 @@ internal class AspectBazelProjectMapper(
     target: TargetInfo,
     repoMapping: RepoMapping,
     featureFlags: FeatureFlags,
+    workspaceContext: WorkspaceContext,
   ): Boolean =
     (
       isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
@@ -820,7 +822,7 @@ internal class AspectBazelProjectMapper(
           hasKnownGoSources(target) ||
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
-          hasKnownPythonSources(target)
+          hasKnownPythonSources(target, workspaceContext)
         ) ||
       target.hasProtobufTargetInfo()
 
