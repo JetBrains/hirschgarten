@@ -20,21 +20,16 @@ def _get_javacopts_from_context(ctx):
     return javacopts + add_exports + add_opens
 
 def get_javacopts(target, ctx):
-    #if( $bazel8OrAbove == "true" && $rulesetName != "" )
     if JavaInfo in target:
         java_info = target[JavaInfo]
         compilation_info = getattr(java_info, "compilation_info", None)
         module_flags_info = getattr(java_info, "module_flags_info", None)
         if compilation_info != None and module_flags_info != None:
-            javacopts = java_utils.tokenize_javacopts(ctx, compilation_info.javac_options)
+            javacopts = expand_make_variables(ctx, True, compilation_info.javac_options.to_list())
             # javacopts here contain --add-export flags already (https://github.com/bazelbuild/rules_java/blob/faaab4062f81deefaeef76dd21b2a5212432f8e3/java/private/java_common_internal.bzl#L159)
             add_opens = ["--add-opens=" + open + "=ALL-UNNAMED" for open in module_flags_info.add_opens.to_list()]
             return javacopts + add_opens
     return _get_javacopts_from_context(ctx)
-
-    #else
-    return _get_javacopts_from_context(ctx)
-    #end
 
 def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
     toolchain = None
