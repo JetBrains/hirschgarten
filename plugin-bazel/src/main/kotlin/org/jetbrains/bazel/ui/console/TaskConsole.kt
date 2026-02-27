@@ -379,8 +379,9 @@ abstract class TaskConsole(
   private val DEFAULT_PTY_TERM_SIZE = TermSize(80, 24)
 
   @Synchronized
-  fun ptyTermSize(taskId: Any): TermSize? {
-    val terminal = taskPtyTerminalMap[taskId] ?: return null
+  fun ptyTermSize(taskId: TaskId): TermSize? {
+    val terminal = generateSequence(taskId) { it.parent }
+      .firstNotNullOfOrNull { taskPtyTerminalMap[it] } ?: return null
     return terminal.terminalWidget.terminalPanel.terminalSizeFromComponent ?: DEFAULT_PTY_TERM_SIZE
   }
 
