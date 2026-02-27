@@ -25,7 +25,8 @@ data class RawBuildTarget(
   override val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
   override var data: BuildTargetData? = null,
   val lowPrioritySharedSources: List<SourceItem> = emptyList(),
-) : BuildTarget
+  val generatorName: String? = null,
+  ) : BuildTarget
 
 data class PartialBuildTarget(
   override val id: Label,

@@ -47,8 +47,7 @@ internal class TargetInfoManager(
   private val filePathSuffix: String,
   logSupplier: () -> Logger,
 ) {
-  private val fileToExecutableTargets: MVMap<HashValue128, List<Label>> =
-    openIdToLabelListMap("fileToExecutableTargets", store, logSupplier)
+  private val targetToExecutableTargets: MVMap<HashValue128, List<Label>> = openIdToLabelListMap("targetToExecutableTargets", store, logSupplier)
   private val fileToTarget: MVMap<HashValue128, List<Label>> = openIdToLabelListMap("fileToTarget", store, logSupplier)
 
   private val libraryIdToTarget: MVMap<HashValue128, Label> = openIdToLabelMap(store, "libraryIdToTarget", logSupplier)
@@ -156,7 +155,13 @@ internal class TargetInfoManager(
 
   fun getTargetsForPath(file: Path) = fileToTarget.get(fileToKey(file))
 
-  fun getExecutableTargetsForPath(file: Path) = fileToExecutableTargets.get(fileToKey(file))
+  fun getExecutableTargetsForTarget(target: Label, project: Project): List<Label>? =
+    target.toCanonicalLabelOrThis(project)?.let { label ->
+      val key = Hashing.xxh3_128()
+        .hashStream()
+        .computeLabelHash(label)
+      targetToExecutableTargets[key]
+    }
 
   fun addFileToTarget(file: Path, targets: List<Label>) {
     fileToTarget.put(fileToKey(file), targets)
@@ -192,7 +197,7 @@ internal class TargetInfoManager(
 
   fun reset(
     fileToTarget: Map<Path, List<Label>>,
-    fileToExecutableTargets: Map<Path, List<Label>>,
+    executableTargets: Map<ResolvedLabel, List<Label>>,
     libraryItems: List<LibraryItem>?,
     project: Project,
     targets: List<BuildTarget>,
@@ -203,9 +208,12 @@ internal class TargetInfoManager(
       addFileToTarget(entry.key, entry.value)
     }
 
-    this.fileToExecutableTargets.clear()
-    for ((file, targets) in fileToExecutableTargets) {
-      this.fileToExecutableTargets.put(fileToKey(file), targets)
+
+    val hashStream = Hashing.xxh3_128()
+      .hashStream()
+    this.targetToExecutableTargets.clear()
+    for ((target, targets) in executableTargets) {
+      this.targetToExecutableTargets.put(hashStream.computeLabelHash(target), targets)
     }
 
     if (libraryItems.isNullOrEmpty()) {
@@ -218,8 +226,6 @@ internal class TargetInfoManager(
 
     moduleIdToTarget.clear()
     this.labelToTargetInfo.clear()
-    val hashStream = Hashing.xxh3_128()
-      .hashStream()
     for (target in targets) {
       // must be canonical label
       val label = target.id as ResolvedLabel

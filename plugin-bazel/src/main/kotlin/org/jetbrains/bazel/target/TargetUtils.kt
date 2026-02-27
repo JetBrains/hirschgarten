@@ -33,6 +33,9 @@ import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.SingleTarget
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -131,15 +134,17 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     libraryItems: List<LibraryItem>?,
   ) {
     ThreadingAssertions.assertBackgroundThread()
-    val labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id }
+
+    val executableTargets =
+      calculateExecutableTargets(
+        targets = fileToTarget.flatMap { it.value }.distinct(),
+        targetDirectDependentsGraph = calculateDirectDependentsGraph(targets),
+        labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id },
+      )
+
     db.reset(
       fileToTarget = fileToTarget,
-      fileToExecutableTargets =
-        calculateFileToExecutableTargets(
-          targetDependentsGraph = TargetDependentsGraph(targets, libraryItems),
-          fileToTarget = fileToTarget,
-          labelToTargetInfo = labelToTargetInfo,
-        ),
+      executableTargets = executableTargets,
       libraryItems = libraryItems,
       targets = targets,
       project = project,
@@ -155,36 +160,53 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
   }
 
-  private fun calculateFileToExecutableTargets(
-    targetDependentsGraph: TargetDependentsGraph,
-    fileToTarget: Map<Path, List<Label>>,
-    labelToTargetInfo: Map<Label, BuildTarget>,
-  ): Map<Path, List<Label>> {
-    val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
-    return fileToTarget.entries
-      .mapNotNull { (path, targets) ->
-        val dependents =
-          targets
-            .flatMap { label ->
-              calculateTransitivelyExecutableTargets(
-                resultCache = targetToTransitiveRevertedDependenciesCache,
-                targetDependentsGraph = targetDependentsGraph,
-                labelToTargetInfo = labelToTargetInfo,
-                target = label,
-              )
-            }.distinct()
+  private fun calculateDirectDependentsGraph(targets: List<RawBuildTarget>): Map<Label, Set<Label>> {
+    val targetIdToDirectDependentIds = hashMapOf<Label, MutableSet<Label>>()
+    for (targetInfo in targets) {
+      val dependencies = targetInfo.dependencies
+      for (dependency in dependencies) {
+        targetIdToDirectDependentIds
+          .computeIfAbsent(dependency.label) { hashSetOf<Label>() }
+          .add(targetInfo.id)
+      }
+    }
+    return targetIdToDirectDependentIds
+  }
 
-        if (dependents.isEmpty()) {
-          null
-        } else {
-          path to dependents
+  private fun calculateExecutableTargets(
+    targets: List<Label>,
+    targetDirectDependentsGraph: Map<Label, Set<Label>>,
+    labelToTargetInfo: Map<Label, RawBuildTarget>,
+  ): Map<ResolvedLabel, List<Label>> {
+    val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
+    val result = mutableMapOf<ResolvedLabel, MutableList<Label>>()
+    targets
+      .forEach { label ->
+        val executables = calculateTransitivelyExecutableTargets(
+          resultCache = targetToTransitiveRevertedDependenciesCache,
+          targetDirectDependentsGraph = targetDirectDependentsGraph,
+          labelToTargetInfo = labelToTargetInfo,
+          target = label,
+        )
+        if (executables.isNotEmpty()) {
+          result[label as ResolvedLabel] = executables.toMutableList()
         }
-      }.toMap()
+      }
+    labelToTargetInfo.forEach { (label, target) ->
+      target.generatorName?.let { generatorName ->
+        val generatorLabel = label.assumeResolved().copy(target = SingleTarget(generatorName))
+        val generatorTargets = result.getOrPut(generatorLabel) { mutableListOf() }
+        if (generatorTargets.size < MAX_EXECUTABLE_TARGET_IDS) {
+          generatorTargets.add(label)
+        }
+      }
+    }
+    return result
   }
 
   private fun calculateTransitivelyExecutableTargets(
     resultCache: MutableMap<Label, Set<Label>>,
-    targetDependentsGraph: TargetDependentsGraph,
+    targetDirectDependentsGraph: Map<Label, Set<Label>>,
     target: Label,
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Set<Label> =
@@ -194,7 +216,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
         return@getOrPut setOf(target)
       }
 
-      val directDependentIds = targetDependentsGraph.directDependentIds(target)
+      val directDependentIds = targetDirectDependentsGraph[target] ?: return@getOrPut emptySet()
 
       val executableTargetsFromSamePackage = directDependentIds.filter {
         it.packagePath == target.packagePath && labelToTargetInfo[it]?.kind?.isExecutable == true
@@ -204,7 +226,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       return@getOrPut directDependentIds
         .asSequence()
         .flatMap { dependency ->
-          calculateTransitivelyExecutableTargets(resultCache, targetDependentsGraph, dependency, labelToTargetInfo)
+          calculateTransitivelyExecutableTargets(resultCache, targetDirectDependentsGraph, dependency, labelToTargetInfo)
         }.distinct()
         .take(MAX_EXECUTABLE_TARGET_IDS)
         .toHashSet()
@@ -229,14 +251,18 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
+    val targetsForFile = getTargetsForFile(file)
     val executableDirectTargets =
-      getTargetsForFile(file)
+      targetsForFile
         .filter { label -> db.getBuildTargetForLabel(label, project)?.kind?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
-      return file.toNioPathOrNull()?.let { db.getExecutableTargetsForPath(it) } ?: emptyList()
+      return targetsForFile.flatMap { getExecutableTargetsForTarget(it) }.distinct()
     }
     return executableDirectTargets
   }
+
+  fun getExecutableTargetsForTarget(target: Label): List<Label> =
+    db.getExecutableTargetsForTarget(target, project).orEmpty()
 
   @PublicApi
   fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY

@@ -115,6 +115,7 @@ class FirstPhaseTargetToBspMapperTest {
             deps = listOf("//dep/target1", "//dep/target2"),
             srcs = listOf("//target1:src1.java", "//target1:a/src2.java"),
             resources = listOf("//target1:resource1.txt", "//target1:a/resource2.txt"),
+            generatorName = "generator_name_example",
           ),
           createMockTarget(
             name = "//target2",
@@ -241,6 +242,7 @@ class FirstPhaseTargetToBspMapperTest {
                 target1Resource2,
               ),
             baseDirectory = workspaceRoot.resolve(Path("target1")),
+            generatorName = "generator_name_example",
           ),
           // target2: now merges its declared language with those inferred from its .kt sources
           RawBuildTarget(
