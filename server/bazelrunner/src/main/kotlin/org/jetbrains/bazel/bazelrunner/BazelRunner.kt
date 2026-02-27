@@ -5,9 +5,9 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
-import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import kotlin.io.path.pathString
 
@@ -19,10 +19,6 @@ class BazelRunner(
   val workspaceRoot: Path,
   val bazelProcessLauncher: BazelProcessLauncher = DefaultBazelProcessLauncher(workspaceRoot),
 ) {
-  companion object {
-    private val LOGGER = LoggerFactory.getLogger(BazelRunner::class.java)
-  }
-
   class CommandBuilder(workspaceContext: WorkspaceContext) {
     private val bazelBinary = workspaceContext.bazelBinary?.pathString ?: "bazel"
     var inheritWorkspaceOptions = false
@@ -129,21 +125,25 @@ class BazelRunner(
     command: BazelCommand,
     taskId: TaskId?,
     logProcessOutput: Boolean = true,
-  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), taskId, logProcessOutput)
+    logOnlyErrors: Boolean = false,
+  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), taskId, logProcessOutput, logOnlyErrors)
 
   fun runBazelCommand(
     executionDescriptor: BazelCommandExecutionDescriptor,
     taskId: TaskId?,
     logProcessOutput: Boolean = true,
+    logOnlyErrors: Boolean = false,
   ): BazelProcess {
     val finishCallback = executionDescriptor.finishCallback
     val processArgs = executionDescriptor.command
     val environment = executionDescriptor.environment
 
-    val outputLogger = taskId?.let { taskEventsHandler.takeIf { logProcessOutput }?.asLogger(taskId) }
+    val outputLogger = taskId?.let { taskEventsHandler.takeIf { logProcessOutput }?.asLogger(taskId) }?.let {
+      if (logOnlyErrors) BazelTaskLoggerOnlyErrors(delegate = it) else it
+    }
     if (outputLogger != null) {
       val log = "${envToString(environment)} ${processArgs.joinToString(" ")}"
-      outputLogger.message(log)
+      outputLogger.info(log)
     }
 
     val process = bazelProcessLauncher.launchProcess(executionDescriptor)
@@ -161,4 +161,10 @@ class BazelRunner(
   }
 
   private fun envToString(environment: Map<String, String>): String = environment.entries.joinToString(" ") { "${it.key}=${it.value}" }
+}
+
+private class BazelTaskLoggerOnlyErrors(private val delegate: BazelTaskLogger): BazelTaskLogger by delegate {
+  override fun message(message: String) {
+    // Do nothing
+  }
 }

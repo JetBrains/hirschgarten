@@ -24,7 +24,7 @@ class BazelProcess internal constructor(
 
       val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelFeatureFlags.killClientTreeOnCancel)
       val duration = stopwatch.stop()
-      logger?.message("Command completed in ${Format.duration(duration)} (exit code $exitCode)")
+      logger?.info("Command completed in ${Format.duration(duration)} (exit code $exitCode)")
 
       BazelLog.write {
         appendLine("exit code: $exitCode")
