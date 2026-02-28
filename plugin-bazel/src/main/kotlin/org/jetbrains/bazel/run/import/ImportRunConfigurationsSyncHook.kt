@@ -24,6 +24,7 @@ import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 
 private const val GOOGLE_BAZEL_RUN_CONFIG_TYPE = "BlazeCommandRunConfigurationType"
+private const val SHELL_SCRIPT_RUN_CONFIG_TYPE = "ShConfigurationType"
 
 internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
   private val log = logger<ImportRunConfigurationsSyncHook>()
@@ -61,12 +62,12 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
 
   private fun importRunConfiguration(project: Project, runConfigurationPath: Path): RunnerAndConfigurationSettings? {
     val runConfigurationXml = getConfigurationElement(JDOMUtil.load(runConfigurationPath)) ?: return null
-    val settings =
-      if (checkNotNull(runConfigurationXml.getAttributeValue("type")) == GOOGLE_BAZEL_RUN_CONFIG_TYPE) {
-        loadGoogleBazelRunConfiguration(project, runConfigurationXml)
-      } else {
-        loadRunConfigurationXmlNormally(project, runConfigurationXml)
-      }
+    val configurationType = checkNotNull(runConfigurationXml.getAttributeValue("type"))
+    val settings = when (configurationType) {
+      GOOGLE_BAZEL_RUN_CONFIG_TYPE -> loadGoogleBazelRunConfiguration(project, runConfigurationXml)
+      SHELL_SCRIPT_RUN_CONFIG_TYPE -> loadShellScriptRunConfiguration(project, runConfigurationXml)
+      else -> loadRunConfigurationXmlNormally(project, runConfigurationXml)
+    }
     return settings
   }
 
@@ -84,7 +85,9 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     val googleHandlerId: String = checkNotNull(blazeSettings.getAttributeValue("handler-id"))
     val bazelCommand: String = checkNotNull(blazeSettings.getAttributeValue("blaze-command"))
     val target = Label.parse(checkNotNull(blazeSettings.getChild("blaze-target")).text)
-    val additionalBazelParams = blazeSettings.getChild("blaze-user-flag")?.text?.replaceProjectDir(project)
+    val additionalBazelParams = blazeSettings.getChildren("blaze-user-flag")
+      .mapNotNull { it.text?.replaceProjectDir(project) }
+      .joinToString(" ")
     val programArguments = blazeSettings.getChild("blaze-user-exe-flag")?.text?.replaceProjectDir(project)
 
     val envsMap =
@@ -109,7 +112,54 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     (state as? HasEnv)?.env?.set(EnvironmentVariablesData.create(envsMap, true))
 
     runManager.addConfiguration(settings)
+
+    // Parse before-run tasks from the method element after adding the configuration
+    val methodElement = runConfigurationXml.getChild("method")
+    if (methodElement != null) {
+      val runManagerImpl = RunManagerImpl.getInstanceImpl(project)
+      runManagerImpl.readBeforeRunTasks(methodElement, settings, configuration)
+
+      // Filter out Blaze.BeforeRunTask
+      configuration.beforeRunTasks = configuration.beforeRunTasks.filter { task ->
+        task.providerId.toString() != "Blaze.BeforeRunTask"
+      }
+    }
+
     return settings
+  }
+
+  private fun loadShellScriptRunConfiguration(project: Project, runConfigurationXml: Element): RunnerAndConfigurationSettings {
+    // Create a copy of the XML element to modify it
+    val modifiedXml = runConfigurationXml.clone()
+    // Apply replaceProjectDir to the specified shell script configuration fields
+    modifiedXml.children.filter { it.name == "option" }.forEach { option ->
+      when (option.getAttributeValue("name")) {
+        "SCRIPT_TEXT" -> {
+          option.getAttributeValue("value")?.let { value ->
+            option.setAttribute("value", value.replaceProjectDir(project))
+          }
+        }
+        "SCRIPT_PATH" -> {
+          option.getAttributeValue("value")?.let { value ->
+            option.setAttribute("value", value.replaceProjectDir(project))
+          }
+        }
+        "SCRIPT_OPTIONS" -> {
+          option.getAttributeValue("value")?.let { value ->
+            option.setAttribute("value", value.replaceProjectDir(project))
+          }
+        }
+        "SCRIPT_WORKING_DIRECTORY" -> {
+          option.getAttributeValue("value")?.let { value ->
+            option.setAttribute("value", value.replaceProjectDir(project))
+          }
+        }
+      }
+    }
+
+    // Load the modified configuration normally
+    val runManager = RunManagerImpl.getInstanceImpl(project)
+    return runManager.loadConfiguration(modifiedXml, false)
   }
 
   /**
