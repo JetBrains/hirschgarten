@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
 import org.jetbrains.bazel.target.targetUtils
 
-class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
+internal class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), false) {
   override fun resolve(): PsiElement? = null
 

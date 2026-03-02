@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 
-open class StarlarkArgumentReference(element: StarlarkArgumentElement, range: TextRange) :
+internal open class StarlarkArgumentReference(element: StarlarkArgumentElement, range: TextRange) :
   PsiReferenceBase<StarlarkArgumentElement>(element, range, true) {
   override fun resolve(): PsiElement? = null
 

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.projectview.lexer
 
 import com.intellij.lexer.LexerBase
 import com.intellij.psi.tree.IElementType
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewLexerBase.Token
 
 /**
@@ -9,6 +10,7 @@ import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewLexerBase.Toke
  *
  * @constructor Create an empty project view lexer.
  */
+@ApiStatus.Internal
 class ProjectViewLexer : LexerBase() {
   private var endOffset = 0
   private var offsetStart = 0

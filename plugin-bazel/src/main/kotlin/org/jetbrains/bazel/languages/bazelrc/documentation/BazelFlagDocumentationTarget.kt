@@ -100,7 +100,7 @@ private fun Flag.commands(): String =
     ?.let { commands -> commands.joinToString(", ") { it.lowercase() } }
     ?.let { """**Commands**: `$it`""" } ?: ""
 
-fun flagToDocumentationMarkdownText(flag: Flag): String {
+internal fun flagToDocumentationMarkdownText(flag: Flag): String {
   val markdownText =
     """
           |
@@ -139,7 +139,7 @@ private fun getDocumentationResult(flag: Flag, project: Project): DocumentationR
 }
 
 @Suppress("UnstableApiUsage")
-class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
+internal class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
   DocumentationTarget,
   Pointer<BazelFlagDocumentationTarget> {
   val symbolPtr = symbol.createPointer()
@@ -162,7 +162,7 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
 }
 
 @Suppress("UnstableApiUsage")
-class BazelFlagSymbolLessDocumentationTarget(
+internal class BazelFlagSymbolLessDocumentationTarget(
   val element: PsiElement,
   private val originalElement: PsiElement?,
   private val flag: Flag,

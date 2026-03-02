@@ -37,7 +37,7 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
 
 private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
-object ProjectViewFileUtils {
+internal object ProjectViewFileUtils {
   fun calculateProjectViewFilePath(
     projectRootDir: VirtualFile,
     projectViewPath: Path?,

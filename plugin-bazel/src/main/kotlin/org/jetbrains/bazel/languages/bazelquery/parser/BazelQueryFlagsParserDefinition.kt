@@ -10,12 +10,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryElementTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.lexer.BazelQueryLexer
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFlagsFile
 
+@ApiStatus.Internal
 class BazelQueryFlagsParserDefinition : ParserDefinition {
   override fun createLexer(project: Project?): Lexer = BazelQueryLexer()
 

@@ -16,12 +16,14 @@ import com.intellij.platform.workspace.jps.entities.libraryProperties
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import java.nio.file.Path
 
+@ApiStatus.Internal
 class LibraryEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val importIjars: Boolean,
@@ -112,6 +114,7 @@ class LibraryEntityUpdater(
   }
 }
 
+@ApiStatus.Internal
 fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
   when {
     !workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps -> BazelProjectEntitySource

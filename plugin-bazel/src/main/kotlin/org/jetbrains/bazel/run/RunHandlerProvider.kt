@@ -8,7 +8,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 
-interface RunHandlerProvider {
+internal interface RunHandlerProvider {
   /**
    * Returns the unique ID of this {@link BspRunHandlerProvider}. The ID is
    * used to store configuration settings and must not change between plugin versions.

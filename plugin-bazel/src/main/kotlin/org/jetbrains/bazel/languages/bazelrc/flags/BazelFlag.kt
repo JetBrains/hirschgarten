@@ -2,9 +2,11 @@ package org.jetbrains.bazel.languages.bazelrc.flags
 
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.toPersistentMap
+import org.jetbrains.annotations.ApiStatus
 import java.lang.reflect.Field
 import kotlin.reflect.KProperty
 
+@ApiStatus.Internal
 sealed class Flag {
   abstract val name: String
 
@@ -72,7 +74,7 @@ sealed class Flag {
   }
 }
 
-fun knownFlagNames(pair: Pair<Flag, Option>): List<Pair<String, Flag>> {
+internal fun knownFlagNames(pair: Pair<Flag, Option>): List<Pair<String, Flag>> {
   val (flag, option) = pair
   var names = listOf(option.name, option.oldName).filter { it.isNotEmpty() }
 
@@ -86,7 +88,7 @@ fun knownFlagNames(pair: Pair<Flag, Option>): List<Pair<String, Flag>> {
   return names.map { it to flag }
 }
 
-abstract class LazyExtension<T, This> {
+internal abstract class LazyExtension<T, This> {
   private lateinit var value: T & Any
 
   operator fun getValue(o: This, p: KProperty<*>): T {

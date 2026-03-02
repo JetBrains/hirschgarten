@@ -6,7 +6,7 @@ import com.intellij.xdebugger.breakpoints.XLineBreakpointType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 
-class StarlarkBreakpointType :
+internal class StarlarkBreakpointType :
   XLineBreakpointType<StarlarkBreakpointProperties>(
     "starlark-line",
     BazelPluginBundle.message("starlark.debug.breakpoint.type.title"),

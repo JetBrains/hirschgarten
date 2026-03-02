@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
-class FunctionParsing(context: ParsingContext) : Parsing(context) {
+internal class FunctionParsing(context: ParsingContext) : Parsing(context) {
   fun parseFunction(functionMarker: Marker) {
     assertCurrentToken(StarlarkTokenTypes.DEF_KEYWORD)
     builder.advanceLexer()

@@ -8,7 +8,7 @@ import com.intellij.execution.junit.JUnitConfiguration
 import org.jetbrains.bazel.config.isBazelProject
 import java.nio.file.Paths
 
-class JUnitRunConfigurationExtension : RunConfigurationExtension() {
+internal class JUnitRunConfigurationExtension : RunConfigurationExtension() {
   override fun <T : RunConfigurationBase<*>?> updateJavaParameters(
     configuration: T & Any,
     params: JavaParameters,

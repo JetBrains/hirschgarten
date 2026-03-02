@@ -20,7 +20,7 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.extension
 
-class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
+internal class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
   override fun findClass(element: PsiClass, containing: PsiClass?): VirtualFile? {
     val targetElement = element.containingClass ?: element
     val project = targetElement.project

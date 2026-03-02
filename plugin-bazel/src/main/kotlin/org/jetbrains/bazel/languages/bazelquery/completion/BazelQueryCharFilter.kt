@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
  * the completions after typing special characters
  * like '/' or ':', which often appear in targets.
  */
-class BazelQueryCharFilter : CharFilter() {
+internal class BazelQueryCharFilter : CharFilter() {
   override fun acceptChar(
     c: Char,
     prefixLength: Int,

@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.parser
 import com.intellij.lang.PsiBuilder
 import java.util.ArrayDeque
 
-class ParsingContext(val builder: PsiBuilder) {
+internal class ParsingContext(val builder: PsiBuilder) {
   val expressionParser = ExpressionParsing(this)
   val statementParser = StatementParsing(this)
   val functionParser = FunctionParsing(this)

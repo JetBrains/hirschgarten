@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.commons
 
-data class LibraryArtifact(
+internal data class LibraryArtifact(
   val interfaceJar: ArtifactLocation?,
   val classJar: ArtifactLocation?,
   val sourceJars: List<ArtifactLocation>,

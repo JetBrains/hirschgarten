@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.analysis.api.platform.modification.publishGlobalModu
 /**
  * Workaround for https://youtrack.jetbrains.com/issue/KT-70632
  */
-class RefreshKotlinHighlightingPostSyncHook : ProjectPostSyncHook {
+internal class RefreshKotlinHighlightingPostSyncHook : ProjectPostSyncHook {
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     writeAction {
       environment.project.publishGlobalModuleStateModificationEvent()

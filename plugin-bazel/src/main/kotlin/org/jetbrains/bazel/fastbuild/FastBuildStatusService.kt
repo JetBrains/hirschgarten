@@ -5,7 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
-class FastBuildStatusService(private val project: Project) {
+internal class FastBuildStatusService(private val project: Project) {
   fun startFastBuild() {
     project.messageBus.syncPublisher(FastBuildStatusListener.TOPIC).fastBuildStarted()
   }

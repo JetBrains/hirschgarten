@@ -20,7 +20,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 
-class BazelProjectTaskRunner : ProjectTaskRunner() {
+internal class BazelProjectTaskRunner : ProjectTaskRunner() {
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
     project.isBazelProject &&
     TrustedProjects.isProjectTrusted(project) &&
@@ -83,7 +83,7 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
 /**
  * This extension is useful when there is a need to inject before and after actions with respect to the project task runner
  */
-interface AdditionalProjectTaskRunnerProvider {
+internal interface AdditionalProjectTaskRunnerProvider {
   fun preRun(
     project: Project,
     projectTaskContext: ProjectTaskContext,

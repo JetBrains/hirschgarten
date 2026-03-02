@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.commons
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Main
@@ -16,6 +17,7 @@ import kotlin.io.path.toPath
 
 private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
+@ApiStatus.Internal
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   private val paths = ConcurrentHashMap<FileLocation, Path>()
 

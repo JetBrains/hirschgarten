@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStateme
 private val CODE_USAGE = UsageType { BazelPluginBundle.message("findusages.starlark.code.usages") }
 private val LOAD_USAGE = UsageType { BazelPluginBundle.message("findusages.starlark.load.usages") }
 
-class StarlarkUsageTypeProvider : UsageTypeProvider {
+internal class StarlarkUsageTypeProvider : UsageTypeProvider {
   override fun getUsageType(element: PsiElement): UsageType =
     if (PsiTreeUtil.getParentOfType(element, StarlarkLoadStatement::class.java) != null) {
       LOAD_USAGE

@@ -6,7 +6,7 @@ import com.intellij.platform.backend.documentation.DocumentationSymbol
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 
 @Suppress("UnstableApiUsage")
-class BazelGlobalFunctionArgumentDocumentationSymbol(val argument: BazelGlobalFunctionParameter, val project: Project) :
+internal class BazelGlobalFunctionArgumentDocumentationSymbol(val argument: BazelGlobalFunctionParameter, val project: Project) :
   DocumentationSymbol,
   Pointer<BazelGlobalFunctionArgumentDocumentationSymbol> {
   override fun createPointer() = this

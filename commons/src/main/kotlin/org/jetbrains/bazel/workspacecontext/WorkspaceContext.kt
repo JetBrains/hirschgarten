@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspacecontext
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
@@ -68,6 +69,7 @@ data class WorkspaceContext(
  * belong to them.
  */
 val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
+  @ApiStatus.Internal
   get() =
     targets
       .filter { it.isIncluded() }

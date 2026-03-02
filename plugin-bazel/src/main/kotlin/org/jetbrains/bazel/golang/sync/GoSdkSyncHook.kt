@@ -23,7 +23,7 @@ import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 /** From [com.goide.inspections.GoWrongSdkConfigurationNotificationProvider].  */
 private const val DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH = "DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH"
 
-class GoSdkSyncHook : ProjectPostSyncHook {
+internal class GoSdkSyncHook : ProjectPostSyncHook {
   override fun isEnabled(project: Project): Boolean =
     BazelFeatureFlags.isGoSupportEnabled &&
       project.targetUtils

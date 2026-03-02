@@ -10,9 +10,9 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
-class GenericRunState : AbstractGenericRunState<GenericRunState>()
+internal class GenericRunState : AbstractGenericRunState<GenericRunState>()
 
-open class AbstractGenericRunState<T : AbstractGenericRunState<T>> :
+internal open class AbstractGenericRunState<T : AbstractGenericRunState<T>> :
   BazelRunConfigurationState<T>(),
   HasEnv,
   HasProgramArguments,
@@ -31,7 +31,7 @@ open class AbstractGenericRunState<T : AbstractGenericRunState<T>> :
   override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<T> = GenericRunStateEditor(configuration)
 }
 
-class GenericRunStateEditor<T : AbstractGenericRunState<T>>(private val config: BazelRunConfiguration) :
+internal class GenericRunStateEditor<T : AbstractGenericRunState<T>>(private val config: BazelRunConfiguration) :
   FragmentedSettingsEditor<T>(config.handler?.state as T) {
   override fun createFragments(): Collection<SettingsEditorFragment<T, *>> =
     SettingsEditorFragmentContainer.fragments {

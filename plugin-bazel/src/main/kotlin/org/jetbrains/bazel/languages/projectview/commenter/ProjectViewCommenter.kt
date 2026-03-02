@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.projectview.commenter
 
 import com.intellij.lang.Commenter
 
-class ProjectViewCommenter : Commenter {
+internal class ProjectViewCommenter : Commenter {
   override fun getLineCommentPrefix(): String = "#"
 
   override fun getBlockCommentPrefix(): String? = null

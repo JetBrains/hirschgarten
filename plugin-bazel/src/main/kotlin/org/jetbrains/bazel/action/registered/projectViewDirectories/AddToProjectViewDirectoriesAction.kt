@@ -22,7 +22,7 @@ import org.jetbrains.bazel.utils.selectedDirectory
 import org.jetbrains.bazel.workspace.excludedRoots
 import org.jetbrains.bazel.workspace.includedRoots
 
-class AddToProjectViewDirectoriesAction : AnAction() {
+internal class AddToProjectViewDirectoriesAction : AnAction() {
 
   override fun actionPerformed(e: AnActionEvent) {
     val directory = e.selectedDirectory ?: return

@@ -18,7 +18,7 @@ import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.RULES_KOTLIN_VE
 import org.jetbrains.kotlin.tools.projectWizard.BuildSystemKotlinNewProjectWizard
 import org.jetbrains.kotlin.tools.projectWizard.KotlinNewProjectWizard.Step
 
-class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
+internal class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
   override val name: @NlsContexts.Label String
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 

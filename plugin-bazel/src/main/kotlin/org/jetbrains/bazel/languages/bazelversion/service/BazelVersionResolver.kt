@@ -2,10 +2,10 @@ package org.jetbrains.bazel.languages.bazelversion.service
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.annotations.InternalApi
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 
-@InternalApi
+@ApiStatus.Internal
 interface BazelVersionResolver {
   val id: String
   val name: String

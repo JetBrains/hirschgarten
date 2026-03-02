@@ -1,3 +1,3 @@
 package org.jetbrains.bazel.sync.workspace
 
-interface BazelMappedProject
+internal interface BazelMappedProject

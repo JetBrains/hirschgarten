@@ -11,12 +11,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewLexer
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 
+@ApiStatus.Internal
 class ProjectViewParserDefinition : ParserDefinition {
   override fun createLexer(project: Project?): Lexer = ProjectViewLexer()
 

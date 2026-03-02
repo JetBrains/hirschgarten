@@ -27,7 +27,7 @@ private const val DEPLOY_INFO_EXTENSION = ".intellij-plugin-debug-target-deploy-
 
 private val PROVIDER_ID = Key.create<CopyPluginToSandboxBeforeRunTaskProvider.Task>("CopyPluginToSandboxBeforeRunTaskProvider")
 
-public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<CopyPluginToSandboxBeforeRunTaskProvider.Task>() {
+internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<CopyPluginToSandboxBeforeRunTaskProvider.Task>() {
   public class Task : BeforeRunTask<Task>(PROVIDER_ID)
 
   override fun getId(): Key<Task> = PROVIDER_ID

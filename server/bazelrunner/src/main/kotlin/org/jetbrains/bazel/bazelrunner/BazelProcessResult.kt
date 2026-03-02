@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.bazelrunner
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
 import org.jetbrains.bazel.commons.BazelStatus
 
+@ApiStatus.Internal
 class BazelProcessResult(
   private val stdoutCollector: OutputCollector,
   private val stderrCollector: OutputCollector,

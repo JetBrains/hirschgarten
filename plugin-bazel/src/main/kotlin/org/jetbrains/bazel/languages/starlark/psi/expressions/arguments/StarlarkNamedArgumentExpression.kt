@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions.arguments
 
 import com.intellij.lang.ASTNode
+import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.psi.PsiReference
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -10,6 +12,7 @@ import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionArgu
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
 
 @Suppress("UnstableApiUsage")
+@ApiStatus.Internal
 class StarlarkNamedArgumentExpression(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkArgumentElement {
@@ -36,6 +39,6 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
 
   fun getArgumentStringValue(): String? = findChildByClass(StarlarkStringLiteralExpression::class.java)?.getStringContents()
 
-  override fun getOwnReferences(): Collection<BazelGlobalFunctionArgumentReference> =
+  override fun getOwnReferences(): Collection<PsiSymbolReference> =
     name?.let { listOf(BazelGlobalFunctionArgumentReference(this)) } ?: emptyList()
 }

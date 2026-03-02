@@ -14,12 +14,12 @@ import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-val rootRulesToNeededTransitiveRules = mapOf(
+internal val rootRulesToNeededTransitiveRules = mapOf(
   "rules_kotlin" to listOf("rules_java"),
   "rules_scala" to listOf("rules_java"),
 )
 
-suspend fun calculateRepoMapping(
+internal suspend fun calculateRepoMapping(
   workspaceContext: WorkspaceContext,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,

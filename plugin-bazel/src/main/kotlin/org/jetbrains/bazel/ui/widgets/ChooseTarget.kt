@@ -13,7 +13,7 @@ import org.jetbrains.bazel.label.Label
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-suspend fun List<Label>.chooseTarget(editor: Editor?): Label? {
+internal suspend fun List<Label>.chooseTarget(editor: Editor?): Label? {
   if (editor == null) return firstOrNull() // Can't show the popup without a parent component
   if (isEmpty()) return null
   if (size == 1) return first()

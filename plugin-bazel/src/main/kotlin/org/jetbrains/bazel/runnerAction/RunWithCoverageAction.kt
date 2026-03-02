@@ -9,7 +9,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.test.setTestFilter
 import org.jetbrains.bsp.protocol.BuildTarget
 
-class RunWithCoverageAction(
+internal class RunWithCoverageAction(
   project: Project,
   targetInfos: List<BuildTarget>,
   text: ((isRunConfigName: Boolean) -> String)? = null,

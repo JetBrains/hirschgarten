@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
+import org.jetbrains.annotations.ApiStatus
 import java.io.ByteArrayOutputStream
 
+@ApiStatus.Internal
 class OutputCollector {
   private val raw = ByteArrayOutputStream()
 

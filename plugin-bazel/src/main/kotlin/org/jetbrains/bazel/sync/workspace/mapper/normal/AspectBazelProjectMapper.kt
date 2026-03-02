@@ -52,7 +52,7 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 
-class AspectBazelProjectMapper(
+internal class AspectBazelProjectMapper(
   private val project: Project,
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,

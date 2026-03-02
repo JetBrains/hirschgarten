@@ -49,9 +49,9 @@ import java.nio.file.Path
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 
-const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
+internal const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 
-class CollectProjectDetailsTask(
+internal class CollectProjectDetailsTask(
   private val project: Project,
   private val taskId: TaskId,
   private val diff: MutableEntityStorage,
@@ -320,7 +320,7 @@ class CollectProjectDetailsTask(
 }
 
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
-suspend fun calculateProjectDetailsWithCapabilities(
+internal suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
   server: BazelServerFacade,
   syncScope: ProjectSyncScope,

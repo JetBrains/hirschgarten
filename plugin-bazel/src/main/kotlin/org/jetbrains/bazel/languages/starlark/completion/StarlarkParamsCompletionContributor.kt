@@ -10,7 +10,7 @@ import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameterList
 
-class StarlarkParamsCompletionContributor : CompletionContributor() {
+internal class StarlarkParamsCompletionContributor : CompletionContributor() {
   init {
     extend(CompletionType.BASIC, paramElement("*"), StarlarkParamsCompletionProvider("args"))
     extend(CompletionType.BASIC, paramElement("**"), StarlarkParamsCompletionProvider("kwargs"))

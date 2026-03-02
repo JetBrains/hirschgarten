@@ -6,9 +6,11 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.workspacemodel.entities.GenericSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 
+@ApiStatus.Internal
 class JavaSourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   workspaceModelEntitiesFolderMarker: Boolean = false,

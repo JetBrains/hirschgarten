@@ -35,7 +35,7 @@ import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.protocol.WorkspacePhasedBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
 
-class BaselServerFacadeImpl(
+internal class BaselServerFacadeImpl(
   private val bspMapper: BspProjectMapper,
   private val projectProvider: BazelSyncProjectProvider,
   private val executeService: ExecuteService,

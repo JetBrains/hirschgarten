@@ -21,7 +21,7 @@ import java.io.File
 import java.nio.file.Path
 
 /** Represents a workspace root  */
-data class WorkspaceRoot(val directory: Path) {
+internal data class WorkspaceRoot(val directory: Path) {
   constructor(directory: File) : this(directory.toPath())
 
   fun fileForPath(workspacePath: WorkspacePath): Path = directory.resolve(workspacePath.relativePath())

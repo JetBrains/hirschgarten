@@ -11,7 +11,7 @@ import org.jetbrains.bazel.workspace.excludeSymlinksFromFileWatcher
 import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
-class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
+internal class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
   private var symlinksToExclude: List<Path>? = null
 
   @Synchronized

@@ -10,7 +10,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BspJvmClasspath
 import java.nio.file.Path
 
-object ClasspathQuery {
+internal object ClasspathQuery {
   suspend fun classPathQuery(
     target: Label,
     bspInfo: BspInfo,

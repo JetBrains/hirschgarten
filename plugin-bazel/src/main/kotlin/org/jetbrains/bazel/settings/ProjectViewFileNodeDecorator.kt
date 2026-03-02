@@ -11,7 +11,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
-class ProjectViewFileNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
+internal class ProjectViewFileNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
     if (!project.isBazelProject) return
     val vFile = node.virtualFile ?: return

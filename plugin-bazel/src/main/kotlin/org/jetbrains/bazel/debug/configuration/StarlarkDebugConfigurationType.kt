@@ -7,7 +7,7 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.Icon
 
-class StarlarkDebugConfigurationType :
+internal class StarlarkDebugConfigurationType :
   ConfigurationType,
   DumbAware {
   override fun getDisplayName(): String = BazelPluginBundle.message("starlark.debug.config.type.name")

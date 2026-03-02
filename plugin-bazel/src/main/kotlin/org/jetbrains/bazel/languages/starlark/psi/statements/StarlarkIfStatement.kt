@@ -4,7 +4,7 @@ import com.intellij.lang.ASTNode
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 
-class StarlarkIfStatement(node: ASTNode) :
+internal class StarlarkIfStatement(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkStatementContainer {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitIfStatement(this)

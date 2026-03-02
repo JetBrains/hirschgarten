@@ -8,11 +8,13 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 import kotlin.jvm.internal.Reflection
 import kotlin.reflect.KClass
 
+@ApiStatus.Internal
 val bazelGson: Gson =
   GsonBuilder()
     .registerTypeHierarchyAdapter(Path::class.java, PathSerializer)
@@ -21,7 +23,7 @@ val bazelGson: Gson =
     .disableHtmlEscaping()
     .create()
 
-class SealedClassTypeAdapterFactory : TypeAdapterFactory {
+internal class SealedClassTypeAdapterFactory : TypeAdapterFactory {
   companion object {
     private const val TYPE_FIELD = "type"
   }
@@ -137,7 +139,7 @@ class SealedClassTypeAdapterFactory : TypeAdapterFactory {
     }
 }
 
-object LabelSerializer : TypeAdapter<Label?>() {
+internal object LabelSerializer : TypeAdapter<Label?>() {
   override fun read(jsonReader: JsonReader): Label? = jsonReader.nextString().let { Label.parseOrNull(it) }
 
   override fun write(out: JsonWriter, value: Label?) {
@@ -145,7 +147,7 @@ object LabelSerializer : TypeAdapter<Label?>() {
   }
 }
 
-object PathSerializer : TypeAdapter<Path?>() {
+internal object PathSerializer : TypeAdapter<Path?>() {
   override fun read(jsonReader: JsonReader): Path? = jsonReader.nextString()?.let { Path.of(it) }
 
   override fun write(out: JsonWriter, value: Path?) {

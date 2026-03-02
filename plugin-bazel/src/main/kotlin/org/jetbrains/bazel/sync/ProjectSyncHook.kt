@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
@@ -30,6 +31,7 @@ interface ProjectSyncHook {
   suspend fun onSync(environment: ProjectSyncHookEnvironment)
 
   companion object {
+    @ApiStatus.Internal
     val ep = ExtensionPointName.create<ProjectSyncHook>("org.jetbrains.bazel.projectSyncHook")
   }
 
@@ -42,23 +44,25 @@ interface ProjectSyncHook {
    * @param progressReporter should be used to report the progress of the hook
    * @param buildTargets base info about all the available targets in the project
    */
-  data class ProjectSyncHookEnvironment(
+  @ConsistentCopyVisibility
+  data class ProjectSyncHookEnvironment @ApiStatus.Internal constructor(
     val project: Project,
-    val syncScope: ProjectSyncScope,
+    internal val syncScope: ProjectSyncScope,
     val server: BazelServerFacade,
     val resolver: BazelWorkspaceResolveService,
-    val diff: AllProjectStructuresDiff,
-    val taskId: TaskId,
+    internal val diff: AllProjectStructuresDiff,
+    internal val taskId: TaskId,
     val progressReporter: SequentialProgressReporter,
-    val buildTargets: Map<Label, BspTargetInfo.TargetInfo>,
+    internal val buildTargets: Map<Label, BspTargetInfo.TargetInfo>,
   )
 }
 
 val Project.projectSyncHooks: List<ProjectSyncHook>
+  @ApiStatus.Internal
   get() =
     ProjectSyncHook.ep
       .extensionList
       .filter { it.isEnabled(this) }
 
-suspend fun <T> ProjectSyncHook.ProjectSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
+internal suspend fun <T> ProjectSyncHook.ProjectSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
   project.withSubtask(progressReporter, taskId.subTask(text), text, block)

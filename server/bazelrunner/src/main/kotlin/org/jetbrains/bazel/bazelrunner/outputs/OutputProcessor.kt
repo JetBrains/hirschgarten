@@ -3,6 +3,7 @@ package org.jetbrains.bazel.bazelrunner.outputs
 import com.intellij.execution.process.OSProcessUtil
 import com.intellij.util.io.awaitExit
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.annotations.ApiStatus
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.InputStream
@@ -14,6 +15,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 typealias OutputHandler = (String) -> Unit
 
+@ApiStatus.Internal
 class OutputProcessor(private val process: Process, handler: OutputHandler? = null) {
   val stdoutCollector = OutputCollector()
   val stderrCollector = OutputCollector()

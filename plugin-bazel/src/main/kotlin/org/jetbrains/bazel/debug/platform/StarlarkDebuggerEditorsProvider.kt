@@ -17,7 +17,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 
-class StarlarkDebuggerEditorsProvider : XDebuggerEditorsProviderBase() {
+internal class StarlarkDebuggerEditorsProvider : XDebuggerEditorsProviderBase() {
   override fun getFileType(): FileType = StarlarkFileType
 
   override fun createExpressionCodeFragment(

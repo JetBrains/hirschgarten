@@ -10,7 +10,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.concurrency.Promise
 
-class BazelFastBuildProjectTaskRunner : ProjectTaskRunner() {
+internal class BazelFastBuildProjectTaskRunner : ProjectTaskRunner() {
   override fun canRun(projectTask: ProjectTask): Boolean = throw UnsupportedOperationException("Obsolete method")
 
   override fun canRun(

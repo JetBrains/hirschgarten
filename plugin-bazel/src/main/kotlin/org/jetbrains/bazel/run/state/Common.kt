@@ -23,14 +23,14 @@ import com.intellij.util.xmlb.annotations.XMap
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.JCheckBox
 
-interface HasEnv {
+internal interface HasEnv {
   var env: EnvironmentVariablesDataOptions
 }
 
 // Copied from org.jetbrains.plugins.terminal.EnvironmentVariablesDataOptions
 // We can't use it directly because it comes from a different plugin
 @Tag("")
-class EnvironmentVariablesDataOptions : BaseState() {
+internal class EnvironmentVariablesDataOptions : BaseState() {
   // user order of env must be preserved - do not sort user input
   @Property(description = "Environment variables")
   @get:XMap(entryTagName = "env", keyAttributeName = "key")
@@ -48,7 +48,7 @@ class EnvironmentVariablesDataOptions : BaseState() {
   fun get(): EnvironmentVariablesData = EnvironmentVariablesData.create(envs, isPassParentEnvs)
 }
 
-fun <C : HasEnv> SettingsEditorFragmentContainer<C>.addEnvironmentFragment() =
+internal fun <C : HasEnv> SettingsEditorFragmentContainer<C>.addEnvironmentFragment() =
   addEnvironmentFragment(
     object : LabeledSettingsFragmentInfo {
       override val editorLabel: String = ExecutionBundle.message("environment.variables.component.title")
@@ -66,11 +66,11 @@ fun <C : HasEnv> SettingsEditorFragmentContainer<C>.addEnvironmentFragment() =
     hideWhenEmpty = false,
   )
 
-interface HasProgramArguments {
+internal interface HasProgramArguments {
   var programArguments: String?
 }
 
-fun <T : HasProgramArguments> programArgumentsFragment(): SettingsEditorFragment<T, RawCommandLineEditor> {
+internal fun <T : HasProgramArguments> programArgumentsFragment(): SettingsEditorFragment<T, RawCommandLineEditor> {
   val programArguments = RawCommandLineEditor()
   CommandLinePanel.setMinimumWidth(programArguments, 400)
   val message = ExecutionBundle.message("run.configuration.program.parameters.placeholder")
@@ -104,11 +104,11 @@ fun <T : HasProgramArguments> programArgumentsFragment(): SettingsEditorFragment
   return parameters
 }
 
-interface HasBazelParams {
+internal interface HasBazelParams {
   var additionalBazelParams: String?
 }
 
-fun <T : HasBazelParams> bazelParamsFragment(): SettingsEditorFragment<T, RawCommandLineEditor> {
+internal fun <T : HasBazelParams> bazelParamsFragment(): SettingsEditorFragment<T, RawCommandLineEditor> {
   val bazelParams = RawCommandLineEditor()
   CommandLinePanel.setMinimumWidth(bazelParams, 400)
   val message = BazelPluginBundle.message("runconfig.bazel.params")
@@ -143,11 +143,11 @@ fun <T : HasBazelParams> bazelParamsFragment(): SettingsEditorFragment<T, RawCom
 }
 
 
-interface HasRunWithBazel {
+internal interface HasRunWithBazel {
   var runWithBazel: Boolean
 }
 
-fun <C : HasRunWithBazel> SettingsEditorFragmentContainer<C>.addRunWithBazelFragment(): SettingsEditorFragment<C, DialogPanel> {
+internal fun <C : HasRunWithBazel> SettingsEditorFragmentContainer<C>.addRunWithBazelFragment(): SettingsEditorFragment<C, DialogPanel> {
   val checkBox = JCheckBox(BazelPluginBundle.message("runconfig.run.with.bazel"))
   return addSettingsEditorFragment(
     object : SettingsFragmentInfo {

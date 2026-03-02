@@ -14,7 +14,7 @@ import com.intellij.openapi.project.Project
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-class BazelBinPathService : PersistentStateComponent<BazelBinPathService.State> {
+internal class BazelBinPathService : PersistentStateComponent<BazelBinPathService.State> {
   var bazelBinPath: String? = null
   var bazelExecPath: String? = null
 

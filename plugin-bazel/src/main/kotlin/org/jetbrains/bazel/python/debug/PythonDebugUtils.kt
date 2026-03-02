@@ -8,7 +8,7 @@ import org.jetbrains.bazel.runfiles.RunfilesUtils
 import java.nio.file.Path
 import java.nio.file.Paths
 
-object PythonDebugUtils {
+internal object PythonDebugUtils {
   fun guessRunScriptName(project: Project, target: Label): Path {
     val bazelBinPath = getBazelBinPath(project)
     val targetPackage = target.packagePath.pathSegments.toTypedArray()

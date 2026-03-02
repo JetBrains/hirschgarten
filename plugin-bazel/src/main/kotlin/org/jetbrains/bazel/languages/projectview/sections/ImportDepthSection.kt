@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.IntScalarSection
 
+@ApiStatus.Internal
 class ImportDepthSection : IntScalarSection() {
   override val name = NAME
   override val sectionKey = KEY

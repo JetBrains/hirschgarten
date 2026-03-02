@@ -16,7 +16,7 @@ import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
 import kotlin.concurrent.Volatile
 
-class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
+internal class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   val bazelVersion: Int?
     get() = node.psi.project.getService(BazelVersionCheckerService::class.java).currentBazelVersion?.toSemVer()?.major

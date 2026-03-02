@@ -14,7 +14,7 @@ import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import java.nio.file.Path
 
-class WorkspaceModelUpdater(
+internal class WorkspaceModelUpdater(
   workspaceEntityStorageBuilder: MutableEntityStorage,
   private val virtualFileUrlManager: VirtualFileUrlManager,
   private val projectBasePath: Path,

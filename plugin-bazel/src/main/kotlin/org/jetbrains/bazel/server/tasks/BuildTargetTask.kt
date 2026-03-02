@@ -23,7 +23,7 @@ import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import kotlin.random.Random
 
-interface BuildTargetTask {
+internal interface BuildTargetTask {
   suspend fun build(
     server: BazelServerFacade,
     targetIds: List<Label>,
@@ -33,7 +33,7 @@ interface BuildTargetTask {
   ): BazelStatus
 }
 
-suspend fun runBuildTargetTask(
+internal suspend fun runBuildTargetTask(
   targetIds: List<Label>,
   project: Project,
   isDebug: Boolean,
@@ -80,7 +80,7 @@ suspend fun runBuildTargetTask(
   }
 }
 
-object DefaultBuildTargetTask : BuildTargetTask {
+internal object DefaultBuildTargetTask : BuildTargetTask {
   override suspend fun build(
     server: BazelServerFacade,
     targetIds: List<Label>,
@@ -93,7 +93,7 @@ object DefaultBuildTargetTask : BuildTargetTask {
   }
 }
 
-suspend fun runBuildTargetTask(
+internal suspend fun runBuildTargetTask(
   targetIds: List<Label>,
   project: Project,
   isDebug: Boolean = false,

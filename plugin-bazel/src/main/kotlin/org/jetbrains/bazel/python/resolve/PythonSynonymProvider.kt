@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.python.resolve
 
 import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.annotations.ApiStatus
 
 /** Use this extension point if resolving Python imports require a custom change in their qualified names */
+@ApiStatus.Internal
 interface PythonSynonymProvider {
   /**
    * Creates a synonym for a Python import.

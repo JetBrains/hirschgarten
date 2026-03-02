@@ -8,6 +8,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
@@ -25,6 +26,7 @@ import org.jetbrains.bsp.protocol.TaskId
 
 private const val MAX_REPLACE_WSM_ATTEMPTS = 3
 
+@ApiStatus.Internal
 class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntityStorage) : ProjectStructureDiff {
   private val postApplyActions = mutableListOf<suspend () -> Unit>()
 
@@ -84,9 +86,10 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
 }
 
 val AllProjectStructuresDiff.workspaceModelDiff: WorkspaceModelProjectStructureDiff
+  @ApiStatus.Internal
   get() = diffOfType(WorkspaceModelProjectStructureDiff::class.java)
 
-class WorkspaceModelProjectStructureProvider : ProjectStructureProvider<WorkspaceModelProjectStructureDiff> {
+internal class WorkspaceModelProjectStructureProvider : ProjectStructureProvider<WorkspaceModelProjectStructureDiff> {
   override fun newDiff(project: Project): WorkspaceModelProjectStructureDiff =
     WorkspaceModelProjectStructureDiff(MutableEntityStorage.create())
 }

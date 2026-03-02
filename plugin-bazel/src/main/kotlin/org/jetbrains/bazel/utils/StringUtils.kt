@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.utils
 
+import org.jetbrains.annotations.ApiStatus
 import java.security.MessageDigest
 
+@ApiStatus.Internal
 object StringUtils {
   /**
    * Creates a md5 hashed string from an original string

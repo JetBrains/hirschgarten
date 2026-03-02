@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.lang.Language
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Main
@@ -9,6 +10,7 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 
+@ApiStatus.Internal
 object SyntheticRunTargetUtils {
   private val escapePattern = Regex("[^A-Za-z0-9_]")
 

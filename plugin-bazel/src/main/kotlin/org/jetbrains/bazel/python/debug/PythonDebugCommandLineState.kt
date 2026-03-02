@@ -26,7 +26,7 @@ import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.BazelServerFacade
 
-class PythonDebugCommandLineState(environment: ExecutionEnvironment, private val programArguments: String?) :
+internal class PythonDebugCommandLineState(environment: ExecutionEnvironment, private val programArguments: String?) :
   BazelCommandLineStateBase(environment) {
   val target: Label? = (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
   private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(environment.project, it) }

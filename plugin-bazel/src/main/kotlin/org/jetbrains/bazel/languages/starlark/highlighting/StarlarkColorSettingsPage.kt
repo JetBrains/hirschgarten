@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import javax.swing.Icon
 
-class StarlarkColorSettingsPage : ColorSettingsPage {
+internal class StarlarkColorSettingsPage : ColorSettingsPage {
   override fun getAttributeDescriptors(): Array<AttributesDescriptor> {
     infix fun String.to(key: TextAttributesKey) = AttributesDescriptor(this, key)
 

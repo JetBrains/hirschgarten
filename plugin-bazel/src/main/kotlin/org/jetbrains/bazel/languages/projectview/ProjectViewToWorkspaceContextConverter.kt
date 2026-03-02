@@ -9,6 +9,7 @@ import com.intellij.openapi.util.io.NioFiles
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -30,6 +31,7 @@ private val log = logger<ProjectViewToWorkspaceContextConverter>()
  * Converts the new ProjectView to legacy WorkspaceContext for interfacing with the server layer.
  * This is a temporary bridge until the server layer can be updated to use the new ProjectView directly.
  */
+@ApiStatus.Internal
 object ProjectViewToWorkspaceContextConverter {
   fun convert(
     projectView: ProjectView,

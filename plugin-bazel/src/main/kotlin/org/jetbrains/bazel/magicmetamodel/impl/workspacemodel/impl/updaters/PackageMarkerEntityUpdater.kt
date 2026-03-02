@@ -19,7 +19,7 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.name
 
-class PackageMarkerEntityUpdater(
+internal class PackageMarkerEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   moduleEntities: List<Module>,
 ) : WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, PackageMarkerEntity> {

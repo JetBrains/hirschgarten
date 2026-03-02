@@ -8,7 +8,7 @@ import com.goide.util.GoExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
 
-open class GoDebuggableCommandLineState(
+internal open class GoDebuggableCommandLineState(
   val environment: ExecutionEnvironment,
   module: Module,
   configuration: GoApplicationConfiguration,

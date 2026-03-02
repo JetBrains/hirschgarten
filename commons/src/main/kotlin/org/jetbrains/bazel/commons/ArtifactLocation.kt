@@ -18,7 +18,7 @@ package org.jetbrains.bazel.commons
 import java.nio.file.Paths
 
 /** Represents a blaze-produced artifact.  */
-class ArtifactLocation
+internal class ArtifactLocation
   private constructor(
     val rootExecutionPathFragment: String,
     /**

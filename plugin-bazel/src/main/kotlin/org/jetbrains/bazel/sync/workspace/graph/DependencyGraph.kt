@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.sync.workspace.graph
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import java.util.PriorityQueue
 
+@ApiStatus.Internal
 class DependencyGraph(
   private val rootTargets: Set<Label> = emptySet(),
   private val idToTargetInfo: Map<Label, BspTargetInfo.TargetInfo> = emptyMap(),

@@ -6,16 +6,19 @@ import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.updateSettings.impl.UpdateChecker
 import com.intellij.openapi.updateSettings.impl.UpdateSettings
+import org.jetbrains.annotations.ApiStatus
 
+@ApiStatus.Internal
 const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
 
 @Suppress("UnstableApiUsage")
+@ApiStatus.Internal
 object BazelPluginUpdater {
   fun updatePlugins() {
     UpdateChecker.updateAndShowResult(null, UpdateSettings.getInstance())
   }
 
-  fun updatePluginsHost(newUpdateChannel: UpdateChannel) {
+  internal fun updatePluginsHost(newUpdateChannel: UpdateChannel) {
     val currentUpdateChannel = BazelApplicationSettingsService.getInstance().settings.updateChannel
     updatePluginHost(newUpdateChannel, currentUpdateChannel)
   }

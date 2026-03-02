@@ -22,6 +22,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.annotations.ApiStatus
 import java.util.SortedMap
 import javax.swing.Icon
 
@@ -32,7 +33,8 @@ import javax.swing.Icon
  * It can have an arbitrary amount of child nodes, forming a tree. Child nodes may be added and
  * queried with the appropriate methods.
  */
-class GoSyntheticLibraryElementNode(
+@ApiStatus.Internal
+class GoSyntheticLibraryElementNode internal constructor(
   project: Project,
   library: BazelGoExternalSyntheticLibrary,
   dirName: String,

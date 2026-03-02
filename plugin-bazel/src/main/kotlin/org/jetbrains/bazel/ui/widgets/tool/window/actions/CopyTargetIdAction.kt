@@ -12,7 +12,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.JComponent
 
-sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
+internal sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project ?: return
     getTargetInfo()?.copyIdToClipboard(project)

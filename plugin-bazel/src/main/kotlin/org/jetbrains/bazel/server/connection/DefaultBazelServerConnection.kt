@@ -28,7 +28,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import java.util.concurrent.atomic.AtomicReference
 
-class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
+internal class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
   private val workspaceRoot = project.rootDir.toNioPath()
   private val environmentCreator = EnvironmentCreator(workspaceRoot).also {
     it.create()

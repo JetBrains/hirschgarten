@@ -3,7 +3,7 @@ package org.jetbrains.bazel.server.diagnostics
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import kotlin.io.path.Path
 
-object IntelliJRunnerOutputParser : Parser {
+internal object IntelliJRunnerOutputParser : Parser {
 
   private val HeadlineRegex = Regex(
     """

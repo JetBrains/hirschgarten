@@ -14,7 +14,7 @@ import kotlin.io.path.getLastModifiedTime
  * @param updatedFiles provides a list of updated jar files, which will be used for constructing the class manifest
  * @param removedFiles keeps track of the list of removed jar files, this is used for writing unit test to check for correctness.
  */
-data class FilesDiff(
+internal data class FilesDiff(
   val newFileState: Map<Path, FileTime>,
   val updatedFiles: List<Path>,
   val removedFiles: Set<Path>,

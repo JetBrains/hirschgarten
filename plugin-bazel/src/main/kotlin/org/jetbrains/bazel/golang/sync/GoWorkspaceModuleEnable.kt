@@ -7,7 +7,7 @@ import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSy
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 import org.jetbrains.bsp.protocol.GoBuildTarget
 
-class GoWorkspaceModuleEnable : WorkspaceModuleProjectSyncHook.EnableWorkspaceModuleSyncHookExtension {
+internal class GoWorkspaceModuleEnable : WorkspaceModuleProjectSyncHook.EnableWorkspaceModuleSyncHookExtension {
   override suspend fun isEnabled(environment: ProjectSyncHook.ProjectSyncHookEnvironment): Boolean {
     val project = environment.project
     if (!project.isBazelProject) return false

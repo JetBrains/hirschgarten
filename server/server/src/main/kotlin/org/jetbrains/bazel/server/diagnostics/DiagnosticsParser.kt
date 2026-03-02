@@ -2,7 +2,7 @@ package org.jetbrains.bazel.server.diagnostics
 
 import org.jetbrains.bazel.label.Label
 
-interface DiagnosticsParser {
+internal interface DiagnosticsParser {
   fun parse(
     bazelOutputLines: List<String>,
     target: Label,
@@ -11,7 +11,7 @@ interface DiagnosticsParser {
   ): List<Diagnostic>
 }
 
-class DiagnosticsParserImpl : DiagnosticsParser {
+internal class DiagnosticsParserImpl : DiagnosticsParser {
   override fun parse(
     bazelOutputLines: List<String>,
     target: Label,

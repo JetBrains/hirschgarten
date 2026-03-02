@@ -21,7 +21,7 @@ import org.jetbrains.bazel.label.Label
  * A simple target batcher splitting based on the target strings. This will tend to split by
  * package, so it is better than random batching.
  */
-class LexicographicTargetBatcher : BuildBatchingService {
+internal class LexicographicTargetBatcher : BuildBatchingService {
   override fun calculateTargetBatches(
     targets: Set<Label>,
     excludes: Set<Label>,

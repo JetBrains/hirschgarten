@@ -20,7 +20,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 
 /** Contributes generic rules to [TargetKind].  */
-class GenericBazelRules : TargetKindProvider {
+internal class GenericBazelRules : TargetKindProvider {
   /** Generic bazel rule types.  */
   enum class RuleTypes(
     val ruleName: String,

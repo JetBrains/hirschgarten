@@ -8,10 +8,10 @@ import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsFileType
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 
-class BazelQueryFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelQueryLanguage) {
+internal class BazelQueryFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelQueryLanguage) {
   override fun getFileType(): FileType = BazelQueryFileType
 }
 
-class BazelQueryFlagsFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelQueryFlagsLanguage) {
+internal class BazelQueryFlagsFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelQueryFlagsLanguage) {
   override fun getFileType(): FileType = BazelQueryFlagsFileType
 }

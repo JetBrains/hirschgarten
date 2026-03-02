@@ -9,11 +9,11 @@ import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupE
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
 
-interface StarlarkLocalVariableElement : StarlarkElement {
+internal interface StarlarkLocalVariableElement : StarlarkElement {
   fun getNameNode(): ASTNode?
 }
 
-class StarlarkLocalVariableReference(element: StarlarkLocalVariableElement, soft: Boolean) :
+internal class StarlarkLocalVariableReference(element: StarlarkLocalVariableElement, soft: Boolean) :
   PsiReferenceBase<StarlarkLocalVariableElement>(element, TextRange(0, element.textLength), soft) {
   override fun resolve(): PsiElement? =
     myElement?.let {

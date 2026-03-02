@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.languages.bazelversion.psi
 
 import com.intellij.util.text.SemVer
+import org.jetbrains.annotations.ApiStatus
 
+@ApiStatus.Internal
 sealed interface BazelVersionLiteral {
   data class Forked(val fork: String, val version: BazelVersionLiteral) : BazelVersionLiteral
 
@@ -18,7 +20,7 @@ sealed interface BazelVersionLiteral {
   }
 }
 
-fun BazelVersionLiteral.toBazelVersionStringLiteral(): String =
+internal fun BazelVersionLiteral.toBazelVersionStringLiteral(): String =
   when (this) {
     is BazelVersionLiteral.Forked -> "$fork/${version.toBazelVersionStringLiteral()}"
     is BazelVersionLiteral.Latest -> if (offset == 0) "latest" else "latest-$offset"
@@ -29,7 +31,7 @@ fun BazelVersionLiteral.toBazelVersionStringLiteral(): String =
     is BazelVersionLiteral.Specific -> "$version"
   }
 
-fun BazelVersionLiteral.toSemVer(): SemVer? =
+internal fun BazelVersionLiteral.toSemVer(): SemVer? =
   when (this) {
     is BazelVersionLiteral.Forked -> this.version.toSemVer()
     is BazelVersionLiteral.Other -> SemVer.parseFromText(version)
@@ -37,6 +39,7 @@ fun BazelVersionLiteral.toSemVer(): SemVer? =
     else -> null
   }
 
+@ApiStatus.Internal
 fun BazelVersionLiteral.withNewVersionWhenPossible(newVersion: String): BazelVersionLiteral =
   when (this) {
     is BazelVersionLiteral.Forked -> BazelVersionLiteral.Forked(fork, version.withNewVersionWhenPossible(newVersion))
@@ -45,9 +48,10 @@ fun BazelVersionLiteral.withNewVersionWhenPossible(newVersion: String): BazelVer
     else -> this
   }
 
-val BAZEL_FORK_VERSION_REGEX = """(?:([^/]+)/)?(.+)""".toRegex()
-val BAZEL_VERSION_LATEST_REGEX = """latest(?:-(\d+))?""".toRegex()
+internal val BAZEL_FORK_VERSION_REGEX = """(?:([^/]+)/)?(.+)""".toRegex()
+internal val BAZEL_VERSION_LATEST_REGEX = """latest(?:-(\d+))?""".toRegex()
 
+@ApiStatus.Internal
 fun String.toBazelVersionLiteral(): BazelVersionLiteral? {
   val forkMatch = BAZEL_FORK_VERSION_REGEX.matchEntire(trim()) ?: return null
   val (fork, version) = forkMatch.destructured

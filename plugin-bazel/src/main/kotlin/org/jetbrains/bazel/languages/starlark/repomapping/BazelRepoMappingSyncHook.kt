@@ -8,6 +8,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.config.rootDir
@@ -18,33 +19,35 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 @TestOnly
+@ApiStatus.Internal
 fun Project.injectCanonicalRepoNameToPath(canonicalRepoNameToPath: Map<String, Path>) {
   val service = BazelRepoMappingService.getInstance(this)
   service.canonicalRepoNameToPath = canonicalRepoNameToPath
 }
 
 @TestOnly
+@ApiStatus.Internal
 fun Project.injectCanonicalRepoNameToApparentName(canonicalRepoNameToApparentName: Map<String, String>) {
   val service = BazelRepoMappingService.getInstance(this)
   service.canonicalRepoNameToApparentName = canonicalRepoNameToApparentName
 }
 
-val Project.apparentRepoNameToCanonicalName: Map<String, String>
+internal val Project.apparentRepoNameToCanonicalName: Map<String, String>
   get() =
     BazelRepoMappingService.getInstance(this).apparentRepoNameToCanonicalName.takeIf { it.isNotEmpty() }
       ?: mapOf("" to "")
 
-val Project.canonicalRepoNameToApparentName: Map<String, String>
+internal val Project.canonicalRepoNameToApparentName: Map<String, String>
   get() =
     BazelRepoMappingService.getInstance(this).canonicalRepoNameToApparentName.takeIf { it.isNotEmpty() }
       ?: mapOf("" to "")
 
-val Project.canonicalRepoNameToPath: Map<String, Path>
+internal val Project.canonicalRepoNameToPath: Map<String, Path>
   get() =
     BazelRepoMappingService.getInstance(this).canonicalRepoNameToPath.takeIf { it.isNotEmpty() }
       ?: mapOf("" to rootDir.toNioPath())
 
-class BazelRepoMappingSyncHook : ProjectSyncHook {
+internal class BazelRepoMappingSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Load bazel repo mapping") {
       val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
@@ -61,6 +64,7 @@ class BazelRepoMappingSyncHook : ProjectSyncHook {
 }
 
 @VisibleForTesting
+@ApiStatus.Internal
 data class BazelRepoMappingServiceState(
   var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap(),
   var canonicalRepoNameToPath: Map<String, String> = emptyMap(),
@@ -72,6 +76,7 @@ data class BazelRepoMappingServiceState(
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingServiceState> {
   @Volatile
   var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()

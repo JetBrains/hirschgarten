@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -21,6 +22,7 @@ import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
 
+@ApiStatus.Internal
 class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTarget>,
   fileToTargets: Map<Path, List<Label>>,
@@ -139,9 +141,10 @@ class ModuleDetailsToJavaModuleTransformer(
   }
 }
 
-fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
+internal fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
 
-fun String.projectNameToBaseJdkName(): String = "$this-jdk"
+internal fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 
+@ApiStatus.Internal
 fun String.projectNameToJdkName(javaHomeUri: Path): String =
   projectNameToBaseJdkName() + "-" + StringUtils.md5Hash(javaHomeUri.toString(), 5)

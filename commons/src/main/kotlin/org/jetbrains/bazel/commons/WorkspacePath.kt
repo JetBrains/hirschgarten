@@ -16,6 +16,7 @@
 package org.jetbrains.bazel.commons
 
 import com.intellij.openapi.util.SystemInfo
+import org.jetbrains.annotations.ApiStatus
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
@@ -29,6 +30,7 @@ import kotlin.io.path.Path
  * names.
  */
 @ConsistentCopyVisibility
+@ApiStatus.Internal
 data class WorkspacePath private constructor(private val path: Path) {
   /**
    * @param relativePath relative path that must use the Bazel specific separator char to separate

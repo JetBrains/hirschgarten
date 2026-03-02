@@ -7,7 +7,7 @@ import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 
-class StarlarkDebugConfigurationFactory(type: ConfigurationType) :
+internal class StarlarkDebugConfigurationFactory(type: ConfigurationType) :
   ConfigurationFactory(type),
   DumbAware {
   override fun createTemplateConfiguration(project: Project): RunConfiguration = StarlarkDebugConfiguration(project, this, "")

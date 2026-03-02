@@ -4,7 +4,7 @@ import com.intellij.lang.ASTNode
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewBaseElement
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewElementVisitor
 
-class ProjectViewPsiImportItem(node: ASTNode) : ProjectViewBaseElement(node) {
+internal class ProjectViewPsiImportItem(node: ASTNode) : ProjectViewBaseElement(node) {
   override fun acceptVisitor(visitor: ProjectViewElementVisitor) {
     visitor.visitImportItem(this)
   }

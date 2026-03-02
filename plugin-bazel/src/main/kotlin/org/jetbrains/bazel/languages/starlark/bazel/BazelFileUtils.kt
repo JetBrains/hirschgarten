@@ -11,7 +11,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
 private const val MAX_PATH_LENGTH = 25
 private const val MIN_SEGMENTS_NUMBER = 1
 
-object BazelFileUtils {
+internal object BazelFileUtils {
   fun getContainingDirectoryPresentablePath(project: Project, file: VirtualFile): String? {
     val buildFile = file.toNioPathOrNull() ?: return null
     val relativeDir = calculateLabel(project, buildFile)?.toApparentLabelOrThis(project) as? ResolvedLabel ?: return null

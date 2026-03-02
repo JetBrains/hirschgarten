@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunctionSymb
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryCommand
 
 @Suppress("UnstableApiUsage")
-class BazelQueryFunctionReference(val element: BazelQueryCommand) : PsiSymbolReference {
+internal class BazelQueryFunctionReference(val element: BazelQueryCommand) : PsiSymbolReference {
   val textRange = element.name?.textRangeInParent ?: element.textRange!!
 
   override fun getElement(): PsiElement = element

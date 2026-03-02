@@ -7,7 +7,7 @@ import java.io.StringWriter
 import java.nio.file.Path
 import java.util.Properties
 
-class TemplateWriter(private val resourcePath: Path) {
+internal class TemplateWriter(private val resourcePath: Path) {
   private val velocityEngine: VelocityEngine = VelocityEngine()
 
   init {

@@ -21,6 +21,7 @@ import com.goide.psi.impl.GoPackage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiDirectory
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sync.SyncCache
@@ -31,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
 /** Updates and exposes a map of import paths to files. */
+@ApiStatus.Internal
 class BazelGoPackageFactory : GoPackageFactory {
   override fun createPackage(goFile: GoFile): GoPackage? {
     if (!BazelFeatureFlags.isGoSupportEnabled) return null
@@ -46,7 +48,7 @@ class BazelGoPackageFactory : GoPackageFactory {
   override fun createPackage(packageName: String, vararg directories: PsiDirectory): GoPackage? = null
 
   companion object {
-    @JvmStatic
+    @ApiStatus.Internal
     val fileToImportPathMapComputable =
       SyncCache.SyncCacheComputable { project ->
         buildFileToImportPathMap(project)

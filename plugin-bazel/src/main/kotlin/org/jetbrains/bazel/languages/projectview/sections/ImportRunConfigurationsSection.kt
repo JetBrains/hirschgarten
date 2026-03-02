@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionProvider
 import java.nio.file.Path
 
-class ImportRunConfigurationsSection : ListSection<List<Path>>() {
+internal class ImportRunConfigurationsSection : ListSection<List<Path>>() {
   override val name = NAME
   override val sectionKey = KEY
   override val completionProvider = FiletypeCompletionProvider(".xml")

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -23,6 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
+@ApiStatus.Internal
 interface BazelExternalRulesetsQuery {
   /**
    * the list of returned ruleset names should be in the apparent form as they will be used in aspect files
@@ -30,7 +32,7 @@ interface BazelExternalRulesetsQuery {
   suspend fun fetchExternalRulesetNames(): List<String>
 }
 
-class BazelEnabledRulesetsQueryImpl(private val enabledRules: List<String>) : BazelExternalRulesetsQuery {
+internal class BazelEnabledRulesetsQueryImpl(private val enabledRules: List<String>) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> {
     val specifiedRules = enabledRules
     val neededTransitiveRules = specifiedRules.mapNotNull { rootRulesToNeededTransitiveRules[it] }.flatten()
@@ -39,7 +41,7 @@ class BazelEnabledRulesetsQueryImpl(private val enabledRules: List<String>) : Ba
   }
 }
 
-class BazelExternalRulesetsQueryImpl(
+internal class BazelExternalRulesetsQueryImpl(
   private val taskId: TaskId,
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
@@ -70,7 +72,7 @@ class BazelExternalRulesetsQueryImpl(
     }
 }
 
-class BazelWorkspaceExternalRulesetsQueryImpl(
+internal class BazelWorkspaceExternalRulesetsQueryImpl(
   private val taskId: TaskId,
   private val bazelRunner: BazelRunner,
   private val isWorkspaceEnabled: Boolean,
@@ -138,7 +140,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
   }
 }
 
-class BazelBzlModExternalRulesetsQueryImpl(
+internal class BazelBzlModExternalRulesetsQueryImpl(
   private val taskId: TaskId,
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
@@ -209,8 +211,10 @@ class BazelBzlModExternalRulesetsQueryImpl(
 
 private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderrLines.joinToString("\n")}"
 
+@ApiStatus.Internal
 data class BzlmodDependency(val key: String, val name: String, val apparentName: String, val dependencies: List<BzlmodDependency>)
 
+@ApiStatus.Internal
 data class BzlmodGraph(
   val name: String?,
   val dependencies: List<BzlmodDependency>,

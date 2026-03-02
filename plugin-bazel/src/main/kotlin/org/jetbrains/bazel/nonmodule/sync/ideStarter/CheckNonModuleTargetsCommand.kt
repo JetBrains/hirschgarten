@@ -6,7 +6,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetUtils
 
-class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
     val project = context.project
     val targetUtils = project.targetUtils

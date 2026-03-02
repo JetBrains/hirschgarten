@@ -46,7 +46,7 @@ import java.util.jar.JarFile
 import kotlin.io.path.createTempDirectory
 
 /** Manages hotswapping for bazel java_binary run configurations.  */
-object BazelHotSwapManager {
+internal object BazelHotSwapManager {
   private val logger = Logger.getInstance(BazelHotSwapManager::class.java)
 
   fun reloadChangedClasses(project: Project) {

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.kotlin.sync
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater
@@ -23,6 +24,7 @@ import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import java.nio.file.Path
 
+@ApiStatus.Internal
 class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
   override fun addEntity(
     diff: MutableEntityStorage,

@@ -7,7 +7,7 @@ import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.state.GenericTestState
 
-class GenericBazelTestHandler : BazelRunHandler {
+internal class GenericBazelTestHandler : BazelRunHandler {
   override val state: GenericTestState = GenericTestState()
 
   override val name: String

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bsp.protocol.SourceItem
@@ -17,6 +18,7 @@ import kotlin.io.path.extension
 //
 // it is not perfect but still better than randomly accessing thousands of files
 //
+@ApiStatus.Internal
 class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver) {
 
   fun inferPackages(sources: List<SourceItem>) {
@@ -46,7 +48,7 @@ class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver) {
   }
 }
 
-class SourceItemPropagationPrefixTree {
+internal class SourceItemPropagationPrefixTree {
   private data class Node(
     val segment: String,
     var item: SourceItem?,

@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetUtils
@@ -18,7 +18,6 @@ private class BazelRunLineMarkerInfo(text: String, actions: List<AnAction>) :
   override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = true
 }
 
-@PublicApi
 abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? =
     // gutter icons are only allowed to be added to leaf elements

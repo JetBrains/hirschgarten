@@ -8,7 +8,7 @@ import com.intellij.util.ThreeState
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkIntegerLiteralExpression
 
-class StarlarkCompletionConfidence : CompletionConfidence() {
+internal class StarlarkCompletionConfidence : CompletionConfidence() {
   override fun shouldSkipAutopopup(
     editor: Editor,
     contextElement: PsiElement,
