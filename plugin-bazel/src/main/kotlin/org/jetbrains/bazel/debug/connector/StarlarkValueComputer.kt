@@ -3,7 +3,7 @@ package org.jetbrains.bazel.debug.connector
 import java.util.concurrent.CompletableFuture
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
-class StarlarkValueComputer(private val messenger: StarlarkDebugMessenger) {
+internal class StarlarkValueComputer(private val messenger: StarlarkDebugMessenger) {
   /**
    * Computes the frames for the execution stack of a thread.
    *

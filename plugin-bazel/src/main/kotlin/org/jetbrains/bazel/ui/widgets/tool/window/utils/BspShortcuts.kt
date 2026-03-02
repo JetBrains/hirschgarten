@@ -9,7 +9,7 @@ import javax.swing.KeyStroke
  * Custom keyboard shortcuts for BSP plugin's UI.
  * If a shortcut is present in [com.intellij.openapi.actionSystem.CommonShortcuts], it does not have to be defined here
  */
-object BspShortcuts {
+internal object BspShortcuts {
   /** Toggle case-sensitivity in target search */
   val matchCase = CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK))
 

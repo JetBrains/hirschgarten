@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 private const val TRIPLE_QUOTE = "\"\"\""
 private const val TRIPLE_APOSTROPHE = "\'\'\'"
 
-class StarlarkStringAnnotator : Annotator {
+internal class StarlarkStringAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element is StarlarkStringLiteralExpression) {
       element.firstChild.text.annotateUnterminated(element, holder)

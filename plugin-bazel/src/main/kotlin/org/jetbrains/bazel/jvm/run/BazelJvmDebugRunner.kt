@@ -23,7 +23,7 @@ import org.jdom.Element
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import java.util.concurrent.atomic.AtomicReference
 
-class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
+internal class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
   override fun getRunnerId(): String = "BazelJvmDebugRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -63,7 +63,7 @@ class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
   }
 }
 
-class BazelDebugRunnerSetting : RunnerSettings {
+internal class BazelDebugRunnerSetting : RunnerSettings {
   override fun readExternal(element: Element?) {
     // empty settings, don't do anything
   }

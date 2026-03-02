@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Deferred
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 
-class BazelTestProcessHandler(
+internal class BazelTestProcessHandler(
   private val project: Project,
   runDeferred: Deferred<*>,
   pidDeferred: Deferred<Long?>? = null,

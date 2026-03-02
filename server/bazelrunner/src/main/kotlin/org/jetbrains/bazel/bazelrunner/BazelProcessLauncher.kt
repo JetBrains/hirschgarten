@@ -1,15 +1,17 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import java.nio.file.Path
 
+@ApiStatus.Internal
 interface BazelProcessLauncher {
   fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process
 }
 
-interface BazelProcessLauncherProvider {
+internal interface BazelProcessLauncherProvider {
   fun createBazelProcessLauncher(
     workspaceRoot: Path,
     bspInfo: BspInfo,

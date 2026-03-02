@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 
-abstract class FlagListSection(private vararg val commands: String) : ListSection<List<String>>() {
+internal abstract class FlagListSection(private vararg val commands: String) : ListSection<List<String>>() {
   final override val completionProvider = FlagCompletionProvider(*commands)
 
   final override fun fromRawValues(rawValues: List<String>): List<String> = rawValues

@@ -5,7 +5,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 
-data class Library(
+internal data class Library(
   val label: Label,
   val outputs: Set<Path>,
   val sources: Set<Path>,

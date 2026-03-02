@@ -19,8 +19,7 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants.SE_LABEL_PROVIDER_ID
 import org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor.LabelWithPreview
 
-@ApiStatus.Internal
-class SeLabelItem(
+internal class SeLabelItem(
   val legacyItem: LabelWithPreview,
   private val weight: Int,
   val extendedInfo: SeExtendedInfo?,
@@ -37,8 +36,7 @@ class SeLabelItem(
       .build()
 }
 
-@ApiStatus.Internal
-class SeLabelProvider(private val contributorWrapper: SeAsyncContributorWrapper<Any>) : SeItemsProvider {
+internal class SeLabelProvider(private val contributorWrapper: SeAsyncContributorWrapper<Any>) : SeItemsProvider {
   private val contributor = contributorWrapper.contributor
   override val id: String get() = SE_LABEL_PROVIDER_ID
   override val displayName: String

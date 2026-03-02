@@ -8,7 +8,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.protocol.ProtobufBuildTarget
 import kotlin.io.path.absolutePathString
 
-class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : LanguagePlugin<ProtobufBuildTarget> {
+internal class ProtobufLanguagePlugin(private val javaPlugin: JavaLanguagePlugin) : LanguagePlugin<ProtobufBuildTarget> {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PROTOBUF)
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): ProtobufBuildTarget? {

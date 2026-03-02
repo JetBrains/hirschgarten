@@ -15,9 +15,11 @@
  */
 package org.jetbrains.bazel.commons
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 
 /** Validates package paths in blaze labels / target expressions.  */
+@ApiStatus.Internal
 object PackagePathValidator {
   /** Matches characters allowed in package name.  */
   private val ALLOWED_CHARACTERS_IN_PACKAGE_NAME: com.google.common.base.CharMatcher =

@@ -10,7 +10,7 @@ import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.state.HasProgramArguments
 
-abstract class PythonBazelHandler<T> : BazelRunHandler
+internal abstract class PythonBazelHandler<T> : BazelRunHandler
   where T : BazelRunConfigurationState<T>,
         T : HasProgramArguments {
   abstract override val state: T

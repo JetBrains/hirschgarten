@@ -6,11 +6,13 @@ import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider
 import com.intellij.xdebugger.frame.XSuspendContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.debug.connector.StarlarkDebugMessenger
 import org.jetbrains.bazel.debug.connector.StarlarkSocketConnector
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
 @Suppress("TooManyFunctions")
+@ApiStatus.Internal
 class StarlarkDebugProcess(
   connector: StarlarkSocketConnector,
   session: XDebugSession,

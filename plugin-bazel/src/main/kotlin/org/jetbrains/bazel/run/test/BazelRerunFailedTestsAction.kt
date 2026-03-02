@@ -10,7 +10,7 @@ import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 
-class BazelRerunFailedTestsAction(
+internal class BazelRerunFailedTestsAction(
   consoleView: BaseTestsOutputConsoleView,
 ) : AbstractRerunFailedTestsAction(consoleView.console) {
   init {
@@ -38,6 +38,6 @@ class BazelRerunFailedTestsAction(
   }
 }
 
-fun List<AbstractTestProxy>.getTestIds(): List<String> =
+internal fun List<AbstractTestProxy>.getTestIds(): List<String> =
   filter { it.metainfo == "test" }
   .mapNotNull { it.getUserData(SMTestProxy.NODE_ID) }

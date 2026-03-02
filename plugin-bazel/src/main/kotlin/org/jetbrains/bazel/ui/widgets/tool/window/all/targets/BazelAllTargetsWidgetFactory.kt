@@ -97,7 +97,7 @@ private class BazelAllTargetsWidgetFactory :
   }
 }
 
-suspend fun showBspToolWindow(project: Project) {
+internal suspend fun showBspToolWindow(project: Project) {
   val toolWindow = project.serviceAsync<ToolWindowManager>().getToolWindow(BazelPluginConstants.BAZEL_TOOLWINDOW_ID) ?: return
   withContext(Dispatchers.EDT) {
     toolWindow.show()
@@ -107,7 +107,7 @@ suspend fun showBspToolWindow(project: Project) {
 /**
  * Normally not needed, unless we link a Bazel project after [ToolWindowFactory.shouldBeAvailable] was called.
  */
-suspend fun registerBazelToolWindow(project: Project) {
+internal suspend fun registerBazelToolWindow(project: Project) {
   val toolWindowManager = project.serviceAsync<ToolWindowManager>()
   val currentToolWindow = toolWindowManager.getToolWindow(bazelToolWindowId)
   if (currentToolWindow == null) {

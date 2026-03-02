@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 
 @Service(Service.Level.PROJECT)
-class BazelWorkspace(val project: Project) : Disposable {
+internal class BazelWorkspace(val project: Project) : Disposable {
   private var initialized = false
 
   @Synchronized
@@ -41,7 +41,7 @@ class BazelWorkspace(val project: Project) : Disposable {
   override fun dispose() {}
 }
 
-class BspExternalServicesSubscriber(private val project: Project) {
+internal class BspExternalServicesSubscriber(private val project: Project) {
   fun subscribe() {
     subscribeForConfigChanges()
     subscribeForBranchChanges()

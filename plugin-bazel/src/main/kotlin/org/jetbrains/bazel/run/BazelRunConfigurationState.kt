@@ -11,7 +11,7 @@ import com.intellij.util.xmlb.annotations.XCollection
 import org.jdom.Element
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
-abstract class BazelRunConfigurationState<T : BazelRunConfigurationState<T>> :
+internal abstract class BazelRunConfigurationState<T : BazelRunConfigurationState<T>> :
   BaseState(),
   FragmentedSettings {
   /** Loads this handler's state from the external data.  */

@@ -7,7 +7,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 
 private const val INTELLIJ_PLUGIN_TAG = "intellij-plugin"
 
-class IntellijPluginRunHandlerProvider : RunHandlerProvider {
+internal class IntellijPluginRunHandlerProvider : RunHandlerProvider {
   override val id: String
     get() = "IntellijPluginRunHandlerProvider"
 

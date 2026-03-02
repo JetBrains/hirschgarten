@@ -3,7 +3,7 @@ package org.jetbrains.bazel.runnerAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.BuildTarget
 
-open class RunTargetAction(
+internal open class RunTargetAction(
   project: Project,
   targetInfo: BuildTarget,
   isDebugAction: Boolean = false,

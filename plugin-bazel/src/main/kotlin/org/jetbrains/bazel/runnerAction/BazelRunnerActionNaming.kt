@@ -5,7 +5,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 
-object BazelRunnerActionNaming {
+internal object BazelRunnerActionNaming {
 
   @JvmStatic
   fun getRunActionName(

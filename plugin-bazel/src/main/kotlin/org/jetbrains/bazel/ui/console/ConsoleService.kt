@@ -11,7 +11,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bsp.protocol.TaskId
 
 @Service(Service.Level.PROJECT)
-class ConsoleService(project: Project) {
+internal class ConsoleService(project: Project) {
   val buildConsole: TaskConsole
 
   val syncConsole: TaskConsole
@@ -41,10 +41,10 @@ class ConsoleService(project: Project) {
   }
 }
 
-val Project.syncConsole: TaskConsole
+internal val Project.syncConsole: TaskConsole
   get() = ConsoleService.getInstance(this).syncConsole
 
-suspend fun <T> TaskConsole.withSubtask(
+internal suspend fun <T> TaskConsole.withSubtask(
   subtaskId: TaskId,
   message: String,
   block: suspend (subtaskId: TaskId) -> T,
@@ -60,7 +60,7 @@ suspend fun <T> TaskConsole.withSubtask(
   }
 }
 
-suspend fun <T> Project.withSubtask(
+internal suspend fun <T> Project.withSubtask(
   reporter: SequentialProgressReporter,
   subtaskId: TaskId,
   text: String,

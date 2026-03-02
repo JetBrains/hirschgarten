@@ -5,7 +5,7 @@ import com.google.common.base.Splitter
 /**
  * Support for resolving globs.
  */
-object GlobPatternValidator {
+internal object GlobPatternValidator {
   /**
    * Validate a single glob pattern. If it's invalid, returns an error message. Otherwise, returns
    * null.

@@ -3,7 +3,7 @@ package org.jetbrains.bazel.server.diagnostics
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import kotlin.io.path.Path
 
-object CompilerDiagnosticParser : Parser {
+internal object CompilerDiagnosticParser : Parser {
   override fun tryParse(output: Output): List<Diagnostic> = listOfNotNull(tryParseOne(output))
 
   // Example:

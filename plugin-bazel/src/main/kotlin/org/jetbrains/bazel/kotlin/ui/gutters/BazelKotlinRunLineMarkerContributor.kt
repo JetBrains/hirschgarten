@@ -2,6 +2,7 @@ package org.jetbrains.bazel.kotlin.ui.gutters
 
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiParameter
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.kotlin.asJava.LightClassUtil
 import org.jetbrains.kotlin.idea.base.psi.KotlinPsiHeuristics
@@ -9,6 +10,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 
+@ApiStatus.Internal
 class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
   override fun PsiNameIdentifierOwner.getClassName(): String? = this.getNonStrictParentOfType<KtClassOrObject>()?.name
 

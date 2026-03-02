@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 
-class StarlarkNamedArgumentReference(element: StarlarkNamedArgumentExpression, range: TextRange) :
+internal class StarlarkNamedArgumentReference(element: StarlarkNamedArgumentExpression, range: TextRange) :
   StarlarkArgumentReference(element, range) {
   override fun resolve(): PsiElement? {
     val argumentName = element.name ?: return null

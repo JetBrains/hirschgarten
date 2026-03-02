@@ -1,16 +1,20 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionProvider
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
 import org.jetbrains.bazel.languages.projectview.sections.presets.ExcludableListSection
 import java.nio.file.Path
 
+@ApiStatus.Internal
 class DirectoriesSection : ExcludableListSection<Path>() {
   override val name = NAME
   override val default = emptyList<ExcludableValue<Path>>()
   override val sectionKey = KEY
-  override val completionProvider = DirectoriesCompletionProvider()
+  override val completionProvider: CompletionProvider<CompletionParameters> = DirectoriesCompletionProvider()
   override val doc =
     "A list of directories to include in your project. All files in the given " +
       "directories will be indexed (allowing you to search for them) and listed in the " +

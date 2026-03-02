@@ -9,7 +9,7 @@ import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.run.test.setTestFilter
 import org.jetbrains.bsp.protocol.BuildTarget
 
-class TestTargetAction(
+internal class TestTargetAction(
   project: Project,
   targetInfos: List<BuildTarget>,
   text: ((isRunConfigName: Boolean) -> String)? = null,

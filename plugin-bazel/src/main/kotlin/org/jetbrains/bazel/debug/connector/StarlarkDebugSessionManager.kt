@@ -12,6 +12,7 @@ import com.intellij.xdebugger.XDebugProcessStarter
 import com.intellij.xdebugger.XDebugSession
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -26,8 +27,9 @@ import java.util.concurrent.CancellationException
  * All debug elements which require disposal should have this class registered as their disposable parent.
  * Must be disposed after use.
  */
+@ApiStatus.Internal
 class StarlarkDebugSessionManager(private val project: Project) : Disposable {
-  val taskListener: StarlarkDebugTaskListener
+  internal val taskListener: StarlarkDebugTaskListener
 
   private val console: ConsoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 

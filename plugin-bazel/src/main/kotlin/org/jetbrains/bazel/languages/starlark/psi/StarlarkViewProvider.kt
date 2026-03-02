@@ -7,7 +7,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.SingleRootFileViewProvider
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 
-class StarlarkViewProvider(
+internal class StarlarkViewProvider(
   manager: PsiManager,
   virtualFile: VirtualFile,
   eventSystemEnabled: Boolean,
@@ -19,7 +19,7 @@ class StarlarkViewProvider(
   override fun createCopy(copy: VirtualFile): SingleRootFileViewProvider = StarlarkViewProvider(manager, copy, false, baseLanguage)
 }
 
-class StarlarkViewProviderFactory : FileViewProviderFactory {
+internal class StarlarkViewProviderFactory : FileViewProviderFactory {
   override fun createFileViewProvider(
     file: VirtualFile,
     language: Language,

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import org.apache.velocity.app.VelocityEngine
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -9,6 +10,7 @@ import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import java.util.Properties
 
+@ApiStatus.Internal
 enum class Language(
   private val fileName: String,
   val rulesetNames: List<String>,
@@ -80,6 +82,7 @@ enum class Language(
   fun toAspectTemplateRelativePath(): String = toAspectRelativePath() + Constants.TEMPLATE_EXTENSION
 }
 
+@ApiStatus.Internal
 class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspectsResolver) {
   private val aspectsPath = internalAspectsResolver.aspectsPath
   private val velocityEngine = VelocityEngine()

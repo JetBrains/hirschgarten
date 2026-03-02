@@ -9,7 +9,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import java.nio.file.Files
 
-class ShowBazelLogAction : DumbAwareAction() {
+internal class ShowBazelLogAction : DumbAwareAction() {
   override fun actionPerformed(e: AnActionEvent) {
     val logFile = BazelLog.logPath
     if (Files.exists(logFile)) {

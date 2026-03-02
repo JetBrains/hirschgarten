@@ -4,11 +4,13 @@ import com.intellij.lang.jvm.util.JvmClassUtil
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.synthetic.MainClassSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 
+@ApiStatus.Internal
 class JavaSyntheticRunTargetTemplateGenerator : MainClassSyntheticRunTargetTemplateGenerator() {
   override fun isSupported(target: BuildTarget): Boolean = extractJvmBuildTarget(target) != null
 

@@ -28,7 +28,7 @@ import org.jetbrains.bsp.protocol.TaskGroupId
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
-abstract class LocalJvmRunnerAction(
+internal abstract class LocalJvmRunnerAction(
   protected val targetInfo: BuildTarget,
   text: () -> String,
   icon: Icon? = null,
@@ -144,7 +144,7 @@ abstract class LocalJvmRunnerAction(
 
 private const val RETRIEVE_JVM_ENVIRONMENT_ID = "bsp-retrieve-jvm-environment"
 
-class BspJvmApplicationConfiguration(name: String, project: Project) :
+internal class BspJvmApplicationConfiguration(name: String, project: Project) :
   ApplicationConfiguration(name, project),
   HotswappableRunConfiguration {
   override fun getAffectedTargets(): List<Label> = getUserData(LocalJvmRunnerAction.targetsToPreBuild)?.take(1) ?: listOf()

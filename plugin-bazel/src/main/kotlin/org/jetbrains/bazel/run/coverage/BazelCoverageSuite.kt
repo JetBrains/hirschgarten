@@ -13,7 +13,7 @@ import com.intellij.rt.coverage.data.LineData
 import com.intellij.rt.coverage.data.ProjectData
 import org.jetbrains.bazel.config.rootDir
 
-class BazelCoverageSuite : BaseCoverageSuite {
+internal class BazelCoverageSuite : BaseCoverageSuite {
   var rootDirectory: VirtualFile? = null
     private set
 

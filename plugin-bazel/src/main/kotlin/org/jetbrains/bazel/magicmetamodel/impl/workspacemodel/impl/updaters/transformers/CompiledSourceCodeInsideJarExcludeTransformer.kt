@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.openapi.vfs.JarFileSystem
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -8,6 +9,7 @@ import java.util.Locale
 import kotlin.io.path.invariantSeparatorsPathString
 
 // https://youtrack.jetbrains.com/issue/BAZEL-1672
+@ApiStatus.Internal
 class CompiledSourceCodeInsideJarExcludeTransformer {
   fun transform(moduleDetails: Collection<ModuleDetails>, libraryItems: List<LibraryItem>): CompiledSourceCodeInsideJarExclude =
     CompiledSourceCodeInsideJarExclude(

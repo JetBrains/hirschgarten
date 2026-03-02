@@ -2,23 +2,26 @@ package org.jetbrains.bazel.utils
 
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.annotations.ApiStatus
 import java.nio.file.Path
 
+@ApiStatus.Internal
 fun Path.allAncestorsSequence(): Sequence<Path> = generateSequence(this) { it.parent }
 
-fun List<String>.allAncestorsSequence(): Sequence<List<String>> = generateSequence(this) { if (it.isEmpty()) null else it.dropLast(1) }
+internal fun List<String>.allAncestorsSequence(): Sequence<List<String>> = generateSequence(this) { if (it.isEmpty()) null else it.dropLast(1) }
 
 /**
  * See [com.intellij.openapi.vfs.VfsUtilCore.isUnder]
  */
-fun Path.isUnder(ancestors: Set<Path>): Boolean = this.allAncestorsSequence().any { it in ancestors }
+internal fun Path.isUnder(ancestors: Set<Path>): Boolean = this.allAncestorsSequence().any { it in ancestors }
 
-fun List<String>.isUnder(ancestors: Set<List<String>>): Boolean = this.allAncestorsSequence().any { it in ancestors }
+internal fun List<String>.isUnder(ancestors: Set<List<String>>): Boolean = this.allAncestorsSequence().any { it in ancestors }
 
 /**
  * See [com.intellij.openapi.vfs.VfsUtilCore.getCommonAncestor].
  * Input paths must be absolute and normalized.
  */
+@ApiStatus.Internal
 fun calculateCommonAncestor(file1: Path, file2: Path): Path? {
   if (file1 == file2) return file1
 
@@ -45,6 +48,7 @@ fun calculateCommonAncestor(file1: Path, file2: Path): Path? {
 /**
  * Input paths must be absolute and normalized.
  */
+@ApiStatus.Internal
 fun Collection<Path>.commonAncestor(): Path? {
   if (isEmpty()) return null
   var result: Path = first()
@@ -54,15 +58,16 @@ fun Collection<Path>.commonAncestor(): Path? {
   return result
 }
 
+@ApiStatus.Internal
 fun Set<Path>.filterPathsThatDontContainEachOther(): List<Path> = filter { path -> !path.parent.isUnder(this) }
 
 // Can't be named the same because of platform declaration clash
-fun Set<List<String>>.filterPathsThatDontContainEachOther2(): List<List<String>> = filter { path -> !path.dropLast(1).isUnder(this) }
+internal fun Set<List<String>>.filterPathsThatDontContainEachOther2(): List<List<String>> = filter { path -> !path.dropLast(1).isUnder(this) }
 
-fun Path.refreshAndFindVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(this)
+internal fun Path.refreshAndFindVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(this)
 
-fun Path.findVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
+internal fun Path.findVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
 
-fun Path.findCanonicalVirtualFileThatExists(): VirtualFile? = findVirtualFile()
+internal fun Path.findCanonicalVirtualFileThatExists(): VirtualFile? = findVirtualFile()
   ?.canonicalFile
   ?.takeIf(VirtualFile::exists)

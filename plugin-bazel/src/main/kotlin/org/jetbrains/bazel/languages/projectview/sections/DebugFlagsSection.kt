@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.sections
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.FlagListSection
 
-class DebugFlagsSection : FlagListSection(COMMAND_RUN, COMMAND_TEST) {
+internal class DebugFlagsSection : FlagListSection(COMMAND_RUN, COMMAND_TEST) {
   override val name = NAME
   override val default = emptyList<String>()
   override val sectionKey = KEY

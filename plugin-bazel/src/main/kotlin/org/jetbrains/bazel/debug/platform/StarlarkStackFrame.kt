@@ -12,7 +12,7 @@ import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import kotlin.io.path.Path
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
-class StarlarkStackFrame(
+internal class StarlarkStackFrame(
   private val frame: SDP.Frame,
   val threadId: Long,
   private val valueComputer: StarlarkValueComputer,

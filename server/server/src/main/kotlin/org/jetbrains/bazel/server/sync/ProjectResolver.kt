@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
@@ -36,7 +37,7 @@ import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-class IllegalTargetsSizeException(message: String) : Exception(message)
+internal class IllegalTargetsSizeException(message: String) : Exception(message)
 
 private fun TargetCollection.halve(): List<TargetCollection> {
   if (values.size <= 1) {
@@ -50,7 +51,8 @@ private fun TargetCollection.halve(): List<TargetCollection> {
 }
 
 /** Responsible for querying bazel and constructing Project instance  */
-class ProjectResolver(
+@ApiStatus.Internal
+class ProjectResolver internal constructor(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
@@ -63,7 +65,7 @@ class ProjectResolver(
 ) {
   private suspend fun <T> measured(description: String, f: suspend () -> T): T = bspTracer.spanBuilder(description).useWithScope { f() }
 
-  suspend fun resolve(
+  internal suspend fun resolve(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
     phasedSyncProject: PhasedSyncProject?,
@@ -357,7 +359,7 @@ class ProjectResolver(
     }
   }
 
-  suspend fun extractAspectOutputPaths(buildAspectResult: BazelBspAspectsManagerResult): Set<Path> =
+  internal suspend fun extractAspectOutputPaths(buildAspectResult: BazelBspAspectsManagerResult): Set<Path> =
     measured(
       "Reading aspect output paths",
     ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }

@@ -5,7 +5,7 @@ import com.intellij.xdebugger.frame.XStackFrame
 import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
-class StarlarkExecutionStack(
+internal class StarlarkExecutionStack(
   private val thread: SDP.PausedThread,
   private val valueComputer: StarlarkValueComputer,
   private val evaluatorProvider: StarlarkDebuggerEvaluator.Provider,

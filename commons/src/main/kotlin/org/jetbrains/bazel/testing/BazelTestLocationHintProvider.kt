@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.testing
 
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
 object BazelTestLocationHintProvider {
   const val TEST_CASE_PROTOCOL: String = "java:test"
   const val TEST_SUITE_PROTOCOL: String = "java:suite"

@@ -13,7 +13,7 @@ import kotlin.random.Random
 /**
  * Parses the nice-looking test execution tree Junit5 produces
  */
-class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientTestNotifier) {
+internal class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientTestNotifier) {
   fun processTestOutput(parentId: TaskId, output: String) {
     val tree = generateTestResultTree(output, parentId)
     notifyClient(tree)

@@ -9,7 +9,7 @@ import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeoutException
 
-class BspTaskStatusLogger(
+internal class BspTaskStatusLogger(
   private val taskDeferred: Deferred<BazelStatus>,
   private val bspBuildConsole: TaskConsole,
   private val taskId: TaskId,

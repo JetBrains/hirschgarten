@@ -1,0 +1,132 @@
+a:org.jetbrains.bazel.commons.ExcludableValue
+- sf:Companion:org.jetbrains.bazel.commons.ExcludableValue$Companion
+- a:getValue():java.lang.Object
+- f:isExcluded():Z
+- f:isIncluded():Z
+f:org.jetbrains.bazel.commons.ExcludableValue$Companion
+- f:excluded(java.lang.Object):org.jetbrains.bazel.commons.ExcludableValue
+- f:included(java.lang.Object):org.jetbrains.bazel.commons.ExcludableValue
+f:org.jetbrains.bazel.commons.ExcludableValue$Excluded
+- org.jetbrains.bazel.commons.ExcludableValue
+- <init>(java.lang.Object):V
+- f:component1():java.lang.Object
+- f:copy(java.lang.Object):org.jetbrains.bazel.commons.ExcludableValue$Excluded
+- bs:copy$default(org.jetbrains.bazel.commons.ExcludableValue$Excluded,java.lang.Object,I,java.lang.Object):org.jetbrains.bazel.commons.ExcludableValue$Excluded
+- equals(java.lang.Object):Z
+- getValue():java.lang.Object
+- hashCode():I
+f:org.jetbrains.bazel.commons.ExcludableValue$Included
+- org.jetbrains.bazel.commons.ExcludableValue
+- <init>(java.lang.Object):V
+- f:component1():java.lang.Object
+- f:copy(java.lang.Object):org.jetbrains.bazel.commons.ExcludableValue$Included
+- bs:copy$default(org.jetbrains.bazel.commons.ExcludableValue$Included,java.lang.Object,I,java.lang.Object):org.jetbrains.bazel.commons.ExcludableValue$Included
+- equals(java.lang.Object):Z
+- getValue():java.lang.Object
+- hashCode():I
+org.jetbrains.bazel.label.Label
+- java.lang.Comparable
+- sf:Companion:org.jetbrains.bazel.label.Label$Companion
+- compareTo(org.jetbrains.bazel.label.Label):I
+- a:getPackagePath():org.jetbrains.bazel.label.PackageType
+- a:getTarget():org.jetbrains.bazel.label.TargetType
+- getTargetName():java.lang.String
+- isApparent():Z
+- isMainWorkspace():Z
+- isRecursive():Z
+- isRelative():Z
+- isSynthetic():Z
+- isWildcard():Z
+f:org.jetbrains.bazel.label.Label$Companion
+- f:parse(java.lang.String):org.jetbrains.bazel.label.Label
+- f:parseOrNull(java.lang.String):org.jetbrains.bazel.label.Label
+org.jetbrains.bazel.label.PackageType
+- a:getPathSegments():java.util.List
+org.jetbrains.bazel.label.RepoType
+- a:getRepoName():java.lang.String
+f:org.jetbrains.bazel.label.ResolvedLabel
+- org.jetbrains.bazel.label.Label
+- <init>(org.jetbrains.bazel.label.RepoType,org.jetbrains.bazel.label.PackageType,org.jetbrains.bazel.label.TargetType):V
+- f:component1():org.jetbrains.bazel.label.RepoType
+- f:component2():org.jetbrains.bazel.label.PackageType
+- f:component3():org.jetbrains.bazel.label.TargetType
+- f:copy(org.jetbrains.bazel.label.RepoType,org.jetbrains.bazel.label.PackageType,org.jetbrains.bazel.label.TargetType):org.jetbrains.bazel.label.ResolvedLabel
+- bs:copy$default(org.jetbrains.bazel.label.ResolvedLabel,org.jetbrains.bazel.label.RepoType,org.jetbrains.bazel.label.PackageType,org.jetbrains.bazel.label.TargetType,I,java.lang.Object):org.jetbrains.bazel.label.ResolvedLabel
+- equals(java.lang.Object):Z
+- getPackagePath():org.jetbrains.bazel.label.PackageType
+- f:getRepo():org.jetbrains.bazel.label.RepoType
+- f:getRepoName():java.lang.String
+- getTarget():org.jetbrains.bazel.label.TargetType
+- hashCode():I
+f:org.jetbrains.bazel.label.SingleTarget
+- org.jetbrains.bazel.label.TargetType
+- <init>(java.lang.String):V
+- f:component1():java.lang.String
+- f:copy(java.lang.String):org.jetbrains.bazel.label.SingleTarget
+- bs:copy$default(org.jetbrains.bazel.label.SingleTarget,java.lang.String,I,java.lang.Object):org.jetbrains.bazel.label.SingleTarget
+- equals(java.lang.Object):Z
+- f:getTargetName():java.lang.String
+- hashCode():I
+org.jetbrains.bazel.label.TargetType
+f:org.jetbrains.bazel.settings.bazel.BazelProjectSettings
+- f:component1():com.intellij.openapi.vfs.VirtualFile
+- f:component3():Z
+- f:component4():Z
+- f:component5():Z
+- f:copy(com.intellij.openapi.vfs.VirtualFile,java.nio.file.Path,Z,Z,Z):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
+- bs:copy$default(org.jetbrains.bazel.settings.bazel.BazelProjectSettings,com.intellij.openapi.vfs.VirtualFile,java.nio.file.Path,Z,Z,Z,I,java.lang.Object):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
+- equals(java.lang.Object):Z
+- f:getProjectViewPath():com.intellij.openapi.vfs.VirtualFile
+- hashCode():I
+f:org.jetbrains.bazel.settings.bazel.BazelProjectSettingsKt
+- sf:getBazelProjectSettings(com.intellij.openapi.project.Project):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
+f:org.jetbrains.bazel.workspacecontext.WorkspaceContext
+- <init>(java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,java.util.List,Z,Z,java.util.List,Z):V
+- f:component1():java.util.List
+- f:component10():java.nio.file.Path
+- f:component11():Z
+- f:component12():I
+- f:component13():java.lang.String
+- f:component14():java.util.List
+- f:component15():org.jetbrains.bazel.label.Label
+- f:component16():Z
+- f:component17():java.util.List
+- f:component18():Z
+- f:component19():Z
+- f:component2():java.util.List
+- f:component20():java.util.List
+- f:component21():Z
+- f:component3():java.util.List
+- f:component4():java.util.List
+- f:component5():java.util.List
+- f:component6():java.nio.file.Path
+- f:component7():Z
+- f:component8():I
+- f:component9():java.util.List
+- f:copy(java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,java.util.List,Z,Z,java.util.List,Z):org.jetbrains.bazel.workspacecontext.WorkspaceContext
+- bs:copy$default(org.jetbrains.bazel.workspacecontext.WorkspaceContext,java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,java.util.List,Z,Z,java.util.List,Z,I,java.lang.Object):org.jetbrains.bazel.workspacecontext.WorkspaceContext
+- equals(java.lang.Object):Z
+- f:getAllowManualTargetsSync():Z
+- f:getBazelBinary():java.nio.file.Path
+- f:getBuildFlags():java.util.List
+- f:getDebugFlags():java.util.List
+- f:getDeriveInstrumentationFilterFromTargets():Z
+- f:getDirectories():java.util.List
+- f:getEnabledRules():java.util.List
+- f:getGazelleTarget():org.jetbrains.bazel.label.Label
+- f:getIdeJavaHomeOverride():java.nio.file.Path
+- f:getImportDepth():I
+- f:getImportIjars():Z
+- f:getImportRunConfigurations():java.util.List
+- f:getIndexAdditionalFilesInDirectories():java.util.List
+- f:getIndexAllFilesInDirectories():Z
+- f:getPreferClassJarsOverSourcelessJars():Z
+- f:getPythonCodeGeneratorRuleNames():java.util.List
+- f:getShardSync():Z
+- f:getShardingApproach():java.lang.String
+- f:getSyncFlags():java.util.List
+- f:getTargetShardSize():I
+- f:getTargets():java.util.List
+- hashCode():I
+org.jetbrains.bsp.protocol.BazelServerFacade
+- a:getWorkspaceContext():org.jetbrains.bazel.workspacecontext.WorkspaceContext

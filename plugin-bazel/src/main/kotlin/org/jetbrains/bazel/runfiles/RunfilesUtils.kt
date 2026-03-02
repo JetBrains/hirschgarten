@@ -7,7 +7,7 @@ import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 import java.nio.file.Paths
 
-object RunfilesUtils {
+internal object RunfilesUtils {
   fun calculateTargetRunfiles(project: Project, targetLabel: Label): Path = calculateTargetRunfiles(getBazelBinPath(project), targetLabel)
 
   fun calculateTargetRunfiles(bazelBin: String, targetLabel: Label): Path =

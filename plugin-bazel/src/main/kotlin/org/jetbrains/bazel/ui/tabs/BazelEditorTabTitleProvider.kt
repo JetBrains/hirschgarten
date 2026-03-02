@@ -7,7 +7,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileUtils
 
-class BazelEditorTabTitleProvider : EditorTabTitleProvider {
+internal class BazelEditorTabTitleProvider : EditorTabTitleProvider {
   override fun getEditorTabTitle(project: Project, file: VirtualFile): String? =
     if (requiresDecoration(project, file.name)) {
       BazelFileUtils.getContainingDirectoryPresentablePath(project, file)

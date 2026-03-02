@@ -7,12 +7,13 @@ import com.goide.execution.testing.GoTestRunConfigurationProducerBase
 import com.goide.psi.GoFunctionDeclaration
 import com.goide.psi.GoFunctionOrMethodDeclaration
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 
 /**
  * this impl is inspired by the OG impl [here](https://github.com/bazelbuild/intellij/blob/master/golang/src/com/google/idea/blaze/golang/run/producers/GoTestContextProvider.java)
  */
-class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
+internal class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun PsiElement.shouldAddMarker(): Boolean = isMainFunction() || GoTestFinder.isTestFile(this.containingFile)
 
   private fun PsiElement.isMainFunction(): Boolean =
@@ -54,6 +55,7 @@ class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     }
 }
 
+@ApiStatus.Internal
 fun regexifyTestFilter(text: String): String = "^${escapeRegexChars(text)}$"
 
 private fun escapeRegexChars(name: String): String {

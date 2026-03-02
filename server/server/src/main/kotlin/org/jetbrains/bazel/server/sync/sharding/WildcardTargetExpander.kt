@@ -27,7 +27,7 @@ import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Expands wildcard target patterns into individual Bazel targets.  */
-object WildcardTargetExpander {
+internal object WildcardTargetExpander {
   /**
    * Expand recursive wildcard Bazel target patterns into single-package wildcard patterns, via a
    * file system traversal.

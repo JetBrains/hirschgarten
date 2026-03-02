@@ -5,12 +5,12 @@ import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
 
-data class CompiledSourceCodeInsideJarExcludeId(val id: Int) : SymbolicEntityId<CompiledSourceCodeInsideJarExcludeEntity> {
+internal data class CompiledSourceCodeInsideJarExcludeId(val id: Int) : SymbolicEntityId<CompiledSourceCodeInsideJarExcludeEntity> {
   override val presentableName: String
     get() = toString()
 }
 
-interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolicId {
+internal interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolicId {
   public val relativePathsInsideJarToExclude: Set<String>
   public val librariesFromInternalTargetsUrls: Set<String>
 
@@ -19,7 +19,7 @@ interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolic
     get() = excludeId
 }
 
-interface LibraryCompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntity {
+internal interface LibraryCompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntity {
   val libraryId: LibraryId
   val compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
 }

@@ -2,9 +2,9 @@ package org.jetbrains.bazel.languages.starlark.bazel.bzlmod
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.annotations.InternalApi
+import org.jetbrains.annotations.ApiStatus
 
-@InternalApi
+@ApiStatus.Internal
 interface BazelModuleResolver {
   val id: String
   val name: String

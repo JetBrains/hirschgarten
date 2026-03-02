@@ -12,7 +12,7 @@ import com.intellij.rt.coverage.data.ProjectData
 import org.jetbrains.bazel.config.rootDir
 import java.io.File
 
-class BazelCoverageRunner : CoverageRunner() {
+internal class BazelCoverageRunner : CoverageRunner() {
   companion object {
     @JvmStatic
     fun getInstance(): BazelCoverageRunner = getInstance(BazelCoverageRunner::class.java)

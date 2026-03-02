@@ -14,7 +14,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
 private const val DUMMY_FILENAME = "dummy.bzl"
 
-class StarlarkElementGenerator(val project: Project) {
+internal class StarlarkElementGenerator(val project: Project) {
   fun createTokenType(tokenString: String): ASTNode = createDummyFile(tokenString).node.firstChildNode
 
   fun createNameIdentifier(name: String): ASTNode {

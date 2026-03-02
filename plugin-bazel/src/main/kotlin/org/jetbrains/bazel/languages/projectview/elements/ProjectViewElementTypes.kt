@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSect
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiTryImport
 
-object ProjectViewElementTypes {
+internal object ProjectViewElementTypes {
   val FILE = IFileElementType(ProjectViewLanguage)
 
   val IMPORT = ProjectViewElementType("import", ProjectViewPsiImport::class.java)

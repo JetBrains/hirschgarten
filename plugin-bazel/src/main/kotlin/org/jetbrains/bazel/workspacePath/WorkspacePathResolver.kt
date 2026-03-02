@@ -23,7 +23,7 @@ import java.nio.file.Path
  * Converts workspace-relative paths to absolute files with a minimum of file system calls
  * (typically none).
  */
-interface WorkspacePathResolver {
+internal interface WorkspacePathResolver {
   /** Resolves a workspace path to an absolute file.  */
   fun resolveToFile(workspacepath: WorkspacePath): Path? = resolveToFile(workspacepath.relativePath())
 

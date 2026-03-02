@@ -1,9 +1,11 @@
 package org.jetbrains.bsp.protocol
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
+@ApiStatus.Internal
 interface BuildTarget {
   val id: Label
   val kind: TargetKind
@@ -14,6 +16,7 @@ interface BuildTarget {
   val noBuild: Boolean
 }
 
+@ApiStatus.Internal
 data class RawBuildTarget(
   override val id: Label,
   override val tags: List<String>,
@@ -27,6 +30,7 @@ data class RawBuildTarget(
   val generatorName: String? = null,
 ) : BuildTarget
 
+@ApiStatus.Internal
 data class PartialBuildTarget(
   override val id: Label,
   override val tags: List<String>,
@@ -40,12 +44,15 @@ data class PartialBuildTarget(
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 // id should in 1-255 range
+@ApiStatus.Internal
 annotation class ClassDiscriminator(val id: Short)
 
+@ApiStatus.Internal
 sealed interface BuildTargetData
 
 @ClassDiscriminator(1)
-public data class KotlinBuildTarget(
+@ApiStatus.Internal
+data class KotlinBuildTarget(
   val languageVersion: String?,
   val apiVersion: String?,
   val kotlincOptions: List<String>,
@@ -55,6 +62,7 @@ public data class KotlinBuildTarget(
 ) : BuildTargetData
 
 @ClassDiscriminator(2)
+@ApiStatus.Internal
 data class PythonBuildTarget(
   val version: String?,
   val interpreter: Path?,
@@ -69,6 +77,7 @@ data class PythonBuildTarget(
 ) : BuildTargetData
 
 @ClassDiscriminator(3)
+@ApiStatus.Internal
 data class ScalaBuildTarget(
   val scalaVersion: String,
   val sdkJars: List<Path>,
@@ -78,6 +87,7 @@ data class ScalaBuildTarget(
 
 // TODO: change to interface
 @ClassDiscriminator(4)
+@ApiStatus.Internal
 data class JvmBuildTarget(
   // not used if part of PartialBuildTarget
   @Transient @JvmField val javaHome: Path? = null,
@@ -92,6 +102,7 @@ data class JvmBuildTarget(
 ) : BuildTargetData
 
 @ClassDiscriminator(5)
+@ApiStatus.Internal
 data class GoBuildTarget(
   @Transient @JvmField val sdkHomePath: Path? = null,
   val importPath: String,
@@ -103,10 +114,12 @@ data class GoBuildTarget(
 // ClassDiscriminator 6 & 7 were cpp and android, but they have been removed
 
 @ClassDiscriminator(9)
+@ApiStatus.Internal
 data class ProtobufBuildTarget(
   val sources: Map<String, String>, // import path -> real file
   val jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(8)
+@ApiStatus.Internal
 object VoidBuildTarget : BuildTargetData

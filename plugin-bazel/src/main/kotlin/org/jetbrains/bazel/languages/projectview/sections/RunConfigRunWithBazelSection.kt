@@ -4,7 +4,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.BooleanScalarSection
 
-class RunConfigRunWithBazelSection : BooleanScalarSection() {
+internal class RunConfigRunWithBazelSection : BooleanScalarSection() {
   override val name: String = NAME
   override val sectionKey: SectionKey<Boolean> = KEY
   override val doc: String =

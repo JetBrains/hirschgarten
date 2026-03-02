@@ -23,7 +23,7 @@ import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
-class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: AbstractGenericTestState<*>) :
+internal class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: AbstractGenericTestState<*>) :
   BazelCommandLineStateBase(environment) {
   var coverageReportListener: ((Path) -> Unit)? = null
 

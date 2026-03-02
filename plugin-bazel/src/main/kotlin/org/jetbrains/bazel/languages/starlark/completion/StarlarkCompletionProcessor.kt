@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 
-class StarlarkCompletionProcessor(
+internal class StarlarkCompletionProcessor(
   val results: MutableMap<String, StarlarkLookupElement>,
   private val inputElement: StarlarkElement,
   private val inputWrapping: StarlarkQuote = StarlarkQuote.UNQUOTED,

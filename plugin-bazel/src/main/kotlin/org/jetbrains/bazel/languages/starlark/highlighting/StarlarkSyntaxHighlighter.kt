@@ -11,7 +11,7 @@ import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.lexer.StarlarkHighlightingLexer
 
-object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
+internal object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
       StarlarkTokenTypes.DEF_KEYWORD to StarlarkHighlightingColors.KEYWORD,
@@ -57,6 +57,6 @@ object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
   override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }
 
-class StarlarkSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
+internal class StarlarkSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
   override fun getSyntaxHighlighter(project: Project?, virtualFile: VirtualFile?): SyntaxHighlighter = StarlarkSyntaxHighlighter
 }

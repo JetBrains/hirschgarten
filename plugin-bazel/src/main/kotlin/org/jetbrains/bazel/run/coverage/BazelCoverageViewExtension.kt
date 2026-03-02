@@ -12,7 +12,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.rootDir
 
-class BazelCoverageViewExtension(
+internal class BazelCoverageViewExtension(
   private val project: Project,
   coverageAnnotator: CoverageAnnotator,
   private val bundle: CoverageSuitesBundle,

@@ -20,7 +20,7 @@ import org.jetbrains.bazel.config.isBazelProject
 /**
  * See [YouTrack issue](https://youtrack.jetbrains.com/issue/BAZEL-1128).
  */
-class BazelExternalAnnotationsManager(project: Project) :
+internal class BazelExternalAnnotationsManager(project: Project) :
   ModCommandAwareExternalAnnotationsManager(PsiManager.getInstance(project)),
   Disposable {
   private val delegate: ModCommandAwareExternalAnnotationsManager =

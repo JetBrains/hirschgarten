@@ -1,8 +1,10 @@
 package org.jetbrains.bsp.protocol
 
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 
+@ApiStatus.Internal
 data class RunParams(
   val taskId: TaskId,
   val target: Label,

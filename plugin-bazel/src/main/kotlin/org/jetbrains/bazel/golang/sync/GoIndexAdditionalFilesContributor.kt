@@ -8,7 +8,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 
-class GoIndexAdditionalFilesContributor : IndexAdditionalFilesContributor {
+internal class GoIndexAdditionalFilesContributor : IndexAdditionalFilesContributor {
   override fun getAdditionalFiles(project: Project): List<VirtualFileUrl> {
     val vFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
     return project.targetUtils

@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionFile
@@ -17,6 +18,7 @@ import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionStringLitera
 import org.jetbrains.bazel.languages.bazelversion.psi.toSemVer
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 
+@ApiStatus.Internal
 class BazelVersionInspection : LocalInspectionTool() {
   override fun isAvailableForFile(file: PsiFile): Boolean = file.fileType is BazelVersionFileType
 

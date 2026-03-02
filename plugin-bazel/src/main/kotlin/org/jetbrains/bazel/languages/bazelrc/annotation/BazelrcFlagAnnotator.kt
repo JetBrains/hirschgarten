@@ -21,7 +21,7 @@ import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 import org.jetbrains.bazel.languages.bazelrc.quickfix.DeleteFlagUseFix
 import org.jetbrains.bazel.languages.bazelrc.quickfix.RenameFlagNameFix
 
-val flagTokenPattern =
+internal val flagTokenPattern =
   psiElement(BazelrcTokenTypes.FLAG)
     .withParents(
       BazelrcFlag::class.java,
@@ -31,7 +31,7 @@ val flagTokenPattern =
 private val labelFlagRe = Regex("^(--|--(?:no)?[@/].*)$")
 
 @Suppress("UnstableApiUsage")
-class BazelrcFlagAnnotator : Annotator {
+internal class BazelrcFlagAnnotator : Annotator {
   val symbolReferenceService = PsiSymbolReferenceService.getService()
 
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {

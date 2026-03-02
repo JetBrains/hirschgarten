@@ -15,7 +15,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 
-class StarlarkGlobReference(element: StarlarkGlobExpression) :
+internal class StarlarkGlobReference(element: StarlarkGlobExpression) :
   PsiPolyVariantReferenceBase<StarlarkGlobExpression>(
     element,
     TextRange(0, element.textLength),

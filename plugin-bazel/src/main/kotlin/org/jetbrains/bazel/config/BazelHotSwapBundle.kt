@@ -6,9 +6,9 @@ import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 
 @NonNls
-const val HOTSWAP_BUNDLE = "messages.BazelHotSwapBundle"
+private const val HOTSWAP_BUNDLE = "messages.BazelHotSwapBundle"
 
-object BazelHotSwapBundle : DynamicBundle(HOTSWAP_BUNDLE) {
+internal object BazelHotSwapBundle : DynamicBundle(HOTSWAP_BUNDLE) {
   @Nls
   @JvmStatic
   fun message(

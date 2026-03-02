@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.sections
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.BooleanScalarSection
 
-class UseJetBrainsTestRunnerSection : BooleanScalarSection() {
+internal class UseJetBrainsTestRunnerSection : BooleanScalarSection() {
   override val name = NAME
   override val sectionKey = KEY
   override val doc = "Whether the project is using a custom JUnit test runner by JetBrains"

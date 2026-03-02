@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiReference
 import com.intellij.util.PlatformIcons
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
@@ -10,6 +11,7 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableEl
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableReference
 import javax.swing.Icon
 
+@ApiStatus.Internal
 class StarlarkTargetExpression(node: ASTNode) :
   StarlarkNamedElement(node),
   StarlarkLocalVariableElement {

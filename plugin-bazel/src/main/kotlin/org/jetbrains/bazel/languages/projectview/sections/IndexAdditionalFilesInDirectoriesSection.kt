@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.language.sections
 import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.SectionKey
 
-class IndexAdditionalFilesInDirectoriesSection : ListSection<List<String>>() {
+internal class IndexAdditionalFilesInDirectoriesSection : ListSection<List<String>>() {
   override val name = NAME
   override val sectionKey = KEY
   override val doc =

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.debug.connector
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler.Companion.absolutePath
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointProperties
 import java.io.IOException
@@ -12,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
 @Suppress("TooManyFunctions") // it serves as the main debug message dispatcher, it needs these methods
+@ApiStatus.Internal
 class StarlarkDebugMessenger(private val connector: StarlarkSocketConnector, private val session: XDebugSession) : AutoCloseable {
   private val subscriptions = mutableMapOf<Long, CompletableFuture<SDP.DebugEvent>>()
   private val seq = AtomicLong(1L)

@@ -26,7 +26,7 @@ import org.jetbrains.bazel.target.targetUtils
  * The base editor for a Bazel run configuration.
  * Takes care of targets, the common settings and sets up the handler-specific settings editor.
  */
-class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfiguration) :
+internal class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfiguration) :
   RunConfigurationFragmentedEditor<BazelRunConfiguration>(
     runConfiguration,
     RunConfigurationExtensionManager.getInstance(),

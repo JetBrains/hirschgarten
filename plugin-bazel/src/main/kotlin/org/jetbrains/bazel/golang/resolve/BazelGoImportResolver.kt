@@ -43,7 +43,7 @@ import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import java.util.concurrent.ConcurrentHashMap
 
 /** Converts each go target in the [targetUtils#allBuildTargets()] into a corresponding [BazelGoPackage]. */
-class BazelGoImportResolver : GoImportResolver {
+internal class BazelGoImportResolver : GoImportResolver {
   override fun resolve(
     importPath: String,
     project: Project,
@@ -100,7 +100,7 @@ private class GoPackageFileSystemItem private constructor(private val name: Stri
   }
 
 /** Redirects quick navigation text on the fake file system item back to the build rule. */
-class GoPackageDocumentationProvider : DocumentationProviderEx() {
+internal class GoPackageDocumentationProvider : DocumentationProviderEx() {
   override fun getQuickNavigateInfo(element: PsiElement, originalElement: PsiElement): String? =
     if (element is GoPackageFileSystemItem) {
       CtrlMouseHandler.getInfo(element.navigationElement, originalElement)
@@ -109,7 +109,7 @@ class GoPackageDocumentationProvider : DocumentationProviderEx() {
     }
 }
 
-fun doResolve(importPath: String, project: Project): BazelGoPackage? {
+internal fun doResolve(importPath: String, project: Project): BazelGoPackage? {
   if (!project.isBazelProject) return null
   val targetUtils = project.targetUtils
 
@@ -126,7 +126,7 @@ private val goPackageMapComputable =
     ConcurrentHashMap<String, BazelGoPackage>()
   }
 
-fun getGoPackageMap(project: Project): ConcurrentHashMap<String, BazelGoPackage> =
+internal fun getGoPackageMap(project: Project): ConcurrentHashMap<String, BazelGoPackage> =
   SyncCache
     .getInstance(project)
     .get(goPackageMapComputable)
@@ -151,7 +151,7 @@ private fun getGoTargetMap(project: Project): Map<String, Label> =
     .getInstance(project)
     .get(goTargetMapComputable)
 
-fun doResolve(goPackage: BazelGoPackage, index: Int): Array<ResolveResult> =
+internal fun doResolve(goPackage: BazelGoPackage, index: Int): Array<ResolveResult> =
   listOf(goPackage)
     .asSequence()
     .mapNotNull { it.getImportReferences() }

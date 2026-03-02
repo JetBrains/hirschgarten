@@ -23,7 +23,7 @@ private val BLOCK_OPENING: List<IElementType> =
   StarlarkTokenSets.OPEN_BRACKETS.types.toList() +
     listOf(StarlarkTokenTypes.COLON)
 
-class StarlarkLineIndentProvider : LineIndentProvider {
+internal class StarlarkLineIndentProvider : LineIndentProvider {
   override fun getLineIndent(
     project: Project,
     editor: Editor,

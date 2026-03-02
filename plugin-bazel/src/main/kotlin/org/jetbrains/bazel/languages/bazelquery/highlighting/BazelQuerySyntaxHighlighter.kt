@@ -12,7 +12,7 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
 import org.jetbrains.bazel.languages.bazelquery.lexer.BazelQueryLexer
 
-object BazelQuerySyntaxHighlighter : SyntaxHighlighterBase() {
+internal object BazelQuerySyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
       *BazelQueryTokenSets.WORDS.types
@@ -38,6 +38,6 @@ object BazelQuerySyntaxHighlighter : SyntaxHighlighterBase() {
   override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }
 
-class BazelQuerySyntaxHighlighterFactory : SyntaxHighlighterFactory() {
+internal class BazelQuerySyntaxHighlighterFactory : SyntaxHighlighterFactory() {
   override fun getSyntaxHighlighter(project: Project?, virtualFile: VirtualFile?): SyntaxHighlighter = BazelQuerySyntaxHighlighter
 }

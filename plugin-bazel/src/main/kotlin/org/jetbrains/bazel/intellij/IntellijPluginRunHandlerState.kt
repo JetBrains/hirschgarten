@@ -13,7 +13,7 @@ import org.jetbrains.bazel.run.state.intellijSdkFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
 import org.jetbrains.bazel.run.state.vmOptions
 
-class IntellijPluginRunHandlerState :
+internal class IntellijPluginRunHandlerState :
   BazelRunConfigurationState<IntellijPluginRunHandlerState>(),
   HasJavaVmOptions,
   HasProgramArguments,
@@ -31,7 +31,7 @@ class IntellijPluginRunHandlerState :
     IntellijPluginRunHandlerStateEditor(configuration)
 }
 
-class IntellijPluginRunHandlerStateEditor(private val config: BazelRunConfiguration) :
+internal class IntellijPluginRunHandlerStateEditor(private val config: BazelRunConfiguration) :
   FragmentedSettingsEditor<IntellijPluginRunHandlerState>(config.handler?.state as IntellijPluginRunHandlerState) {
   override fun createFragments(): Collection<SettingsEditorFragment<IntellijPluginRunHandlerState, *>> =
     SettingsEditorFragmentContainer.fragments {

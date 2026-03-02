@@ -36,7 +36,7 @@ import javax.swing.Icon
  */
 private const val WIDGET_ID = "BazelFileTargetsWidget"
 
-class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
+internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
   override fun ID(): String = WIDGET_ID
 
   override fun getWidgetState(file: VirtualFile?): WidgetState =
@@ -116,7 +116,7 @@ class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(proje
   override fun createInstance(project: Project): StatusBarWidget = BazelFileTargetsWidget(project)
 }
 
-class BazelFileTargetsWidgetFactory : StatusBarWidgetFactory {
+internal class BazelFileTargetsWidgetFactory : StatusBarWidgetFactory {
   override fun getId(): String = WIDGET_ID
 
   override fun getDisplayName(): String = BazelPluginBundle.message("widget.factory.display.name")
@@ -134,7 +134,7 @@ class BazelFileTargetsWidgetFactory : StatusBarWidgetFactory {
   override fun isEnabledByDefault(): Boolean = true
 }
 
-suspend fun updateBazelFileTargetsWidget(project: Project) {
+internal suspend fun updateBazelFileTargetsWidget(project: Project) {
   if (!ApplicationManager.getApplication().isHeadlessEnvironment) {
     val statusBarWidgetsManager = project.serviceAsync<StatusBarWidgetsManager>()
     statusBarWidgetsManager.updateWidget(BazelFileTargetsWidgetFactory::class.java)

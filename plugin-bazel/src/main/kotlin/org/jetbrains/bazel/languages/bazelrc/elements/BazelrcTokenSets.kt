@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes.FLAG
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes.SINGLE_QUOTE
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes.VALUE
 
-object BazelrcTokenSets {
+internal object BazelrcTokenSets {
   val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
 
   val COMMENTS = TokenSet.create(COMMENT)

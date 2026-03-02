@@ -6,7 +6,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 
-class GenericTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
+internal class GenericTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
   override val id: String
     get() = "GenericTestHandlerProvider"
 

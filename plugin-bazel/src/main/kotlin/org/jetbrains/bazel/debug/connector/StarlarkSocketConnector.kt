@@ -3,6 +3,7 @@ package org.jetbrains.bazel.debug.connector
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugEvent
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugRequest
 import kotlinx.coroutines.delay
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import java.io.Closeable
 import java.io.IOException
@@ -11,6 +12,7 @@ import java.io.OutputStream
 import java.net.ConnectException
 import java.net.Socket
 
+@ApiStatus.Internal
 class StarlarkSocketConnector private constructor(private val socket: Socket) : Closeable {
   private val ins: InputStream = socket.getInputStream()
   private val outs: OutputStream = socket.getOutputStream()

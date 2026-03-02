@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.projectview.ScalarSection
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import java.nio.file.Path
 
-class BazelBinarySection : ScalarSection<Path>() {
+internal class BazelBinarySection : ScalarSection<Path>() {
   override val name = NAME
 
   override val doc = "Specifies the path to a specific Bazel binary to be used in this project."

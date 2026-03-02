@@ -17,7 +17,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bsp.protocol.BuildTarget
 
-class StarlarkDebugAction(private val targetId: Label) :
+internal class StarlarkDebugAction(private val targetId: Label) :
   SuspendableAction(
     text = BazelPluginBundle.message("starlark.debug.action.name"),
     icon = AllIcons.Actions.StartDebugger,

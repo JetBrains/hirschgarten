@@ -2,7 +2,7 @@ package org.jetbrains.bazel.install.cli
 
 import java.nio.file.Path
 
-data class ProjectViewCliOptions(
+internal data class ProjectViewCliOptions(
   val bazelBinary: Path? = null,
   val targets: List<String>? = null,
   val excludedTargets: List<String>? = null,
@@ -23,7 +23,7 @@ data class ProjectViewCliOptions(
   val gazelleTarget: String? = null,
 )
 
-data class CliOptions(
+internal data class CliOptions(
   val workspaceDir: Path,
   val projectViewFilePath: Path? = null,
   val projectViewCliOptions: ProjectViewCliOptions? = null,

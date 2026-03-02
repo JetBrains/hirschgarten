@@ -3,7 +3,7 @@ package org.jetbrains.bazel.ui.widgets.tool.window.utils
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-public class SimpleDocumentListener(private val onUpdate: () -> Unit) : DocumentListener {
+internal class SimpleDocumentListener(private val onUpdate: () -> Unit) : DocumentListener {
   override fun insertUpdate(e: DocumentEvent?) {
     onUpdate()
   }

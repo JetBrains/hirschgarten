@@ -9,7 +9,7 @@ import org.jetbrains.bazel.runnerAction.RunTargetAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.target.targetUtils
 
-abstract class RunTargetActionCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal abstract class RunTargetActionCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
     executeRunTargetAction(context.project)
   }

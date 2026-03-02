@@ -12,7 +12,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.ui.widgets.queryTab.registerBazelQueryToolWindow
 
-class OpenBazelQueryToolWindowAction :
+internal class OpenBazelQueryToolWindowAction :
   SuspendableAction(
     BazelPluginBundle.message("action.open.bazelquery.toolwindow.text"),
     BazelPluginIcons.bazelToolWindow,

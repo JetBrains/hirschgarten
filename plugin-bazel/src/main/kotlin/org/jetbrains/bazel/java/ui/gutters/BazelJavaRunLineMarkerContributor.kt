@@ -9,13 +9,12 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.util.parentOfType
-import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 
-@PublicApi
 open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true
 
@@ -51,6 +50,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     }
   }
 
+  @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.getMethodName(): String? = if (isMethod()) name else null
 
   /**
@@ -66,17 +66,22 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
       }
     }.joinToString(separator = ",")
 
+  @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.getPsiParameters(): Array<out PsiParameter>? =
     (this as? PsiMethod)?.parameterList?.parameters
 
+  @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.getClassName(): String? = getNonStrictParentOfType<PsiClass>()?.name
 
+  @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.getFullyQualifiedClassName(): String? {
     val psiClass = getNonStrictParentOfType<PsiClass>() ?: return null
     return JvmClassUtil.getJvmClassName(psiClass)
   }
 
+  @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.isClass(): Boolean = this is PsiClass
 
+  @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.isMethod(): Boolean = this is PsiMethod
 }

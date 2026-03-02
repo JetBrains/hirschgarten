@@ -10,6 +10,7 @@ import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.protobuf.Empty
 import com.intellij.platform.util.progress.RawProgressReporter
 import io.grpc.stub.StreamObserver
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
@@ -35,6 +36,7 @@ import java.nio.file.Files
 import java.util.UUID
 import kotlin.random.Random
 
+@ApiStatus.Internal
 class BepServer(
   private val taskEventsHandler: BazelTaskEventsHandler,
   private val diagnosticsService: DiagnosticsService,
@@ -384,7 +386,7 @@ class BepServer(
     }
   }
 
-  val bepOutput: BepOutput = bepOutputBuilder.build()
+  internal val bepOutput: BepOutput = bepOutputBuilder.build()
   var bepMetrics: BuildEventStreamProtos.BuildMetrics? = null
     private set
 

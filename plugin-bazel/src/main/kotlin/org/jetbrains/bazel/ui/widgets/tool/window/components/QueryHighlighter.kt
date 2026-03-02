@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
-object QueryHighlighter {
+internal object QueryHighlighter {
   fun highlight(text: String, query: Regex): String {
     val matches = query.findAll(text).take(text.length).toList()
     return if (query.pattern.isNotEmpty() && matches.isNotEmpty()) {

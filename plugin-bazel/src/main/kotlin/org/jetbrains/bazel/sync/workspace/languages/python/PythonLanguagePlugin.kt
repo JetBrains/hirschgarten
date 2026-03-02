@@ -15,7 +15,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Path
 
-class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonBuildTarget> {
+internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonBuildTarget> {
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
 

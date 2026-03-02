@@ -6,9 +6,9 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.Icon
 
-object BazelrcLanguage : Language("Bazelrc")
+internal object BazelrcLanguage : Language("Bazelrc")
 
-object BazelrcFileType : LanguageFileType(BazelrcLanguage) {
+internal object BazelrcFileType : LanguageFileType(BazelrcLanguage) {
   override fun getName(): String = "Bazelrc"
 
   override fun getDescription(): String = BazelPluginBundle.message("bazelrc.language.description")

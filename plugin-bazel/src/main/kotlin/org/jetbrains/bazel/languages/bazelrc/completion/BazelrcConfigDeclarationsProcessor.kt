@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcImport
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 
-class BazelrcConfigDeclarationsProcessor(private val inputElement: BazelrcLine) : Processor<BazelrcElement> {
+internal class BazelrcConfigDeclarationsProcessor(private val inputElement: BazelrcLine) : Processor<BazelrcElement> {
   var seenFiles = mutableSetOf<VirtualFile>()
   var results = mutableMapOf<String, BazelrcFile>()
 

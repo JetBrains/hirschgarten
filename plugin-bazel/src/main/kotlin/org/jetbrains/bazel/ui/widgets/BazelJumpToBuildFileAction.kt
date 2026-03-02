@@ -23,7 +23,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.JComponent
 
-sealed class BazelJumpToBuildFileAction :
+internal sealed class BazelJumpToBuildFileAction :
   SuspendableAction({ BazelPluginBundle.message("widget.open.build.file") }, AllIcons.Actions.OpenNewTab) {
   protected abstract suspend fun getTargetLabel(project: Project, e: AnActionEvent): Label?
 
@@ -59,7 +59,7 @@ sealed class BazelJumpToBuildFileAction :
   }
 }
 
-suspend fun jumpToBuildFile(project: Project, target: Label) {
+internal suspend fun jumpToBuildFile(project: Project, target: Label) {
   val definition =
     readAction {
       findDefinition(project, target)

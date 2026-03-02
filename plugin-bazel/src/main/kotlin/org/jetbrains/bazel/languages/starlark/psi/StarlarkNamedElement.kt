@@ -3,9 +3,11 @@ package org.jetbrains.bazel.languages.starlark.psi
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
 
+@ApiStatus.Internal
 abstract class StarlarkNamedElement(node: ASTNode) :
   StarlarkBaseElement(node),
   PsiNameIdentifierOwner {

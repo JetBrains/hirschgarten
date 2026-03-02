@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.label
 
-import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.annotations.ApiStatus
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -23,6 +23,7 @@ data class SingleTarget(val targetName: String) : TargetType {
 /**
  * Either :* or :all-targets (meaning all rules and files)
  */
+@ApiStatus.Internal
 data object AllRuleTargetsAndFiles : TargetType {
   override fun toString(): String = "*"
 }
@@ -30,6 +31,7 @@ data object AllRuleTargetsAndFiles : TargetType {
 /**
  * All rule targets in the given package (excluding files)
  */
+@ApiStatus.Internal
 data object AllRuleTargets : TargetType {
   override fun toString(): String = "all"
 }
@@ -48,17 +50,19 @@ data object AllRuleTargets : TargetType {
  * > this is often convenient when using Bash filename expansion. For example, foo/bar/wiz is equivalent to
  * > //foo/bar:wiz (if there is a package foo/bar) or to //foo:bar/wiz (if there is a package foo).
  */
+@ApiStatus.Internal
 data object AmbiguousEmptyTarget : TargetType {
   override fun toString(): String = ""
 }
 
-@PublicApi
 sealed interface PackageType {
   val pathSegments: List<String>
 }
 
+@ApiStatus.Internal
 fun PackageType.toPath(): Path = Path(pathSegments.joinToString(PATH_SEGMENT_SEPARATOR))
 
+@ApiStatus.Internal
 data class Package(override val pathSegments: List<String>) : PackageType {
   override fun toString(): String = pathSegments.joinToString(PATH_SEGMENT_SEPARATOR)
 
@@ -67,6 +71,7 @@ data class Package(override val pathSegments: List<String>) : PackageType {
   fun name(): String = pathSegments.lastOrNull() ?: ""
 }
 
+@ApiStatus.Internal
 data class AllPackagesBeneath(override val pathSegments: List<String>) : PackageType {
   override fun toString(): String =
     if (pathSegments.isEmpty()) {
@@ -84,6 +89,7 @@ sealed interface RepoType {
  * Targets in the main workspace are special-cased because they can be referred to
  * using both syntaxes and there's no need to use a repository mapping to resolve the label.
  */
+@ApiStatus.Internal
 data object Main : RepoType {
   override val repoName: String = ""
 
@@ -94,6 +100,7 @@ data object Main : RepoType {
  * See https://bazel.build/external/overview#canonical-repo-name
  */
 @ConsistentCopyVisibility
+@ApiStatus.Internal
 data class Canonical internal constructor(override val repoName: String) : RepoType {
   init {
     require(repoName.isNotEmpty())
@@ -109,6 +116,7 @@ data class Canonical internal constructor(override val repoName: String) : RepoT
 /**
  * See https://bazel.build/external/overview#apparent-repo-name
  */
+@ApiStatus.Internal
 data class Apparent(override val repoName: String) : RepoType {
   override fun toString(): String = "@$repoName"
 }
@@ -125,6 +133,7 @@ data class ResolvedLabel(
    *
    * It is not 100% reliable, but it works for our use cases, i.e., to import gazelle generated targets as internal.
    */
+  @get:ApiStatus.Internal
   val isGazelleGenerated get() = repoName.startsWith("gazelle")
 
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
@@ -133,12 +142,14 @@ data class ResolvedLabel(
 /**
  * Synthethic label is a label of a target which is not present in the Bazel target graph.
  */
+@ApiStatus.Internal
 data class SyntheticLabel(override val target: TargetType) : Label {
   override val packagePath: PackageType = Package(listOf())
 
   override fun toString(): String = "$target$SYNTHETIC_TAG"
 }
 
+@ApiStatus.Internal
 data class RelativeLabel(override val packagePath: PackageType, override val target: TargetType) : Label {
   override fun toString(): String = joinPackagePathAndTarget(packagePath, target)
 
@@ -164,7 +175,6 @@ data class RelativeLabel(override val packagePath: PackageType, override val tar
  * See https://bazel.build/concepts/labels
  */
 sealed interface Label : Comparable<Label> {
-  @PublicApi
   val packagePath: PackageType
   val target: TargetType
 
@@ -199,6 +209,7 @@ sealed interface Label : Comparable<Label> {
   override fun compareTo(other: Label): Int = toString().compareTo(other.toString())
 
   companion object {
+    @ApiStatus.Internal
     fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
 
     fun parse(value: String): Label {
@@ -254,8 +265,10 @@ sealed interface Label : Comparable<Label> {
   }
 }
 
+@ApiStatus.Internal
 fun Label.asRelative(): RelativeLabel? = this as? RelativeLabel
 
+@ApiStatus.Internal
 fun Label.assumeResolved(): ResolvedLabel =
   when (this) {
     is ResolvedLabel -> this

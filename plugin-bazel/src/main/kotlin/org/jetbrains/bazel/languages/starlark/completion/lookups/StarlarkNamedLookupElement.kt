@@ -4,7 +4,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import javax.swing.Icon
 
-open class StarlarkNamedLookupElement(val element: StarlarkNamedElement, wrapping: StarlarkQuote = StarlarkQuote.UNQUOTED) :
+internal open class StarlarkNamedLookupElement(val element: StarlarkNamedElement, wrapping: StarlarkQuote = StarlarkQuote.UNQUOTED) :
   StarlarkLookupElement(element.name ?: "", wrapping) {
   override val icon: Icon?
     get() = element.getIcon(0)

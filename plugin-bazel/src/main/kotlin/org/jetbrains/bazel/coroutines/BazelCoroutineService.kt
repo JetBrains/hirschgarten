@@ -9,11 +9,9 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import org.jetbrains.bazel.annotations.InternalApi
 
 @Service(Service.Level.PROJECT)
-@InternalApi
-class BazelCoroutineService(private val coroutineScope: CoroutineScope) {
+internal class BazelCoroutineService(private val coroutineScope: CoroutineScope) {
   fun start(block: suspend CoroutineScope.() -> Unit): Job = coroutineScope.launch(block = block)
 
   fun <T> startAsync(lazy: Boolean = false, callable: suspend CoroutineScope.() -> T): Deferred<T> =

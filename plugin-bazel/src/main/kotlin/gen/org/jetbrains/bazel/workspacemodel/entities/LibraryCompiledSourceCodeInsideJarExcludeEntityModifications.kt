@@ -8,9 +8,10 @@ import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
+import org.jetbrains.annotations.ApiStatus
 
 @GeneratedCodeApiVersion(3)
-interface LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuilder<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
+internal interface LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuilder<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
   override var entitySource: EntitySource
   var libraryId: LibraryId
   var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
@@ -34,7 +35,7 @@ internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType :
   }
 }
 
-fun MutableEntityStorage.modifyLibraryCompiledSourceCodeInsideJarExcludeEntity(
+internal fun MutableEntityStorage.modifyLibraryCompiledSourceCodeInsideJarExcludeEntity(
   entity: LibraryCompiledSourceCodeInsideJarExcludeEntity,
   modification: LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit,
 ): LibraryCompiledSourceCodeInsideJarExcludeEntity =
@@ -42,7 +43,8 @@ fun MutableEntityStorage.modifyLibraryCompiledSourceCodeInsideJarExcludeEntity(
 
 @JvmOverloads
 @JvmName("createLibraryCompiledSourceCodeInsideJarExcludeEntity")
-fun LibraryCompiledSourceCodeInsideJarExcludeEntity(
+@ApiStatus.Internal
+internal fun LibraryCompiledSourceCodeInsideJarExcludeEntity(
   libraryId: LibraryId,
   compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId,
   entitySource: EntitySource,

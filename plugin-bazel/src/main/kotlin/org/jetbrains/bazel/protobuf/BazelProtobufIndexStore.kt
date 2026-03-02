@@ -9,7 +9,7 @@ import org.h2.mvstore.MVMap
 import org.h2.mvstore.type.DataType
 import org.h2.mvstore.type.StringDataType
 
-class BazelProtobufIndexStore(val project: Project) {
+internal class BazelProtobufIndexStore(val project: Project) {
   private val store =
     createOrResetMvStore(
       file = project.getProjectDataPath("bazel-protobuf-target-index.db"),

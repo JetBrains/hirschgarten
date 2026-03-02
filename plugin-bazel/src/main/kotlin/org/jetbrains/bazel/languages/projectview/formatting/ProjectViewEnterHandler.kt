@@ -22,7 +22,7 @@ import com.intellij.psi.impl.source.tree.injected.InjectedLanguageEditorUtil
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 
-class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
+internal class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
   companion object {
     const val INDENT = 2
   }

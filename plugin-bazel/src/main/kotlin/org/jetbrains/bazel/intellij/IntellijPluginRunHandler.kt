@@ -31,7 +31,7 @@ import kotlin.io.path.exists
 
 internal val INTELLIJ_PLUGIN_SANDBOX_KEY: Key<Path> = Key.create("INTELLIJ_PLUGIN_SANDBOX_KEY")
 
-class IntellijPluginRunHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
+internal class IntellijPluginRunHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     configuration.setBeforeRunTasksFromHandler(
       listOfNotNull(

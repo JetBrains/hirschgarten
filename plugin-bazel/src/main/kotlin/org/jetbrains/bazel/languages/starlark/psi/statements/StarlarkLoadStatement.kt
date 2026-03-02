@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 
-class StarlarkLoadStatement(node: ASTNode) : StarlarkBaseElement(node) {
+internal class StarlarkLoadStatement(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitLoadStatement(this)
 
   fun getLoadedFileNamePsi(): StarlarkStringLiteralExpression? =

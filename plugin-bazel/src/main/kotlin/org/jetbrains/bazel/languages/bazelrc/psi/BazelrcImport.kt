@@ -6,7 +6,7 @@ import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 import org.jetbrains.bazel.languages.bazelrc.references.BazelrcImportFileReferenceSet
 
-class BazelrcImport(node: ASTNode) : BazelrcBaseElement(node) {
+internal class BazelrcImport(node: ASTNode) : BazelrcBaseElement(node) {
   override fun acceptVisitor(visitor: BazelrcElementVisitor) = visitor.visitImport(this)
 
   override fun getReference(): PsiReference? = references.last()

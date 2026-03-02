@@ -32,6 +32,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
@@ -61,6 +62,7 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 @Suppress("UnstableApiUsage")
+@ApiStatus.Internal
 class BazelFileEventListener : BulkFileListenerBackgroundable {
   override fun after(events: MutableList<out VFileEvent>) {
     // unit tests trigger file event listeners normally, making them hard to test unless that is disabled

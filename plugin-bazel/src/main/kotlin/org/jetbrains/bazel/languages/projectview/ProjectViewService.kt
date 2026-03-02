@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.findFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
@@ -23,6 +24,7 @@ import org.jetbrains.bazel.sync.SyncCache
  * Provides efficient access to project view configuration with automatic cache invalidation.
  */
 @Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 class ProjectViewService(private val project: Project) {
   /**
    * Gets the current ProjectView, parsing it if necessary.

@@ -6,10 +6,10 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.ExtensionPointName
 
-public typealias RunConfigurationExtension = RunConfigurationExtensionBase<BazelRunConfiguration>
+internal typealias RunConfigurationExtension = RunConfigurationExtensionBase<BazelRunConfiguration>
 
 @Service
-public class RunConfigurationExtensionManager : RunConfigurationExtensionsManager<BazelRunConfiguration, RunConfigurationExtension>(ep) {
+internal class RunConfigurationExtensionManager : RunConfigurationExtensionsManager<BazelRunConfiguration, RunConfigurationExtension>(ep) {
   public companion object {
     internal val ep =
       ExtensionPointName.create<RunConfigurationExtension>("org.jetbrains.bazel.runConfigurationExtension")

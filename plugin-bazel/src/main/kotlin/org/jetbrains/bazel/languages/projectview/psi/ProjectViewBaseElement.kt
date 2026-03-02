@@ -3,7 +3,9 @@ package org.jetbrains.bazel.languages.projectview.psi
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElementVisitor
+import org.jetbrains.annotations.ApiStatus
 
+@ApiStatus.Internal
 abstract class ProjectViewBaseElement(node: ASTNode) :
   ASTWrapperPsiElement(node),
   ProjectViewElement {

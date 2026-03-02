@@ -13,7 +13,7 @@ import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 
-class ResyncTargetAction private constructor(private val targetId: Label) :
+internal class ResyncTargetAction private constructor(private val targetId: Label) :
   SuspendableAction({ BazelPluginBundle.message("target.partial.sync.action.text") }, AllIcons.Actions.Refresh) {
     override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
       val syncScope = PartialProjectSync(targetsToSync = listOf(targetId))

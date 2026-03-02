@@ -16,7 +16,7 @@ private const val BAZEL_KOTLIN_PROJECT_CONFIGURATOR_UNSUPPORTED_MESSAGE =
   this can only be done properly by re-syncing the project.
   """
 
-class BazelKotlinProjectConfigurator : KotlinProjectConfigurator {
+internal class BazelKotlinProjectConfigurator : KotlinProjectConfigurator {
   override val name: String = "Bazel Kotlin configurator"
 
   override val presentableText: String

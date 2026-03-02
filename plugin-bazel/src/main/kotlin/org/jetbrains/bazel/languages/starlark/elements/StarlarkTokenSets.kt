@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.starlark.elements
 
 import com.intellij.psi.tree.TokenSet
 
-object StarlarkTokenSets {
+internal object StarlarkTokenSets {
   val WHITESPACE =
     TokenSet.create(
       StarlarkTokenTypes.SPACE,

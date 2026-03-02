@@ -7,7 +7,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.jetbrains.performancePlugin.CommandProvider
 import com.jetbrains.performancePlugin.CreateCommand
 
-class CheckImportedModules(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class CheckImportedModules(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
     val project = context.project
     val workspaceModel = project.workspaceModel
@@ -34,7 +34,7 @@ class CheckImportedModules(text: String, line: Int) : PlaybackCommandCoroutineAd
   }
 }
 
-class CheckImportedModulesProvider : CommandProvider {
+internal class CheckImportedModulesProvider : CommandProvider {
   override fun getCommands(): Map<String, CreateCommand?> =
     mapOf(
       CheckImportedModules.PREFIX to CreateCommand(::CheckImportedModules),

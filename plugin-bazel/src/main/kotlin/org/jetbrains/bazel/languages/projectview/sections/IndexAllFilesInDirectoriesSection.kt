@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.sections
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.BooleanScalarSection
 
-class IndexAllFilesInDirectoriesSection : BooleanScalarSection() {
+internal class IndexAllFilesInDirectoriesSection : BooleanScalarSection() {
   override val name = NAME
   override val sectionKey = KEY
   override val doc = "Whether to all index files inside [ProjectViewDirectoriesSection] or just sources of targets"

@@ -32,7 +32,7 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import java.io.File
 
-class BspDlvPositionConverter(
+internal class BspDlvPositionConverter(
   private val project: Project,
   private val remotePaths: Set<String>,
   private val goRoot: String,

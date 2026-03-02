@@ -7,7 +7,7 @@ import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import com.intellij.psi.PsiDocumentManager
 
-class AssertCoverageCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class AssertCoverageCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
     const val PREFIX = CMD_PREFIX + "assertCoverage"
   }

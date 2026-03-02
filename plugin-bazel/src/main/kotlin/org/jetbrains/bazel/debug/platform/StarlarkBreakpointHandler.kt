@@ -2,8 +2,10 @@ package org.jetbrains.bazel.debug.platform
 
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.debug.connector.StarlarkDebugMessenger
 
+@ApiStatus.Internal
 class StarlarkBreakpointHandler(private val messenger: StarlarkDebugMessenger) :
   XBreakpointHandler<StarlarkBreakpoint>(StarlarkBreakpointType::class.java) {
   private val current = mutableSetOf<StarlarkBreakpoint>()

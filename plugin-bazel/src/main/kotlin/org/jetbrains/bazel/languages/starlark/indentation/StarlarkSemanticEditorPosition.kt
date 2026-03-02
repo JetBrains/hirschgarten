@@ -4,7 +4,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.highlighter.HighlighterIterator
 import com.intellij.psi.tree.IElementType
 
-class StarlarkSemanticEditorPosition(private var editor: EditorEx, offset: Int) {
+internal class StarlarkSemanticEditorPosition(private var editor: EditorEx, offset: Int) {
   private var iterator: HighlighterIterator = editor.highlighter.createIterator(offset)
   private var chars: CharSequence = this.editor.document.charsSequence
 

@@ -7,14 +7,14 @@ import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.bazel.config.BazelPluginConstants
 
-class BazelTestConsoleProperties(
+internal class BazelTestConsoleProperties(
   config: RunConfiguration,
   executor: Executor,
 ) : SMTRunnerConsoleProperties(config, BazelPluginConstants.BAZEL_DISPLAY_NAME, executor) {
   override fun getTestLocator(): SMTestLocator? = BazelTestLocatorProvider.ep.extensionList.firstOrNull()?.getTestLocator()
 }
 
-interface BazelTestLocatorProvider {
+internal interface BazelTestLocatorProvider {
   fun getTestLocator(): SMTestLocator
 
   companion object {

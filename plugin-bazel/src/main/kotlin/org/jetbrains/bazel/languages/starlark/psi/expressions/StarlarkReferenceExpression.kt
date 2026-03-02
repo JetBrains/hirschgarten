@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiReference
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
@@ -10,6 +11,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableElement
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableReference
 
+@ApiStatus.Internal
 class StarlarkReferenceExpression(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkLocalVariableElement {

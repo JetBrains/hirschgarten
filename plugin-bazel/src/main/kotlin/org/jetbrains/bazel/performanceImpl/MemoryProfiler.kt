@@ -1,5 +1,3 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package org.jetbrains.bazel.performance
 
 import com.intellij.openapi.application.PathManager
@@ -24,7 +22,7 @@ import kotlin.time.Duration
 
 private const val MB = 1024 * 1024
 
-object MemoryProfiler : NotificationListener {
+internal object MemoryProfiler : NotificationListener {
   private val maxMemoryMb = AtomicLong()
 
   fun startRecordingMaxMemory() {
@@ -48,7 +46,7 @@ object MemoryProfiler : NotificationListener {
     val metricsExporter = TelemetryMeterJsonExporter(RollingFileSupplier(basePath))
     val filteredMetricsExporter =
       FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->
-        metric.belongsToScope(Scope(BSP_SCOPE))
+        metric.belongsToScope(bspScope)
       }
     TelemetryManager
       .getInstance()

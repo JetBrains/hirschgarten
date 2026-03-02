@@ -4,7 +4,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 
-class MavenCoordinatesResolver {
+internal class MavenCoordinatesResolver {
   fun resolveMavenCoordinates(libraryLabel: Label, outputJar: Path): MavenCoordinates? {
     /* For example:
      * @@rules_jvm_external~override~maven~maven//:org_apache_commons_commons_lang3

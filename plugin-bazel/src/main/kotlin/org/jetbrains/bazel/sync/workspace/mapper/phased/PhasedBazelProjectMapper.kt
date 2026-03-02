@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.mapper.phased
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.Language
 import org.jetbrains.bazel.commons.LanguageClass
@@ -30,6 +31,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
+@ApiStatus.Internal
 class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) {
   fun resolveWorkspace(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): BazelResolvedWorkspace {
     val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync

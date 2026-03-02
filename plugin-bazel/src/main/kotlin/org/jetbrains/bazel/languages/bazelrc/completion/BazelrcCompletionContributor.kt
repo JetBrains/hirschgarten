@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.endOffset
 import com.intellij.psi.util.findParentOfType
 import com.intellij.util.ProcessingContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
@@ -24,7 +25,7 @@ import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 
-class BazelrcCompletionContributor : CompletionContributor() {
+internal class BazelrcCompletionContributor : CompletionContributor() {
   init {
     extend(CompletionType.BASIC, BazelCommandCompletionProvider.psiPattern, BazelCommandCompletionProvider())
     extend(CompletionType.BASIC, BazelImportCompletionProvider.psiPattern, BazelImportCompletionProvider())
@@ -37,8 +38,9 @@ class BazelrcCompletionContributor : CompletionContributor() {
   }
 }
 
-val importOrCommandTokens = TokenSet.create(BazelrcTokenTypes.COMMAND, BazelrcTokenTypes.IMPORT)
+internal val importOrCommandTokens = TokenSet.create(BazelrcTokenTypes.COMMAND, BazelrcTokenTypes.IMPORT)
 
+@ApiStatus.Internal
 class BazelCommandCompletionProvider : CompletionProvider<CompletionParameters>() {
   companion object {
     val psiPattern =
@@ -122,6 +124,7 @@ private class BazelConfigCompletionProvider : CompletionProvider<CompletionParam
     LookupElementBuilder.create(name).withBoldness(true).withIcon(BazelPluginIcons.bazel)
 }
 
+@ApiStatus.Internal
 class BazelImportCompletionProvider : CompletionProvider<CompletionParameters>() {
   companion object {
     val psiPattern =
@@ -156,7 +159,7 @@ class BazelImportCompletionProvider : CompletionProvider<CompletionParameters>()
   }
 }
 
-class BazelFlagCompletionProvider : CompletionProvider<CompletionParameters>() {
+internal class BazelFlagCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
@@ -215,7 +218,7 @@ class BazelFlagCompletionProvider : CompletionProvider<CompletionParameters>() {
   }
 }
 
-inline fun <T> T.letIf(predicate: Boolean, block: (T) -> T): T =
+internal inline fun <T> T.letIf(predicate: Boolean, block: (T) -> T): T =
   if (predicate) {
     block(this)
   } else {

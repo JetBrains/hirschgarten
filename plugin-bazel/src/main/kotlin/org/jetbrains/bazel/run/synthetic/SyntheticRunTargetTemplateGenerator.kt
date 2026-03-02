@@ -2,9 +2,11 @@ package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.lang.LanguageExtension
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 
+@ApiStatus.Internal
 interface SyntheticRunTargetTemplateGenerator {
   fun isSupported(target: BuildTarget): Boolean
 

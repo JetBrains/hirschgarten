@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import java.nio.file.Path
 
@@ -7,6 +8,7 @@ import java.nio.file.Path
  * Interface for resolving JVM package prefixes from source files.
  * This abstraction allows for testing without file system access.
  */
+@ApiStatus.Internal
 interface JvmPackageResolver {
   /**
    * Calculates the JVM package prefix for a given source file.
@@ -21,6 +23,7 @@ interface JvmPackageResolver {
 /**
  * Default implementation that reads from the file system.
  */
+@ApiStatus.Internal
 class DefaultJvmPackageResolver : JvmPackageResolver {
   override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? =
     JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source, multipleLines)

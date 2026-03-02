@@ -9,32 +9,36 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
 
-data class BazelProjectSettings(
+data class BazelProjectSettings @ApiStatus.Internal constructor(
   val projectViewPath: VirtualFile? = null,
-  val buildifierExecutablePath: Path? = null,
-  val runBuildifierOnSave: Boolean = true,
-  val showExcludedDirectoriesAsSeparateNode: Boolean = true,
-  val allowBazelInvocationOnFileEvents: Boolean = true,
+  @ApiStatus.Internal internal val buildifierExecutablePath: Path? = null,
+  @ApiStatus.Internal val runBuildifierOnSave: Boolean = true,
+  @ApiStatus.Internal val showExcludedDirectoriesAsSeparateNode: Boolean = true,
+  @ApiStatus.Internal val allowBazelInvocationOnFileEvents: Boolean = true,
   // experimental settings
 ) {
+  @ApiStatus.Internal
   fun withNewProjectViewPath(newProjectViewFilePath: VirtualFile?): BazelProjectSettings =
     copy(projectViewPath = newProjectViewFilePath)
 
+  @ApiStatus.Internal
   fun withNewBuildifierExecutablePath(newBuildifierExecutablePath: Path): BazelProjectSettings =
     copy(buildifierExecutablePath = newBuildifierExecutablePath)
 
+  @ApiStatus.Internal
   fun getBuildifierPathString(): String? =
     buildifierExecutablePath?.takeIf { it.exists() }?.toAbsolutePath()?.toString()
       ?: BuildifierUtil.detectBuildifierExecutable()
 }
 
-data class BazelProjectSettingsState(
+internal data class BazelProjectSettingsState(
   var projectViewPathUri: String? = null,
   var buildifierExecutablePathUri: String? = null,
   var runBuildifierOnSave: Boolean = true,
@@ -50,7 +54,7 @@ data class BazelProjectSettingsState(
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-class BazelProjectSettingsService(val project: Project) :
+internal class BazelProjectSettingsService(val project: Project) :
   DumbAware,
   PersistentStateComponent<BazelProjectSettingsState> {
   var settings: BazelProjectSettings = BazelProjectSettings()
@@ -87,6 +91,7 @@ class BazelProjectSettingsService(val project: Project) :
 
 var Project.bazelProjectSettings: BazelProjectSettings
   get() = BazelProjectSettingsService.getInstance(this).settings.copy()
+  @ApiStatus.Internal
   set(value) {
     BazelProjectSettingsService.getInstance(this).settings = value.copy()
   }

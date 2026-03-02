@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.storage.VersionedStorageChange
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
-class BazelBaseProjectDirectories(project: Project, scope: CoroutineScope) : BaseProjectDirectoriesImpl(project, scope) {
+internal class BazelBaseProjectDirectories(project: Project, scope: CoroutineScope) : BaseProjectDirectoriesImpl(project, scope) {
   override fun collectRoots(snapshot: ImmutableEntityStorage): Sequence<VirtualFile> =
     super.collectRoots(snapshot) +
       snapshot.entities(BazelProjectDirectoriesEntity::class.java).mapNotNull { it.projectRoot.virtualFile }

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.lexer
 import com.intellij.lexer.FlexAdapter
 import com.intellij.psi.tree.IElementType
 import it.unimi.dsi.fastutil.ints.IntArrayList
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
@@ -21,6 +22,7 @@ private class PendingCommentToken(
   val indent: Int,
 ) : PendingToken(type, start, end)
 
+@ApiStatus.Internal
 class StarlarkIndentingLexer : FlexAdapter(_StarlarkLexer(null)) {
   private val indentStack = IntArrayList()
   private var braceLevel = 0

@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
 
-class BazelGithubVersionResolver : BazelVersionResolver {
+internal class BazelGithubVersionResolver : BazelVersionResolver {
   val githubGson =
     GsonBuilder()
       .setPrettyPrinting()
@@ -107,11 +107,11 @@ class BazelGithubVersionResolver : BazelVersionResolver {
   )
 }
 
-val GITHUB_CACHE_EVICTION_TIME = 24.hours
+internal val GITHUB_CACHE_EVICTION_TIME = 24.hours
 
 @Service(Service.Level.PROJECT)
 @State(name = "BazelGithubResolverVersionCache", storages = [Storage(StoragePathMacros.CACHE_FILE, roamingType = RoamingType.DISABLED)])
-class BazelGithubGlobalCacheService(val coroutineScope: CoroutineScope) : PersistentStateComponent<BazelGithubGlobalCacheService.State> {
+internal class BazelGithubGlobalCacheService(val coroutineScope: CoroutineScope) : PersistentStateComponent<BazelGithubGlobalCacheService.State> {
   class State : BaseState() {
     @get:XMap
     val forks by map<String, ForkState>()

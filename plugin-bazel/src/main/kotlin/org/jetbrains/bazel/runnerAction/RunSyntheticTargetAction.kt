@@ -15,7 +15,7 @@ import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.BuildTarget
 
 // TODO: refactor to Execution API
-open class RunSyntheticTargetAction(
+internal open class RunSyntheticTargetAction(
   private val target: BuildTarget,
   private val isDebugAction: Boolean,
   private val includeTargetNameInText: Boolean,

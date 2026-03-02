@@ -18,7 +18,7 @@ import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JUNIT_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.RULES_JAVA_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.RULES_JVM_EXTERNAL_VERSION
 
-class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
+internal class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
   override val name: @NlsContexts.Label String
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 

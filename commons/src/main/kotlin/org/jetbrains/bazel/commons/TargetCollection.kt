@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.commons
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 
 /**
  * Utility class for working with collections of includable and excludable targets.
  * This replaces the old TargetsSpec class.
  */
+@ApiStatus.Internal
 data class TargetCollection(val values: List<Label>, val excludedValues: List<Label> = emptyList()) {
   companion object {
     fun fromExcludableList(targets: List<ExcludableValue<Label>>): TargetCollection {

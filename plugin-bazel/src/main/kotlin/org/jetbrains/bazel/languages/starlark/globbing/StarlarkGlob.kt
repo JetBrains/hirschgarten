@@ -20,6 +20,7 @@ import com.intellij.util.concurrency.annotations.RequiresBlockingContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
@@ -36,6 +37,7 @@ import java.util.regex.PatternSyntaxException
  *
  * Largely copied from old Bazel plugin's UnixGlob.java
  */
+@ApiStatus.Internal
 object StarlarkGlob {
   /**
    * Checks that each pattern is valid, splits it into segments and checks that each segment

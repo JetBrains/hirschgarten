@@ -7,7 +7,7 @@ import com.jetbrains.performancePlugin.CreateCommand
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetUtils
 
-class CheckTargetsInTargetWidget(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class CheckTargetsInTargetWidget(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
     val project = context.project
     val loadedTargets = project.targetUtils.allTargets().toSet()
@@ -29,7 +29,7 @@ class CheckTargetsInTargetWidget(text: String, line: Int) : PlaybackCommandCorou
   }
 }
 
-class CheckTargetsInTargetWidgetProvider : CommandProvider {
+internal class CheckTargetsInTargetWidgetProvider : CommandProvider {
   override fun getCommands(): Map<String, CreateCommand?> =
     mapOf(
       CheckTargetsInTargetWidget.PREFIX to CreateCommand(::CheckTargetsInTargetWidget),

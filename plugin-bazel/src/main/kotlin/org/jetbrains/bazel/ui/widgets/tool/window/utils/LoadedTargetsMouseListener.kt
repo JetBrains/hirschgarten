@@ -39,7 +39,7 @@ import java.awt.event.MouseEvent
 
 private val LOG = logger<LoadedTargetsMouseListener>()
 
-abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
+internal abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
   abstract fun isPointSelectable(point: Point): Boolean
 
   abstract fun getSelectedBuildTarget(): BuildTarget?
@@ -135,7 +135,7 @@ private fun BazelRunnerAction.prepareAndPerform(project: Project) {
 }
 
 @Suppress("CognitiveComplexMethod")
-fun DefaultActionGroup.fillWithEligibleActions(
+internal fun DefaultActionGroup.fillWithEligibleActions(
   project: Project,
   target: BuildTarget,
   includeTargetNameInText: Boolean,

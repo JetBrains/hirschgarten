@@ -11,7 +11,7 @@ import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewLexer
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 
-object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
+internal object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
       ProjectViewTokenType.COLON to ProjectViewHighlightingColors.COLON,
@@ -27,6 +27,6 @@ object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
   override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }
 
-class ProjectViewSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
+internal class ProjectViewSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
   override fun getSyntaxHighlighter(project: Project?, virtualFile: VirtualFile?): SyntaxHighlighter = ProjectViewSyntaxHighlighter
 }

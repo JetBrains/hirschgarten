@@ -5,12 +5,15 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
 import java.nio.file.Path
 import kotlin.io.path.exists
 
+@ApiStatus.Internal
 class SectionKey<T>(val name: String)
 
+@ApiStatus.Internal
 abstract class Section<T> {
   abstract val name: String
 
@@ -54,6 +57,7 @@ abstract class Section<T> {
   }
 }
 
+@ApiStatus.Internal
 abstract class ScalarSection<T> : Section<T>() {
   abstract fun fromRawValue(rawValue: String): T?
 
@@ -67,6 +71,7 @@ abstract class ScalarSection<T> : Section<T>() {
   override fun serialize(value: T): String = "$name: $value"
 }
 
+@ApiStatus.Internal
 abstract class ListSection<T : Collection<*>> : Section<T>() {
   override fun serialize(value: T): String = "$name:\n  ${value.joinToString(separator = "\n  ") { it.toString() }}"
 }

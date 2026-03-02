@@ -24,7 +24,7 @@ import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
 import org.jetbrains.bazel.config.BazelPluginBundle.message as bundledMessage
 
-class NewBazelPackageAction : DumbAwareAction() {
+internal class NewBazelPackageAction : DumbAwareAction() {
   override fun update(e: AnActionEvent) {
     val project = e.project
     val presentation: Presentation = e.presentation

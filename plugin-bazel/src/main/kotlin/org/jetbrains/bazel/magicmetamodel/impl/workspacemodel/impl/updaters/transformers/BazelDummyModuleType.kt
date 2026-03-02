@@ -5,9 +5,11 @@ import com.intellij.ide.util.projectWizard.EmptyModuleBuilder
 import com.intellij.openapi.module.InternalModuleType
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.module.ModuleTypeManager
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.Icon
 
+@ApiStatus.Internal
 class BazelDummyModuleType : InternalModuleType<BazelDummyModuleBuilder>(ID) {
   companion object {
     const val ID: String = "BAZEL_DUMMY_MODULE_TYPE"
@@ -22,6 +24,7 @@ class BazelDummyModuleType : InternalModuleType<BazelDummyModuleBuilder>(ID) {
   override fun getNodeIcon(isOpened: Boolean): Icon = AllIcons.Nodes.Package
 }
 
+@ApiStatus.Internal
 class BazelDummyModuleBuilder : EmptyModuleBuilder() {
   override fun getModuleType(): ModuleType<*> = ModuleTypeManager.getInstance().findByID(BazelDummyModuleType.ID)
 }

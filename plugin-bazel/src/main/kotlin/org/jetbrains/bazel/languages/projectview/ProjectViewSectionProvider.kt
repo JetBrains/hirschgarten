@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.language.sections.IndexAdditionalFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.AllowManualTargetsSyncSection
 import org.jetbrains.bazel.languages.projectview.sections.AndroidMinSdkSection
@@ -30,7 +31,7 @@ import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.TestFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.UseJetBrainsTestRunnerSection
 
-interface ProjectViewSectionProvider {
+internal interface ProjectViewSectionProvider {
   val sections: List<Section<*>>
 
   companion object {
@@ -38,7 +39,7 @@ interface ProjectViewSectionProvider {
   }
 }
 
-class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
+internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
   override val sections =
     listOf(
       AllowManualTargetsSyncSection(),
@@ -72,6 +73,7 @@ class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
     )
 }
 
+@ApiStatus.Internal
 object ProjectViewSections {
   val REGISTERED_SECTIONS get() = ProjectViewSectionProvider.EP.extensionList.flatMap { it.sections }
 

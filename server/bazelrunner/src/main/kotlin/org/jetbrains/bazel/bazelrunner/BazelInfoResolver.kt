@@ -14,7 +14,7 @@ private const val WORKSPACE = "workspace"
 private const val BAZEL_BIN = "bazel-bin"
 private const val STARLARK_SEMANTICS = "starlark-semantics"
 
-class BazelInfoResolver(val workspaceRoot: Path) {
+internal class BazelInfoResolver(val workspaceRoot: Path) {
   suspend fun resolveBazelInfo(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): BazelInfo {
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {

@@ -9,11 +9,11 @@ import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.JTextField
 
-interface HasTestFilter {
+internal interface HasTestFilter {
   var testFilter: String?
 }
 
-fun <C : HasTestFilter> SettingsEditorFragmentContainer<C>.addTestFilterFragment() =
+internal fun <C : HasTestFilter> SettingsEditorFragmentContainer<C>.addTestFilterFragment() =
   addLabeledSettingsEditorFragment(
     object : LabeledSettingsFragmentInfo {
       override val settingsActionHint: String? = null

@@ -6,9 +6,9 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.Icon
 
-object StarlarkLanguage : Language("Starlark")
+internal object StarlarkLanguage : Language("Starlark")
 
-object StarlarkFileType : LanguageFileType(StarlarkLanguage) {
+internal object StarlarkFileType : LanguageFileType(StarlarkLanguage) {
   override fun getName(): String = "Starlark"
 
   override fun getDescription(): String = BazelPluginBundle.message("starlark.language.description")

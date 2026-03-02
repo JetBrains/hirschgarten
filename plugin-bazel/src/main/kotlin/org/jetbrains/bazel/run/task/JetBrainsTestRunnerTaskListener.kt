@@ -9,7 +9,7 @@ private const val TEAMCITY_PREFIX = "##teamcity[test"
 private const val TEST_NAME_TAG = " name='"
 private const val JAVA_TEST_SCHEMA = "java:test://"
 
-class JetBrainsTestRunnerTaskListener(handler: BazelProcessHandler) : BazelRunTaskListener(handler) {
+internal class JetBrainsTestRunnerTaskListener(handler: BazelProcessHandler) : BazelRunTaskListener(handler) {
   override fun onCachedTestLog(testLog: Path) {
     testLog.useLines { lines ->
       lines.map { line ->

@@ -8,9 +8,11 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.psi.impl.PyImportResolver
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 
+@ApiStatus.Internal
 class BazelPyImportResolver : PyImportResolver {
   val cacheKey = "PythonResolveIndex"
 

@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolService
 import com.intellij.psi.PsiReference
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -13,6 +14,7 @@ import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionRefe
 import org.jetbrains.bazel.languages.starlark.references.StarlarkFunctionCallReference
 
 @Suppress("UnstableApiUsage")
+@ApiStatus.Internal
 class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitCallExpression(this)
 
@@ -26,7 +28,7 @@ class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   fun getNameNode(): ASTNode? = getNamePsi()?.node
 
-  fun getNamePsi(): StarlarkReferenceExpression? = findChildByType(StarlarkElementTypes.REFERENCE_EXPRESSION)
+  internal fun getNamePsi(): StarlarkReferenceExpression? = findChildByType(StarlarkElementTypes.REFERENCE_EXPRESSION)
 
   fun getTargetName(): String? = getArgumentList()?.getNameArgumentValue()
 

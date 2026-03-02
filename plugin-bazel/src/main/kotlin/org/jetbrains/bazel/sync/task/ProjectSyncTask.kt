@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
@@ -60,6 +61,7 @@ import kotlin.random.Random
 
 private val log = logger<ProjectSyncTask>()
 
+@ApiStatus.Internal
 class ProjectSyncTask(private val project: Project) {
   suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
     if (TrustedProjects.isProjectTrusted(project)) {
@@ -295,7 +297,7 @@ class ProjectSyncTask(private val project: Project) {
   }
 }
 
-enum class SyncResultStatus {
+internal enum class SyncResultStatus {
   SUCCESS,
   PARTIAL_SUCCESS,
   FAILURE,

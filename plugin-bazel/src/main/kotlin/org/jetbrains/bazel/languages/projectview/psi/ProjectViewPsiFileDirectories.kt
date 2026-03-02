@@ -10,19 +10,19 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSect
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
 import org.jetbrains.kotlin.psi.psiUtil.isAncestor
 
-fun ProjectViewPsiFile.isDirectoriesNullOrEmpty(): Boolean = directories?.getItems().isNullOrEmpty()
+internal fun ProjectViewPsiFile.isDirectoriesNullOrEmpty(): Boolean = directories?.getItems().isNullOrEmpty()
 
-fun ProjectViewPsiFile.directoriesContainsInclude(file: VirtualFile): Boolean = directoriesContainsItem(file, true)
+internal fun ProjectViewPsiFile.directoriesContainsInclude(file: VirtualFile): Boolean = directoriesContainsItem(file, true)
 
-fun ProjectViewPsiFile.directoriesContainsExclude(file: VirtualFile): Boolean = directoriesContainsItem(file, false)
+internal fun ProjectViewPsiFile.directoriesContainsExclude(file: VirtualFile): Boolean = directoriesContainsItem(file, false)
 
-fun ProjectViewPsiFile.addDirectoriesInclude(file: VirtualFile): Unit = addDirectoriesItem(file, true)
+internal fun ProjectViewPsiFile.addDirectoriesInclude(file: VirtualFile): Unit = addDirectoriesItem(file, true)
 
-fun ProjectViewPsiFile.addDirectoriesExclude(file: VirtualFile): Unit = addDirectoriesItem(file, false)
+internal fun ProjectViewPsiFile.addDirectoriesExclude(file: VirtualFile): Unit = addDirectoriesItem(file, false)
 
-fun ProjectViewPsiFile.removeDirectoriesInclude(file: VirtualFile): Unit = removeDirectoriesItem(file, true)
+internal fun ProjectViewPsiFile.removeDirectoriesInclude(file: VirtualFile): Unit = removeDirectoriesItem(file, true)
 
-fun ProjectViewPsiFile.removeDirectoriesExclude(file: VirtualFile): Unit = removeDirectoriesItem(file, false)
+internal fun ProjectViewPsiFile.removeDirectoriesExclude(file: VirtualFile): Unit = removeDirectoriesItem(file, false)
 
 private fun ProjectViewPsiFile.directoriesContainsItem(file: VirtualFile, include: Boolean): Boolean {
   val project = project

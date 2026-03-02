@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcElementTypes
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenSets
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 
-open class Parsing(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
+internal open class Parsing(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
   companion object {
     private val commandPrefixes = TokenSet.create(BazelrcTokenTypes.COMMAND, *BazelrcTokenSets.QUOTES.types)
     private val flagPrefixes = TokenSet.create(BazelrcTokenTypes.FLAG, BazelrcTokenTypes.EQ, BazelrcTokenTypes.VALUE)

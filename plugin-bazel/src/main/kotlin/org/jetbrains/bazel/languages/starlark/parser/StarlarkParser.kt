@@ -5,7 +5,7 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiParser
 import com.intellij.psi.tree.IElementType
 
-class StarlarkParser : PsiParser {
+internal class StarlarkParser : PsiParser {
   override fun parse(root: IElementType, builder: PsiBuilder): ASTNode {
     val rootMarker = builder.mark()
     val context = ParsingContext(builder)

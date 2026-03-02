@@ -21,7 +21,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
  * [this comment](https://code.jetbrains.team/p/ij/repositories/ultimate/files/66f6824f124da59d24e64111fcb085125305942b/remote-dev/cwm-guest/src/com/jetbrains/thinclient/toolWindow/generic/FrontendToolWindowHost.kt?tab=source&line=89&lines-count=2).
  * That's why we try to show the tool windows several times so that at least one call will be **after** `ToolWindowManagerImpl#setLayout`.
  */
-class BazelRemoteClientSessionListener : RemoteClientSessionListener {
+internal class BazelRemoteClientSessionListener : RemoteClientSessionListener {
   override fun projectSessionInitialized(lifetime: Lifetime, session: ClientProjectSession) {
     val project = session.project
     BazelCoroutineService.getInstance(project).start {

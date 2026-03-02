@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.sections
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.BooleanScalarSection
 
-class PreferClassJarsOverSourcelessJarsSection : BooleanScalarSection() {
+internal class PreferClassJarsOverSourcelessJarsSection : BooleanScalarSection() {
   override val name: String = NAME
   override val sectionKey: SectionKey<Boolean> = KEY
   override val doc: String = "In case library class jar is also present in the sources jars list, " +

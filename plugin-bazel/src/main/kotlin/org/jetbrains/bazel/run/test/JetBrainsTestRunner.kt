@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.run.test
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
@@ -15,9 +16,10 @@ private const val JB_TEST_FILTER = "JB_TEST_FILTER"
 private const val JB_IDE_SM_RUN = "JB_IDE_SM_RUN"
 
 @VisibleForTesting
-public var forceDisableJetBrainsTestRunner = false
+@ApiStatus.Internal
+var forceDisableJetBrainsTestRunner = false
 
-fun Project.useJetBrainsTestRunner(): Boolean {
+internal fun Project.useJetBrainsTestRunner(): Boolean {
   if (forceDisableJetBrainsTestRunner) {
     return false
   }
@@ -25,7 +27,7 @@ fun Project.useJetBrainsTestRunner(): Boolean {
   return ProjectViewService.getInstance(this).getCachedProjectView().useJetBrainsTestRunner
 }
 
-fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFilter: String?) {
+internal fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFilter: String?) {
   if (project.useJetBrainsTestRunner()) {
     (state as? HasTestFilter)?.testFilter = null
     (state as? HasEnv)?.env?.envs?.let {
@@ -47,7 +49,7 @@ fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFi
   }
 }
 
-fun setTestUniqueIds(state: BazelRunConfigurationState<*>, testUniqueIds: List<String>) {
+internal fun setTestUniqueIds(state: BazelRunConfigurationState<*>, testUniqueIds: List<String>) {
   (state as? HasTestFilter)?.testFilter = null
   (state as? HasEnv)?.env?.envs?.let {
     it.remove(JB_TEST_FILTER)
@@ -56,7 +58,7 @@ fun setTestUniqueIds(state: BazelRunConfigurationState<*>, testUniqueIds: List<S
   }
 }
 
-fun getTestUniqueIds(state: BazelRunConfigurationState<*>): List<String>? {
+internal fun getTestUniqueIds(state: BazelRunConfigurationState<*>): List<String>? {
   (state as? HasEnv)?.env?.envs?.let {
     return it[JB_TEST_UNIQUE_IDS]?.split(";")
   }

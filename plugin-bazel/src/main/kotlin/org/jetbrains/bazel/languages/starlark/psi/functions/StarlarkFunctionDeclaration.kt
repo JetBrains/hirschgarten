@@ -2,12 +2,14 @@ package org.jetbrains.bazel.languages.starlark.psi.functions
 
 import com.intellij.lang.ASTNode
 import com.intellij.util.PlatformIcons
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 import javax.swing.Icon
 
+@ApiStatus.Internal
 class StarlarkFunctionDeclaration(node: ASTNode) :
   StarlarkNamedElement(node),
   StarlarkCallable {
@@ -22,5 +24,5 @@ class StarlarkFunctionDeclaration(node: ASTNode) :
 
   override fun getParameters(): List<StarlarkParameter> = findChildByClass(StarlarkParameterList::class.java)?.getParameters().orEmpty()
 
-  fun getStatementList(): StarlarkStatementList = findChildByClass(StarlarkStatementList::class.java)!!
+  internal fun getStatementList(): StarlarkStatementList = findChildByClass(StarlarkStatementList::class.java)!!
 }

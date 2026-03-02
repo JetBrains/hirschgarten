@@ -21,7 +21,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
-public abstract class BaseRunnerAction(
+internal abstract class BaseRunnerAction(
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,

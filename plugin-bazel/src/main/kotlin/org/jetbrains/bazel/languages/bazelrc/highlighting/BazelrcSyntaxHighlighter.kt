@@ -11,7 +11,7 @@ import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 import org.jetbrains.bazel.languages.bazelrc.lexer.BazelrcLexer
 
-object BazelrcSyntaxHighlighter : SyntaxHighlighterBase() {
+internal object BazelrcSyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
       BazelrcTokenTypes.COMMENT to BazelrcHighlightingColors.COMMENT,
@@ -26,6 +26,6 @@ object BazelrcSyntaxHighlighter : SyntaxHighlighterBase() {
   override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }
 
-class BazelrcSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
+internal class BazelrcSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
   override fun getSyntaxHighlighter(project: Project?, virtualFile: VirtualFile?): SyntaxHighlighter = BazelrcSyntaxHighlighter
 }

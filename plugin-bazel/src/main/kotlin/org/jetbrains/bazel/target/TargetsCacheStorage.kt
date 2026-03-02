@@ -14,6 +14,7 @@ import org.h2.mvstore.MVMap
 import org.h2.mvstore.MVStore
 import org.h2.mvstore.WriteBuffer
 import org.h2.mvstore.type.LongDataType
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.AllPackagesBeneath
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.AllRuleTargetsAndFiles
@@ -39,6 +40,7 @@ private val logger = logger<TargetsCacheStorage>()
 private val logSupplier = { logger }
 
 // The implementation heavily relies on hashing without conflicts
+@ApiStatus.Internal
 class TargetsCacheStorage(
   private val store: MVStore,
   private val project: Project

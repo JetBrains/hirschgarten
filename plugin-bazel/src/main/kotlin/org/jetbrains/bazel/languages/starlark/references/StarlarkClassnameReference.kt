@@ -8,7 +8,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 
-class StarlarkClassnameReference(element: StarlarkStringLiteralExpression) :
+internal class StarlarkClassnameReference(element: StarlarkStringLiteralExpression) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), false) {
   override fun resolve(): PsiElement? {
     val project = element.project

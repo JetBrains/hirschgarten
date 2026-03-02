@@ -10,7 +10,7 @@ import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import javax.swing.Icon
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
-class StarlarkValue private constructor(
+internal class StarlarkValue private constructor(
   name: String,
   private val type: String,
   private val valueAsString: String,

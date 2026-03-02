@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.DynamicBundle
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 
 @NonNls
-const val BUNDLE: String = "messages.BazelPluginBundle"
+private const val BUNDLE: String = "messages.BazelPluginBundle"
 
+@ApiStatus.Internal
 object BazelPluginBundle : DynamicBundle(BUNDLE) {
   @JvmStatic
   @Nls

@@ -10,7 +10,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
  *
  * <p>Provides language-specific configuration state, validation, presentation, and runner.
  */
-interface BazelRunHandler {
+internal interface BazelRunHandler {
   val state: BazelRunConfigurationState<*>
 
   /**

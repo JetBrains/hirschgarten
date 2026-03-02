@@ -14,7 +14,7 @@ import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
 
-class FirstPhaseProjectResolver(
+internal class FirstPhaseProjectResolver(
   private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
   private val workspaceContext: WorkspaceContext,

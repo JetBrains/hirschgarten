@@ -15,7 +15,7 @@ import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
+internal class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
   var bspTargets: List<RawBuildTarget> = emptyList()
   var fileToTarget: Map<Path, List<Label>> = emptyMap()
   var libraryItems: List<LibraryItem> = emptyList()
@@ -38,9 +38,9 @@ class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
   }
 }
 
-val AllProjectStructuresDiff.targetUtilsDiff: TargetUtilsProjectStructureDiff
+internal val AllProjectStructuresDiff.targetUtilsDiff: TargetUtilsProjectStructureDiff
   get() = diffOfType(TargetUtilsProjectStructureDiff::class.java)
 
-class TargetUtilsProjectStructureProvider : ProjectStructureProvider<TargetUtilsProjectStructureDiff> {
+internal class TargetUtilsProjectStructureProvider : ProjectStructureProvider<TargetUtilsProjectStructureDiff> {
   override fun newDiff(project: Project): TargetUtilsProjectStructureDiff = TargetUtilsProjectStructureDiff()
 }

@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.quickFixes.StarlarkGlobAllowEmptyQuickFix
 
-class StarlarkGlobAnnotator : StarlarkAnnotator() {
+internal class StarlarkGlobAnnotator : StarlarkAnnotator() {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element is StarlarkGlobExpression && !element.isGlobValid()) {
       holder

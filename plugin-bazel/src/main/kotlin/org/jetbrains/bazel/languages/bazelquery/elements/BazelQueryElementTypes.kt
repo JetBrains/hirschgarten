@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFlagVal
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryInteger
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryWord
 
-object BazelQueryElementTypes {
+internal object BazelQueryElementTypes {
   val COMMAND = BazelQueryElementType("COMMAND")
   val WORD = BazelQueryElementType("WORD")
   val INTEGER = BazelQueryElementType("INTEGER")

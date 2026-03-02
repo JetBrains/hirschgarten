@@ -55,7 +55,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkReturnState
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
 
-object StarlarkElementTypes {
+internal object StarlarkElementTypes {
   val ASSIGNMENT_STATEMENT = StarlarkElementType("ASSIGNMENT_STATEMENT")
   val AUG_ASSIGNMENT_STATEMENT = StarlarkElementType("AUG_ASSIGNMENT_STATEMENT")
   val BREAK_STATEMENT = StarlarkElementType("BREAK_STATEMENT")

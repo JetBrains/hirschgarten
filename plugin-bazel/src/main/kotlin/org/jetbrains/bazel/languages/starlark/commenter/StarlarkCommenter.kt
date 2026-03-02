@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.starlark.commenter
 
 import com.intellij.lang.Commenter
 
-class StarlarkCommenter : Commenter {
+internal class StarlarkCommenter : Commenter {
   override fun getLineCommentPrefix(): String = "# "
 
   override fun getBlockCommentPrefix(): String? = null

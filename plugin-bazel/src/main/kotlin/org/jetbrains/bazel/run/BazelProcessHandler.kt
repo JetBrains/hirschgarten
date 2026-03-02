@@ -5,12 +5,14 @@ import com.intellij.execution.process.ProcessOutputType
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.future.asCompletableFuture
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import java.io.OutputStream
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.cancellation.CancellationException
 
+@ApiStatus.Internal
 open class BazelProcessHandler(
   private val project: Project,
   private val runDeferred: Deferred<*>,

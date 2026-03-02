@@ -13,7 +13,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceE
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 
-class StarlarkFindUsagesProvider : FindUsagesProvider {
+internal class StarlarkFindUsagesProvider : FindUsagesProvider {
   override fun canFindUsagesFor(psiElement: PsiElement): Boolean =
     psiElement is StarlarkNamedElement || psiElement is StarlarkReferenceExpression
 
@@ -43,7 +43,7 @@ class StarlarkFindUsagesProvider : FindUsagesProvider {
   override fun getWordsScanner(): WordsScanner = StarlarkWordsScanner()
 }
 
-class StarlarkWordsScanner :
+internal class StarlarkWordsScanner :
   DefaultWordsScanner(
     StarlarkHighlightingLexer(),
     StarlarkTokenSets.IDENTIFIER,

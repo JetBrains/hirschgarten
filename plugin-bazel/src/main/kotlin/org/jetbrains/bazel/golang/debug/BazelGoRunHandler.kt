@@ -21,7 +21,7 @@ import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.util.concurrent.atomic.AtomicReference
 
-class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
+internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     configuration.setBeforeRunTasksFromHandler(
       listOfNotNull(
@@ -74,7 +74,7 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
   }
 }
 
-class GoRunWithDebugCommandLineState(
+internal class GoRunWithDebugCommandLineState(
   environment: ExecutionEnvironment,
   module: Module,
   configuration: GoApplicationConfiguration,

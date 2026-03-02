@@ -18,13 +18,14 @@ package org.jetbrains.bazel.golang.sync
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import javax.swing.Icon
 
-@VisibleForTesting
-const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries"
+internal const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries"
 
+@ApiStatus.Internal
 data class GoExternalSyntheticLibrary(private val files: List<VirtualFile>) :
   SyntheticLibrary(),
   ItemPresentation {

@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
 
-abstract class StarlarkAnnotator : Annotator {
+internal abstract class StarlarkAnnotator : Annotator {
   protected fun checkElementAndParentType(
     element: PsiElement,
     expectedElementTypes: List<IElementType>,

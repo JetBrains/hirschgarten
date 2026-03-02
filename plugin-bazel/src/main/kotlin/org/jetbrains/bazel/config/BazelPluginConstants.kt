@@ -2,7 +2,7 @@ package org.jetbrains.bazel.config
 
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
 
-object BazelPluginConstants {
+internal object BazelPluginConstants {
   const val BAZEL_TOOLWINDOW_ID: String = "Bazel"
   const val BAZEL_QUERY_TOOLWINDOW_ID: String = "Bazel Query"
 

@@ -15,7 +15,7 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import java.util.function.Function
 import javax.swing.JComponent
 
-class UnsyncedSourceFileNotificationProvider : EditorNotificationProvider {
+internal class UnsyncedSourceFileNotificationProvider : EditorNotificationProvider {
   override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
     if (!project.isBazelProject) return null
     if (project.isSyncInProgress()) return null

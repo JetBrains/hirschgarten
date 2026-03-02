@@ -7,7 +7,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.ProtobufBuildTarget
 import java.nio.file.Path
 
-class BazelProtobufSyncHook : ProjectPostSyncHook {
+internal class BazelProtobufSyncHook : ProjectPostSyncHook {
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val store = environment.project.serviceAsync<BazelProtobufSyncService>().store
 

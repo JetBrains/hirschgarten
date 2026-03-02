@@ -5,7 +5,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker
 
-class JavaUnresolvedImportChecker : UnresolvedImportChecker {
+internal class JavaUnresolvedImportChecker : UnresolvedImportChecker {
   override fun hasUnresolvedImport(project: Project, psiFile: PsiFile): Boolean {
     val javaPsiFile = psiFile as? PsiJavaFile ?: return false
     val importList = javaPsiFile.importList ?: return false

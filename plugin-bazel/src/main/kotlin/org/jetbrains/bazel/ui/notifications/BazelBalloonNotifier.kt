@@ -20,7 +20,7 @@ import javax.swing.Icon
  *
  * If subtitle is empty, there will be no `':'` character after "Bazel".
  */
-object BazelBalloonNotifier {
+internal object BazelBalloonNotifier {
   /**
    * Display an information as a balloon notification
    *

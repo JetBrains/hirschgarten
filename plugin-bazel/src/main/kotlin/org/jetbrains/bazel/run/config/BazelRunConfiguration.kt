@@ -25,7 +25,7 @@ import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
 import org.jetbrains.bazel.target.targetUtils
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
-class BazelRunConfiguration internal constructor(
+internal class BazelRunConfiguration internal constructor(
   private val project: Project,
   name: String,
   configurationType: BazelRunConfigurationType,

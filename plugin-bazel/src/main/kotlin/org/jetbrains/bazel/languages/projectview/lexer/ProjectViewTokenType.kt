@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
  *
  * @param debugName the name of the element type, used for debugging purposes.
  */
-class ProjectViewTokenType private constructor(debugName: String) : IElementType(debugName, ProjectViewLanguage) {
+internal class ProjectViewTokenType private constructor(debugName: String) : IElementType(debugName, ProjectViewLanguage) {
   companion object {
     /** The character ':' */
     val COLON = ProjectViewTokenType("colon")

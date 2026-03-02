@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiWhiteSpace
 
-object StarlarkUtils {
+internal object StarlarkUtils {
   /**
    * original version: `com.jetbrains.python.psi.impl.PyPsiUtils.getNextNonWhitespaceSibling(com.intellij.lang.ASTNode)`
    */

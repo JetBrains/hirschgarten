@@ -7,7 +7,7 @@ import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 
-class StarlarkDebugConfigurationState(
+internal class StarlarkDebugConfigurationState(
   val project: Project,
   val target: String,
   environment: ExecutionEnvironment,

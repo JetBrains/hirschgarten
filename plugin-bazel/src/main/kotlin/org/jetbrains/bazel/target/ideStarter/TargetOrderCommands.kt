@@ -23,7 +23,7 @@ private fun getOrderedTargetLabels(context: PlaybackContext): List<String> {
   return targets.map { it.toShortString(project) }.sorted()
 }
 
-class SaveTargetOrderCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class SaveTargetOrderCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
     const val PREFIX = CMD_PREFIX + "saveTargetOrder"
   }
@@ -35,7 +35,7 @@ class SaveTargetOrderCommand(text: String, line: Int) : PlaybackCommandCoroutine
   }
 }
 
-class AssertTargetOrderCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class AssertTargetOrderCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
     const val PREFIX = CMD_PREFIX + "assertTargetOrder"
   }
@@ -64,7 +64,7 @@ class AssertTargetOrderCommand(text: String, line: Int) : PlaybackCommandCorouti
   }
 }
 
-class TargetOrderCommandProvider : CommandProvider {
+internal class TargetOrderCommandProvider : CommandProvider {
   override fun getCommands(): Map<String, CreateCommand> =
     mapOf(
       SaveTargetOrderCommand.PREFIX to CreateCommand(::SaveTargetOrderCommand),

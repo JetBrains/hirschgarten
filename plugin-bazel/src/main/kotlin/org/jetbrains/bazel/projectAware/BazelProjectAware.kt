@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.concurrency.annotations.RequiresReadLock
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
@@ -25,6 +26,7 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 
+@ApiStatus.Internal
 class BazelProjectAware(private val project: Project) : ExternalSystemProjectAware {
   override val projectId: ExternalSystemProjectId = getBazelProjectId(project.rootDir)
 
@@ -70,7 +72,7 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
 
   companion object {
     @JvmStatic
-    fun initialize(workspace: BazelWorkspace) {
+    internal fun initialize(workspace: BazelWorkspace) {
       val project = workspace.project
       val projectAware = BazelProjectAware(project)
       val projectTracker = ExternalSystemProjectTracker.getInstance(project)

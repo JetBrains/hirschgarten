@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.bazelrunner
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
 import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.Stopwatch
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bsp.protocol.BazelTaskLogger
 
+@ApiStatus.Internal
 class BazelProcess internal constructor(
   private val process: Process,
   private val logger: BazelTaskLogger? = null,

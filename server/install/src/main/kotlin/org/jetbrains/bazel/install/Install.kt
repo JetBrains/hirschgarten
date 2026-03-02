@@ -3,7 +3,7 @@ package org.jetbrains.bazel.install
 import org.jetbrains.bazel.install.cli.CliOptions
 import java.nio.file.Path
 
-object Install {
+internal object Install {
   fun runInstall(cliOptions: CliOptions, silent: Boolean = false) {
     createEnvironment(cliOptions)
     if (!silent) printSuccess(cliOptions.workspaceDir)

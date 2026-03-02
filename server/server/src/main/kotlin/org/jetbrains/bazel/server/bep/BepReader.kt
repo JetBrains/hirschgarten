@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.io.path.inputStream
 import kotlin.time.Duration.Companion.milliseconds
 
-class BepReader(val bepServer: BepServer, val eventFile: Path) {
+internal class BepReader(val bepServer: BepServer, val eventFile: Path) {
   val serverPid = AtomicLong(0)
 
   private val bazelBuildFinished = AtomicBoolean(false)

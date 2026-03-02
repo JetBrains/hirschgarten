@@ -6,7 +6,7 @@ import org.jetbrains.plugins.terminal.block.completion.spec.ShellCommandSpecInfo
 import org.jetbrains.plugins.terminal.block.completion.spec.ShellCommandSpecsProvider
 
 @Suppress("UnstableApiUsage")
-class BazelQueryCommandSpecsProvider : ShellCommandSpecsProvider {
+internal class BazelQueryCommandSpecsProvider : ShellCommandSpecsProvider {
   override fun getCommandSpecs(): List<ShellCommandSpecInfo> =
     if (isQueryTerminalCompletionEnabled) {
       listOf(ShellCommandSpecInfo.create(bazelQueryCommandSpec(), ShellCommandSpecConflictStrategy.OVERRIDE))

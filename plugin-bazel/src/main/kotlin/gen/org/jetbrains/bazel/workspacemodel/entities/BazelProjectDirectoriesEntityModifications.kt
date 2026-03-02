@@ -9,8 +9,10 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.ApiStatus
 
 @GeneratedCodeApiVersion(3)
+@ApiStatus.Internal
 interface BazelProjectDirectoriesEntityBuilder : WorkspaceEntityBuilder<BazelProjectDirectoriesEntity> {
   override var entitySource: EntitySource
   var projectRoot: VirtualFileUrl
@@ -43,13 +45,14 @@ internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirec
   }
 }
 
-fun MutableEntityStorage.modifyBazelProjectDirectoriesEntity(
+internal fun MutableEntityStorage.modifyBazelProjectDirectoriesEntity(
   entity: BazelProjectDirectoriesEntity,
   modification: BazelProjectDirectoriesEntityBuilder.() -> Unit,
 ): BazelProjectDirectoriesEntity = modifyEntity(BazelProjectDirectoriesEntityBuilder::class.java, entity, modification)
 
 @JvmOverloads
 @JvmName("createBazelProjectDirectoriesEntity")
+@ApiStatus.Internal
 fun BazelProjectDirectoriesEntity(
   projectRoot: VirtualFileUrl,
   includedRoots: List<VirtualFileUrl>,

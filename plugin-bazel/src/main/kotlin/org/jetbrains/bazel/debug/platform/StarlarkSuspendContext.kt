@@ -6,7 +6,7 @@ import com.intellij.xdebugger.frame.XSuspendContext
 import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
-class StarlarkSuspendContext(
+internal class StarlarkSuspendContext(
   threads: List<SDP.PausedThread>,
   private val valueComputer: StarlarkValueComputer,
   private val evaluatorProvider: StarlarkDebuggerEvaluator.Provider,

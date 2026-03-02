@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 
-class StarlarkLoadReference(element: StarlarkStringLiteralExpression, val loadedFileReference: BazelLabelReference) :
+internal class StarlarkLoadReference(element: StarlarkStringLiteralExpression, val loadedFileReference: BazelLabelReference) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), false) {
   override fun resolve(): PsiElement? {
     val loadedFile = loadedFileReference.resolve() as? StarlarkFile ?: return null

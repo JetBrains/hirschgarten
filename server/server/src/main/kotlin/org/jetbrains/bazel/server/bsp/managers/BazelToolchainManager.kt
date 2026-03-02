@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
-class BazelToolchainManager {
+internal class BazelToolchainManager {
   fun getToolchain(rulesetLanguage: RulesetLanguage): String? =
     when (rulesetLanguage.language) {
       Language.Scala -> rulesetLanguage.rulesetName?.asReponame()?.let { """"@$it//scala:toolchain_type"""" }

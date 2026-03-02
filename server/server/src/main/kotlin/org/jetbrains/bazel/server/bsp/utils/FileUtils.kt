@@ -8,7 +8,7 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-object FileUtils {
+internal object FileUtils {
   /**
    * Important for aspect files, as writing the same content
    * updates filesystem's modification date and trigger Bazel's

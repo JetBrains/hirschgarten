@@ -16,6 +16,7 @@
 package org.jetbrains.bazel.commons
 
 import com.intellij.openapi.util.io.FileUtil
+import org.jetbrains.annotations.ApiStatus
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -25,6 +26,7 @@ import kotlin.io.path.absolute
  * An absolute or relative path returned from Bazel. If it is a relative path, it is relative to the
  * execution root.
  */
+@ApiStatus.Internal
 data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
   constructor(path: String) : this(Path(path))
 

@@ -10,9 +10,10 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.ApiStatus
 
 @GeneratedCodeApiVersion(3)
-interface PackageMarkerEntityBuilder : WorkspaceEntityBuilder<PackageMarkerEntity> {
+internal interface PackageMarkerEntityBuilder : WorkspaceEntityBuilder<PackageMarkerEntity> {
   override var entitySource: EntitySource
   var root: VirtualFileUrl
   var packagePrefix: String
@@ -36,18 +37,19 @@ internal object PackageMarkerEntityType : EntityType<PackageMarkerEntity, Packag
   }
 }
 
-fun MutableEntityStorage.modifyPackageMarkerEntity(
+internal fun MutableEntityStorage.modifyPackageMarkerEntity(
   entity: PackageMarkerEntity,
   modification: PackageMarkerEntityBuilder.() -> Unit,
 ): PackageMarkerEntity = modifyEntity(PackageMarkerEntityBuilder::class.java, entity, modification)
 
-var ModuleEntityBuilder.packageMarkerEntities: List<PackageMarkerEntityBuilder>
+internal var ModuleEntityBuilder.packageMarkerEntities: List<PackageMarkerEntityBuilder>
   by WorkspaceEntity.extensionBuilder(PackageMarkerEntity::class.java)
 
 
 @JvmOverloads
 @JvmName("createPackageMarkerEntity")
-fun PackageMarkerEntity(
+@ApiStatus.Internal
+internal fun PackageMarkerEntity(
   root: VirtualFileUrl,
   packagePrefix: String,
   entitySource: EntitySource,

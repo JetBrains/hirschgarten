@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.label
 
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
 data class DependencyLabel(
   val label: Label,
   val isRuntime: Boolean = false,

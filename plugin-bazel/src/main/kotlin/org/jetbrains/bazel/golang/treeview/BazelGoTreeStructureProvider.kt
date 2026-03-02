@@ -24,6 +24,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory
 import org.jetbrains.bazel.golang.sync.GO_EXTERNAL_LIBRARY_ROOT_NAME
@@ -37,6 +38,7 @@ import java.util.function.Function
  * Modifies the project view by replacing the External Go Libraries root node (containing a flat
  * list of sources) with a root node that structures sources based on their import paths.
  */
+@ApiStatus.Internal
 class BazelGoTreeStructureProvider :
   TreeStructureProvider,
   DumbAware {

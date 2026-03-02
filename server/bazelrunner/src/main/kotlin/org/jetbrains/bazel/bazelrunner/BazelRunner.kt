@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.label.Label
@@ -14,6 +15,7 @@ import kotlin.io.path.pathString
 /**
  * Runs Bazel commands with proper repository configuration.
  */
+@ApiStatus.Internal
 class BazelRunner(
   private val taskEventsHandler: BazelTaskEventsHandler?,
   val workspaceRoot: Path,

@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.bazelquery.psi
 
 import com.intellij.psi.PsiElementVisitor
 
-open class BazelQueryElementVisitor : PsiElementVisitor() {
+internal open class BazelQueryElementVisitor : PsiElementVisitor() {
   fun visitCommand(node: BazelQueryCommand) {
     visitElement(node)
   }

@@ -24,7 +24,7 @@ import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 
 /** Helper methods for HotSwapping  */
-object HotSwapUtils {
+internal object HotSwapUtils {
   fun canHotSwap(env: ExecutionEnvironment, project: Project): Boolean = isHotSwapEligible(project) && isDebugging(env)
 
   fun isHotSwapEligible(project: Project): Boolean =

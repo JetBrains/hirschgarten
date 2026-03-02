@@ -40,7 +40,7 @@ import java.net.ConnectException
 import java.util.concurrent.CancellationException
 import kotlin.random.Random
 
-class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
+internal class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
   override fun getRunnerId(): String = "StarlarkDebugRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean =

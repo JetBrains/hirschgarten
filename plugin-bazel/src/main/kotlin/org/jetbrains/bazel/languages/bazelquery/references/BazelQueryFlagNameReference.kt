@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 
 @Suppress("UnstableApiUsage")
-class BazelQueryFlagNameReference(val element: BazelQueryFlag) : PsiSymbolReference {
+internal class BazelQueryFlagNameReference(val element: BazelQueryFlag) : PsiSymbolReference {
   val textRange = element.name?.textRangeInParent ?: element.textRange!!
 
   override fun getElement(): PsiElement = element

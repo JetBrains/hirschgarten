@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
-class RunWithLocalJvmRunnerAction(
+internal class RunWithLocalJvmRunnerAction(
   project: Project,
   targetInfo: BuildTarget,
   text: (() -> String)? = null,

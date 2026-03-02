@@ -9,7 +9,7 @@ import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerAction
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
-class BazelJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
+internal class BazelJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
   override fun patchJavaParameters(
     executor: Executor,
     configuration: RunProfile,

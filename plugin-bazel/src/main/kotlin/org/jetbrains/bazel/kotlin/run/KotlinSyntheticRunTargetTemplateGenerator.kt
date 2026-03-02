@@ -3,6 +3,7 @@ package org.jetbrains.bazel.kotlin.run
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import org.intellij.lang.annotations.Language
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.synthetic.MainClassSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
@@ -13,6 +14,7 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 
+@ApiStatus.Internal
 class KotlinSyntheticRunTargetTemplateGenerator : MainClassSyntheticRunTargetTemplateGenerator() {
 
   override fun getMainClass(element: PsiElement): String? {

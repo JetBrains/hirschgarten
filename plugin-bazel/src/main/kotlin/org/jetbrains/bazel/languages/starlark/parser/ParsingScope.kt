@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.parser
 
-data class ParsingScope(
+internal data class ParsingScope(
   val isFunction: Boolean = false,
   val isSuite: Boolean = false,
   var isAfterSemicolon: Boolean = false,

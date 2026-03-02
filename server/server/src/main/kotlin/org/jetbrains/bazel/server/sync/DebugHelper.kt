@@ -3,7 +3,7 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.protocol.DebugType
 
-object DebugHelper {
+internal object DebugHelper {
   fun jdwpArgument(port: Int): String =
     // https://bazel.build/reference/command-line-reference#flag--java_debug
     "--wrapper_script_flag=--debug=$port"

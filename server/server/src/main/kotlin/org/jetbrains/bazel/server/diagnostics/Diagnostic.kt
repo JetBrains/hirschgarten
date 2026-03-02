@@ -1,10 +1,11 @@
 package org.jetbrains.bazel.server.diagnostics
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import java.nio.file.Path
 
-data class Diagnostic(
+internal data class Diagnostic(
   val position: Position,
   val message: String,
   val fileLocation: Path?,
@@ -12,4 +13,5 @@ data class Diagnostic(
   val level: DiagnosticSeverity? = null,
 )
 
+@ApiStatus.Internal
 data class Position(val line: Int, val character: Int)

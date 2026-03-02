@@ -32,7 +32,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import javax.swing.ListCellRenderer
 
-class LabelSearchEverywhereContributor(private val project: Project) :
+internal class LabelSearchEverywhereContributor(private val project: Project) :
   WeightedSearchEverywhereContributor<LabelSearchEverywhereContributor.LabelWithPreview>,
   SearchEverywherePreviewProvider {
   private val listCellRenderer: ListCellRenderer<LabelWithPreview> =

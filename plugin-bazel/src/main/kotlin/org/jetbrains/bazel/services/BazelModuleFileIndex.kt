@@ -16,7 +16,7 @@ import org.jetbrains.bazel.config.isBazelProject
  * Apparently this behavior is important for Rider.
  * This class just reverts this commit for BSP projects.
  */
-class BazelModuleFileIndex(private val module: Module) : ModuleFileIndexImpl(module) {
+internal class BazelModuleFileIndex(private val module: Module) : ModuleFileIndexImpl(module) {
   override fun iterateContent(processor: ContentIterator, filter: VirtualFileFilter?): Boolean {
     if (!module.project.isBazelProject) return super.iterateContent(processor, filter)
 

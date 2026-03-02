@@ -20,7 +20,7 @@ import kotlin.io.path.createParentDirectories
 import org.h2.mvstore.MVStore
 
 @Service(Service.Level.PROJECT)
-class BazelModuleBcrCacheService(project: Project) : Disposable {
+internal class BazelModuleBcrCacheService(project: Project) : Disposable {
   private val gson = Gson()
   private val store: MVStore = openStore(project.getProjectDataPath("bzlmod/bcr-cache.mv"))
   private val map = store.openMap<String, String>("bcrCache")

@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.bazelrc.psi
 
 import com.intellij.psi.PsiElementVisitor
 
-open class BazelrcElementVisitor : PsiElementVisitor() {
+internal open class BazelrcElementVisitor : PsiElementVisitor() {
   fun visitImport(node: BazelrcImport) {
     visitElement(node)
   }

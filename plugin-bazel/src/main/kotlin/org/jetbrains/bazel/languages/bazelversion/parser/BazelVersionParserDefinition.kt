@@ -20,7 +20,7 @@ import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionFile
 /**
  * @see com.intellij.openapi.fileTypes.PlainTextParserDefinition
  */
-class BazelVersionParserDefinition : ParserDefinition {
+internal class BazelVersionParserDefinition : ParserDefinition {
   // avoid creating new IFileElementType on each getFileNodeType
   // to ensure IFileElementType is registered only once inside an internal registry
   val file =

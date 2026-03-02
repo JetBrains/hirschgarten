@@ -5,7 +5,7 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.Icon
 
-object ProjectViewFileType : LanguageFileType(ProjectViewLanguage) {
+internal object ProjectViewFileType : LanguageFileType(ProjectViewLanguage) {
   override fun getName(): String = "ProjectView"
 
   override fun getDescription(): String = BazelPluginBundle.message("bazel.language.projectview.description")

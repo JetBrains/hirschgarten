@@ -27,7 +27,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceE
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 
-class StarlarkArgumentCompletionContributor : CompletionContributor() {
+internal class StarlarkArgumentCompletionContributor : CompletionContributor() {
   init {
     extend(
       CompletionType.BASIC,

@@ -3,7 +3,7 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
-import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.TaskId
 
@@ -13,7 +13,6 @@ import org.jetbrains.bsp.protocol.TaskId
  * It should be used to perform post-sync actions, e.g., code cleanup after sync.
  * It's guaranteed that hook will be called *after* all [ProjectSyncHook] calls.
  */
-@PublicApi
 interface ProjectPostSyncHook {
   /**
    * Tells the sync mechanism whatever this hook should be executed after a sync.
@@ -28,6 +27,7 @@ interface ProjectPostSyncHook {
 
   companion object {
     @JvmField
+    @ApiStatus.Internal
     val ep = ExtensionPointName.create<ProjectPostSyncHook>("org.jetbrains.bazel.projectPostSyncHook")
   }
 
@@ -38,14 +38,16 @@ interface ProjectPostSyncHook {
    */
   data class ProjectPostSyncHookEnvironment(
     val project: Project,
+    @ApiStatus.Internal
     val taskId: TaskId,
     val progressReporter: SequentialProgressReporter,
   )
 }
 
 val Project.projectPostSyncHooks: List<ProjectPostSyncHook>
+  @ApiStatus.Internal
   get() =
     ProjectPostSyncHook.ep.extensionList.filter { it.isEnabled(this) }
 
-suspend fun <T> ProjectPostSyncHook.ProjectPostSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
+internal suspend fun <T> ProjectPostSyncHook.ProjectPostSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
   project.withSubtask(progressReporter, taskId.subTask(text), text, block)

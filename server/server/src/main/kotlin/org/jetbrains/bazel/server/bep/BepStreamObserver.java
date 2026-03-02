@@ -3,9 +3,11 @@ package org.jetbrains.bazel.server.bep;
 import com.google.devtools.build.v1.PublishBuildToolEventStreamRequest;
 import com.google.devtools.build.v1.PublishBuildToolEventStreamResponse;
 import io.grpc.stub.StreamObserver;
+import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@ApiStatus.Internal
 public class BepStreamObserver implements StreamObserver<PublishBuildToolEventStreamRequest> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BepStreamObserver.class);

@@ -15,7 +15,7 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
-class OpenProjectViewAction :
+internal class OpenProjectViewAction :
   SuspendableAction(
     { BazelPluginBundle.message("widget.config.file.popup.message", BazelPluginBundle.message("tool.window.generic.config.file")) },
     AllIcons.FileTypes.Config,

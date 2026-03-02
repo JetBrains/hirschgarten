@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.sections.presets
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.languages.projectview.ListSection
 
+@ApiStatus.Internal
 abstract class ExcludableListSection<T> : ListSection<List<ExcludableValue<T>>>() {
   abstract fun parseItem(value: String): T?
 

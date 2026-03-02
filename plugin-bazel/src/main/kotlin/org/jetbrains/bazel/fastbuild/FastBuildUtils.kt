@@ -63,7 +63,7 @@ import kotlin.io.path.reader
 import kotlin.io.path.relativeTo
 import kotlin.io.path.writer
 
-object FastBuildUtils {
+internal object FastBuildUtils {
   private val logger = Logger.getInstance(FastBuildUtils::class.java)
 
   fun fastBuildFilesPromise(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {

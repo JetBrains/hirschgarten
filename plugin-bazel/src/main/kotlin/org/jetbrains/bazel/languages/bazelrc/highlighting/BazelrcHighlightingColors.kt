@@ -4,7 +4,7 @@ import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.CodeInsightColors
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 
-object BazelrcHighlightingColors {
+internal object BazelrcHighlightingColors {
   val COMMAND = createTextAttributesKey("BAZELRC_COMMAND", DefaultLanguageHighlighterColors.KEYWORD)
   val IMPORT = createTextAttributesKey("BAZELRC_IMPORT", DefaultLanguageHighlighterColors.STATIC_METHOD)
   val STRING = createTextAttributesKey("BAZELRC_STRING", DefaultLanguageHighlighterColors.STRING)

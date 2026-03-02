@@ -9,7 +9,7 @@ import org.jetbrains.bazel.run.BazelCommandLineStateBase
 // Longer timeout to account for Bazel build
 private const val DEBUGGER_ATTACH_TIMEOUT: Long = 3 * 60 * 1000
 
-abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, private val port: Int) :
+internal abstract class JvmDebuggableCommandLineState(environment: ExecutionEnvironment, private val port: Int) :
   BazelCommandLineStateBase(environment) {
   fun createDebugEnvironment(environment: ExecutionEnvironment): DefaultDebugEnvironment {
     // create remote connection with client mode

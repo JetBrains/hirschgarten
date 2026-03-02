@@ -18,7 +18,7 @@ import java.nio.file.Path
 import kotlin.io.path.extension
 
 @Service(Service.Level.PROJECT)
-class GoExternalLibraryManager(private val project: Project) {
+internal class GoExternalLibraryManager(private val project: Project) {
   @Volatile
   var library: GoExternalSyntheticLibrary? = null
     private set

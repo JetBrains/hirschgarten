@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.commons.constants
 
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
 object Constants {
   const val NAME: String = "bazelbsp"
   const val VERSION: String = "3.2.0"

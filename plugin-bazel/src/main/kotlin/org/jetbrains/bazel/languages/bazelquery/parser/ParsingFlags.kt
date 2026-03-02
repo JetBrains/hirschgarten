@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryElementTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
 
-open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
+internal open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
   private val utils = ParsingUtils(builder)
 
   fun parseFile(): ASTNode {

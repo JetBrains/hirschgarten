@@ -16,10 +16,12 @@
 package org.jetbrains.bazel.commons
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import org.jetbrains.annotations.ApiStatus
 
 /** Language classes.
  * serialId is being used in serialization - keep it unchanged
  * */
+@ApiStatus.Internal
 enum class LanguageClass(
   val serialId: Int,
   val languageName: String,

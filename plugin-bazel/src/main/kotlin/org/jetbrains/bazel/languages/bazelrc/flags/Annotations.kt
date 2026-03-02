@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.languages.bazelrc.flags
 
+import org.jetbrains.annotations.ApiStatus
+
 // Known effects: from com.google.devtools.common.options.proto.OptionFilters.OptionEffectTag
+@ApiStatus.Internal
 enum class OptionEffectTag {
   NO_OP,
   LOSES_INCREMENTAL_STATE,
@@ -20,6 +23,7 @@ enum class OptionEffectTag {
 }
 
 // Metadata: from com.google.devtools.common.options.proto.OptionFilters.OptionMetadataTag
+@ApiStatus.Internal
 enum class OptionMetadataTag {
   EXPERIMENTAL,
   INCOMPATIBLE_CHANGE,
@@ -35,6 +39,7 @@ enum class OptionMetadataTag {
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)
+@ApiStatus.Internal
 annotation class Option(
   /** The name of the option ("--name"). */
   val name: String,

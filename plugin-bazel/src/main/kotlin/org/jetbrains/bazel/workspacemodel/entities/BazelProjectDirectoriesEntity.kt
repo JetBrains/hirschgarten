@@ -2,7 +2,9 @@ package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.ApiStatus
 
+@ApiStatus.Internal
 interface BazelProjectDirectoriesEntity : WorkspaceEntity {
   public val projectRoot: VirtualFileUrl
   public val includedRoots: List<VirtualFileUrl>

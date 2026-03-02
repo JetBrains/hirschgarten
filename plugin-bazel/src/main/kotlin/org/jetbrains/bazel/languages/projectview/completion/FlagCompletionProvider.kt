@@ -12,7 +12,7 @@ import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
-class FlagCompletionProvider(vararg val commands: String) : CompletionProvider<CompletionParameters>() {
+internal class FlagCompletionProvider(vararg val commands: String) : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,

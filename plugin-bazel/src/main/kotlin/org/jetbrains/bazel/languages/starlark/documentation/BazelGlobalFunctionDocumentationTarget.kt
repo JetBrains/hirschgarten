@@ -12,7 +12,7 @@ import org.jetbrains.bazel.languages.starlark.highlighting.StarlarkHighlightingC
 import java.awt.Color
 
 @Suppress("UnstableApiUsage")
-class BazelGlobalFunctionDocumentationTarget(symbol: BazelGlobalFunctionDocumentationSymbol) :
+internal class BazelGlobalFunctionDocumentationTarget(symbol: BazelGlobalFunctionDocumentationSymbol) :
   DocumentationTarget,
   Pointer<BazelGlobalFunctionDocumentationTarget> {
   val symbolPtr = symbol.createPointer()

@@ -6,6 +6,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 
 /**
  * BazelJVMProjectSettings holds the JVM-specific part of settings. It can be modified by BazelJVMSettingsProviders,
@@ -14,6 +15,7 @@ import com.intellij.openapi.project.Project
  * * (BazelJVMSettingsProviders is the extension of an extension point, and it will not be loaded when java plugin is absent, so that user won't be able to change t
  * the JVM-specific settings when there is no java plugin)
  * */
+@ApiStatus.Internal
 data class BazelJVMProjectSettings(
   var hotSwapEnabled: Boolean = true,
   var enableLocalJvmActions: Boolean = false,
@@ -55,7 +57,9 @@ internal class BazelJVMProjectSettingsService :
 }
 
 var Project.bazelJVMProjectSettings: BazelJVMProjectSettings
+  @ApiStatus.Internal
   get() = BazelJVMProjectSettingsService.getInstance(this).settings.copy()
+  @ApiStatus.Internal
   set(value) {
     BazelJVMProjectSettingsService.getInstance(this).settings = value.copy()
   }

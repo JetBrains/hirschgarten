@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkOptionalPara
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameterList
 
-class StarlarkLambdaExpression(node: ASTNode) :
+internal class StarlarkLambdaExpression(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkCallable {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitLambdaExpression(this)

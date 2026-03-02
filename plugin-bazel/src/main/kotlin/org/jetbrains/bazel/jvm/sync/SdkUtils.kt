@@ -14,7 +14,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import java.nio.file.Path
 
-object SdkUtils {
+internal object SdkUtils {
   suspend fun addJdkIfNeeded(projectName: String, javaHome: Path) {
     val jdkName = projectName.projectNameToJdkName(javaHome)
     // Normalize the JDK path, because some code in the platform compares paths using `startsWith`, e.g.

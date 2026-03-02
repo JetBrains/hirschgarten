@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.sync.workspace.languages.jvm
 
+import org.jetbrains.annotations.ApiStatus
 import java.nio.charset.Charset
 import java.nio.file.Path
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.notExists
 
+@ApiStatus.Internal
 object JVMLanguagePluginParser {
   private val PACKAGE_PATTERN = Regex("^\\s*package\\s+([\\p{L}0-9_.]+)")
   private val ONE_BYTE_CHARSET = Charset.forName("ISO-8859-1")

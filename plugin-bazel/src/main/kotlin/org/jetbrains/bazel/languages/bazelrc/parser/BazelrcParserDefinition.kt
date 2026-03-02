@@ -10,12 +10,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcElementTypes
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenSets
 import org.jetbrains.bazel.languages.bazelrc.lexer.BazelrcLexer
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
 
+@ApiStatus.Internal
 class BazelrcParserDefinition : ParserDefinition {
   override fun createLexer(project: Project?): Lexer = BazelrcLexer()
 

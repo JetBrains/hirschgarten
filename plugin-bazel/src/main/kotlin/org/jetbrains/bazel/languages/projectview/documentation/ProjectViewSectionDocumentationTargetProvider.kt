@@ -13,7 +13,7 @@ import org.jetbrains.bazel.languages.projectview.Section
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionName
 
-class ProjectViewSectionDocumentationTargetProvider : DocumentationTargetProvider {
+internal class ProjectViewSectionDocumentationTargetProvider : DocumentationTargetProvider {
   @Suppress("UnstableApiUsage")
   private class SectionDocumentationTarget(
     val element: PsiElement,

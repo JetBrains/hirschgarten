@@ -13,7 +13,7 @@ import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
 
-object TargetIdToModuleEntitiesMap {
+internal object TargetIdToModuleEntitiesMap {
   suspend operator fun invoke(
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,

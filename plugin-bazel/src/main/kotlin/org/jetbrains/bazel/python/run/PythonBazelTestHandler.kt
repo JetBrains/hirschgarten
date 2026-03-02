@@ -11,7 +11,7 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bsp.protocol.BuildTarget
 
-class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
+internal class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
   override val name: String
     get() = "Python Test Handler"
 

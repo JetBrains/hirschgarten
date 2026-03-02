@@ -18,7 +18,7 @@ import org.jetbrains.bazel.run.state.addRunWithBazelFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
 
-class JvmRunState(project: Project) :
+internal class JvmRunState(project: Project) :
   AbstractGenericRunState<JvmRunState>(),
   HasDebugPort,
   HasRunWithBazel {
@@ -33,7 +33,7 @@ class JvmRunState(project: Project) :
   override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<JvmRunState> = JvmRunStateEditor(configuration)
 }
 
-class JvmRunStateEditor(private val config: BazelRunConfiguration) :
+internal class JvmRunStateEditor(private val config: BazelRunConfiguration) :
   FragmentedSettingsEditor<JvmRunState>(config.handler?.state as JvmRunState) {
   override fun createFragments(): Collection<SettingsEditorFragment<JvmRunState, *>> =
     SettingsEditorFragmentContainer.fragments {

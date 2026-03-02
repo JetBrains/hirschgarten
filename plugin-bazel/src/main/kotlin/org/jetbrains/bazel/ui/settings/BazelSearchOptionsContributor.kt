@@ -4,7 +4,7 @@ import com.intellij.ide.ui.search.SearchableOptionContributor
 import com.intellij.ide.ui.search.SearchableOptionProcessor
 import org.jetbrains.bazel.config.BazelPluginBundle
 
-class BazelSearchOptionsContributor : SearchableOptionContributor() {
+internal class BazelSearchOptionsContributor : SearchableOptionContributor() {
   override fun processOptions(processor: SearchableOptionProcessor) {
     val settingPages = listOf(bazelProjectSettingsPage, bazelApplicationSettingsPage, bazelExperimentalProjectSettingsPage)
     settingPages.forEach { page ->

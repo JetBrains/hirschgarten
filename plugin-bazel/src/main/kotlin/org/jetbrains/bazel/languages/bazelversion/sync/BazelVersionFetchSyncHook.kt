@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerSer
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 
-class BazelVersionFetchSyncHook : ProjectPostSyncHook {
+internal class BazelVersionFetchSyncHook : ProjectPostSyncHook {
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val workspaceDir = environment.project.rootDir.toNioPath()
     val currentVersion = BazelVersionWorkspaceResolver.resolveBazelVersionFromWorkspace(workspaceDir)

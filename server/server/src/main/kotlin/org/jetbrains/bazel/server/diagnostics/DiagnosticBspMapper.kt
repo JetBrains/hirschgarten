@@ -8,7 +8,7 @@ import org.jetbrains.bsp.protocol.Diagnostic as BspDiagnostic
 import org.jetbrains.bsp.protocol.Position as BspPosition
 import org.jetbrains.bsp.protocol.Range as BspRange
 
-class DiagnosticBspMapper(private val workspaceRoot: Path) {
+internal class DiagnosticBspMapper(private val workspaceRoot: Path) {
   fun createDiagnostics(diagnostics: List<Diagnostic>, taskId: TaskId): List<PublishDiagnosticsParams> =
     diagnostics
       .groupBy {

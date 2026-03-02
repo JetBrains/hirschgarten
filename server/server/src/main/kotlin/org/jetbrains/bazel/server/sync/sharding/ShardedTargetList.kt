@@ -19,7 +19,7 @@ import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
 
 /** Partitioned list of Bazel targets.  */
-class ShardedTargetList(private val shardedTargets: List<List<Label>>, private val excludedTargets: List<Label> = listOf()) {
+internal class ShardedTargetList(private val shardedTargets: List<List<Label>>, private val excludedTargets: List<Label> = listOf()) {
   fun toTargetCollections(): List<TargetCollection> =
     shardedTargets.map { targets ->
       TargetCollection(

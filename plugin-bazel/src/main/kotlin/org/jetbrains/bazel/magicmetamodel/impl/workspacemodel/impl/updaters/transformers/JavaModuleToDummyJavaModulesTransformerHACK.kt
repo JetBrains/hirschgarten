@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -30,6 +31,7 @@ import kotlin.io.path.pathString
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
+@ApiStatus.Internal
 class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
   private val fileToTargets: Map<Path, List<Label>>,
@@ -248,7 +250,7 @@ private fun Iterable<Pair<JavaSourceRoot, Int>>.sumUpVotes(): Map<JavaSourceRoot
   return result
 }
 
-fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
+internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
   val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()
   val absoluteProjectBasePath = projectBasePath.toAbsolutePath().toString()
   return absoluteSourceRoot
@@ -262,7 +264,7 @@ fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): Strin
 
 private const val IJ_DUMMY_MODULE_PREFIX = "_aux.synthetic"
 
-fun String.addIntelliJDummyPrefix(): String =
+internal fun String.addIntelliJDummyPrefix(): String =
   if (isBlank()) {
     IJ_DUMMY_MODULE_PREFIX
   }

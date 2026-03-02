@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionItem
 
-class ProjectViewFlagDocumentationTargetProvider : DocumentationTargetProvider {
+internal class ProjectViewFlagDocumentationTargetProvider : DocumentationTargetProvider {
   override fun documentationTargets(file: PsiFile, offset: Int): List<DocumentationTarget> {
     val element = file.findElementAt(offset) ?: return emptyList()
     if (element.language !is ProjectViewLanguage) return emptyList()

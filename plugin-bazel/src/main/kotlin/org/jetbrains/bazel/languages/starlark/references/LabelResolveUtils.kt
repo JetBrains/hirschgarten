@@ -26,7 +26,7 @@ import org.jetbrains.bazel.utils.findVirtualFile
  * @see ExternalRepoResolveTest
  */
 @RequiresReadLock
-fun resolveLabel(
+internal fun resolveLabel(
   project: Project,
   label: Label,
   containingFile: VirtualFile? = null,
@@ -81,7 +81,7 @@ private fun resolveBuildFileTarget(buildFile: StarlarkFile, label: Label): PsiEl
     ?.let { return it }
 }
 
-fun findBuildFile(
+internal fun findBuildFile(
   project: Project,
   label: ResolvedLabel,
   containingFile: VirtualFile? = null,
@@ -140,7 +140,7 @@ private fun findReferredAbsolutePackage(
   return repoRoot.findFileByRelativePath(label.packagePath.toString())
 }
 
-fun findBuildFile(packageDir: VirtualFile): VirtualFile? =
+internal fun findBuildFile(packageDir: VirtualFile): VirtualFile? =
   Constants.BUILD_FILE_NAMES.firstNotNullOfOrNull { buildFileName ->
     packageDir.findChild(buildFileName)?.takeIf { it.isFile }
   }

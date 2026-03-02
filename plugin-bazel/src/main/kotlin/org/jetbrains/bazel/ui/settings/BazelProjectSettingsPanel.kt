@@ -34,7 +34,7 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.isExecutable
 import kotlin.io.path.isRegularFile
 
-class BazelProjectSettingsConfigurable(private val project: Project) :
+internal class BazelProjectSettingsConfigurable(private val project: Project) :
   BoundCompositeSearchableConfigurable<UnnamedConfigurable>(
     displayName = BazelPluginBundle.message(DISPLAY_NAME_KEY),
     helpTopic = "",

@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import java.nio.file.Path
 
-class TargetCompletionsGenerator(private val project: Project) {
+internal class TargetCompletionsGenerator(private val project: Project) {
   private val separator = "/"
   private val startTargetSign = "//"
 

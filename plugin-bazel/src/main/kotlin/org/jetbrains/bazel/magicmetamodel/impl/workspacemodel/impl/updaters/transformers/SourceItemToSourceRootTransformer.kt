@@ -1,15 +1,18 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelEntity
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
+@ApiStatus.Internal
 data class SourceRoot(
   val sourcePath: Path,
   val generated: Boolean,
   val jvmPackagePrefix: String? = null,
 ) : WorkspaceModelEntity()
 
+@ApiStatus.Internal
 object SourceItemToSourceRootTransformer :
   WorkspaceModelEntityTransformer<SourceItem, SourceRoot> {
   override fun transform(inputEntity: SourceItem): SourceRoot {

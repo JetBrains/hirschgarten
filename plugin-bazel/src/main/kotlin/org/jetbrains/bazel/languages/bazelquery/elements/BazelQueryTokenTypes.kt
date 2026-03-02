@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.languages.bazelquery.elements
 
-object BazelQueryTokenTypes {
+internal object BazelQueryTokenTypes {
   @JvmField
   val COMMENT = BazelQueryTokenType("COMMENT")
 

@@ -5,7 +5,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.CompileParams
 import kotlin.time.Duration.Companion.seconds
 
-object BazelTestRunnerWithDiagnostics : BazelBaseTestRunner() {
+internal object BazelTestRunnerWithDiagnostics : BazelBaseTestRunner() {
   private const val COMPILE_TARGETS = "COMPILE_TARGETS_"
 
   private fun getSteps(): List<List<Label>> =

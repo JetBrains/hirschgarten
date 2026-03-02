@@ -18,7 +18,7 @@ import org.jetbrains.bsp.protocol.TaskStartParams
 import java.util.concurrent.ConcurrentHashMap
 
 @Service(Service.Level.PROJECT)
-class BazelTaskEventsService : BazelTaskEventsHandler {
+internal class BazelTaskEventsService : BazelTaskEventsHandler {
 
   private val taskListeners: ConcurrentHashMap<TaskGroupId, BazelTaskListener> = ConcurrentHashMap()
 

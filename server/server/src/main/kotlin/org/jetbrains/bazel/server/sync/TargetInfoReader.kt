@@ -12,7 +12,7 @@ import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.reader
 
-class TargetInfoReader(private val taskLogger: BazelTaskLogger?) {
+internal class TargetInfoReader(private val taskLogger: BazelTaskLogger?) {
   suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
     withContext(Dispatchers.Default) {
       files.map { file -> async { readFromFile(file) } }.awaitAll()

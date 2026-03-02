@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.util.Key
 import com.intellij.util.xmlb.annotations.Attribute
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
@@ -17,16 +18,18 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
 import java.nio.file.Path
 
-const val GENERATE_SYNTHETIC_PROVIDER_NAME: String = "BazelGenerateSyntheticTargetRunTaskProvider"
+private const val GENERATE_SYNTHETIC_PROVIDER_NAME: String = "BazelGenerateSyntheticTargetRunTaskProvider"
+@ApiStatus.Internal
 val GENERATE_SYNTHETIC_PROVIDER_ID: Key<GenerateSyntheticTargetRunTaskProvider.Task> = Key.create(GENERATE_SYNTHETIC_PROVIDER_NAME)
 
-val SYNTHETIC_BUILD_SESSION: Key<SyntheticRunTargetSession> = Key.create("bazel.run.synthetic.build_file.vfile")
+internal val SYNTHETIC_BUILD_SESSION: Key<SyntheticRunTargetSession> = Key.create("bazel.run.synthetic.build_file.vfile")
 
-data class SyntheticRunTargetSession(
+internal data class SyntheticRunTargetSession(
   val buildFileContent: String,
   val buildFilePath: Path,
 )
 
+@ApiStatus.Internal
 class GenerateSyntheticTargetRunTaskProvider(
 ) : BeforeRunTaskProvider<GenerateSyntheticTargetRunTaskProvider.Task>() {
   override fun getId(): Key<Task> = GENERATE_SYNTHETIC_PROVIDER_ID
@@ -95,4 +98,4 @@ class GenerateSyntheticTargetRunTaskProvider(
   }
 }
 
-interface SyntheticRunTaskMarker
+internal interface SyntheticRunTaskMarker

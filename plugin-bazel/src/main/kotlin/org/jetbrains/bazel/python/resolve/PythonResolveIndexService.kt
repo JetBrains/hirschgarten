@@ -27,7 +27,7 @@ import kotlin.io.path.relativeTo
 
 @Service(Service.Level.PROJECT)
 @State(name = "PythonResolveIndexService", storages = [Storage("bazelPython.xml")], reportStatistic = true)
-class PythonResolveIndexService(private val project: Project) : PersistentStateComponent<PythonResolveIndexService.State> {
+internal class PythonResolveIndexService(private val project: Project) : PersistentStateComponent<PythonResolveIndexService.State> {
   var resolveIndex: Map<QualifiedName, VirtualFile?> = emptyMap()
     private set
   private var internalResolveIndex: Map<QualifiedName, Path> = mapOf()

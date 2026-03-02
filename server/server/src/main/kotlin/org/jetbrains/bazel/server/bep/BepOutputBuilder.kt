@@ -10,9 +10,9 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-data class TextProtoDepSet(val files: Collection<Path>, val children: Collection<String>)
+internal data class TextProtoDepSet(val files: Collection<Path>, val children: Collection<String>)
 
-class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolver) {
+internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolver) {
   private val outputGroups: MutableMap<String, MutableSet<String>> = HashMap()
   private val textProtoFileSets: MutableMap<String, TextProtoDepSet> = HashMap()
   private val rootTargets: MutableSet<Label> = HashSet()

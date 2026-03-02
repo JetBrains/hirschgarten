@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.server.bsp.utils
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import java.nio.file.Path
 
+@ApiStatus.Internal
 class InternalAspectsResolver(
   val bspInfo: BspInfo,
 ) {

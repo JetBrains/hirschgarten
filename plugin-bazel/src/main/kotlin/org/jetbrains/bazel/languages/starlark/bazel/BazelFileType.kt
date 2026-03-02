@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
-enum class BazelFileType {
+internal enum class BazelFileType {
   BUILD,
   EXTENSION,
   MODULE,

@@ -5,7 +5,7 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import java.nio.file.Path
 import java.util.regex.Pattern
 
-class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
+internal class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
   fun resolveSdk(targetInfo: BspTargetInfo.TargetInfo): ScalaSdk? {
     if (!targetInfo.hasScalaTargetInfo()) {
       return null

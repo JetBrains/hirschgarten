@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
@@ -8,6 +9,7 @@ import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
+@ApiStatus.Internal
 data class ModuleDetails(
   val target: RawBuildTarget,
   val javacOptions: List<String>,
@@ -16,6 +18,7 @@ data class ModuleDetails(
   val jvmBinaryJars: List<Path>,
 )
 
+@ApiStatus.Internal
 interface WorkspaceModelUpdater {
   suspend fun loadModules(moduleEntities: List<Module>, libraryModules: List<JavaModule>)
 

@@ -6,7 +6,7 @@ import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDi
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 
-class JvmSyncHook : ProjectSyncHook {
+internal class JvmSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     val targetUtilsDiff = environment.diff.targetUtilsDiff
     environment.withSubtask("Process JVM targets") {

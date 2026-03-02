@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.sections
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.BooleanScalarSection
 
-class AllowManualTargetsSyncSection : BooleanScalarSection() {
+internal class AllowManualTargetsSyncSection : BooleanScalarSection() {
   override val name = NAME
   override val default = false
   override val sectionKey = KEY

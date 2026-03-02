@@ -34,7 +34,7 @@ import java.util.Collections
  *
  * Each rule name must map to at most one Kind, across all such providers.
  */
-interface TargetKindProvider {
+internal interface TargetKindProvider {
   /** A set of rule names known at compile time.  */
   val targetKinds: Set<TargetKind>
 
@@ -58,7 +58,7 @@ interface TargetKindProvider {
  * point setup.
  */
 @Service
-class TargetKindService {
+internal class TargetKindService {
   /** An internal map of all known rule types.  */
   val stringToKind: MutableMap<String, TargetKind> =
     Collections.synchronizedMap(HashMap())
@@ -98,11 +98,11 @@ class TargetKindService {
   }
 }
 
-fun TargetKind.isOneOf(vararg kinds: TargetKind): Boolean = kinds.contains(this)
+internal fun TargetKind.isOneOf(vararg kinds: TargetKind): Boolean = kinds.contains(this)
 
-fun TargetKind.hasLanguage(languageClass: LanguageClass): Boolean = this.languageClasses.contains(languageClass)
+internal fun TargetKind.hasLanguage(languageClass: LanguageClass): Boolean = this.languageClasses.contains(languageClass)
 
-fun TargetKind.hasAnyLanguageIn(vararg languageClass: LanguageClass): Boolean = languageClass.any { this.languageClasses.contains(it) }
+internal fun TargetKind.hasAnyLanguageIn(vararg languageClass: LanguageClass): Boolean = languageClass.any { this.languageClasses.contains(it) }
 
 /**
  * When a rule has a transition applied to it then it will present with this
@@ -110,7 +110,7 @@ fun TargetKind.hasAnyLanguageIn(vararg languageClass: LanguageClass): Boolean = 
  */
 private const val RULE_NAME_PREFIX_TRANSITION = "_transition_"
 
-fun TargetKind.Companion.fromRuleName(ruleName: String): TargetKind? {
+internal fun TargetKind.Companion.fromRuleName(ruleName: String): TargetKind? {
   var ruleName = ruleName
   if (ruleName.startsWith(RULE_NAME_PREFIX_TRANSITION)) {
     ruleName = ruleName.substring(RULE_NAME_PREFIX_TRANSITION.length)
@@ -118,7 +118,7 @@ fun TargetKind.Companion.fromRuleName(ruleName: String): TargetKind? {
   return TargetKindService.service.stringToKind[ruleName]
 }
 
-val TargetKind.Companion.perLanguageKinds: Multimap<LanguageClass, TargetKind>
+internal val TargetKind.Companion.perLanguageKinds: Multimap<LanguageClass, TargetKind>
   /**
    * Returns a per-language map of rule kinds handled by an available [TargetKindProvider].
    *
@@ -134,10 +134,10 @@ val TargetKind.Companion.perLanguageKinds: Multimap<LanguageClass, TargetKind>
     }
   }
 
-fun TargetKind.Companion.getKindsForLanguage(language: LanguageClass): Set<TargetKind> = perLanguageKinds.get(language).toSet()
+internal fun TargetKind.Companion.getKindsForLanguage(language: LanguageClass): Set<TargetKind> = perLanguageKinds.get(language).toSet()
 
 /** If rule type isn't recognized, uses a heuristic to guess the rule type.  */
-fun TargetKind.Companion.guessRuleType(ruleName: String): RuleType? {
+internal fun TargetKind.Companion.guessRuleType(ruleName: String): RuleType? {
   val kind = fromRuleName(ruleName)
   return when {
     kind != null -> kind.ruleType

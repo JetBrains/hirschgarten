@@ -9,7 +9,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 
-class BuildTargetAction(private val targetId: Label) :
+internal class BuildTargetAction(private val targetId: Label) :
   SuspendableAction(
     text = { BazelPluginBundle.message("widget.build.target.popup.message") },
     icon = AllIcons.Toolwindows.ToolWindowBuild,

@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.commons
 
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
 enum class Language(
   val id: String,
   val extensions: Set<String>,

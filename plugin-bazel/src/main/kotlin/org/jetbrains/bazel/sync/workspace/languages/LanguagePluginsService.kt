@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
@@ -14,9 +15,10 @@ import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
 
 @Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 class LanguagePluginsService {
   val logger = logger<LanguagePluginsService>()
-  val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
+  private val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
 
   // target data can have only one language data
   // jvm language plugins include base JavaInfo into their model BUT you have to call their plugin first

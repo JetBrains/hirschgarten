@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.elements
 
-object StarlarkTokenTypes {
+internal object StarlarkTokenTypes {
   // Whitespaces
   @JvmField
   val SPACE = StarlarkTokenType("SPACE")

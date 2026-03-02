@@ -5,7 +5,7 @@ import org.jetbrains.bazel.languages.projectview.ScalarSection
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 
-class GazelleTargetSection : ScalarSection<Label>() {
+internal class GazelleTargetSection : ScalarSection<Label>() {
   override val name = NAME
   override val sectionKey = KEY
   override val completionProvider = TargetCompletionProvider()

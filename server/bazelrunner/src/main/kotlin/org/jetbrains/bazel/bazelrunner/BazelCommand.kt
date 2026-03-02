@@ -3,6 +3,7 @@ package org.jetbrains.bazel.bazelrunner
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.util.SystemInfo
 import com.jediterm.core.util.TermSize
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
@@ -15,17 +16,17 @@ import java.nio.file.StandardOpenOption
 import kotlin.io.path.createDirectories
 import kotlin.io.path.writeLines
 
-interface HasProgramArguments {
+internal interface HasProgramArguments {
   // Will be forwarded directly to `bazel run <target> -- <arguments>` or set using `--test_arg=<arg>` for `bazel test`
   val programArguments: MutableList<String>
 }
 
-interface HasAdditionalBazelOptions {
+internal interface HasAdditionalBazelOptions {
   // Will be forwarded directly to `bazel <command> <options>`
   val additionalBazelOptions: MutableList<String>
 }
 
-interface HasEnvironment {
+internal interface HasEnvironment {
   // In case of `bazel test`, it will be set using `--test_env=<name=value>`
   // In case of `bazel build`, it will be set using `--action_env=<name=value>`
   // `bazel run` needs to be set up inside the [org.jetbrains.bazel.bazelrunner.BazelRunner]
@@ -38,7 +39,7 @@ interface HasEnvironment {
   val inheritedEnvironment: List<String>
 }
 
-interface HasMultipleTargets {
+internal interface HasMultipleTargets {
   // Will be added as `bazel <command> -- target1 target2 ...`
   val targets: MutableList<Label>
 
@@ -64,13 +65,14 @@ interface HasMultipleTargets {
   }
 }
 
-interface HasSingleTarget {
+internal interface HasSingleTarget {
   val target: Label
 }
 
 /**
  * Immutable in contrast to [BazelCommand]
  */
+@ApiStatus.Internal
 data class BazelCommandExecutionDescriptor(
   val command: List<String>,
   val ptyTermSize: TermSize?,
@@ -79,6 +81,7 @@ data class BazelCommandExecutionDescriptor(
 )
 
 // See https://bazel.build/reference/command-line-reference#commands
+@ApiStatus.Internal
 abstract class BazelCommand(val bazelBinary: String) {
   // See https://bazel.build/reference/command-line-reference#startup-options
   val startupOptions: MutableList<String> = mutableListOf()

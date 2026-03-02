@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.bazelversion.service
 
 import com.intellij.util.EnvironmentUtil
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
@@ -9,6 +10,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.readText
 
+@ApiStatus.Internal
 object BazelVersionWorkspaceResolver {
   fun resolveBazelVersionFromWorkspace(workspace: Path): BazelVersionLiteral? =
     resolveBazelVersionEnvVariable()
@@ -53,6 +55,7 @@ object BazelVersionWorkspaceResolver {
 }
 
 // https://github.com/bazelbuild/bazelisk/blob/2ecd43c25b475cab2cd554f0fce40304f2bf3445/config/config.go#L50
+@ApiStatus.Internal
 object BazeliskrcParser {
   fun parse(content: String): Map<String, String> =
     content

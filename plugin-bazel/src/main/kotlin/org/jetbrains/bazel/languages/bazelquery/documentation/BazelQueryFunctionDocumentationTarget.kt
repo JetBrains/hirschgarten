@@ -16,7 +16,7 @@ import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunction
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunctionSymbol
 
 @Suppress("UnstableApiUsage")
-class BazelQueryFunctionDocumentationTarget(symbol: BazelQueryFunctionSymbol, val project: Project) :
+internal class BazelQueryFunctionDocumentationTarget(symbol: BazelQueryFunctionSymbol, val project: Project) :
   DocumentationTarget,
   Pointer<BazelQueryFunctionDocumentationTarget> {
   private val function = symbol.function

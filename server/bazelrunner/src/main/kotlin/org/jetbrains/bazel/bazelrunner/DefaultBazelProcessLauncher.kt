@@ -6,7 +6,7 @@ import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import java.nio.file.Path
 
-class DefaultBazelProcessLauncher(private val workspaceRoot: Path) : BazelProcessLauncher {
+internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path) : BazelProcessLauncher {
   override fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process {
     val ptyTermSize = executionDescriptor.ptyTermSize
     val commandLine = if (ptyTermSize != null) {
@@ -24,7 +24,7 @@ class DefaultBazelProcessLauncher(private val workspaceRoot: Path) : BazelProces
   }
 }
 
-object DefaultBazelProcessLauncherProvider : BazelProcessLauncherProvider {
+internal object DefaultBazelProcessLauncherProvider : BazelProcessLauncherProvider {
   override fun createBazelProcessLauncher(
     workspaceRoot: Path,
     bspInfo: BspInfo,

@@ -3,9 +3,11 @@ package org.jetbrains.bazel.config
 import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
 
+@ApiStatus.Internal
 object BazelFeatureFlags {
   private const val PYTHON_SUPPORT = "bsp.python.support"
 
@@ -118,7 +120,7 @@ object BazelFeatureFlags {
   }
 }
 
-object FeatureFlagsProvider {
+internal object FeatureFlagsProvider {
   fun getFeatureFlags(project: Project): FeatureFlags =
     with(BazelFeatureFlags) {
       FeatureFlags(

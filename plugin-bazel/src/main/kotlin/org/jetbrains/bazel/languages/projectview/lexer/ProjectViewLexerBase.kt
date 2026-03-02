@@ -6,7 +6,7 @@ package org.jetbrains.bazel.languages.projectview.lexer
  * @constructor Creates a lexer which returns a list of tokens for the given [input].
  * @param input The input to tokenize.
  */
-class ProjectViewLexerBase(input: CharSequence) {
+internal class ProjectViewLexerBase(input: CharSequence) {
   private val tokens = mutableListOf<Token>()
   private var buffer = input.toString()
   private var pos = 0

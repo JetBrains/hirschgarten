@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.commons.symlinks
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import java.io.IOException
 import java.nio.file.FileVisitResult
@@ -14,6 +15,7 @@ import kotlin.io.path.name
 /**
  * Moved from [org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService.getBazelSymlinksToExclude]
  */
+@ApiStatus.Internal
 object BazelSymlinksCalculator {
   fun calculateBazelSymlinksToExclude(workspaceRoot: Path, bazelSymlinksScanMaxDepth: Int): List<Path> {
     if (bazelSymlinksScanMaxDepth <= 0) return emptyList()

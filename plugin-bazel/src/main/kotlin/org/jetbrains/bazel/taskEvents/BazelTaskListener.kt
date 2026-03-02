@@ -6,7 +6,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-interface BazelTaskListener {
+internal interface BazelTaskListener {
   fun onDiagnostic(
     taskId: TaskId,
     textDocument: Path?,

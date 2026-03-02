@@ -18,7 +18,7 @@ import org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
-class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurationProvider {
+internal class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurationProvider {
   override fun provideRunConfiguration(
     configurationName: String,
     environment: JvmEnvironmentItem,
@@ -73,7 +73,7 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
     )
 }
 
-interface PsiElementConfigurationLocator {
+internal interface PsiElementConfigurationLocator {
   fun getPsiMethod(callerPsiElement: PsiElement): PsiMethod?
 
   fun getPsiClass(callerPsiElement: PsiElement): PsiClass?

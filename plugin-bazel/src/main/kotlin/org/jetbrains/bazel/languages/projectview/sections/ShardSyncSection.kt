@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.BooleanScalarSection
 
+@ApiStatus.Internal
 class ShardSyncSection : BooleanScalarSection() {
   override val name = NAME
   override val sectionKey: SectionKey<Boolean> = KEY

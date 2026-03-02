@@ -23,7 +23,7 @@ import org.jetbrains.bazel.label.Label
  *
  * The goal is primarily to avoid OOMEs, with a secondary goal of reducing build latency.
  */
-interface BuildBatchingService {
+internal interface BuildBatchingService {
   /**
    * Given a list of individual, un-excluded blaze targets (no wildcard target patterns), returns a
    * list of target batches.

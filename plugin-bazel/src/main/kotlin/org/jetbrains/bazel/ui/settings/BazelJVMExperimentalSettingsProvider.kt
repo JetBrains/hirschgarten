@@ -10,7 +10,7 @@ import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import javax.swing.JComponent
 
-class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
+internal class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
   override fun createConfigurable(project: Project): UnnamedConfigurable = BazelJVMExperimentalConfigurable(project)
 
   override fun searchIndexKeys() =
@@ -21,7 +21,7 @@ class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
     )
 }
 
-class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedConfigurable {
+internal class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedConfigurable {
   private val enableLocalJvmActionsCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
   private val useIntellijTestRunnerCheckBox: JBCheckBox

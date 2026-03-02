@@ -5,7 +5,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
 
-class StarlarkResolveProcessor(val result: MutableList<StarlarkElement>, private val referenceElement: StarlarkElement) :
+internal class StarlarkResolveProcessor(val result: MutableList<StarlarkElement>, private val referenceElement: StarlarkElement) :
   Processor<StarlarkElement> {
   override fun process(currentElement: StarlarkElement): Boolean =
     when {

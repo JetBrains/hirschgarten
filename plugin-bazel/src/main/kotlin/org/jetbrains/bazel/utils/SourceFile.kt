@@ -8,7 +8,7 @@ import java.nio.file.Path
 import javax.swing.Icon
 import kotlin.io.path.toPath
 
-enum class SourceType(private val extensions: Array<String>) {
+internal enum class SourceType(private val extensions: Array<String>) {
   JAVA(arrayOf("java")),
   KOTLIN(arrayOf("kt", "kts")),
   SCALA(arrayOf("scala")),
@@ -25,7 +25,7 @@ enum class SourceType(private val extensions: Array<String>) {
   }
 }
 
-interface SourceTypeIconProvider {
+internal interface SourceTypeIconProvider {
   fun getSourceType(): SourceType
 
   fun getIcon(): Icon?
@@ -40,7 +40,7 @@ interface SourceTypeIconProvider {
   }
 }
 
-fun VirtualFile.isSourceFile(): Boolean {
+internal fun VirtualFile.isSourceFile(): Boolean {
   val isFile =
     try {
       this.isFile
@@ -50,6 +50,6 @@ fun VirtualFile.isSourceFile(): Boolean {
   return isFile && SourceType.hasSourceFileExtension(nameSequence)
 }
 
-fun Path.isSourceFile(): Boolean = SourceType.hasSourceFileExtension(toString())
+internal fun Path.isSourceFile(): Boolean = SourceType.hasSourceFileExtension(toString())
 
-fun URI.isSourceFile(): Boolean = SourceType.hasSourceFileExtension(toPath().toString())
+internal fun URI.isSourceFile(): Boolean = SourceType.hasSourceFileExtension(toPath().toString())

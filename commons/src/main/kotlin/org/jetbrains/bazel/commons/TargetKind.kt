@@ -15,8 +15,10 @@
  */
 package org.jetbrains.bazel.commons
 
+import org.jetbrains.annotations.ApiStatus
+
 // For compatibility with OG
-typealias Kind = TargetKind
+internal typealias Kind = TargetKind
 
 /**
  * A set of recognized bazel rule names, together with [LanguageClass] and [RuleType].
@@ -26,6 +28,7 @@ typealias Kind = TargetKind
  *
  * Each rule name maps to at most one Kind.
  */
+@ApiStatus.Internal
 data class TargetKind(
   val kindString: String,
   val languageClasses: Set<LanguageClass> = emptySet(),

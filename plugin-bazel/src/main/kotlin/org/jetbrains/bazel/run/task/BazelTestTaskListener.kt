@@ -6,6 +6,7 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+@ApiStatus.Internal
 class BazelTestTaskListener(private val handler: BazelProcessHandler, private val coverageReportListener: ((Path) -> Unit)? = null) :
   BazelTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
