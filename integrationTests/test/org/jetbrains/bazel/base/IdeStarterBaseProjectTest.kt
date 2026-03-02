@@ -3,7 +3,6 @@ package org.jetbrains.bazel.ideStarter
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
 import com.intellij.driver.client.utility
-import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.openEditor
@@ -17,6 +16,7 @@ import com.intellij.driver.sdk.waitForCodeAnalysis
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
@@ -28,6 +28,7 @@ import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
@@ -48,6 +49,7 @@ import org.kodein.di.bindSingleton
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
+import java.util.function.Predicate
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -119,7 +121,7 @@ abstract class IdeStarterBaseProjectTest {
   }
 
   @AfterEach
-  fun tearDown() {
+  fun tearDown(): Unit = timeoutRunBlocking {
     killBazelProcesses()
     killCefProcesses()
   }
@@ -157,12 +159,12 @@ abstract class IdeStarterBaseProjectTest {
   }
 
   companion object {
-    fun killBazelProcesses() {
+    suspend fun killBazelProcesses() {
       try {
         // Kill Bazel server Java processes started for the test workspace
         findAndKillProcesses(
           message = "Killing Bazel server processes",
-          filter = java.util.function.Predicate { p ->
+          filter = Predicate { p ->
             val hasServerJar = p.arguments.any { arg ->
               arg.contains("A-server.jar") || arg.endsWith("/server.jar") || arg.endsWith("\\server.jar") || arg.endsWith("-server.jar")
             }
@@ -177,7 +179,7 @@ abstract class IdeStarterBaseProjectTest {
       }
     }
 
-    fun killCefProcesses() {
+    suspend fun killCefProcesses() {
       try {
         val cefProcesses = getProcessList(java.util.function.Predicate { p ->
           p.name.contains("cef_server") &&
